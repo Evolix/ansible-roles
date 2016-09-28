@@ -1,0 +1,18 @@
+---
+
+- name: monit is installed
+  apt:
+    name: monit
+    state: installed
+  tags:
+    - monit
+
+- name: custom config is installed
+  template:
+    src: custom.j2
+    dest: /etc/monit/conf.d/custom
+    mode: 0640
+    force: yes
+  notify: restart monit
+  tags:
+    - monit

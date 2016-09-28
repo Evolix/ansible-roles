@@ -1,0 +1,11 @@
+---
+
+- name: reload monit
+  service:
+    name: monit
+    state: reloaded
+
+- name: restart monit
+  service:
+    name: monit
+    state: restarted

@@ -1,0 +1,14 @@
+set daemon {{ monit_daemon_time }}
+
+set logfile syslog facility log_daemon
+
+{% if monit_alert_dest %}
+set alert {{ monit_alert_dest }}
+{% endif %}
+
+{% if monit_httpd_enable %}
+set httpd port {{ monit_httpd_port }} and
+{% for item in monit_httpd_allow_items %}
+  allow {{ item }}
+{% endfor %}
+{% endif %}

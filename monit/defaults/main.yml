@@ -1,0 +1,7 @@
+monit_daemon_time: 60
+monit_alert_dest:
+monit_httpd_enable: true
+monit_httpd_port: 2812
+monit_httpd_allow_items:
+  - localhost
+  - 127.0.0.1
