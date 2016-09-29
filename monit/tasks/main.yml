@@ -6,6 +6,7 @@
     state: installed
   tags:
     - monit
+    - packages
 
 - name: custom config is installed
   template:

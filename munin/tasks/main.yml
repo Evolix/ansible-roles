@@ -11,6 +11,7 @@
     - munin-plugins-extra
   tags:
     - munin
+    - packages
 
 - block:
   - name: Replace localdomain in Munin config

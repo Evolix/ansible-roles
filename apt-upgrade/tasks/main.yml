@@ -5,3 +5,4 @@
     upgrade: "{{ apt_upgrade_mode | default('safe') }}"
   tags:
     - system
+    - packages
