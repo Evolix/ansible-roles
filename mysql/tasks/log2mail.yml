@@ -1,0 +1,19 @@
+---
+
+- name: Is log2mail present ?
+  stat:
+    path: /etc/log2mail/config
+  register: log2mail_config_dir
+  tags:
+    - mysql
+    - log2mail
+
+- name: Copy log2mail config
+  copy:
+    src: log2mail.conf
+    dest: /etc/log2mail/config/mysql.conf
+    mode: 0640
+  when: log2mail_config_dir.stat.exists
+  tags:
+    - mysql
+    - log2mail

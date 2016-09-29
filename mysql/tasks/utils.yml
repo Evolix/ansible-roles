@@ -1,0 +1,79 @@
+---
+
+# mytop
+
+- name: Install mytop
+  apt:
+    name: mytop
+    state: installed
+  tags:
+    - packages
+    - mytop
+    - mysql
+
+- name: Read debian-sys-maint password
+  shell: cat /etc/mysql/debian.cnf | grep -m1 "password = .*" | cut -d" " -f3
+  register: mysql_debian_password
+  changed_when: False
+
+- name: Configure mytop
+  template:
+    src: mytop.j2
+    dest: /root/.mytop
+    mode: 0600
+    force: yes
+  tags:
+    - mytop
+    - mysql
+
+# mysqltuner
+
+- name: Install mysqltuner
+  copy:
+    src: mysqltuner.pl
+    dest: /usr/local/bin/mysqltuner.pl
+    mode: 700
+  tags:
+    - mysql
+    - mysqltuner
+
+- name: Install aha
+  apt:
+    name: aha
+  tags:
+    - mysql
+    - mysqltuner
+
+# automatic optimizations
+
+- name: Weekly cron to optimize MySQL
+  copy:
+    src: mysql-optimize
+    dest: /etc/cron.monthly/mysql-optimize
+    mode: 0755
+  tags:
+    - mysql
+
+# my-add.sh
+
+- name: Install apg
+  apt:
+    name: apg
+  tags:
+    - mysql
+
+- name: Ensure /usr/share/scripts exists
+  file:
+    dest: /usr/share/scripts
+    mode: 0700
+    state: directory
+  tags:
+    - mysql
+
+- name: Install my-add.sh
+  copy:
+    src: my-add.sh
+    dest: /usr/local/bin/my-add.sh
+    mode: 0700
+  tags:
+    - mysql

@@ -1,0 +1,16 @@
+---
+
+- name: Ensure MySQL packages are installed
+  apt:
+    name: mysql-server
+    state: installed
+  with_items:
+    - mysql-server
+  tags:
+    - mysql
+    - packages
+
+- name: MySQL is started
+  service:
+    name: mysql
+    state: started

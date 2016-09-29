@@ -1,0 +1,40 @@
+---
+
+- block:
+  - name: "Is {{ mysql_custom_datadir }} present ?"
+    stat:
+      path: "{{ mysql_custom_datadir }}"
+    register: mysql_custom_datadir_test
+
+  - name: "read the real datadir"
+    command: readlink -f /var/lib/mysql
+    changed_when: false
+    register: mysql_current_real_datadir_test
+  tags:
+    - mysql
+  when: mysql_custom_datadir != ''
+
+- block:
+  - name: MySQL is stopped
+    service:
+      name: mysql
+      state: stopped
+
+  - name: Move MySQL datadir to {{ mysql_custom_datadir }}
+    command: mv {{ mysql_current_real_datadir_test.stdout }} {{ mysql_custom_datadir }}
+    args:
+      creates: "{{ mysql_custom_datadir }}"
+
+  - name: Symlink {{ mysql_custom_datadir }} to /var/lib/mysql
+    file:
+      src: "{{ mysql_custom_datadir }}"
+      dest: '/var/lib/mysql'
+      state: link
+
+  - name: MySQL is started
+    service:
+      name: mysql
+      state: started
+  tags:
+    - mysql
+  when: mysql_custom_datadir != '' and mysql_custom_datadir != mysql_current_real_datadir_test.stdout and not mysql_custom_datadir_test.stat.exists

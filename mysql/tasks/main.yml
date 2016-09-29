@@ -1,0 +1,19 @@
+---
+
+- include: packages.yml
+
+- include: users.yml
+
+- include: config.yml
+
+- include: datadir.yml
+
+- include: tmpdir.yml
+
+- include: nrpe.yml
+
+- include: munin.yml
+
+- include: log2mail.yml
+
+- include: utils.yml

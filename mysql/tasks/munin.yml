@@ -1,0 +1,53 @@
+---
+
+- name: is Munin present ?
+  stat:
+    path: /etc/munin/plugin-conf.d/munin-node
+  register: munin_node_plugins_config
+  tags:
+    - mysql
+    - munin
+
+- block:
+  - name: Install libcache-cache-perl for Munin
+    apt:
+      name: libcache-cache-perl
+      state: present
+
+  - name: Enable core Munin plugins
+    file:
+      src: '/usr/share/munin/plugins/{{ item }}'
+      dest: /etc/munin/plugins/{{ item }}
+      state: link
+    with_items:
+      - mysql_bytes
+      - mysql_queries
+      - mysql_slowqueries
+      - mysql_threads
+    notify: restart munin-node
+
+  - name: Enable contributed Munin plugins
+    file:
+      src: /usr/share/munin/plugins/mysql_
+      dest: '/etc/munin/plugins/mysql_{{ item }}'
+      state: link
+    with_items:
+      - connections
+      - files_tables
+      - innodb_bpool
+      - innodb_bpool_act
+      - innodb_io
+      - innodb_log
+      - innodb_rows
+      - innodb_semaphores
+      - myisam_indexes
+      - qcache
+      - qcache_mem
+      - sorts
+      - tmp_tables
+    notify: restart munin-node
+
+  when: munin_node_plugins_config.stat.exists == true
+  tags:
+    - mysql
+    - munin

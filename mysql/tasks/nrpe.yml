@@ -1,0 +1,40 @@
+---
+
+- name: is NRPE present ?
+  stat:
+    path: /etc/nagios/nrpe.d/evolix.cfg
+  register: nrpe_evolix_config
+  tags:
+    - mysql
+    - nrpe
+
+- block:
+  - name: Create a password for NRPE
+    shell: perl -e 'print map{("a".."z","A".."Z",0..9)[int(rand(62))]}(1..16)'
+    register: mysql_nrpe_password
+    changed_when: false
+
+  - debug:
+      msg: "repl password: {{ mysql_nrpe_password.stdout }}"
+
+  - name: Create nrpe user
+    mysql_user:
+      name: nrpe
+      password: '{{ mysql_nrpe_password.stdout }}'
+      config_file: /root/.my.cnf
+      update_password: on_create
+      state: present
+    register: create_nrpe_user
+
+  - name: config check_mysql to use the new password
+    replace:
+      dest: /etc/nagios/nrpe.d/evolix.cfg
+      regexp: '\bMYSQL_PASSWD\b'
+      replace: '{{ mysql_nrpe_password.stdout }}'
+    notify: restart nagios-nrpe-server
+    when: create_nrpe_user.changed
+
+  when: nrpe_evolix_config.stat.exists
+  tags:
+    - mysql
+    - nrpe

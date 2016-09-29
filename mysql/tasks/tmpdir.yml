@@ -1,0 +1,23 @@
+---
+
+- block:
+  - name: "Create {{ mysql_custom_tmpdir }}"
+    file:
+      path: "{{ mysql_custom_tmpdir }}"
+      owner: mysql
+      group: mysql
+      mode: 0700
+      state: directory
+    tags:
+      - mysql
+
+  - name: Configure tmpdir
+    ini_file:
+      dest: /etc/mysql/conf.d/100-evolinux-custom.cnf
+      section: mysqld
+      option: tmpdir
+      value: "{{ mysql_custom_tmpdir }}"
+    notify: restart mysql
+    tags:
+      - mysql
+  when: mysql_custom_tmpdir != ''

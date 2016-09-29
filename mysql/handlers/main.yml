@@ -1,0 +1,15 @@
+---
+- name: restart munin-node
+  service:
+    name: munin-node
+    state: restarted
+
+- name: restart nagios-nrpe-server
+  service:
+    name: nagios-nrpe-server
+    state: restarted
+
+- name: restart mysql
+  service:
+    name: mysql
+    state: restarted

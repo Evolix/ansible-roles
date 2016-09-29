@@ -1,0 +1,7 @@
+mysql_replace_root_with_mysqladmin: true
+
+mysql_custom_datadir: ''
+mysql_custom_tmpdir: ''
+
+mysql_thread_cache_size: '{{ ansible_processor_cores }}'
+mysql_innodb_buffer_pool_size: '{{ (ansible_memtotal_mb * 0.3) | int }}M'
