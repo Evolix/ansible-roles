@@ -1,0 +1,118 @@
+---
+
+- name: install rbenv dependencies
+  apt:
+    pkg: '{{ item }}'
+    install_recommends: no
+    state: present
+  with_items:
+    - build-essential
+    - git
+    - libcurl4-openssl-dev
+    - libffi-dev
+    - libreadline-dev
+    - libssl-dev
+    - libxml2-dev
+    - libxslt1-dev
+    - zlib1g-dev
+  tags:
+    - rbenv
+    - packages
+
+- name: checkout rbenv_repo for {{ username }}
+  git:
+    repo: '{{ rbenv_repo }}'
+    dest: '{{ rbenv_root }}'
+    version: '{{ rbenv_version }}'
+    accept_hostkey: yes
+    force: yes
+  become_user: "{{ username }}"
+  ignore_errors: yes
+  tags:
+    - rbenv
+
+- name: create plugins directory for {{ username }}
+  file:
+    path: '{{ rbenv_root }}/plugins'
+    state: directory
+  become_user: "{{ username }}"
+  ignore_errors: yes
+  tags:
+    - rbenv
+
+- name: install plugins for {{ username }}
+  git:
+    repo: '{{ item.repo }}'
+    dest: '{{ rbenv_root }}/plugins/{{ item.name }}'
+    version: '{{ item.version }}'
+    accept_hostkey: yes
+    force: yes
+  with_items:
+    - "{{ rbenv_plugins }}"
+  become_user: "{{ username }}"
+  ignore_errors: yes
+  tags:
+    - rbenv
+
+- name: Init rbenv in profile for {{ username }}
+  become_user: "{{ username }}"
+  blockinfile:
+    dest: '~{{ username }}/.profile'
+    block: |
+      export PATH="{{ rbenv_root }}/bin:$PATH"
+      eval "$(rbenv init -)"
+    marker: "# {mark} ANSIBLE MANAGED RBENV INIT"
+
+- name: set default-gems for {{ username }}
+  copy:
+    src: default-gems
+    dest: '{{ rbenv_root }}/default-gems'
+  become_user: "{{ username }}"
+  ignore_errors: yes
+  tags:
+    - rbenv
+
+- name: set gemrc for {{ username }}
+  copy:
+    src: gemrc
+    dest: ~/.gemrc
+  become_user: "{{ username }}"
+  ignore_errors: yes
+  tags:
+    - rbenv
+
+- name: check ruby {{ rbenv_ruby_version }} installed for {{ username }}
+  shell: /bin/bash -lc "rbenv versions | grep {{ rbenv_ruby_version }}"
+  become_user: "{{ username }}"
+  register: ruby_installed
+  changed_when: false
+  ignore_errors: yes
+  always_run: yes
+  tags:
+    - rbenv
+
+- name: install ruby {{ rbenv_ruby_version }} for {{ username }}
+  shell: /bin/bash -lc "TMPDIR=~/tmp rbenv install {{ rbenv_ruby_version }}"
+  become_user: "{{ username }}"
+  when: ruby_installed.rc != 0
+  ignore_errors: yes
+  tags:
+    - rbenv
+
+- name: check if user ruby version is {{ rbenv_ruby_version }} for {{ username }}
+  shell: /bin/bash -lc "rbenv version | cut -d ' ' -f 1 | grep -Fx '{{ rbenv_ruby_version }}'"
+  become_user: "{{ username }}"
+  register: ruby_selected
+  changed_when: false
+  ignore_errors: yes
+  always_run: yes
+  tags:
+    - rbenv
+
+- name: set ruby {{ rbenv_ruby_version }} for {{ username }}
+  shell: /bin/bash -lc "rbenv global {{ rbenv_ruby_version }} && rbenv rehash"
+  become_user: "{{ username }}"
+  when: ruby_selected.rc != 0
+  ignore_errors: yes
+  tags:
+    - rbenv
