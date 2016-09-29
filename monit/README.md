@@ -4,7 +4,7 @@ Installation de Monit et ajout d'une configuration personnalisée.
 
 ## Taches
 
-L'ensemble des action est dans le fichier `tasks/main.yml`
+L'ensemble des actions est dans le fichier `tasks/main.yml`
 
 ## Variables possibles
 
