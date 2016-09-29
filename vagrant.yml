@@ -1,0 +1,14 @@
+---
+- hosts: all
+  gather_facts: yes
+  become: yes
+  # vars_files:
+  #   - 'vars/main.yml'
+
+  roles:
+    # - { role: apt-upgrade, apt_upgrade_mode: safe }
+    - apt-upgrade
+    - munin
+    - monit
+    - redis
+    - { role: rbenv, username: 'vagrant' }
