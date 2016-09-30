@@ -1,23 +1,23 @@
 # munin
 
-Installation de Redis.
+Install Redis with sensible configuration.
 
-Rôle basé sur https://github.com/geerlingguy/ansible-role-redis
+This role is based on https://github.com/geerlingguy/ansible-role-redis
 
-## Taches
+## Tasks
 
-L'ensemble des actions est dans le fichier `tasks/main.yml`
+Everything is in the `tasks/main.yml` file.
 
-## Variables possibles
+## Available variables
 
-Les variables principales sont :
+Main variables are :
 
-* `redis_daemon`: nom du processus
-* `redis_conf_path`: emplacement du fichier de config
-* `redis_port`: port TCP d'écoute
-* `redis_bind_interface`: IP d'écoute
-* `redis_unixsocket`: socket Unix écouté
-* `redis_loglevel`: verbosité des logs
-* `redis_logfile`: emplacement du fichier de log
+* `redis_daemon`: name of the process ;
+* `redis_conf_path`: config file location ;
+* `redis_port`: listening TCP port ;
+* `redis_bind_interface`: listening IP address ;
+* `redis_unixsocket`: Unix socket ;
+* `redis_loglevel`: log verbosity ;
+* `redis_logfile`: log file location.
 
-La liste complète est disponible dans `defaults/main.yml`.
+The full list of variables (with default values) can be found in `defaults/main.yml`.

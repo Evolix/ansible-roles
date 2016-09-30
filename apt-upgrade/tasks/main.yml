@@ -1,5 +1,5 @@
 ---
-- name: Debian is up-to-date
+- name: Ensure Debian is up-to-date
   apt:
     update_cache: yes
     upgrade: "{{ apt_upgrade_mode | default('safe') }}"

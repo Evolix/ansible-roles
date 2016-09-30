@@ -1,13 +1,13 @@
 # apt-upgrade
 
-Mise à jour des paquets APT.
+Upgrades Debian packages
 
-## Taches
+## Tasks
 
-L'ensemble des actions est dans le fichier `tasks/main.yml`
+Everything is in the `tasks/main.yml` file.
 
-## Variables possibles
+## Available variables
 
-* `apt_upgrade_mode` : indique le type de mise à jour, `safe` par défaut (cf. http://docs.ansible.com/ansible/apt_module.html#options)
+* `apt_upgrade_mode` : kind of upgrade to do (cf. http://docs.ansible.com/ansible/apt_module.html#options)
 
-Le choix peut se faire dans un fichier de variables (par exemple `vars/main.yml`) ou bien lors de l'appel du rôle (`- { role: apt-upgrade, apt_upgrade_mode: safe }`)
+Choice of upgrade mode can be set in a variables file (ex. `vars/main.yml`) or when invoking the role (`- { role: apt-upgrade, apt_upgrade_mode: safe }`).

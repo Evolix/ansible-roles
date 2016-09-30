@@ -1,22 +1,22 @@
 # munin
 
-Installation de Rbenv, Ruby et des gems par défaut.
+Install Rbenv, Ruby and some default gems.
 
-## Taches
+## Tasks
 
-L'ensemble des actions est dans le fichier `tasks/main.yml`
+Everything is in the `tasks/main.yml` file.
 
-## Variables possibles
+## Available variables
 
 Les seules variables sont liées au hostname (court et complet) qui sont simplement déduites des facts.
 
-* `rbenv_version`: version de Rbenv à installer, `v1.0.0` par défaut
-* `rbenv_ruby_version`: version de Ruby à installer, `2.3.1` par défaut
-* `rbenv_root`: dossier d'installation, `~/.rbenv` par défaut
-* `rbenv_repo`: source Git pour Rbenv
-* `rbenv_plugins`: liste des plugins Rbenv à installer
+* `rbenv_version`: Rbenv version to install ;
+* `rbenv_ruby_version`: Ruby version to install ;
+* `rbenv_root`: install path for Rbenv ;
+* `rbenv_repo`: repository location ;
+* `rbenv_plugins`: list of Rbenv plugins to install.
 
-Le rôle doit être ajouté en indiquant l'utilisateur concerné :
+The role must be specified with a `username` variable :
 
 ```
 roles:

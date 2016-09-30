@@ -1,14 +1,14 @@
 # monit
 
-Installation de Monit et ajout d'une configuration personnalisée.
+Install Monit.
 
-## Taches
+## Tasks
 
-L'ensemble des actions est dans le fichier `tasks/main.yml`
+Everything is in the `tasks/main.yml` file.
 
-## Variables possibles
+## Available variables
 
-* `monit_daemon_time` : délai d'exécution des vérifications (en secondes)
-* `monit_httpd_enable` : activation du serveur http intégré (`true`/`false`)
-* `monit_httpd_port` : port d'écoute pour le serveur http
-* `monit_httpd_allow_items` : liste des IP/hosts autorisés à se connecter
+* `monit_daemon_time` : execution frequency (in seconds) ;
+* `monit_httpd_enable` : integrated http server enabled or not ;
+* `monit_httpd_port` : TCP port of http server ;
+* `monit_httpd_allow_items` : IP/hosts allow to conenct to http server.

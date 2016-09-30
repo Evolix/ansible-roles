@@ -1,11 +1,11 @@
 # munin
 
-Installation de Munin et changement de quelques plugins.
+Install Munin and enables/diables some default plugins.
 
-## Taches
+## Tasks
 
-L'ensemble des actions est dans le fichier `tasks/main.yml`
+Everything is in the `tasks/main.yml` file.
 
-## Variables possibles
+## Available variables
 
-Les seules variables sont liées au hostname (court et complet) qui sont simplement déduites des facts.
+The only variables are related to the hostname (short and fully qualified) and are derived from gathered facts.

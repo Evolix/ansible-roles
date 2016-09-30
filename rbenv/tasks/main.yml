@@ -1,6 +1,6 @@
 ---
 
-- name: install rbenv dependencies
+- name: Rbenv dependencies are installed
   apt:
     pkg: '{{ item }}'
     install_recommends: no
@@ -19,7 +19,7 @@
     - rbenv
     - packages
 
-- name: checkout rbenv_repo for {{ username }}
+- name: Rbenv repository is checked out for {{ username }}
   git:
     repo: '{{ rbenv_repo }}'
     dest: '{{ rbenv_root }}'
@@ -31,7 +31,7 @@
   tags:
     - rbenv
 
-- name: create plugins directory for {{ username }}
+- name: plugins directory for {{ username }}
   file:
     path: '{{ rbenv_root }}/plugins'
     state: directory
@@ -40,7 +40,7 @@
   tags:
     - rbenv
 
-- name: install plugins for {{ username }}
+- name: plugins are installed for {{ username }}
   git:
     repo: '{{ item.repo }}'
     dest: '{{ rbenv_root }}/plugins/{{ item.name }}'
@@ -54,7 +54,7 @@
   tags:
     - rbenv
 
-- name: Init rbenv in profile for {{ username }}
+- name: Rbenv is initialized in profile for {{ username }}
   become_user: "{{ username }}"
   blockinfile:
     dest: '~{{ username }}/.profile'
@@ -63,7 +63,7 @@
       eval "$(rbenv init -)"
     marker: "# {mark} ANSIBLE MANAGED RBENV INIT"
 
-- name: set default-gems for {{ username }}
+- name: default gems are installed for {{ username }}
   copy:
     src: default-gems
     dest: '{{ rbenv_root }}/default-gems'
@@ -72,7 +72,7 @@
   tags:
     - rbenv
 
-- name: set gemrc for {{ username }}
+- name: gemrc for {{ username }}
   copy:
     src: gemrc
     dest: ~/.gemrc
@@ -81,7 +81,7 @@
   tags:
     - rbenv
 
-- name: check ruby {{ rbenv_ruby_version }} installed for {{ username }}
+- name: is Ruby {{ rbenv_ruby_version }} available for {{ username }} ?
   shell: /bin/bash -lc "rbenv versions | grep {{ rbenv_ruby_version }}"
   become_user: "{{ username }}"
   register: ruby_installed
@@ -91,7 +91,7 @@
   tags:
     - rbenv
 
-- name: install ruby {{ rbenv_ruby_version }} for {{ username }}
+- name: Ruby {{ rbenv_ruby_version }} is available for {{ username }}
   shell: /bin/bash -lc "TMPDIR=~/tmp rbenv install {{ rbenv_ruby_version }}"
   become_user: "{{ username }}"
   when: ruby_installed.rc != 0
@@ -99,7 +99,7 @@
   tags:
     - rbenv
 
-- name: check if user ruby version is {{ rbenv_ruby_version }} for {{ username }}
+- name: is Ruby {{ rbenv_ruby_version }} selected for {{ username }} ?
   shell: /bin/bash -lc "rbenv version | cut -d ' ' -f 1 | grep -Fx '{{ rbenv_ruby_version }}'"
   become_user: "{{ username }}"
   register: ruby_selected
@@ -109,7 +109,7 @@
   tags:
     - rbenv
 
-- name: set ruby {{ rbenv_ruby_version }} for {{ username }}
+- name: select Ruby {{ rbenv_ruby_version }} for {{ username }}
   shell: /bin/bash -lc "rbenv global {{ rbenv_ruby_version }} && rbenv rehash"
   become_user: "{{ username }}"
   when: ruby_selected.rc != 0

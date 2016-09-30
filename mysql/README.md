@@ -1,29 +1,27 @@
 # mysql
 
-Installation de MySQL, une configuration type Evolix et quelques outils.
+Install MySQL
 
-## Taches
+## Tasks
 
-Les taches sont éclatées dans différents fichiers, inclus dans `tasks/main.yml` :
+Tasks are extracted in several files, included in `tasks/main.yml` :
 
-* `packages.yml` : installation des paquets
-* `users.yml` : remplacement de l'utilisateur `root` par `mysqladmin`
-* `config.yml` : copie des configurations
-* `datadir.yml` : configuration du dossier de travail
-* `tmpdir.yml` : configuration du dossier temporaire
-* `nrpe.yml` : utilisateur `nrpe` pour checks Nagios
-* `munin.yml` : activation des plugins Munin
-* `log2mail.yml` : recettes log2mail
-* `utils.yml` : installation d'outils utiles
+* `packages.yml` : packages installation ;
+* `users.yml` : replacement of `root` user by `mysqladmin` user ;
+* `config.yml` : configurations ;
+* `datadir.yml` : data directory customization ;
+* `tmpdir.yml` : temporary directory customization ;
+* `nrpe.yml` : `nrpe` user for Nagios checks ;
+* `munin.yml` : Munin plugins ;
+* `log2mail.yml` : log2mail patterns ;
+* `utils.yml` : useful tools.
 
-## Variables possibles
+## Available variables
 
-Les seules variables sont liées au hostname (court et complet) qui sont simplement déduites des facts.
+* `mysql_replace_root_with_mysqladmin`: switch from `root` to `mysqladmin` user or not ;
+* `mysql_thread_cache_size`: number of threads for the cache ;
+* `mysql_innodb_buffer_pool_size`: amount of RAM dedicated to InnoDB ;
+* `mysql_custom_datadir`: custom datadir
+* `mysql_custom_tmpdir`: custom tmpdir.
 
-* `mysql_replace_root_with_mysqladmin`: remplacement de `root` par `mysqladmin` – `true` par défaut
-* `mysql_thread_cache_size`: nombre de threads pour le cache – nombre de vCPU par défaut
-* `mysql_innodb_buffer_pool_size`: taille du buffer InnoDB – 30% de la RAM installée par défaut
-* `mysql_custom_datadir`: le dossier de travail personnalisé
-* `mysql_custom_tmpdir`: le dossier temporaire personnalisé
-
-NB : le changement de _datadir_ peut se faire plusieurs fois, tant qu'on ne revient pas vers la valeur par défaut (car une fois déplacé un lien symbolique est créé au point de départ).
+NB : changing the _datadir_ location can be done multiple times, as long as it is not restored to the default initial location, (because a symlink is created  and can't be switched back, yet).
