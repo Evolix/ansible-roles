@@ -19,11 +19,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define :default do |default|
     default.vm.hostname = "default"
     default.vm.network :private_network, ip: "192.168.33.33"
-    default.vm.provision :ansible do |ansible|
-          ansible.limit = "default"
-          ansible.playbook = "vagrant.yml"
-          # ansible.tags = "mysql"
-          ansible.raw_arguments = ["-b"]
+    default.vm.provision :ansible, run: "always" do |ansible|
+      ansible.limit = "default"
+      ansible.playbook = "vagrant.yml"
+      # ansible.tags = "mysql"
+      ansible.raw_arguments = ["-b"]
     end
   end
 
