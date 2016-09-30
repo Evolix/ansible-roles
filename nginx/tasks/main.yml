@@ -1,0 +1,108 @@
+---
+- name: Ensure Nginx is installed
+  apt:
+    name: nginx-full
+    state: installed
+  notify: restart nginx
+  tags:
+    - nginx
+
+- name: Install Nginx configuration
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    mode: 0640
+    # force: yes
+  notify: reload nginx
+  tags:
+    - nginx
+
+- name: Copy snippets
+  copy:
+    src: nginx/snippets/
+    dest: /etc/nginx/snippets/
+    directory_mode: 0640
+    mode: 0640
+    # force: yes
+  notify: reload nginx
+  tags:
+    - nginx
+
+- name: add IP addresses to private IP whitelist
+  lineinfile:
+    dest: /etc/nginx/snippets/private_ipaddr_whitelist
+    line: "allow {{ item }};"
+    state: present
+  with_items: "{{ nginx_private_ipaddr_whitelist_present }}"
+
+- name: remove IP addresses from private IP whitelist
+  lineinfile:
+    dest: /etc/nginx/snippets/private_ipaddr_whitelist
+    line: "allow {{ item }};"
+    state: absent
+  with_items: "{{ nginx_private_ipaddr_whitelist_absent }}"
+
+- name: add user:pwd to private htpasswd
+  lineinfile:
+    dest: /etc/nginx/snippets/private_htpasswd
+    line: "{{ item }}"
+    state: present
+  with_items: "{{ nginx_private_htpasswd_present }}"
+
+- name: remove user:pwd from private htpasswd
+  lineinfile:
+    dest: /etc/nginx/snippets/private_htpasswd
+    line: "{{ item }}"
+    state: absent
+  with_items: "{{ nginx_private_htpasswd_absent }}"
+
+- name: Check if a certificate is present for default site
+  stat:
+    path: /etc/ssl/certs/{{ ansible_fqdn }}.crt
+  register: stat_crt
+  tags:
+    - nginx
+
+- include: create_default_cert.yml
+  when: not stat_crt.stat.exists
+  tags:
+    - nginx
+
+- name: Install Nginx default site
+  template:
+    src: default_site.j2
+    dest: /etc/nginx/sites-available/default
+    mode: 0640
+    # force: yes
+  notify: reload nginx
+  tags:
+    - nginx
+
+- name: Enable Nginx default site
+  file:
+    src: /etc/nginx/sites-available/default
+    dest: /etc/nginx/sites-enabled/default
+    state: link
+  notify: reload nginx
+  tags:
+    - nginx
+
+- name: Verify that the service is enabled and started
+  service:
+    name: nginx
+    enabled: yes
+    state: started
+  tags:
+    - nginx
+
+- name: Check if Munin is installed
+  stat:
+    path: /etc/munin/plugin-conf.d/munin-node
+  register: stat_munin_node
+  tags:
+    - munin
+
+- include: configure_munin.yml
+  when: stat_munin_node.stat.exists
+  tags:
+    - munin

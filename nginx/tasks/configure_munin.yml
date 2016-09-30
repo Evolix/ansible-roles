@@ -1,0 +1,52 @@
+---
+- name: Add munin to hosts
+  lineinfile:
+    dest: /etc/hosts
+    regexp: 'munin$'
+    line: '127.0.0.1 munin'
+
+- name: Copy Munin config for Nginx
+  copy:
+    src: munin/plugin-conf.d/evolinux.nginx
+    dest: /etc/munin/plugin-conf.d/
+    mode: 0644
+  notify: restart munin
+
+- name: Enable Munin plugins for Nginx
+  file:
+    src: '/usr/share/munin/plugins/{{ item }}'
+    dest: '/etc/munin/plugins/{{ item }}'
+    state: link
+  with_items:
+    - nginx_request
+    - nginx_status
+  notify: restart munin
+
+- name: Ensure packages for Munin CGI are installed
+  apt:
+    name: '{{ item }}'
+    state: installed
+  with_items:
+    - liblwp-useragent-determined-perl
+    - spawn-fcgi
+
+- name: Adjust rights for munin-cgi
+  file:
+    path: '{{ item }}'
+    owner: munin
+    group: adm
+  with_fileglob:
+    - /var/log/munin/munin-cgi-*
+
+- name: Install Init script for Munin-fcgi
+  copy:
+    src: init.d/spawn-fcgi-munin-graph
+    dest: /etc/init.d/
+    mode: 0755
+
+- name: Ensure that Munin-fcgi is started/stopped correctly
+  service:
+    name: spawn-fcgi-munin-graph
+    enabled: yes
+    state: started
+  notify: restart spawn-fcgi-munin-graph

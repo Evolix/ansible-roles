@@ -1,0 +1,8 @@
+nginx_worker_processes: '{{ ansible_processor_vcpus }}'
+nginx_default_redirect_url: "http://evolix.fr"
+
+nginx_private_ipaddr_whitelist_present: []
+nginx_private_ipaddr_whitelist_absent: []
+
+nginx_private_htpasswd_present: []
+nginx_private_htpasswd_absent: []

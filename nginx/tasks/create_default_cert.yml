@@ -1,0 +1,18 @@
+---
+- name: Verify that ssl-cert is installed
+  apt:
+    name: ssl-cert
+    state: installed
+
+- name: Create private key for default site ({{ ansible_fqdn }})
+  shell: openssl req -newkey rsa:2048 -sha256 -nodes -keyout /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/{{ ansible_fqdn }}.csr -batch -subj "/C=FR/ST=PACA/L=Marseille/O=Evolix/CN={{ ansible_fqdn }}/emailAddress=security@evolix.net" 2>/dev/null
+
+- name: Adjust rights on private key
+  file:
+    path: /etc/ssl/private/{{ ansible_fqdn }}.key
+    owner: root
+    group: ssl-cert
+    mode: 0640
+
+- name: Create certificate for default site
+  shell: openssl x509 -req -days 3650 -sha256 -in /etc/ssl/{{ ansible_fqdn }}.csr -signkey /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/certs/{{ ansible_fqdn }}.crt 2>/dev/null
