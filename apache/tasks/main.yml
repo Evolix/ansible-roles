@@ -13,14 +13,31 @@
   changed_when: false
 
 - name : copy Apache default config
-  copy: src=z_evolix.conf  dest=/etc/apache2/conf-available/z_evolix.conf owner=root group=root mode=0644
+  copy: src=z_evolix.conf dest=/etc/apache2/conf-available/z_evolix.conf owner=root group=root mode=0644
+
+- name : copy Apache override config
+  copy: src=zzz_evolix.conf  dest=/etc/apache2/conf-available/zzz_evolix.conf owner=root group=root mode=0640 force=no
 
 - name: ensure Apache default config is enabled
-  command: a2enconf z_evolix.conf
+  command: a2enconf z_evolix.conf zzz_evolix.conf
   changed_when: false
 
 - name: init ipaddr_whitelist.conf file
   copy: src=ipaddr_whitelist.conf dest=/etc/apache2/ipaddr_whitelist.conf owner=root group=root mode=0640 force=no
 
-- name : ensure umask is in envvars
-  lineinfile: dest=/etc/apache2/envvars regexp="^umask" line="umask 077"
+- name: add IP addresses to private IP whitelist
+  lineinfile:
+    dest: /etc/apache2/ipaddr_whitelist.conf
+    line: "Allow from {{ item }}"
+    state: present
+  with_items: "{{ apache_ipaddr_whitelist }}"
+
+- name: add a mark in envvars for umask
+  blockinfile:
+    dest: /etc/apache2/envvars
+    block: |
+      ## Set umask for writing by Apache user.
+      ## Set rights on files and directories written by Apache
+
+- name : ensure umask is set in envvars (default is umask 007)
+  lineinfile: dest=/etc/apache2/envvars regexp="^umask" line="umask 007"
