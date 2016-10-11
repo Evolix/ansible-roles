@@ -91,7 +91,7 @@
   tags:
     - rbenv
 
-- name: Ruby {{ rbenv_ruby_version }} is available for {{ username }}
+- name: Ruby {{ rbenv_ruby_version }} is available for {{ username }} (be patient... could be long)
   shell: /bin/bash -lc "TMPDIR=~/tmp rbenv install {{ rbenv_ruby_version }}"
   become_user: "{{ username }}"
   when: ruby_installed.rc != 0
