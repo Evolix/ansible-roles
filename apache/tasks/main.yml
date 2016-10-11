@@ -1,0 +1,26 @@
+- name: ensure packages are installed
+  apt:
+    name: '{{ item }}'
+    state: installed
+  with_items:
+    - apache2-mpm-itk
+    - apachetop
+    - libapache2-mod-evasive
+    - libwww-perl
+
+- name: ensure basic modules are enabled
+  command: a2enmod rewrite expires headers rewrite cgi
+  changed_when: false
+
+- name : copy Apache default config
+  copy: src=z_evolix.conf  dest=/etc/apache2/conf-available/z_evolix.conf owner=root group=root mode=0644
+
+- name: ensure Apache default config is enabled
+  command: a2enconf z_evolix.conf
+  changed_when: false
+
+- name: init ipaddr_whitelist.conf file
+  copy: src=ipaddr_whitelist.conf dest=/etc/apache2/ipaddr_whitelist.conf owner=root group=root mode=0640 force=no
+
+- name : ensure umask is in envvars
+  lineinfile: dest=/etc/apache2/envvars regexp="^umask" line="umask 077"
