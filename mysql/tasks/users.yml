@@ -44,7 +44,13 @@
 - name: remove root user
   mysql_user:
     name: root
+    host: "{{ item }}"
     config_file: /root/.my.cnf
     state: absent
+  with_items:
+    - "localhost"
+    - "127.0.0.1"
+    - "::1"
+    - "{{ ansible_hostname }}"
   tags:
     - mysql
