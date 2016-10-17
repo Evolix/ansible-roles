@@ -1,1 +1,3 @@
 # Whitelisted IP addresses, used in default site…
+# Example:
+# allow 192.0.2.42;
