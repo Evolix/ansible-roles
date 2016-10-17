@@ -4,10 +4,19 @@
   become: yes
 
   roles:
-    #- { role: apt-upgrade, apt_upgrade_mode: safe }
-    #- apt-upgrade
-    #- munin
-    #- monit
-    #- redis
-    #- { role: rbenv, username: 'vagrant' }
-    #- apache
+    # - { role: apt-upgrade, apt_upgrade_mode: safe }
+    # - apt-upgrade
+    # - munin
+    # - monit
+    # - redis
+    # - { role: rbenv, username: 'vagrant' }
+    # - mysql
+    # - { role: mysql, mysql_custom_tmpdir: '/home/mysql-tmpdir' }
+    # - {
+    #     role: "nginx",
+    #     nginx_private_ipaddr_whitelist_present: ["192.168.0.2"],
+    #     nginx_private_ipaddr_whitelist_absent: ["127.0.0.1"],
+    #     nginx_private_htpasswd_present: ["qsdfqsdf:dsfgdfsdf"],
+    #     nginx_private_htpasswd_absent: ["toto:dsfgdfsdf"]
+    #   }
+    # - apache
