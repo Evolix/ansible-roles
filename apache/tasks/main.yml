@@ -1,43 +1,65 @@
-- name: ensure packages are installed
+- name: Ensure packages are installed
   apt:
     name: '{{ item }}'
-    state: installed
+    state: present
   with_items:
     - apache2-mpm-itk
     - apachetop
     - libapache2-mod-evasive
     - libwww-perl
 
-- name: ensure basic modules are enabled
-  command: a2enmod rewrite expires headers rewrite cgi
-  changed_when: false
+- name: Ensure basic modules are enabled
+  apache2_module:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - rewrite
+    - expires
+    - headers
+    - rewrite
+    - cgi
 
-- name : copy Apache default config
-  copy: src=z_evolix.conf dest=/etc/apache2/conf-available/z_evolix.conf owner=root group=root mode=0644
+- name: Copy Apache config files
+  copy:
+    src: "{{ item.file }}"
+    dest: "/etc/apache2/conf-available/{{ item.file }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { file: z_evolix.conf, mode: 0644 }
+    - { file: zzz_evolix.conf, mode: 0640 }
 
-- name : copy Apache override config
-  copy: src=zzz_evolix.conf  dest=/etc/apache2/conf-available/zzz_evolix.conf owner=root group=root mode=0640 force=no
-
-- name: ensure Apache default config is enabled
+- name: Ensure Apache default config is enabled
   command: a2enconf z_evolix.conf zzz_evolix.conf
-  changed_when: false
+  register: command_result
+  changed_when: "'Enabling' in command_result.stderr"
 
-- name: init ipaddr_whitelist.conf file
-  copy: src=ipaddr_whitelist.conf dest=/etc/apache2/ipaddr_whitelist.conf owner=root group=root mode=0640 force=no
+- name: Init ipaddr_whitelist.conf file
+  copy:
+    src: ipaddr_whitelist.conf
+    dest: /etc/apache2/ipaddr_whitelist.conf
+    owner: root
+    group: root
+    mode: 0640
+    force: no
 
-- name: add IP addresses to private IP whitelist
+- name: Add IP addresses to private IP whitelist if defined
   lineinfile:
     dest: /etc/apache2/ipaddr_whitelist.conf
     line: "Allow from {{ item }}"
     state: present
   with_items: "{{ apache_ipaddr_whitelist }}"
 
-- name: add a mark in envvars for umask
+- name: Add a mark in envvars for umask
   blockinfile:
     dest: /etc/apache2/envvars
     block: |
       ## Set umask for writing by Apache user.
       ## Set rights on files and directories written by Apache
 
-- name : ensure umask is set in envvars (default is umask 007)
-  lineinfile: dest=/etc/apache2/envvars regexp="^umask" line="umask 007"
+- name : Ensure umask is set in envvars (default is umask 007)
+  lineinfile:
+    dest: /etc/apache2/envvars
+    regexp: "^umask"
+    line: "umask 007"
