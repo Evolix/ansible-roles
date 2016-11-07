@@ -5,3 +5,8 @@ mysql_custom_tmpdir: ''
 
 mysql_thread_cache_size: '{{ ansible_processor_cores }}'
 mysql_innodb_buffer_pool_size: '{{ (ansible_memtotal_mb * 0.3) | int }}M'
+
+
+default_alert_mail: root
+general_alert_mail: Null
+log2mail_alert_mail: Null
