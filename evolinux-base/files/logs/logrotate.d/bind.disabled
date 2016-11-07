@@ -1,0 +1,14 @@
+/var/chroot-bind/var/log/bind.log {
+    weekly
+    missingok
+    notifempty
+    rotate 4
+    create 640 bind bind
+    compress
+    delaycompress
+    sharedscripts
+    postrotate
+        rndc reload > /dev/null
+    endscript
+}
+

@@ -1,0 +1,9 @@
+/var/log/dhcp.log {
+    weekly
+    missingok
+    rotate 52
+    compress
+    delaycompress
+    create 640 root adm
+    notifempty
+}

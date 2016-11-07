@@ -1,0 +1,28 @@
+---
+
+# TODO: voir comment faire des backups initiaux des fichiers
+
+- name: Copy rsyslog.conf
+  copy:
+    src: logs/rsyslog.conf
+    dest: /etc/rsyslog.conf
+    mode: 0644
+  notify: restart rsyslog
+
+- name: Disable logrotate default conf
+  command: mv /etc/logrotate.d/rsyslog /etc/logrotate.d/rsyslog.disabled
+  args:
+    removes: /etc/logrotate.d/rsyslog
+    creates: /etc/logrotate.d/rsyslog.disabled
+  notify: restart rsyslog
+
+- name: Configure logrotate
+  copy:
+    src: logs/logrotate.d
+    dest: /etc/logrotate.d
+
+- name: Configure logrotate.conf
+  replace:
+    dest: /etc/logrotate.conf
+    regexp: "rotate [0-9]*"
+    replace: "rotate 12"

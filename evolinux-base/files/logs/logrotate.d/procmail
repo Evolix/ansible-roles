@@ -1,0 +1,11 @@
+/var/log/procmail.log {
+    daily
+    rotate 365
+    dateext
+    dateyesterday
+    dateformat .%Y%m%d
+    missingok
+    rotate 365
+    create 640 root adm
+}
+

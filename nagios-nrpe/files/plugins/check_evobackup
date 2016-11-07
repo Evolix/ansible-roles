@@ -1,0 +1,10 @@
+#!/bin/sh
+ports="2222 2223"
+
+for port in $ports; do
+    /usr/lib/nagios/plugins/check_ssh -p $port localhost
+    exitCode=$?
+    [ $exitCode -ne 0 ] && exit $exitCode
+done
+
+exit 0

@@ -1,0 +1,6 @@
+/var/log/lvm {
+    daily
+    rotate 3
+    missingok
+    create 0640 root adm
+}

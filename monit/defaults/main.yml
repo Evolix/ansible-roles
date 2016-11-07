@@ -1,3 +1,4 @@
+---
 monit_daemon_time: 60
 monit_alert_dest:
 monit_httpd_enable: true

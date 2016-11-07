@@ -1,0 +1,39 @@
+---
+- name: Hostname
+  include: hostname.yml
+
+- name: Kernel tuning
+  include: kernel.yml
+
+- name: Apt configuration and packages install
+  include: apt.yml
+
+- name: Fstab configuration
+  include: fstab.yml
+
+- name: Default packages
+  include: default_packages.yml
+
+- name: System settings
+  include: system.yml
+
+- name: Root user configuration
+  include: root.yml
+
+- name: Logs management
+  include: logs.yml
+
+
+- name: Default index page
+  include: default_www.yml
+
+- name: Hardware drivers and tools
+  include: hardware.yml
+
+- name: Customize for Online.net
+  include: provider_online.yml
+  when: evolinux_provider_online
+
+- name: Customize for Orange FCE
+  include: provider_orange_fce.yml
+  when: evolinux_provider_orange_fce

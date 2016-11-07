@@ -1,0 +1,37 @@
+---
+
+
+- name: APT https transport is enabled
+  apt:
+    name: apt-transport-https
+    state: installed
+  tags:
+    - system
+    - packages
+
+- name: Node GPG key is installed
+  apt_key:
+    url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+    state: present
+  tags:
+    - system
+    - packages
+    - nodejs
+
+- name: Node sources list ({{ nodejs_apt_version }}) is available
+  apt_repository:
+    repo: "deb https://deb.nodesource.com/{{ nodejs_apt_version }} jessie main"
+    state: present
+  tags:
+    - system
+    - packages
+    - nodejs
+
+- name: Node is installed
+  apt:
+    name: nodejs
+    update_cache: yes
+    state: installed
+  tags:
+    - packages
+    - nodejs

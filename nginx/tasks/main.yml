@@ -7,17 +7,34 @@
   tags:
     - nginx
 
-- name: Install Nginx configuration
-  template:
-    src: nginx.conf.j2
+# TODO: find a way to override the main configuration
+# without touching the main file
+
+- name: customize worker_connections
+  lineinfile:
     dest: /etc/nginx/nginx.conf
+    regexp: '^(\s*worker_connections)\s+.+;'
+    line: '    worker_connections 1024;'
+    insertafter: 'events \{'
+
+- name: use epoll
+  lineinfile:
+    dest: /etc/nginx/nginx.conf
+    regexp: '^(\s*use)\s+.+;'
+    line: '    use epoll;'
+    insertafter: 'events \{'
+
+- name: Install Nginx http configuration
+  copy:
+    src: nginx/evolinux-defaults.conf
+    dest: /etc/nginx/conf.d/z-evolinux-defaults.conf
     mode: 0640
     # force: yes
   notify: reload nginx
   tags:
     - nginx
 
-# TODO: verify that those permisisons are correct :
+# TODO: verify that those permissions are correct :
 # not too strict for private_ipaddr_whitelist
 # and not too loose for private_htpasswd
 
@@ -79,37 +96,6 @@
   with_items: "{{ nginx_private_htpasswd_absent }}"
   notify: reload nginx
 
-- name: Check if a certificate is present for default site
-  stat:
-    path: /etc/ssl/certs/{{ ansible_fqdn }}.crt
-  register: stat_crt
-  tags:
-    - nginx
-
-- include: create_default_cert.yml
-  when: not stat_crt.stat.exists
-  tags:
-    - nginx
-
-- name: Install Nginx default site
-  template:
-    src: default_site.j2
-    dest: /etc/nginx/sites-available/default
-    mode: 0640
-    # force: yes
-  notify: reload nginx
-  tags:
-    - nginx
-
-- name: Enable Nginx default site
-  file:
-    src: /etc/nginx/sites-available/default
-    dest: /etc/nginx/sites-enabled/default
-    state: link
-  notify: reload nginx
-  tags:
-    - nginx
-
 - name: Verify that the service is enabled and started
   service:
     name: nginx
@@ -125,7 +111,12 @@
   tags:
     - munin
 
-- include: configure_munin.yml
+- include: munin_vhost.yml
+  when: stat_munin_node.stat.exists
+  tags:
+    - munin
+
+- include: munin_graphs.yml
   when: stat_munin_node.stat.exists
   tags:
     - munin

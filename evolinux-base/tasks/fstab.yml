@@ -1,0 +1,53 @@
+---
+# TODO: trouver comment faire une copie initiale de /etc/fstab
+# TODO: try to use the custom mount_uuid module for a different approach
+
+- name: Fetch fstab content
+  shell: "grep -v '^#' /etc/fstab"
+  register: fstab_content
+  failed_when: False
+  changed_when: False
+
+- name: /home partition is customized (noexec,nosuid,nodev)
+  replace:
+    dest: /etc/fstab
+    regexp: '(\s+/home\s+\w+\s+defaults)(\s+)'
+    replace: '\1,noexec,nosuid,nodev\2'
+    backup: yes
+  notify: remount /home
+  when: "' /home ' in fstab_content.stdout"
+
+- name: /tmp partition is customized (noexec,nosuid,nodev)
+  replace:
+    dest: /etc/fstab
+    regexp: '(\s+/tmp\s+\w+\s+defaults)(\s+)'
+    replace: '\1,noexec,nosuid,nodev\2'
+    backup: yes
+  when: "' /tmp ' in fstab_content.stdout"
+
+- name: /usr partition is customized (ro)
+  replace:
+    dest: /etc/fstab
+    regexp: '(\s+/usr\s+\w+\s+defaults)(\s+)'
+    replace: '\1,ro\2'
+    backup: yes
+  when: "' /usr ' in fstab_content.stdout"
+
+- name: /var partition is customized (nosuid)
+  replace:
+    dest: /etc/fstab
+    regexp: '(\s+/var\s+\w+\s+defaults)(\s+)'
+    replace: '\1,nosuid\2'
+    backup: yes
+  notify: remount /var
+  when: "' /var ' in fstab_content.stdout"
+
+- name: /var/tmp is created
+  mount:
+    src: tmpfs
+    name: /var/tmpfs
+    fstype: tmpfs
+    opts: defaults,noexec,nosuid,nodev,size=1024m
+    state: mounted
+
+- meta: flush_handlers

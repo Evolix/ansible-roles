@@ -1,0 +1,24 @@
+---
+- name: package is installed
+  apt:
+    name: fail2ban
+    state: installed
+  tags:
+    - packages
+
+- name: custom filters are installed
+  copy:
+    src: "{{ item }}"
+    dest: /etc/fail2ban/filter.d/
+    mode: 0644
+  with_items:
+    - dovecot-evolix.conf
+    - sasl-evolix.conf
+  notify: restart fail2ban
+
+- name: local jail is installed
+  template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.local
+    mode: 0644
+  notify: restart fail2ban

@@ -1,0 +1,108 @@
+---
+- name: /var/www is present
+  file:
+    path: /var/www
+    state: directory
+    mode: 0755
+
+- name: images are copied
+  copy:
+    src: default_www/img
+    dest: /var/www/
+    mode: 0755
+    directory_mode: 0755
+    follow: yes
+
+- name: index is copied
+  template:
+    src: default_www/index.html.j2
+    dest: /var/www/index.html
+    mode: 0755
+
+# SSL cert
+
+- name: ssl-cert package is installed
+  apt:
+    name: ssl-cert
+    state: installed
+
+- name: Create private key and csr for default site ({{ ansible_fqdn }})
+  shell: openssl req -newkey rsa:2048 -sha256 -nodes -keyout /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/{{ ansible_fqdn }}.csr -batch -subj "{{ evolinux_default_www_ssl_subject }}"
+  args:
+    creates: "/etc/ssl/private/{{ ansible_fqdn }}.key"
+
+- name: Adjust rights on private key
+  file:
+    path: /etc/ssl/private/{{ ansible_fqdn }}.key
+    owner: root
+    group: ssl-cert
+    mode: 0640
+
+- name: Create certificate for default site
+  shell: openssl x509 -req -days 3650 -sha256 -in /etc/ssl/{{ ansible_fqdn }}.csr -signkey /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/certs/{{ ansible_fqdn }}.crt
+  args:
+    creates: "/etc/ssl/certs/{{ ansible_fqdn }}.crt"
+
+
+# Nginx vhost
+
+- name: is Nginx installed?
+  stat:
+    path: /etc/nginx/sites-available
+  register: nginx_sites_available
+
+- block:
+  - name: nginx vhost is installed
+    template:
+      src: default_www/nginx_default_site.j2
+      dest: /etc/nginx/sites-available/000-default
+      mode: 0640
+      # force: yes
+    notify: reload nginx
+    tags:
+      - nginx
+
+
+  - name: nginx vhost is enabled
+    file:
+      src: /etc/nginx/sites-available/000-default
+      dest: /etc/nginx/sites-enabled/000-default
+      state: link
+    notify: reload nginx
+    when: evolinux_default_www_nginx_enabled
+    tags:
+      - nginx
+
+  when: nginx_sites_available.stat.exists
+
+
+# Apache vhost
+
+- name: is Apache installed?
+  stat:
+    path: /etc/apache2/sites-available
+  register: apache_sites_available
+
+- block:
+  - name: Apache vhost is installed
+    template:
+      src: default_www/apache_default_site.j2
+      dest: /etc/apache2/sites-available/000-default
+      mode: 0640
+      # force: yes
+    notify: reload apache
+    tags:
+      - apache
+
+
+  - name: Apache vhost is enabled
+    file:
+      src: /etc/apache2/sites-available/000-default
+      dest: /etc/apache2/sites-enabled/000-default
+      state: link
+    notify: reload apache
+    when: evolinux_default_www_apache_enabled
+    tags:
+      - apache
+
+  when: apache_sites_available.stat.exists

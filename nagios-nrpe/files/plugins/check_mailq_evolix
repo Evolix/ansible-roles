@@ -1,0 +1,60 @@
+#!/bin/sh
+
+# Nagios plugin to check Postfix's mailq.
+# Inspired by postfix_mailqueue munin's plugin
+
+set -e
+
+usage() {
+    cat <<EOT >&2
+Usage: $0 -w <warn> -c <crit>
+EOT
+}
+
+while getopts ':w:c:' o; do
+    case $o in
+        w)
+            warn=$OPTARG
+            ;;
+        c)
+            crit=$OPTARG
+            ;;
+        *)
+            usage
+            exit 2
+            ;;
+    esac
+done
+
+if [ -z $warn ] || [ -z $crit ]; then
+    usage
+    exit 2
+fi
+
+
+POSTCONFSPOOL="$(postconf -h queue_directory || echo /var/spool/postfix)"
+
+# If find fail (eg. Permission denied), script continues and exits normally,
+# even with set -e.
+# So check here if we are sufficient permission to list a Postfix directory
+if ! find $POSTCONFSPOOL/corrupt >/dev/null; then
+    echo "Script does not seem to have permission to list spool directories."
+    exit 2
+fi
+
+deferred=$(find $POSTCONFSPOOL/deferred -type f |wc -l)
+active=$(find $POSTCONFSPOOL/active -type f | wc -l)
+maildrop=$(find $POSTCONFSPOOL/maildrop -type f | wc -l)
+incoming=$(find $POSTCONFSPOOL/incoming -type f | wc -l)
+corrupt=$(find $POSTCONFSPOOL/corrupt -type f | wc -l)
+hold=$(find $POSTCONFSPOOL/hold -type f | wc -l)
+total=$(($deferred + $active + $maildrop + $incoming + $corrupt + $hold))
+
+echo "total: $total (deferred: $deferred, active: $active, maildrop: \
+$maildrop, incoming: $incoming, corrupt: $corrupt, hold: $hold)"
+
+if [ $total -ge $crit ]; then
+    exit 2
+elif [ $total -ge $warn ]; then
+    exit 1
+fi

@@ -1,0 +1,146 @@
+#!/bin/bash
+
+TUNE2FS="/sbin/tune2fs"
+
+MOUNT_MAX=14
+INTERVAL_MAX=200
+MAIL_ALERT="alert3@evolix.fr"
+
+PROGNAME=`/usr/bin/basename $0`
+
+# Nagios compatibility
+STATE_OK=0
+STATE_WARNING=1
+STATE_CRITICAL=2
+STATE_UNKNOWN=3
+STATE_DEPENDENT=4
+
+print_usage() {
+    echo "Usage: $PROGNAME --dev /dev/sdaX [--mount-max $MOUNT_MAX] [--interval-max $INTERVAL_MAX] [--alert]"
+    echo "Usage: $PROGNAME -d /dev/sdaX [-c $MOUNT_MAX] [-i $INTERVAL_MAX] [-a]"
+    echo "Usage: $PROGNAME --help"
+}
+
+print_help() {
+    print_usage
+    echo ""
+    echo "Options:"
+    echo "--dev, -d /dev/sdNX"
+    echo "--mount-max, -c X"
+    echo "--interval-max, -i X (days)"
+    echo "--alert, -a (send a mail to $MAIL_ALERT if state critical)"
+}
+
+alert_mail() {
+# $1 max_mount
+# $2 days
+
+    if [ "$send_mail" = "1" ]; then
+        if [ "$exitstatus" = "$STATE_CRITICAL" ]; then
+            echo "From: Equipe Evolix <equipe@evolix.fr>
+To: $MAIL_ALERT
+Subject: [alert] Fsck on $(hostname)
+
+Number of mount since last fsck: $1
+Days since last fsck: $2
+
+"|/usr/lib/sendmail -oi -t -f "$MAIL_ALERT"
+        fi
+    fi
+}
+
+send_mail=0
+exitstatus=$STATE_OK
+
+# check command line arguments
+
+if [ $# -lt 1 ]; then
+    print_usage
+    exit $STATE_UNKNOWN
+fi
+
+while test -n "$1"; do
+    case "$1" in
+        --help)
+            print_help
+            exit $STATE_OK
+            ;;
+        -h)
+            print_help
+            exit $STATE_OK
+            ;;
+        --dev)
+            dev=$2
+            shift
+            ;;
+        -d)
+            dev=$2
+            shift
+            ;;
+        --mount-max)
+            mount_max=$2
+            shift
+            ;;
+        -c)
+            mount_max=$2
+            shift
+            ;;
+        --interval-max)
+            interval_max=$2
+            shift
+            ;;
+        -i)    
+            interval_max=$2
+            shift
+            ;;
+        --alert)
+            send_mail=1
+            ;;
+        -a)
+            send_mail=1
+            ;;
+        *)
+            echo "Unknown argument: $1"
+            print_usage
+            exit $STATE_UNKNOWN
+            ;;
+    esac
+    shift
+done
+
+[ -z "$dev" ] && print_usage && exit $STATE_UNKNOWN
+[ -z "$mount_max" ] && mount_max=$MOUNT_MAX
+[ -z "$interval_max" ] && interval_max=$INTERVAL_MAX
+
+# is $dev support tune2fs ?
+bad_magic=$($TUNE2FS -l $dev|grep "Bad magic number")
+[ -n "$bad_magic" ] && echo "Bad magic number in super-block while trying to open $dev" && exit $STATE_UNKNOWN
+
+# grep max_count && last_checked
+max_count=$($TUNE2FS -l $dev|grep "Mount count" | awk -F":" '{ print $2 }'| sed 's/^\s*//')
+last_checked=$($TUNE2FS -l $dev|grep "Last checked"| awk -F":" '{ print $2":"$3":"$4 }'|sed 's/^\s*//')
+
+[ -z "$max_count" ] && echo "No Mount count value on $TUNE2FS $dev" && exit $STATE_UNKNOWN
+[ -z "$last_checked" ] && echo "No Last checked value on $TUNE2FS $dev" && exit $STATE_UNKNOWN
+
+# check max mount
+if [ $max_count -ge $mount_max ]; then
+    echo "Number of mount since last fsck: $max_count"
+    echo " - threshold $mount_max reached !\n"
+    exitstatus=$STATE_CRITICAL;
+fi
+
+# compute day interval
+timestamp=$( date -d "$last_checked" "+%s" )
+today=$( date "+%s" )
+days=$(( ($today - $timestamp) / 86400 ))
+
+if [ $days -ge $interval_max ]; then
+    echo "Days since last fsck: $days"
+    echo " - threshold $interval_max reached !\n"
+    exitstatus=$STATE_CRITICAL;
+fi
+
+alert_mail $max_count $days
+
+exit $exitstatus

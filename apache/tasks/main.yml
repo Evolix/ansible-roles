@@ -1,4 +1,4 @@
-- name: Ensure packages are installed
+- name: packages are installed
   apt:
     name: '{{ item }}'
     state: present
@@ -7,8 +7,10 @@
     - apachetop
     - libapache2-mod-evasive
     - libwww-perl
+  tags:
+    - apache
 
-- name: Ensure basic modules are enabled
+- name: basic modules are enabled
   apache2_module:
     name: '{{ item }}'
     state: present
@@ -18,48 +20,120 @@
     - headers
     - rewrite
     - cgi
+  tags:
+    - apache
 
-- name: Copy Apache config files
+- name: Copy Apache defaults config file
   copy:
-    src: "{{ item.file }}"
-    dest: "/etc/apache2/conf-available/{{ item.file }}"
+    src: evolinux-defaults.conf
+    dest: "/etc/apache2/conf-available/z-evolinux-defaults.conf
     owner: root
     group: root
-    mode: "{{ item.mode }}"
-  with_items:
-    - { file: z_evolinux.conf, mode: 0644 }
-    - { file: zzz_evolinux.conf, mode: 0640 }
+    mode: 0644
+    force: yes
+  tags:
+    - apache
 
-- name: Ensure Apache default config is enabled
-  command: a2enconf z_evolinux.conf zzz_evolinux.conf
+- name: Copy Apache custom config file
+  template:
+    src: evolinux-custom.conf.j2
+    dest: "/etc/apache2/conf-available/zzz-evolinux-custom.conf
+    owner: root
+    group: root
+    mode: 0644
+    force: no
+  tags:
+    - apache
+
+- name: Ensure Apache config files are enabled
+  command: "a2enconf {{ item }}"
   register: command_result
   changed_when: "'Enabling' in command_result.stderr"
+  with_items:
+    - z-evolinux-defaults.conf
+    - zzz-evolinux-custom.conf
+  tags:
+    - apache
 
-- name: Init ipaddr_whitelist.conf file
+- name: Init private_ipaddr_whitelist.conf file
   copy:
-    src: ipaddr_whitelist.conf
-    dest: /etc/apache2/ipaddr_whitelist.conf
+    src: private_ipaddr_whitelist.conf
+    dest: /etc/apache2/private_ipaddr_whitelist.conf
     owner: root
     group: root
     mode: 0640
     force: no
+  tags:
+    - apache
 
-- name: Add IP addresses to private IP whitelist if defined
+- name: add IP addresses to private IP whitelist
   lineinfile:
-    dest: /etc/apache2/ipaddr_whitelist.conf
+    dest: /etc/apache2/private_ipaddr_whitelist.conf
     line: "Allow from {{ item }}"
     state: present
-  with_items: "{{ apache_ipaddr_whitelist }}"
+  with_items: "{{ apache_private_ipaddr_whitelist_present }}"
+  notify: reload apache
+  tags:
+    - apache
+
+- name: remove IP addresses from private IP whitelist
+  lineinfile:
+    dest: /etc/apache2/private_ipaddr_whitelist.conf
+    line: "Allow from {{ item }}"
+    state: absent
+  with_items: "{{ apache_private_ipaddr_whitelist_absent }}"
+  notify: reload apache
+  tags:
+    - apache
+
+- name: Copy private_htpasswd
+  copy:
+    src: private_htpasswd
+    dest: /etc/apache2/private_htpasswd
+    owner: root
+    group: root
+    mode: 0640
+    force: no
+  notify: reload apache
+  tags:
+    - apache
+
+- name: add user:pwd to private htpasswd
+  lineinfile:
+    dest: /etc/apache2/private_htpasswd
+    line: "{{ item }}"
+    state: present
+  with_items: "{{ apache_private_htpasswd_present }}"
+  notify: reload apache
+  tags:
+    - apache
+
+- name: remove user:pwd from private htpasswd
+  lineinfile:
+    dest: /etc/apache2/private_htpasswd
+    line: "{{ item }}"
+    state: absent
+  with_items: "{{ apache_private_htpasswd_absent }}"
+  notify: reload apache
+  tags:
+    - apache
+
+- name: is umask already present?
+  command: "grep -E '^umask ' /etc/apache2/envvars"
+  failed_when: False
+  changed_when: False
+  register: envvar_grep_umask
+  tags:
+    - apache
 
 - name: Add a mark in envvars for umask
   blockinfile:
     dest: /etc/apache2/envvars
+    marker: "## {mark} ANSIBLE MANAGED BLOCK"
     block: |
       ## Set umask for writing by Apache user.
       ## Set rights on files and directories written by Apache
-
-- name : Ensure umask is set in envvars (default is umask 007)
-  lineinfile:
-    dest: /etc/apache2/envvars
-    regexp: "^umask"
-    line: "umask 007"
+      umask 007
+  when: envvar_grep_umask.rc != 0
+  tags:
+    - apache

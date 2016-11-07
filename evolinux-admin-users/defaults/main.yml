@@ -1,0 +1,6 @@
+---
+evolinux_admin_users: []
+
+general_scripts_dir: "/usr/local/bin"
+evomaintenance_scripts_dir: Null
+listupgrade_scripts_dir: Null

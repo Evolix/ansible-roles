@@ -1,0 +1,71 @@
+---
+- name: Install pciutils
+  apt:
+    name: pciutils
+    state: present
+
+## Broadcom NetXtreme II
+
+- name: Check if Broadcom NetXtreme II device is present
+  shell: "lspci | grep -q 'NetXtreme II'"
+  register: broadcom
+  failed_when: False
+  changed_when: False
+
+# TODO: add the "non-free" part to the existing sources
+# instead of adding a new source
+
+- name: Add non-free repo for Broadcom NetXtreme II
+  apt_repository:
+    repo: 'deb http://mirror.evolix.org/debian/ jessie non-free'
+    state: present
+  when: broadcom|success
+
+## RAID
+
+- name: Detect if RAID is installed
+  shell: lspci | grep "RAID bus controller" | grep -v Intel
+  register: raidmodel
+  changed_when: "'FAILED' in raidmodel.stdout"
+  failed_when: "'FAILED' in raidmodel.stdout"
+
+- block:
+  - name: Install packages for HP hardware
+    apt:
+      name: cciss-vol-status
+      state: present
+
+  - name: Configure packages for HP hardware
+    template:
+      src: hardware/cciss-vol-statusd.j2
+      dest: /etc/init.d/cciss-vol-statusd
+      mode: 0755
+
+  - name: Enable HP hardware in sysctl
+    service:
+      name: cciss-vol-statusd
+      enabled: true
+      state: started
+  when: "'Hewlett-Packard Company Smart Array' in raidmodel.stdout"
+
+- block:
+  - name: Install packages for DELL/LSI hardware
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - megacli
+      - megaclisas-statusd
+
+  - name: Configure packages for DELL/LSI hardware
+    template:
+      src: hardware/megaclisas-statusd.j2
+      dest: /etc/default/megaclisas-statusd
+      mode: 0755
+
+  - name: Enable DELL/LSI hardware in sysctl
+    service:
+      name: megaclisas-statusd
+      enabled: true
+      state: started
+  when: "'MegaRAID SAS' in raidmodel.stdout"

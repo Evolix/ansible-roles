@@ -1,0 +1,55 @@
+---
+
+- name: Setting apt config
+  lineinfile:
+    dest: /etc/apt/apt.conf.d/z-evolinux.conf
+    line: "{{ item }}"
+    create: yes
+    state: present
+    mode: 0640
+  with_items:
+  - "APT::Install-Recommends \"0\";"
+  - "APT::Install-Suggests \"0\";"
+
+- name: DPKg invoke hooks
+  lineinfile:
+    dest: /etc/apt/apt.conf.d/z-evolinux.conf
+    line: "{{ item }}"
+    create: yes
+    state: present
+    mode: 0640
+  with_items:
+  - "DPkg::Pre-Invoke { \"mount -oremount,exec /tmp && mount -oremount,rw /usr || true\"; };"
+  - "DPkg::Post-Invoke { \"mount -oremount /tmp && mount -oremount /usr || exit 0\"; };"
+  when: evolinux_apt_hooks
+
+- name: Original repositories are disabled
+  replace:
+    dest: /etc/apt/sources.list
+    regexp:  '^(deb(-src)? {{ item }}.+)'
+    replace: '# \1'
+  with_items:
+  # - '.+\.debian\.org'
+  - 'cdrom:'
+
+- name: Basic sources list is installed
+  lineinfile:
+    dest: /etc/apt/sources.list
+    line: "{{ item }}"
+  with_items:
+  - "deb http://security.debian.org/ jessie/updates {{ evolinux_apt_components | mandatory }}"
+  - "deb http://mirror.evolix.org/debian/ jessie {{ evolinux_apt_components | mandatory }}"
+  - "deb http://mirror.evolix.org/debian/ jessie-updates {{ evolinux_apt_components | mandatory }}"
+
+- name: Evolix public list is installed
+  template:
+    src: apt/evolix_public.list.j2
+    dest: /etc/apt/sources.list.d/evolix_public.list
+    force: yes
+    backup: yes
+    mode: 0640
+
+- name: Upgrading system
+  apt:
+    upgrade: dist
+    update_cache: yes

@@ -1,0 +1,14 @@
+# Attention, bien mettre "log file = /var/log/samba/%m.log" dans la conf Samba
+/var/log/samba/*.log {
+        weekly
+        missingok
+        rotate 52
+        postrotate
+                invoke-rc.d --quiet samba reload > /dev/null
+                [ ! -f /var/run/samba/nmbd.pid ] || kill -HUP `cat /var/run/samba/nmbd.pid`
+                [ -f /var/run/samba/winbindd.pid ] && kill -HUP `cat /var/run/samba/winbindd.pid` || true
+        endscript
+        compress
+        notifempty
+}
+

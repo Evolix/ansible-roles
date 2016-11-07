@@ -1,0 +1,29 @@
+#!/bin/sh
+
+usage() {
+
+    cat <<EOF
+Usage: $0 regexp
+This litle Nagios script check if a line (using regexp) in iptable is set.
+If not it will return CRITICAL.
+EOF
+}
+
+if [ -z "$1" ]; then
+    usage
+    exit 2
+fi
+
+cmd=$(iptables -L | grep -q -E $1)
+status=$?
+if [ $status -eq 0 ]; then
+    echo "OK. The rule is present."
+    exit 0
+fi
+if [ $status -eq 1 ]; then
+    echo "Rule not found!"
+    exit 2
+else
+    echo "Unhandled error."
+    exit 2
+fi

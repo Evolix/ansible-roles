@@ -1,0 +1,34 @@
+---
+- name: package is installed
+  apt:
+    name: proftpd-basic
+    state: installed
+  tags:
+    - proftpd
+    - packages
+
+- name: ftpusers groupe exists
+  group:
+    name: ftpusers
+    state: present
+  notify: restart proftpd
+  tags:
+    - proftpd
+
+- name: local jail is installed
+  template:
+    src: evolinux.conf.j2
+    dest: /etc/proftpd/conf.d/z-evolinux.conf
+    mode: 0644
+  notify: restart proftpd
+  tags:
+    - proftpd
+
+- name: mod_tls_memcache is disabled
+  replace:
+    dest: /etc/proftpd/modules.conf
+    regexp: '^LoadModule mod_tls_memcache.c'
+    replace: '#LoadModule mod_tls_memcache.c'
+  notify: restart proftpd
+  tags:
+    - proftpd

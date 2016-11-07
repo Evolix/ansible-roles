@@ -24,5 +24,9 @@ Tasks are extracted in several files, included in `tasks/main.yml` :
 * `mysql_innodb_buffer_pool_size`: amount of RAM dedicated to InnoDB ;
 * `mysql_custom_datadir`: custom datadir
 * `mysql_custom_tmpdir`: custom tmpdir.
+* `general_alert_email`: email address to send various alert messages (default: `root@localhost`).
+* `log2mail_alert_email`: email address to send Log2mail messages to (default: `general_alert_email`).
+* `general_scripts_dir`: general directory for scripts installation (default: `/usr/local/bin`).
+* `mysql_scripts_dir`: email address to send Log2mail messages to (default: `general_scripts_dir`).
 
 NB : changing the _datadir_ location can be done multiple times, as long as it is not restored to the default initial location, (because a symlink is created  and can't be switched back, yet).

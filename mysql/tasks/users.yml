@@ -2,7 +2,7 @@
 
 # dependency for mysql_user and mysql_db
 
-- name: python-mysqldb is installed
+- name: python-mysqldb is installed (Ansible dependency)
   apt:
     name: python-mysqldb
     state: installed

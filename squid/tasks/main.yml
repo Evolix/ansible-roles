@@ -1,0 +1,31 @@
+---
+
+- name: package is installed
+  apt:
+    name: squid3
+    state: present
+
+- name: squid.conf is present
+  template:
+    src: squid.j2
+    dest: /etc/squid3/squid.conf
+  notify: restart squid
+
+- name: evolix whitelist is present
+  copy:
+    src: whitelist-evolix.conf
+    dest: /etc/squid3/whitelist-evolix.conf
+    force: yes
+    backup: yes
+  notify: restart squid
+
+- name: custom whitelist is present
+  copy:
+    src: whitelist-custom.conf
+    dest: /etc/squid3/whitelist-custom.conf
+    force: no
+  notify: restart squid
+
+- include: minifirewall.yml
+
+- include: log2mail.yml

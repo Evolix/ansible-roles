@@ -1,3 +1,4 @@
+---
 elasticsearch_cluster_name: Null
 elasticsearch_node_name: "${HOSTNAME}"
 elasticsearch_network_host: "[_site_, _local_]"

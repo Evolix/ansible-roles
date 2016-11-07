@@ -1,0 +1,27 @@
+# EvoLinux Fail2Ban config.
+
+[DEFAULT]
+
+# "ignoreip" can be an IP address, a CIDR mask or a DNS host
+ignoreip = 127.0.0.1/8
+bantime  = 600
+maxretry = 3
+
+# "backend" specifies the backend used to get files modification. Available
+# options are "gamin", "polling" and "auto".
+# yoh: For some reason Debian shipped python-gamin didn't work as expected
+#      This issue left ToDo, so polling is default backend for now
+backend = auto
+
+destemail = {{ fail2ban_alert_email or general_alert_email | mandatory }}
+
+# ACTIONS
+
+banaction = iptables-multiport
+mta = sendmail
+protocol = tcp
+chain = INPUT
+action_mwl = %(banaction)s[name=%(__name__)s, port="%(port)s", protocol="%(protocol)s", chain="%(chain)s"]
+               %(mta)s-whois-lines[name=%(__name__)s, dest="%(destemail)s", logpath=%(logpath)s, chain="%(chain)s"]
+
+action = %(action_mwl)s

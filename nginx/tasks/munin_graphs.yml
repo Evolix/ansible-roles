@@ -1,0 +1,18 @@
+---
+
+- name: Copy Munin config for Nginx
+  copy:
+    src: munin/evolinux.nginx
+    dest: /etc/munin/plugin-conf.d/
+    mode: 0644
+  notify: restart munin
+
+- name: Enable Munin plugins for Nginx
+  file:
+    src: '/usr/share/munin/plugins/{{ item }}'
+    dest: '/etc/munin/plugins/{{ item }}'
+    state: link
+  with_items:
+    - nginx_request
+    - nginx_status
+  notify: restart munin

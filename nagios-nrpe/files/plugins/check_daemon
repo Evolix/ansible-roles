@@ -1,0 +1,64 @@
+#!/bin/sh
+
+usage() {
+  cat <<EOF
+Usage: $0 [OPTIONS] NOM
+Valide la présence d'un processus d'après son NOM stocké.
+
+Les options suivantes sont admises :
+  -s, --sane  vérifier que le processus est dans un état sain
+  -u, --user  vérifier que le processus est lancé par un certain user
+  -U, --uniq  vérifier que le processus n'est lancé qu'une seule fois
+EOF
+}
+
+TEMP=`getopt -o hsUu: --long help,sane,user: -n $0 -- "$@"`
+if [ $? != 0 ]; then echo "Terminaison..." >&2; exit 1; fi
+eval set -- "$TEMP"
+
+OPT_USER=""
+OPT_SANE=0
+OPT_UNIQ=0
+
+while true; do
+  case "$1" in
+  -u|--user) OPT_USER="$2" ; shift 2 ;;
+  -U|--uniq) OPT_UNIQ=1;     shift   ;;
+  -s|--sane) OPT_SANE=1;     shift   ;;
+  -h|--help) usage;          exit  0 ;;
+  --) shift; break ;;
+  *)  echo "Erreur interne"; exit  -1 ;;
+  esac
+done
+
+ID_USER="`getent passwd $OPT_USER | cut -d: -f3`"
+
+if [ $# -ne 1 ]; then usage; exit -1; fi
+
+NAME="$1"
+STATUS=0
+RES="`ps n -eo pid,user,state,command | egrep "$NAME" | egrep "$ID_USER " | egrep -v "grep|$0"`"
+P_USER="`  echo $RES | cut -d' ' -f2`"
+P_STATE="` echo $RES | cut -d' ' -f3`"
+
+if [ -n "$RES" ]; then
+  if [ -n "$OPT_USER" ]; then
+    if [ "`getent passwd $OPT_USER`" != "`getent passwd $P_USER`" ]; then
+      STATUS=2
+    fi
+  fi
+  if [ $OPT_SANE -eq 1 -a "$P_STATE" = "Z" ]; then
+    STATUS=2
+  fi
+  if [ $OPT_UNIQ -eq 1 ]; then
+      if [ `echo -e "$RES" |wc -l` -gt 1 ]; then
+          STATUS=2
+      fi
+  fi
+else
+  STATUS=2
+fi
+
+[ $STATUS -eq 0 ] && echo "$NAME running"
+
+exit $STATUS

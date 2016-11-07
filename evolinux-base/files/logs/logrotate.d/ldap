@@ -1,0 +1,9 @@
+/var/log/openldap.log {
+        weekly
+        missingok
+        rotate 3
+	compress
+	notifempty
+        create 640 root adm
+}
+

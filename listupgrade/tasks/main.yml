@@ -1,0 +1,39 @@
+---
+- name: Scripts dir is present
+  file:
+    path: "{{ evomaintenance_scripts_dir or general_scripts_dir | mandatory }}"
+    state: directory
+    mode: 0700
+
+- name: Copy listupgrade script
+  template:
+    src: listupgrade.sh.j2
+    dest: "{{ evomaintenance_scripts_dir or general_scripts_dir | mandatory }}/listupgrade.sh"
+    mode: 0700
+    owner: root
+    group: root
+    force: yes
+    backup: yes
+
+- name: Create /etc/evolinux
+  file:
+    path: /etc/evolinux
+    state: directory
+    mode: 0600
+
+- name: Copy listupgrade config
+  template:
+    src: listupgrade.cnf.j2
+    dest: /etc/evolinux/listupgrade.cnf
+    mode: 0600
+    owner: root
+    group: root
+    force: no
+
+- name: Enable listupgrade cron
+  template:
+    src: listupgrade_cron.j2
+    dest: /etc/cron.d/listupgrade
+    mode: 0600
+    owner: root
+    group: root

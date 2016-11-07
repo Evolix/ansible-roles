@@ -1,0 +1,23 @@
+---
+general_alert_email: "root@localhost"
+evomaintenance_alert_email: Null
+
+general_scripts_dir: "/usr/local/bin"
+evomaintenance_scripts_dir: Null
+
+evomaintenance_hostname: "{{ ansible_fqdn }}"
+
+evomaintenance_pg_host: Null
+evomaintenance_pg_passwd: Null
+evomaintenance_pg_db: Null
+evomaintenance_pg_table: Null
+
+evomaintenance_from: "evomaintenance@{{ ansible_fqdn }}"
+evomaintenance_full_from: "Evomaintenance <{{ evomaintenance_from }}>"
+
+evomaintenance_urgency_from: mama.doe@example.com
+evomaintenance_urgency_tel: "06.00.00.00.00"
+
+evomaintenance_realm: "{{ ansible_domain }}"
+
+evomaintenance_hosts: []

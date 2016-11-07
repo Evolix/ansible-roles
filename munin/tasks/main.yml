@@ -66,7 +66,22 @@
     src: /usr/share/munin/plugins/sensors_
     dest: /etc/munin/plugins/sensors_temp
     state: link
-  when: not ansible_virtualization_role == "guest"
+  when: ansible_virtualization_role != "guest"
   notify: restart munin-node
   tags:
     - munin
+
+- name: adjustments for grsec kernel
+  blockinfile:
+    dest: /etc/munin/plugin-conf.d/munin-node
+    block: |
+
+      [processes]
+      user root
+
+      [vmstat]
+      user root
+
+      [swap]
+      user root
+  when: ansible_kernel | search("-grs-")

@@ -1,0 +1,23 @@
+#!/bin/sh
+
+HOSTNAME=$(hostname)
+nfsmount=/srv/data
+
+mkdir $nfsmount/.nrpe
+
+touch $nfsmount/.nrpe/.nfstest.$HOSTNAME
+if [ ! "$?" -eq "0" ]; then
+    echo "CRITICAL - error in check"
+    exit 2
+fi
+
+rm $nfsmount/.nrpe/.nfstest.$HOSTNAME
+if [ ! "$?" -eq "0" ]; then
+    echo "CRITICAL - error in check"
+    exit 2
+fi
+
+rmdir $nfsmount/.nrpe
+
+echo "OK - All fine"
+exit 0

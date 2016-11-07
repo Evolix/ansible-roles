@@ -1,0 +1,197 @@
+#!/usr/bin/perl -w
+
+# $Id: check_spamd.pl,v 1.1 2009-08-11 09:47:11 tmartin Exp $
+#
+# check SPAMD connections
+#
+# Copyright (c) 2005, 2006 Holger Weiss <holger@CIS.FU-Berlin.DE>
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+# ---------------------------------------------------------------
+#
+# New in 1.4:
+# - Checking SPAMD using a UNIX domain socket specified via the new
+#   -U/--socket option is now supported (thanks to Zeus Panchenko).
+#
+# New in 1.3:
+# - The "-v" option now works again.
+#
+# New in 1.2:
+# - A proper error message is reported if spamd(1) closes the connection
+#   unexpectedly.  This happens, for example, if spamd(1)s "-A" option is
+#   used, but the client hasn't been added to the list of authorized hosts.
+# - Minor code cleanup.
+
+use strict;
+use Socket;
+use Getopt::Long;
+use lib "/usr/lib/nagios/plugins";
+use utils qw(%ERRORS $TIMEOUT &print_revision &support);
+use vars qw($opt_H $opt_U $opt_V $opt_c $opt_h $opt_p $opt_t $opt_v $opt_w);
+
+sub talk_spamd ($$);
+sub die_crit ($);
+sub die_warn ($);
+sub die_unknown ($);
+sub print_usage ();
+sub print_help ();
+
+my $PROGNAME = "check_spamd";
+my $PORT = 783;
+my $CRIT = $TIMEOUT;
+my ($spamd_target, $spamd_port, $warning, $critical, $timeout, $response,
+    $start, $duration);
+
+$SIG{'ALRM'} = sub { die_unknown("Timeout"); };
+$ENV{'PATH'}='';
+$ENV{'ENV'}='';
+
+Getopt::Long::Configure("bundling");
+if (!GetOptions("V"   => \$opt_V, "version"    => \$opt_V,
+                "h"   => \$opt_h, "help"       => \$opt_h,
+                "v+"  => \$opt_v, "verbose+"   => \$opt_v,
+                "H=s" => \$opt_H, "hostname=s" => \$opt_H,
+                "U=s" => \$opt_U, "socket=s"   => \$opt_U,
+                "c=i" => \$opt_c, "critical=i" => \$opt_c,
+                "p=i" => \$opt_p, "port=i"     => \$opt_p,
+                "t=i" => \$opt_t, "timeout=i"  => \$opt_t,
+                "w=i" => \$opt_w, "warning=i"  => \$opt_w)) {
+        print "SPAMD UNKNOWN - Error processing command line options\n";
+        print_usage();
+        exit $ERRORS{'UNKNOWN'};
+}
+if ($opt_V) {
+        print_revision($PROGNAME,'$Revision: 1.1 $ ');
+        exit $ERRORS{'OK'};
+}
+if ($opt_h) {
+        print_help();
+        exit $ERRORS{'OK'};
+}
+if (not $opt_H and not $opt_U) {
+        print "SPAMD UNKNOWN - No target host or socket specified\n";
+        print_usage();
+        exit $ERRORS{'UNKNOWN'};
+}
+if ($opt_U and ($opt_H or $opt_p)) {
+        print "SPAMD UNKNOWN - UNIX domain socket AND host/port specified\n";
+        print_usage();
+        exit $ERRORS{'UNKNOWN'};
+}
+alarm($opt_t ? $opt_t : $TIMEOUT);
+$critical = $opt_c ? $opt_c : $CRIT;
+$warning = $opt_w ? $opt_w : $critical;
+if ($warning > $critical) {
+        print "SPAMD UNKNOWN - Warning larger than critical threshold\n";
+        print_usage();
+        exit $ERRORS{'UNKNOWN'};
+}
+if ($opt_U) {
+        $spamd_target = $opt_U;
+        $spamd_port = undef;
+} else {
+        $spamd_target = $opt_H;
+        $spamd_port = $opt_p ? $opt_p : getservbyname("spamd", "tcp");
+        $spamd_port = $PORT unless defined $spamd_port;
+}
+$start = time;
+$response = talk_spamd($spamd_target, $spamd_port);
+$duration = time - $start;
+die_crit("$response - $duration sec. response time") if $duration >= $critical;
+die_warn("$response - $duration sec. response time") if $duration >= $warning;
+$response .= " - $duration sec. response time" if $opt_v;
+print "SPAMD OK - Server response: $response\n";
+exit $ERRORS{'OK'};
+
+sub talk_spamd ($$) {
+        my ($host, $port) = @_;
+        my ($buffer, $iaddr, $message, $n, $paddr, $proto, $status, $str);
+
+        if ($port) {    # check host name or IP address
+                $iaddr = inet_aton($host)
+                    || die_unknown("Invalid hostname/address: $host");
+                $paddr = sockaddr_in($port, $iaddr);
+                socket(SOCK, PF_INET, SOCK_STREAM, getprotobyname('tcp'))
+                    || die_unknown("Socket error: $!");
+        } else {        # check UNIX domain socket
+                $paddr = sockaddr_un($host);
+                socket(SOCK, PF_UNIX, SOCK_STREAM, 0)
+                    || die_unknown("Socket error: $!");
+        }
+        connect(SOCK, $paddr) || die_crit("Error connecting to $host: $!");
+        defined(send(SOCK, "PING SPAMC/1.2\r\n", 0))
+            || die_unknown("Error sending request to $host: $!");
+        $buffer = <SOCK>;
+        die_unknown("Connection reset by peer") unless $buffer;
+        close SOCK || die_unknown("Cannot close connection: $!");
+        $n = ($proto, $status, $message)
+            = ($buffer =~ /^(\S+) +(\S+) +([^\r\n]+)/);
+        if ($n != 3) {
+                my $error = "Protocol error";
+
+                $error .= " - Server said: $buffer" if $buffer;
+                die_crit($error);
+        }
+        $str = "$proto $status $message";
+        die_crit($str) unless $status == 0;
+        $str;
+}
+
+sub die_unknown ($) {
+        printf "SPAMD UNKNOWN - %s\n", shift;
+        exit $ERRORS{'UNKNOWN'};
+}
+
+sub die_warn ($) {
+        printf "SPAMD WARNING - %s\n", shift;
+        exit $ERRORS{'WARNING'};
+}
+
+sub die_crit ($) {
+        printf "SPAMD CRITICAL - %s\n", shift;
+        exit $ERRORS{'CRITICAL'};
+}
+
+sub print_usage () {
+        print "Usage: $PROGNAME { -H host | -U socket } [-p port] [-w warn]\n" .
+              "       [-c crit] [-t timeout] [-v]\n";
+}
+
+sub print_help () {
+        print_revision($PROGNAME, '$Revision: 1.1 $');
+        print "Copyright (c) 2005, 2006 Holger Weiss\n\n";
+        print "Check SPAMD connections with the specified host.\n\n";
+        print_usage();
+        print <<EOF;
+
+ -H, --hostname=ADDRESS
+    Host name or IP address
+ -U, --socket=PATH
+    UNIX domain socket pathname
+ -p, --port=INTEGER
+    Port number (default: $PORT)
+ -w, --warning=INTEGER
+    Response time to result in warning status (seconds)
+ -c, --critical=INTEGER
+    Response time to result in critical status (seconds)
+ -t, --timeout=INTEGER
+    Seconds before connection times out (default: $TIMEOUT)
+ -v, --verbose
+    Show details for command-line debugging (Nagios may truncate output)
+
+EOF
+        support();
+}

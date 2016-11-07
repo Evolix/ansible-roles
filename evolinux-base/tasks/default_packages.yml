@@ -1,0 +1,14 @@
+---
+- name: Install/Update default packages (might take some time)
+  command: "apt-get install -yq --allow-unauthenticated {{ evolinux_default_packages | join(' ') }}"
+  register: install_default_packages
+  changed_when: not (install_default_packages.stdout | search("0 upgraded") and install_default_packages.stdout | search("0 newly installed"))
+
+- name: Deleting rpcbin and nfs-common
+  apt:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - rpcbind
+    - nfs-common
+  when: evolinux_delete_nfs

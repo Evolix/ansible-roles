@@ -10,8 +10,8 @@
 
 - name: custom config is installed
   template:
-    src: custom.j2
-    dest: /etc/monit/conf.d/custom
+    src: custom.conf.j2
+    dest: /etc/monit/conf.d/custom.conf
     mode: 0640
     force: yes
   notify: restart monit

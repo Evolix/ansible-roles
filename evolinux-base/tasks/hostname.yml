@@ -1,0 +1,37 @@
+---
+- name: Set hostname "{{ evolinux_hostname }}"
+  hostname:
+    name: "{{ evolinux_hostname }}"
+
+- name: Set right localhost line in /etc/hosts
+  replace:
+    dest: /etc/hosts
+    regexp: '^127.0.0.1(\s+)localhost.*$'
+    replace: '127.0.0.1\1localhost.localdomain localhost'
+
+- name: Set ip+fqdn+hostname in /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    line: "{{ ansible_default_ipv4.address }}    {{ evolinux_fqdn }} {{ evolinux_hostname }}"
+    insertafter: '127.0.0.1\s+localhost.localdomain'
+
+- name: 127.0.1.1 is removed
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '^127.0.1.1\s+{{ evolinux_fqdn }}'
+    state: absent
+
+- name: override ansible_hostname fact
+  set_fact:
+    ansible_hostname: "{{ evolinux_hostname }}"
+  when: ansible_hostname != evolinux_hostname
+
+- name: override ansible_domain fact
+  set_fact:
+    ansible_domain: "{{ evolinux_domain }}"
+  when: ansible_domain != evolinux_domain
+
+- name: override ansible_fqdn fact
+  set_fact:
+    ansible_fqdn: "{{ evolinux_fqdn }}"
+  when: ansible_fqdn != evolinux_fqdn

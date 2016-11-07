@@ -1,3 +1,4 @@
+---
 elasticsearch_plugin_head_home: /home/elasticsearch-head
 elasticsearch_plugin_head_clone_dir: "{{ elasticsearch_plugin_head_home }}/www"
 elasticsearch_plugin_head_owner: "elasticsearch-head"

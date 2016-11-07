@@ -1,1 +1,6 @@
-apache_ipaddr_whitelist: []
+---
+apache_private_ipaddr_whitelist_present: []
+apache_private_ipaddr_whitelist_absent: []
+
+apache_private_htpasswd_present: []
+apache_private_htpasswd_absent: []

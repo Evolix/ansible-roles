@@ -1,0 +1,14 @@
+- name: Customize kernel for Orange FCE
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/evolinux_fce.conf
+    state: present
+    reload: yes
+  with_items:
+    - { name: net.ipv4.tcp_keepalive_time, value: 250 }
+    - { name: net.ipv4.tcp_keepalive_intvl, value: 60 }
+    - { name: net.ipv6.conf.all.disable_ipv6, value: 1 }
+
+- debug:
+    msg: "Orange DNS servers suck! Please change them in /etc/resolv.conf."

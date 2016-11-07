@@ -1,35 +1,22 @@
 ---
-- name: Is zzz_evolinux.cnf already present ?
-  stat:
-    path: /etc/mysql/conf.d/zzz_evolinux.cnf
-  register: mysql_zzz_evolinux
-  tags:
-    - mysql
-    - log2mail
-
-- name: Copy MySQL config files
+- name: Copy MySQL defaults config file
   copy:
-    src: "{{ item.file }}"
-    dest: "/etc/mysql/conf.d/{{ item.file }}"
+    src: evolinux-defaults.cnf
+    dest: /etc/mysql/conf.d/z-evolinux-defaults.cnf
     owner: root
     group: root
-    mode: "{{ item.mode }}"
-    force: no
-  with_items:
-    - { file: z_evolinux.cnf, mode: 0644 }
-    - { file: zzz_evolinux.cnf, mode: 0640 }
+    mode: 0644
+    force: yes
   tags:
     - mysql
 
-- name: Custom MySQL config
-  ini_file:
-    dest: /etc/mysql/conf.d/zzz_evolinux.cnf
-    section: mysqld
-    option: '{{ item.option }}'
-    value: '{{ item.value }}'
-  with_items:
-    - { option: thread_cache_size, value: '{{ mysql_thread_cache_size }}' }
-    - { option: innodb_buffer_pool_size, value: '{{ mysql_innodb_buffer_pool_size }}' }
-  when: mysql_zzz_evolinux.stat.exists == False
+- name: Copy MySQL custom config file
+  template:
+    src: evolinux-custom.cnf.j2
+    dest: /etc/mysql/conf.d/zzz-evolinux-custom.cnf
+    owner: root
+    group: root
+    mode: 0640
+    force: no
   tags:
     - mysql

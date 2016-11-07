@@ -1,0 +1,15 @@
+---
+- name: restart munin-node
+  service:
+    name: munin-node
+    state: restarted
+
+- name: restart squid
+  service:
+    name: squid3
+    state: restarted
+
+- name: restart log2mail
+  service:
+    name: log2mail
+    state: restarted

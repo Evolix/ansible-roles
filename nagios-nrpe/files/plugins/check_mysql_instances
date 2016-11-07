@@ -1,0 +1,11 @@
+#!/bin/sh
+
+for port in 3308 3309; do
+        /usr/lib/nagios/plugins/check_mysql -H 127.0.0.1 -P $port -u nrpe -p MYSQL_PASSWD
+        ret=$?
+
+        [ $ret -ne 0 ] && exit $ret
+done
+
+exit 0
+

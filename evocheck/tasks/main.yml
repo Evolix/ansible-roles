@@ -1,0 +1,8 @@
+---
+
+- name: evocheck is installed
+  command: "apt-get install -yq --allow-unauthenticated evomaintenance"
+  register: installed_evomaintenance
+  changed_when: not (installed_evomaintenance.stdout | search("0 upgraded") and installed_evomaintenance.stdout | search("0 newly installed"))
+
+# TODO make sure that the package is in the right version

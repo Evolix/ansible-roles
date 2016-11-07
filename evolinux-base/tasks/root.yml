@@ -1,0 +1,78 @@
+---
+
+- name: chmod 700 /root
+  file:
+    path: /root
+    state: directory
+    mode: 0700
+  tags:
+    - root
+
+- name: "Customize root's bashrc..."
+  lineinfile:
+    dest: /root/.bashrc
+    line: "{{ item }}"
+    create: yes
+    state: present
+  with_items:
+    - "export HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoreboth"
+    - "export HISTSIZE=65535"
+    - "export HISTTIMEFORMAT=\"%c : \""
+  tags:
+    - root
+
+## .bash_history should be append-only
+
+- name: Create .bash_history if missing
+  copy:
+    content: ""
+    dest: "/root/.bash_history"
+    force: no
+  tags:
+    - root
+
+- name: Set umask in /root/.profile
+  lineinfile:
+    dest: "/root/.profile"
+    line: "umask 0077"
+    regexp: "umask [0-9]+"
+  tags:
+    - root
+
+- name: Custom git config for root
+  copy:
+    src: root/gitconfig
+    dest: "/root/.gitconfig"
+    force: no
+  tags:
+    - root
+
+- name: Is .bash_history append-only
+  shell: lsattr /root/.bash_history | grep -E "^.*a.* "
+  register: bash_history_append_only
+  failed_when: False
+  changed_when: False
+  tags:
+    - root
+
+- name: Set .bash_history append-only
+  command: chattr +a /root/.bash_history
+  when: bash_history_append_only.rc != 0
+  tags:
+    - root
+
+- name: Setting vim root configuration
+  lineinfile:
+    dest: /root/.vimrc
+    line: "{{ item }}"
+    create: yes
+    state: present
+  with_items:
+    - "syntax on"
+    - "set hlsearch"
+    - "set background=dark"
+    - "set expandtab"
+    - "set tabstop=4"
+    - "set softtabstop=0"
+    - "set shiftwidth=4"
+    - "set smarttab"

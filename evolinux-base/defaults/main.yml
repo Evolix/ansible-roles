@@ -1,0 +1,41 @@
+---
+general_alert_email: "root@localhost"
+reboot_alert_email: Null
+apt_alert_email: Null
+log2mail_alert_email: Null
+raid_alert_email: Null
+
+# hostname
+
+evolinux_hostname: "{{ ansible_hostname }}"
+evolinux_domain: "{{ ansible_domain }}"
+evolinux_fqdn: "{{ ansible_fqdn }}"
+evolinux_internal_hostname: "{{ evolinux_hostname }}"
+
+# apt
+
+evolinux_apt_repositories_components: "main"
+evolinux_apt_hooks: False
+# kernel
+
+evolinux_kernel_reboot_after_panic: True
+evolinux_kernel_disable_tcp_timestamps: True
+evolinux_kernel_reduce_swapiness: True
+evolinux_kernel_cve20165696: True
+
+# providers
+
+evolinux_provider_online: False
+evolinux_provider_orange_fce: False
+
+# default www
+
+evolinux_default_www_redirect_url: "http://evolix.fr"
+evolinux_default_www_ssl_subject: "/CN={{ ansible_fqdn }}"
+evolinux_default_www_nginx_enabled: False
+evolinux_default_www_apache_enabled: False
+
+# misc.
+
+evolinux_ntp_server: Null
+evolinux_delete_nfs: True

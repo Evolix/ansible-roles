@@ -1,0 +1,36 @@
+---
+
+- name: Git is installed
+  apt:
+    name: git
+    state: present
+
+- name: /etc is versioned with git
+  command: "git init ."
+  args:
+    chdir: /etc
+    creates: /etc/.git/
+  register: git_init
+
+- name: /etc/.gitignore is present
+  copy:
+    src: gitignore
+    dest: /etc/.gitignore
+    owner: root
+    group: root
+    mode: 0600
+
+- name: does /etc/ have any commit?
+  command: "git log"
+  args:
+    chdir: /etc
+  changed_when: False
+  failed_when: False
+  register: git_log
+
+- name: initial commit is present?
+  shell: "git add -A . && git commit -m \"Initial commit via Ansible\""
+  args:
+    chdir: /etc
+  register: git_commit
+  when: git_init.changed or git_log.rc != 0

@@ -1,0 +1,6 @@
+---
+general_alert_email: "root@localhost"
+listupgrade_alert_email: Null
+
+general_scripts_dir: "/usr/local/bin"
+listupgrade_scripts_dir: Null

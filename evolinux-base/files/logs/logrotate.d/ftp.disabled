@@ -1,0 +1,31 @@
+/var/log/proftpd.log {
+    weekly
+    missingok
+    rotate 13
+    compress
+    delaycompress
+    notifempty
+    create 640 root adm
+    sharedscripts
+        postrotate
+            /etc/init.d/proftpd restart > /dev/null
+        endscript
+}
+
+
+/var/log/xferlog.log {
+    weekly
+    rotate 1
+    missingok
+    create 640 root adm
+    sharedscripts
+        postrotate
+            DATE=$(date +"%d-%m-%Y")
+            cd /var/log
+            ftpstats -a -r -l 2 -d i-f xferlog.log.1 2>/dev/null >xferreport.$DATE
+            mv xferlog.log.1 xferlog.log.$DATE
+            gzip xferlog.log.$DATE
+            gzip xferreport.$DATE
+       endscript
+}
+

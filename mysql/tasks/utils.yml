@@ -31,8 +31,8 @@
 - name: Install mysqltuner
   copy:
     src: mysqltuner.pl
-    dest: /usr/local/bin/mysqltuner.pl
-    mode: 700
+    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysqltuner.pl"
+    mode: 0700
   tags:
     - mysql
     - mysqltuner
@@ -49,7 +49,7 @@
 - name: Weekly cron to optimize MySQL
   copy:
     src: mysql-optimize
-    dest: /etc/cron.monthly/mysql-optimize
+    dest: /etc/cron.weekly/mysql-optimize.sh
     mode: 0755
   tags:
     - mysql
@@ -73,7 +73,7 @@
 - name: Install my-add.sh
   copy:
     src: my-add.sh
-    dest: /usr/local/bin/my-add.sh
+    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/my-add.sh"
     mode: 0700
   tags:
     - mysql

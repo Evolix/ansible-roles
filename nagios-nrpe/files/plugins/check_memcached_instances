@@ -1,0 +1,10 @@
+#!/bin/bash
+
+returnCode=0
+
+for port in $(grep "^-p " /etc/memcached*.conf |cut -d ' ' -f 2); do
+    /usr/lib/nagios/plugins/check_tcp -p $port
+    returnCode=$(($returnCode|$?))
+done
+
+exit $returnCode

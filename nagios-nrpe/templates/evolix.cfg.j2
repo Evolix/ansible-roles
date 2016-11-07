@@ -1,0 +1,63 @@
+#
+# Custom NRPE configuration file.
+# Part of the Evolinux distribution.
+#
+
+# Allowed IPs
+allowed_hosts={{ nagios_nrpe_allowed_hosts | join(',') }}
+
+# System checks
+command[check_load]=/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20
+command[check_swap]=/usr/lib/nagios/plugins/check_swap -a -w 30% -c 20%
+command[check_disk1]=/usr/lib/nagios/plugins/check_disk -x /lib/init/rw -x /dev -x /dev/shm -w 10% -c 3% -W 10% -K 3% -C -w 5% -c 2% -W 5% -K 2% -p /home
+command[check_zombie_procs]=sudo /usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z
+command[check_total_procs]=sudo /usr/lib/nagios/plugins/check_procs -w 400 -c 600
+command[check_users]=/usr/lib/nagios/plugins/check_users -w 5 -c 10
+
+# Generic services checks
+command[check_smtp]=/usr/lib/nagios/plugins/check_smtp -H localhost
+command[check_dns]=/usr/lib/nagios/plugins/check_dns -H evolix.net
+command[check_ntp]=/usr/lib/nagios/plugins/check_ntp -H ntp2.evolix.net
+command[check_ssh]=/usr/lib/nagios/plugins/check_ssh localhost
+command[check_mailq]=/usr/lib/nagios/plugins/check_mailq -M postfix -w 10 -c 20
+
+# Specific services checks
+command[check_pgsql]=/usr/lib/nagios/plugins/check_pgsql -H localhost -l nrpe -p '{{ nagios_nrpe_pgsql_passwd }}'
+command[check_mysql]=/usr/lib/nagios/plugins/check_mysql -H localhost -u nrpe -p '{{ nagios_nrpe_mysql_passwd }}'
+command[check_ldap]=/usr/lib/nagios/plugins/check_ldap -3 -H localhost -D cn=nagios,ou=ldapusers,{{ nagios_nrpe_ldap_dc }} -P {{ nagios_nrpe_ldap_passwd }} -b {{ nagios_nrpe_ldap_dc }}
+command[check_ldaps]=/usr/lib/nagios/plugins/check_ldaps -3 -H localhost -b {{ nagios_nrpe_ldap_dc }}
+command[check_imap]=/usr/lib/nagios/plugins/check_imap -H localhost
+command[check_imaps]=/usr/lib/nagios/plugins/check_imap -S -H localhost -p 993
+command[check_pop]=/usr/lib/nagios/plugins/check_pop -H localhost
+command[check_pops]=/usr/lib/nagios/plugins/check_pop -S -H localhost -p 995
+command[check_ftp]=/usr/lib/nagios/plugins/check_ftp -H localhost
+command[check_http]=/usr/lib/nagios/plugins/check_http -f follow -I 127.0.0.1 -H localhost
+command[check_https]=/usr/lib/nagios/plugins/check_http -f follow -I 127.0.0.1 -S -p 443 -H ssl.evolix.net
+command[check_bind]=/usr/lib/nagios/plugins/check_dig -l evolix.net -H localhost
+command[check_smb]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 445
+command[check_tse]=/usr/lib/nagios/plugins/check_tcp -H TSEADDR -p 3389
+command[check_jboss-http]=/usr/lib/nagios/plugins/check_tcp -p 8080
+command[check_jboss-ajp13]=/usr/lib/nagios/plugins/check_tcp -p 8009
+command[check_tomcat-http]=/usr/lib/nagios/plugins/check_tcp -p 8080
+command[check_tomcat-ajp13]=/usr/lib/nagios/plugins/check_tcp -p 8009
+command[check_proxy]=/usr/lib/nagios/plugins/check_http -H www.debian.org
+command[check_redis]=/usr/lib/nagios/plugins/check_tcp -p 6379
+command[check_clamd]=/usr/lib/nagios/plugins/check_clamd -H /var/run/clamav/clamd.ctl -v
+command[check_ssl]=/usr/lib/nagios/plugins/check_http -f follow -I 127.0.0.1 -S -p 443 -H ssl.evolix.net -C 15,5
+command[check_elasticsearch]=/usr/lib/nagios/plugins/check_http -H localhost -u /_cluster/health -p 9200 -r '"status":"red",' --invert-regex
+
+# Local checks (not packaged)
+command[check_mem]=/usr/local/lib/nagios/plugins/check_mem -f -C -w 20 -c 10
+command[check_amavis]=/usr/local/lib/nagios/plugins/check_amavis --server 127.0.0.1 --from {{ nagios_nrpe_amavis_from }} --to postmaster@localhost --port 10024
+command[check_spamd]=/usr/local/lib/nagios/plugins/check_spamd -H 127.0.0.1
+command[check_nfsclient]=sudo -u www-data /usr/local/lib/nagios/plugins/check_nfsclient
+command[check_evobackup]=/usr/local/lib/nagios/plugins/check_evobackup
+command[check_process]=/usr/local/lib/nagios/plugins/check_process
+command[check_drbd]=/usr/local/lib/nagios/plugins/check_drbd -d All -c StandAlone
+command[check_mongodb_connect]=/usr/local/lib/nagios/plugins/check_mongodb -H localhost -P27017 -A connect
+command[check_glusterfs]=/usr/local/lib/nagios/plugins/check_glusterfs -v all -n 0
+command[check_supervisord_status]=/usr/local/lib/nagios/plugins/check_supervisord
+
+# Check HTTP "many". Use this to check many websites (http, https, ports, sockets and SSL certificates).
+# Beware! All checks must not take more than 10s!
+#command[check_https]=/usr/local/lib/nagios/plugins/check_http_many

@@ -1,0 +1,8 @@
+/var/log/news.log {
+    monthly
+    missingok
+    notifempty
+    rotate 1
+    create 640 root adm
+}
+

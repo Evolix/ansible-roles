@@ -1,0 +1,16 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          alert5
+# Required-Start:    $local_fs
+# Required-Stop:     $local_fs
+# Should-Start:      $all
+# Should-Stop:       $all
+# Default-Start:     2
+# Default-Stop:
+# Short-Description: Send boot/reboot mail on start
+# Description:       Send boot/reboot mail on start
+### END INIT INFO
+
+date | mail -s'boot/reboot' {{ reboot_alert_email or general_alert_email | mandatory }}
+#/etc/init.d/minifirewall start

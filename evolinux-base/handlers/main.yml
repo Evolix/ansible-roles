@@ -1,0 +1,49 @@
+---
+- name: dpkg-reconfigure-debconf
+  command: dpkg-reconfigure --frontend noninteractive debconf
+
+- name: dpkg-reconfigure-locales
+  command: dpkg-reconfigure --frontend noninteractive locales
+
+- name: dpkg-reconfigure-apt
+  command: dpkg-reconfigure --frontend noninteractive apt-listchanges
+
+# - name: debconf-set-selections
+#   command: debconf-set-selections /root/debconf-preseed
+
+- name: apt update
+  apt:
+    update_cache: yes
+
+- name: restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+
+
+- name: remount /home
+  command: mount -o remount /home
+
+- name: remount /var
+  command: mount -o remount /var
+
+
+- name: restart nginx
+  service:
+    name: nginx
+    state: restarted
+
+- name: reload nginx
+  service:
+    name: nginx
+    state: reloaded
+
+- name: restart apache
+  service:
+    name: apache2
+    state: restarted
+
+- name: reload apache
+  service:
+    name: apache2
+    state: reloaded

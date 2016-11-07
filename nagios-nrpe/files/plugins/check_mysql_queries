@@ -1,0 +1,63 @@
+#!/bin/sh
+
+# Avant d'exécuter le check :
+# mysql> CREATE DATABASE nrpe;
+# mysql> CREATE TABLE nrpe (test TINYINT);
+# mysql> GRANT ALL ON nrpe.nrpe TO nrpe@localhost;
+
+usage() {
+    cat <<EOT >&2
+Usage : $0 -H host -P port -u user -p password -b base
+All these options are required
+EOT
+}
+
+while getopts ':H:P:u:p:b:' o
+do
+    case $o in
+     H)
+        host=$OPTARG
+        ;;
+     P)
+        port=$OPTARG
+        ;;
+     u)
+        user=$OPTARG
+        ;;
+     p)
+        passwd=$OPTARG
+        ;;
+     b)
+        base=$OPTARG
+        ;;
+     ?)
+        usage
+        exit 2
+        ;;
+    esac
+done
+
+if [ -z $host ] || [ -z $port ] || [ -z $user ] || [ -z $passwd ] || [ -z $base ]; then
+    usage
+    exit 2
+fi
+
+MYSQLCMD="mysql -h $host -P $port -u $user -p$passwd $base"
+
+$MYSQLCMD -e "INSERT INTO nrpe (test) VALUES('4')"
+if [ $? -ne 0 ]; then
+    echo "INSERT query failed"
+    exit 2
+fi
+
+$MYSQLCMD -e "SELECT test FROM nrpe"
+if [ $? -ne 0 ]; then
+    echo "SELECT query failed"
+    exit 2
+fi
+
+$MYSQLCMD -e "DELETE FROM nrpe"
+if [ $? -ne 0 ]; then
+    echo "DELETE query failed"
+    exit 2
+fi

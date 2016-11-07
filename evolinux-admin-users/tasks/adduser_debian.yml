@@ -1,0 +1,95 @@
+---
+
+- name: Test if uid exists for '{{ user.name }}'
+  command: 'getent passwd {{ user.uid }}'
+  register: uidisbusy
+  failed_when: False
+  changed_when: False
+
+- name: Add Unix account with classical uid for '{{ user.name }}'
+  user:
+   state: present
+   uid: '{{ user.uid }}'
+   name: '{{ user.name }}'
+   comment: '{{ user.fullname }}'
+   shell: /bin/bash
+   password: '{{ user.password_hash }}'
+   update_password: on_create
+  when: uidisbusy|failed
+
+- name: Add Unix account with random uid for '{{ user.name }}'
+  user:
+   state: present
+   name: '{{ user.name }}'
+   comment: '{{ user.fullname }}'
+   shell: /bin/bash
+   password: '{{ user.password_hash }}'
+   update_password: on_create
+  when: uidisbusy|success
+
+- name: Fix perms on homedirectory for '{{ user.name }}'
+  file:
+   name: '/home/{{ user.name }}'
+   mode: 0700
+   state: directory
+
+- name: is evomaintenance installed?
+  stat:
+    path: "{{ evomaintenance_scripts_dir or general_scripts_dir | mandatory }}/evomaintenance.sh"
+  register: evomaintenance_script
+
+- name: Add evomaintenance trap for '{{ user.name }}'
+  lineinfile:
+    state: present
+    dest: '/home/{{ user.name }}/.profile'
+    insertafter: EOF
+    line: 'trap "sudo {{ evomaintenance_scripts_dir or general_scripts_dir | mandatory }}/evomaintenance.sh" 0'
+  when: evomaintenance_script.stat.exists
+
+- name: Create .ssh directory for '{{ user.name }}'
+  file:
+    dest: '/home/{{ user.name }}/.ssh/'
+    state: directory
+    mode: 0700
+    owner: '{{ user.name }}'
+    group: '{{ user.name }}'
+
+- name: Add user's SSH public key for '{{ user.name }}'
+  lineinfile:
+    dest: '/home/{{ user.name }}/.ssh/authorized_keys'
+    create: yes
+    line: '{{ user.ssh_key }}'
+    owner: '{{ user.name }}'
+    group: '{{ user.name }}'
+
+- name: Modify AllowUsers' sshd directive for '{{ user.name }}'
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '^(AllowUsers ((?!{{ user.name }}).)*)$'
+    replace: '\1 {{ user.name }}'
+  notify:
+    - reload sshd
+
+- name: Modify Match User's sshd directive for '{{ user.name }}'
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '^(Match User ((?!{{ user.name }}).)*)$'
+    replace: '\1,{{ user.name }}'
+  notify:
+    - reload sshd
+
+- name: Evolinux sudoers file is present
+  template:
+    src: sudoers_debian.j2
+    dest: /etc/sudoers.d/evolinux
+    force: false
+    validate: '/usr/sbin/visudo -cf %s'
+  register: copy_sudoers_evolinux
+
+- name: Add user in sudoers file for '{{ user.name }}'
+  replace:
+    dest: /etc/sudoers.d/evolinux
+    regexp: '^(User_Alias\s+ADMINS\s+=((?!{{ user.name }}).)*)$'
+    replace: '\1,{{ user.name }}'
+    validate: '/usr/sbin/visudo -cf %s'
+  when: not copy_sudoers_evolinux.changed

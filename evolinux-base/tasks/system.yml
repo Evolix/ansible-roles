@@ -1,0 +1,104 @@
+---
+- name: /tmp must be world-writable
+  file:
+    path: /tmp
+    state: directory
+    mode: 1777
+
+- name: Setting default locales
+  lineinfile:
+    dest: /etc/locale.gen
+    line: "{{ item }}"
+    state: present
+  with_items:
+    - "en_US.UTF-8 UTF-8"
+    - "fr_FR ISO-8859-1"
+    - "fr_FR.UTF-8 UTF-8"
+  notify: dpkg-reconfigure-locales
+  # when: not docker
+
+- name: Setting vim as default editor
+  alternatives:
+    name: editor
+    path: /usr/bin/vim.basic
+
+- name: Add "umask 027" to /etc/profile.d/evolinux.sh
+  lineinfile:
+    dest: /etc/profile.d/evolinux.sh
+    line: "umask 027"
+    create: yes
+    state: present
+
+- name: Set /etc/adduser.conf DIR_MODE to 0700
+  replace:
+    dest: /etc/adduser.conf
+    regexp: "^DIR_MODE=.*$"
+    replace: "DIR_MODE=0700"
+
+# TODO: trouver comment ne pas faire ça sur Xen Dom-U
+
+- name: Deactivating login on all tty except tty2
+  lineinfile:
+    dest: /etc/securetty
+    line: "tty2"
+    create: yes
+    state: present
+
+- name: Setting TMOUT to deconnect inactive users
+  lineinfile:
+    dest: /etc/profile
+    line: "export TMOUT=36000"
+    state: present
+
+#- name: Customizing /etc/fstab
+
+- name: Modify default umask for cron deamon
+  lineinfile:
+    dest: /etc/default/cron
+    line: "umask 022"
+    create: yes
+    state: present
+
+- name: Randomize periodic crontabs
+  replace:
+    dest: /etc/crontab
+    regexp:  "{{ item.regexp }}"
+    replace: "{{ item.replace }}"
+    backup:  "{{ item.backup }}"
+  with_items:
+  - {regexp: '^17((\s*\*){4})', replace: '{{ 59|random(start=1) }}\1', backup: "yes"}
+  - {regexp: '^25\s*6((\s*\*){3})', replace: '{{ 59|random(start=1) }} {{ [0,1,3,4,5,6,7]|random }}\1', backup: "no"}
+  - {regexp: '^47\s*6((\s*\*){2}\s*7)', replace: '{{ 59|random(start=1) }} {{ [0,1,3,4,5,6,7]|random }}\1', backup: "no"}
+  - {regexp: '^52\s*6(\s*1(\s*\*){2})', replace: '{{ 59|random(start=1) }} {{ [0,1,3,4,5,6,7]|random }}\1', backup: "no"}
+
+# NTP server address
+
+- name: Configure NTP
+  replace:
+    dest: /etc/ntp.conf
+    regexp: "^server .*$"
+    replace: "server {{ evolinux_ntp_server }}"
+    backup: yes
+  when: evolinux_ntp_server | default(False)
+
+## alert5
+
+- name: "Install alert5 init script"
+  template:
+    src: system/init_alert5.j2
+    dest: /etc/init.d/alert5
+    mode: 0755
+
+- name: Enable alert5 init script
+  service:
+    name: alert5
+    enabled: yes
+
+## network interfaces
+
+- name: "Network interfaces must be \"auto\" and not \"allow-hotplug\""
+  replace:
+    dest: /etc/network/interfaces
+    regexp: "allow-hotplug"
+    replace: "auto"
+    backup: yes

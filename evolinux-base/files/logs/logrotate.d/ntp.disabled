@@ -1,0 +1,14 @@
+/var/log/ntp.log {
+    weekly
+    rotate 1
+    missingok
+    create 640 root adm
+    sharedscripts
+        postrotate
+        DATE=$(date +"%d-%m-%Y")
+        cd /var/log
+        mv ntp.log.1 ntp.log.$DATE
+        gzip ntp.log.$DATE
+    endscript
+}
+

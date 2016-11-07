@@ -1,0 +1,84 @@
+#!/bin/bash
+
+result=/tmp/nagios.check_http_many.result
+trap "rm ${result}*" EXIT
+warning=false
+critical=false
+
+check_state() {
+
+    if [[ $1 -eq 0 ]]; then
+        cat $result >> ${result}.ok
+        :> $result
+    fi
+    if [[ $1 -eq 1 ]]; then
+        warning=true
+        cat $result >> ${result}.err
+        :> $result
+    fi
+    if [[ $1 -eq 2 ]]; then
+        critical=true
+        cat $result >> ${result}.err
+        :> $result
+    fi
+
+}
+
+## Return OK between 02am and 05am.
+#date=$(date +%H)
+#if [[ $date > 01 && $date < 05 ]]; then
+#    echo "Maintenance time, no check! All green!"
+#    exit 0
+#fi
+
+# Check HTTP
+sites=""
+for site in $sites; do
+    echo -n "Site ${site}: " >> $result
+    /usr/lib/nagios/plugins/check_http -f critical -I 127.0.0.1 -H ${site%%/*} -u /${site#*/} >> $result
+    check_state $?
+done
+
+## Check HTTPs
+sites=""
+for site in $sites; do
+    echo -n "Site ${site}: " >> $result
+    /usr/lib/nagios/plugins/check_http -w4 -c6 -f critical -p 443 -S -I 127.0.0.1 -H ${site%%/*} -u /${site#*/} >> $result
+    check_state $?
+done
+
+# Check HTTPs certs
+sites=""
+for site in $sites; do
+    echo -n "Certificate ${site}: " >> $result
+    /usr/lib/nagios/plugins/check_http -p 443 -S --sni -H $site -C14,7 >> $result
+    check_state $?
+done
+
+# Check Sockets
+sockets=""
+for socket in $sockets; do
+    echo -n "Socket ${socket}: " >> $result
+    /usr/lib/nagios/plugins/check_tcp -H $socket >> $result
+    check_state $?0
+done
+
+# Check Ports
+ports=""
+for port in $ports; do
+    echo -n "Port ${port}: " >> $result
+    /usr/lib/nagios/plugins/check_tcp -p $port >> $result
+    check_state $?
+done
+
+if ($critical); then
+    cat ${result}.err
+    exit 2
+fi
+if ($warning); then
+    cat ${result}.err
+    exit 1
+else
+    cat ${result}.ok
+    exit 0
+fi

@@ -1,0 +1,29 @@
+# Evolix's specific configuration
+
+ServerName        "{{ proftpd_hostname }} FTP Server"
+ServerIdent    on "FTP Server Ready"
+AccessGrantMsg    "Hey, bienvenue %u sur le serveur FTP {{ proftpd_fqdn }} !"
+
+# Connexion limits
+MaxInstances      50
+MaxClients        40
+MaxClientsPerHost 20
+
+# Network settings
+PassivePorts  60000 61000
+UseReverseDNS off
+IdentLookups  off
+
+# Local permissions
+DefaultRoot       ~
+Umask             137  027
+RequireValidShell off
+UseFtpUsers       off
+
+# Allow RESUME (REST command)
+AllowStoreRestart on
+
+<Limit LOGIN>
+    AllowGroup ftpusers
+    DenyAll
+</Limit>
