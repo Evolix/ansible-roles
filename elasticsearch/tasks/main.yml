@@ -1,0 +1,13 @@
+---
+
+- include: java.yml
+
+- include: elasticsearch.yml
+
+- include: configuration.yml
+
+- include: bootstrap_checks.yml
+
+- include: datadir.yml
+
+- include: tmpdir.yml

@@ -1,0 +1,15 @@
+---
+
+- name: Java 8 is installed
+  apt:
+    name: openjdk-8-jre
+    default_release: jessie-backports
+    state: installed
+  tags:
+    - java
+    - packages
+
+- name: Java 8 is the default alternative
+  alternatives:
+    name: java
+    path: /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java

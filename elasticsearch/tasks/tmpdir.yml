@@ -1,0 +1,30 @@
+---
+
+- name: Check if /tmp is noexec
+  shell: "cat /etc/fstab | grep -E \" +/tmp\" | grep noexec"
+  register: fstab_tmp_noexec
+  failed_when: False
+  changed_when: False
+
+- block:
+  - name: "Create {{ elasticsearch_custom_tmpdir }}"
+    file:
+      path: "{{ elasticsearch_custom_tmpdir }}"
+      owner: elasticsearch
+      group: elasticsearch
+      mode: 0755
+      state: directory
+    tags:
+      - elasticsearch
+
+  - name: change JVM tmpdir
+    lineinfile:
+      dest: /etc/elasticsearch/jvm.options
+      line: "-Djava.io.tmpdir={{ elasticsearch_custom_tmpdir }}"
+      regexp: "^-Djava.io.tmpdir="
+      insertafter: "## JVM configuration"
+    notify:
+      - restart elasticsearch
+    tags:
+      - elasticsearch
+  when: elasticsearch_custom_tmpdir or fstab_tmp_noexec|success

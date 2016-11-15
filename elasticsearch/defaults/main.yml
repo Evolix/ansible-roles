@@ -1,0 +1,6 @@
+elasticsearch_cluster_name: Null
+elasticsearch_node_name: "${HOSTNAME}"
+elasticsearch_network_host: "[_site_, _local_]"
+elasticsearch_network_publish_host: "_site_"
+elasticsearch_custom_datadir: Null
+elasticsearch_custom_tmpdir: Null

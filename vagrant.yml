@@ -20,3 +20,5 @@
     #     nginx_private_htpasswd_absent: ["toto:dsfgdfsdf"]
     #   }
     # - apache
+    # - apt-backports
+    - { role: elasticsearch, elasticsearch_custom_tmpdir: "/var/lib/elasticsearch/tmp" }

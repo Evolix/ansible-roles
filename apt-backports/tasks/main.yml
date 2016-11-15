@@ -1,0 +1,23 @@
+---
+- name: Jessie-backports list is available
+  apt_repository:
+    repo: "deb http://mirror.evolix.org/debian jessie-backports main contrib non-free"
+    update_cache: yes
+    state: present
+  tags:
+    - system
+    - packages
+
+- name: Backports have a low priority
+  blockinfile:
+    dest: /etc/apt/preferences.d/backports
+    marker: "// {mark} ANSIBLE MANAGED BLOCK"
+    insertafter: EOF
+    create: yes
+    content: |
+      Package: *
+      Pin: release a=jessie-backports
+      Pin-Priority: 50
+  tags:
+    - system
+    - packages

@@ -1,0 +1,38 @@
+---
+
+- name: Read maximum map count
+  command: "sysctl -n vm.max_map_count"
+  register: max_map_count
+  failed_when: False
+  changed_when: False
+  tags:
+    - config
+
+- name: Maximum map count check
+  sysctl:
+    name: vm.max_map_count
+    value: 262144
+    sysctl_file: /etc/sysctl.d/elasticsearch.conf
+  when: "{{ max_map_count|int < 262144 }}"
+  tags:
+    - config
+
+- name: bootstrap.memory_lock
+  lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "bootstrap.memory_lock: true"
+    regexp: "^bootstrap.memory_lock:"
+    insertafter: "^# *bootstrap.memory_lock:"
+  tags:
+    - config
+
+- name: Override memory config in systemd unit
+  ini_file:
+    dest: /etc/systemd/system/elasticsearch.service.d/elasticsearch.conf
+    section: Service
+    option: "LimitMEMLOCK"
+    value: "infinity"
+  notify:
+    - reload elasticsearch unit
+  tags:
+    - config

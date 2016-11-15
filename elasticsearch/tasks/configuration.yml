@@ -1,0 +1,49 @@
+---
+
+- name: Configure cluster name
+  lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "cluster.name: {{ elasticsearch_cluster_name }}"
+    regexp: "^cluster.name:"
+    insertafter: "^# *cluster.name:"
+  when: elasticsearch_cluster_name|default("", True)
+  tags:
+    - config
+
+- name: Configure node name
+  lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "node.name: {{ elasticsearch_node_name }}"
+    regexp: "^node.name:"
+    insertafter: "^# *node.name:"
+  tags:
+    - config
+
+- name: Configure network host
+  lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "network.host: {{ elasticsearch_network_host }}"
+    regexp: "^network.host:"
+    insertafter: "^# *network.host:"
+  when: elasticsearch_network_host|default("", True)
+  tags:
+    - config
+
+- name: Configure network publish_host
+  lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "network.publish_host: {{ elasticsearch_network_publish_host }}"
+    regexp: "^network.publish_host:"
+    insertafter: "^# *network.publish_host:"
+  when: elasticsearch_network_publish_host|default("", True)
+  tags:
+    - config
+
+- name: Restart on upgrade
+  lineinfile:
+    dest: /etc/default/elasticsearch
+    line: "RESTART_ON_UPGRADE=true"
+    regexp: "^RESTART_ON_UPGRADE="
+    insertafter: "^# *RESTART_ON_UPGRADE=true"
+  tags:
+    - config
