@@ -1,0 +1,24 @@
+---
+- name: Install Varnish
+  apt: name=varnish state=present
+
+- name: Remove default varnish configuration files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_fileglob: "/etc/defaults/varnish*"
+
+- name: Copy Varnish service configuration file
+  copy:
+    src: "/lib/systemd/system/varnish.service"
+    dest: "/etc/systemd/system/"
+
+- name: Modify Varnish configuration file
+  lineinfile:
+    dest: "/etc/systemd/system/varnish.service"
+    regexp: "^ExecStart="
+    line: |
+      ExecStart=/usr/sbin/varnishd -a 0.0.0.0:80 -T localhost:6082 -f /etc/varnish/default.vcl \
+      -S /etc/varnish/secret -s malloc,2G \
+      -p thread_pools={{ thread_pools }} -p thread_pool_add_delay=2 -p thread_pool_min=500 -p thread_pool_max=5000
+  notify: reload systemctl

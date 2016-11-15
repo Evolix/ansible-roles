@@ -1,0 +1,5 @@
+# Varnish
+
+## Tasks
+
+## Variables
