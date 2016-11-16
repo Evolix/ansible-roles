@@ -1,0 +1,3 @@
+elasticsearch_plugin_head_install_path: /var/www2/elasticsearch-head
+elasticsearch_plugin_head_owner: "www-data"
+elasticsearch_plugin_head_group: "www-data"

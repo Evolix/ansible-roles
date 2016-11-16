@@ -1,0 +1,83 @@
+---
+
+
+- name: APT https transport is enabled
+  apt:
+    name: apt-transport-https
+    state: installed
+  tags:
+    - system
+    - packages
+
+- name: Node GPG key is installed
+  apt_key:
+    url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+    state: present
+  tags:
+    - system
+    - packages
+    - npm
+
+- name: Node sources list is available
+  apt_repository:
+    repo: "deb https://deb.nodesource.com/node_6.x jessie main"
+    state: present
+  tags:
+    - system
+    - packages
+    - npm
+
+- name: Node is installed
+  apt:
+    name: nodejs
+    update_cache: yes
+    state: installed
+  tags:
+    - packages
+    - npm
+
+- name: Head repository is check-out
+  git:
+    repo: "git://github.com/mobz/elasticsearch-head.git"
+    dest: "{{ elasticsearch_plugin_head_install_path }}"
+    clone: yes
+  tags:
+    - elasticsearch
+
+- name: NPM packages for head are installed
+  npm:
+    path: "{{ elasticsearch_plugin_head_install_path }}"
+  tags:
+    - packages
+    - npm
+
+- name: "Directory is owned by {{ elasticsearch_plugin_head_owner }}"
+  file:
+    path: "{{ elasticsearch_plugin_head_install_path }}"
+    owner: "{{ elasticsearch_plugin_head_owner }}"
+    group: "{{ elasticsearch_plugin_head_group }}"
+    state: directory
+  tags:
+    - elasticsearch
+
+- name: Elasticsearch HTTP/CORS are enabled
+  lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "http.cors.enabled: true"
+    regexp: "^http.cors.enabled:"
+    insertafter: EOF
+  notify:
+    - restart elasticsearch
+  tags:
+    - elasticsearch
+
+- name: Elasticsearch HTTP/CORS accepts all origins
+  lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "http.cors.allow-origin: \"*\""
+    regexp: "^http.cors.allow-origin:"
+    insertafter: "http.cors.enabled"
+  notify:
+    - restart elasticsearch
+  tags:
+    - elasticsearch
