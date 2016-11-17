@@ -1,0 +1,52 @@
+---
+
+- name: APT https transport is enabled
+  apt:
+    name: apt-transport-https
+    state: installed
+  tags:
+    - system
+    - packages
+
+- name: Elastic GPG key is installed
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+  tags:
+    - system
+    - packages
+
+- name: Elastic sources list is available
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/5.x/apt stable main"
+    state: present
+  tags:
+    - system
+    - packages
+
+- name: Filebeat is installed
+  apt:
+    name: filebeat
+    update_cache: yes
+    state: installed
+  tags:
+    - packages
+
+- name: Filebeat service is enabled
+  service:
+    name: filebeat
+    enabled: yes
+
+- name: Kibana dashboards are imported
+  command: /usr/share/filebeat/scripts/import_dashboards
+  failed_when: '"fail" in stdout'
+  when: filebeat_kibana_dashboards
+
+- name: is logstash-plugin available?
+  stat:
+    path: /usr/share/logstash/bin/logstash-plugin
+  register: logstash_plugin
+
+- name: Logstash plugin is installed
+  command: /usr/share/logstash/bin/logstash-plugin install logstash-input-beats
+  when: filebeat_logstash_plugin and logstash_plugin.stat.exists

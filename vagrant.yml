@@ -5,8 +5,8 @@
 
   roles:
     # - { role: apt-upgrade, apt_upgrade_mode: safe }
-    - apt-upgrade
-    - apt-backports
+    # - apt-upgrade
+    # - apt-backports
     # - munin
     # - monit
     # - redis
@@ -24,4 +24,4 @@
     # - { role: elasticsearch, elasticsearch_custom_tmpdir: "/var/lib/elasticsearch/tmp" }
     # - elasticsearch
     # - elasticsearch-plugin-head
-    - kibana
+    - filebeat
