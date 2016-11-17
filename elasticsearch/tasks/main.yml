@@ -1,8 +1,6 @@
 ---
 
-- include: java.yml
-
-- include: elasticsearch.yml
+- include: packages.yml
 
 - include: configuration.yml
 

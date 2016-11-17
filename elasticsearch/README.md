@@ -6,8 +6,7 @@ Install Elasticsearch.
 
 Tasks are extracted in several files, included in `tasks/main.yml` :
 
-* `java.yml` : install Java 8 ;
-* `elasticsearch.yml` : install packages ;
+* `packages.yml` : install packages ;
 * `configuration.yml` : configure the service;
 * `bootstrap_checks.yml` : deal with bootstrap checks;
 * `datadir.yml` : data directory customization ;

@@ -13,3 +13,6 @@
   alternatives:
     name: java
     path: /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+  when: java8_default_alternative
+  tags:
+    - java

@@ -1,0 +1,14 @@
+---
+
+- name: Logstash is installed
+  apt:
+    name: logstash
+    update_cache: yes
+    state: installed
+  tags:
+    - packages
+
+- name: Logstash service is enabled
+  service:
+    name: logstash
+    enabled: yes

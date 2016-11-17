@@ -1,7 +1,7 @@
 ---
 
 - block:
-  - name: "Is {{ elasticsearch_custom_datadir }} present ?"
+  - name: "Is custom datadir present ?"
     stat:
       path: "{{ elasticsearch_custom_datadir }}"
     register: elasticsearch_custom_datadir_test
@@ -20,7 +20,7 @@
       name: elasticsearch
       state: stopped
 
-  - name: Move elasticsearch datadir to {{ elasticsearch_custom_datadir }}
+  - name: Move elasticsearch datadir to custom datadir
     command: mv {{ elasticsearch_current_real_datadir_test.stdout }} {{ elasticsearch_custom_datadir }}
     args:
       creates: "{{ elasticsearch_custom_datadir }}"

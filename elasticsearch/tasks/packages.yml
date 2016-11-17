@@ -1,0 +1,14 @@
+---
+
+- name: Elasticsearch is installed
+  apt:
+    name: elasticsearch
+    update_cache: yes
+    state: installed
+  tags:
+    - packages
+
+- name: Elasticsearch service is enabled
+  service:
+    name: elasticsearch
+    enabled: yes

@@ -1,29 +1,5 @@
 ---
 
-- name: APT https transport is enabled
-  apt:
-    name: apt-transport-https
-    state: installed
-  tags:
-    - system
-    - packages
-
-- name: Elastic GPG key is installed
-  apt_key:
-    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    state: present
-  tags:
-    - system
-    - packages
-
-- name: Elastic sources list is available
-  apt_repository:
-    repo: "deb https://artifacts.elastic.co/packages/5.x/apt stable main"
-    state: present
-  tags:
-    - system
-    - packages
-
 - name: Filebeat is installed
   apt:
     name: filebeat
