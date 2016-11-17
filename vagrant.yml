@@ -22,5 +22,6 @@
     #   }
     # - apache
     # - { role: elasticsearch, elasticsearch_custom_tmpdir: "/var/lib/elasticsearch/tmp" }
-    - elasticsearch
-    - elasticsearch-plugin-head
+    # - elasticsearch
+    # - elasticsearch-plugin-head
+    - kibana

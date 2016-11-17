@@ -1,0 +1,24 @@
+upstream kibana {
+  server 127.0.0.1:5601 fail_timeout=0;
+}
+server {
+  charset utf-8;
+
+  # ajouter les règles d'authentification
+
+{% for address in ansible_all_ipv4_addresses %}
+  listen {{ address }}:80;
+{% endfor %}
+  server_name    {{ ansible_hostname }};
+
+  location / {
+    proxy_redirect off;
+    proxy_pass http://kibana/;
+    proxy_set_header    X-Real-IP   $remote_addr;
+    proxy_set_header    X-Forwarded-For  $proxy_add_x_forwarded_for;
+    proxy_set_header    X-Forwarded-Proto  $scheme;
+    proxy_set_header    X-Forwarded-Server  $host;
+    proxy_set_header    X-Forwarded-Host  $host;
+    proxy_set_header    Host  $host;
+  }
+}

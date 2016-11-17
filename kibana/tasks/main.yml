@@ -1,0 +1,59 @@
+---
+
+- name: APT https transport is enabled
+  apt:
+    name: apt-transport-https
+    state: installed
+  tags:
+    - system
+    - packages
+
+- name: Elastic GPG key is installed
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+  tags:
+    - system
+    - packages
+
+- name: Elastic sources list is available
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/5.x/apt stable main"
+    state: present
+  tags:
+    - system
+    - packages
+
+- name: Kibana is installed
+  apt:
+    name: kibana
+    update_cache: yes
+    state: installed
+  tags:
+    - packages
+
+- name: Kibana service is enabled and started
+  service:
+    name: kibana
+    enabled: yes
+    state: started
+
+- name: Logrotate configuration is enabled
+  copy:
+    src: logrotate
+    dest: /etc/logrotate.d/kibana
+    mode: 0644
+    owner: root
+    group: root
+
+- name: Nginx installed?
+  stat:
+    path: /etc/nginx/sites-available/
+  register: nginx_installed
+
+- name: Example proxy for Kibana with Nginx
+  template:
+    src: nginx_proxy_kibana.j2
+    dest: /etc/nginx/sites-available/kibana.conf
+    force: no
+  when: nginx_installed.stat.exists
