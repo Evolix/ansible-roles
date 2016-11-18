@@ -26,6 +26,11 @@
   tags:
     - config
 
+- name: Create a system config directory for systemd overrides
+  file:
+    path: /etc/systemd/system/elasticsearch.service.d
+    state: directory
+
 - name: Override memory config in systemd unit
   ini_file:
     dest: /etc/systemd/system/elasticsearch.service.d/elasticsearch.conf

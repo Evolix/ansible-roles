@@ -12,3 +12,20 @@
   service:
     name: logstash
     enabled: yes
+
+
+- name: JVM Heap size (min) is set
+  lineinfile:
+    dest: /etc/logstash/jvm.options
+    regexp: "^-Xms"
+    line: "-Xms{{ logstash_jvm_xms }}"
+  tags:
+    - config
+
+- name: JVM Heap size (max) is set
+  lineinfile:
+    dest: /etc/logstash/jvm.options
+    regexp: "^-Xmx"
+    line: "-Xmx{{ logstash_jvm_xmx }}"
+  tags:
+    - config
