@@ -12,11 +12,27 @@
   copy:
     src: "/lib/systemd/system/varnish.service"
     dest: "/etc/systemd/system/"
+    remote_src: True
     force: no
+    mode: 0644
+    owner: root
+    group: root
 
-- name: Modify Varnish configuration file
-  lineinfile:
+- name: Copy Custom Varnish ExecReload script
+  copy:
+    src: "reload-vcl.sh"
+    dest: "/etc/varnish/reload-vcl.sh"
+    mode: 0700
+    owner: root
+    group: root
+
+- name: Modify Varnish configuration files
+  ini_file:
     dest: "/etc/systemd/system/varnish.service"
-    regexp: "^ExecStart="
-    line: "ExecStart=/usr/sbin/varnishd -a 0.0.0.0:80 -T localhost:6082 -f /etc/varnish/default.vcl -S /etc/varnish/secret -s malloc,2G -p thread_pools={{ thread_pools }} -p thread_pool_add_delay=2 -p thread_pool_min=500 -p thread_pool_max=5000"
+    section: "Service"
+    option: "{{ item.option }}"
+    value: "{{ value.value }}"
   notify: reload systemctl
+  with_items:
+    - { option: 'ExecStart', value: '/usr/sbin/varnishd -a 0.0.0.0:80 -T localhost:6082 -f /etc/varnish/default.vcl -S /etc/varnish/secret -s malloc,{{ malloc }} -p thread_pools={{ thread_pools }} -p thread_pool_add_delay=2 -p thread_pool_min=500 -p thread_pool_max=5000' }
+    - { option: 'ExecReload', value: '/etc/varnish/reload-vcl.sh' }
