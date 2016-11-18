@@ -1,22 +1,14 @@
 ---
 - name: Install Varnish
-  apt: name=varnish state=present
+  apt:
+    name: varnish
+    state: present
 
 - name: Remove default varnish configuration files
   file:
     path: "{{ item }}"
     state: absent
   with_fileglob: "/etc/defaults/varnish*"
-
-- name: Copy Varnish service configuration file
-  copy:
-    src: "/lib/systemd/system/varnish.service"
-    dest: "/etc/systemd/system/"
-    remote_src: True
-    force: no
-    mode: 0644
-    owner: root
-    group: root
 
 - name: Copy Custom Varnish ExecReload script
   copy:
@@ -26,13 +18,18 @@
     owner: root
     group: root
 
+- name: Create a system config directory for systemd overrides
+  file:
+    path: /etc/systemd/system/varnish.service.d
+    state: directory
+
 - name: Modify Varnish configuration files
   ini_file:
-    dest: "/etc/systemd/system/varnish.service"
-    section: "Service"
+    dest: /etc/systemd/system/varnish.service.d/varnish.service
+    section: Service
     option: "{{ item.option }}"
-    value: "{{ value.value }}"
+    value: "{{ item.value }}"
   notify: reload systemctl
   with_items:
-    - { option: 'ExecStart', value: '/usr/sbin/varnishd -a 0.0.0.0:80 -T localhost:6082 -f /etc/varnish/default.vcl -S /etc/varnish/secret -s malloc,{{ malloc }} -p thread_pools={{ thread_pools }} -p thread_pool_add_delay=2 -p thread_pool_min=500 -p thread_pool_max=5000' }
-    - { option: 'ExecReload', value: '/etc/varnish/reload-vcl.sh' }
+    - { option: ExecStart, value: "/usr/sbin/varnishd -a 0.0.0.0:80 -T localhost:6082 -f /etc/varnish/default.vcl -S /etc/varnish/secret -s malloc,{{ malloc }} -p thread_pools={{ thread_pools }} -p thread_pool_add_delay=2 -p thread_pool_min=500 -p thread_pool_max=5000 "}
+    - { option: ExecReload, value: "/etc/varnish/reload-vcl.sh" }
