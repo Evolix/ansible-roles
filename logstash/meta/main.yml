@@ -1,0 +1,4 @@
+---
+dependencies:
+  - { role: java8 }
+  - { role: elastic-sources-list }

@@ -6,7 +6,6 @@
   roles:
     # - { role: apt-upgrade, apt_upgrade_mode: safe }
     - apt-upgrade
-    - apt-backports
     # - munin
     # - monit
     # - redis
@@ -21,11 +20,7 @@
     #     nginx_private_htpasswd_absent: ["toto:dsfgdfsdf"]
     #   }
     # - apache
-    - java8
-    # - { role: elasticsearch, elasticsearch_custom_tmpdir: "/var/lib/elasticsearch/tmp" }
-    - elastic-source-list
-    - elasticsearch
-    # - elasticsearch-plugin-head
+    - { role: elasticsearch, elasticsearch_jvm_heap: "256m" }
     - elasticsearch-plugin-head
     - kibana
     - logstash
