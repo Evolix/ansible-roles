@@ -20,8 +20,8 @@
     #     nginx_private_htpasswd_absent: ["toto:dsfgdfsdf"]
     #   }
     # - apache
-    - { role: elasticsearch, elasticsearch_jvm_heap: "256m" }
-    - elasticsearch-plugin-head
-    - kibana
-    - logstash
+    - { role: elastic-stack,
+        elasticsearch_jvm_xms: "256m",
+        elasticsearch_jvm_xmx: "256m"
+      }
     - filebeat
