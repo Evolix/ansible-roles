@@ -14,7 +14,7 @@
     marker: "// {mark} ANSIBLE MANAGED BLOCK"
     insertafter: EOF
     create: yes
-    content: |
+    block: |
       Package: *
       Pin: release a=jessie-backports
       Pin-Priority: 50
