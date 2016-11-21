@@ -7,9 +7,9 @@
   changed_when: False
 
 - block:
-  - name: "Create {{ elasticsearch_custom_tmpdir }}"
+  - name: "Create {{ elasticsearch_custom_tmpdir or elasticsearch_default_tmpdir | mandatory }}"
     file:
-      path: "{{ elasticsearch_custom_tmpdir }}"
+      path: "{{ elasticsearch_custom_tmpdir or elasticsearch_default_tmpdir | mandatory }}"
       owner: elasticsearch
       group: elasticsearch
       mode: 0755
@@ -20,7 +20,7 @@
   - name: change JVM tmpdir
     lineinfile:
       dest: /etc/elasticsearch/jvm.options
-      line: "-Djava.io.tmpdir={{ elasticsearch_custom_tmpdir }}"
+      line: "-Djava.io.tmpdir={{ elasticsearch_custom_tmpdir or elasticsearch_default_tmpdir | mandatory }}"
       regexp: "^-Djava.io.tmpdir="
       insertafter: "## JVM configuration"
     notify:
