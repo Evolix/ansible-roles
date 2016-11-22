@@ -1,0 +1,14 @@
+---
+
+- name: Example proxy for Kibana with Nginx
+  template:
+    src: nginx_proxy_kibana.j2
+    dest: /etc/nginx/sites-available/kibana.conf
+    force: no
+
+- name: Kibana host in Nginx is enabled
+  file:
+    src: /etc/nginx/sites-available/kibana.conf
+    dest: /etc/nginx/sites-enabled/kibana.conf
+    state: link
+  notify: reload nginx

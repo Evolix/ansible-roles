@@ -21,15 +21,3 @@
     mode: 0644
     owner: root
     group: root
-
-- name: Nginx installed?
-  stat:
-    path: /etc/nginx/sites-available/
-  register: nginx_installed
-
-- name: Example proxy for Kibana with Nginx
-  template:
-    src: nginx_proxy_kibana.j2
-    dest: /etc/nginx/sites-available/kibana.conf
-    force: no
-  when: nginx_installed.stat.exists

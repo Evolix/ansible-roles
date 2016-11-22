@@ -1,0 +1,2 @@
+kibana_proxy_bind: "{{ ansible_default_ipv4.address }}:80"
+kibana_proxy_domain: "kibana.{{ ansible_fqdn }}"

@@ -6,10 +6,8 @@ server {
 
   # ajouter les règles d'authentification
 
-{% for address in ansible_all_ipv4_addresses %}
-  listen {{ address }}:80;
-{% endfor %}
-  server_name    {{ ansible_hostname }};
+  listen      {{ kibana_proxy_bind }};
+  server_name {{ kibana_proxy_domain }};
 
   location / {
     proxy_redirect off;
