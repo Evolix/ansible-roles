@@ -1,7 +1,5 @@
 ---
 dependencies:
-  # - { role: java8 }
-  # - { role: elastic-sources-list }
   - { role: elasticsearch }
   - { role: elasticsearch-plugin-head }
   - { role: logstash }
