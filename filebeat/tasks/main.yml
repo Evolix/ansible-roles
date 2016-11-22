@@ -13,16 +13,29 @@
     name: filebeat
     enabled: yes
 
-- name: Kibana dashboards are imported
-  command: /usr/share/filebeat/scripts/import_dashboards
-  failed_when: '"fail" in stdout'
-  when: filebeat_kibana_dashboards
+# - name: Kibana dashboards are imported
+#   command: /usr/share/filebeat/scripts/import_dashboards
+#   when: filebeat_kibana_dashboards
 
 - name: is logstash-plugin available?
   stat:
     path: /usr/share/logstash/bin/logstash-plugin
   register: logstash_plugin
 
-- name: Logstash plugin is installed
-  command: /usr/share/logstash/bin/logstash-plugin install logstash-input-beats
+- name: is logstash-input-beats installed?
+  shell: grep logstash-input-beats /usr/share/logstash/Gemfile
+  register: logstash_plugin_installed
+  failed_when: false
+  changed_when: false
   when: filebeat_logstash_plugin and logstash_plugin.stat.exists
+
+- block:
+  - name: /usr is mounted as "rw"
+    command: mount -oremount,rw /usr
+
+  - name: Logstash plugin is installed
+    command: /usr/share/logstash/bin/logstash-plugin install logstash-input-beats
+
+  - name: /usr is remounted
+    command: mount -oremount /usr
+  when: filebeat_logstash_plugin and logstash_plugin.stat.exists and not logstash_plugin_installed | success
