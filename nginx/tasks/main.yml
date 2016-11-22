@@ -21,8 +21,8 @@
   copy:
     src: nginx/snippets/
     dest: /etc/nginx/snippets/
-    directory_mode: 0640
-    mode: 0640
+    directory_mode: 0644
+    mode: 0644
     # force: yes
   notify: reload nginx
   tags:
