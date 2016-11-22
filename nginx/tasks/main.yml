@@ -17,12 +17,18 @@
   tags:
     - nginx
 
+# TODO: verify that those permisisons are correct :
+# not too strict for private_ipaddr_whitelist
+# and not too loose for private_htpasswd
+
 - name: Copy snippets
   copy:
     src: nginx/snippets/
     dest: /etc/nginx/snippets/
-    directory_mode: 0644
-    mode: 0644
+    owner: www-data
+    group: www-data
+    directory_mode: 0640
+    mode: 0640
     # force: yes
   notify: reload nginx
   tags:
