@@ -1,0 +1,30 @@
+---
+
+- name: APT https transport is enabled
+  apt:
+    name: apt-transport-https
+    state: installed
+  tags:
+    - system
+    - packages
+
+- name: Elastic GPG key is installed
+  apt_key:
+    url: https://packages.elastic.co/GPG-KEY-elasticsearch
+    state: present
+  tags:
+    - system
+    - packages
+
+- name: Curator sources list is available
+  apt_repository:
+    repo: "deb http://packages.elastic.co/curator/4/debian stable main"
+    state: present
+  tags:
+    - system
+    - packages
+
+- name: Curator package is installed
+  apt:
+    name: elasticsearch-curator
+    state: installed
