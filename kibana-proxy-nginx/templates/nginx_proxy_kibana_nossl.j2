@@ -4,10 +4,16 @@ upstream kibana {
 server {
   charset utf-8;
 
-  # ajouter les règles d'authentification
+  listen 80;
 
-  listen      {{ kibana_proxy_bind }};
   server_name {{ kibana_proxy_domain }};
+
+  # Auth.
+  include /etc/nginx/snippets/private_ipaddr_whitelist;
+  deny all;
+  auth_basic "Reserved {{ kibana_proxy_domain }}";
+  auth_basic_user_file /etc/nginx/snippets/private_htpasswd;
+  satisfy any;
 
   location / {
     proxy_redirect off;
