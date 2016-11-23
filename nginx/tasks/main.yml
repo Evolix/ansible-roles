@@ -21,15 +21,15 @@
 # not too strict for private_ipaddr_whitelist
 # and not too loose for private_htpasswd
 
-- name: Copy snippets
+- name: Copy private_ipaddr_whitelist
   copy:
-    src: nginx/snippets/
-    dest: /etc/nginx/snippets/
+    src: nginx/snippets/private_ipaddr_whitelist
+    dest: /etc/nginx/snippets/private_ipaddr_whitelist
     owner: www-data
     group: www-data
     directory_mode: 0640
     mode: 0640
-    # force: yes
+    force: no
   notify: reload nginx
   tags:
     - nginx
@@ -40,6 +40,7 @@
     line: "allow {{ item }};"
     state: present
   with_items: "{{ nginx_private_ipaddr_whitelist_present }}"
+  notify: reload nginx
 
 - name: remove IP addresses from private IP whitelist
   lineinfile:
@@ -47,6 +48,20 @@
     line: "allow {{ item }};"
     state: absent
   with_items: "{{ nginx_private_ipaddr_whitelist_absent }}"
+  notify: reload nginx
+
+- name: Copy private_htpasswd
+  copy:
+    src: nginx/snippets/private_htpasswd
+    dest: /etc/nginx/snippets/private_htpasswd
+    owner: www-data
+    group: www-data
+    directory_mode: 0640
+    mode: 0640
+    force: no
+  notify: reload nginx
+  tags:
+    - nginx
 
 - name: add user:pwd to private htpasswd
   lineinfile:
@@ -54,6 +69,7 @@
     line: "{{ item }}"
     state: present
   with_items: "{{ nginx_private_htpasswd_present }}"
+  notify: reload nginx
 
 - name: remove user:pwd from private htpasswd
   lineinfile:
@@ -61,6 +77,7 @@
     line: "{{ item }}"
     state: absent
   with_items: "{{ nginx_private_htpasswd_absent }}"
+  notify: reload nginx
 
 - name: Check if a certificate is present for default site
   stat:
