@@ -34,7 +34,7 @@
     dest: /etc/elasticsearch/elasticsearch.yml
     line: "network.publish_host: {{ elasticsearch_network_publish_host }}"
     regexp: "^network.publish_host:"
-    insertafter: "^# *network.publish_host:"
+    insertafter: "^network.host:"
   when: elasticsearch_network_publish_host|default("", True)
   tags:
     - config
