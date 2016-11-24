@@ -4,7 +4,7 @@ redis_conf_path: /etc/redis/redis.conf
 
 redis_port: 6379
 redis_bind_interface: 127.0.0.1
-redis_unixsocket: ''
+redis_unixsocket: '/var/run/redis/redis.sock'
 redis_timeout: 300
 
 redis_loglevel: "notice"
