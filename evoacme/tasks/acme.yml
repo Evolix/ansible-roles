@@ -1,0 +1,45 @@
+---
+- name: Create acme group
+  group:
+    name: acme
+    state: present
+
+- name: Create acme user
+  user:
+    name: acme
+    group: acme
+    state: present
+    createhome: no
+    home: "{{ crt_dir }}"
+    shell: /bin/false
+
+- name: Fix crt dir's right
+  file:
+    path: "{{ crt_dir }}"
+    mode: 0755
+    owner: acme
+    group: acme
+    state: directory
+
+- name: Fix log dir's right
+  file:
+    path: "{{ log_dir }}"
+    mode: 0755
+    owner: acme
+    group: acme
+    state: directory
+
+- name: Fix challenge dir's right
+  file:
+    path: "{{ acme_dir }}"
+    mode: 0755
+    owner: acme
+    group: acme
+    state: directory
+
+- name: Set acme aliases
+  lineinfile:
+    state: present
+    dest: /etc/aliases
+    line: 'acme: root'
+  notify: "newaliases"

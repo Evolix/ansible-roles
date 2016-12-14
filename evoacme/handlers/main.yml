@@ -1,0 +1,11 @@
+- name: newaliases
+  shell: newaliases
+
+- name: Test Apache conf
+  shell: apache2ctl -t
+  notify: "Reload Apache conf"
+
+- name: Reload Apache conf
+  service:
+   name=apache2
+   state=reloaded

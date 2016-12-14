@@ -1,0 +1,80 @@
+---
+- name: Set certbot release to Debian stable
+  set_fact: release="stable"
+  when:
+    - ansible_distribution is defined
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version is defined
+    - ansible_distribution_major_version|int > 8
+
+- name: Set certbot relase to jessie-backports
+  set_fact: release="jessie-backports"
+  when: 
+    - ansible_distribution is defined
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version is defined
+    - ansible_distribution_major_version == "8"
+
+- block:
+  - name: Add backports repository
+    lineinfile:
+      dest: /etc/apt/sources.list
+      line: 'deb http://mirror.evolix.org/debian jessie-backports main'
+      state: present
+    when: release == "jessie-backports"
+
+  - name: Install certbot with apt
+    apt:
+      name: certbot
+      state: latest
+      default_release: "{{release}}"
+      update_cache: yes
+
+  - name: Mount /usr in rw
+    command: mount -o remount,rw /usr warn=no
+    changed_when: False
+
+  - name: Remove certbot symlink for apt install
+    file:
+      path: /usr/local/bin/certbot
+      state: absent
+  when: release is defined
+
+- block:
+  - name: Install certbot from source
+    git:
+      repo: https://github.com/certbot/certbot.git
+      dest: /opt/certbot
+      update: yes
+
+  - name: Fix certbot right for source install
+    file:
+      path: /opt/certbot
+      recurse: yes
+      state: directory
+      mode: "g+rX,o+rX"
+
+  - name: Install certbot symlink for source install
+    copy:
+      dest: /usr/local/bin/certbot
+      content: '#!/bin/sh\nsudo /opt/certbot/certbot-auto $@'
+      mode: 0755
+
+  - name: Add sudo right for source install
+    copy:
+      src: files/sudoers
+      dest: /etc/sudoers.d/certbot
+      mode: 0440
+      validate: '/usr/sbin/visudo -cf %s'
+  when: release is undefined 
+
+- name: Remove certbot dpkg cron
+  file:
+    path: /etc/cron.d/certbot
+    state: absent
+
+- name: Install certbot custom cron
+  copy:
+    src: certbot.cron
+    dest: /etc/cron.daily/certbot
+    mode: 0755

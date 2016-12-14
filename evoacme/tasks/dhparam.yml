@@ -1,0 +1,3 @@
+- name: Generate DH paramaters
+  shell: openssl dhparam -rand - {{dhparam_size}} -out /etc/ssl/dhparam.pem
+   creates=/etc/ssl/dhparam.pem

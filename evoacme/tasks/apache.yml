@@ -1,0 +1,17 @@
+- name: Copy acme challenge conf
+  template:
+    src: templates/apache.conf.j2
+    dest: /etc/apache2/conf-available/letsencrypt.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: "Test Apache conf"
+
+- name: Enable acme challenge conf
+  file:
+    src: /etc/apache2/conf-available/letsencrypt.conf
+    dest: /etc/apache2/conf-enabled/letsencrypt.conf
+    state: link
+    owner: root
+    group: root
+  notify: "Test Apache conf"

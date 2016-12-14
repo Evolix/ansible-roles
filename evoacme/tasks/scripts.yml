@@ -1,0 +1,24 @@
+---
+- name: Create CSR dir
+  file:
+    path: "{{ csr_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Copy make-csr.sh script
+  copy:
+    src: files/make-csr.sh
+    dest: /usr/local/bin/make-csr
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Copy evoacme script
+  copy:
+    src: files/evoacme.sh
+    dest: /usr/local/bin/evoacme
+    owner: root
+    group: root
+    mode: 0755

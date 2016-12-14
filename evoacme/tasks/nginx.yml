@@ -1,0 +1,7 @@
+- name: Copy acme challenge conf
+  template:
+    src: templates/nginx.conf.j2
+    dest: /etc/nginx/letsencrypt.conf
+    owner: root
+    group: root
+    mode: 0644

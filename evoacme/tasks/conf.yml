@@ -1,0 +1,33 @@
+---
+- ini_file:
+    dest: /etc/letsencrypt/openssl.cnf
+    section: 'req'
+    option: "{{ item.name }}"
+    value: "{{ item.var }}"
+  with_items:
+     - { name: 'default_bits', var: "{{ ssl_key_size }}" }
+     - { name: 'encrypt_key', var: 'yes' }
+     - { name: 'distinguished_name', var: 'req_dn' }
+     - { name: 'prompt', var: 'no' }
+
+- name: Update openssl conf
+  ini_file:
+    dest: "{{ crt_dir }}/openssl.cnf"
+    section: 'req_dn'
+    option: "{{ item.name }}"
+    value: "{{ item.var }}"
+  with_items:
+     - { name: 'C', var: "{{ ssl_ct }}" }
+     - { name: 'ST', var: "{{ ssl_state }}" }
+     - { name: 'L', var: "{{ ssl_loc }}" }
+     - { name: 'O', var: "{{ ssl_org }}" }
+     - { name: 'OU', var: "{{ ssl_ou }}" }
+     - { name: 'emailAddress', var: "{{ ssl_email }}" }
+
+- name: Copy new evoacme conf
+  template: 
+    src: templates/evoacme.conf.j2
+    dest: /etc/default/evoacme 
+    owner: root 
+    group: root 
+    mode: 0644

@@ -1,0 +1,15 @@
+---
+ssl_key_dir: /etc/ssl/private
+ssl_key_size: 2048
+dhparam_size: 2048
+acme_dir: /var/lib/letsencrypt
+csr_dir: /etc/ssl/requests
+crt_dir: /etc/letsencrypt
+log_dir: /var/log/evoacme
+ssl_minday: 15
+ssl_ct: 'FR'
+ssl_state: 'France'
+ssl_loc: 'Marseille'
+ssl_org: 'Evolix'
+ssl_ou: 'Security'
+ssl_email: 'security@evolix.net'
