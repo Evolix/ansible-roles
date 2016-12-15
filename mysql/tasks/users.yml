@@ -44,6 +44,7 @@
 - name: remove root user
   mysql_user:
     name: root
+    #host_all: yes
     host: "{{ item }}"
     config_file: /root/.my.cnf
     state: absent
