@@ -1,11 +1,23 @@
 ---
 
-- name: Ensure MySQL packages are installed
+- name: Ensure MySQL (Oracle version) packages are installed
   apt:
-    name: mysql-server
+    name: '{{ item }}'
     state: installed
   with_items:
     - mysql-server
+  when: mysql_use_mariadb == False
+  tags:
+    - mysql
+    - packages
+
+- name: Ensure MySQL (MariaDB version) packages are installed
+  apt:
+    name: '{{ item }}'
+    state: installed
+  with_items:
+    - mariadb-server-10.0
+  when: mysql_use_mariadb
   tags:
     - mysql
     - packages

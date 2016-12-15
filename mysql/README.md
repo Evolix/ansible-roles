@@ -18,6 +18,7 @@ Tasks are extracted in several files, included in `tasks/main.yml` :
 
 ## Available variables
 
+* `mysql_use_mariadb` : use mariadb-server-10.0 instead of mysql-server ;
 * `mysql_replace_root_with_mysqladmin`: switch from `root` to `mysqladmin` user or not ;
 * `mysql_thread_cache_size`: number of threads for the cache ;
 * `mysql_innodb_buffer_pool_size`: amount of RAM dedicated to InnoDB ;
