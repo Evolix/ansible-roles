@@ -1,25 +1,28 @@
 [mysqld]
 
 ###### Connexions
-# Maximum de connexions concurrentes (defaut = 100)... provoque un
-# "Too many connections"
+# Maximum de connexions concurrentes (defaut = 100)... provoque un "Too many connections"
 max_connections = 250
-# Maximum de connexions en attente en cas de max_connections atteint
-# (defaut = 50)
+# Maximum de connexions en attente en cas de max_connections atteint (defaut = 50)
 back_log = 100
 # Maximum d'erreurs avant de blacklister un hote
 max_connect_errors = 10
+# Loguer les requetes trop longues
+log_slow_queries = /var/log/mysql/mysql-slow.log
+long_query_time = 10
 
 ###### Tailles
 # Taille reservee au buffer des index MyIsam
 # A ajuster selon les resultats
-key_buffer_size         = 512M
-# Taille max des paquets envoyés/reçus ... provoque un "Packet too large"
-max_allowed_packet      = 64M
+key_buffer_size = 512M
+# Taille max des paquets envoyés/reçus … provoque un "Packet too large"
+max_allowed_packet = 64M
 # Taille de la memoire reserve pour un thread
-thread_stack            = 192K
-# A mettre le nombre de CPU x2
-thread_cache_size       = 2
+thread_stack = 192K
+# A mettre le nombre de threads CPU alloues pour MySQL
+thread_cache_size = 1
+# Taille maximum des tables de type MEMORY
+max_heap_table_size = 64M
 
 ###### Cache
 # max_connections x nbre max de tables dans une jointure (defaut = 64)
@@ -42,20 +45,18 @@ tmp_table_size          = 128M
 # En general, il est plus optimum d'avoir un fichier par table
 innodb_file_per_table
 # Taille memoire allouee pour le cache des datas et index
-# A ajuster en fonction de sa RAM (si serveur dedie a MySQL, on peut aller
-# jusqu'a 80%)
-innodb_buffer_pool_size = 2G
+# A ajuster en fonction de sa RAM (si serveur dedie a MySQL, on peut aller jusqu'a 80%)
+innodb_buffer_pool_size = 512M
 # Taille buffer memoire pour structures internes InnoDB
 innodb_additional_mem_pool_size = 16M
 # Nombre maximum de threads systeme concurents
 innodb_thread_concurrency = 16
 # Ajuste la valeur des logs InnoDB
-# (attention, il faut ensuite stopper MySQL et effacer les fichiers
-# ib_logfile*)
+# (attention, il faut ensuite stopper MySQL et effacer les fichiers ib_logfile*)
 #innodb_log_file_size = 128M
 #innodb_log_files_in_group = 2
 
 ###### Misc
 # charset utf8 par defaut
-character-set-server = utf8
+default-character-set = utf8
 collation-server = utf8_unicode_ci
