@@ -1,16 +1,21 @@
 ---
 
-- name: Copy Evolinux defaults
+- name: Copy MySQL config files
   copy:
-    src: evolinux-defaults.cnf
-    dest: /etc/mysql/conf.d/000-evolinux-defaults.cnf
-    mode: 0640
+    src: "{{ item.file }}"
+    dest: "/etc/mysql/conf.d/{{ item.file }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { file: z_evolinux.cnf, mode: 0644 }
+    - { file: zzz_evolinux.cnf, mode: 0640 }
   tags:
     - mysql
 
-- name: Custom mysqld config values
+- name: Custom MySQL config
   ini_file:
-    dest: /etc/mysql/conf.d/100-evolinux-custom.cnf
+    dest: /etc/mysql/conf.d/zzz_evolinux.cnf
     section: mysqld
     option: '{{ item.option }}'
     value: '{{ item.value }}'

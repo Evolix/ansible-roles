@@ -13,7 +13,7 @@
 
   - name: Configure tmpdir
     ini_file:
-      dest: /etc/mysql/conf.d/100-evolinux-custom.cnf
+      dest: /etc/mysql/conf.d/zzz_evolinux.cnf
       section: mysqld
       option: tmpdir
       value: "{{ mysql_custom_tmpdir }}"
