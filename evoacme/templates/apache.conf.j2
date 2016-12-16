@@ -1,6 +1,6 @@
 SetEnvIf Request_URI "/.well-known/acme-challenge/*" no-jk
-Alias /.well-known/acme-challenge {{ acme_dir }}/.well-known/acme-challenge
-<Directory "{{ acme_dir }}/.well-known/acme-challenge">
+Alias /.well-known/acme-challenge {{ evoacme_acme_dir }}/.well-known/acme-challenge
+<Directory "{{ evoacme_acme_dir }}/.well-known/acme-challenge">
     Options -Indexes
     Allow from all
     Require all granted

@@ -10,12 +10,12 @@
     group: acme
     state: present
     createhome: no
-    home: "{{ crt_dir }}"
+    home: "{{ evoacme_crt_dir }}"
     shell: /bin/false
 
 - name: Fix crt dir's right
   file:
-    path: "{{ crt_dir }}"
+    path: "{{ evoacme_crt_dir }}"
     mode: 0755
     owner: acme
     group: acme
@@ -23,7 +23,7 @@
 
 - name: Fix log dir's right
   file:
-    path: "{{ log_dir }}"
+    path: "{{ evoacme_log_dir }}"
     mode: 0755
     owner: acme
     group: acme
@@ -31,7 +31,7 @@
 
 - name: Fix challenge dir's right
   file:
-    path: "{{ acme_dir }}"
+    path: "{{ evoacme_acme_dir }}"
     mode: 0755
     owner: acme
     group: acme

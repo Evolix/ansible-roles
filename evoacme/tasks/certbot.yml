@@ -1,6 +1,7 @@
 ---
 - name: Set certbot release to Debian stable
-  set_fact: release="stable"
+  set_fact:
+    evoacme_certbot_release: stable
   when:
     - ansible_distribution is defined
     - ansible_distribution == "Debian"
@@ -8,8 +9,9 @@
     - ansible_distribution_major_version|int > 8
 
 - name: Set certbot relase to jessie-backports
-  set_fact: release="jessie-backports"
-  when: 
+  set_fact:
+    evoacme_certbot_release: jessie-backports
+  when:
     - ansible_distribution is defined
     - ansible_distribution == "Debian"
     - ansible_distribution_major_version is defined
@@ -21,13 +23,13 @@
       dest: /etc/apt/sources.list
       line: 'deb http://mirror.evolix.org/debian jessie-backports main'
       state: present
-    when: release == "jessie-backports"
+    when: evoacme_certbot_release == "jessie-backports"
 
   - name: Install certbot with apt
     apt:
       name: certbot
       state: latest
-      default_release: "{{release}}"
+      default_release: "{{ evoacme_certbot_release }}"
       update_cache: yes
 
   - name: Mount /usr in rw
