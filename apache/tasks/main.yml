@@ -27,11 +27,11 @@
     group: root
     mode: "{{ item.mode }}"
   with_items:
-    - { file: z_evolix.conf, mode: 0644 }
-    - { file: zzz_evolix.conf, mode: 0640 }
+    - { file: z_evolinux.conf, mode: 0644 }
+    - { file: zzz_evolinux.conf, mode: 0640 }
 
 - name: Ensure Apache default config is enabled
-  command: a2enconf z_evolix.conf zzz_evolix.conf
+  command: a2enconf z_evolinux.conf zzz_evolinux.conf
   register: command_result
   changed_when: "'Enabling' in command_result.stderr"
 
