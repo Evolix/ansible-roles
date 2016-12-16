@@ -8,7 +8,7 @@
 
   - name: "read the real datadir"
     command: readlink -f /var/lib/mysql
-    changed_when: false
+    changed_when: False
     register: mysql_current_real_datadir_test
   tags:
     - mysql

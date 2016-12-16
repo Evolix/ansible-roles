@@ -12,7 +12,7 @@
   - name: Create a password for NRPE
     shell: perl -e 'print map{("a".."z","A".."Z",0..9)[int(rand(62))]}(1..16)'
     register: mysql_nrpe_password
-    changed_when: false
+    changed_when: False
 
   - debug:
       msg: "repl password: {{ mysql_nrpe_password.stdout }}"

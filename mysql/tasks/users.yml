@@ -12,7 +12,7 @@
 - name: create a password for mysqladmin
   shell: perl -e 'print map{("a".."z","A".."Z",0..9)[int(rand(62))]}(1..16)'
   register: mysql_admin_password
-  changed_when: false
+  changed_when: False
   tags:
     - mysql
 

@@ -1,6 +1,6 @@
 mysql_use_mariadb: False
 
-mysql_replace_root_with_mysqladmin: true
+mysql_replace_root_with_mysqladmin: True
 
 mysql_custom_datadir: ''
 mysql_custom_tmpdir: ''
