@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "Add an acount / database in MySQL"
+echo "Add an account / database in MySQL"
 echo "Enter the name of the new database"
 read db
 
@@ -8,12 +8,12 @@ echo "Enter account with all right on this new database"
 echo "(you can use existant account)"
 read login
 
-echo -n "This account is already existant ? [y|N] "
+echo -n "Does this account already exist ? [y|N] "
 read confirm
 
 if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
-echo "Waning, if account is existant, it will be reset !"
-echo -n "Enter new password for new MySQL account (empty for random):"
+echo "Warning, if account exists, it will be reset !"
+echo -n "Enter new password for new MySQL account (empty for random): "
 read -s password
 echo ""
 
