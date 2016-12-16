@@ -1,12 +1,19 @@
 ---
 - include: tasks/certbot.yml
+
 - include: tasks/acme.yml
+
 - include: tasks/conf.yml
+
 - include: tasks/scripts.yml
+
 - include: tasks/webserver.yml
+
 - include: tasks/apache.yml
-  when: sta.stat.isreg is defined and sta.stat.isreg == True
+  when: sta.stat.isreg is defined and sta.stat.isreg
+
 - include: tasks/nginx.yml
-  when: stn.stat.isreg is defined and stn.stat.isreg == True
+  when: stn.stat.isreg is defined and stn.stat.isreg
+
 - include: tasks/dhparam.yml
-  when: stn.stat.isreg is defined and stn.stat.isreg == True
+  when: stn.stat.isreg is defined and stn.stat.isreg
