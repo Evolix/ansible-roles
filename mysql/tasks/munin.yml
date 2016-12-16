@@ -47,7 +47,7 @@
       - tmp_tables
     notify: restart munin-node
 
-  when: munin_node_plugins_config.stat.exists == true
+  when: munin_node_plugins_config.stat.exists
   tags:
     - mysql
     - munin
