@@ -1,4 +1,11 @@
 ---
+- name: Is zzz_evolinux.cnf already present ?
+  stat:
+    path: /etc/mysql/conf.d/zzz_evolinux.cnf
+  register: mysql_zzz_evolinux
+  tags:
+    - mysql
+    - log2mail
 
 - name: Copy MySQL config files
   copy:
@@ -7,6 +14,7 @@
     owner: root
     group: root
     mode: "{{ item.mode }}"
+    force: no
   with_items:
     - { file: z_evolinux.cnf, mode: 0644 }
     - { file: zzz_evolinux.cnf, mode: 0640 }
@@ -22,5 +30,6 @@
   with_items:
     - { option: thread_cache_size, value: '{{ mysql_thread_cache_size }}' }
     - { option: innodb_buffer_pool_size, value: '{{ mysql_innodb_buffer_pool_size }}' }
+  when: mysql_zzz_evolinux.stat.exists == False
   tags:
     - mysql
