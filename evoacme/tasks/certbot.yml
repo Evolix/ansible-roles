@@ -59,7 +59,9 @@
   - name: Install certbot symlink for source install
     copy:
       dest: /usr/local/bin/certbot
-      content: '#!/bin/sh\nsudo /opt/certbot/certbot-auto $@'
+      content: |
+        #!/bin/sh
+        sudo /opt/certbot/certbot-auto $@
       mode: 0755
 
   - name: Add sudo right for source install
@@ -68,7 +70,7 @@
       dest: /etc/sudoers.d/certbot
       mode: 0440
       validate: '/usr/sbin/visudo -cf %s'
-  when: release is undefined 
+  when: release is undefined
 
 - name: Remove certbot dpkg cron
   file:
