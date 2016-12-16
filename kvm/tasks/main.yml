@@ -1,0 +1,8 @@
+---
+- include: packages.yml
+
+- name: Mount /usr in rw
+  command: mount -o remount,rw /usr warn=no
+  changed_when: False
+
+- include: munin.yml

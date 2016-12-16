@@ -1,0 +1,33 @@
+---
+- file:
+    path: '/usr/local/share/munin/plugins/'
+    state: directory
+    mode: 02755
+
+- name: Get Munin plugins
+  get_url:
+    url: "https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/virtualization/{{ item }}"
+    dest: '/usr/local/share/munin/plugins/'
+    mode: 0755
+  with_items:
+    - 'kvm_cpu'
+    - 'kvm_io'
+    - 'kvm_mem'
+  notify: restart munin-node
+
+- name: Activate Munin plugins
+  file: 
+    src: "/usr/local/share/munin/plugins/{{ item }}"
+    dest: "/etc/munin/plugins/{{ item }}"
+    state: link
+  with_items:
+    - 'kvm_cpu'
+    - 'kvm_io'
+    - 'kvm_mem'
+  notify: restart munin-node
+
+- name: Copy Munin plugins conf
+  copy:
+    src: files/munin-plugins
+    dest: '/etc/munin/plugin-conf.d/kvm'
+  notify: restart munin-node

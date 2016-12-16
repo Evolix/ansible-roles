@@ -1,0 +1,12 @@
+---
+- name: Install dependency
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - libvirt-bin
+    - qemu-kvm
+    - netcat-openbsd
+    - bridge-utils
+    - qemu-utils
+    - virtinst
+    - lvm2
