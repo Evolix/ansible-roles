@@ -37,9 +37,9 @@
     dest: /etc/apt/sources.list
     line: "{{ item }}"
   with_items:
-  - "deb http://security.debian.org/ jessie/updates {{ evolinux_apt_components | mandatory }}"
-  - "deb http://mirror.evolix.org/debian/ jessie {{ evolinux_apt_components | mandatory }}"
-  - "deb http://mirror.evolix.org/debian/ jessie-updates {{ evolinux_apt_components | mandatory }}"
+  - "deb http://security.debian.org/ jessie/updates {{ evolinux_apt_repositories_components | mandatory }}"
+  - "deb http://mirror.evolix.org/debian/ jessie {{ evolinux_apt_repositories_components | mandatory }}"
+  - "deb http://mirror.evolix.org/debian/ jessie-updates {{ evolinux_apt_repositories_components | mandatory }}"
 
 - name: Evolix public list is installed
   template:
