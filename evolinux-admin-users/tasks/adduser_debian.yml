@@ -35,7 +35,7 @@
 
 - name: is evomaintenance installed?
   stat:
-    path: "{{ evomaintenance_scripts_dir or general_scripts_dir | mandatory }}/evomaintenance.sh"
+    path: "/usr/share/scripts/evomaintenance.sh"
   register: evomaintenance_script
 
 - name: Add evomaintenance trap for '{{ user.name }}'
@@ -43,7 +43,7 @@
     state: present
     dest: '/home/{{ user.name }}/.profile'
     insertafter: EOF
-    line: 'trap "sudo {{ evomaintenance_scripts_dir or general_scripts_dir | mandatory }}/evomaintenance.sh" 0'
+    line: 'trap "sudo /usr/share/scripts/evomaintenance.sh" 0'
   when: evomaintenance_script.stat.exists
 
 - name: Create .ssh directory for '{{ user.name }}'

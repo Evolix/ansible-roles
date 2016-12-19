@@ -23,7 +23,3 @@ evolinux_admin_users:
     password_hash: 'gsdfgsdfgsdfgsdf'
     ssh_key: 'ssh-rsa QWERTYUIOP'
 ```
-
-* `general_scripts_dir`: general directory for scripts installation (default: `/usr/local/bin`).
-* `listupgrade_scripts_dir`: script directory for listupgrade (default: `general_scripts_dir`).
-* `evomaintenance_scripts_dir`: script directory for evomaintenance (default: `general_scripts_dir`).

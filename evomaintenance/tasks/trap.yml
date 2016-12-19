@@ -6,7 +6,7 @@
 - name: install shell trap in {{ home }}/.bash_profile
   lineinfile:
     dest: "{{ home }}/.bash_profile"
-    line: "trap \"sudo {{ evomaintenance_scripts_dir or general_scripts_dir | mandatory }}/evomaintenance.sh\" 0"
+    line: "trap \"sudo /usr/share/scripts/evomaintenance.sh\" 0"
     insertafter: EOF
     create: no
   when: bash_profile.stat.exists
@@ -20,7 +20,7 @@
 - name: install shell trap in {{ home }}/.profile
   lineinfile:
     dest: "{{ home }}/.profile"
-    line: "trap \"sudo {{ evomaintenance_scripts_dir or general_scripts_dir | mandatory }}/evomaintenance.sh\" 0"
+    line: "trap \"sudo /usr/share/scripts/evomaintenance.sh\" 0"
     insertafter: EOF
     create: yes
   when: not bash_profile.stat.exists

@@ -2,9 +2,6 @@
 general_alert_email: "root@localhost"
 evomaintenance_alert_email: Null
 
-general_scripts_dir: "/usr/local/bin"
-evomaintenance_scripts_dir: Null
-
 evomaintenance_hostname: "{{ ansible_fqdn }}"
 
 evomaintenance_pg_host: Null

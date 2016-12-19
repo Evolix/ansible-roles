@@ -1,14 +1,14 @@
 ---
 - name: Scripts dir is present
   file:
-    path: "{{ evomaintenance_scripts_dir or general_scripts_dir | mandatory }}"
+    path: "/usr/share/scripts"
     state: directory
     mode: 0700
 
 - name: Copy listupgrade script
   template:
     src: listupgrade.sh.j2
-    dest: "{{ evomaintenance_scripts_dir or general_scripts_dir | mandatory }}/listupgrade.sh"
+    dest: "/usr/share/scripts/listupgrade.sh"
     mode: 0700
     owner: root
     group: root
