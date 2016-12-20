@@ -43,7 +43,7 @@ The main directory is `tasks`. It will contains tasks, either all in the `main.y
 
 `handlers` is the place to put special tasks that can be triggered by the `notify` argument of modules. For example an `nginx -s reload` command.
 
-`meta/main.yml` contains … well … "meta" information. There we can define role dependencies, but also some "galaxy" information like the desired Ansible version, supported OS and distributions, a destription, author/ownership, license…
+`meta/main.yml` contains … well … "meta" information. There we can define role dependencies, but also some "galaxy" information like the desired Ansible version, supported OS and distributions, a description, author/ownership, license…
 
 `tests` and `.travis.yml` are here to help testing with a test matrix, a test inventory and a test playbook.
 
@@ -77,19 +77,19 @@ Here are some reasons :
 
 * when lines get long, it's easier to read ;
 * it's a pure YAML syntax, so there is no Ansible-specific preprocessing
-* … with means that IDE can show the proper syntax highligthing ;
+* … which means that IDE can show the proper syntax highlighting ;
 * each argument stands on its own.
 
 ## Variables
 
 ### defaults
 
-When a role is using variables, they must be defined (for example in the `defaults/main.yml`) with a default value (possibly Ǹull). That way, there will never be an "foo is undefined" situation.
+When a role is using variables, they must be defined (for example in the `defaults/main.yml`) with a default value (possibly Ǹull). That way, there will never be a "foo is undefined" situation.
 
 ### progressive specificity
 
 In many roles, we use a *progressive specificity* pattern for some variables.
-The most common is for "alert_email" ; we want to have a default email address where all alerts or message will be sent, but it can be customized globally, and also customized per task/role.
+The most common is for "alert_email" ; we want to have a default email address where all alerts or messages will be sent, but it can be customized globally, and also customized per task/role.
 
 For the *evolinux-base* role we have those defaults :
 
@@ -102,11 +102,11 @@ In the *log2mail* template, we set the email address like this :
 
     mailto = {{ log2mail_alert_email or general_alert_email | mandatory }}
 
-if nothing is customize, the mail will be sent to root@localhost, if geeral_alert_email is changed, it will be use, but if log2mail_alert_email is set to a non-null value, it will have precedence.
+If nothing is customized, the mail will be sent to root@localhost, if general_alert_email is changed, it will be used, but if log2mail_alert_email is set to a non-null value, it will have precedence.
 
 ## precedence
 
-There are multiple places where we can define variables ans there is a specific precedence order for the resolution. Here is [the (ascending) order](http://docs.ansible.com/ansible/playbooks_variables.html#variable-precedence-where-should-i-put-a-variable) :
+There are multiple places where we can define variables and there is a specific precedence order for the resolution. Here is [the (ascending) order](http://docs.ansible.com/ansible/playbooks_variables.html#variable-precedence-where-should-i-put-a-variable) :
 
 * role defaults
 * inventory vars
@@ -130,11 +130,11 @@ There are multiple places where we can define variables ans there is a specific 
 ### lineinfile vs. blockinfile vs. copy/template
 
 When possible, we prefer using the [lineinfile](http://docs.ansible.com/ansible/lineinfile_module.html) module to make very specific changes.
-If a `regexp` argument is specified, every line that matches the pattern will be updated. It's a good way to comment/uncomment variable, of add a piece inside a line.
+If a `regexp` argument is specified, every line that matches the pattern will be updated. It's a good way to comment/uncomment variable, or add a piece inside a line.
 
-When it's not possible (multi-line changes, for example), we can use the [blockinfile](http://docs.ansible.com/ansible/blockinfile_module.html) module. It managed blocs of text with begin/end markers. The marker can be customized, mostly to use the proper comment syntax, but also to prevent collisions within a file.
+When it's not possible (multi-line changes, for example), we can use the [blockinfile](http://docs.ansible.com/ansible/blockinfile_module.html) module. It manages blocks of text with begin/end markers. The marker can be customized, mostly to use the proper comment syntax, but also to prevent collisions within a file.
 
-If none of the previous ca be used, we can use [copy](http://docs.ansible.com/ansible/copy_module.html) or [template](http://docs.ansible.com/ansible/template_module.html) modules to copy an entire file.
+If none of the previous can be used, we can use [copy](http://docs.ansible.com/ansible/copy_module.html) or [template](http://docs.ansible.com/ansible/template_module.html) modules to copy an entire file.
 
 ### defaults and custom files
 
