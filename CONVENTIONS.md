@@ -33,7 +33,7 @@ The main directory is `tasks`. It will contains tasks, either all in the `main.y
 
 `vars` will hold files with variables definitions. Those differ from the defaults because of a much higher precedence (see below).
 
-`files` is the directory where we'll put files to copy on hosts. They will be copied "as-is". When a role has multiple logical groups of tasks, it's best to create a sub-directroy for each group that needs files. The name of files in these directories doesn't have to be the same as the destination name. Example :
+`files` is the directory where we'll put files to copy on hosts. They will be copied "as-is". When a role has multiple logical groups of tasks, it's best to create a sub-directory for each group that needs files. The name of files in these directories doesn't have to be the same as the destination name. Example :
 
     copy:
       src: apt/jessie_backports_preferences
@@ -84,7 +84,7 @@ Here are some reasons :
 
 ### defaults
 
-When a role is using variables, they must be defined (for example in the `defaults/main.yml`) with a default value (possibly Ǹull). That way, there will never be a "foo is undefined" situation.
+When a role is using variables, they must be defined (for example in the `defaults/main.yml`) with a default value (possibly Null). That way, there will never be a "foo is undefined" situation.
 
 ### progressive specificity
 
