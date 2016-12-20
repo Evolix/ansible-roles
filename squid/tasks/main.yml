@@ -13,7 +13,7 @@
 
 - name: evolix whitelist is present
   copy:
-    src: whitelist-evolix.conf
+    src: whitelist-evolinux.conf
     dest: /etc/squid3/whitelist-evolinux.conf
     force: yes
     backup: yes
