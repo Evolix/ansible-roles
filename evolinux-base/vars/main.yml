@@ -1,31 +1,32 @@
 evolinux_default_packages:
-  - serveur-base
-  - strace
-  - htop
-  - iftop
-  - iptraf
-  - ncdu
-  - vim
-  - iotop
-  - rsync
-  - mtr-tiny
-  - sudo
-  - git
-  - subversion
-  - ntp
-  - screen
-  - pv
-  - apg
-  - tcpdump
-  - ntpdate
-  - lsb-release
-  - mutt
-  - pinentry-curses
-  - bc
-  - dnsutils
-  - lm-sensors
-  - conntrack
-  - hdparm
-  - lsb-invalid-mta
-  - smartmontools
-  - tree
+- strace
+- htop
+- iftop
+- iptraf
+- ncdu
+- vim
+- iotop
+- rsync
+- mtr-tiny
+- sudo
+- git
+- subversion
+- ntp
+- screen
+- pv
+- apg
+- tcpdump
+- ntpdate
+- lsb-release
+- mutt
+- pinentry-curses
+- bc
+- dnsutils
+- lm-sensors
+- conntrack
+- hdparm
+- smartmontools
+- tree
+
+evolinux_unauthenticated_packages:
+- serveur-base

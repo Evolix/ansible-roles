@@ -1,8 +1,26 @@
 ---
 - name: Install/Update default packages (might take some time)
-  command: "apt-get install -yq --allow-unauthenticated {{ evolinux_default_packages | join(' ') }}"
+  apt:
+    name: "{{ item }}"
+  with_items: "{{ evolinux_default_packages }}"
+
+- name: Install/Update unauthenticated packages (might take some time)
+  command: "apt-get install -yq --allow-unauthenticated {{ evolinux_unauthenticated_packages | join(' ') }}"
   register: install_default_packages
   changed_when: not (install_default_packages.stdout | search("0 upgraded") and install_default_packages.stdout | search("0 newly installed"))
+
+
+- name: is Postfix installed?
+  shell: "dpkg -l postfix | grep '^ii '"
+  register: postfix_installed
+  failed_when: False
+  changed_when: False
+
+- name: Install lsb-invalid-mta if Postfix is not present
+  apt:
+    name: lsb-invalid-mta
+  when: postfix_installed.rc != 0
+
 
 - name: Deleting rpcbin and nfs-common
   apt:
