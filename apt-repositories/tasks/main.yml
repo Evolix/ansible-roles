@@ -7,6 +7,7 @@
     force: yes
     backup: yes
     mode: 0640
+  notify: apt update
 
 - name: Backports configuration
   copy:
@@ -15,3 +16,6 @@
     force: yes
     backup: yes
     mode: 0640
+  notify: apt update
+
+- meta: flush_handlers
