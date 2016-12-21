@@ -5,7 +5,8 @@
     owner: root
     group: root
     mode: 0644
-  notify: "Test Apache conf"
+  validate: apache2ctl -t
+  notify: reload apache2
 
 - name: Enable acme challenge conf
   file:
@@ -14,4 +15,5 @@
     state: link
     owner: root
     group: root
-  notify: "Test Apache conf"
+  validate: apache2ctl -t
+  notify: reload apache2

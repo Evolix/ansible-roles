@@ -1,7 +1,7 @@
 ---
 - name: Create CSR dir
   file:
-    path: "{{ csr_dir }}"
+    path: "{{ evoacme_csr_dir }}"
     state: directory
     owner: root
     group: root

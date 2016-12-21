@@ -5,7 +5,7 @@
     option: "{{ item.name }}"
     value: "{{ item.var }}"
   with_items:
-     - { name: 'default_bits', var: "{{ ssl_key_size }}" }
+     - { name: 'default_bits', var: "{{ evoacme_ssl_key_size }}" }
      - { name: 'encrypt_key', var: 'yes' }
      - { name: 'distinguished_name', var: 'req_dn' }
      - { name: 'prompt', var: 'no' }
@@ -17,17 +17,17 @@
     option: "{{ item.name }}"
     value: "{{ item.var }}"
   with_items:
-     - { name: 'C', var: "{{ ssl_ct }}" }
-     - { name: 'ST', var: "{{ ssl_state }}" }
-     - { name: 'L', var: "{{ ssl_loc }}" }
-     - { name: 'O', var: "{{ ssl_org }}" }
-     - { name: 'OU', var: "{{ ssl_ou }}" }
-     - { name: 'emailAddress', var: "{{ ssl_email }}" }
+     - { name: 'C', var: "{{ evoacme_ssl_ct }}" }
+     - { name: 'ST', var: "{{ evoacme_ssl_state }}" }
+     - { name: 'L', var: "{{ evoacme_ssl_loc }}" }
+     - { name: 'O', var: "{{ evoacme_ssl_org }}" }
+     - { name: 'OU', var: "{{ evoacme_ssl_ou }}" }
+     - { name: 'emailAddress', var: "{{ evoacme_ssl_email }}" }
 
 - name: Copy new evoacme conf
-  template: 
+  template:
     src: templates/evoacme.conf.j2
-    dest: /etc/default/evoacme 
-    owner: root 
-    group: root 
+    dest: /etc/default/evoacme
+    owner: root
+    group: root
     mode: 0644

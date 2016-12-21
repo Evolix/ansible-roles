@@ -1,8 +1,10 @@
 ---
 - name: Determine Nginx presence
-  stat: path=/etc/nginx/nginx.conf
+  stat:
+    path: /etc/nginx/nginx.conf
   register: stn
 
 - name: Determine Apache presence
-  stat: path=/etc/apache2/apache2.conf
+  stat:
+    path: /etc/apache2/apache2.conf
   register: sta
