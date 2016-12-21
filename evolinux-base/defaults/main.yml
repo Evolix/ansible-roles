@@ -4,6 +4,7 @@ reboot_alert_email: Null
 apt_alert_email: Null
 log2mail_alert_email: Null
 raid_alert_email: Null
+postfix_alias_email: Null
 
 # hostname
 
@@ -16,6 +17,13 @@ evolinux_internal_hostname: "{{ evolinux_hostname }}"
 
 evolinux_apt_repositories_components: "main"
 evolinux_apt_hooks: False
+
+# postfix
+
+evolinux_postfix_myorigin: "{{ ansible_fqdn }}"
+evolinux_postfix_slow_transports_enabled: True
+evolinux_postfix_remove_exim: True
+
 # kernel
 
 evolinux_kernel_reboot_after_panic: True

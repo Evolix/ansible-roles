@@ -47,3 +47,21 @@
   service:
     name: apache2
     state: reloaded
+
+
+- name: newaliases
+  command: newaliases
+  changed_when: False
+
+- name: restart postfix
+  service:
+    name: postfix
+    state: restarted
+
+- name: reload postfix
+  service:
+    name: postfix
+    state: reloaded
+
+- name: postmap transport
+  command: postmap /etc/postfix/transport

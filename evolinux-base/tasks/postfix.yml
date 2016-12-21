@@ -17,7 +17,7 @@
     regexp: "^#? *{{ item.key }} *="
     line: "{{ item.key }} = {{ item.value }}"
   with_items:
-    - { key: "myorigin", value: "/etc/mailname" }
+    - { key: "myorigin", value: "{{ evolinux_postfix_myorigin }}" }
     - { key: "disable_vrfy_command", value: "yes" }
   notify: reload postfix
   tags:
@@ -72,12 +72,14 @@
     - exim4-base
     - exim4-config
     - exim4-daemon-light
-  when: postfix_remove_exim
+  when: evolinux_postfix_remove_exim
   tags:
     - packages
     - postfix
 
-- include: slow_transports.yml
-  when: postfix_slow_transports_enabled
+- include: postfix_slow_transports.yml
+  when: evolinux_postfix_slow_transports_enabled
   tags:
     - postfix
+
+- meta: flush_handlers

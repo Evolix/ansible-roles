@@ -1,6 +1,0 @@
----
-general_alert_email: "root@localhost"
-postfix_alias_email: Null
-
-postfix_slow_transports_enabled: True
-postfix_remove_exim: True
