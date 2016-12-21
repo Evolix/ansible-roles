@@ -10,16 +10,16 @@
   changed_when: not (install_packages.stdout | search("0 upgraded") and install_packages.stdout | search("0 newly installed"))
 
 
-- name: is Postfix installed?
-  shell: "dpkg -l postfix | grep '^ii '"
-  register: postfix_installed
+- name: is an MTA installed?
+  command: "dpkg -S /usr/sbin/sendmail"
+  register: mta_installed
   failed_when: False
   changed_when: False
 
-- name: Install lsb-invalid-mta if Postfix is not present
+- name: Install lsb-invalid-mta
   apt:
     name: lsb-invalid-mta
-  when: postfix_installed.rc != 0
+  when: mta_installed.rc != 0
 
 
 - name: Deleting rpcbin and nfs-common
