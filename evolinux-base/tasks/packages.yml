@@ -1,0 +1,78 @@
+---
+
+- name: Install/Update diagnostic tools
+  apt:
+    name: "{{ item }}"
+  with_items:
+  - strace
+  - htop
+  - iftop
+  - iptraf
+  - ncdu
+  - iotop
+  - tcpdump
+  - mtr-tiny
+
+- name: Install/Update system tools
+  apt:
+    name: "{{ item }}"
+  with_items:
+  - sudo
+  - ntp
+  - ntpdate
+  - lsb-release
+  - dnsutils
+  - pv
+  - apg
+  - conntrack
+
+- name: Install/Update hardware tools
+  apt:
+    name: "{{ item }}"
+  with_items:
+  - hdparm
+  - smartmontools
+  - lm-sensors
+
+
+- name: Install/Update common tools
+  apt:
+    name: "{{ item }}"
+  with_items:
+  - vim
+  - screen
+  - tmux
+  - mutt
+  - tree
+  - git
+  - subversion
+  - rsync
+  - bc
+  - pinentry-curses
+
+- name: Install/Update serveur-base meta-package
+  command: "apt-get install -yq --allow-unauthenticated serveur-base"
+  register: install_server_base
+  changed_when: not (install_server_base.stdout | search("0 upgraded") and install_server_base.stdout | search("0 newly installed"))
+
+
+- name: is an MTA installed?
+  command: "dpkg -S /usr/sbin/sendmail"
+  register: mta_installed
+  failed_when: False
+  changed_when: False
+
+- name: Install lsb-invalid-mta
+  apt:
+    name: lsb-invalid-mta
+  when: mta_installed.rc != 0
+
+
+- name: Deleting rpcbin and nfs-common
+  apt:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - rpcbind
+    - nfs-common
+  when: evolinux_delete_nfs

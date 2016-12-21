@@ -11,14 +11,17 @@
 - name: Fstab configuration
   include: fstab.yml
 
-- name: Default packages
-  include: default_packages.yml
+- name: Packages
+  include: packages.yml
 
 - name: System settings
   include: system.yml
 
 - name: Root user configuration
   include: root.yml
+
+- name: Postfix
+  include: postfix.yml
 
 - name: Logs management
   include: logs.yml
