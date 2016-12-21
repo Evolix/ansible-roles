@@ -1,6 +1,0 @@
----
-
-- name: evocheck is installed
-  command: "apt-get install -yq --allow-unauthenticated evocheck"
-  register: installed_evocheck
-  changed_when: not (installed_evocheck.stdout | search("0 upgraded") and installed_evocheck.stdout | search("0 newly installed"))
