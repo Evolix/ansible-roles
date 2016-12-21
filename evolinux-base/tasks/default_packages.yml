@@ -6,8 +6,8 @@
 
 - name: Install/Update unauthenticated packages (might take some time)
   command: "apt-get install -yq --allow-unauthenticated {{ evolinux_unauthenticated_packages | join(' ') }}"
-  register: install_default_packages
-  changed_when: not (install_default_packages.stdout | search("0 upgraded") and install_default_packages.stdout | search("0 newly installed"))
+  register: install_packages
+  changed_when: not (install_packages.stdout | search("0 upgraded") and install_packages.stdout | search("0 newly installed"))
 
 
 - name: is Postfix installed?
