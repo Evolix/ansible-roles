@@ -33,4 +33,4 @@
   args:
     chdir: /etc
   register: git_commit
-  when: git_init.changed or git_log.rc != 0
+  when: git_log.rc != 0 or (git_init is defined and git_init.changed)
