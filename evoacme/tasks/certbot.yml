@@ -40,7 +40,7 @@
     file:
       path: /usr/local/bin/certbot
       state: absent
-  when: release is defined
+  when: evoacme_certbot_release is defined
 
 - block:
   - name: Install certbot from source
@@ -70,7 +70,7 @@
       dest: /etc/sudoers.d/certbot
       mode: 0440
       validate: '/usr/sbin/visudo -cf %s'
-  when: release is undefined
+  when: evoacme_certbot_release is undefined
 
 - name: Remove certbot dpkg cron
   file:

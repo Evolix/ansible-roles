@@ -12,7 +12,7 @@
 
 - name: Update openssl conf
   ini_file:
-    dest: "{{ crt_dir }}/openssl.cnf"
+    dest: "{{ evoacme_crt_dir }}/openssl.cnf"
     section: 'req_dn'
     option: "{{ item.name }}"
     value: "{{ item.var }}"
