@@ -1,0 +1,6 @@
+---
+
+- include: package.yml
+- include: config.yml
+- include: nrpe.yml
+- include: munin.yml

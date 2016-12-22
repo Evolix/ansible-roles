@@ -1,0 +1,20 @@
+---
+- name: Generate random password for nrpe user
+  shell: apg -n1 -m 12 -M SCNL
+  register: nrpe_password
+  changed_when: False
+
+- name: Create nrpe user
+  become_user: postgres
+  postgresql_user:
+    name: nrpe
+    password: '{{ nrpe_password.stdout }}'
+    no_password_changes: yes
+  register: create_nrpe_user
+
+- name: Add NRPE check
+  lineinfile:
+    name: /etc/nagios/nrpe.d/evolix.cfg
+    line: 'command[check_pgsql]=/usr/lib/nagios/plugins/check_pgsql -H localhost -l nrpe -p "{{nrpe_password.stdout}}"'
+  when: create_nrpe_user.changed
+  notify: restart nagios-nrpe-server

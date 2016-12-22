@@ -1,0 +1,23 @@
+---
+- name: Add Munin plugins for PostgreSQL
+  file:
+    state: link
+    src: '/usr/share/munin/plugins/{{item}}'
+    dest: '/etc/munin/plugins/{{item}}'
+  with_items:
+  - postgres_bgwriter
+  - postgres_checkpoints
+  - postgres_connections_db
+  - postgres_users
+  - postgres_xlog
+  notify: restart munin-node
+
+- name: Add Munin plugins for PostgreSQL (for specific databases)
+  file:
+    state: link
+    src: '/usr/share/munin/plugins/{{item[0]}}'
+    dest: '/etc/munin/plugins/{{item[0]}}{{item[1]}}'
+  with_nested:
+  - ['postgres_cache_', 'postgres_connections_', 'postgres_locks_', 'postgres_querylength_', 'postgres_scans_', 'postgres_size_', 'postgres_transactions_', 'postgres_tuples_']
+  - '{{databases}}'
+  notify: restart munin-node
