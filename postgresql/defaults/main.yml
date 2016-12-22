@@ -1,9 +1,9 @@
 ---
 # Used to create specific Munin graphs.
-databases: ['titi', 'toto']
+postgresql_databases: []
 
 # Tuning
-shared_buffers: 4GB
-work_mem: 8MB
-random_page_cost: 1.5
-effective_cache_size: 14GB
+postgresql_shared_buffers: 4GB
+postgresql_work_mem: 8MB
+postgresql_random_page_cost: 1.5
+postgresql_effective_cache_size: 14GB
