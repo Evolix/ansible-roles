@@ -1,7 +1,7 @@
 ---
 
 - include: adduser_debian.yml user={{ item }}
-  with_items: "{{ evolinux_admin_users }}"
+  with_items: "{{ admin_users }}"
   when: ansible_distribution == "Debian"
 
 # - include: openbsd.yml
