@@ -1,21 +1,10 @@
 ---
-- file:
-    path: '/usr/local/share/munin/plugins/'
-    state: directory
-    mode: 02755
 
 - name: Get Munin plugin
   get_url:
-    url: 'https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/drbd/drbd'    
-    dest: '/usr/local/share/munin/plugins/'
+    url: 'https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/drbd/drbd'
+    dest: '/etc/munin/plugins/'
     mode: 0755
-  notify: restart munin-node
-
-- name: Activate Munin plugin
-  file:
-    src: "/usr/local/share/munin/plugins/drbd"
-    dest: "/etc/munin/plugins/drbd"
-    state: link
   notify: restart munin-node
 
 - name: Copy Munin plugin conf
