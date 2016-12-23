@@ -25,6 +25,8 @@
     state: directory
   notify: restart nagios-nrpe-server
 
+# TODO deal with /usr mounted as read-only
+
 - name: Nagios plugins are installed
   copy:
     src: plugins/
