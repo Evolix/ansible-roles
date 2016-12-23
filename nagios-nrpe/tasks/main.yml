@@ -17,7 +17,7 @@
     dest: /etc/nagios/nrpe.d/evolix.cfg
   notify: restart nagios-nrpe-server
 
-- name: Nagios config is secured
+- name: Nagios config is secure
   file:
     dest: /etc/nagios/
     mode: 0750
@@ -27,18 +27,19 @@
 
 # TODO deal with /usr mounted as read-only
 
-- name: Nagios plugins are installed
-  copy:
-    src: plugins/
-    dest: /usr/local/lib/nagios/plugins/
-    mode: 0755
-  notify: restart nagios-nrpe-server
-
-- name: Nagios lib is secured
+- name: Nagios plugins directory is secure
   file:
-    dest: /usr/local/lib/nagios/
+    dest: "{{ nagios_plugins_directory }}/"
     mode: 0755
     group: nagios
     recurse: yes
     state: directory
+  notify: restart nagios-nrpe-server
+
+- name: Nagios plugins are installed
+  copy:
+    src: plugins/
+    dest: "{{ nagios_plugins_directory }}/"
+    group: nagios
+    mode: 0755
   notify: restart nagios-nrpe-server
