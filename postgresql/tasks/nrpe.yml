@@ -5,6 +5,7 @@
   changed_when: False
 
 - name: Create nrpe user
+  become: yes
   become_user: postgres
   postgresql_user:
     name: nrpe
