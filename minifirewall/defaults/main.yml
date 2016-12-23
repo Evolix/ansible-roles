@@ -1,6 +1,6 @@
 ---
 minifirewall_git_url: "https://forge.evolix.org/minifirewall.git"
-minifirewall_checkout_path: "/usr/local/src/minifirewall"
+minifirewall_checkout_path: "/tmp/minifirewall"
 minifirewall_int: "{{ ansible_default_ipv4.interface }}"
 minifirewall_ipv6: "on"
 minifirewall_intlan: "{{ ansible_default_ipv4.address }}/32"
