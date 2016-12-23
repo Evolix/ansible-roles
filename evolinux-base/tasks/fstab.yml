@@ -3,7 +3,7 @@
 # TODO: try to use the custom mount_uuid module for a different approach
 
 - name: Fetch fstab content
-  shell: "grep -v '^#' /etc/fstab"
+  command: "grep -v '^#' /etc/fstab"
   register: fstab_content
   failed_when: False
   changed_when: False

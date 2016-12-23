@@ -27,7 +27,7 @@
     state: installed
 
 - name: Create private key and csr for default site ({{ ansible_fqdn }})
-  shell: openssl req -newkey rsa:2048 -sha256 -nodes -keyout /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/{{ ansible_fqdn }}.csr -batch -subj "{{ evolinux_default_www_ssl_subject }}"
+  command: openssl req -newkey rsa:2048 -sha256 -nodes -keyout /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/{{ ansible_fqdn }}.csr -batch -subj "{{ evolinux_default_www_ssl_subject }}"
   args:
     creates: "/etc/ssl/private/{{ ansible_fqdn }}.key"
 
@@ -39,7 +39,7 @@
     mode: 0640
 
 - name: Create certificate for default site
-  shell: openssl x509 -req -days 3650 -sha256 -in /etc/ssl/{{ ansible_fqdn }}.csr -signkey /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/certs/{{ ansible_fqdn }}.crt
+  command: openssl x509 -req -days 3650 -sha256 -in /etc/ssl/{{ ansible_fqdn }}.csr -signkey /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/certs/{{ ansible_fqdn }}.crt
   args:
     creates: "/etc/ssl/certs/{{ ansible_fqdn }}.crt"
 
