@@ -1,9 +1,17 @@
 ---
+
+# WARN: the documentation says that the mode is in "octal mode"
+# but if the leading digit is not 0 it must be added again.
+#  755 -> 0755
+# 2755 -> 02755
+# 1777 -> 01777
+# Bottom line: if the mode is not preceded by a 0, it will mess your rights up.
+
 - name: /tmp must be world-writable
   file:
     path: /tmp
     state: directory
-    mode: 1777
+    mode: 01777
 
 - name: Setting default locales
   lineinfile:
