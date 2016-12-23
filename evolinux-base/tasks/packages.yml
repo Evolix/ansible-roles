@@ -1,5 +1,19 @@
 ---
 
+- name: Install/Update system tools
+  apt:
+    name: "{{ item }}"
+  with_items:
+  - locales
+  - sudo
+  - ntp
+  - ntpdate
+  - lsb-release
+  - dnsutils
+  - pv
+  - apg
+  - conntrack
+
 - name: Install/Update diagnostic tools
   apt:
     name: "{{ item }}"
@@ -12,19 +26,6 @@
   - iotop
   - tcpdump
   - mtr-tiny
-
-- name: Install/Update system tools
-  apt:
-    name: "{{ item }}"
-  with_items:
-  - sudo
-  - ntp
-  - ntpdate
-  - lsb-release
-  - dnsutils
-  - pv
-  - apg
-  - conntrack
 
 - name: Install/Update hardware tools
   apt:

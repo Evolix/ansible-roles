@@ -9,13 +9,17 @@
   lineinfile:
     dest: /etc/locale.gen
     line: "{{ item }}"
+    create: yes
     state: present
   with_items:
     - "en_US.UTF-8 UTF-8"
     - "fr_FR ISO-8859-1"
     - "fr_FR.UTF-8 UTF-8"
-  notify: dpkg-reconfigure-locales
-  # when: not docker
+  register: default_locales
+
+- name: Reconfigure locales
+  command: /usr/sbin/locale-gen
+  when: default_locales | changed
 
 - name: Setting vim as default editor
   alternatives:
