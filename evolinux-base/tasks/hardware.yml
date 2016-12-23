@@ -50,12 +50,17 @@
 
 - block:
   - name: Install packages for DELL/LSI hardware
-    apt:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - megacli
-      - megaclisas-statusd
+    ## With Ansible 2.0, the apt module can't install unauthenticated packages
+    # apt:
+    #   name: "{{ item }}"
+    #   state: present
+    # with_items:
+    #   - megacli
+    #   - megaclisas-status
+    command: "apt-get install -yq --allow-unauthenticated megacli megaclisas-status"
+    register: install_megacli
+    changed_when: not (install_megacli.stdout | search("0 upgraded") and install_megacli.stdout | search("0 newly installed"))
+
 
   - name: Configure packages for DELL/LSI hardware
     template:
