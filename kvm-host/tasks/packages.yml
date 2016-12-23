@@ -1,5 +1,5 @@
 ---
-- name: Install dependency
+- name: Install packages for kvm/libvirt
   apt:
     name: "{{ item }}"
   with_items:
