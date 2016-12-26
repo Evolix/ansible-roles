@@ -77,3 +77,9 @@
     - rpcbind
     - nfs-common
   when: evolinux_delete_nfs
+
+- name: Remove Aptitude
+  apt:
+    name: aptitude
+    state: absent
+  when: evolinux_remove_aptitude
