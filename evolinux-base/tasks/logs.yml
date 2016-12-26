@@ -16,10 +16,10 @@
     creates: /etc/logrotate.d/rsyslog.disabled
   notify: restart rsyslog
 
-- name: Configure logrotate
+- name: Copy many logrotate files
   copy:
-    src: logs/logrotate.d
-    dest: /etc/logrotate.d
+    src: logs/logrotate.d/
+    dest: /etc/logrotate.d/
 
 - name: Configure logrotate.conf
   replace:
