@@ -1,0 +1,40 @@
+- name: ensure packages are installed
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - rabbitmq-server
+
+- name: test if rabbitmq-env.conf exists
+  stat:
+    path: /etc/rabbitmq/rabbitmq-env.conf
+  register: rabbitmq_env_file
+
+- name: touch rabbitmq-env.conf
+  file:
+    path: /etc/rabbitmq/rabbitmq-env.conf
+    owner: rabbitmq
+    group: rabbitmq
+    mode: 600
+    state: touch
+  when: not rabbitmq_env_file.stat.exists
+
+- name: test if rabbitmq.config exists
+  stat:
+    path: /etc/rabbitmq/rabbitmq.config
+  register: rabbitmq_config_file
+
+- name: create rabbitmq.config
+  copy:
+    src: evolinux-rabbitmq.config
+    dest: /etc/rabbitmq/rabbitmq.config
+    owner: rabbitmq
+    group: rabbitmq
+    mode: 600
+  when: not rabbitmq_config_file.stat.exists
+
+- name: set ulimit -n to 2048
+  lineinfile:
+     dest: /etc/default/rabbitmq-server
+     line: ulimit -n 2048
+
