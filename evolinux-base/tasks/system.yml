@@ -99,6 +99,7 @@
   template:
     src: system/init_alert5.j2
     dest: /etc/init.d/alert5
+    force: no
     mode: 0755
 
 - name: Enable alert5 init script
