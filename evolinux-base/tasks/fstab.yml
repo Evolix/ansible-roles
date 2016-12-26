@@ -45,7 +45,7 @@
 - name: /var/tmp is created
   mount:
     src: tmpfs
-    name: /var/tmpfs
+    name: /var/tmp
     fstype: tmpfs
     opts: defaults,noexec,nosuid,nodev,size=1024m
     state: mounted
