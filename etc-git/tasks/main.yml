@@ -12,6 +12,14 @@
     creates: /etc/.git/
   register: git_init
 
+- name: /etc/.git is secure
+  file:
+    path: /etc/.git
+    owner: root
+    group: root
+    mode: 0700
+    state: directory
+
 - name: /etc/.gitignore is present
   copy:
     src: gitignore
