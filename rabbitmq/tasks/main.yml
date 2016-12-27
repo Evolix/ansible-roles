@@ -5,24 +5,14 @@
   with_items:
     - rabbitmq-server
 
-- name: test if rabbitmq-env.conf exists
-  stat:
-    path: /etc/rabbitmq/rabbitmq-env.conf
-  register: rabbitmq_env_file
-
-- name: touch rabbitmq-env.conf
-  file:
-    path: /etc/rabbitmq/rabbitmq-env.conf
+- name: create rabbitmq-env.conf
+  copy:
+    src: rabbitmq-env.conf
+    dest: /etc/rabbitmq/rabbitmq-env.conf
     owner: rabbitmq
     group: rabbitmq
     mode: 0600
-    state: touch
-  when: not rabbitmq_env_file.stat.exists
-
-- name: test if rabbitmq.config exists
-  stat:
-    path: /etc/rabbitmq/rabbitmq.config
-  register: rabbitmq_config_file
+    force: no
 
 - name: create rabbitmq.config
   copy:
@@ -31,7 +21,7 @@
     owner: rabbitmq
     group: rabbitmq
     mode: 0600
-  when: not rabbitmq_config_file.stat.exists
+    force: no
 
 - name: set ulimit -n to 2048
   lineinfile:
