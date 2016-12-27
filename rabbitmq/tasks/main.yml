@@ -15,7 +15,7 @@
     path: /etc/rabbitmq/rabbitmq-env.conf
     owner: rabbitmq
     group: rabbitmq
-    mode: 600
+    mode: 0600
     state: touch
   when: not rabbitmq_env_file.stat.exists
 
@@ -30,11 +30,10 @@
     dest: /etc/rabbitmq/rabbitmq.config
     owner: rabbitmq
     group: rabbitmq
-    mode: 600
+    mode: 0600
   when: not rabbitmq_config_file.stat.exists
 
 - name: set ulimit -n to 2048
   lineinfile:
      dest: /etc/default/rabbitmq-server
      line: ulimit -n 2048
-
