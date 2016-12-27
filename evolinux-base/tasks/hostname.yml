@@ -19,7 +19,7 @@
 - name: 127.0.1.1 is removed
   lineinfile:
     dest: /etc/hosts
-    regexp: '^127.0.1.1\s+{{ evolinux_fqdn }}'
+    regexp: '^127.0.1.1\s+'
     state: absent
 
 - name: override ansible_hostname fact
