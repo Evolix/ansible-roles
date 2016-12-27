@@ -49,12 +49,13 @@
     backup: yes
     mode: 0640
 
+# TODO: use ini_file when Ansible > 2.1 (no_extra_spaces: yes)
+
 - name: Configure Listchanges
-  ini_file:
+  lineinfile:
     dest: /etc/apt/listchanges.conf
-    section: apt
-    option: "{{ item.option }}"
-    value: "{{ item.value }}"
+    regexp: '^{{ item.option }}\s*='
+    line: "{{ item.option }}={{ item.value }}"
   with_items:
     - { option: "confirm", value: "1" }
     - { option: "which",   value: "both" }
