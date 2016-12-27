@@ -32,6 +32,12 @@
   # - '.+\.debian\.org'
   - 'cdrom:'
 
+- name: deb-src repositories are disabled
+  replace:
+    dest: /etc/apt/sources.list
+    regexp:  '^(deb-src.+)'
+    replace: '# \1'
+
 - name: Basic sources list is installed
   lineinfile:
     dest: /etc/apt/sources.list
