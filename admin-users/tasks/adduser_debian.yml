@@ -55,30 +55,63 @@
     group: '{{ user.name }}'
 
 - name: Add user's SSH public key for '{{ user.name }}'
+  authorized_key:
+    user: "{{ user.name }}"
+    key: "{{ user.ssh_key }}"
+    state: present
+
+- name: verify AllowUsers directive
+  command: "grep AllowUsers /etc/ssh/sshd_config"
+  changed_when: False
+  failed_when: False
+  register: grep_allowusers_ssh
+
+- name: Add AllowUsers' sshd directive for '{{ user.name }}'
   lineinfile:
-    dest: '/home/{{ user.name }}/.ssh/authorized_keys'
-    create: yes
-    line: '{{ user.ssh_key }}'
-    owner: '{{ user.name }}'
-    group: '{{ user.name }}'
+    dest: /etc/ssh/sshd_config
+    line: "\nAllowUsers {{ user.name }}"
+    insertafter: '^UsePAM'
+    validate: '/usr/sbin/sshd -T -f %s'
+  notify:
+    - reload sshd
+  when: grep_allowusers_ssh.rc != 0
 
 - name: Modify AllowUsers' sshd directive for '{{ user.name }}'
   replace:
     dest: /etc/ssh/sshd_config
     regexp: '^(AllowUsers ((?!{{ user.name }}).)*)$'
     replace: '\1 {{ user.name }}'
+    validate: '/usr/sbin/sshd -T -f %s'
+  notify:
+  - reload sshd
+  when: grep_allowusers_ssh.rc == 0
+
+- name: verify Match User directive
+  command: "grep 'Match User' /etc/ssh/sshd_config"
+  changed_when: False
+  failed_when: False
+  register: grep_matchuser_ssh
+
+- name: Add Match User sshd directive for '{{ user.name }}'
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    line: "\nMatch User {{ user.name }}\n    PasswordAuthentication no"
+    validate: '/usr/sbin/sshd -T -f %s'
   notify:
     - reload sshd
+  when: grep_matchuser_ssh.rc != 0
 
 - name: Modify Match User's sshd directive for '{{ user.name }}'
   replace:
     dest: /etc/ssh/sshd_config
     regexp: '^(Match User ((?!{{ user.name }}).)*)$'
     replace: '\1,{{ user.name }}'
+    validate: '/usr/sbin/sshd -T -f %s'
   notify:
     - reload sshd
+  when: grep_matchuser_ssh.rc == 0
 
-- name: Evolinux sudoers file is present
+- name: Verify Evolinux sudoers file presence
   template:
     src: sudoers_debian.j2
     dest: /etc/sudoers.d/evolinux
