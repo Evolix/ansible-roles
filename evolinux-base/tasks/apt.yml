@@ -49,6 +49,12 @@
     backup: yes
     mode: 0640
 
+- name: Remove Aptitude
+  apt:
+    name: aptitude
+    state: absent
+  when: evolinux_apt_remove_aptitude
+
 - name: Upgrading system
   apt:
     upgrade: dist
