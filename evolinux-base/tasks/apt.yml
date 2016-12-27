@@ -49,6 +49,16 @@
     backup: yes
     mode: 0640
 
+- name: Configure Listchanges
+  ini_file:
+    dest: /etc/apt/listchanges.conf
+    section: apt
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { option: "confirm", value: "1" }
+    - { option: "which",   value: "both" }
+
 - name: Remove Aptitude
   apt:
     name: aptitude
