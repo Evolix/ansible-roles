@@ -44,6 +44,11 @@ evolinux_default_www_ssl_subject: "/CN={{ ansible_fqdn }}"
 evolinux_default_www_nginx_enabled: False
 evolinux_default_www_apache_enabled: False
 
+# ssh
+
+evolinux_ssh_password_auth_addresses: []
+evolinux_ssh_disable_root: True
+
 # misc.
 
 evolinux_ntp_server: Null

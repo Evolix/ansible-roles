@@ -1,0 +1,39 @@
+---
+- name: verify Match Address directive
+  command: "grep 'Match Address' /etc/ssh/sshd_config"
+  changed_when: False
+  failed_when: False
+  register: grep_matchaddress_ssh
+
+- name: Add Match Address sshd directive
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    line: "\nMatch Address {{ evolinux_ssh_password_auth_addresses | join(',') }}\n    PasswordAuthentication yes"
+    validate: '/usr/sbin/sshd -T -f %s'
+  notify:
+    - reload sshd
+  when: grep_matchaddress_ssh.rc != 0
+
+- name: Modify Match Address sshd directive
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '^(Match Address ((?!{{ item }}).)*)$'
+    replace: '\1,{{ item }}'
+    validate: '/usr/sbin/sshd -T -f %s'
+  with_items: "{{ evolinux_ssh_password_auth_addresses }}"
+  notify:
+    - reload sshd
+  when: grep_matchaddress_ssh.rc == 0
+
+- name: disable SSH access for root
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin (yes|without-password)'
+    replace: "PermitRootLogin no"
+  when: evolinux_ssh_disable_root
+
+- name: disable AcceptEnv in ssh config
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '^AcceptEnv'
+    replace: "#AcceptEnv"

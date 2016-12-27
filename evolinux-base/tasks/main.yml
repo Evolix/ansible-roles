@@ -20,6 +20,9 @@
 - name: Root user configuration
   include: root.yml
 
+- name: SSH configuration
+  include: ssh.yml
+
 - name: Postfix
   include: postfix.yml
 
