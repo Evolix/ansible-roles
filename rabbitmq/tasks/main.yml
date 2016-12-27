@@ -7,7 +7,7 @@
 
 - name: create rabbitmq-env.conf
   copy:
-    src: rabbitmq-env.conf
+    src: evolinux-rabbitmq-env.conf
     dest: /etc/rabbitmq/rabbitmq-env.conf
     owner: rabbitmq
     group: rabbitmq
