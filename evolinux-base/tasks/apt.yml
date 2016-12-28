@@ -55,8 +55,6 @@
     backup: yes
     mode: 0640
 
-# TODO: use ini_file when Ansible > 2.1 (no_extra_spaces: yes)
-
 - name: Remove Aptitude
   apt:
     name: aptitude
