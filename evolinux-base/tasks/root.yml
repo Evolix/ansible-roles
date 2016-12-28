@@ -61,6 +61,13 @@
   tags:
     - root
 
+- name: Setting vim as selected-editor
+  lineinfile:
+    dest: /root/.selected_editor
+    regexp: '^SELECTED_EDITOR='
+    line: "SELECTED_EDITOR=\"/usr/bin/vim.basic\""
+    create: yes
+
 - name: Setting vim root configuration
   lineinfile:
     dest: /root/.vimrc
