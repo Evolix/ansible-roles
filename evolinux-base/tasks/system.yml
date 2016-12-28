@@ -29,6 +29,22 @@
   command: /usr/sbin/locale-gen
   when: default_locales | changed
 
+- name: Setting default timezone
+  lineinfile:
+    dest: /etc/timezone
+    regexp: '^\w+/\w+$'
+    line: "{{ evolinux_timezone | mandatory }}"
+    insertbefore: BOF
+    create: yes
+  register: change_timezone
+
+- name: Reconfigure tzdata
+  command: dpkg-reconfigure --frontend noninteractive tzdata
+  when: change_timezone | changed
+
+# TODO : find a way to force the console-data configuration
+# non-interactively (like tzdata ↑)
+
 - name: Setting vim as default editor
   alternatives:
     name: editor

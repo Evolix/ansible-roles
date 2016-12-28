@@ -53,3 +53,4 @@ evolinux_ssh_disable_root: True
 
 evolinux_ntp_server: Null
 evolinux_delete_nfs: True
+evolinux_timezone: "Europe/Paris"
