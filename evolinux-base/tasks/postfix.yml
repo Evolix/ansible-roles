@@ -18,6 +18,8 @@
     line: "{{ item.key }} = {{ item.value }}"
   with_items:
     - { key: "myorigin", value: "{{ evolinux_postfix_myorigin }}" }
+    - { key: "myhostname", value: "{{ evolinux_postfix_myhostname }}" }
+    - { key: "mydestination", value: "{{ evolinux_postfix_mydestination }}" }
     - { key: "disable_vrfy_command", value: "yes" }
   notify: reload postfix
   tags:

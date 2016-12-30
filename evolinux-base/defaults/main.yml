@@ -22,6 +22,8 @@ evolinux_apt_remove_aptitude: True
 # postfix
 
 evolinux_postfix_myorigin: "{{ ansible_fqdn }}"
+evolinux_postfix_myhostname: "{{ ansible_fqdn }}"
+evolinux_postfix_mydestination: "$myhostname"
 evolinux_postfix_slow_transports_enabled: True
 evolinux_postfix_remove_exim: True
 
