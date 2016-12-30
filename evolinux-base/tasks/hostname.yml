@@ -22,6 +22,12 @@
     regexp: '^127.0.1.1\s+'
     state: absent
 
+- name: /etc/mailname is up-to-date
+  copy:
+    dest: /etc/mailname
+    content: "{{ evolinux_fqdn }}\n"
+    force: yes
+
 - name: override ansible_hostname fact
   set_fact:
     ansible_hostname: "{{ evolinux_hostname }}"
