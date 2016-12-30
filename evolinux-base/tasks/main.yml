@@ -1,45 +1,73 @@
 ---
 - name: Hostname
   include: hostname.yml
+  tags:
+  - evolinux_hostname
 
 - name: Kernel tuning
   include: kernel.yml
+  tags:
+  - evolinux_kernel
 
 - name: Apt configuration and packages install
   include: apt.yml
+  tags:
+  - evolinux_apt
 
 - name: Fstab configuration
   include: fstab.yml
+  tags:
+  - evolinux_fstab
 
 - name: Packages
   include: packages.yml
+  tags:
+  - evolinux_packages
 
 - name: System settings
   include: system.yml
+  tags:
+  - evolinux_system
 
 - name: Root user configuration
   include: root.yml
+  tags:
+  - evolinux_root
 
 - name: SSH configuration
   include: ssh.yml
+  tags:
+  - evolinux_ssh
 
 - name: Postfix
   include: postfix.yml
+  tags:
+  - evolinux_postfix
 
 - name: Logs management
   include: logs.yml
+  tags:
+  - evolinux_logs
 
 
 - name: Default index page
   include: default_www.yml
+  tags:
+  - evolinux_default_www
 
 - name: Hardware drivers and tools
   include: hardware.yml
+  tags:
+  - evolinux_hardware
 
 - name: Customize for Online.net
   include: provider_online.yml
+  tags:
+  - evolinux_provider_online
   when: evolinux_provider_online
 
 - name: Customize for Orange FCE
   include: provider_orange_fce.yml
+  tags:
+  - evolinux_provider_orange_fce
   when: evolinux_provider_orange_fce
