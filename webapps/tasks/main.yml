@@ -1,2 +1,4 @@
 ---
-# tasks file for webapps
+
+- include: wordpress.yml
+  when: webapps_wordpress_install

@@ -1,22 +1,5 @@
----
-- name: Installation of wordpress
-  hosts: '{{ hosts }}'
-  gather_facts: yes
-
-  vars_files:
-    - './vars/default.yml'
-
-  # TODO: create vars file
-  vars:
-    service: WordPress
-    version_service: 4.7-branch
-    url_service: https://github.com/WordPress/WordPress
-    site_title: "new blog Evolix SaaS"
-
-  tasks:
-
-  - name: Init global variables 
-    include: './tasks/var_common.yml'
+  #- name: Init global variables 
+  #  include: './tasks/var_common.yml'
 
   - name: init dir_wpcli
     set_fact: dir_wpcli="{{ dir }}/wp-cli"
@@ -25,13 +8,13 @@
     when: debug_mode
     tags: debug_mode
 
-  - name: Git clone {{ service }} repository
+  - name: Git clone Wordpress repository
     include: './tasks/git.yml'
     vars:
-      service_git: "{{ service }}"
-      url_git: "{{ url_service }}"
+      service_git: WordPress
+      url_git: "{{ webapps_wordpress_upstream }}"
       dest_git: "{{ dir_www }}"
-      version_git: "{{ version_service }}"
+      version_git: "{{ webapps_wordpress_version }}"
 
   - name: Creation directory wp-cli
     file: >
