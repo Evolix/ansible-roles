@@ -1,0 +1,3 @@
+---
+postfix_hostname: "{{ ansible_fqdn }}"
+postfix_slow: False

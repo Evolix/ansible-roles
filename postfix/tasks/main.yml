@@ -1,0 +1,28 @@
+- name: ensure packages are installed
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - postfix
+    - mailgraph
+
+- name: check if main.cf is default
+  shell: egrep -v "^(myhostname|mydestination|mailbox_command)" /etc/postfix/main.cf  | md5sum -
+  changed_when: False
+  #check_mode: no (for migration to Ansible 2.2)
+  always_run: yes
+  register: default_main_cf
+  
+- name: create minimal main.cf
+  template:
+    src: evolinux_main.cf.j2
+    dest: /etc/postfix/main.cf
+    owner: root
+    group: root
+    mode: 0644
+    force: yes
+  when: default_main_cf.stdout == "5450c05d65878e99dad696c7c722e511  -"
+  notify: restart postfix
+
+- meta: flush_handlers
+

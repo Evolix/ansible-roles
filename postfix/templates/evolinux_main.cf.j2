@@ -1,0 +1,15 @@
+smtpd_banner = $myhostname ESMTP mail server
+biff = no
+append_dot_mydomain = no
+myhostname = {{ postfix_hostname }}
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+myorigin = $myhostname
+mydestination = $myhostname localhost.localdomain localhost
+relayhost = 
+mynetworks = 127.0.0.0/8
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = all
+inet_protocols = ipv4
+disable_vrfy_command = yes
