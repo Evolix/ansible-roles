@@ -4,7 +4,9 @@ Install Postfix
 
 ## Tasks
 
-Minimal configuration is in `tasks/main.yml`.
+Minimal configuration is in `tasks/main.yml` and optional customization in :
+
+* `slow_transport.yml` : slow transport to specific destination.
 
 ## Available variables
 

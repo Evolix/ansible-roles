@@ -23,11 +23,7 @@ Main variables are :
 * `evolinux_delete_nfs`: delete NFS tools (default: `True`)
 * `evolinux_ntp_server`: custom NTP server host or IP (default: `Null`)
 * `evolinux_additional_packages`: optional additional packages to install (default: `[]`)
-* `evolinux_postfix_slow_transports_enabled`: configure slow transports (default: `True`) ;
-* `evolinux_postfix_remove_exim`: remove Exim4 packages (default: `True`) ;
-* `evolinux_postfix_myorigin`: `myorigin` variable for Postfix (default: value of `ansible_fqdn`) ;
-* `evolinux_postfix_myhostname`: `myhostname` variable for Postfix (default: value of `ansible_fqdn`) ;
-* `evolinux_postfix_mydestination`: `mydestination` variable for Postfix (default: `$myhostname`) ;
+* `evolinux_postfix_purge_exim`: purge Exim packages (default: `True`) ;
 * `evolinux_ssh_password_auth_addresses`: list of addresses that can authenticate with a password (default: `[]`)
 * `evolinux_ssh_disable_root`: disable SSH access for root (default: `True`)
 

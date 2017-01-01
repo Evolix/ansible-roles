@@ -11,20 +11,6 @@
     - packages
     - postfix
 
-- name: main.cf is configured
-  lineinfile:
-    dest: /etc/postfix/main.cf
-    regexp: "^#? *{{ item.key }} *="
-    line: "{{ item.key }} = {{ item.value }}"
-  with_items:
-    - { key: "myorigin", value: "{{ evolinux_postfix_myorigin }}" }
-    - { key: "myhostname", value: "{{ evolinux_postfix_myhostname }}" }
-    - { key: "mydestination", value: "{{ evolinux_postfix_mydestination }}" }
-    - { key: "disable_vrfy_command", value: "yes" }
-  notify: reload postfix
-  tags:
-    - postfix
-
 - name: fetch users list
   shell: getent passwd | cut -d":" -f 1 | grep -v root
   register: non_root_users_list
@@ -64,6 +50,8 @@
   tags:
     - postfix
 
+- meta: flush_handlers
+
 - name: exim4 is absent
   apt:
     name: "{{ item }}"
@@ -74,14 +62,8 @@
     - exim4-base
     - exim4-config
     - exim4-daemon-light
-  when: evolinux_postfix_remove_exim
+  when: evolinux_postfix_purge_exim
   tags:
     - packages
     - postfix
 
-- include: postfix_slow_transports.yml
-  when: evolinux_postfix_slow_transports_enabled
-  tags:
-    - postfix
-
-- meta: flush_handlers

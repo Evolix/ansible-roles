@@ -26,3 +26,5 @@
 
 - meta: flush_handlers
 
+- include: slow_transport.yml
+  when: postfix_slow_transport

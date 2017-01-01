@@ -4,3 +4,10 @@
     name: postfix
     state: restarted
 
+- name: reload postfix
+  service:
+    name: postfix
+    state: reloaded
+
+- name: postmap transport
+  command: postmap /etc/postfix/transport

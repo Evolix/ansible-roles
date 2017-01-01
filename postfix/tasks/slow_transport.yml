@@ -1,0 +1,44 @@
+---
+
+- name: slow transport is defined in master.cf
+  lineinfile:
+    dest: /etc/postfix/master.cf
+    regexp: "^slow "
+    line: "slow      unix     -       -       n       -       -    smtp"
+
+- name: list of providers for slow transport
+  lineinfile:
+    dest: /etc/postfix/transport
+    line: "{{ item }}"
+    create: yes
+  with_items:
+    - "orange.fr slow:"
+    - "wanadoo.fr slow:"
+    - "voila.fr slow:"
+    - "laposte slow:"
+    - "yahoo.fr slow:"
+    - "yahoo.com slow:"
+    - "hotmail.fr slow:"
+    - "hotmail.com slow:"
+  notify: postmap transport
+
+- name: main.cf is configured for slow transports
+  blockinfile:
+    dest: /etc/postfix/main.cf
+    marker: "# {mark} Slow transports configuration (installed by Ansible)"
+    block: |
+      minimal_backoff_time = 2h
+      maximal_backoff_time = 6h
+      maximal_queue_lifetime = 4d
+      queue_run_delay = 100s
+      bounce_queue_lifetime = 1d
+      initial_destination_concurrency = 5
+      default_destination_concurrency_limit = 20
+      slow_destination_rate_delay = 0
+      slow_destination_concurrency_limit = 1
+      slow_destination_concurrency_failed_cohort_limit = 100
+      slow_destination_recipient_limit = 25
+      transport_maps = hash:$config_directory/transport
+  notify: restart postfix
+
+- meta: flush_handlers
