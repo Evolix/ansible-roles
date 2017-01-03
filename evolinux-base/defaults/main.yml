@@ -15,6 +15,7 @@ evolinux_internal_hostname: "{{ evolinux_hostname }}"
 
 # apt
 
+evolinux_apt_upgrade: True
 evolinux_apt_repositories_components: "main"
 evolinux_apt_hooks: True
 evolinux_apt_remove_aptitude: True

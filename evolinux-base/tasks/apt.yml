@@ -61,7 +61,11 @@
     state: absent
   when: evolinux_apt_remove_aptitude
 
+- name: Updating APT cache
+  apt:
+    update_cache: yes
+
 - name: Upgrading system
   apt:
     upgrade: dist
-    update_cache: yes
+  when: evolinux_apt_upgrade
