@@ -15,6 +15,8 @@
   shell: cat /etc/mysql/debian.cnf | grep -m1 "password = .*" | cut -d" " -f3
   register: mysql_debian_password
   changed_when: False
+  tags:
+    - mysql
 
 - name: Configure mytop
   template:
@@ -42,15 +44,31 @@
     name: aha
   tags:
     - mysql
-    - mysqltuner
 
 # automatic optimizations
 
-- name: Weekly cron to optimize MySQL
+- name: Optimize script for MySQL
   copy:
-    src: mysql-optimize
+    src: mysql-optimize.sh
+    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysql-optimize.sh"
+    mode: 0700
+  tags:
+    - mysql
+
+- name: Enable Weekly cron to optimize MySQL
+  file:
+    src: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysql-optimize.sh"
     dest: /etc/cron.weekly/mysql-optimize.sh
-    mode: 0755
+    state: link
+  when: mysql_cron_optimize
+  tags:
+    - mysql
+
+- name: Disable Weekly cron to optimize MySQL
+  file:
+    dest: /etc/cron.weekly/mysql-optimize.sh
+    state: absent
+  when: not mysql_cron_optimize
   tags:
     - mysql
 
@@ -61,6 +79,7 @@
     name: apg
   tags:
     - mysql
+    - packages
 
 - name: Ensure /usr/share/scripts exists
   file:
