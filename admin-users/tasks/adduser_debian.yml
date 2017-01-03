@@ -119,6 +119,12 @@
     validate: '/usr/sbin/visudo -cf %s'
   register: copy_sudoers_evolinux
 
+- name: Verify Evolinux sudoers file permissions
+  file:
+    path: /etc/sudoers.d/evolinux
+    mode: 0440
+    state: file
+
 - name: Add user in sudoers file for '{{ user.name }}'
   replace:
     dest: /etc/sudoers.d/evolinux
