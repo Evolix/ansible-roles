@@ -4,6 +4,7 @@
     path: /var/www
     state: directory
     mode: 0755
+  when: evolinux_default_www_files
 
 - name: images are copied
   copy:
@@ -12,37 +13,40 @@
     mode: 0755
     directory_mode: 0755
     follow: yes
+  when: evolinux_default_www_files
 
 - name: index is copied
   template:
     src: default_www/index.html.j2
     dest: /var/www/index.html
     mode: 0755
+  when: evolinux_default_www_files
 
 # SSL cert
 
-- name: ssl-cert package is installed
-  apt:
-    name: ssl-cert
-    state: installed
+- block:
+  - name: ssl-cert package is installed
+    apt:
+      name: ssl-cert
+      state: installed
 
-- name: Create private key and csr for default site ({{ ansible_fqdn }})
-  command: openssl req -newkey rsa:2048 -sha256 -nodes -keyout /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/{{ ansible_fqdn }}.csr -batch -subj "{{ evolinux_default_www_ssl_subject }}"
-  args:
-    creates: "/etc/ssl/private/{{ ansible_fqdn }}.key"
+  - name: Create private key and csr for default site ({{ ansible_fqdn }})
+    command: openssl req -newkey rsa:2048 -sha256 -nodes -keyout /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/{{ ansible_fqdn }}.csr -batch -subj "{{ evolinux_default_www_ssl_subject }}"
+    args:
+      creates: "/etc/ssl/private/{{ ansible_fqdn }}.key"
 
-- name: Adjust rights on private key
-  file:
-    path: /etc/ssl/private/{{ ansible_fqdn }}.key
-    owner: root
-    group: ssl-cert
-    mode: 0640
+  - name: Adjust rights on private key
+    file:
+      path: /etc/ssl/private/{{ ansible_fqdn }}.key
+      owner: root
+      group: ssl-cert
+      mode: 0640
 
-- name: Create certificate for default site
-  command: openssl x509 -req -days 3650 -sha256 -in /etc/ssl/{{ ansible_fqdn }}.csr -signkey /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/certs/{{ ansible_fqdn }}.crt
-  args:
-    creates: "/etc/ssl/certs/{{ ansible_fqdn }}.crt"
-
+  - name: Create certificate for default site
+    command: openssl x509 -req -days 3650 -sha256 -in /etc/ssl/{{ ansible_fqdn }}.csr -signkey /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/certs/{{ ansible_fqdn }}.crt
+    args:
+      creates: "/etc/ssl/certs/{{ ansible_fqdn }}.crt"
+  when: evolinux_default_www_ssl_cert
 
 # Nginx vhost
 
@@ -60,8 +64,7 @@
       # force: yes
     notify: reload nginx
     tags:
-      - nginx
-
+    - nginx
 
   - name: nginx vhost is enabled
     file:
@@ -71,9 +74,9 @@
     notify: reload nginx
     when: evolinux_default_www_nginx_enabled
     tags:
-      - nginx
+    - nginx
 
-  when: nginx_sites_available.stat.exists
+  when: evolinux_default_www_nginx_vhost and nginx_sites_available.stat.exists
 
 
 # Apache vhost
@@ -92,8 +95,7 @@
       # force: yes
     notify: reload apache
     tags:
-      - apache
-
+    - apache
 
   - name: Apache vhost is enabled
     file:
@@ -103,6 +105,6 @@
     notify: reload apache
     when: evolinux_default_www_apache_enabled
     tags:
-      - apache
+    - apache
 
-  when: apache_sites_available.stat.exists
+  when: evolinux_default_www_apache_vhost and apache_sites_available.stat.exists

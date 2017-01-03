@@ -12,6 +12,7 @@
     path: /tmp
     state: directory
     mode: 01777
+  when: evolinux_system_chmod_tmp
 
 - name: Setting default locales
   lineinfile:
@@ -24,23 +25,25 @@
     - "fr_FR ISO-8859-1"
     - "fr_FR.UTF-8 UTF-8"
   register: default_locales
+  when: evolinux_system_locales
 
 - name: Reconfigure locales
   command: /usr/sbin/locale-gen
-  when: default_locales | changed
+  when: evolinux_system_locales and default_locales | changed
 
 - name: Setting default timezone
   lineinfile:
     dest: /etc/timezone
     regexp: '^\w+/\w+$'
-    line: "{{ evolinux_timezone | mandatory }}"
+    line: "{{ evolinux_system_timezone | mandatory }}"
     insertbefore: BOF
     create: yes
   register: change_timezone
+  when: evolinux_system_timezone != False
 
 - name: Reconfigure tzdata
   command: dpkg-reconfigure --frontend noninteractive tzdata
-  when: change_timezone | changed
+  when: evolinux_system_timezone != False and change_timezone | changed
 
 # TODO : find a way to force the console-data configuration
 # non-interactively (like tzdata ↑)
@@ -49,6 +52,7 @@
   alternatives:
     name: editor
     path: /usr/bin/vim.basic
+  when: evolinux_system_vim_default
 
 - name: Add "umask 027" to /etc/profile.d/evolinux.sh
   lineinfile:
@@ -56,12 +60,14 @@
     line: "umask 027"
     create: yes
     state: present
+  when: evolinux_system_profile
 
 - name: Set /etc/adduser.conf DIR_MODE to 0700
   replace:
     dest: /etc/adduser.conf
     regexp: "^DIR_MODE=.*$"
     replace: "DIR_MODE=0700"
+  when: evolinux_system_dirmode_adduser
 
 # TODO: trouver comment ne pas faire ça sur Xen Dom-U
 
@@ -71,12 +77,14 @@
     line: "tty2"
     create: yes
     state: present
+  when: evolinux_system_dirmode_adduser
 
 - name: Setting TMOUT to deconnect inactive users
   lineinfile:
     dest: /etc/profile
     line: "export TMOUT=36000"
     state: present
+  when: evolinux_system_dirmode_adduser
 
 #- name: Customizing /etc/fstab
 
@@ -86,6 +94,7 @@
     line: "umask 022"
     create: yes
     state: present
+  when: evolinux_system_dirmode_adduser
 
 - name: Randomize periodic crontabs
   replace:
@@ -98,6 +107,7 @@
   - {regexp: '^25\s*6((\s*\*){3})', replace: '{{ 59|random(start=1) }} {{ [0,1,3,4,5,6,7]|random }}\1', backup: "no"}
   - {regexp: '^47\s*6((\s*\*){2}\s*7)', replace: '{{ 59|random(start=1) }} {{ [0,1,3,4,5,6,7]|random }}\1', backup: "no"}
   - {regexp: '^52\s*6(\s*1(\s*\*){2})', replace: '{{ 59|random(start=1) }} {{ [0,1,3,4,5,6,7]|random }}\1', backup: "no"}
+  when: evolinux_system_dirmode_adduser
 
 # NTP server address
 
@@ -105,9 +115,9 @@
   replace:
     dest: /etc/ntp.conf
     regexp: "^server .*$"
-    replace: "server {{ evolinux_ntp_server }}"
+    replace: "server {{ evolinux_system_ntp_server }}"
     backup: yes
-  when: evolinux_ntp_server | default(False)
+  when: evolinux_system_ntp_server != False
 
 ## alert5
 
@@ -117,11 +127,13 @@
     dest: /etc/init.d/alert5
     force: no
     mode: 0755
+  when: evolinux_system_alert5_init
 
 - name: Enable alert5 init script
   service:
     name: alert5
     enabled: yes
+  when: evolinux_system_alert5_init and evolinux_system_alert5_enable
 
 ## network interfaces
 
@@ -131,3 +143,4 @@
     regexp: "allow-hotplug"
     replace: "auto"
     backup: yes
+  when: evolinux_system_eni_auto

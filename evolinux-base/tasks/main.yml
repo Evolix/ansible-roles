@@ -1,56 +1,56 @@
 ---
 - name: Hostname
   include: hostname.yml
-  when: evolinux_tasks_hostname
+  when: evolinux_hostname_include
 
 - name: Kernel tuning
   include: kernel.yml
-  when: evolinux_tasks_kernel
+  when: evolinux_kernel_include
 
 - name: Apt configuration and packages install
   include: apt.yml
-  when: evolinux_tasks_apt
+  when: evolinux_apt_include
 
 - name: Fstab configuration
   include: fstab.yml
-  when: evolinux_tasks_fstab
+  when: evolinux_fstab_include
 
 - name: Packages
   include: packages.yml
-  when: evolinux_tasks_packages
+  when: evolinux_packages_include
 
 - name: System settings
   include: system.yml
-  when: evolinux_tasks_system
+  when: evolinux_system_include
 
 - name: Root user configuration
   include: root.yml
-  when: evolinux_tasks_root
+  when: evolinux_root_include
 
 - name: SSH configuration
   include: ssh.yml
-  when: evolinux_tasks_ssh
+  when: evolinux_ssh_include
 
 - name: Postfix
   include: postfix.yml
-  when: evolinux_tasks_postfix
+  when: evolinux_postfix_include
 
 - name: Logs management
   include: logs.yml
-  when: evolinux_tasks_logs
+  when: evolinux_logs_include
 
 - name: Default index page
   include: default_www.yml
-  when: evolinux_tasks_default_www
+  when: evolinux_default_www_include
 
 - name: Hardware drivers and tools
   include: hardware.yml
-  when: evolinux_tasks_hardware
+  when: evolinux_hardware_include
 
 - name: Customize for Online.net
   include: provider_online.yml
-  when: evolinux_tasks_provider_online
+  when: evolinux_provider_online_include
 
 - name: Customize for Orange FCE
   include: provider_orange_fce.yml
-  when: evolinux_tasks_provider_orange_fce
+  when: evolinux_provider_orange_fce_include

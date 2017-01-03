@@ -13,6 +13,7 @@
   - pv
   - apg
   - conntrack
+  when: evolinux_packages_system
 
 - name: Install/Update diagnostic tools
   apt:
@@ -26,6 +27,7 @@
   - iotop
   - tcpdump
   - mtr-tiny
+  when: evolinux_packages_diagnostic
 
 - name: Install/Update hardware tools
   apt:
@@ -34,7 +36,7 @@
   - hdparm
   - smartmontools
   - lm-sensors
-
+  when: evolinux_packages_hardware
 
 - name: Install/Update common tools
   apt:
@@ -50,12 +52,13 @@
   - rsync
   - bc
   - pinentry-curses
+  when: evolinux_packages_common
 
 - name: Install/Update serveur-base meta-package
   command: "apt-get install -yq --allow-unauthenticated serveur-base"
   register: install_server_base
   changed_when: not (install_server_base.stdout | search("0 upgraded") and install_server_base.stdout | search("0 newly installed"))
-
+  when: evolinux_packages_serveur_base
 
 - name: is an MTA installed?
   command: "dpkg -S /usr/sbin/sendmail"
@@ -66,7 +69,7 @@
 - name: Install lsb-invalid-mta
   apt:
     name: lsb-invalid-mta
-  when: mta_installed.rc != 0
+  when: evolinux_packages_invalid_mta and mta_installed.rc != 0
 
 
 - name: Deleting rpcbin and nfs-common
@@ -76,7 +79,7 @@
   with_items:
     - rpcbind
     - nfs-common
-  when: evolinux_delete_nfs
+  when: evolinux_packages_delete_nfs
 
 
 # TODO: use ini_file when Ansible > 2.1 (no_extra_spaces: yes)
@@ -89,3 +92,4 @@
   with_items:
   - { option: "confirm", value: "1" }
   - { option: "which",   value: "both" }
+  when: evolinux_packages_listchanges

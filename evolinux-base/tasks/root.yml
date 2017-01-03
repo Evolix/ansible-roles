@@ -5,8 +5,7 @@
     path: /root
     state: directory
     mode: 0700
-  tags:
-    - root
+  when: evolinux_root_chmod
 
 - name: "Customize root's bashrc..."
   lineinfile:
@@ -18,8 +17,7 @@
     - "export HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoreboth"
     - "export HISTSIZE=65535"
     - "export HISTTIMEFORMAT=\"%c : \""
-  tags:
-    - root
+  when: evolinux_root_bashrc
 
 ## .bash_history should be append-only
 
@@ -28,38 +26,31 @@
     content: ""
     dest: "/root/.bash_history"
     force: no
-  tags:
-    - root
+  when: evolinux_root_bash_history
 
 - name: Set umask in /root/.profile
   lineinfile:
     dest: "/root/.profile"
     line: "umask 0077"
     regexp: "umask [0-9]+"
-  tags:
-    - root
+  when: evolinux_root_umask
 
 - name: Custom git config for root
   copy:
     src: root/gitconfig
     dest: "/root/.gitconfig"
     force: no
-  tags:
-    - root
+  when: evolinux_root_gitconfig
 
 - name: Is .bash_history append-only
   shell: lsattr /root/.bash_history | grep -E "^.*a.* "
   register: bash_history_append_only
   failed_when: False
   changed_when: False
-  tags:
-    - root
 
 - name: Set .bash_history append-only
   command: chattr +a /root/.bash_history
-  when: bash_history_append_only.rc != 0
-  tags:
-    - root
+  when: evolinux_root_bash_history_appendonly and bash_history_append_only.rc != 0
 
 - name: Setting vim as selected-editor
   lineinfile:
@@ -67,6 +58,7 @@
     regexp: '^SELECTED_EDITOR='
     line: "SELECTED_EDITOR=\"/usr/bin/vim.basic\""
     create: yes
+  when: evolinux_root_vim_default
 
 - name: Setting vim root configuration
   lineinfile:
@@ -83,3 +75,4 @@
     - "set softtabstop=0"
     - "set shiftwidth=4"
     - "set smarttab"
+  when: evolinux_root_vim_conf

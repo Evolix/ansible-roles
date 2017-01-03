@@ -10,6 +10,7 @@
   with_items:
   - "APT::Install-Recommends \"0\";"
   - "APT::Install-Suggests \"0\";"
+  when: evolinux_apt_conf
 
 - name: DPKg invoke hooks
   lineinfile:
@@ -31,12 +32,14 @@
   with_items:
   # - '.+\.debian\.org'
   - 'cdrom:'
+  when: evolinux_apt_disable_originals
 
 - name: deb-src repositories are disabled
   replace:
     dest: /etc/apt/sources.list
     regexp:  '^(deb-src.+)'
     replace: '# \1'
+  when: evolinux_apt_disable_debsrc
 
 - name: Basic sources list is installed
   lineinfile:
@@ -46,14 +49,16 @@
   - "deb http://security.debian.org/ jessie/updates {{ evolinux_apt_repositories_components | mandatory }}"
   - "deb http://mirror.evolix.org/debian/ jessie {{ evolinux_apt_repositories_components | mandatory }}"
   - "deb http://mirror.evolix.org/debian/ jessie-updates {{ evolinux_apt_repositories_components | mandatory }}"
+  when: evolinux_apt_basic_sources
 
 - name: Evolix public list is installed
-  template:
-    src: apt/evolix_public.list.j2
+  copy:
+    src: apt/evolix_public.list
     dest: /etc/apt/sources.list.d/evolix_public.list
     force: yes
     backup: yes
     mode: 0640
+  when: evolinux_apt_public_sources
 
 - name: Remove Aptitude
   apt:

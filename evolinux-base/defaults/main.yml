@@ -11,7 +11,10 @@ postfix_alias_email: Null
 
 # hostname
 
-evolinux_tasks_hostname: True
+evolinux_hostname_include: True
+
+evolinux_hostname_hosts: True
+evolinux_hostname_mailname: True
 
 evolinux_hostname: "{{ ansible_hostname }}"
 evolinux_domain: "{{ ansible_domain }}"
@@ -20,7 +23,7 @@ evolinux_internal_hostname: "{{ evolinux_hostname }}"
 
 # kernel
 
-evolinux_tasks_kernel: True
+evolinux_kernel_include: True
 
 evolinux_kernel_reboot_after_panic: True
 evolinux_kernel_disable_tcp_timestamps: True
@@ -29,65 +32,115 @@ evolinux_kernel_cve20165696: True
 
 # apt
 
-evolinux_tasks_apt: True
+evolinux_apt_include: True
 
-evolinux_apt_upgrade: True
-evolinux_apt_repositories_components: "main"
+evolinux_apt_conf: True
 evolinux_apt_hooks: True
+evolinux_apt_disable_originals: True
+evolinux_apt_disable_debsrc: True
+evolinux_apt_basic_sources: True
+evolinux_apt_public_sources: True
+evolinux_apt_upgrade: True
 evolinux_apt_remove_aptitude: True
+
+evolinux_apt_repositories_components: "main"
 
 # fstab
 
-evolinux_tasks_fstab: True
+evolinux_fstab_include: True
+
+evolinux_fstab_var_tmp: True
 
 # packages
 
-evolinux_tasks_packages: True
+evolinux_packages_include: True
 
-evolinux_delete_nfs: True
+evolinux_packages_system: True
+evolinux_packages_diagnostic: True
+evolinux_packages_hardware: True
+evolinux_packages_common: True
+evolinux_packages_serveur_base: True
+evolinux_packages_invalid_mta: True
+evolinux_packages_delete_nfs: True
+evolinux_packages_listchanges: True
 
 # system
 
-evolinux_tasks_system: True
+evolinux_system_include: True
 
-evolinux_ntp_server: Null
-evolinux_timezone: "Europe/Paris"
+evolinux_system_chmod_tmp: True
+evolinux_system_locales: True
+evolinux_system_timezone: "Europe/Paris"
+evolinux_system_vim_default: True
+evolinux_system_profile: True
+evolinux_system_dirmode_adduser: True
+evolinux_system_alert5_init: True
+evolinux_system_alert5_enable: True
+evolinux_system_eni_auto: True
+evolinux_system_ntp_server: False
 
 # root
 
-evolinux_tasks_root: True
+evolinux_root_include: True
+
+evolinux_root_chmod: True
+evolinux_root_bashrc: True
+evolinux_root_bash_history: True
+evolinux_root_umask: True
+evolinux_root_gitconfig: True
+evolinux_root_bash_history_appendonly: True
+evolinux_root_vim_default: True
+evolinux_root_vim_conf: True
 
 # ssh
 
-evolinux_tasks_ssh: True
+evolinux_ssh_include: True
 
 evolinux_ssh_password_auth_addresses: []
+evolinux_ssh_match_address: True
 evolinux_ssh_disable_root: True
+evolinux_ssh_disable_acceptenv: True
 
 # postfix
 
-evolinux_tasks_postfix: True
+evolinux_postfix_include: True
 
+evolinux_postfix_packages: True
+evolinux_postfix_users_alias_root: True
+evolinux_postfix_mailer_alias_root: True
+evolinux_postfix_root_alias: True
 evolinux_postfix_purge_exim: True
 
 # logs
 
-evolinux_tasks_logs: True
+evolinux_logs_include: True
+
+evolinux_logs_logrotate_confs: True
+evolinux_logs_default_rotate: True
+evolinux_logs_disable_logrotate_rsyslog: True
+evolinux_logs_rsyslog_conf: True
 
 # default www
 
-evolinux_tasks_default_www: True
+evolinux_default_www_include: True
+
+evolinux_default_www_files: True
+evolinux_default_www_ssl_cert: True
+evolinux_default_www_ssl_subject: "/CN={{ ansible_fqdn }}"
+
+evolinux_default_www_nginx_vhost: True
+evolinux_default_www_nginx_enabled: False
+
+evolinux_default_www_apache_vhost: True
+evolinux_default_www_apache_enabled: False
 
 evolinux_default_www_redirect_url: "http://evolix.fr"
-evolinux_default_www_ssl_subject: "/CN={{ ansible_fqdn }}"
-evolinux_default_www_nginx_enabled: False
-evolinux_default_www_apache_enabled: False
 
 # hardware
 
-evolinux_tasks_hardware: True
+evolinux_hardware_include: True
 
 # providers
 
-evolinux_tasks_provider_online: False
-evolinux_tasks_provider_orange_fce: False
+evolinux_provider_online_include: False
+evolinux_provider_orange_fce_include: False

@@ -49,5 +49,6 @@
     fstype: tmpfs
     opts: defaults,noexec,nosuid,nodev,size=1024m
     state: mounted
+  when: evolinux_fstab_var_tmp
 
 - meta: flush_handlers

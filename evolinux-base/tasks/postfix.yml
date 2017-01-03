@@ -7,6 +7,7 @@
   with_items:
     - postfix
     - mailgraph
+  when: evolinux_postfix_packages
   tags:
     - packages
     - postfix
@@ -25,6 +26,7 @@
     line: "{{ item }}: root"
   with_items: "{{ non_root_users_list.stdout_lines }}"
   notify: newaliases
+  when: evolinux_postfix_users_alias_root
   tags:
     - postfix
 
@@ -38,6 +40,7 @@
     - abuse
     - mailer-daemon
   notify: newaliases
+  when: evolinux_postfix_mailer_alias_root
   tags:
     - postfix
 
@@ -47,6 +50,7 @@
     regexp: "^root:"
     line: "root: {{ postfix_alias_email or general_alert_email | mandatory }}"
   notify: newaliases
+  when: evolinux_postfix_root_alias
   tags:
     - postfix
 
@@ -66,4 +70,3 @@
   tags:
     - packages
     - postfix
-

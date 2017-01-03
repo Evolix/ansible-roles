@@ -19,11 +19,11 @@ Various tasks for Evolinux setup.
 * `provider_online` :
 * `provider_orange_fce` :
 
-Each task file is included in the `main.yml` file with a condition based on a variable like `evolinux_tasks_hostname` (mostly `True` by default). The variables can be set to `False` to disable groups of tasks. Finer grained tasks disabling is done in each group of tasks.
-
 ## Available variables
 
-Main variables are :
+Each tasks group is included in the `main.yml` file with a condition based on a variable like `evolinux_hostname_include` (mostly `True` by default). The variables can be set to `False` to disable a . Finer grained tasks disabling is done in each group of tasks.
+
+Main variables are:
 
 * `general_alert_email`: email address to send various alert messages (default: `root@localhost`).
 * `apt_alert_email`: email address to send APT messages to (default: `general_alert_email`).
