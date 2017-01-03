@@ -30,3 +30,5 @@
     regexp: "rotate [0-9]*"
     replace: "rotate 12"
   when: evolinux_logs_default_rotate
+
+- meta: flush_handlers

@@ -108,3 +108,5 @@
     - apache
 
   when: evolinux_default_www_apache_vhost and apache_sites_available.stat.exists
+
+- meta: flush_handlers

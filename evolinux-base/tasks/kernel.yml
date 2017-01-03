@@ -37,3 +37,5 @@
     state: present
     reload: yes
   when: evolinux_kernel_cve20165696
+
+- meta: flush_handlers

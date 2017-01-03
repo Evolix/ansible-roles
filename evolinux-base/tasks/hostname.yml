@@ -48,3 +48,5 @@
   set_fact:
     ansible_fqdn: "{{ evolinux_fqdn }}"
   when: ansible_fqdn != evolinux_fqdn
+
+- meta: flush_handlers

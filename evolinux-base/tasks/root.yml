@@ -76,3 +76,5 @@
     - "set shiftwidth=4"
     - "set smarttab"
   when: evolinux_root_vim_conf
+
+- meta: flush_handlers

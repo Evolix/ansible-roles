@@ -93,3 +93,5 @@
   - { option: "confirm", value: "1" }
   - { option: "which",   value: "both" }
   when: evolinux_packages_listchanges
+
+- meta: flush_handlers

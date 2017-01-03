@@ -70,3 +70,5 @@
   tags:
     - packages
     - postfix
+
+- meta: flush_handlers

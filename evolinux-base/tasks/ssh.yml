@@ -36,3 +36,5 @@
     regexp: '^AcceptEnv'
     replace: "#AcceptEnv"
   when: evolinux_ssh_disable_acceptenv
+
+- meta: flush_handlers

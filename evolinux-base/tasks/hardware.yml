@@ -74,3 +74,5 @@
       enabled: true
       state: started
   when: "'MegaRAID SAS' in raidmodel.stdout"
+
+- meta: flush_handlers

@@ -74,3 +74,5 @@
   apt:
     upgrade: dist
   when: evolinux_apt_upgrade
+
+- meta: flush_handlers

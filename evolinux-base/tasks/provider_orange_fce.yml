@@ -12,3 +12,5 @@
 
 - debug:
     msg: "Orange DNS servers suck! Please change them in /etc/resolv.conf."
+
+- meta: flush_handlers

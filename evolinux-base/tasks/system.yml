@@ -144,3 +144,5 @@
     replace: "auto"
     backup: yes
   when: evolinux_system_eni_auto
+
+- meta: flush_handlers
