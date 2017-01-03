@@ -1,4 +1,7 @@
 ---
+
+# email variables
+
 general_alert_email: "root@localhost"
 reboot_alert_email: Null
 apt_alert_email: Null
@@ -8,48 +11,83 @@ postfix_alias_email: Null
 
 # hostname
 
+evolinux_tasks_hostname: True
+
 evolinux_hostname: "{{ ansible_hostname }}"
 evolinux_domain: "{{ ansible_domain }}"
 evolinux_fqdn: "{{ ansible_fqdn }}"
 evolinux_internal_hostname: "{{ evolinux_hostname }}"
 
-# apt
-
-evolinux_apt_upgrade: True
-evolinux_apt_repositories_components: "main"
-evolinux_apt_hooks: True
-evolinux_apt_remove_aptitude: True
-
-# postfix
-
-evolinux_postfix_purge_exim: True
-
 # kernel
+
+evolinux_tasks_kernel: True
 
 evolinux_kernel_reboot_after_panic: True
 evolinux_kernel_disable_tcp_timestamps: True
 evolinux_kernel_reduce_swapiness: True
 evolinux_kernel_cve20165696: True
 
-# providers
+# apt
 
-evolinux_provider_online: False
-evolinux_provider_orange_fce: False
+evolinux_tasks_apt: True
+
+evolinux_apt_upgrade: True
+evolinux_apt_repositories_components: "main"
+evolinux_apt_hooks: True
+evolinux_apt_remove_aptitude: True
+
+# fstab
+
+evolinux_tasks_fstab: True
+
+# packages
+
+evolinux_tasks_packages: True
+
+evolinux_delete_nfs: True
+
+# system
+
+evolinux_tasks_system: True
+
+evolinux_ntp_server: Null
+evolinux_timezone: "Europe/Paris"
+
+# root
+
+evolinux_tasks_root: True
+
+# ssh
+
+evolinux_tasks_ssh: True
+
+evolinux_ssh_password_auth_addresses: []
+evolinux_ssh_disable_root: True
+
+# postfix
+
+evolinux_tasks_postfix: True
+
+evolinux_postfix_purge_exim: True
+
+# logs
+
+evolinux_tasks_logs: True
 
 # default www
+
+evolinux_tasks_default_www: True
 
 evolinux_default_www_redirect_url: "http://evolix.fr"
 evolinux_default_www_ssl_subject: "/CN={{ ansible_fqdn }}"
 evolinux_default_www_nginx_enabled: False
 evolinux_default_www_apache_enabled: False
 
-# ssh
+# hardware
 
-evolinux_ssh_password_auth_addresses: []
-evolinux_ssh_disable_root: True
+evolinux_tasks_hardware: True
 
-# misc.
+# providers
 
-evolinux_ntp_server: Null
-evolinux_delete_nfs: True
-evolinux_timezone: "Europe/Paris"
+evolinux_tasks_provider_online: False
+evolinux_tasks_provider_orange_fce: False

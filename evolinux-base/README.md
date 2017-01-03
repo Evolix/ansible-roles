@@ -4,11 +4,22 @@ Various tasks for Evolinux setup.
 
 ## Tasks
 
-* `system.yml` :
-* `apt.yml` :
-* `install_tools.yml` :
-* `root.yml` :
-* `logs.yml` :
+* `hostname` :
+* `kernel` :
+* `apt` :
+* `fstab` :
+* `packages` :
+* `system` :
+* `root` :
+* `ssh` :
+* `postfix` :
+* `logs` :
+* `default_www` :
+* `hardware` :
+* `provider_online` :
+* `provider_orange_fce` :
+
+Each task file is included in the `main.yml` file with a condition based on a variable like `evolinux_tasks_hostname` (mostly `True` by default). The variables can be set to `False` to disable groups of tasks. Finer grained tasks disabling is done in each group of tasks.
 
 ## Available variables
 
