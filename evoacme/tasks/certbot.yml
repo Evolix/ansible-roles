@@ -23,14 +23,21 @@
       dest: /etc/apt/sources.list
       line: 'deb http://mirror.evolix.org/debian jessie-backports main'
       state: present
+    register: add_backports
     when: evoacme_certbot_release == "jessie-backports"
+
+  - name: Apt update
+    apt:
+      update_cache: yes
+    when:
+      - add_backports is defined
+      - add_backports|change
 
   - name: Install certbot with apt
     apt:
       name: certbot
       state: latest
       default_release: "{{ evoacme_certbot_release }}"
-      update_cache: yes
 
   - name: Mount /usr in rw
     command: mount -o remount,rw /usr warn=no
