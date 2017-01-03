@@ -12,6 +12,13 @@
     creates: /etc/.git/
   register: git_init
 
+- name: Git user.email is configured
+  ini_file:
+    dest: /etc/.git/config
+    section: user
+    option: email
+    value: "<root@{{ ansible_fqdn | default('localhost.localdomain') }}>"
+
 - name: /etc/.git is secure
   file:
     path: /etc/.git
