@@ -10,9 +10,8 @@
     dest: /etc/ssh/sshd_config
     line: "\nMatch Address {{ evolinux_ssh_password_auth_addresses | join(',') }}\n    PasswordAuthentication yes"
     validate: '/usr/sbin/sshd -T -f %s'
-  notify:
-    - reload sshd
-  when: grep_matchaddress_ssh.rc != 0
+  notify: reload sshd
+  when: grep_matchaddress_ssh.rc != 0 and evolinux_ssh_password_auth_addresses != []
 
 - name: Modify Match Address sshd directive
   replace:
@@ -21,8 +20,7 @@
     replace: '\1,{{ item }}'
     validate: '/usr/sbin/sshd -T -f %s'
   with_items: "{{ evolinux_ssh_password_auth_addresses }}"
-  notify:
-    - reload sshd
+  notify: reload sshd
   when: grep_matchaddress_ssh.rc == 0
 
 - name: disable SSH access for root
