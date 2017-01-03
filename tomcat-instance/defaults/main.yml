@@ -1,0 +1,4 @@
+---
+tomcat_instance_root: '/srv/tomcat'
+tomcat_instance_port: 8080
+tomcat_instance_ram: 512

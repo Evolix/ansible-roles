@@ -1,0 +1,18 @@
+---
+- name: Create bin dir for alias
+  file:
+    path: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/bin"
+    state: directory
+    mode: 0770
+    owner: "{{ tomcat_instance_name }}"
+    group: "{{ tomcat_instance_name }}"
+    
+- name: Copy alias script for systemctl --user
+  template:
+    src: "{{ item }}"
+    dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/bin/"
+    mode: 0770
+    owner: "{{ tomcat_instance_name }}"
+    group: "{{ tomcat_instance_name }}"
+  with_fileglob:
+    - 'templates/bin/*'

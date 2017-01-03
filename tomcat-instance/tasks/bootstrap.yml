@@ -1,0 +1,36 @@
+---
+- name: Create tomcat dirs
+  file:
+    path: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/{{ item }}"
+    state: directory
+    mode: 02770
+  with_items:
+    - 'conf'
+    - 'logs'
+    - 'webapps'
+    - 'work'
+    - 'temp'
+    - 'lib'
+
+- name: Copy conf dir
+  shell: "cp /usr/share/tomcat7/skel/conf/* {{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/"
+
+- name: Copy server.xml
+  template:
+    src: 'templates/server.xml.j2'
+    dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/server.xml"
+    mode: 0660
+
+- name: Copy env file
+  template:
+    src: 'templates/env.j2'
+    dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/env"
+    mode: 0660
+
+- name: Fix owner
+  file:
+    name: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}"
+    state: directory
+    owner: "{{ tomcat_instance_name }}"
+    group: "{{ tomcat_instance_name }}"
+    recurse: yes

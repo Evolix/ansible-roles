@@ -1,0 +1,37 @@
+---
+- name: Check tomcat_instance_name
+  debug: 
+    msg: "{{ tomcat_instance_name }}"
+
+- name: Check use of gid 
+  shell: id -ng "{{ tomcat_instance_port }}"
+  register: check_port_gid
+  changed_when: false
+  failed_when: 
+    - check_port_gid|succeeded
+    - check_port_gid.stdout != "{{ tomcat_instance_name }}"
+
+- name: Check use of uid 
+  shell: id -nu "{{ tomcat_instance_port }}"
+  register: check_port_uid
+  changed_when: false
+  failed_when: 
+    - check_port_uid|succeeded
+    - check_port_uid.stdout != "{{ tomcat_instance_name }}"
+
+#- name: Check use of http port 
+#  shell: grep '<Connector port="{{ tomcat_instance_port }}" protocol="HTTP/1.1"' $(ls {{ tomcat_instance_root }}/*/conf/server.xml|grep -v {{ tomcat_instance_name }})
+
+- name: Set shutdown port (default=http port + 1)
+  set_fact:
+    tomcat_instance_shutdown: "{{ tomcat_instance_port | int + 1 }}"
+  when: tomcat_instance_shutdown is undefined
+
+- name: Set tomcat mps (default=ram/2)
+  set_fact:
+    tomcat_instance_mps: "{{ tomcat_instance_ram | int / 2 }}"
+  when: tomcat_instance_mps is undefined
+
+- name: Fix mps type
+  set_fact:
+    tomcat_instance_mps: "{{ tomcat_instance_mps | int }}"

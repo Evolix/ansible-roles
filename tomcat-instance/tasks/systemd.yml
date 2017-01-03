@@ -1,0 +1,12 @@
+---
+- name: Enable systemd user mode
+  command: "loginctl enable-linger {{ tomcat_instance_name }}"
+  changed_when: false
+
+- name: Set systemd conf var
+  lineinfile:
+    dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/.profile"
+    state: present
+    mode: 0640
+    create: yes
+    line: 'export XDG_RUNTIME_DIR=/run/user/$UID'

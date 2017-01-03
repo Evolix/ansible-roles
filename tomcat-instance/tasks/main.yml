@@ -1,0 +1,13 @@
+---
+- stat:
+    path: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}"
+  register: tomcat_instance_stat
+
+- include: tomcat.yml
+- include: check.yml
+- include: user.yml
+- include: systemd.yml
+- include: alias.yml
+  when: tomcat_instance_stat.stat.exists != True
+- include: bootstrap.yml
+  when: tomcat_instance_stat.stat.exists != True

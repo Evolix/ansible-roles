@@ -1,0 +1,24 @@
+---
+- name: Install dependancy
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - 'tomcat7'
+    - 'tomcat7-user'
+    - 'libpam-systemd'
+
+- name: Create tomcat root dir
+  file:
+    path: "{{ tomcat_instance_root }}"
+    state: directory
+    owner: 'root'
+    group: 'root'
+    mode: 0755
+
+- name: Copy systemd unit
+  copy:
+    src: 'files/tomcat.service'
+    dest: "/etc/systemd/user/tomcat.service"
+    mode: 0755
+  notify: systemd reload

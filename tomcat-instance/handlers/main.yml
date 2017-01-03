@@ -1,0 +1,6 @@
+---
+- name: new aliases
+  command: newaliases
+
+- name: systemd reload
+  shell: systemctl daemon-reload

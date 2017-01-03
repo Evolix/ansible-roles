@@ -1,0 +1,47 @@
+---
+- name: Create group instance
+  group:
+   name: "{{ tomcat_instance_name }}"
+   gid: "{{ tomcat_instance_port }}"
+
+- name: Create user instance
+  user:
+    name: "{{ tomcat_instance_name }}"
+    group: "{{ tomcat_instance_name }}"
+    uid: "{{ tomcat_instance_port }}"
+    home: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}"
+    shell: '/bin/bash'
+    createhome: no
+
+- name: Create home dir
+  file:
+    path: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}"
+    state: directory
+    mode: 02770
+
+- name: Set mail alias for user
+  lineinfile:
+    dest: '/etc/aliases'
+    state: present
+    line: "{{ tomcat_instance_name }}: {{ tomcat_instance_mail }}"
+  when: tomcat_instance_mail is defined
+  notify: new aliases
+
+- name: Enable sudo right
+  lineinfile:
+    dest: '/etc/sudoers.d/tomcat'
+    state: present
+    mode: 0440
+    create: yes
+    line: "%{{ tomcat_instance_name }} ALL = ({{ tomcat_instance_name }}) SETENV: ALL"
+    validate: 'visudo -cf %s'
+
+- name: Enable sudo right for deploy user
+  lineinfile:
+    dest: '/etc/sudoers.d/tomcat'
+    state: present
+    mode: 0440
+    create: yes
+    line: "{{ tomcat_instance_deploy_user }} ALL = ({{ tomcat_instance_name }}) NOPASSWD: SETENV: ALL"
+    validate: 'visudo -cf %s'
+  when: tomcat_instance_deploy_user is defined
