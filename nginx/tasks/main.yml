@@ -5,7 +5,8 @@
     state: installed
   notify: restart nginx
   tags:
-    - nginx
+  - nginx
+  - packages
 
 # TODO: find a way to override the main configuration
 # without touching the main file
@@ -16,6 +17,8 @@
     regexp: '^(\s*worker_connections)\s+.+;'
     line: '    worker_connections 1024;'
     insertafter: 'events \{'
+  tags:
+  - nginx
 
 - name: use epoll
   lineinfile:
@@ -23,6 +26,8 @@
     regexp: '^(\s*use)\s+.+;'
     line: '    use epoll;'
     insertafter: 'events \{'
+  tags:
+  - nginx
 
 - name: Install Nginx http configuration
   copy:
@@ -32,7 +37,7 @@
     # force: yes
   notify: reload nginx
   tags:
-    - nginx
+  - nginx
 
 # TODO: verify that those permissions are correct :
 # not too strict for private_ipaddr_whitelist
@@ -49,7 +54,7 @@
     force: no
   notify: reload nginx
   tags:
-    - nginx
+  - nginx
 
 - name: add IP addresses to private IP whitelist
   lineinfile:
@@ -58,6 +63,8 @@
     state: present
   with_items: "{{ nginx_private_ipaddr_whitelist_present }}"
   notify: reload nginx
+  tags:
+  - nginx
 
 - name: remove IP addresses from private IP whitelist
   lineinfile:
@@ -66,6 +73,8 @@
     state: absent
   with_items: "{{ nginx_private_ipaddr_whitelist_absent }}"
   notify: reload nginx
+  tags:
+  - nginx
 
 - name: Copy private_htpasswd
   copy:
@@ -78,7 +87,7 @@
     force: no
   notify: reload nginx
   tags:
-    - nginx
+  - nginx
 
 - name: add user:pwd to private htpasswd
   lineinfile:
@@ -87,6 +96,8 @@
     state: present
   with_items: "{{ nginx_private_htpasswd_present }}"
   notify: reload nginx
+  tags:
+  - nginx
 
 - name: remove user:pwd from private htpasswd
   lineinfile:
@@ -95,6 +106,8 @@
     state: absent
   with_items: "{{ nginx_private_htpasswd_absent }}"
   notify: reload nginx
+  tags:
+  - nginx
 
 - name: Verify that the service is enabled and started
   service:
@@ -102,21 +115,26 @@
     enabled: yes
     state: started
   tags:
-    - nginx
+  - nginx
 
 - name: Check if Munin is installed
   stat:
     path: /etc/munin/plugin-conf.d/munin-node
   register: stat_munin_node
   tags:
-    - munin
+  - nginx
+  - munin
 
 - include: munin_vhost.yml
   when: stat_munin_node.stat.exists
   tags:
-    - munin
+  - nginx
+  - munin
 
 - include: munin_graphs.yml
   when: stat_munin_node.stat.exists
   tags:
-    - munin
+  - nginx
+  - munin
+
+- include: logrotate.yml

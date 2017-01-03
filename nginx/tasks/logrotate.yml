@@ -1,0 +1,6 @@
+---
+- name: logrotate configuration
+  copy:
+    src: logrotate_nginx
+    dest: /etc/logrotate.d/nginx
+    force: no

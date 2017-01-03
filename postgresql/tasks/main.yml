@@ -4,3 +4,4 @@
 - include: config.yml
 - include: nrpe.yml
 - include: munin.yml
+- include: logrotate.yml

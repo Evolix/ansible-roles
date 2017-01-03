@@ -1,0 +1,6 @@
+---
+- name: logrotate configuration
+  copy:
+    src: logrotate_squid3
+    dest: /etc/logrotate.d/squid3
+    force: no

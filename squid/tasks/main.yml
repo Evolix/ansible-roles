@@ -11,6 +11,11 @@
     dest: /etc/squid3/squid.conf
   notify: restart squid
 
+- name: logrotate configuration
+  copy:
+    src: logrotate_squid3
+    dest: /etc/logrotate.d/squid3
+
 - name: evolix whitelist is present
   copy:
     src: whitelist-evolinux.conf
@@ -25,6 +30,8 @@
     dest: /etc/squid3/whitelist-custom.conf
     force: no
   notify: restart squid
+
+- include: logrotate.yml
 
 - include: minifirewall.yml
 
