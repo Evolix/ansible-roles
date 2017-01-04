@@ -27,6 +27,18 @@
   tags:
     - mysql
 
+# Ansible 2.2 allows to create with ini_file
+# before: we have to create the file beforehand
+
+- name: touch /root/.my.cnf
+  file:
+    path: /root/.my.cnf
+    state: touch
+  changed_when: False
+  when: create_mysqladmin_user.changed
+  tags:
+  - mysql
+
 - name: mysqladmin is the default user
   ini_file:
     dest: /root/.my.cnf

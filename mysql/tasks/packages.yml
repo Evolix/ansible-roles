@@ -1,23 +1,21 @@
 ---
 
-- name: Ensure MySQL (Oracle version) packages are installed
-  apt:
-    name: '{{ item }}'
-    state: installed
-  with_items:
-    - mysql-server
-  when: mysql_use_mariadb == False
-  tags:
-    - mysql
-    - packages
+- name: Choose packages (Oracle)
+  set_fact:
+    mysql_packages: "{{ mysql_packages_oracle }}"
+  when: mysql_variant == "oracle"
 
-- name: Ensure MySQL (MariaDB version) packages are installed
+- name: Choose packages (MariaDB)
+  set_fact:
+    mysql_packages: "{{ mysql_packages_mariadb }}"
+  when: mysql_variant == "mariadb"
+
+- name: Install packages
   apt:
     name: '{{ item }}'
+    update_cache: yes
     state: installed
-  with_items:
-    - mariadb-server-10.0
-  when: mysql_use_mariadb
+  with_items: "{{ mysql_packages }}"
   tags:
     - mysql
     - packages

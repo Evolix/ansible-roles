@@ -1,0 +1,5 @@
+mysql_packages_oracle:
+- mysql-server
+
+mysql_packages_mariadb:
+- mariadb-server-10.0
