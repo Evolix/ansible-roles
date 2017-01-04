@@ -133,7 +133,22 @@
   service:
     name: alert5
     enabled: yes
-  when: evolinux_system_alert5_init and evolinux_system_alert5_enable
+  when:
+  - ansible_version.major == 2
+  - ansible_version.minor < 2
+  - evolinux_system_alert5_init
+  - evolinux_system_alert5_enable
+
+- name: Enable alert5 init script
+  systemd:
+    name: alert5
+    daemon_reload: yes
+    enabled: yes
+  when:
+  - ansible_version.major == 2
+  - ansible_version.minor >= 2
+  - evolinux_system_alert5_init
+  - evolinux_system_alert5_enable
 
 ## network interfaces
 
