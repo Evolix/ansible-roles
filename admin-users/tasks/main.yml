@@ -1,8 +1,9 @@
 ---
 
-- include: adduser_debian.yml user={{ item }}
-  with_items: "{{ admin_users }}"
+- include: adduser_debian.yml user={{ item.value }}
+  with_dict: "{{ admin_users }}"
   when: ansible_distribution == "Debian"
 
-# - include: openbsd.yml
+# - include: adduser_openbsd.yml user={{ item.value }}
+#   with_dict: "{{ admin_users }}"
 #   when: ansible_distribution == "OpenBSD"
