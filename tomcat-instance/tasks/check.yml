@@ -7,6 +7,7 @@
   shell: id -ng "{{ tomcat_instance_port }}"
   register: check_port_gid
   changed_when: false
+  always_run: yes
   failed_when: 
     - check_port_gid|succeeded
     - check_port_gid.stdout != "{{ tomcat_instance_name }}"
@@ -14,6 +15,7 @@
 - name: Check use of uid 
   shell: id -nu "{{ tomcat_instance_port }}"
   register: check_port_uid
+  always_run: yes
   changed_when: false
   failed_when: 
     - check_port_uid|succeeded
