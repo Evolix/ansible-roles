@@ -4,6 +4,7 @@
   register: tomcat_instance_stat
 
 - include: tomcat.yml
+- include: nagios.yml
 - include: check.yml
 - include: user.yml
 - include: systemd.yml

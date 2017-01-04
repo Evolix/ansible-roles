@@ -1,0 +1,18 @@
+#!/bin/bash
+
+TOMCAT_ROOT='{{ tomcat_instance_root }}'
+alert=0
+
+for instance in $(ls $TOMCAT_ROOT); do
+        port=$(id -u $instance)
+        if [ -h ${TOMCAT_ROOT}/${instance}/.config/systemd/user/default.target.wants/tomcat.service ]; then
+                echo -n "$instance ($port) : "
+                /usr/lib/nagios/plugins/check_tcp -p $port
+                ret=$?
+                if [ $ret != 0 ]; then
+                        alert=$ret
+                fi
+        fi
+done
+
+exit $alert

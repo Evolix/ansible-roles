@@ -1,0 +1,20 @@
+---
+- name: Intall monitorings plugins 
+  apt:
+    name: monitoring-plugins
+    state: present
+
+- name: Mount /usr in rw
+  command: mount -o remount,rw /usr warn=no
+  changed_when: False
+
+- name: Create Nagios plugins dir
+  file:
+    path: '/usr/local/lib/nagios/plugins'
+    state: directory
+
+- name: Copy Tomcat instance check
+  template:
+    src: 'templates/check_tomcat_instance.sh.j2'
+    dest: '/usr/local/lib/nagios/plugins/check_tomcat_instance.sh'
+    mode: 0755
