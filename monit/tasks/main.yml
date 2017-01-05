@@ -5,15 +5,15 @@
     name: monit
     state: installed
   tags:
-    - monit
-    - packages
+  - monit
+  - packages
 
 - name: custom config is installed
   template:
-    src: custom.conf.j2
-    dest: /etc/monit/conf.d/custom.conf
+    src: evolinux-defaults.conf.j2
+    dest: /etc/monit/conf.d/z-evolinux-defaults.conf
     mode: "640"
     force: yes
   notify: restart monit
   tags:
-    - monit
+  - monit
