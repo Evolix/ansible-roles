@@ -24,7 +24,7 @@
     path: /etc/.git
     owner: root
     group: root
-    mode: 0700
+    mode: "700"
     state: directory
 
 - name: /etc/.gitignore is present
@@ -33,7 +33,7 @@
     dest: /etc/.gitignore
     owner: root
     group: root
-    mode: 0600
+    mode: "600"
 
 - name: does /etc/ have any commit?
   command: "git log"

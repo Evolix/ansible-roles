@@ -1,17 +1,10 @@
 ---
 
-# WARN: the documentation says that the mode is in "octal mode"
-# but if the leading digit is not 0 it must be added again.
-#  755 -> 0755
-# 2755 -> 02755
-# 1777 -> 01777
-# Bottom line: if the mode is not preceded by a 0, it will mess your rights up.
-
 - name: /tmp must be world-writable
   file:
     path: /tmp
     state: directory
-    mode: 01777
+    mode: "1777"
   when: evolinux_system_chmod_tmp
 
 - name: Setting default locales
@@ -126,7 +119,7 @@
     src: system/init_alert5.j2
     dest: /etc/init.d/alert5
     force: no
-    mode: 0755
+    mode: "755"
   when: evolinux_system_alert5_init
 
 - name: Enable alert5 init script

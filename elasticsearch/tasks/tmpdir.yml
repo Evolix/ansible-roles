@@ -12,7 +12,7 @@
       path: "{{ elasticsearch_custom_tmpdir or elasticsearch_default_tmpdir | mandatory }}"
       owner: elasticsearch
       group: elasticsearch
-      mode: 0755
+      mode: "755"
       state: directory
     tags:
       - elasticsearch

@@ -10,7 +10,7 @@
   copy:
     src: "{{ item }}"
     dest: /etc/fail2ban/filter.d/
-    mode: 0644
+    mode: "644"
   with_items:
     - dovecot-evolix.conf
     - sasl-evolix.conf
@@ -20,5 +20,5 @@
   template:
     src: jail.local.j2
     dest: /etc/fail2ban/jail.local
-    mode: 0644
+    mode: "644"
   notify: restart fail2ban

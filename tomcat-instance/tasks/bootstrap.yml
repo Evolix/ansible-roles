@@ -3,7 +3,7 @@
   file:
     path: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/{{ item }}"
     state: directory
-    mode: 02770
+    mode: "2770"
   with_items:
     - 'conf'
     - 'logs'
@@ -19,13 +19,13 @@
   template:
     src: 'templates/server.xml.j2'
     dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/server.xml"
-    mode: 0660
+    mode: "660"
 
 - name: Copy env file
   template:
     src: 'templates/env.j2'
     dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/env"
-    mode: 0660
+    mode: "660"
 
 - name: Fix owner
   file:

@@ -33,7 +33,7 @@
   copy:
     src: nginx/evolinux-defaults.conf
     dest: /etc/nginx/conf.d/z-evolinux-defaults.conf
-    mode: 0640
+    mode: "640"
     # force: yes
   notify: reload nginx
   tags:
@@ -49,8 +49,8 @@
     dest: /etc/nginx/snippets/private_ipaddr_whitelist
     owner: www-data
     group: www-data
-    directory_mode: 0640
-    mode: 0640
+    directory_mode: "640"
+    mode: "640"
     force: no
   notify: reload nginx
   tags:
@@ -82,8 +82,8 @@
     dest: /etc/nginx/snippets/private_htpasswd
     owner: www-data
     group: www-data
-    directory_mode: 0640
-    mode: 0640
+    directory_mode: "640"
+    mode: "640"
     force: no
   notify: reload nginx
   tags:

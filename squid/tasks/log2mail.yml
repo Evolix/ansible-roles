@@ -10,7 +10,7 @@
     template:
       src: log2mail.j2
       dest: /etc/log2mail/config/squid.conf
-      mode: 0640
+      mode: "640"
       owner: log2mail
       group: adm
     notify: restart log2mail

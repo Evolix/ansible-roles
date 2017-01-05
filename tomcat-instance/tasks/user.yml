@@ -17,7 +17,7 @@
   file:
     path: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}"
     state: directory
-    mode: 02770
+    mode: "2770"
 
 - name: Set mail alias for user
   lineinfile:
@@ -31,7 +31,7 @@
   lineinfile:
     dest: '/etc/sudoers.d/tomcat'
     state: present
-    mode: 0440
+    mode: "440"
     create: yes
     line: "%{{ tomcat_instance_name }} ALL = ({{ tomcat_instance_name }}) SETENV: ALL"
     validate: 'visudo -cf %s'
@@ -40,7 +40,7 @@
   lineinfile:
     dest: '/etc/sudoers.d/tomcat'
     state: present
-    mode: 0440
+    mode: "440"
     create: yes
     line: "{{ tomcat_instance_deploy_user }} ALL = ({{ tomcat_instance_name }}) NOPASSWD: SETENV: ALL"
     validate: 'visudo -cf %s'

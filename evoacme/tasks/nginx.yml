@@ -4,4 +4,4 @@
     dest: /etc/nginx/letsencrypt.conf
     owner: root
     group: root
-    mode: 0644
+    mode: "644"

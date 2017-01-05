@@ -22,7 +22,7 @@
   template:
     src: mytop.j2
     dest: /root/.mytop
-    mode: 0600
+    mode: "600"
     force: yes
   tags:
     - mytop
@@ -34,7 +34,7 @@
   copy:
     src: mysqltuner.pl
     dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysqltuner.pl"
-    mode: 0700
+    mode: "700"
   tags:
     - mysql
     - mysqltuner
@@ -51,7 +51,7 @@
   copy:
     src: mysql-optimize.sh
     dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysql-optimize.sh"
-    mode: 0700
+    mode: "700"
   tags:
     - mysql
 
@@ -84,7 +84,7 @@
 - name: Ensure /usr/share/scripts exists
   file:
     dest: /usr/share/scripts
-    mode: 0700
+    mode: "700"
     state: directory
   tags:
     - mysql
@@ -93,6 +93,6 @@
   copy:
     src: my-add.sh
     dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/my-add.sh"
-    mode: 0700
+    mode: "700"
   tags:
     - mysql

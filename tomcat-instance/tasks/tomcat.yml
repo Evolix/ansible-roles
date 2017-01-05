@@ -14,11 +14,11 @@
     state: directory
     owner: 'root'
     group: 'root'
-    mode: 0755
+    mode: "755"
 
 - name: Copy systemd unit
   copy:
     src: 'files/tomcat.service'
     dest: "/etc/systemd/user/tomcat.service"
-    mode: 0755
+    mode: "755"
   notify: systemd reload

@@ -4,7 +4,7 @@
     dest: /etc/apache2/conf-available/letsencrypt.conf
     owner: root
     group: root
-    mode: 0644
+    mode: "644"
   notify: reload apache2
 
 - name: Enable acme challenge conf

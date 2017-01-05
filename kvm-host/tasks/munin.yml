@@ -4,7 +4,7 @@
   get_url:
     url: "https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/virtualization/{{ item }}"
     dest: "/etc/munin/plugins/"
-    mode: 0755
+    mode: "755"
   with_items:
   - kvm_cpu
   - kvm_io

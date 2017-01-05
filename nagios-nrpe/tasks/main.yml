@@ -20,7 +20,7 @@
 - name: Nagios config is secure
   file:
     dest: /etc/nagios/
-    mode: 0750
+    mode: "750"
     group: nagios
     state: directory
   notify: restart nagios-nrpe-server
@@ -30,7 +30,7 @@
 - name: Nagios plugins directory is secure
   file:
     dest: "{{ nagios_plugins_directory }}/"
-    mode: 0755
+    mode: "755"
     group: nagios
     recurse: yes
     state: directory
@@ -41,5 +41,5 @@
     src: plugins/
     dest: "{{ nagios_plugins_directory }}/"
     group: nagios
-    mode: 0755
+    mode: "755"
   notify: restart nagios-nrpe-server

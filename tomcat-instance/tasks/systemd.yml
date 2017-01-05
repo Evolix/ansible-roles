@@ -7,6 +7,6 @@
   lineinfile:
     dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/.profile"
     state: present
-    mode: 0640
+    mode: "640"
     create: yes
     line: 'export XDG_RUNTIME_DIR=/run/user/$UID'

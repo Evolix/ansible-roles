@@ -4,7 +4,7 @@
   get_url:
     url: 'https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/drbd/drbd'
     dest: '/etc/munin/plugins/'
-    mode: 0755
+    mode: "755"
   notify: restart munin-node
 
 - name: Copy Munin plugin conf

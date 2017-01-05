@@ -3,15 +3,15 @@
   file:
     path: /var/www
     state: directory
-    mode: 0755
+    mode: "0755"
   when: evolinux_default_www_files
 
 - name: images are copied
   copy:
     src: default_www/img
     dest: /var/www/
-    mode: 0755
-    directory_mode: 0755
+    mode: "0755"
+    directory_mode: "0755"
     follow: yes
   when: evolinux_default_www_files
 
@@ -19,7 +19,7 @@
   template:
     src: default_www/index.html.j2
     dest: /var/www/index.html
-    mode: 0755
+    mode: "0755"
   when: evolinux_default_www_files
 
 # SSL cert
@@ -40,7 +40,7 @@
       path: /etc/ssl/private/{{ ansible_fqdn }}.key
       owner: root
       group: ssl-cert
-      mode: 0640
+      mode: "640"
 
   - name: Create certificate for default site
     command: openssl x509 -req -days 3650 -sha256 -in /etc/ssl/{{ ansible_fqdn }}.csr -signkey /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/certs/{{ ansible_fqdn }}.crt
@@ -60,7 +60,7 @@
     template:
       src: default_www/nginx_default_site.j2
       dest: /etc/nginx/sites-available/000-default
-      mode: 0640
+      mode: "640"
       # force: yes
     notify: reload nginx
     tags:
@@ -91,7 +91,7 @@
     template:
       src: default_www/apache_default_site.j2
       dest: /etc/apache2/sites-available/000-default
-      mode: 0640
+      mode: "640"
       # force: yes
     notify: reload apache
     tags:

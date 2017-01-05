@@ -29,7 +29,7 @@
     dest: "/etc/apache2/conf-available/z-evolinux-defaults.conf"
     owner: root
     group: root
-    mode: 0644
+    mode: "644"
     force: yes
   tags:
     - apache
@@ -40,7 +40,7 @@
     dest: "/etc/apache2/conf-available/zzz-evolinux-custom.conf"
     owner: root
     group: root
-    mode: 0644
+    mode: "644"
     force: no
   tags:
     - apache
@@ -61,7 +61,7 @@
     dest: /etc/apache2/private_ipaddr_whitelist.conf
     owner: root
     group: root
-    mode: 0640
+    mode: "640"
     force: no
   tags:
     - apache
@@ -92,7 +92,7 @@
     dest: /etc/apache2/private_htpasswd
     owner: root
     group: root
-    mode: 0640
+    mode: "640"
     force: no
   notify: reload apache
   tags:

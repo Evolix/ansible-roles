@@ -11,7 +11,7 @@
     dest: /etc/rabbitmq/rabbitmq-env.conf
     owner: rabbitmq
     group: rabbitmq
-    mode: 0600
+    mode: "600"
     force: no
 
 - name: create rabbitmq.config
@@ -20,7 +20,7 @@
     dest: /etc/rabbitmq/rabbitmq.config
     owner: rabbitmq
     group: rabbitmq
-    mode: 0600
+    mode: "600"
     force: no
 
 - name: set ulimit -n to 2048
