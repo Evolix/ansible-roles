@@ -1,4 +1,19 @@
 ---
+galaxy_info:
+  author: Evolix
+  description: Single server install of the Elastic Stack (Elasticsearch, Logstash, Kibana)
+
+  issue_tracker_url: https://forge.evolix.org/projects/ansible-roles/issues
+
+  license: GPLv2
+
+  min_ansible_version: 2.0
+
+  platforms:
+  - name: Debian
+    versions:
+    - jessie
+
 dependencies:
   - { role: elasticsearch }
   - { role: elasticsearch-plugin-head }

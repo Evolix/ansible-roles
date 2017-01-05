@@ -1,6 +1,6 @@
 # munin
 
-Install Munin and enables/diables some default plugins.
+Install Munin and enables/disables some default plugins.
 
 ## Tasks
 

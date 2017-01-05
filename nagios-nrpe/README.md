@@ -1,6 +1,6 @@
 # nagios-nrpe
 
-Install Nagios NRPE server.
+Installation and custom configuration of Nagios NRPE server.
 
 ## Tasks
 

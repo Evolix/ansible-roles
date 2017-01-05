@@ -1,6 +1,6 @@
 # monit
 
-Install Monit.
+Installation and basic configuration of Monit.
 
 ## Tasks
 

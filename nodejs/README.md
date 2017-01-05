@@ -1,6 +1,6 @@
 # nodejs
 
-Install NodeJS from NPM repositories.
+Installation of NodeJS from NPM repositories.
 
 ## Tasks
 

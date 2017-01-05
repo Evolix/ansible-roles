@@ -1,6 +1,6 @@
 # Postfix
 
-Install Postfix
+Installation and basic configuration of Postfix.
 
 ## Tasks
 

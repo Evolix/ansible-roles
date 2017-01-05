@@ -1,6 +1,6 @@
-# fail2ban
+# profptd
 
-Install Fail2ban.
+Installation and basic configuration of ProFTPd
 
 ## Tasks
 
@@ -10,7 +10,7 @@ Everything is in the `tasks/main.yml` file.
 
 Main variables are :
 
-* `general_alert_email`: email address to send various alert messages (default: `root@localhost`).
-* `fail2ban_alert_email`: email address for messages sent to root (default: `general_alert_email`).
+* `proftpd_hostname`: hostname (default: `ansible_hostname`)
+* `proftpd_fqdn`: fully qualified domain name (default: `ansible_fqdn`)
 
 The full list of variables (with default values) can be found in `defaults/main.yml`.

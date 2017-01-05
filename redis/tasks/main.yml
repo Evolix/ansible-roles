@@ -4,8 +4,8 @@
     name: redis-server
     state: installed
   tags:
-    - redis
-    - packages
+  - redis
+  - packages
 
 - name: Redis is configured.
   template:
@@ -14,7 +14,7 @@
     mode: "644"
   notify: restart redis
   tags:
-    - redis
+  - redis
 
 - name: Redis is running and enabled on boot.
   service:
@@ -22,4 +22,4 @@
     enabled: yes
     state: started
   tags:
-    - redis
+  - redis

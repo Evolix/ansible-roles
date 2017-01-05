@@ -1,10 +1,12 @@
 # squid
 
-Install Squid.
+Installation and configuration of Squid as an outgoing proxy.
 
 ## Tasks
 
 Everything is in the `tasks/main.yml` file.
+
+A blank file is created at `/etc/squid3/whitelist-custom.conf` to add addresses in the whitelist.
 
 ## Available variables
 

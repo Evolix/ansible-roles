@@ -1,6 +1,6 @@
 # munin
 
-Install Rbenv, Ruby and some default gems.
+Installation of Rbenv, Ruby and some default gems.
 
 ## Tasks
 
@@ -18,5 +18,5 @@ The role must be specified with a `username` variable :
 
 ```
 roles:
-  - { role: rbenv, username: 'johndoe' }
+- { role: rbenv, username: 'johndoe' }
 ```

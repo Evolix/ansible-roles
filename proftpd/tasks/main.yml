@@ -4,8 +4,8 @@
     name: proftpd-basic
     state: installed
   tags:
-    - proftpd
-    - packages
+  - proftpd
+  - packages
 
 - name: ftpusers groupe exists
   group:
@@ -13,7 +13,7 @@
     state: present
   notify: restart proftpd
   tags:
-    - proftpd
+  - proftpd
 
 - name: local jail is installed
   template:
@@ -22,7 +22,7 @@
     mode: "644"
   notify: restart proftpd
   tags:
-    - proftpd
+  - proftpd
 
 - name: mod_tls_memcache is disabled
   replace:
@@ -31,4 +31,4 @@
     replace: '#LoadModule mod_tls_memcache.c'
   notify: restart proftpd
   tags:
-    - proftpd
+  - proftpd

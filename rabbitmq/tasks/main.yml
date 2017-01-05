@@ -1,11 +1,11 @@
-- name: ensure packages are installed
+- name: Install packages
   apt:
-    name: '{{ item }}'
+    name: "{{ item }}"
     state: present
   with_items:
-    - rabbitmq-server
+  - rabbitmq-server
 
-- name: create rabbitmq-env.conf
+- name: Create rabbitmq-env.conf
   copy:
     src: evolinux-rabbitmq-env.conf
     dest: /etc/rabbitmq/rabbitmq-env.conf
@@ -14,7 +14,7 @@
     mode: "600"
     force: no
 
-- name: create rabbitmq.config
+- name: Create rabbitmq.config
   copy:
     src: evolinux-rabbitmq.config
     dest: /etc/rabbitmq/rabbitmq.config
@@ -23,7 +23,7 @@
     mode: "600"
     force: no
 
-- name: set ulimit -n to 2048
+- name: Adjust ulimit
   lineinfile:
      dest: /etc/default/rabbitmq-server
      line: ulimit -n 2048

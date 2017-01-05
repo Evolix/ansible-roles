@@ -1,6 +1,6 @@
 # munin
 
-Install Redis with sensible configuration.
+Installation and basic configuration of Redis.
 
 This role is based on https://github.com/geerlingguy/ansible-role-redis
 
