@@ -92,7 +92,7 @@ cli() {
             password=$(apg -n1)
         fi
     fi
-    mysql_add $db $user $password
+    mysql_add $db $user $password >/dev/null
 }
 
 is_db() {
