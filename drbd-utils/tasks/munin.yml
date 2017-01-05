@@ -1,14 +1,15 @@
 ---
 
+# https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/drbd/drbd
 - name: Get Munin plugin
-  get_url:
-    url: 'https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/drbd/drbd'
-    dest: '/etc/munin/plugins/'
+  copy:
+    src: munin/drbd-plugin
+    dest: /etc/munin/plugins/drbd
     mode: "755"
   notify: restart munin-node
 
 - name: Copy Munin plugin conf
   copy:
-    src: files/munin-plugins
-    dest: '/etc/munin/plugin-conf.d/drbd'
+    src: munin/drbd-config
+    dest: /etc/munin/plugin-conf.d/drbd
   notify: restart munin-node
