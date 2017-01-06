@@ -1,0 +1,57 @@
+---
+
+- name: Begin marker for IP addresses
+  lineinfile:
+    dest: /etc/default/minifirewall
+    create: no
+    line: "# BEGIN ANSIBLE MANAGED BLOCK FOR IPS"
+    insertbefore: '^# Main interface'
+
+- name: End marker for IP addresses
+  lineinfile:
+    dest: /etc/default/minifirewall
+    create: no
+    line: "# END ANSIBLE MANAGED BLOCK FOR IPS"
+    insertafter: '^PRIVILEGIEDIPS='
+
+- name: Configure IP addresses
+  blockinfile:
+    dest: /etc/default/minifirewall
+    create: no
+    marker: "# {mark} ANSIBLE MANAGED BLOCK FOR IPS"
+    content: |
+      INT='{{ minifirewall_int }}'
+      IPV6='{{ minifirewall_ipv6 }}'
+      INTLAN='{{ minifirewall_intlan }}'
+      TRUSTEDIPS='{{ minifirewall_trusted_ips | join(' ') }}'
+      PRIVILEGIEDIPS='{{ minifirewall_privilegied_ips | join(' ') }}'
+
+
+- name: Begin marker for ports
+  lineinfile:
+    dest: /etc/default/minifirewall
+    create: no
+    line: "# BEGIN ANSIBLE MANAGED BLOCK FOR PORTS"
+    insertbefore: '^# Protected services'
+
+- name: End marker for ports
+  lineinfile:
+    dest: /etc/default/minifirewall
+    create: no
+    line: "# END ANSIBLE MANAGED BLOCK FOR PORTS"
+    insertafter: '^SERVICESUDP3='
+
+- name: Configure ports
+  blockinfile:
+    dest: /etc/default/minifirewall
+    create: no
+    marker: "# {mark} ANSIBLE MANAGED BLOCK FOR PORTS"
+    content: |
+      SERVICESTCP1p='{{ minifirewall_protected_ports_tcp | join(' ') }}'
+      SERVICESUDP1p='{{ minifirewall_protected_ports_udp | join(' ') }}'
+      SERVICESTCP1='{{ minifirewall_public_ports_tcp | join(' ') }}'
+      SERVICESUDP1='{{ minifirewall_public_ports_udp | join(' ') }}'
+      SERVICESTCP2='{{ minifirewall_semipublic_ports_tcp | join(' ') }}'
+      SERVICESUDP2='{{ minifirewall_semipublic_ports_udp | join(' ') }}'
+      SERVICESTCP3='{{ minifirewall_private_ports_tcp | join(' ') }}'
+      SERVICESUDP3='{{ minifirewall_private_ports_udp | join(' ') }}'

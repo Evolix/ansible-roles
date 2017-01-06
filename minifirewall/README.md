@@ -1,6 +1,6 @@
 # minifirewall
 
-Install minifirewall a simple and versatile local firewall.
+Installation of minifirewall a simple and versatile local firewall.
 
 The firewall is not started by default, but an init script is installed.
 
@@ -16,4 +16,6 @@ Everything is in the `tasks/main.yml` file.
 * `minifirewall_trusted_ips`: with IP/hosts should be trusted for full access (default: none)
 * `minifirewall_privilegied_ips`: with IP/hosts should be trusted for restricted access (default: none)
 
-Some IP/hosts must be configured or the server will be inaccessible via network.
+The full list of variables (with default values) can be found in `defaults/main.yml`.
+
+**Some IP/hosts must be configured or the server will be inaccessible via network.**
