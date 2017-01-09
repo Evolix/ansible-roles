@@ -1,7 +1,7 @@
 ---
 
 - name: Check if minifirewall is running
-  command: /sbin/iptables -L -n | grep -E "^(DROP\s+udp|ACCEPT\s+icmp)\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$
+  command: /sbin/iptables -L -n | grep -E "^(DROP\s+udp|ACCEPT\s+icmp)\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
   changed_when: False
   failed_when: False
   register: minifirewall_is_running
