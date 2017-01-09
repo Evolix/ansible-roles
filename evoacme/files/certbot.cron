@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ls /etc/letsencrypt/*.crt|sed 's/.crt//'|while read vhost;
+ls /etc/letsencrypt/*.crt 2>/dev/null |sed 's/.crt//'|while read vhost;
 do 
 	evoacme $(basename $vhost)>/dev/null
 done
