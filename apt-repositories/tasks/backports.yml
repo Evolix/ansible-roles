@@ -1,0 +1,43 @@
+---
+
+- name: Backports sources list is installed
+  template:
+    src: jessie_backports.list.j2
+    dest: /etc/apt/sources.list.d/backports.list
+    force: yes
+    backup: yes
+    mode: "640"
+  notify: apt update
+  when: ansible_distribution_major_version == '8'
+
+- name: Backports sources list is installed
+  template:
+    src: stretch_backports.list.j2
+    dest: /etc/apt/sources.list.d/backports.list
+    force: yes
+    backup: yes
+    mode: "640"
+  notify: apt update
+  when: ansible_distribution_major_version == '9'
+
+- name: Backports configuration
+  copy:
+    src: jessie_backports_preferences
+    dest: /etc/apt/preferences.d/backports
+    force: yes
+    backup: yes
+    mode: "640"
+  notify: apt update
+  when: ansible_distribution_major_version == '8'
+
+- name: Backports configuration
+  copy:
+    src: stretch_backports_preferences
+    dest: /etc/apt/preferences.d/backports
+    force: yes
+    backup: yes
+    mode: "640"
+  notify: apt update
+  when: ansible_distribution_major_version == '9'
+
+- meta: flush_handlers
