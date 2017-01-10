@@ -27,10 +27,14 @@
     src: init.d/spawn-fcgi-munin-graph
     dest: /etc/init.d/
     mode: "755"
+  register: install_spawn_fcgi_munin_graph
+
+- name: Reload systemd
+  command: systemctl daemon-reload
+  when: install_spawn_fcgi_munin_graph | changed
 
 - name: Ensure that Munin-fcgi is started/stopped correctly
   service:
     name: spawn-fcgi-munin-graph
     enabled: yes
     state: started
-  notify: restart spawn-fcgi-munin-graph
