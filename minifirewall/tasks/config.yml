@@ -5,6 +5,7 @@
   changed_when: False
   failed_when: False
   register: minifirewall_is_running
+  check_mode: no
 
 - name: Begin marker for IP addresses
   lineinfile:
