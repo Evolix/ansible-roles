@@ -1,15 +1,22 @@
 ---
 
+- name: Check if Munin plugins exists
+  stat:
+    path: /etc/munin/plugins/
+  register: munin_plugins_dir
+
 # https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/drbd/drbd
 - name: Get Munin plugin
   copy:
     src: munin/drbd-plugin
     dest: /etc/munin/plugins/drbd
     mode: "755"
+  when: munin_plugins_dir.stat.exist
   notify: restart munin-node
 
 - name: Copy Munin plugin conf
   copy:
     src: munin/drbd-config
     dest: /etc/munin/plugin-conf.d/drbd
+  when: munin_plugins_dir.stat.exist
   notify: restart munin-node
