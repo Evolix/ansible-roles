@@ -27,6 +27,7 @@ rm -f $CRT_DIR/${vhost}.crt $CRT_DIR/${vhost}-fullchain.pem $CRT_DIR/${vhost}-ch
 sudo -u acme certbot certonly --quiet --webroot --csr $CSR_DIR/${vhost}.csr --webroot-path $ACME_DIR -n --agree-tos --cert-path=$CRT_DIR/${vhost}.crt --fullchain-path=$CRT_DIR/${vhost}-fullchain.pem --chain-path=$CRT_DIR/${vhost}-chain.pem $emailopt --logs-dir $LOG_DIR 2> >(grep -v certbot.crypto_util)
 
 if [ $? != 0 ]; then
+	openssl x509 -req -sha256 -days 365 -in $CSR_DIR/${vhost}.csr -signkey $SSL_KEY_DIR/${vhost}.key -out $CRT_DIR/${vhost}-fullchain.pem
 	exit 1
 fi
 
