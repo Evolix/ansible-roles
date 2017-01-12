@@ -8,7 +8,7 @@
 - name: Mount /usr in rw
   command: mount -o remount,rw /usr warn=no
   changed_when: False
-  when: nagios_plugins_dir.stat.exist
+  when: nagios_plugins_dir.stat.exists
 
 # https://exchange.nagios.org/components/com_mtree/attachment.php?link_id=3367&cf_id=30
 - name: Install Nagios plugin
@@ -16,4 +16,4 @@
     src: "nagios/check_drbd"
     dest: "/usr/local/lib/nagios/plugins/check_drbd"
     mode: "755"
-  when: nagios_plugins_dir.stat.exist
+  when: nagios_plugins_dir.stat.exists

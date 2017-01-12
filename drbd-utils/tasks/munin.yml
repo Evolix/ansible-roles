@@ -11,12 +11,12 @@
     src: munin/drbd-plugin
     dest: /etc/munin/plugins/drbd
     mode: "755"
-  when: munin_plugins_dir.stat.exist
+  when: munin_plugins_dir.stat.exists
   notify: restart munin-node
 
 - name: Copy Munin plugin conf
   copy:
     src: munin/drbd-config
     dest: /etc/munin/plugin-conf.d/drbd
-  when: munin_plugins_dir.stat.exist
+  when: munin_plugins_dir.stat.exists
   notify: restart munin-node
