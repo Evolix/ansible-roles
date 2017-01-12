@@ -1,4 +1,4 @@
-- name: ensure packages are installed
+- name: LDAP packages are installed
   apt:
     name: '{{ item }}'
     state: present
@@ -6,3 +6,8 @@
     - slapd
     - ldap-utils
     - ldapvi
+
+- name: apg package is installed
+  apt:
+    name: apg
+    state: present

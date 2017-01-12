@@ -1,4 +1,9 @@
 ---
+- name: apg package is installed
+  apt:
+    name: apg
+    state: present
+
 - name: Generate random password for nrpe user
   command: apg -n1 -m 12 -M SCNL
   register: postgresql_nrpe_password

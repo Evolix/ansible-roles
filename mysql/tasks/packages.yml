@@ -10,7 +10,7 @@
     mysql_packages: "{{ mysql_packages_mariadb }}"
   when: mysql_variant == "mariadb"
 
-- name: Install packages
+- name: Install MySQL packages
   apt:
     name: '{{ item }}'
     update_cache: yes
@@ -24,3 +24,8 @@
   service:
     name: mysql
     state: started
+
+- name: apg package is installed
+  apt:
+    name: apg
+    state: present
