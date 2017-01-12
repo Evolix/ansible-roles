@@ -9,6 +9,11 @@
   register: postgresql_nrpe_password
   changed_when: False
 
+- name: Install python dependencies for postgresql_user
+  apt:
+    name: python-psycopg2
+    state: present
+
 - name: Create nrpe user
   become: yes
   become_user: postgres
