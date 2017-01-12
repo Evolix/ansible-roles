@@ -125,8 +125,9 @@ mysql_add() {
         exit 1
     fi
     if [ -z "${password}" ]; then
+	password=$(mysql mysql -Ne "SELECT Password FROM user WHERE User='${user}' AND Host='localhost';")
         echo -n "Grant '${user}' to '${db}' database ..."
-        mysql -e "GRANT ALL PRIVILEGES ON ${db}.* TO ${user}@localhost;"
+        mysql -e "GRANT ALL PRIVILEGES ON ${db}.* TO ${user}@localhost IDENTIFIED BY PASSWORD '${password}';"
         grant=$?
     else
         echo -n "Grant '${user}' to '${db}' database with password '${password}' ..."
