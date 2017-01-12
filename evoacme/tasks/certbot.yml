@@ -39,9 +39,20 @@
       state: latest
       default_release: "{{ evoacme_certbot_release }}"
 
-  - name: Mount /usr in rw
-    command: mount -o remount,rw /usr warn=no
+  - name: Check if /usr is a partition
+    shell: "mount | grep 'on /usr type'"
+    args:
+      warn: no
     changed_when: False
+    failed_when: False
+    register: usr_partition
+
+  - name: Mount /usr in rw
+    command: mount -o remount,rw /usr
+    args:
+      warn: no
+    changed_when: False
+    when: usr_partition.rc == 0
 
   - name: Remove certbot symlink for apt install
     file:

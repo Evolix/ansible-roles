@@ -5,10 +5,20 @@
     path: /usr/local/lib/nagios/plugins/
   register: nagios_plugins_dir
 
-- name: Mount /usr in rw
-  command: mount -o remount,rw /usr warn=no
+- name: Check if /usr is a partition
+  shell: "mount | grep 'on /usr type'"
+  args:
+    warn: no
   changed_when: False
-  when: nagios_plugins_dir.stat.exists
+  failed_when: False
+  register: usr_partition
+
+- name: Mount /usr in rw
+  command: mount -o remount,rw /usr
+  args:
+    warn: no
+  changed_when: False
+  when: usr_partition.rc == 0 and nagios_plugins_dir.stat.exists
 
 # https://exchange.nagios.org/components/com_mtree/attachment.php?link_id=3367&cf_id=30
 - name: Install Nagios plugin
