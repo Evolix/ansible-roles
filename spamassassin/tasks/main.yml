@@ -1,6 +1,4 @@
 - name: ensure packages are installed
   apt:
-    name: '{{ item }}'
+    name: spamassassin
     state: present
-  with_items:
-  - spamassassin

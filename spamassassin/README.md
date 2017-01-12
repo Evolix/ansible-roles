@@ -1,4 +1,4 @@
-# Courier
+# Spamassassin
 
 Installation and basic configuration of spamassassin
 
