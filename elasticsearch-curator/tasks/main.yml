@@ -3,7 +3,7 @@
 - name: APT https transport is enabled
   apt:
     name: apt-transport-https
-    state: installed
+    state: present
   tags:
     - system
     - packages
@@ -27,4 +27,4 @@
 - name: Curator package is installed
   apt:
     name: elasticsearch-curator
-    state: installed
+    state: present

@@ -2,7 +2,7 @@
 - name: package is installed
   apt:
     name: proftpd-basic
-    state: installed
+    state: present
   tags:
   - proftpd
   - packages

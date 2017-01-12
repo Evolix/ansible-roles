@@ -3,7 +3,7 @@
 - name: APT https transport is enabled
   apt:
     name: apt-transport-https
-    state: installed
+    state: present
   tags:
   - elastic
   - system

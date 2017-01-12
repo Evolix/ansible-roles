@@ -4,7 +4,7 @@
   apt:
     name: kibana
     update_cache: yes
-    state: installed
+    state: present
   tags:
     - packages
 

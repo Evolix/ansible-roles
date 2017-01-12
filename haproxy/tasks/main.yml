@@ -3,4 +3,4 @@
 - name: Install packages
   apt:
     name: haproxy
-    state: installed
+    state: present

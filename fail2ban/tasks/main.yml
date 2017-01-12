@@ -2,7 +2,7 @@
 - name: package is installed
   apt:
     name: fail2ban
-    state: installed
+    state: present
   tags:
     - packages
 

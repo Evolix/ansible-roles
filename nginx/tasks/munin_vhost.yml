@@ -9,7 +9,7 @@
 - name: Ensure packages for Munin CGI are installed
   apt:
     name: '{{ item }}'
-    state: installed
+    state: present
   with_items:
     - liblwp-useragent-determined-perl
     - spawn-fcgi

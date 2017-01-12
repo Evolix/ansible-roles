@@ -4,7 +4,7 @@
 - name: APT https transport is enabled
   apt:
     name: apt-transport-https
-    state: installed
+    state: present
   tags:
     - system
     - packages
@@ -31,7 +31,7 @@
   apt:
     name: nodejs
     update_cache: yes
-    state: installed
+    state: present
   tags:
     - packages
     - nodejs

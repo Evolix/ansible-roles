@@ -5,7 +5,7 @@
 - name: Install mytop
   apt:
     name: mytop
-    state: installed
+    state: present
   tags:
     - packages
     - mytop

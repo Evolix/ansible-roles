@@ -2,7 +2,7 @@
 - name: Ensure Nginx is installed
   apt:
     name: nginx-full
-    state: installed
+    state: present
   notify: restart nginx
   tags:
   - nginx

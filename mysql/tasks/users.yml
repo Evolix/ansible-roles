@@ -5,7 +5,7 @@
 - name: python-mysqldb is installed (Ansible dependency)
   apt:
     name: python-mysqldb
-    state: installed
+    state: present
   tags:
     - mysql
 

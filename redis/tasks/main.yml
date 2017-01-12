@@ -2,7 +2,7 @@
 - name: Redis is installed.
   apt:
     name: redis-server
-    state: installed
+    state: present
   tags:
   - redis
   - packages

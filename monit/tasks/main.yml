@@ -3,7 +3,7 @@
 - name: monit is installed
   apt:
     name: monit
-    state: installed
+    state: present
   tags:
   - monit
   - packages
