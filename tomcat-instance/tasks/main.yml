@@ -1,6 +1,6 @@
 ---
 - stat:
-    path: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}"
+    path: "{{ tomcat_instance_root | mandatory }}/{{ tomcat_instance_name | mandatory }}"
   register: tomcat_instance_stat
 
 - include: tomcat.yml
