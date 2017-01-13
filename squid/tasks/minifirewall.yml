@@ -1,39 +1,38 @@
 ---
-- name: verify that minifirewall is present
+- name: Check if Minifirewall is present
   stat:
     path: /etc/default/minifirewall
   register: minifirewall_test
 
-- fail:
-    msg: "You must install and configure minifirewall to use Squid"
-  when: not minifirewall_test.stat.exists
+- name: configure Minifirewall for Squid
+  block:
+  - name: HTTPSITES list is commented in minifirewall
+    replace:
+      dest: /etc/default/minifirewall
+      regexp: "^(HTTPSITES='[^0-9])"
+      replace: '#\1'
 
-- name: HTTPSITES list is commented in minifirewall
-  replace:
-    dest: /etc/default/minifirewall
-    regexp: "^(HTTPSITES='[^0-9])"
-    replace: '#\1'
+  - name: all HTTPSITES are authorized in minifirewall
+    lineinfile:
+      dest: /etc/default/minifirewall
+      line: "HTTPSITES='0.0.0.0/0'"
+      insertafter: "^#HTTPSITES="
 
-- name: all HTTPSITES are authorized in minifirewall
-  lineinfile:
-    dest: /etc/default/minifirewall
-    line: "HTTPSITES='0.0.0.0/0'"
-    insertafter: "^#HTTPSITES="
+  - name: add iptables rules for the proxy
+    lineinfile:
+      dest: /etc/default/minifirewall
+      regexp: "^#? *{{ item }}"
+      line: "{{ item }}"
+      insertafter: "^# Proxy"
+    with_items:
+      - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -m owner --uid-owner proxy -j ACCEPT"
+      - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -d {{ squid_address }} -j ACCEPT"
+      - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -d 127.0.0.0/8 -j ACCEPT"
+      - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port 8888"
 
-- name: add minifirewall rules for the proxy
-  lineinfile:
-    dest: /etc/default/minifirewall
-    regexp: "^#? *{{ item }}"
-    line: "{{ item }}"
-    insertafter: "^# Proxy"
-  with_items:
-    - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -m owner --uid-owner proxy -j ACCEPT"
-    - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -d {{ squid_address }} -j ACCEPT"
-    - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -d 127.0.0.0/8 -j ACCEPT"
-    - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port 8888"
-
-- name: remove minifirewall example rule for the proxy
-  lineinfile:
-    dest: /etc/default/minifirewall
-    regexp: '^#.*(-t nat).*(-d X\.X\.X\.X)'
-    state: absent
+  - name: remove minifirewall example rule for the proxy
+    lineinfile:
+      dest: /etc/default/minifirewall
+      regexp: '^#.*(-t nat).*(-d X\.X\.X\.X)'
+      state: absent
+  when: minifirewall_test.stat.exists
