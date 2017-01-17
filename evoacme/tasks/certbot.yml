@@ -31,7 +31,7 @@
       update_cache: yes
     when:
       - add_backports is defined
-      - add_backports|change
+      - add_backports|changed
 
   - name: Install certbot with apt
     apt:
