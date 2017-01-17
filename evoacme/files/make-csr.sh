@@ -34,13 +34,29 @@ if [ -f /etc/apache2/sites-enabled/${vhost}.conf ]; then
 	domains=`grep -oE "^( )*[^#]+" /etc/apache2/sites-enabled/${vhost}.conf|grep -oE "(ServerName|ServerAlias).*"|sed 's/ServerName//'|sed 's/ServerAlias//'|sed 's/\s\{1,\}//'|sort|uniq`
 fi
 
-echo "Domain(s) for $vhost :"
+valid_domains=''
+srv_ip=$(ip a|grep brd|cut -d'/' -f1|grep -oE "([0-9]+\.){3}[0-9]+")
+
+echo "Valid Domain(s) for $vhost :"
 for domain in $domains
 do
-	# TODO : vérifier si domaine pointe sur localhost
-	echo "- $domain"
-	nb=$(( nb  + 1 ))
+	real_ip=$(dig +short $domain|grep -oE "([0-9]+\.){3}[0-9]+")
+	for ip in "$srv_ip"; do
+		if [ "$ip" == "$real_ip" ]; then
+                        valid_domains="$valid_domains $domain"
+	                nb=$(( nb  + 1 ))
+			echo "- $domain"
+		fi
+	done
 done
+
+if [ $nb -eq 0 ]; then
+        nb=`echo $domains|wc -l`
+	echo "No valid domains : $domains" >&2
+	exit 1
+else
+        domains=$valid_domains
+fi
 
 mkdir -p /etc/ssl/requests -m 755
 chown root: /etc/ssl/requests
