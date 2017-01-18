@@ -41,7 +41,7 @@
       dest: /etc/init.d/cciss-vol-statusd
       mode: "755"
 
-  - name: Enable HP hardware in sysctl
+  - name: Enable HP hardware in systemd
     service:
       name: cciss-vol-statusd
       enabled: true
@@ -68,7 +68,7 @@
       dest: /etc/default/megaclisas-statusd
       mode: "755"
 
-  - name: Enable DELL/LSI hardware in sysctl
+  - name: Enable DELL/LSI hardware in systemd
     service:
       name: megaclisas-statusd
       enabled: true
