@@ -41,8 +41,8 @@ echo "Valid Domain(s) for $vhost :"
 for domain in $domains
 do
 	real_ip=$(dig +short $domain|grep -oE "([0-9]+\.){3}[0-9]+")
-	for ip in "$srv_ip"; do
-		if [ "$ip" == "$real_ip" ]; then
+	for ip in $(echo $srv_ip|xargs -n1); do
+		if [ "${ip}" == "${real_ip}" ]; then
                         valid_domains="$valid_domains $domain"
 	                nb=$(( nb  + 1 ))
 			echo "- $domain"
