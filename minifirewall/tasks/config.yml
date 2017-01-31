@@ -36,10 +36,21 @@
     create: no
     marker: "# {mark} ANSIBLE MANAGED BLOCK FOR IPS"
     content: |
+      # Main interface
       INT='{{ minifirewall_int }}'
+
+      # IPv6
       IPV6='{{ minifirewall_ipv6 }}'
+
+      # Trusted IPv4 local network
+      # ...will be often IP/32 if you don't trust anything
       INTLAN='{{ minifirewall_intlan }}'
+
+      # Trusted IPv4 addresses for private and semi-public services
       TRUSTEDIPS='{{ minifirewall_trusted_ips | join(' ') }}'
+
+      # Privilegied IPv4 addresses for semi-public services
+      # (no need to add again TRUSTEDIPS)
       PRIVILEGIEDIPS='{{ minifirewall_privilegied_ips | join(' ') }}'
   register: minifirewall_config_ips
 
@@ -63,12 +74,20 @@
     create: no
     marker: "# {mark} ANSIBLE MANAGED BLOCK FOR PORTS"
     content: |
+      # Protected services
+      # (add also in Public services if needed)
       SERVICESTCP1p='{{ minifirewall_protected_ports_tcp | join(' ') }}'
       SERVICESUDP1p='{{ minifirewall_protected_ports_udp | join(' ') }}'
+
+      # Public services (IPv4/IPv6)
       SERVICESTCP1='{{ minifirewall_public_ports_tcp | join(' ') }}'
       SERVICESUDP1='{{ minifirewall_public_ports_udp | join(' ') }}'
+
+      # Semi-public services (IPv4)
       SERVICESTCP2='{{ minifirewall_semipublic_ports_tcp | join(' ') }}'
       SERVICESUDP2='{{ minifirewall_semipublic_ports_udp | join(' ') }}'
+
+      # Private services (IPv4)
       SERVICESTCP3='{{ minifirewall_private_ports_tcp | join(' ') }}'
       SERVICESUDP3='{{ minifirewall_private_ports_udp | join(' ') }}'
   register: minifirewall_config_ports
