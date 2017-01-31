@@ -5,6 +5,8 @@
   register: uidisbusy
   failed_when: False
   changed_when: False
+  #check_mode: no (for migration to Ansible 2.2)
+  always_run: yes
 
 - name: Add Unix account with classical uid for '{{ user.name }}'
   user:
@@ -37,6 +39,8 @@
   stat:
     path: "/usr/share/scripts/evomaintenance.sh"
   register: evomaintenance_script
+  #check_mode: no (for migration to Ansible 2.2)
+  always_run: yes
 
 - name: Add evomaintenance trap for '{{ user.name }}'
   lineinfile:
@@ -65,6 +69,8 @@
   changed_when: False
   failed_when: False
   register: grep_allowusers_ssh
+  #check_mode: no (for migration to Ansible 2.2)
+  always_run: yes
 
 - name: Add AllowUsers sshd directive for '{{ user.name }}'
   lineinfile:
@@ -89,6 +95,8 @@
   changed_when: False
   failed_when: False
   register: grep_matchuser_ssh
+  #check_mode: no (for migration to Ansible 2.2)
+  always_run: yes
 
 - name: Add Match User sshd directive for '{{ user.name }}'
   lineinfile:

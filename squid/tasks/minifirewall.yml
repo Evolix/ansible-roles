@@ -2,6 +2,8 @@
 - name: Check if Minifirewall is present
   stat:
     path: /etc/default/minifirewall
+  #check_mode: no (for migration to Ansible 2.2)
+  always_run: yes
   register: minifirewall_test
 
 - name: configure Minifirewall for Squid

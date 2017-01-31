@@ -14,6 +14,8 @@
 
 - name: fetch users list
   shell: getent passwd | cut -d":" -f 1 | grep -v root
+  #check_mode: no (for migration to Ansible 2.2)
+  always_run: yes
   register: non_root_users_list
   changed_when: False
   tags:

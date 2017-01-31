@@ -4,8 +4,11 @@
   command: /sbin/iptables -L -n | grep -E "^(DROP\s+udp|ACCEPT\s+icmp)\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
   changed_when: False
   failed_when: False
+  #check_mode: no (for migration to Ansible 2.2)
+  always_run: yes
   register: minifirewall_is_running
-  check_mode: no
+  #check_mode: no (for migration to Ansible 2.2)
+  always_run: yes
 
 - name: Begin marker for IP addresses
   lineinfile:

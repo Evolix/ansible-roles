@@ -3,6 +3,8 @@
 - name: is NRPE present ?
   stat:
     path: /etc/nagios/nrpe.d/evolix.cfg
+  #check_mode: no (for migration to Ansible 2.2)
+  always_run: yes
   register: nrpe_evolix_config
   tags:
     - mysql

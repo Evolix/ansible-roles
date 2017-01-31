@@ -8,6 +8,8 @@
 
 - name: Check if Broadcom NetXtreme II device is present
   shell: "lspci | grep -q 'NetXtreme II'"
+  #check_mode: no (for migration to Ansible 2.2)
+  always_run: yes
   register: broadcom
   failed_when: False
   changed_when: False
@@ -25,6 +27,8 @@
 
 - name: Detect if RAID is installed
   shell: lspci | grep "RAID bus controller" | grep -v Intel
+  #check_mode: no (for migration to Ansible 2.2)
+  always_run: yes
   register: raidmodel
   changed_when: "'FAILED' in raidmodel.stdout"
   failed_when: "'FAILED' in raidmodel.stdout"

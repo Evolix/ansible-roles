@@ -62,6 +62,8 @@
 
 - name: is an MTA installed?
   command: "dpkg -S /usr/sbin/sendmail"
+  #check_mode: no (for migration to Ansible 2.2)
+  always_run: yes
   register: mta_installed
   failed_when: False
   changed_when: False

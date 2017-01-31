@@ -80,8 +80,8 @@
   become_user: "{{ username }}"
   failed_when: False
   changed_when: False
-  register: ruby_installed
   always_run: yes
+  register: ruby_installed
   tags:
   - rbenv
 
@@ -95,9 +95,9 @@
 - name: is Ruby {{ rbenv_ruby_version }} selected for {{ username }} ?
   shell: /bin/bash -lc "rbenv version | cut -d ' ' -f 1 | grep -Fx '{{ rbenv_ruby_version }}'"
   become_user: "{{ username }}"
+  always_run: yes
   register: ruby_selected
   changed_when: False
-  always_run: yes
   tags:
   - rbenv
 

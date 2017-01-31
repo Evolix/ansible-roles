@@ -120,6 +120,8 @@
 - name: Check if Munin is installed
   stat:
     path: /etc/munin/plugin-conf.d/munin-node
+  #check_mode: no (for migration to Ansible 2.2)
+  always_run: yes
   register: stat_munin_node
   tags:
   - nginx
