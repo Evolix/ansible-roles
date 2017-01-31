@@ -37,13 +37,19 @@ service nginx reload
 4 - Create a CSR for a vhost with make-csr
 
 ~~~
-# vhostname is vhostfile without .conf ext
+# make-csr look for this file :
+# /etc/nginx/sites-enabled/vhostname
+# /etc/nginx/sites-enabled/vhostname.conf
+# /etc/apache2/sites-enabled/vhostname
+# /etc/apache2/sites-enabled/vhostname.conf
 make-csr vhostname
 ~~~
 
 8 - Generate the certificate with evoacme
 
 ~~~
+# evoacme look for /etc/ssl/requests/vhostname
+# vhostname was the same used by make-csr
 evoacme vhostname
 ~~~
 

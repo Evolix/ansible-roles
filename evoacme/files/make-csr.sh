@@ -1,15 +1,19 @@
 #!/bin/bash
-
 source /etc/default/evoacme
 
-vhost=$1
+shopt -s extglob
 
-if [ ! -f /etc/nginx/sites-enabled/$vhost ]; then
-	if [ ! -f /etc/apache2/sites-enabled/${vhost}.conf ]; then
-		echo "$vhost doesn't exist !"
-		exit 1
-	fi
+vhost=$1
+vhostfiles=$(ls -1 /etc/{nginx,apache2}/sites-enabled/${vhost}?(.conf) 2>/dev/null)
+
+if [ $(echo "${vhostfiles}"|wc -l) -lt 1 ]; then
+	echo "$vhost doesn't exist !"
+	exit 1
 fi
+
+for vhostfile in "${vhostfiles}"; do
+	break;
+done
 
 if [ -f $SSL_KEY_DIR/${vhost}.key ]; then
 	read -p "$vhost key already exist, overwrite it ? (y)" -n 1 -r
@@ -26,12 +30,14 @@ chmod 640 $SSL_KEY_DIR/${vhost}.key
 
 nb=0
 
-if [ -f /etc/nginx/sites-enabled/$vhost ]; then
-	domains=`grep -oE "^( )*[^#]+" /etc/nginx/sites-enabled/$vhost|grep -oE "[^\$]server_name.*;$"|sed 's/server_name//'|tr -d ';'|sed 's/\s\{1,\}//'|sed 's/\s\{1,\}/\n/g'|sort|uniq`
+echo $vhostfile |grep -q nginx
+if [ $? -eq 0 ]; then
+	domains=`grep -oE "^( )*[^#]+" $vhostfile |grep -oE "[^\$]server_name.*;$"|sed 's/server_name//'|tr -d ';'|sed 's/\s\{1,\}//'|sed 's/\s\{1,\}/\n/g'|sort|uniq`
 fi
 
-if [ -f /etc/apache2/sites-enabled/${vhost}.conf ]; then
-	domains=`grep -oE "^( )*[^#]+" /etc/apache2/sites-enabled/${vhost}.conf|grep -oE "(ServerName|ServerAlias).*"|sed 's/ServerName//'|sed 's/ServerAlias//'|sed 's/\s\{1,\}//'|sort|uniq`
+echo $vhostfile |grep -q apache2
+if [ $? -eq 0 ]; then
+	domains=`grep -oE "^( )*[^#]+" $vhostfile |grep -oE "(ServerName|ServerAlias).*"|sed 's/ServerName//'|sed 's/ServerAlias//'|sed 's/\s\{1,\}//'|sort|uniq`
 fi
 
 valid_domains=''
