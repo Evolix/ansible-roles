@@ -6,7 +6,7 @@
   failed_when: False
   changed_when: False
   tags:
-    - config
+  - config
 
 - name: Maximum map count check
   sysctl:
@@ -15,7 +15,7 @@
     sysctl_file: /etc/sysctl.d/elasticsearch.conf
   when: "{{ max_map_count|int < 262144 }}"
   tags:
-    - config
+  - config
 
 - name: bootstrap.memory_lock
   lineinfile:
@@ -24,7 +24,7 @@
     regexp: "^bootstrap.memory_lock:"
     insertafter: "^# *bootstrap.memory_lock:"
   tags:
-    - config
+  - config
 
 - name: Create a system config directory for systemd overrides
   file:
@@ -38,6 +38,6 @@
     option: "LimitMEMLOCK"
     value: "infinity"
   notify:
-    - reload elasticsearch unit
+  - reload elasticsearch unit
   tags:
-    - config
+  - config

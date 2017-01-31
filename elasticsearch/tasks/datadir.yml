@@ -40,5 +40,5 @@
       name: elasticsearch
       state: started
   tags:
-    - elasticsearch
+  - elasticsearch
   when: elasticsearch_custom_datadir and elasticsearch_custom_datadir != elasticsearch_current_real_datadir_test.stdout and not elasticsearch_custom_datadir_test.stat.exists

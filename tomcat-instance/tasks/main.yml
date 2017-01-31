@@ -6,11 +6,17 @@
   register: tomcat_instance_stat
 
 - include: tomcat.yml
+
 - include: nagios.yml
+
 - include: check.yml
+
 - include: user.yml
+
 - include: systemd.yml
+
 - include: alias.yml
-  when: tomcat_instance_stat.stat.exists != True
+  when: not tomcat_instance_stat.stat.exists
+
 - include: bootstrap.yml
-  when: tomcat_instance_stat.stat.exists != True
+  when: not tomcat_instance_stat.stat.exists
