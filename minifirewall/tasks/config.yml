@@ -7,8 +7,14 @@
   #check_mode: no (for migration to Ansible 2.2)
   always_run: yes
   register: minifirewall_is_running
-  #check_mode: no (for migration to Ansible 2.2)
-  always_run: yes
+
+- debug:
+    msg: Minifirewall IS running
+  when: minifirewall_is_running.rc == 0
+
+- debug:
+    msg: Minifirewall IS NOT running
+  when: minifirewall_is_running.rc != 0
 
 - name: Begin marker for IP addresses
   lineinfile:
