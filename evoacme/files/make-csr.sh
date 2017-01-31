@@ -1,5 +1,11 @@
 #!/bin/bash
-source /etc/default/evoacme
+
+if [ -f /etc/default/evoacme ]; then
+	source /etc/default/evoacme
+fi
+[ -z "${SSL_KEY_DIR}" ] && SSL_KEY_DIR='/etc/ssl/private'
+[ -z "${CSR_DIR}" ] && CSR_DIR='/etc/ssl/requests'
+[ -z "${SELF_SIGNED_DIR}" ] && SELF_SIGNED_DIR='/etc/ssl/self-signed'
 
 shopt -s extglob
 
@@ -26,7 +32,7 @@ fi
 SSL_KEY_SIZE=$(grep default_bits /etc/letsencrypt/openssl.cnf|cut -d'=' -f2|xargs)
 openssl genrsa -out $SSL_KEY_DIR/${vhost}.key $SSL_KEY_SIZE
 chown root: $SSL_KEY_DIR/${vhost}.key
-chmod 640 $SSL_KEY_DIR/${vhost}.key
+chmod 600 $SSL_KEY_DIR/${vhost}.key
 
 nb=0
 
@@ -64,11 +70,10 @@ else
         domains=$valid_domains
 fi
 
-mkdir -p /etc/ssl/requests -m 755
-chown root: /etc/ssl/requests
+mkdir -p $CSR_DIR -m 0755
 
 if [ $nb -eq 1 ]; then
-    openssl req -new -sha256 -key $SSL_KEY_DIR/${vhost}.key -config <(cat /etc/letsencrypt/openssl.cnf <(printf "CN=$domain")) -out $CSR_DIR/${vhost}.csr
+	openssl req -new -sha256 -key $SSL_KEY_DIR/${vhost}.key -config <(cat /etc/letsencrypt/openssl.cnf <(printf "CN=$domain")) -out $CSR_DIR/${vhost}.csr
 elif [ $nb -gt 1 ]; then
 	san=''
 	for domain in $domains
@@ -76,14 +81,14 @@ elif [ $nb -gt 1 ]; then
 	        san="$san,DNS:$domain"
 	done
 	san=`echo $san|sed 's/,//'`
-    openssl req -new -sha256 -key $SSL_KEY_DIR/${vhost}.key -reqexts SAN -config <(cat /etc/letsencrypt/openssl.cnf <(printf "[SAN]\nsubjectAltName=$san")) > $CSR_DIR/${vhost}.csr
+	openssl req -new -sha256 -key $SSL_KEY_DIR/${vhost}.key -reqexts SAN -config <(cat /etc/letsencrypt/openssl.cnf <(printf "[SAN]\nsubjectAltName=$san")) > $CSR_DIR/${vhost}.csr
 fi
 
 if [ -f $CSR_DIR/${vhost}.csr ]; then
-	chown root: $CSR_DIR/${vhost}.csr
 	chmod 644 $CSR_DIR/${vhost}.csr
-	if [ ! -f $CRT_DIR/${vhost}-fullchain.pem ]; then
-		echo "Generate autosigned cert"
-		openssl x509 -req -sha256 -days 365 -in $CSR_DIR/${vhost}.csr -signkey $SSL_KEY_DIR/${vhost}.key -out $CRT_DIR/${vhost}-fullchain.pem
+	mkdir -p $SELF_SIGNED_DIR -m 0755
+	openssl x509 -req -sha256 -days 365 -in $CSR_DIR/${vhost}.csr -signkey $SSL_KEY_DIR/${vhost}.key -out $SELF_SIGNED_DIR/${vhost}.pem
+	if [ -f $SELF_SIGNED_DIR/${vhost}.pem ]; then
+		chmod 644 $SELF_SIGNED_DIR/${vhost}.pem
 	fi
 fi
