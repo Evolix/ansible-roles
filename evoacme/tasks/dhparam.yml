@@ -1,4 +1,0 @@
-- name: Generate DH paramaters
-  command: openssl dhparam -rand - {{ evoacme_dhparam_size }} -out /etc/ssl/dhparam.pem
-  args:
-    creates: /etc/ssl/dhparam.pem

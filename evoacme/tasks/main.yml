@@ -14,6 +14,3 @@
 
 - include: tasks/nginx.yml
   when: stn.stat.isreg is defined and stn.stat.isreg
-
-- include: tasks/dhparam.yml
-  when: stn.stat.isreg is defined and stn.stat.isreg

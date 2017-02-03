@@ -1,4 +1,4 @@
-# Evoacme 1.4
+# Evoacme 1.5
 
 EvoAcme is an [Ansible](https://www.ansible.com/) role and a [Certbot](https://certbot.eff.org) wrapper for generate [Let's Encrypt](https://letsencrypt.org/) certificates.
 
@@ -45,12 +45,28 @@ service nginx reload
 make-csr vhostname
 ~~~
 
-8 - Generate the certificate with evoacme
+5 - Generate the certificate with evoacme
 
 ~~~
 # evoacme look for /etc/ssl/requests/vhostname
 # vhostname was the same used by make-csr
 evoacme vhostname
+~~~
+
+6 - Include ssl configuration
+
+Sll configuration has generated, you must include it in your vhost.
+
+For Apache :
+
+~~~
+Include /etc/apache2/ssl/vhost.conf
+~~~
+
+For Nginx :
+
+~~~
+include /etc/nginx/ssl/vhost.conf;
 ~~~
 
 # License

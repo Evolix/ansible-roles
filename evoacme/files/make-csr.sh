@@ -1,8 +1,6 @@
 #!/bin/bash
 
-if [ -f /etc/default/evoacme ]; then
-	source /etc/default/evoacme
-fi
+[ -f /etc/default/evoacme ] && source /etc/default/evoacme
 [ -z "${SSL_KEY_DIR}" ] && SSL_KEY_DIR='/etc/ssl/private'
 [ -z "${CSR_DIR}" ] && CSR_DIR='/etc/ssl/requests'
 [ -z "${SELF_SIGNED_DIR}" ] && SELF_SIGNED_DIR='/etc/ssl/self-signed'
@@ -65,7 +63,6 @@ done
 if [ $nb -eq 0 ]; then
         nb=`echo $domains|wc -l`
 	echo "No valid domains : $domains" >&2
-	exit 1
 else
         domains=$valid_domains
 fi
@@ -90,5 +87,26 @@ if [ -f $CSR_DIR/${vhost}.csr ]; then
 	openssl x509 -req -sha256 -days 365 -in $CSR_DIR/${vhost}.csr -signkey $SSL_KEY_DIR/${vhost}.key -out $SELF_SIGNED_DIR/${vhost}.pem
 	if [ -f $SELF_SIGNED_DIR/${vhost}.pem ]; then
 		chmod 644 $SELF_SIGNED_DIR/${vhost}.pem
+	fi
+fi
+
+if [ -d /etc/apache2 ]; then
+	mkdir -p /etc/apache2/ssl
+	if [ ! -f /etc/apache2/ssl/${vhost}.conf ]; then
+		cat > /etc/apache2/ssl/${vhost}.conf <<EOF
+SSLEngine On
+SSLCertificateFile    $SELF_SIGNED_DIR/${vhost}.pem
+SSLCertificateKeyFile $SSL_KEY_DIR/${vhost}.key
+EOF
+	fi
+fi
+
+if [ -d /etc/nginx ]; then
+	mkdir -p /etc/nginx/ssl
+	if [ ! -f /etc/nginx/ssl/${vhost}.conf ]; then
+		cat > /etc/nginx/ssl/${vhost}.conf <<EOF
+ssl_certificate $SELF_SIGNED_DIR/${vhost}.pem;
+ssl_certificate_key $SSL_KEY_DIR/${vhost}.key;
+EOF
 	fi
 fi

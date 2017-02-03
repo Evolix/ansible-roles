@@ -1,6 +1,9 @@
 #!/bin/bash
 
-source /etc/default/evoacme
+[ -f /etc/default/evoacme ] && source /etc/default/evoacme
+[ -z "${SSL_KEY_DIR}" ] && SSL_KEY_DIR='/etc/ssl/private'
+[ -z "${CSR_DIR}" ] && CSR_DIR='/etc/ssl/requests'
+[ -z "${SELF_SIGNED_DIR}" ] && SELF_SIGNED_DIR='/etc/ssl/self-signed'
 
 vhost=$1
 
@@ -27,42 +30,30 @@ rm -f $CRT_DIR/${vhost}.crt $CRT_DIR/${vhost}-fullchain.pem $CRT_DIR/${vhost}-ch
 sudo -u acme certbot certonly --quiet --webroot --csr $CSR_DIR/${vhost}.csr --webroot-path $ACME_DIR -n --agree-tos --cert-path=$CRT_DIR/${vhost}.crt --fullchain-path=$CRT_DIR/${vhost}-fullchain.pem --chain-path=$CRT_DIR/${vhost}-chain.pem $emailopt --logs-dir $LOG_DIR 2> >(grep -v certbot.crypto_util)
 
 if [ $? != 0 ]; then
-	openssl x509 -req -sha256 -days 365 -in $CSR_DIR/${vhost}.csr -signkey $SSL_KEY_DIR/${vhost}.key -out $CRT_DIR/${vhost}-fullchain.pem
+	if [ -d /etc/apache2 ]; then
+		sed -i "s~^SSLCertificateFile.*$~SSLCertificateFile $SELF_SIGNED_DIR/${vhost}.pem~" /etc/apache2/ssl/${vhost}.conf
+	fi
+	if [ -d /etc/nginx ]; then
+		sed -i "s~^ssl_certificate[^_]*$~ssl_certificate $SELF_SIGNED_DIR/${vhost}.pem;~" /etc/nginx/ssl/${vhost}.conf
+	fi
 	exit 1
 fi
 
 which apache2ctl>/dev/null
 if [ $? == 0 ]; then
-        apache2ctl -t 2>/dev/null
+	sed -i "s~^SSLCertificateFile.*$~SSLCertificateFile $CRT_DIR/${vhost}-fullchain.pem~" /etc/apache2/ssl/${vhost}.conf
+	apache2ctl -t 2>/dev/null
         if [ $? == 0 ]; then
                 service apache2 reload
         fi
 fi
 which nginx>/dev/null
 if [ $? == 0 ]; then
+	sed -i "s~^ssl_certificate[^_]*$~ssl_certificate $CRT_DIR/${vhost}-fullchain.pem;~" /etc/nginx/ssl/${vhost}.conf
         nginx -t 2>/dev/null
         if [ $? == 0 ]; then
                 service nginx reload
         fi
-fi
-
-if [ -z "$renew" ]; then
-
-cat <<EOF
-
-- Nginx configuration :
-
-ssl_certificate $CRT_DIR/${vhost}-fullchain.pem;
-ssl_certificate_key /etc/ssl/private/${vhost}.key;
-
-- Apache configuration :
-
-SSLEngine On
-SSLCertificateFile    $CRT_DIR/${vhost}-fullchain.pem
-SSLCertificateKeyFile /etc/ssl/private/${vhost}.key
-
-EOF
-
 fi
 
 exit 0
