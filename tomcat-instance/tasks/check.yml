@@ -9,7 +9,7 @@
   changed_when: false
   always_run: yes
   failed_when: 
-    - check_port_gid|succeeded
+    - check_port_gid|success
     - check_port_gid.stdout != "{{ tomcat_instance_name }}"
 
 - name: Check use of uid 
@@ -18,7 +18,7 @@
   always_run: yes
   changed_when: false
   failed_when: 
-    - check_port_uid|succeeded
+    - check_port_uid|success
     - check_port_uid.stdout != "{{ tomcat_instance_name }}"
 
 #- name: Check use of http port 
