@@ -1,4 +1,7 @@
 - name: ensure packages are installed
   apt:
-    name: clamav-freshclam
+    name: '{{ item }}'
     state: present
+  with_items:
+  - clamav-daemon
+  - clamav-freshclam
