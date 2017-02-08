@@ -31,17 +31,17 @@ sudo -u acme certbot certonly --quiet --webroot --csr $CSR_DIR/${vhost}.csr --we
 
 if [ $? != 0 ]; then
 	if [ -d /etc/apache2 ]; then
-		sed -i "s~^SSLCertificateFile.*$~SSLCertificateFile $SELF_SIGNED_DIR/${vhost}.pem~" /etc/apache2/ssl/${vhost}.conf
+		[ -f /etc/apache2/ssl/${vhost}.conf ] && sed -i "s~^SSLCertificateFile.*$~SSLCertificateFile $SELF_SIGNED_DIR/${vhost}.pem~" /etc/apache2/ssl/${vhost}.conf
 	fi
 	if [ -d /etc/nginx ]; then
-		sed -i "s~^ssl_certificate[^_]*$~ssl_certificate $SELF_SIGNED_DIR/${vhost}.pem;~" /etc/nginx/ssl/${vhost}.conf
+		[ -f /etc/nginx/ssl/${vhost}.conf ] && sed -i "s~^ssl_certificate[^_]*$~ssl_certificate $SELF_SIGNED_DIR/${vhost}.pem;~" /etc/nginx/ssl/${vhost}.conf
 	fi
 	exit 1
 fi
 
 which apache2ctl>/dev/null
 if [ $? == 0 ]; then
-	sed -i "s~^SSLCertificateFile.*$~SSLCertificateFile $CRT_DIR/${vhost}-fullchain.pem~" /etc/apache2/ssl/${vhost}.conf
+	[ -f /etc/apache2/ssl/${vhost}.conf ] && sed -i "s~^SSLCertificateFile.*$~SSLCertificateFile $CRT_DIR/${vhost}-fullchain.pem~" /etc/apache2/ssl/${vhost}.conf
 	apache2ctl -t 2>/dev/null
         if [ $? == 0 ]; then
                 service apache2 reload
@@ -49,7 +49,7 @@ if [ $? == 0 ]; then
 fi
 which nginx>/dev/null
 if [ $? == 0 ]; then
-	sed -i "s~^ssl_certificate[^_]*$~ssl_certificate $CRT_DIR/${vhost}-fullchain.pem;~" /etc/nginx/ssl/${vhost}.conf
+	[ -f /etc/nginx/ssl/${vhost}.conf ] && sed -i "s~^ssl_certificate[^_]*$~ssl_certificate $CRT_DIR/${vhost}-fullchain.pem;~" /etc/nginx/ssl/${vhost}.conf
         nginx -t 2>/dev/null
         if [ $? == 0 ]; then
                 service nginx reload

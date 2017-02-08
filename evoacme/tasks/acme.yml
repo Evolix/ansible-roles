@@ -10,7 +10,7 @@
     group: acme
     state: present
     createhome: no
-    home: "{{ evoacme_crt_dir }}"
+    home: "{{ evoacme_acme_dir }}"
     shell: /bin/false
 
 - name: Fix crt dir's right
