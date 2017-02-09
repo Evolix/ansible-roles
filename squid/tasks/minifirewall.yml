@@ -6,8 +6,7 @@
   always_run: yes
   register: minifirewall_test
 
-- name: configure Minifirewall for Squid
-  block:
+- block:
   - name: HTTPSITES list is commented in minifirewall
     replace:
       dest: /etc/default/minifirewall
