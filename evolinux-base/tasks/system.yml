@@ -114,7 +114,7 @@
 
 ## alert5
 
-- name: "Install alert5 init script"
+- name: Install alert5 init script
   template:
     src: system/init_alert5.j2
     dest: /etc/init.d/alert5
@@ -122,26 +122,21 @@
     mode: "755"
   when: evolinux_system_alert5_init
 
+
+#TODO: switch service/systemd modules with Ansible 2.2+
+
 - name: Enable alert5 init script
   service:
     name: alert5
     enabled: yes
-  when:
-  - ansible_version.major == 2
-  - ansible_version.minor < 2
-  - evolinux_system_alert5_init
-  - evolinux_system_alert5_enable
+  when: evolinux_system_alert5_init and evolinux_system_alert5_enable
 
-- name: Enable alert5 init script
-  systemd:
-    name: alert5
-    daemon_reload: yes
-    enabled: yes
-  when:
-  - ansible_version.major == 2
-  - ansible_version.minor >= 2
-  - evolinux_system_alert5_init
-  - evolinux_system_alert5_enable
+# - name: Enable alert5 init script
+#   systemd:
+#     name: alert5
+#     daemon_reload: yes
+#     enabled: yes
+#   when: evolinux_system_alert5_init and evolinux_system_alert5_enable
 
 ## network interfaces
 
