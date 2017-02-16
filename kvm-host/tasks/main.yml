@@ -19,3 +19,4 @@
   when: usr_partition.rc == 0
 
 - include: munin.yml
+- include: images.yml

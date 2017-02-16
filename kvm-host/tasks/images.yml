@@ -1,0 +1,14 @@
+---
+- name: Create images directory
+  file:
+    path: '/home/images'
+    state: directory
+    owner: root
+    group: libvirt
+    mode: 02775
+
+- name: Symlink for libvirt images directory
+  file:
+    src: '/home/images'
+    dest: '/var/lib/libvirt/images'
+    state: link
