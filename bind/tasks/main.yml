@@ -6,7 +6,7 @@
 - name: Modify OPTIONS in /etc/default/bind9
   replace:
     dest: /etc/default/bind9
-    regexp: '^(OPTIONS ((?).)*)$'
+    regexp: '^OPTIONS.*'
     replace: 'OPTIONS="-u bind -t /var/chroot-bind"'
 
 - name: Create /etc/systemd/system/bind9.service
@@ -20,8 +20,8 @@
   register: create_bind_systemd
 
 - name: Fill out /etc/systemd/system/bind9.service
-  blockinfile: 
-    path: "/etc/systemd/system/bind9.service"
+  blockinfile:
+    dest: /etc/systemd/system/bind9.service
     block: |
       [Unit]
       Description=BIND Domain Name Server
@@ -66,7 +66,7 @@
 
 - name: Move bind to /var/chroot-bind/etc/
   command: mv /etc/bind/ /var/chroot-bind/etc/
-  when: bind_stat.stat.exists
+  when: bind_stat.stat.exists and bind_stat.stat.islnk == False
 
 - name: Create symlink
   file:
@@ -90,7 +90,7 @@
 
 - name: Create run directory
   file:
-    path: "/var/{{ item }}"
+    path: "/var/run/bind/run"
     state: directory
     owner: root
     group: bind
