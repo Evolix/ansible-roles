@@ -9,7 +9,6 @@ EnvironmentFile=%h/conf/env
 UMask=0002
 ExecStart=/usr/share/tomcat7/bin/startup.sh
 ExecStop=/usr/share/tomcat7/bin/shutdown.sh
-ExecStopPost=/bin/sh -c date | /usr/bin/mail -s "%H/%u : Shutdown instance" %u
 Type=forking
 
 [Install]
