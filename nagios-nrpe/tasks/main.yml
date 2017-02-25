@@ -1,45 +1,6 @@
 ---
-- name: packages are installed
-  apt:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - nagios-nrpe-server
-    - nagios-plugins
-    - nagios-plugins-basic
-    - nagios-plugins-common
-    - nagios-plugins-contrib
-    - nagios-plugins-standard
+- include: debian.yml
+  when: ansible_os_family == "Debian"
 
-- name: custom configuration is present
-  template:
-    src: evolix.cfg.j2
-    dest: /etc/nagios/nrpe.d/evolix.cfg
-  notify: restart nagios-nrpe-server
-
-- name: Nagios config is secure
-  file:
-    dest: /etc/nagios/
-    mode: "750"
-    group: nagios
-    state: directory
-  notify: restart nagios-nrpe-server
-
-# TODO deal with /usr mounted as read-only
-
-- name: Nagios plugins directory is secure
-  file:
-    dest: "{{ nagios_plugins_directory }}/"
-    mode: "755"
-    group: nagios
-    recurse: yes
-    state: directory
-  notify: restart nagios-nrpe-server
-
-- name: Nagios plugins are installed
-  copy:
-    src: plugins/
-    dest: "{{ nagios_plugins_directory }}/"
-    group: nagios
-    mode: "755"
-  notify: restart nagios-nrpe-server
+- include: openbsd.yml
+  when: ansible_os_family == "OpenBSD"

@@ -1,0 +1,42 @@
+---
+- name: packages are installed
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - nagios-nrpe-server
+    - nagios-plugins
+    - nagios-plugins-basic
+    - nagios-plugins-common
+    - nagios-plugins-contrib
+    - nagios-plugins-standard
+
+- name: custom configuration is present
+  template:
+    src: evolix.cfg.j2
+    dest: /etc/nagios/nrpe.d/evolix.cfg
+  notify: restart nagios-nrpe-server
+
+- name: Nagios config is secured
+  file:
+    dest: /etc/nagios/
+    mode: 0750
+    group: nagios
+    state: directory
+  notify: restart nagios-nrpe-server
+
+- name: Nagios plugins are installed
+  copy:
+    src: plugins/
+    dest: /usr/local/lib/nagios/plugins/
+    mode: 0755
+  notify: restart nagios-nrpe-server
+
+- name: Nagios lib is secured
+  file:
+    dest: /usr/local/lib/nagios/
+    mode: 0755
+    group: nagios
+    recurse: yes
+    state: directory
+  notify: restart nagios-nrpe-server

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if netstat -an|grep '.1194' >/dev/null; then
+        echo "VPN OK"
+        return 0
+else
+        echo "PROCESS NOT LISTENING"
+        return 2
+fi

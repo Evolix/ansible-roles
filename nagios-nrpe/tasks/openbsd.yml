@@ -1,0 +1,42 @@
+---
+- name: packages are installed
+  openbsd_pkg:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - nrpe--
+    - monitoring-plugins
+
+- name: Create nrpe.d dir
+  file:
+    path: /etc/nrpe.d
+    state: directory
+    owner: root
+    group: wheel
+    mode: 0755
+
+- name: Include nrpe.d dir in nrpe.cfg
+  lineinfile:
+    dest: /etc/nrpe.cfg
+    line: 'include_dir=/etc/nrpe.d'
+
+- name: custom configuration is present
+  template:
+    src: evolix_bsd.cfg.j2
+    dest: /etc/nrpe.d/evolix.cfg
+  notify: restart nrpe
+
+- name: Nagios plugins are installed
+  copy:
+    src: plugins_bsd/
+    dest: /usr/local/libexec/nagios/plugins/
+    owner: root
+    group: wheel
+    mode: 0755
+  notify: restart nrpe
+
+- name: Starting and enabling nrpe
+  service:
+    name: nrpe
+    enabled: yes
+    state: started

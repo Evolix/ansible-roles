@@ -1,0 +1,18 @@
+#!/bin/sh
+WARNING_STATES_LIMIT=100000
+CRTICAL_STATES_LIMIT=150000
+
+. /usr/local/libexec/nagios/utils.sh
+
+CHECK_STATES=$(/usr/bin/nc 127.0.0.1 9999 2>/dev/null| /usr/bin/grep '0 - 0' | /usr/bin/sed 's/0 - 0 //g')
+
+if [ $CHECK_STATES -lt $WARNING_STATES_LIMIT ];then
+        echo "OK: States number ($CHECK_STATES) is below threshold ($WARNING_STATES_LIMIT / $CRTICAL_STATES_LIMIT)"
+        exit "$STATE_OK"
+elif [ $CHECK_STATES -ge $WARNING_STATES_LIMIT ] && [ $CHECK_STATES -lt $CRTICAL_STATES_LIMIT ];then
+        echo "WARNING: States number is $CHECK_STATES (threshold WARNING = $WARNING_STATES_LIMIT)"
+        exit "$STATE_WARNING"
+else
+        echo "CRITICAL: States number is $CHECK_STATES (threshold CRITICAL = $CRTICAL_STATES_LIMIT)"
+        exit "$STATE_CRITICAL"
+fi
