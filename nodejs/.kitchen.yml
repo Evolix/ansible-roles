@@ -11,7 +11,6 @@ provisioner:
   ansible_verbose: true
   require_ansible_source: true
   install_source_rev: "stable-2.0.0.1"
-  idempotency_test: true
   require_chef_for_busser: false
 
 platforms:
@@ -19,3 +18,7 @@ platforms:
 
 suites:
   - name: default
+    provisioner:
+      name: ansible_playbook
+      playbook: ./tests/test.yml
+      idempotency_test: true
