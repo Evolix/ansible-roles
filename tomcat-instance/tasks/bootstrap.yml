@@ -4,6 +4,8 @@
     path: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/{{ item }}"
     state: directory
     mode: "2770"
+    owner: "{{ tomcat_instance_name }}"
+    group: "{{ tomcat_instance_name }}"
   with_items:
     - 'conf'
     - 'logs'
@@ -12,25 +14,25 @@
     - 'temp'
     - 'lib'
 
-- name: Copy conf dir
-  shell: "cp /usr/share/tomcat7/skel/conf/* {{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/"
-
 - name: Copy server.xml
   template:
     src: 'templates/server.xml.j2'
     dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/server.xml"
     mode: "660"
+    owner: "{{ tomcat_instance_name }}"
+    group: "{{ tomcat_instance_name }}"
+    force: no
+
+- name: Copy conf dir
+  shell: "cp /usr/share/tomcat7/skel/conf/* {{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/"
+  args:
+    creates: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/catalina.properties"
 
 - name: Copy env file
   template:
     src: 'templates/env.j2'
     dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/env"
     mode: "660"
-
-- name: Fix owner
-  file:
-    name: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}"
-    state: directory
     owner: "{{ tomcat_instance_name }}"
     group: "{{ tomcat_instance_name }}"
-    recurse: yes
+    force: no
