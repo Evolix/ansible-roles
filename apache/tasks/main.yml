@@ -3,25 +3,25 @@
     name: '{{ item }}'
     state: present
   with_items:
-    - apache2-mpm-itk
-    - apachetop
-    - libapache2-mod-evasive
-    - libwww-perl
+  - apache2-mpm-itk
+  - apachetop
+  - libapache2-mod-evasive
+  - libwww-perl
   tags:
-    - apache
+  - apache
 
 - name: basic modules are enabled
   apache2_module:
     name: '{{ item }}'
     state: present
   with_items:
-    - rewrite
-    - expires
-    - headers
-    - rewrite
-    - cgi
+  - rewrite
+  - expires
+  - headers
+  - rewrite
+  - cgi
   tags:
-    - apache
+  - apache
 
 - name: Copy Apache defaults config file
   copy:
@@ -32,7 +32,7 @@
     mode: "644"
     force: yes
   tags:
-    - apache
+  - apache
 
 - name: Copy Apache custom config file
   copy:
@@ -43,17 +43,17 @@
     mode: "644"
     force: no
   tags:
-    - apache
+  - apache
 
 - name: Ensure Apache config files are enabled
   command: "a2enconf {{ item }}"
   register: command_result
   changed_when: "'Enabling' in command_result.stderr"
   with_items:
-    - z-evolinux-defaults.conf
-    - zzz-evolinux-custom.conf
+  - z-evolinux-defaults.conf
+  - zzz-evolinux-custom.conf
   tags:
-    - apache
+  - apache
 
 - name: Init private_ipaddr_whitelist.conf file
   copy:
@@ -64,7 +64,7 @@
     mode: "640"
     force: no
   tags:
-    - apache
+  - apache
 
 - name: add IP addresses to private IP whitelist
   lineinfile:
@@ -74,7 +74,7 @@
   with_items: "{{ apache_private_ipaddr_whitelist_present }}"
   notify: reload apache
   tags:
-    - apache
+  - apache
 
 - name: remove IP addresses from private IP whitelist
   lineinfile:
@@ -84,7 +84,7 @@
   with_items: "{{ apache_private_ipaddr_whitelist_absent }}"
   notify: reload apache
   tags:
-    - apache
+  - apache
 
 - name: Copy private_htpasswd
   copy:
@@ -96,7 +96,7 @@
     force: no
   notify: reload apache
   tags:
-    - apache
+  - apache
 
 - name: add user:pwd to private htpasswd
   lineinfile:
@@ -106,7 +106,7 @@
   with_items: "{{ apache_private_htpasswd_present }}"
   notify: reload apache
   tags:
-    - apache
+  - apache
 
 - name: remove user:pwd from private htpasswd
   lineinfile:
@@ -116,7 +116,7 @@
   with_items: "{{ apache_private_htpasswd_absent }}"
   notify: reload apache
   tags:
-    - apache
+  - apache
 
 - name: is umask already present?
   command: "grep -E '^umask ' /etc/apache2/envvars"
@@ -126,7 +126,7 @@
   #check_mode: no (for migration to Ansible 2.2)
   always_run: yes
   tags:
-    - apache
+  - apache
 
 - name: Add a mark in envvars for umask
   blockinfile:
@@ -138,4 +138,4 @@
       umask 007
   when: envvar_grep_umask.rc != 0
   tags:
-    - apache
+  - apache
