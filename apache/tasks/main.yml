@@ -35,8 +35,8 @@
     - apache
 
 - name: Copy Apache custom config file
-  template:
-    src: evolinux-custom.conf.j2
+  copy:
+    src: evolinux-custom.conf
     dest: "/etc/apache2/conf-available/zzz-evolinux-custom.conf"
     owner: root
     group: root
