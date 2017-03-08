@@ -1,0 +1,35 @@
+---
+- name: Ensure Nginx (light) is installed
+  apt:
+    name: nginx-light
+    state: present
+  notify: reload nginx
+  tags:
+  - nginx
+  - packages
+
+- name: Copy default vhost
+  template:
+    src: default.j2
+    dest: /etc/nginx/sites-available/default
+    mode: 0644
+  notify: reload nginx
+  tags:
+  - nginx
+  - packages
+
+- name: Enable default vhost
+  file:
+    src: /etc/nginx/sites-available/default
+    dest: /etc/nginx/sites-enabled/default 
+    state: link
+  notify: reload nginx
+  tags:
+  - nginx
+  - packages
+
+- name: Ensure Nginx is enabled
+  service:
+    name: nginx
+    state: started
+    enabled: yes
