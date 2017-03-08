@@ -1,0 +1,71 @@
+---
+
+- name: Ensure that Munin is installed
+  openbsd_pkg:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - munin-server
+    - munin-node
+  tags:
+    - munin
+    - packages
+
+- name: Change hostname in munin-node config
+  replace:
+    dest: /etc/munin/munin-node.conf
+    regexp: '#?host_name .*'
+    replace: 'host_name {{ ansible_hostname }}'
+  notify: restart munin_node
+  tags:
+    - munin
+
+- name: Install munin cron
+  copy:
+    src: "crontab"
+    dest: "/var/cron/tabs/_munin"
+    owner: "_munin"
+    group: "crontab"
+  tags:
+    - munin
+
+- name: Enable munin plugins
+  file:
+    src: "/usr/local/libexec/munin/plugins/{{ item }}"
+    dest: "/etc/munin/plugins/{{ item }}"
+    state: link
+  with_items:
+    - 'cpu'
+    - 'df'
+    - 'df_inode'
+    - 'load'
+    - 'memory'
+    - 'munin_stats'
+    - 'netstat'
+    - 'open_files'
+    - 'pf_changes'
+    - 'pf_searches'
+    - 'pf_states'
+    - 'processes'
+    - 'systat'
+    - 'uptime'
+    - 'users'
+    - 'vmstat'
+  notify: restart munin_node
+  tags:
+    - munin
+
+- name: Enable sensors plugin unless VM detected
+  file:
+    src: /usr/share/munin/plugins/sensors_
+    dest: /etc/munin/plugins/sensors_temp
+    state: link
+  when: ansible_vio0 is undefined 
+  notify: restart munin_node
+  tags:
+    - munin
+
+- name: Enable munin-node service
+  service:
+    name: munin-node
+    
