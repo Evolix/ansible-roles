@@ -1,0 +1,15 @@
+server {
+    listen unix:/run/nginx-letsencrypt.sock;
+
+    root {{ evoacme_acme_dir }};
+
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+
+    server_name _;
+
+    location / {
+        try_files $uri =404;
+        allow all;
+    }
+}

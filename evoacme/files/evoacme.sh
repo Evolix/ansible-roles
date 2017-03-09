@@ -56,4 +56,13 @@ if [ $? == 0 ]; then
         fi
 fi
 
+which haproxy>/dev/null
+if [ $? == 0 ]; then
+	mkdir -p /etc/ssl/haproxy -m 700
+	cat $CRT_DIR/${vhost}-fullchain.pem $SSL_KEY_DIR/${vhost}.key > /etc/ssl/haproxy/${vhost}.pem
+	haproxy -c -f /etc/haproxy/haproxy.cfg 1>/dev/null
+        if [ $? == 0 ]; then
+                service haproxy reload
+        fi
+fi
 exit 0
