@@ -24,7 +24,7 @@ MAILTO="{{ raid_alert_email or general_alert_email | mandatory }}"   # Where to 
 PERIOD=600    # Seconds between each check    (default 10 minutes)
 REMIND=86400   # Seconds between each reminder (default 2 hours)
 RUN_DAEMON=yes
-ID=/dev/cciss/sda
+ID=/dev/sda
 
 [ -e /etc/default/cciss-vol-statusd ] && . /etc/default/cciss-vol-statusd
 
