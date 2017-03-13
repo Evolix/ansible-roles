@@ -1,18 +1,21 @@
 #!/bin/sh
-WARNING_STATES_LIMIT=100000
-CRTICAL_STATES_LIMIT=150000
+
+# Script writen by Evolix
+
+_WARNING_STATES_LIMIT=130000
+_CRTICAL_STATES_LIMIT=150000
 
 . /usr/local/libexec/nagios/utils.sh
 
-CHECK_STATES=$(/usr/bin/nc 127.0.0.1 9999 2>/dev/null| /usr/bin/grep '0 - 0' | /usr/bin/sed 's/0 - 0 //g')
+_CHECK_STATES=$(/sbin/pfctl -si | /usr/bin/grep current | /usr/bin/sed s,\ current\ entries\ ,,g | /usr/bin/sed -e 's,^[ \t]*,,' | /usr/bin/sed 's, *$,,')
 
-if [ $CHECK_STATES -lt $WARNING_STATES_LIMIT ];then
-        echo "OK: States number ($CHECK_STATES) is below threshold ($WARNING_STATES_LIMIT / $CRTICAL_STATES_LIMIT)"
+if [ $_CHECK_STATES -lt $_WARNING_STATES_LIMIT ];then
+        echo "OK: States number ($_CHECK_STATES) is below threshold ($_WARNING_STATES_LIMIT / $_CRTICAL_STATES_LIMIT)"
         exit "$STATE_OK"
-elif [ $CHECK_STATES -ge $WARNING_STATES_LIMIT ] && [ $CHECK_STATES -lt $CRTICAL_STATES_LIMIT ];then
-        echo "WARNING: States number is $CHECK_STATES (threshold WARNING = $WARNING_STATES_LIMIT)"
-        exit "$STATE_WARNING"
+elif [ $_CHECK_STATES -ge $_WARNING_STATES_LIMIT ] && [ $_CHECK_STATES -lt $_CRTICAL_STATES_LIMIT ];then
+        echo "WARNING: States number is $_CHECK_STATES (threshold WARNING = $_WARNING_STATES_LIMIT)"
+        exit "$_STATE_WARNING"
 else
-        echo "CRITICAL: States number is $CHECK_STATES (threshold CRITICAL = $CRTICAL_STATES_LIMIT)"
-        exit "$STATE_CRITICAL"
+        echo "CRITICAL: States number is $_CHECK_STATES (threshold CRITICAL = $_CRTICAL_STATES_LIMIT)"
+        exit "$_STATE_CRITICAL"
 fi
