@@ -22,3 +22,6 @@ suites:
       name: ansible_playbook
       playbook: ./tests/test.yml
       idempotency_test: true
+
+transport:
+  max_ssh_sessions: 6

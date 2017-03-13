@@ -30,3 +30,6 @@ suites:
       - nginx/tests/spec/nginx_spec.rb
       bundler_path: '/usr/local/bin'
       rspec_path: '/usr/local/bin'
+
+transport:
+  max_ssh_sessions: 6
