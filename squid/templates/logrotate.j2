@@ -1,0 +1,11 @@
+/var/log/{{ squid_daemon }}/*.log {
+    monthly
+    compress
+    rotate 12
+    missingok
+    create 640 proxy adm
+    sharedscripts
+    postrotate
+        test ! -e /var/run/{{ squid_daemon }}.pid || /usr/sbin/{{ squid_daemon }} -k rotate
+    endscript
+}

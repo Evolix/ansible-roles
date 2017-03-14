@@ -1,35 +1,33 @@
 ---
 
+- name: Include OS-specific variables
+  include_vars: "{{ ansible_os_family }}-{{ ansible_distribution_release }}.yml"
+
 - name: package is installed
   apt:
-    name: squid3
+    name: "{{ squid_package }}"
     state: present
 
 - name: squid.conf is present
   template:
     src: squid.j2
-    dest: /etc/squid3/squid.conf
-  notify: restart squid
-
-- name: logrotate configuration
-  copy:
-    src: logrotate_squid3
-    dest: /etc/logrotate.d/squid3
+    dest: "{{ squid_conf_file }}"
+  notify: "restart {{ squid_daemon }}"
 
 - name: evolix whitelist is present
   copy:
     src: whitelist-evolinux.conf
-    dest: /etc/squid3/whitelist-evolinux.conf
+    dest: "{{ squid_conf_path }}/whitelist-evolinux.conf"
     force: yes
     backup: yes
-  notify: restart squid
+  notify: "restart {{ squid_daemon }}"
 
 - name: custom whitelist is present
   copy:
     src: whitelist-custom.conf
-    dest: /etc/squid3/whitelist-custom.conf
+    dest: "{{ squid_conf_path }}/whitelist-custom.conf"
     force: no
-  notify: restart squid
+  notify: "restart {{ squid_daemon }}"
 
 - include: logrotate.yml
 

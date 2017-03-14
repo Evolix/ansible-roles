@@ -1,6 +1,6 @@
 ---
 - name: logrotate configuration
-  copy:
-    src: logrotate_squid3
-    dest: /etc/logrotate.d/squid3
+  template:
+    src: logrotate.j2
+    dest: /etc/logrotate.d/{{ squid_daemon }}
     force: no
