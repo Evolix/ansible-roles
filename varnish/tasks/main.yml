@@ -25,7 +25,7 @@
 
 - name: Modify Varnish configuration files
   ini_file:
-    dest: /etc/systemd/system/varnish.service.d/varnish.service
+    dest: /etc/systemd/system/varnish.service.d/varnish.conf
     section: Service
     option: "{{ item.option }}"
     value: "{{ item.value }}"
