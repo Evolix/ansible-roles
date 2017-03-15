@@ -49,7 +49,7 @@ if [ $? == 0 ]; then
 fi
 which nginx>/dev/null
 if [ $? == 0 ]; then
-	[ -f /etc/nginx/ssl/${vhost}.conf ] && sed -i "s~^ssl_certificate[^_]*$~ssl_certificate $CRT_DIR/${vhost}-fullchain.pem;~" /etc/nginx/ssl/${vhost}.conf
+	[ -f /etc/nginx/ssl/${vhost}.conf ] && sed -i "s~^ssl_certificate[^_].*$~ssl_certificate $CRT_DIR/${vhost}-fullchain.pem;~" /etc/nginx/ssl/${vhost}.conf
         nginx -t 2>/dev/null
         if [ $? == 0 ]; then
                 service nginx reload
