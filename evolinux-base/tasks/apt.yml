@@ -46,14 +46,14 @@
     dest: /etc/apt/sources.list
     line: "{{ item }}"
   with_items:
-  - "deb http://security.debian.org/ jessie/updates {{ evolinux_apt_repositories_components | mandatory }}"
-  - "deb http://mirror.evolix.org/debian/ jessie {{ evolinux_apt_repositories_components | mandatory }}"
-  - "deb http://mirror.evolix.org/debian/ jessie-updates {{ evolinux_apt_repositories_components | mandatory }}"
+  - "deb http://security.debian.org/ {{ ansible_distribution_release }}/updates {{ evolinux_apt_repositories_components | mandatory }}"
+  - "deb http://mirror.evolix.org/debian/ {{ ansible_distribution_release }} {{ evolinux_apt_repositories_components | mandatory }}"
+  - "deb http://mirror.evolix.org/debian/ {{ ansible_distribution_release }}-updates {{ evolinux_apt_repositories_components | mandatory }}"
   when: evolinux_apt_basic_sources
 
 - name: Evolix public list is installed
-  copy:
-    src: apt/evolix_public.list
+  template:
+    src: apt/evolix_public.list.j2
     dest: /etc/apt/sources.list.d/evolix_public.list
     force: yes
     backup: yes

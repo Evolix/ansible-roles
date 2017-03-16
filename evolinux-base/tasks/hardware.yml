@@ -19,7 +19,7 @@
 
 - name: Add non-free repo for Broadcom NetXtreme II
   apt_repository:
-    repo: 'deb http://mirror.evolix.org/debian/ jessie non-free'
+    repo: 'deb http://mirror.evolix.org/debian/ {{ ansible_distribution_release }} non-free'
     state: present
   when: broadcom|success
 
