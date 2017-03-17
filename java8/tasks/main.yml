@@ -1,10 +1,13 @@
 ---
+- set_fact:
+    java8_apt_release: '{% if ansible_distribution_release == "jessie" %}jessie-backports{% else %}{{ ansible_distribution_release }}{% endif %}'
 
 - name: Java 8 is installed
   apt:
     name: openjdk-8-jre
-    default_release: jessie-backports
+    default_release: "{{ java8_apt_release }}"
     state: present
+  when: ansible_distribution_release == "jessie"
   tags:
     - java
     - packages
