@@ -20,7 +20,7 @@
 
 - name: Node sources list ({{ nodejs_apt_version }}) is available
   apt_repository:
-    repo: "deb https://deb.nodesource.com/{{ nodejs_apt_version }} jessie main"
+    repo: "deb https://deb.nodesource.com/{{ nodejs_apt_version }} {{ ansible_distribution_release }} main"
     state: present
   tags:
     - system
