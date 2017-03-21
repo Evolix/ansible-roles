@@ -1,0 +1,4 @@
+---
+# defaults file for packweb-apache
+general_alert_email: "root@localhost"
+log2mail_alert_email: Null

@@ -1,0 +1,87 @@
+---
+# tasks file for packweb-apache
+
+
+- name: Setting /etc/skel/
+  file:
+    path: "/etc/skel/{{ item.path }}"
+    state: "{{ item.state }}"
+    mode: "{{ item.mode }}"
+  with_items:
+  - {path: log, mode: "0750", state: directory}
+  - {path: awstats, mode: "0750", state: directory}
+  - {path: www, mode: "0750", state: directory}
+  - {path: log/access.log, mode: "0644", state: touch}
+  - {path: log/error.log, mode: "0644", state: touch}
+
+- name: Setting DIR_MODE in /etc/adduser.conf to 0750
+  lineinfile:
+    dest: /etc/adduser.conf
+    regexp: '^DIR_MODE='
+    line: 'DIR_MODE=0750'
+
+- name: is PATH already present?
+  command: "grep -E '^export PATH ' /etc/apache2/envvars"
+  failed_when: False
+  changed_when: False
+  register: envvar_grep_path
+  #check_mode: no (for migration to Ansible 2.2)
+  always_run: yes
+
+- name: Add a mark in envvars for PATH
+  blockinfile:
+    dest: /etc/apache2/envvars
+    marker: "## {mark} ANSIBLE MANAGED BLOCK FOR PATH"
+    block: |
+      # Used for Evoadmin-web
+      export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  when: envvar_grep_path.rc != 0
+
+- name: packages are installed
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - libapache2-mod-evasive
+  - apache2-mpm-itk
+  - libapache2-mod-security2
+
+- name: Copy Apache itk and evasive settings
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/apache2/conf-available/{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+    force: no
+  with_items:
+  - evolinux-itk.conf
+  - evolinux-evasive.conf
+  - evolinux-modsec.conf
+
+- name: Ensure Apache config files are enabled
+  command: "a2enconf {{ item }}"
+  register: command_result
+  changed_when: "'Enabling' in command_result.stderr"
+  with_items:
+  - evolinux-itk
+  - evolinux-evasive
+  - evolinux-modsec
+
+- name: Is log2mail installed?
+  command: "apt list --installed log2mail"
+  register: command_result
+  changed_when: False
+
+- debug:
+    var: command_result
+
+- name: Add log2mail config for apache segfault
+  template:
+    src: log2mail-apache.j2
+    dest: "/etc/log2mail/config/apache"
+    owner: root
+    group: root
+    mode: "0644"
+    force: no
+  when: "'log2mail' in command_result.stdout"

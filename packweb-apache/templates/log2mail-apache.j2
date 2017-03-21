@@ -1,0 +1,4 @@
+file = /var/log/apache2/error.log
+pattern = "Segmentation fault"
+mailto = {{ log2mail_alert_email or general_alert_email | mandatory }}
+template = /etc/log2mail/mail

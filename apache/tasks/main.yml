@@ -3,9 +3,7 @@
     name: '{{ item }}'
     state: present
   with_items:
-  - apache2-mpm-itk
   - apachetop
-  - libapache2-mod-evasive
   - libwww-perl
   tags:
   - apache
@@ -20,6 +18,7 @@
   - headers
   - rewrite
   - cgi
+  - ssl
   tags:
   - apache
 
@@ -45,6 +44,17 @@
   tags:
   - apache
 
+- name: Copy Apache SSL (strong security) config file
+  copy:
+    src: evolinux-ssl.conf
+    dest: "/etc/apache2/conf-available/evolinux-ssl.conf"
+    owner: root
+    group: root
+    mode: "0644"
+    force: no
+  tags:
+  - apache
+
 - name: Ensure Apache config files are enabled
   command: "a2enconf {{ item }}"
   register: command_result
@@ -52,6 +62,7 @@
   with_items:
   - z-evolinux-defaults.conf
   - zzz-evolinux-custom.conf
+  - evolinux-ssl.conf
   tags:
   - apache
 
