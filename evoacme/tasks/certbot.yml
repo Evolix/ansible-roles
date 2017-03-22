@@ -20,10 +20,20 @@
 - block:
   - name: Add backports repository
     lineinfile:
-      dest: /etc/apt/sources.list
+      dest: /etc/apt/sources.list.d/backports.list
       line: 'deb http://mirror.evolix.org/debian jessie-backports main'
       state: present
     register: add_backports
+    when: evoacme_certbot_release == "jessie-backports"
+
+  - name: Add exceptions for certbot dependances
+    blockinfile:
+      dest: /etc/apt/preferences.d/backports
+      marker: "## {mark} ANSIBLE MANAGED BLOCK"
+      block: |
+        Package: certbot python-certbot python-acme python-cryptography python-openssl python-setuptools python-ndg-httpsclient python-pyasn1 python-pkg-resources
+        Pin: release a=jessie-backports
+        Pin-Priority: 999
     when: evoacme_certbot_release == "jessie-backports"
 
   - name: Apt update
