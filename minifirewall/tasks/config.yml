@@ -30,6 +30,10 @@
     line: "# END ANSIBLE MANAGED BLOCK FOR IPS"
     insertafter: '^PRIVILEGIEDIPS='
 
+- fail:
+    msg: You must provide at least 1 trusted IP
+  when: minifirewall_trusted_ips == []
+
 - name: Configure IP addresses
   blockinfile:
     dest: /etc/default/minifirewall
