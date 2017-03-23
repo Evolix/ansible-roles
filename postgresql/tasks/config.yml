@@ -11,7 +11,7 @@
     state: directory
     owner: postgres
     group: postgres
-    mode: "755"
+    mode: "0755"
 
 - name: Copy PostgreSQL config file
   template:
@@ -19,5 +19,5 @@
     dest: /etc/postgresql/9.4/main/conf.d/evolinux.conf
     owner: postgres
     group: postgres
-    mode: "644"
+    mode: "0644"
   notify: restart postgresql

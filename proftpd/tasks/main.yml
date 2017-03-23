@@ -19,7 +19,7 @@
   template:
     src: evolinux.conf.j2
     dest: /etc/proftpd/conf.d/z-evolinux.conf
-    mode: "644"
+    mode: "0644"
   notify: restart proftpd
   tags:
   - proftpd

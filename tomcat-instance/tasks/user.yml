@@ -31,7 +31,7 @@
   lineinfile:
     dest: '/etc/sudoers.d/tomcat'
     state: present
-    mode: "440"
+    mode: "0440"
     create: yes
     line: "%{{ tomcat_instance_name }} ALL = ({{ tomcat_instance_name }}) SETENV: ALL"
     validate: 'visudo -cf %s'
@@ -40,7 +40,7 @@
   lineinfile:
     dest: '/etc/sudoers.d/tomcat'
     state: present
-    mode: "440"
+    mode: "0440"
     create: yes
     line: "{{ tomcat_instance_deploy_user }} ALL = ({{ tomcat_instance_name }}) NOPASSWD: SETENV: ALL"
     validate: 'visudo -cf %s'

@@ -16,7 +16,7 @@
 - name: Fix crt dir's right
   file:
     path: "{{ evoacme_crt_dir }}"
-    mode: "755"
+    mode: "0755"
     owner: acme
     group: acme
     state: directory
@@ -24,7 +24,7 @@
 - name: Fix log dir's right
   file:
     path: "{{ evoacme_log_dir }}"
-    mode: "755"
+    mode: "0755"
     owner: acme
     group: acme
     state: directory
@@ -32,7 +32,7 @@
 - name: Fix challenge dir's right
   file:
     path: "{{ evoacme_acme_dir }}"
-    mode: "755"
+    mode: "0755"
     owner: acme
     group: acme
     state: directory

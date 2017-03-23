@@ -19,7 +19,7 @@
     dest: /etc/postfix/main.cf
     owner: root
     group: root
-    mode: "644"
+    mode: "0644"
     force: yes
   when: default_main_cf.stdout == "5450c05d65878e99dad696c7c722e511  -"
   notify: restart postfix

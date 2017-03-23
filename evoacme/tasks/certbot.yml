@@ -92,13 +92,13 @@
       content: |
         #!/bin/sh
         sudo /opt/certbot/certbot-auto $@
-      mode: "755"
+      mode: "0755"
 
   - name: Add sudo right for source install
     copy:
       src: files/sudoers
       dest: /etc/sudoers.d/certbot
-      mode: "440"
+      mode: "0440"
       validate: '/usr/sbin/visudo -cf %s'
   when: evoacme_certbot_release is undefined
 
@@ -111,4 +111,4 @@
   copy:
     src: certbot.cron
     dest: /etc/cron.daily/certbot
-    mode: "755"
+    mode: "0755"

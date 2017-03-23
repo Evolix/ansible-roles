@@ -119,7 +119,7 @@
     src: system/init_alert5.j2
     dest: /etc/init.d/alert5
     force: no
-    mode: "755"
+    mode: "0755"
   when: evolinux_system_alert5_init
 
 

@@ -3,7 +3,7 @@
   file:
     path: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/bin"
     state: directory
-    mode: "770"
+    mode: "0770"
     owner: "{{ tomcat_instance_name }}"
     group: "{{ tomcat_instance_name }}"
     
@@ -11,7 +11,7 @@
   template:
     src: "{{ item }}"
     dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/bin/"
-    mode: "770"
+    mode: "0770"
     owner: "{{ tomcat_instance_name }}"
     group: "{{ tomcat_instance_name }}"
   with_fileglob:

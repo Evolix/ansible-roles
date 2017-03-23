@@ -6,7 +6,7 @@
   copy:
     src: logs/rsyslog.conf
     dest: /etc/rsyslog.conf
-    mode: "644"
+    mode: "0644"
   notify: restart rsyslog
   when: evolinux_logs_rsyslog_conf
 

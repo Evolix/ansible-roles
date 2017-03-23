@@ -5,7 +5,7 @@
     dest: /etc/mysql/conf.d/z-evolinux-defaults.cnf
     owner: root
     group: root
-    mode: "644"
+    mode: "0644"
     force: yes
   tags:
     - mysql
@@ -16,7 +16,7 @@
     dest: /etc/mysql/conf.d/zzz-evolinux-custom.cnf
     owner: root
     group: root
-    mode: "640"
+    mode: "0640"
     force: no
   tags:
     - mysql

@@ -5,7 +5,7 @@
     state: directory
     owner: root
     group: root
-    mode: "755"
+    mode: "0755"
 
 - name: Copy make-csr.sh script
   copy:
@@ -13,7 +13,7 @@
     dest: /usr/local/bin/make-csr
     owner: root
     group: root
-    mode: "755"
+    mode: "0755"
 
 - name: Copy evoacme script
   copy:
@@ -21,4 +21,4 @@
     dest: /usr/local/bin/evoacme
     owner: root
     group: root
-    mode: "755"
+    mode: "0755"

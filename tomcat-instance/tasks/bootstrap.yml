@@ -18,7 +18,7 @@
   template:
     src: 'templates/server.xml.j2'
     dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/server.xml"
-    mode: "660"
+    mode: "0660"
     owner: "{{ tomcat_instance_name }}"
     group: "{{ tomcat_instance_name }}"
     force: no
@@ -32,7 +32,7 @@
   template:
     src: 'templates/env.j2'
     dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/env"
-    mode: "660"
+    mode: "0660"
     owner: "{{ tomcat_instance_name }}"
     group: "{{ tomcat_instance_name }}"
     force: no

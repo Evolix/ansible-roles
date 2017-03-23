@@ -4,7 +4,7 @@
   copy:
     src: munin/evolinux.nginx
     dest: /etc/munin/plugin-conf.d/
-    mode: "644"
+    mode: "0644"
   notify: restart munin
 
 - name: Enable Munin plugins for Nginx

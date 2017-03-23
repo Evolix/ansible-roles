@@ -6,7 +6,7 @@
       path: "{{ mysql_custom_tmpdir }}"
       owner: mysql
       group: mysql
-      mode: "700"
+      mode: "0700"
       state: directory
     tags:
       - mysql

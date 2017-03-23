@@ -29,5 +29,5 @@
   copy:
     src: "nagios/check_drbd"
     dest: "/usr/local/lib/nagios/plugins/check_drbd"
-    mode: "755"
+    mode: "0755"
   when: nagios_plugins_dir.stat.exists

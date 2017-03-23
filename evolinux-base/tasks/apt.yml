@@ -6,7 +6,7 @@
     line: "{{ item }}"
     create: yes
     state: present
-    mode: "640"
+    mode: "0640"
   with_items:
   - "APT::Install-Recommends \"0\";"
   - "APT::Install-Suggests \"0\";"
@@ -18,7 +18,7 @@
     line: "{{ item }}"
     create: yes
     state: present
-    mode: "640"
+    mode: "0640"
   with_items:
   - "DPkg::Pre-Invoke { \"mount -oremount,exec /tmp && mount -oremount,rw /usr || true\"; };"
   - "DPkg::Post-Invoke { \"mount -oremount /tmp && mount -oremount /usr || exit 0\"; };"
@@ -57,7 +57,7 @@
     dest: /etc/apt/sources.list.d/evolix_public.list
     force: yes
     backup: yes
-    mode: "640"
+    mode: "0640"
   when: evolinux_apt_public_sources
 
 - name: Remove Aptitude

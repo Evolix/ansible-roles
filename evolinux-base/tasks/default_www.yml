@@ -40,7 +40,7 @@
       path: /etc/ssl/private/{{ ansible_fqdn }}.key
       owner: root
       group: ssl-cert
-      mode: "640"
+      mode: "0640"
 
   - name: Create certificate for default site
     command: openssl x509 -req -days 3650 -sha256 -in /etc/ssl/{{ ansible_fqdn }}.csr -signkey /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/certs/{{ ansible_fqdn }}.crt
@@ -62,7 +62,7 @@
     template:
       src: default_www/nginx_default_site.j2
       dest: /etc/nginx/sites-available/000-default
-      mode: "640"
+      mode: "0640"
       # force: yes
     notify: reload nginx
     tags:
@@ -95,7 +95,7 @@
     template:
       src: default_www/apache_default_site.j2
       dest: /etc/apache2/sites-available/000-default
-      mode: "640"
+      mode: "0640"
       # force: yes
     notify: reload apache
     tags:

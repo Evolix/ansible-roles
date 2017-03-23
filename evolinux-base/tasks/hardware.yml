@@ -43,7 +43,7 @@
     template:
       src: hardware/cciss-vol-statusd.j2
       dest: /etc/init.d/cciss-vol-statusd
-      mode: "755"
+      mode: "0755"
 
   - name: Enable HP hardware in systemd
     service:
@@ -70,7 +70,7 @@
     template:
       src: hardware/megaclisas-statusd.j2
       dest: /etc/default/megaclisas-statusd
-      mode: "755"
+      mode: "0755"
 
   - name: Enable DELL/LSI hardware in systemd
     service:

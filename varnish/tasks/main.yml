@@ -14,7 +14,7 @@
   copy:
     src: "reload-vcl.sh"
     dest: "/etc/varnish/reload-vcl.sh"
-    mode: "700"
+    mode: "0700"
     owner: root
     group: root
 

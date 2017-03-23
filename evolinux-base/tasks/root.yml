@@ -4,7 +4,7 @@
   file:
     path: /root
     state: directory
-    mode: "700"
+    mode: "0700"
   when: evolinux_root_chmod
 
 - name: "Customize root's bashrc..."

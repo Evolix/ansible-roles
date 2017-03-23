@@ -30,4 +30,4 @@
     dest: /etc/default/evoacme
     owner: root
     group: root
-    mode: "644"
+    mode: "0644"

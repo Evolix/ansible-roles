@@ -3,13 +3,13 @@
   file:
     path: "/usr/share/scripts"
     state: directory
-    mode: "700"
+    mode: "0700"
 
 - name: Copy listupgrade script
   template:
     src: listupgrade.sh.j2
     dest: "/usr/share/scripts/listupgrade.sh"
-    mode: "700"
+    mode: "0700"
     owner: root
     group: root
     force: yes
@@ -19,13 +19,13 @@
   file:
     path: /etc/evolinux
     state: directory
-    mode: "600"
+    mode: "0600"
 
 - name: Copy listupgrade config
   template:
     src: listupgrade.cnf.j2
     dest: /etc/evolinux/listupgrade.cnf
-    mode: "600"
+    mode: "0600"
     owner: root
     group: root
     force: no
@@ -34,6 +34,6 @@
   template:
     src: listupgrade_cron.j2
     dest: /etc/cron.d/listupgrade
-    mode: "600"
+    mode: "0600"
     owner: root
     group: root

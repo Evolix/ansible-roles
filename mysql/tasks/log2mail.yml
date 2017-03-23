@@ -14,7 +14,7 @@
   template:
     src: log2mail.j2
     dest: /etc/log2mail/config/mysql.conf
-    mode: "640"
+    mode: "0640"
   when: log2mail_config_dir.stat.exists
   tags:
     - mysql

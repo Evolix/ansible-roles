@@ -26,7 +26,7 @@
   copy:
     src: init.d/spawn-fcgi-munin-graph
     dest: /etc/init.d/
-    mode: "755"
+    mode: "0755"
   register: install_spawn_fcgi_munin_graph
 
 - name: Reload systemd

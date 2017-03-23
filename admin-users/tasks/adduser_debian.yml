@@ -32,7 +32,7 @@
 - name: Fix perms on homedirectory for '{{ user.name }}'
   file:
    name: '/home/{{ user.name }}'
-   mode: "700"
+   mode: "0700"
    state: directory
 
 - name: is evomaintenance installed?
@@ -54,7 +54,7 @@
   file:
     dest: '/home/{{ user.name }}/.ssh/'
     state: directory
-    mode: "700"
+    mode: "0700"
     owner: '{{ user.name }}'
     group: '{{ user.name }}'
 
@@ -126,7 +126,7 @@
 - name: Verify Evolinux sudoers file permissions
   file:
     path: /etc/sudoers.d/evolinux
-    mode: "440"
+    mode: "0440"
     state: file
 
 - name: Add user in sudoers file for '{{ user.name }}'

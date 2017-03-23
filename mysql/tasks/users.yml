@@ -42,7 +42,7 @@
 - name: mysqladmin is the default user
   ini_file:
     dest: /root/.my.cnf
-    mode: "600"
+    mode: "0600"
     section: client
     option: '{{ item.option }}'
     value: '{{ item.value }}'

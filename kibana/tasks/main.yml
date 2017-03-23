@@ -18,6 +18,6 @@
   copy:
     src: logrotate
     dest: /etc/logrotate.d/kibana
-    mode: "644"
+    mode: "0644"
     owner: root
     group: root
