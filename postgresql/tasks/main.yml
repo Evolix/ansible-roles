@@ -1,5 +1,8 @@
 ---
 
+- include: pgdg-repo.yml
+  when: postgresql_version != '9.4'
+
 - include: packages.yml
 
 - include: config.yml

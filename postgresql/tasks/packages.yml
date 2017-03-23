@@ -3,4 +3,4 @@
 - name: Install postgresql package
   apt:
     name: '{{item}}'
-  with_items: ['postgresql', 'ptop']
+  with_items: ['postgresql-{{postgresql_version}}', 'ptop']
