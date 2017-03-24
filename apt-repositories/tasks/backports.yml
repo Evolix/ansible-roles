@@ -17,5 +17,3 @@
     backup: yes
     mode: "0640"
   notify: apt update
-
-- meta: flush_handlers
