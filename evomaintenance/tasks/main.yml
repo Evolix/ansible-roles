@@ -13,8 +13,8 @@
 - name: list users with a shell
   shell: "cat /etc/passwd | grep -vE \"^root:\"  | grep -E \":/[^:]+sh$\" | cut -d: -f6"
   changed_when: False
-  #check_mode: no (for migration to Ansible 2.2)
-  always_run: yes
+  check_mode: no
+  
   register: home_of_shell_users
 
 - include: trap.yml home={{ item }}

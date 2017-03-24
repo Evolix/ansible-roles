@@ -3,8 +3,8 @@
 - name: Is log2mail present ?
   stat:
     path: /etc/log2mail/config
-  #check_mode: no (for migration to Ansible 2.2)
-  always_run: yes
+  check_mode: no
+  
   register: log2mail_config_dir
   tags:
     - mysql

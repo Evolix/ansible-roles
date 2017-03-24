@@ -1,8 +1,8 @@
 - name: is {{ home }}/.bash_profile present?
   stat:
     path: "{{ home }}/.bash_profile"
-  #check_mode: no (for migration to Ansible 2.2)
-  always_run: yes
+  check_mode: no
+  
   register: bash_profile
 
 - name: install shell trap in {{ home }}/.bash_profile
@@ -16,8 +16,8 @@
 - name: is {{ home }}/.profile present?
   stat:
     path: "{{ home }}/.profile"
-  #check_mode: no (for migration to Ansible 2.2)
-  always_run: yes
+  check_mode: no
+  
   register: profile
   when: not bash_profile.stat.exists
 

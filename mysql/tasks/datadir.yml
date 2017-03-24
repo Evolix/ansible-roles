@@ -4,15 +4,15 @@
   - name: "Is {{ mysql_custom_datadir }} present ?"
     stat:
       path: "{{ mysql_custom_datadir }}"
-    #check_mode: no (for migration to Ansible 2.2)
-    always_run: yes
+    check_mode: no
+    
     register: mysql_custom_datadir_test
 
   - name: "read the real datadir"
     command: readlink -f /var/lib/mysql
     changed_when: False
-    #check_mode: no (for migration to Ansible 2.2)
-    always_run: yes
+    check_mode: no
+    
     register: mysql_current_real_datadir_test
   tags:
     - mysql

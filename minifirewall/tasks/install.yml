@@ -12,8 +12,8 @@
 - name: is init script present?
   stat:
     path: /etc/init.d/minifirewall
-  #check_mode: no (for migration to Ansible 2.2)
-  always_run: yes
+  check_mode: no
+  
   register: init_minifirewall
 
 - name: init script is copied
@@ -24,8 +24,8 @@
 - name: is configuration present?
   stat:
     path: /etc/default/minifirewall
-  #check_mode: no (for migration to Ansible 2.2)
-  always_run: yes
+  check_mode: no
+  
   register: default_minifirewall
 
 - name: configuration is copied

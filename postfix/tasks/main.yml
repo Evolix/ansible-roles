@@ -9,8 +9,8 @@
 - name: check if main.cf is default
   shell: egrep -v "^(myhostname|mydestination|mailbox_command)" /etc/postfix/main.cf  | md5sum -
   changed_when: False
-  #check_mode: no (for migration to Ansible 2.2)
-  always_run: yes
+  check_mode: no
+  
   register: default_main_cf
 
 - name: create minimal main.cf

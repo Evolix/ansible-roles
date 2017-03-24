@@ -5,15 +5,15 @@
     stat:
       path: "{{ elasticsearch_custom_datadir }}"
     register: elasticsearch_custom_datadir_test
-    #check_mode: no (for migration to Ansible 2.2)
-    always_run: yes
+    check_mode: no
+
 
   - name: "read the real datadir"
     command: readlink -f /var/lib/elasticsearch
     changed_when: false
     register: elasticsearch_current_real_datadir_test
-    #check_mode: no (for migration to Ansible 2.2)
-    always_run: yes
+    check_mode: no
+
   tags:
     - elasticsearch
   when: elasticsearch_custom_datadir

@@ -53,8 +53,8 @@
 - name: is Nginx installed?
   stat:
     path: /etc/nginx/sites-available
-  #check_mode: no (for migration to Ansible 2.2)
-  always_run: yes
+  check_mode: no
+  
   register: nginx_sites_available
 
 - block:
@@ -86,8 +86,8 @@
 - name: is Apache installed?
   stat:
     path: /etc/apache2/sites-available
-  #check_mode: no (for migration to Ansible 2.2)
-  always_run: yes
+  check_mode: no
+  
   register: apache_sites_available
 
 - block:
