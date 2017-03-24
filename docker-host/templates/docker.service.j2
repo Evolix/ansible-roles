@@ -1,0 +1,27 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Docker Application Container Engine
+Documentation=https://docs.docker.com
+After=network.target docker.socket
+Requires=docker.socket
+
+[Service]
+ExecStart=/usr/bin/docker daemon -H fd:// \
+         {% if docker_tls_enabled %}
+         --tlsverify \
+         --tlscacert={{ docker_tls_path }}/{{ docker_tls_ca }} \
+         --tlscert={{ docker_tls_path }}/{{ docker_tls_cert }} \
+         --tlskey={{ docker_tls_path }}/{{ docker_tls_key }}   \
+         {% endif %}
+         {% if docker_remote_access_enabled %}
+         -H tcp://{{ docker_daemon_listening_ip }}:{{ docker_daemon_port }}
+         {% endif %}
+MountFlags=slave
+LimitNOFILE=1048576
+LimitNPROC=1048576
+LimitCORE=infinity
+Environment="TMPDIR={{ docker_tmpdir }}"
+
+[Install]
+WantedBy=multi-user.target

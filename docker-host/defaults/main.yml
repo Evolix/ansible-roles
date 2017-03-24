@@ -1,0 +1,14 @@
+---
+docker_tmpdir: /home/docker/tmp
+
+docker_remote_access_enabled: True
+docker_daemon_port: 2376
+docker_daemon_listening_ip: 0.0.0.0
+
+docker_tls_enabled: True
+docker_tls_path: /home/docker/tls
+docker_tls_ca: ca/ca.pem
+docker_tls_ca_key: ca/ca-key.pem
+docker_tls_cert: server/cert.pem
+docker_tls_key: server/key.pem
+docker_tls_csr: server/server.csr

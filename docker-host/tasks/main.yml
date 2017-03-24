@@ -1,0 +1,69 @@
+# This role installs the docker daemon
+---
+- name: Install apt-transport-https
+  apt:
+    name: apt-transport-https
+    state: present
+    update_cache: yes
+
+- name: Enable Docker repositories
+  apt_repository:
+    repo: 'deb https://apt.dockerproject.org/repo debian-{{ ansible_distribution_release }} main'
+    state: present
+    update_cache: no
+
+- name: Enable backports repository for docker-py
+  apt_repository:
+    repo: 'deb http://ftp.debian.org/debian {{ ansible_distribution_release }}-backports main'
+    state: present
+
+- name: Install Docker repo keys
+  apt_key:
+    keyserver: pgp.mit.edu
+    id: 58118E89F3A912897C070ADBF76221572C52609D
+
+- name: Install docker and docker-py
+  apt:
+    name: {{ item }}
+    state: latest
+    update_cache: yes
+  with_items:
+    - docker-engine
+    - python-docker
+
+- name: Configure docker service
+  template:
+    src: docker.service.j2
+    dest: /lib/systemd/system/docker.service
+  notify:
+    - reload systemd
+    - restart docker
+
+- name: Creating Docker tmp directory
+  file:
+    path: "{{ docker_tmpdir }}"
+    state: directory
+    mode: "0644"
+    owner: root
+
+- name: Creating Docker TLS directory
+  file:
+    path: "{{ docker_tls_path }}"
+    state: directory
+    mode: "0644"
+    owner: root
+  when: "{{ docker_tls_enabled }}"
+
+- name: Copy shellpki utility to Docker TLS directory
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ docker_tls_path }}/{{ item }}"
+    mode: "0744"
+  with_items:
+    - shellpki.sh
+    - openssl.cnf
+  when: "{{ docker_tls_enabled }}"
+
+- name: Creating a CA, server key
+  command: "{{ docker_tls_path }}/shellpki.sh init"
+  when: "{{ docker_tls_enabled }}"

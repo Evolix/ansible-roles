@@ -1,0 +1,121 @@
+#!/bin/sh
+# {{ ansible_managed }}
+# Simplified ShellPKI for Docker with TLS
+
+PREFIX={{ docker_tls_path }}
+CONFFILE=$PREFIX/openssl.cnf
+OPENSSL=`which openssl`
+
+init() {
+
+  if [ ! -d $PREFIX/ca ]; then mkdir -p $PREFIX/ca; fi
+  if [ ! -d $PREFIX/ca/tmp ]; then mkdir -p $PREFIX/ca/tmp; fi
+  if [ ! -d $PREFIX/certs ]; then mkdir -p $PREFIX/certs; fi
+  if [ ! -d $PREFIX/files ]; then mkdir -p $PREFIX/files; fi
+  if [ ! -d $PREFIX/server ]; then mkdir -p $PREFIX/server; fi
+
+  echo "Generating CA Key...\n"
+  $OPENSSL genrsa -out $PREFIX/ca/ca-key.pem 4096
+
+  echo "Generating CA cert...\n"
+  $OPENSSL req \
+      -new -x509 -days 3650 -sha256 \
+      -key $PREFIX/{{ docker_tls_ca_key }} \
+      -out $PREFIX/{{ docker_tls_ca }} \
+      -subj "/CN={{ ansible_hostname }}/C=FR"
+
+  echo "Generating server key...\n"
+  $OPENSSL genrsa -out $PREFIX/{{ docker_tls_key }} 4096
+
+  echo "Generating server cert...\n"
+  $OPENSSL req \
+      -new -days 3650 -sha256 \
+      -key $PREFIX/{{ docker_tls_key }} \
+      -out $PREFIX/{{ docker_tls_csr }} \
+      -subj "/CN={{ ansible_hostname }}/C=FR"
+
+  echo "subjectAltName = {% for ip in ansible_all_ipv4_addresses %}IP:{{ ip }},{% endfor %}IP:127.0.0.1" > $PREFIX/extfile.cnf
+
+  echo "Signing server...\n"
+  $OPENSSL x509 \
+      -req -sha256 -days 3650 \
+      -in $PREFIX/{{ docker_tls_csr }} \
+      -CA $PREFIX/{{ docker_tls_ca }} \
+      -CAkey $PREFIX/{{ docker_tls_ca_key }} \
+      -CAcreateserial \
+      -out $PREFIX/{{ docker_tls_cert }} \
+      -extfile $PREFIX/extfile.cnf
+
+  rm $PREFIX/{{ docker_tls_csr }}
+}
+
+
+create() {
+    echo "Please enter your CN (Common Name)"
+    read cn
+    echo
+    echo "Your CN is '$cn'"
+    echo "Press return to continue..."
+    read
+    echo
+
+    DIR=$PREFIX/files/$cn
+    mkdir $DIR
+
+# generate private key
+$OPENSSL genrsa -out $DIR/$cn.key 4096
+
+# generate csr req
+$OPENSSL req \
+    -new \
+    -key $DIR/$cn.key \
+    -config $CONFFILE \
+    -out $DIR/$cn.csr \
+    -subj "/CN=$cn/C=FR"
+
+# ca sign and generate cert
+  echo extendedKeyUsage = clientAuth > $DIR/extfile.cnf
+  $OPENSSL x509 \
+          -req -sha256 \
+          -in $DIR/$cn.csr \
+          -CA $PREFIX/{{ docker_tls_ca }} \
+          -CAkey $PREFIX/{{ docker_tls_ca_key }} \
+          -CAcreateserial \
+          -out $DIR/cert.pem \
+          -extfile $DIR/extfile.cnf
+  rm $DIR/$cn.csr
+  cp $PREFIX/{{ docker_tls_ca }} $DIR/
+}
+
+revoke() {
+    echo "Please enter CN (Common Name) to revoke"
+    read cn
+    echo
+    echo "CN '$cn' will be revoked"
+    echo "Press return to continue..."
+    read
+    echo
+
+$OPENSSL ca \
+    -revoke $PREFIX/certs/$cn.crt
+
+}
+
+case "$1" in
+    init)
+	init
+	;;
+
+    create)
+	create
+	;;
+
+    revoke)
+    	revoke
+	;;
+
+    *)
+	echo "Usage: shellpki.sh {init|create|revoke}"
+	exit 1
+	;;
+esac

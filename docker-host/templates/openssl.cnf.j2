@@ -1,0 +1,50 @@
+# {{ ansible_managed }}
+
+[ ca ]
+default_ca      = CA_default
+
+[ CA_default ]
+dir             = {{ docker_tls_path }}/ca
+certs           = {{ docker_tls_path }}/certs
+new_certs_dir   = {{ docker_tls_path }}/ca/tmp
+database        = $dir/index.txt
+certificate     = $dir/cacert.pem
+serial          = $dir/serial
+crl             = {{ docker_tls_path }}crl.pem
+private_key     = $dir/private.key
+RANDFILE        = $dir/.rand
+default_days    = 365
+default_crl_days= 365
+default_md      = sha256
+preserve        = no
+policy          = policy_match
+
+[ policy_match ]
+countryName             = supplied
+stateOrProvinceName     = supplied
+organizationName        = supplied
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = supplied
+
+[ req ]
+default_bits            = 2048
+distinguished_name      = req_distinguished_name
+
+[ req_distinguished_name ]
+countryName                     = Country Name (2 letter code)
+countryName_default             = FR
+countryName_min                 = 2
+countryName_max                 = 2
+stateOrProvinceName             = State or Province
+stateOrProvinceName_default     = 13
+localityName                    = Locality Name (eg, city)
+localityName_default            = Marseille
+0.organizationName              = Organization Name (eg, company)
+0.organizationName_default      = Evolix
+organizationalUnitName          = Organizational Unit Name (eg, section)
+commonName                      = Common Name (eg, your name or your server\'s hostname)
+commonName_max                  = 64
+emailAddress                    = Email Address
+emailAddress_default            = security@evolix.net
+emailAddress_max                = 40
