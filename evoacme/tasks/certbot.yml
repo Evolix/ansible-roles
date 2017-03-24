@@ -1,106 +1,47 @@
 ---
-- name: Set certbot release to Debian stable
-  set_fact:
-    evoacme_certbot_release: stable
-  when:
-    - ansible_distribution is defined
-    - ansible_distribution == "Debian"
-    - ansible_distribution_major_version is defined
-    - ansible_distribution_major_version|int > 8
-
-- name: Set certbot relase to jessie-backports
-  set_fact:
-    evoacme_certbot_release: jessie-backports
-  when:
-    - ansible_distribution is defined
-    - ansible_distribution == "Debian"
-    - ansible_distribution_major_version is defined
-    - ansible_distribution_major_version == "8"
 
 - block:
-  - name: Add backports repository
-    lineinfile:
-      dest: /etc/apt/sources.list.d/backports.list
-      line: 'deb http://mirror.evolix.org/debian jessie-backports main'
-      state: present
-    register: add_backports
-    when: evoacme_certbot_release == "jessie-backports"
+  - name: install jessie-backports
+    include_role:
+      name: "{{ roles }}/apt-repositories"
+    vars:
+      apt_repositories_install_backports: True
 
   - name: Add exceptions for certbot dependances
-    blockinfile:
-      dest: /etc/apt/preferences.d/backports
-      marker: "## {mark} ANSIBLE MANAGED BLOCK"
-      block: |
-        Package: certbot python-certbot python-acme python-cryptography python-openssl python-setuptools python-ndg-httpsclient python-pyasn1 python-pkg-resources
-        Pin: release a=jessie-backports
-        Pin-Priority: 999
-    when: evoacme_certbot_release == "jessie-backports"
-
-  - name: Apt update
-    apt:
-      update_cache: yes
-    when:
-      - add_backports is defined
-      - add_backports|changed
-
-  - name: Install certbot with apt
-    apt:
-      name: certbot
-      state: latest
-      default_release: "{{ evoacme_certbot_release }}"
-
-  - name: Check if /usr is a partition
-    shell: "mount | grep 'on /usr type'"
-    args:
-      warn: no
-    changed_when: False
-    failed_when: False
-    #check_mode: no (for migration to Ansible 2.2)
-    always_run: yes
-    register: usr_partition
-
-  - name: Mount /usr in rw
-    command: mount -o remount,rw /usr
-    args:
-      warn: no
-    changed_when: False
-    when: usr_partition.rc == 0
-
-  - name: Remove certbot symlink for apt install
-    file:
-      path: /usr/local/bin/certbot
-      state: absent
-  when: evoacme_certbot_release is defined
-
-- block:
-  - name: Install certbot from source
-    git:
-      repo: https://github.com/certbot/certbot.git
-      dest: /opt/certbot
-      update: yes
-
-  - name: Fix certbot right for source install
-    file:
-      path: /opt/certbot
-      recurse: yes
-      state: directory
-      mode: "g+rX,o+rX"
-
-  - name: Install certbot symlink for source install
     copy:
-      dest: /usr/local/bin/certbot
-      content: |
-        #!/bin/sh
-        sudo /opt/certbot/certbot-auto $@
-      mode: "0755"
+      src: backports-certbot
+      dest: /etc/apt/preferences.d/z-backports-certbot
+    notify: apt update
 
-  - name: Add sudo right for source install
-    copy:
-      src: files/sudoers
-      dest: /etc/sudoers.d/certbot
-      mode: "0440"
-      validate: '/usr/sbin/visudo -cf %s'
-  when: evoacme_certbot_release is undefined
+  - meta: flush_handlers
+  when: ansible_distribution_release == "jessie"
+
+- name: Install certbot with apt
+  apt:
+    name: certbot
+    state: latest
+
+- name: Check if /usr is a partition
+  shell: "mount | grep 'on /usr type'"
+  args:
+    warn: no
+  changed_when: False
+  failed_when: False
+  #check_mode: no (for migration to Ansible 2.2)
+  always_run: yes
+  register: usr_partition
+
+- name: Mount /usr in rw
+  command: mount -o remount,rw /usr
+  args:
+    warn: no
+  changed_when: False
+  when: usr_partition.rc == 0
+
+- name: Remove certbot symlink for apt install
+  file:
+    path: /usr/local/bin/certbot
+    state: absent
 
 - name: Remove certbot dpkg cron
   file:

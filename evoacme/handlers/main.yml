@@ -9,3 +9,7 @@
   service:
    name: apache2
    state: reloaded
+
+- name: apt update
+  apt:
+    update_cache: yes

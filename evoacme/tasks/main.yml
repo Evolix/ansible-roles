@@ -1,4 +1,12 @@
 ---
+
+- name: Fail if distribution is not supported
+  fail:
+    msg: "Error: '{{ ansible_os_family }} {{ ansible_distribution_release }}' is not a supported distribution."
+  when:
+  - ansible_distribution_release != "jessie"
+  - ansible_distribution_release != "stretch"
+
 - include: tasks/certbot.yml
 
 - include: tasks/acme.yml
