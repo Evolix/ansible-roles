@@ -3,3 +3,8 @@
   service:
     name: munin-node
     state: restarted
+
+- name: restart munin_node
+  service:
+    name: munin_node
+    state: restarted

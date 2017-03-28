@@ -29,11 +29,11 @@
   tags:
     - munin
 
-- name: Change hostname in munin-node config
-  replace:
+- name: Set munin-node config
+  template:
+    src: munin-node.conf.j2   
     dest: /etc/munin/munin-node.conf
-    regexp: '#?host_name .*'
-    replace: 'host_name {{ ansible_hostname }}'
+    mode: "0644"
   notify: restart munin_node
   tags:
     - munin
@@ -52,6 +52,7 @@
     src: "/usr/local/libexec/munin/plugins/{{ item }}"
     dest: "/etc/munin/plugins/{{ item }}"
     state: link
+  notify: restart munin_node
   with_items:
     - 'cpu'
     - 'df'
@@ -78,6 +79,7 @@
     src: "/usr/local/libexec/munin/plugins/if_"
     dest: "/etc/munin/plugins/if_{{ item }}"
     state: link
+  notify: restart munin_node
   with_items: "{{ ansible_interfaces }}"
 
 - name: Enable sensors plugin unless VM detected
