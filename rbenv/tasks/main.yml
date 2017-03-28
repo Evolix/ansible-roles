@@ -80,7 +80,6 @@
   become_user: "{{ username }}"
   failed_when: False
   changed_when: False
-  
   register: ruby_installed
   tags:
   - rbenv
