@@ -1,13 +1,13 @@
 ---
 - name: Allow conf.d/*.conf files to be included in PostgreSQL configuration
   lineinfile:
-    name: /etc/postgresql/9.4/main/postgresql.conf
+    name: "/etc/postgresql/{{postgresql_version}}/main/postgresql.conf"
     line: include_dir = 'conf.d'
   notify: restart postgresql
 
 - name: Create conf.d directory
   file:
-    name: /etc/postgresql/9.4/main/conf.d/
+    name: "/etc/postgresql/{{postgresql_version}}/main/conf.d/"
     state: directory
     owner: postgres
     group: postgres
@@ -16,7 +16,7 @@
 - name: Copy PostgreSQL config file
   template:
     src: postgresql.conf
-    dest: /etc/postgresql/9.4/main/conf.d/evolinux.conf
+    dest: "/etc/postgresql/{{postgresql_version}}/main/conf.d/evolinux.conf"
     owner: postgres
     group: postgres
     mode: "0644"
