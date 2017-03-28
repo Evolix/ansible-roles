@@ -1,4 +1,13 @@
 ---
+- name: Open firewall for PGDG repository
+  replace:
+    name: /etc/default/minifirewall
+    regexp: "^(HTTPSITES='((?!apt\\.postgresql\\.org).)*)'$"
+    replace: "\\1 apt.postgresql.org'"
+  notify: Restart minifirewall
+
+- meta: flush_handlers
+
 - name: Add PGDG repository
   apt_repository:
     repo: "deb http://apt.postgresql.org/pub/repos/apt/ {{ansible_distribution_release}}-pgdg main"

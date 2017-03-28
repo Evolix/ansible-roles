@@ -13,3 +13,6 @@
   service:
     name: postgresql
     state: restarted
+
+- name: Restart minifirewall
+  command: /etc/init.d/minifirewall restart
