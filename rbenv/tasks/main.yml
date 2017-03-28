@@ -95,7 +95,6 @@
 - name: is Ruby {{ rbenv_ruby_version }} selected for {{ username }} ?
   shell: /bin/bash -lc "rbenv version | cut -d ' ' -f 1 | grep -Fx '{{ rbenv_ruby_version }}'"
   become_user: "{{ username }}"
-  
   register: ruby_selected
   changed_when: False
   tags:
