@@ -23,3 +23,8 @@
     owner: root
     group: root
   notify: reload apache2
+
+- name: Enable proxy module for Apache
+  apache2_module:
+    name: proxy
+  notify: reload apache2
