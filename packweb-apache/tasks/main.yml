@@ -1,4 +1,9 @@
 ---
+
+- name: Include apache role
+  include_role:
+    name: "{{ roles }}/apache"
+
 - name: Add elements to user account template
   file:
     path: "/etc/skel/{{ item.path }}"
@@ -72,6 +77,7 @@
 
 - debug:
     var: command_result
+    verbosity: 1
 
 - name: Add log2mail config for Apache segfaults
   template:
@@ -82,3 +88,191 @@
     mode: "0644"
     force: no
   when: "'log2mail' in command_result.stdout"
+
+- name: Install PHP5 packages
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - libapache2-mod-php5
+  - php5
+  - php5-gd
+  - php5-imap
+  - php5-ldap
+  - php5-mcrypt
+  - php5-mysql
+  - php5-pgsql
+  - php-gettext
+  - php5-curl
+  - libssh2-php
+  tags:
+  - apache
+
+- name: Set default values in /etc/php5/apache2/conf.d/z-evolinux_defaults.ini
+  ini_file:
+    dest: /etc/php5/apache2/conf.d/z-evolinux_defaults.ini
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+    create: yes
+  with_items:
+  - { option: "short_open_tag", value: "Off" }
+  - { option: "disable_functions", value: "exec, shell-exec, system, passthru, putenv, popen" }
+  - { option: "expose_php", value: "Off" }
+  - { option: "display_errors", value: "Off" }
+  - { option: "log_errors", value: "On" }
+  - { option: "allow_url_fopen", value: "Off" }
+  notify: reload apache
+
+- name: Custom php.ini
+  copy:
+    dest: /etc/php5/apache2/conf.d/zzz-evolinux_custom.ini
+    content: |
+      # Put customized values here.
+    force: no
+
+- name: Install phpmyadmin
+  apt:
+    name: phpmyadmin
+    state: present
+
+- name: Check if phpmyadmin default configuration is present
+  stat:
+    path: /etc/apache2/conf-enabled/phpmyadmin.conf
+  register: pma_default_config
+
+- debug:
+    var: pma_default_config
+    verbosity: 1
+
+- name: Disable phpmyadmin default configuration
+  command: "a2disconf phpmyadmin"
+  register: command_result
+  changed_when: "'Disabling' in command_result.stderr"
+  when: pma_default_config.stat.exists
+
+- name: Change group to www-data for /etc/phpmyadmin/
+  file:
+    dest: /etc/phpmyadmin/
+    group: www-data
+
+- name: Install awstats
+  apt:
+    name: awstats
+    state: present
+
+- name: Configure awstats
+  blockinfile:
+    dest: /etc/awstats/awstats.conf.local
+    marker: "## {mark} ANSIBLE MANAGED BLOCK FOR PACKWEB"
+    block: |
+      LogFile="/var/log/apache2/access.log"
+      SiteDomain="{{ ansible_hostname }}"
+      DirData="/var/lib/awstats"
+      ShowHostsStats=0
+      ShowOriginStats=0
+      ShowPagesStats=0
+      ShowKeyphrasesStats=0
+      ShowKeywordsStats=0
+      ShowHTTPErrorsStats=0
+      LogFormat=1
+      AllowFullYearView=3
+      ErrorMessages="An error occured. Contact your Administrator"
+    mode: "0644"
+
+- name: Create conf-available/awstats-icon.conf file
+  copy:
+    dest: /etc/apache2/conf-available/awstats-icon.conf
+    content: |
+      Alias /awstats-icon/ /usr/share/awstats/icon/
+      <Directory /usr/share/awstats/icon/>
+        Require All Granted
+      </Directory>
+    force: no
+    mode: "0644"
+
+- name: Enable apache awstats-icon configuration
+  command: "a2enconf awstats-icon"
+  register: command_result
+  changed_when: "'Enabling' in command_result.stderr"
+  notify: reload apache
+
+- name: Create awstats cron
+  lineinfile:
+    dest: /etc/cron.d/awstats
+    create: yes
+    regexp: '-config=awstats'
+    line: "10 */6 * * * root umask 033; [ -x /usr/lib/cgi-bin/awstats.pl -a -f /etc/awstats/awstats.conf -a -r /var/log/apache2/access.log ] && /usr/lib/cgi-bin/awstats.pl -config=awstats -update >/dev/null"
+
+- name: Remove read permission on some folders (/, /etc, ...)
+  shell: "test -d {{ item }} && chmod --verbose o-r {{ item }}"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  failed_when: False
+  with_items:
+  - /
+  - /etc
+  - /usr
+  - /usr/bin
+  - /var
+  - /var/log
+  - /home
+  - /bin
+  - /sbin
+  - /lib
+  - /usr/lib
+  - /usr/include
+  - /usr/bin
+  - /usr/sbin
+  - /usr/share
+  - /usr/share/doc
+  - /etc/default
+
+- name: Set 750 permission on some folders (/var/log/apt, /var/log/munin, ...)
+  shell: "test -d {{ item }} && chmod --verbose 750 {{ item }}"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  failed_when: False
+  with_items:
+  - /var/log/apt
+  - /var/lib/dpkg
+  - /var/log/munin
+  - /var/backups
+  - /var/cache/apt
+  - /etc/init.d
+  - /etc/apt
+  - /etc/apache2
+  - /etc/network
+  - /etc/phpmyadmin
+  - /var/log/installer
+
+- name: Set u-s permission on some binaries (/bin/ping, /usr/bin/mtr, ...)
+  shell: "test -f {{ item }} && chmod --verbose u-s {{ item }}"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  failed_when: False
+  with_items:
+  - /bin/ping
+  - /bin/ping6
+  - /usr/bin/fping
+  - /usr/bin/fping6
+  - /usr/bin/mtr
+
+- name: Set 640 permission on some files (/var/log/evolix.log, ...)
+  shell: "test -f {{ item }} && chmod --verbose 640 {{ item }}"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  failed_when: False
+  with_items:
+  - /var/log/evolix.log
+  - /etc/warnquota.conf
+
+- name: Remove some log files (/var/log/mail.err, ...)
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+  - /var/log/debug
+  - /var/log/mail.err
+  - /var/log/mail.warn
