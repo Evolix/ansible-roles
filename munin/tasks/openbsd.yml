@@ -84,7 +84,7 @@
 
 - name: Enable sensors plugin unless VM detected
   file:
-    src: /usr/share/munin/plugins/sensors_
+    src: /usr/local/libexec/munin/plugins/sensors_
     dest: /etc/munin/plugins/sensors_temp
     state: link
   when: ansible_vio0 is undefined 
