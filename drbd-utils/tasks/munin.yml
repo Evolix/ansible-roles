@@ -6,7 +6,6 @@
   register: munin_plugins_dir
   check_mode: no
 
-
 # https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/drbd/drbd
 - name: Get Munin plugin
   copy:
