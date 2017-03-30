@@ -1,21 +1,33 @@
 ---
-- name: Enable reboot after panic
+
+- name: Reboot after panic
   sysctl:
     name: "{{ item.name }}"
     value: "{{ item.value }}"
-    sysctl_file: /etc/sysctl.d/evolinux.conf
+    sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
     state: present
     reload: yes
   with_items:
-    - { name: kernel.panic_on_oops, value: 1 }
-    - { name: kernel.panic, value: 60 }
+  - { name: kernel.panic_on_oops, value: 1 }
+  - { name: kernel.panic, value: 60 }
   when: evolinux_kernel_reboot_after_panic
+
+- name: Don't reboot after panic
+  sysctl:
+    name: "{{ item }}"
+    sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
+    state: absent
+    reload: yes
+  with_items:
+  - kernel.panic_on_oops
+  - kernel.panic
+  when: not evolinux_kernel_reboot_after_panic
 
 - name: Disable net.ipv4.tcp_timestamps
   sysctl:
     name: net.ipv4.tcp_timestamps
     value: 0
-    sysctl_file: /etc/sysctl.d/evolinux.conf
+    sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
     state: present
     reload: yes
   when: evolinux_kernel_disable_tcp_timestamps
@@ -24,7 +36,7 @@
   sysctl:
     name: vm.swappiness
     value: 20
-    sysctl_file: /etc/sysctl.d/evolinux.conf
+    sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
     state: present
     reload: yes
   when: evolinux_kernel_reduce_swapiness
@@ -33,7 +45,7 @@
   sysctl:
     name: net.ipv4.tcp_challenge_ack_limit
     value: 1073741823
-    sysctl_file: /etc/sysctl.d/evolinux.conf
+    sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
     state: present
     reload: yes
   when: evolinux_kernel_cve20165696
