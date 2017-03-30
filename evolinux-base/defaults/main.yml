@@ -6,6 +6,7 @@ general_alert_email: "root@localhost"
 reboot_alert_email: Null
 apt_alert_email: Null
 log2mail_alert_email: Null
+logcheck_alert_email: Null
 raid_alert_email: Null
 postfix_alias_email: Null
 
@@ -63,6 +64,7 @@ evolinux_packages_serveur_base: True
 evolinux_packages_invalid_mta: True
 evolinux_packages_delete_nfs: True
 evolinux_packages_listchanges: True
+evolinux_packages_logcheck_recipient: True
 
 # system
 

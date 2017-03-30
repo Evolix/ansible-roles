@@ -60,6 +60,13 @@
   changed_when: not (install_server_base.stdout | search("0 upgraded") and install_server_base.stdout | search("0 newly installed"))
   when: evolinux_packages_serveur_base
 
+- name: Customize logcheck recipient
+  lineinfile:
+    dest: /etc/logcheck/logcheck.conf
+    regexp: '^SENDMAILTO=".*"$'
+    line: 'SENDMAILTO="{{ logcheck_alert_email or general_alert_email | mandatory }}"'
+  when: evolinux_packages_logcheck_recipient
+
 - name: is an MTA installed?
   command: "dpkg -S /usr/sbin/sendmail"
   check_mode: no
