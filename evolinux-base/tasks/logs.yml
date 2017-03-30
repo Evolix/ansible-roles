@@ -27,7 +27,7 @@
 - name: Configure logrotate.conf
   replace:
     dest: /etc/logrotate.conf
-    regexp: "rotate [0-9]*"
+    regexp: "rotate [0-9]+"
     replace: "rotate 12"
   when: evolinux_logs_default_rotate
 
