@@ -5,7 +5,6 @@
   changed_when: False
   failed_when: False
   check_mode: no
-
   register: minifirewall_is_running
 
 - debug:

@@ -3,7 +3,6 @@
   stat:
     path: /etc/default/minifirewall
   check_mode: no
-  
   register: minifirewall_test
 
 - block:

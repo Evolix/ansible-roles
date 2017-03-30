@@ -13,7 +13,6 @@
   stat:
     path: /etc/init.d/minifirewall
   check_mode: no
-  
   register: init_minifirewall
 
 - name: init script is copied
@@ -25,7 +24,6 @@
   stat:
     path: /etc/default/minifirewall
   check_mode: no
-  
   register: default_minifirewall
 
 - name: configuration is copied
