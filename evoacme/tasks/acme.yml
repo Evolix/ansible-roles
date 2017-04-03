@@ -12,6 +12,7 @@
     createhome: no
     home: "{{ evoacme_acme_dir }}"
     shell: /bin/false
+    system: yes
 
 - name: Fix crt dir's right
   file:
