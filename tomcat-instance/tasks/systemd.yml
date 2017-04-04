@@ -7,6 +7,8 @@
   lineinfile:
     dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/.profile"
     state: present
+    owner: "{{ tomcat_instance_name }}"
+    group: "{{ tomcat_instance_name }}"
     mode: "0640"
     create: yes
     line: 'export XDG_RUNTIME_DIR=/run/user/$UID'
