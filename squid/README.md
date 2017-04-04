@@ -11,6 +11,7 @@ A blank file is created at `/etc/squid3/whitelist-custom.conf` to add addresses 
 ## Available variables
 
 * `squid_address` : IP address for internal/outgoing traffic (default: Ansible detected IPv4 address) ;
+* `squid_whitelist_items` : list of URL to add to the whitelist (default: `[]`) ;
 * `general_alert_email`: email address to send various alert messages (default: `root@localhost`).
 * `log2mail_alert_email`: email address to send Log2mail messages to (default: `general_alert_email`).
 

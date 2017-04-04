@@ -29,6 +29,15 @@
     force: no
   notify: "restart {{ squid_daemon }}"
 
+- name: add some URL in whitelist
+  lineinfile:
+    insertafter: EOF
+    dest: "{{ squid_conf_path }}/whitelist-custom.conf"
+    line: "{{ item }}"
+    state: present
+  with_items: '{{ squid_whitelist_items }}'
+  notify: reload squid
+
 - include: logrotate.yml
 
 - include: minifirewall.yml

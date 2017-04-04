@@ -14,6 +14,11 @@
     name: squid3
     state: restarted
 
+- name: reload squid3
+  service:
+    name: squid3
+    state: reloaded
+
 - name: restart log2mail
   service:
     name: log2mail
