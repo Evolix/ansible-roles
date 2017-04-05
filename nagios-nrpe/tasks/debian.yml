@@ -20,7 +20,7 @@
 - name: Nagios config is secured
   file:
     dest: /etc/nagios/
-    mode: 0750
+    mode: "0750"
     group: nagios
     state: directory
   notify: restart nagios-nrpe-server
@@ -29,13 +29,13 @@
   copy:
     src: plugins/
     dest: /usr/local/lib/nagios/plugins/
-    mode: 0755
+    mode: "0755"
   notify: restart nagios-nrpe-server
 
 - name: Nagios lib is secured
   file:
     dest: /usr/local/lib/nagios/
-    mode: 0755
+    mode: "0755"
     group: nagios
     recurse: yes
     state: directory
