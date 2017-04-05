@@ -2,3 +2,22 @@
   apt:
     name: memcached
     state: present
+  tags:
+  - memcached
+
+- name: Memcached is configured.
+  template:
+    src: memcached.conf.j2
+    dest: /etc/memcached.conf
+    mode: "0644"
+  notify: restart memcached
+  tags:
+  - memcached
+
+- name: Memcached is running and enabled on boot.
+  service:
+    name: memcached
+    enabled: yes
+    state: started
+  tags:
+  - memcached
