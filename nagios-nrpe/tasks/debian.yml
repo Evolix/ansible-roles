@@ -28,7 +28,7 @@
 - name: Nagios plugins are installed
   copy:
     src: plugins/
-    dest: /usr/local/lib/nagios/plugins/
+    dest: {{ nagios_plugins_directory }}/
     mode: "0755"
   notify: restart nagios-nrpe-server
 
