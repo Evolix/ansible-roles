@@ -36,7 +36,7 @@
     line: "{{ item }}"
     state: present
   with_items: '{{ squid_whitelist_items }}'
-  notify: reload squid
+  notify: "reload {{ squid_daemon }}"
 
 - include: logrotate.yml
 
