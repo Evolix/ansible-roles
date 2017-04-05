@@ -3,6 +3,5 @@ nagios_nrpe_allowed_hosts: []
 nagios_nrpe_ldap_dc: "dc=DOMAIN,dc=EXT"
 nagios_nrpe_ldap_passwd: LDAP_PASSWD
 nagios_nrpe_pgsql_passwd: PGSQL_PASSWD
-nagios_nrpe_mysql_passwd: MYSQL_PASSWD
 nagios_nrpe_amavis_from: "foobar@{{ ansible_domain }}"
 nagios_plugins_directory: "/etc/nagios/plugins"
