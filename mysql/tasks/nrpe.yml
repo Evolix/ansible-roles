@@ -4,8 +4,16 @@
   stat:
     path: /etc/nagios/nrpe.d/evolix.cfg
   check_mode: no
-  
   register: nrpe_evolix_config
+  tags:
+    - mysql
+    - nrpe
+
+- name: NRPE user exists for MySQL ?
+  stat:
+    path: ~nagios/.my.cnf
+  check_mode: no
+  register: nrpe_my_cnf
   tags:
     - mysql
     - nrpe
@@ -16,27 +24,30 @@
     register: mysql_nrpe_password
     changed_when: False
 
-  - debug:
-      msg: "repl password: {{ mysql_nrpe_password.stdout }}"
-
   - name: Create nrpe user
     mysql_user:
       name: nrpe
       password: '{{ mysql_nrpe_password.stdout }}'
       config_file: /root/.my.cnf
-      update_password: on_create
+      update_password: always
       state: present
     register: create_nrpe_user
 
-  - name: config check_mysql to use the new password
-    replace:
-      dest: /etc/nagios/nrpe.d/evolix.cfg
-      regexp: '\bMYSQL_PASSWD\b'
-      replace: '{{ mysql_nrpe_password.stdout }}'
-    notify: restart nagios-nrpe-server
+  - name: Store credentials in nagios home
+    ini_file:
+      dest: "~nagios/.my.cnf"
+      owner: nagios
+      group: nagios
+      mode: "0600"
+      section: client
+      option: '{{ item.option }}'
+      value: '{{ item.value }}'
+    with_items:
+      - { option: 'user', value: 'nrpe' }
+      - { option: 'password', value: '{{ mysql_nrpe_password.stdout }}' }
     when: create_nrpe_user.changed
 
-  when: nrpe_evolix_config.stat.exists
+  when: nrpe_evolix_config.stat.exists and (not nrpe_my_cnf.stat.exists or mysql_force_new_nrpe_password)
   tags:
     - mysql
     - nrpe
