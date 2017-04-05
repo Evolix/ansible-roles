@@ -5,52 +5,60 @@
 - name: Fetch fstab content
   command: "grep -v '^#' /etc/fstab"
   check_mode: no
-  
   register: fstab_content
   failed_when: False
   changed_when: False
 
-- name: /home partition is customized (noexec,nosuid,nodev)
+- name: /home partition is customized
   replace:
     dest: /etc/fstab
-    regexp: '(\s+/home\s+\w+\s+defaults)(\s+)'
-    replace: '\1,noexec,nosuid,nodev\2'
+    regexp: '(\s+/home\s+\w+\s+)([a-z,]+)(\s+)'
+    replace: '\1{{ evolinux_fstab_home_options | mandatory }}\3'
     backup: yes
   notify: remount /home
-  when: "' /home ' in fstab_content.stdout"
+  when:
+  - "' /home ' in fstab_content.stdout"
+  - evolinux_fstab_home
 
-- name: /tmp partition is customized (noexec,nosuid,nodev)
+- name: /tmp partition is customized
   replace:
     dest: /etc/fstab
-    regexp: '(\s+/tmp\s+\w+\s+defaults)(\s+)'
-    replace: '\1,noexec,nosuid,nodev\2'
+    regexp: '(\s+/tmp\s+\w+\s+)([a-z,]+)(\s+)'
+    replace: '\1{{ evolinux_fstab_tmp_options | mandatory }}\3'
     backup: yes
-  when: "' /tmp ' in fstab_content.stdout"
+  when:
+  - "' /tmp ' in fstab_content.stdout"
+  - evolinux_fstab_tmp
 
-- name: /usr partition is customized (ro)
+- name: /usr partition is customized
   replace:
     dest: /etc/fstab
-    regexp: '(\s+/usr\s+\w+\s+defaults)(\s+)'
-    replace: '\1,ro\2'
+    regexp: '(\s+/usr\s+\w+\s+)([a-z,]+)(\s+)'
+    replace: '\1{{ evolinux_fstab_usr_options | mandatory }}\3'
     backup: yes
-  when: "' /usr ' in fstab_content.stdout"
+  when:
+  - "' /usr ' in fstab_content.stdout"
+  - evolinux_fstab_usr
 
-- name: /var partition is customized (nosuid)
+- name: /var partition is customized
   replace:
     dest: /etc/fstab
-    regexp: '(\s+/var\s+\w+\s+defaults)(\s+)'
-    replace: '\1,nosuid\2'
+    regexp: '(\s+/var\s+\w+\s+)([a-z,]+)(\s+)'
+    replace: '\1{{ evolinux_fstab_var_options | mandatory }}\3'
     backup: yes
   notify: remount /var
-  when: "' /var ' in fstab_content.stdout"
+  when:
+  - "' /var ' in fstab_content.stdout"
+  - evolinux_fstab_var
 
 - name: /var/tmp is created
   mount:
     src: tmpfs
     name: /var/tmp
     fstype: tmpfs
-    opts: defaults,noexec,nosuid,nodev,size=1024m
+    opts: "{{ evolinux_fstab_var_tmp_options | mandatory }}"
     state: mounted
-  when: evolinux_fstab_var_tmp
+  when:
+  - evolinux_fstab_var_tmp
 
 - meta: flush_handlers

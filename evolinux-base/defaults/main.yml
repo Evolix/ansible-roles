@@ -50,7 +50,16 @@ evolinux_apt_repositories_components: "main"
 
 evolinux_fstab_include: True
 
+evolinux_fstab_tmp: True
+evolinux_fstab_tmp_options: defaults,noexec,nosuid,nodev
+evolinux_fstab_usr: True
+evolinux_fstab_usr_options: defaults,ro
+evolinux_fstab_var: True
+evolinux_fstab_var_options: defaults,nosuid
+evolinux_fstab_home: True
+evolinux_fstab_home_options: defaults,noexec,nosuid,nodev
 evolinux_fstab_var_tmp: True
+evolinux_fstab_var_tmp_options: defaults,noexec,nosuid,nodev,size=1024m
 
 # packages
 
