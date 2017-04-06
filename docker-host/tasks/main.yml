@@ -24,7 +24,7 @@
 
 - name: Install docker and docker-py
   apt:
-    name: {{ item }}
+    name: "{{ item }}"
     state: latest
     update_cache: yes
   with_items:
