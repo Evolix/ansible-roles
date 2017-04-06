@@ -14,7 +14,7 @@
     path: "{{ bind_systemd_service_path }}"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
     state: touch
   register: create_bind_systemd
 
@@ -43,7 +43,7 @@
     state: directory
     owner: bind
     group: bind
-    mode: 0700
+    mode: "0700"
     recurse: yes
   with_items:
   - chroot-bind
@@ -77,7 +77,7 @@
   file:
     path: /var/chroot-bind/var/log/bind.log
     state: touch
-    mode: 0640
+    mode: "0640"
     owner: bind
     group: bind
 
@@ -93,7 +93,7 @@
     state: directory
     owner: root
     group: bind
-    mode: 0770
+    mode: "0770"
     recurse: yes
 
 - name: Stat /var/chroot-bind/var/run/bind/run/named
