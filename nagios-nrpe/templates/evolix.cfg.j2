@@ -23,7 +23,7 @@ command[check_mailq]=/usr/lib/nagios/plugins/check_mailq -M postfix -w 10 -c 20
 
 # Specific services checks
 command[check_pgsql]=/usr/lib/nagios/plugins/check_pgsql -H localhost -l nrpe -p '{{ nagios_nrpe_pgsql_passwd }}'
-command[check_mysql]=/usr/lib/nagios/plugins/check_mysql -H localhost  -f ~/.my.cnf
+command[check_mysql]=/usr/lib/nagios/plugins/check_mysql -H localhost  -f ~nagios/.my.cnf
 command[check_ldap]=/usr/lib/nagios/plugins/check_ldap -3 -H localhost -D cn=nagios,ou=ldapusers,{{ nagios_nrpe_ldap_dc }} -P {{ nagios_nrpe_ldap_passwd }} -b {{ nagios_nrpe_ldap_dc }}
 command[check_ldaps]=/usr/lib/nagios/plugins/check_ldaps -3 -H localhost -b {{ nagios_nrpe_ldap_dc }}
 command[check_imap]=/usr/lib/nagios/plugins/check_imap -H localhost
