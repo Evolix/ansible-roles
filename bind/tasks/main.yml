@@ -65,7 +65,7 @@
 
 - name: Move bind to /var/chroot-bind/etc/
   command: mv /etc/bind/ /var/chroot-bind/etc/
-  when: bind_stat.stat.exists and bind_stat.stat.islnk == False
+  when: bind_stat.stat.exists and not bind_stat.stat.islnk
 
 - name: Create symlink
   file:
@@ -105,13 +105,13 @@
   file:
     state: absent
     path: "/var/chroot-bind/var/run/bind/run/named"
-  when: named_run.stat.isdir == True
+  when: named_run.stat.isdir
 
 - name: Clean /var/run/bind/run/named.pid
   file:
     state: absent
     path: "/var/run/bind/run/named.pid"
-  when: named_run.stat.isdir == True
+  when: named_run.stat.isdir
 
 - name: Stat /var/run/bind/run/named.pid
   stat:
@@ -120,26 +120,26 @@
 
 - name: Cat pid content
   command: cat /var/run/bind/run/named.pid > /var/chroot-bind/var/run/bind/run/named.pid
-  when: named_pid.stat.isreg == True and named_pid.stat.islnk == False
+  when: named_pid.stat.isreg == True and not named_pid.stat.islnk
 
 - name: Clean /var/run/bind/run/named.pid
   file:
     state: absent
     path: "/var/run/bind/run/named.pid"
-  when: named_pid.stat.isreg == True and named_pid.stat.islnk == False
+  when: named_pid.stat.isreg == True and not named_pid.stat.islnk
 
 - name: Clean /var/run/bind/run/named.pid
   file:
     state: absent
     path: "/var/run/bind/run/named.pid"
-  when: named_pid.stat.islnk == False
+  when: not named_pid.stat.islnk
 
 - name: Create pid symlink
   file:
     src:  "/var/chroot-bind/var/run/bind/run/named.pid"
     dest: "/var/run/bind/run/named.pid"
     state: link
-  when: named_pid.stat.islnk == False
+  when: not named_pid.stat.islnk
 
 - name: Stat /var/chroot-bind/dev/random
   stat:
@@ -148,7 +148,7 @@
 
 - name: mknod /var/chroot-bind/dev/random
   command: mknod /var/chroot-bind/dev/random c 1 3; chmod 666 /var/chroot-bind/dev/random
-  when: named_random.stat.exists == False
+  when: not named_random.stat.exists
 
 - name: Copy essential libs
   command: for i in `ldd $(which named) | grep -v linux-vdso.so.1 | cut -d">" -f2 | cut -d"(" -f1` /usr/lib/x86_64-linux-gnu/openssl-1.0.0/engines/libgost.so; do install -D $i /var/chroot-bind/${i##/} done
