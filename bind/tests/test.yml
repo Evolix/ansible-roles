@@ -1,4 +1,4 @@
 ---
 - hosts: test-kitchen
   roles:
-    - role: nginx
+    - role: bind
