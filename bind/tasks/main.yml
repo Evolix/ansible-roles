@@ -60,13 +60,24 @@
     state: link
   notify: restart bind
 
-- name: Create log file
+- name: is there a log file?
+  stat:
+    path: "{{ bind_chroot_root }}/var/log/bind.log"
+  register: bind_log
+
+- name: create log file
   file:
     path: "{{ bind_chroot_root }}/var/log/bind.log"
-    mode: "0640"
+    state: touch
+  when: not bind_log.stat.exists
+
+- name: verify log file permissions
+  file:
+    path: "{{ bind_chroot_root }}/var/log/bind.log"
     owner: bind
     group: bind
-    state: touch
+    mode: "0640"
+    state: file
 
 - name: Create log symlink
   file:
