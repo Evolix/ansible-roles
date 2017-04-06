@@ -7,7 +7,7 @@
   replace:
     dest: /etc/default/bind9
     regexp: '^OPTIONS.*'
-    replace: 'OPTIONS="-u bind -t /var/chroot-bind"'
+    replace: 'OPTIONS="-u bind -t {{ bind_chroot_root }}"'
 
 - name: Create systemd service
   file:
@@ -26,36 +26,35 @@
       Description=BIND Domain Name Server
       Documentation=man:named(8)
       After=network.target
-      
+
       [Service]
       EnvironmentFile=-/etc/default/bind9
       ExecStart=/usr/sbin/named -f $OPTIONS
       ExecReload=/usr/sbin/rndc reload
       ExecStop=/usr/sbin/rndc stop
-      
+
       [Install]
       WantedBy=multi-user.target
   when: create_bind_systemd | changed
 
 - name: Create directories
   file:
-    path: "/var/{{ item }}"
+    path: "{{ bind_chroot_root }}/{{ item }}"
     state: directory
     owner: bind
     group: bind
     mode: "0700"
     recurse: yes
   with_items:
-  - chroot-bind
-  - chroot-bind/bin
-  - chroot-bind/dev
-  - chroot-bind/etc
-  - chroot-bind/lib
-  - chroot-bind/usr/lib
-  - chroot-bind/usr/sbin
-  - chroot-bind/var/cache/bind
-  - chroot-bind/var/log
-  - chroot-bind/var/run/bind/run
+  - bin
+  - dev
+  - etc
+  - lib
+  - usr/lib
+  - usr/sbin
+  - var/cache/bind
+  - var/log
+  - var/run/bind/run
   register: create_bind_dir
 
 - name: Stat /etc/bind
@@ -63,19 +62,19 @@
     path: "/etc/bind"
   register: bind_stat
 
-- name: Move bind to /var/chroot-bind/etc/
-  command: mv /etc/bind/ /var/chroot-bind/etc/
+- name: Move /etc/bind in chroot
+  command: "mv /etc/bind/ {{ bind_chroot_root }}/etc/"
   when: bind_stat.stat.exists and not bind_stat.stat.islnk
 
 - name: Create symlink
   file:
-    src:  "/var/chroot-bind/etc/bind"
+    src:  "{{ bind_chroot_root }}/etc/bind"
     dest: "/etc/bind"
     state: link
 
 - name: Create log file
   file:
-    path: /var/chroot-bind/var/log/bind.log
+    path: "{{ bind_chroot_root }}/var/log/bind.log"
     state: touch
     mode: "0640"
     owner: bind
@@ -83,7 +82,7 @@
 
 - name: Create log symlink
   file:
-    src:  "/var/chroot-bind/var/log/bind.log"
+    src:  "{{ bind_chroot_root }}/var/log/bind.log"
     dest: "/var/log/bind.log"
     state: link
 
@@ -96,15 +95,15 @@
     mode: "0770"
     recurse: yes
 
-- name: Stat /var/chroot-bind/var/run/bind/run/named
+- name: "Stat var/run/bind/run/named in chroot"
   stat:
-    path: "/var/chroot-bind/var/run/bind/run/named"
+    path: "{{ bind_chroot_root }}/var/run/bind/run/named"
   register: named_run
 
-- name: Clean /var/chroot-bind/var/run/bind/run/named
+- name: "Clean var/run/bind/run/named in chroot"
   file:
     state: absent
-    path: "/var/chroot-bind/var/run/bind/run/named"
+    path: "{{ bind_chroot_root }}/var/run/bind/run/named"
   when: named_run.stat.isdir
 
 - name: Clean /var/run/bind/run/named.pid
@@ -119,7 +118,7 @@
   register: named_pid
 
 - name: Cat pid content
-  command: cat /var/run/bind/run/named.pid > /var/chroot-bind/var/run/bind/run/named.pid
+  command: cat /var/run/bind/run/named.pid > {{ bind_chroot_root }}/var/run/bind/run/named.pid
   when: named_pid.stat.isreg == True and not named_pid.stat.islnk
 
 - name: Clean /var/run/bind/run/named.pid
@@ -134,31 +133,31 @@
     path: "/var/run/bind/run/named.pid"
   when: not named_pid.stat.islnk
 
-- name: Create pid symlink
+- name: Create pid symlink in chroot
   file:
-    src:  "/var/chroot-bind/var/run/bind/run/named.pid"
+    src:  "{{ bind_chroot_root }}/var/run/bind/run/named.pid"
     dest: "/var/run/bind/run/named.pid"
     state: link
   when: not named_pid.stat.islnk
 
-- name: Stat /var/chroot-bind/dev/random
+- name: "Stat dev/random in chroot"
   stat:
-    path: "/var/chroot-bind/dev/random"
+    path: "{{ bind_chroot_root }}/dev/random"
   register: named_random
 
-- name: mknod /var/chroot-bind/dev/random
-  command: mknod /var/chroot-bind/dev/random c 1 3; chmod 666 /var/chroot-bind/dev/random
+- name: mknod dev/random in chroot
+  command: mknod {{ bind_chroot_root }}/dev/random c 1 3; chmod 666 {{ bind_chroot_root }}/dev/random
   when: not named_random.stat.exists
 
 - name: Copy essential libs
-  command: for i in `ldd $(which named) | grep -v linux-vdso.so.1 | cut -d">" -f2 | cut -d"(" -f1` /usr/lib/x86_64-linux-gnu/openssl-1.0.0/engines/libgost.so; do install -D $i /var/chroot-bind/${i##/} done
+  command: for i in `ldd $(which named) | grep -v linux-vdso.so.1 | cut -d">" -f2 | cut -d"(" -f1` /usr/lib/x86_64-linux-gnu/openssl-1.0.0/engines/libgost.so; do install -D $i {{ bind_chroot_root }}/${i##/} done
   when: create_bind_dir | changed
 
 - name: Copy bind
   copy:
     src: /usr/sbin/named
-    dest: /var/chroot-bind/usr/sbin/
+    dest: {{ bind_chroot_root }}/usr/sbin/
     remote_src: True
 
 - name: Set the good rights
-  command: chown -R bind:bind /var/chroot-bind/
+  command: chown -R bind:bind {{ bind_chroot_root }}/

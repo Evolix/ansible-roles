@@ -1,2 +1,3 @@
 ---
 bind_systemd_service_path: /etc/systemd/system/bind9.service
+bind_chroot_root: /var/chroot-bind
