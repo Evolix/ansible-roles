@@ -12,3 +12,7 @@ end
 describe port(53) do
   it { should be_listening }
 end
+
+describe command("ps auwx | grep bind") do
+  its(:stdout) { should include " -t /var/chroot-bind" }
+end
