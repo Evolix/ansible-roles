@@ -60,6 +60,7 @@
 - name: Stat /etc/bind
   stat:
     path: "/etc/bind"
+  check_mode: no
   register: bind_stat
 
 - name: Move /etc/bind in chroot
@@ -98,6 +99,7 @@
 - name: "Stat var/run/bind/run/named in chroot"
   stat:
     path: "{{ bind_chroot_root }}/var/run/bind/run/named"
+  check_mode: no
   register: named_run
 
 - name: "Clean var/run/bind/run/named in chroot"
@@ -115,17 +117,18 @@
 - name: Stat /var/run/bind/run/named.pid
   stat:
     path: "/var/run/bind/run/named.pid"
+  check_mode: no
   register: named_pid
 
 - name: Cat pid content
   command: "cat /var/run/bind/run/named.pid > {{ bind_chroot_root }}/var/run/bind/run/named.pid"
-  when: named_pid.stat.isreg == True and not named_pid.stat.islnk
+  when: named_pid.stat.isreg and not named_pid.stat.islnk
 
 - name: Clean /var/run/bind/run/named.pid
   file:
     state: absent
     path: "/var/run/bind/run/named.pid"
-  when: named_pid.stat.isreg == True and not named_pid.stat.islnk
+  when: named_pid.stat.isreg and not named_pid.stat.islnk
 
 - name: Clean /var/run/bind/run/named.pid
   file:
@@ -143,6 +146,7 @@
 - name: "Stat dev/random in chroot"
   stat:
     path: "{{ bind_chroot_root }}/dev/random"
+  check_mode: no
   register: named_random
 
 - name: mknod dev/random in chroot
