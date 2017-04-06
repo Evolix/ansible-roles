@@ -9,19 +9,18 @@
     regexp: '^OPTIONS.*'
     replace: 'OPTIONS="-u bind -t /var/chroot-bind"'
 
-- name: Create /etc/systemd/system/bind9.service
+- name: Create systemd service
   file:
-    path: "/etc/systemd/system/bind9.service"
-    state: file
+    path: "{{ bind_systemd_service_path }}"
     owner: root
     group: root
     mode: 0644
     state: touch
   register: create_bind_systemd
 
-- name: Fill out /etc/systemd/system/bind9.service
+- name: "Fill out systemd service"
   blockinfile:
-    dest: /etc/systemd/system/bind9.service
+    dest: "{{ bind_systemd_service_path }}"
     block: |
       [Unit]
       Description=BIND Domain Name Server
