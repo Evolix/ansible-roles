@@ -2,6 +2,6 @@
 memcached_logfile: '/var/log/memcached.log'
 memcached_mem: 64
 memcached_user: 'nobody'
-memcached_bind_interface: '0.0.0.0'
+memcached_bind_interface: '127.0.0.1'
 memcached_connections: 1024
-
+memcached_port: 11211
