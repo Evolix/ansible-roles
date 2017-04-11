@@ -8,12 +8,8 @@
   register: minifirewall_is_running
 
 - debug:
-    msg: Minifirewall IS running
-  when: minifirewall_is_running.rc == 0
-
-- debug:
-    msg: Minifirewall IS NOT running
-  when: minifirewall_is_running.rc != 0
+    var: minifirewall_is_running
+    verbosity: 1
 
 - name: Begin marker for IP addresses
   lineinfile:
@@ -104,3 +100,7 @@
   failed_when: "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
   changed_when: "'starting IPTables rules is now finish : OK' in minifirewall_init_restart.stdout"
   when: minifirewall_is_running.rc == 0 and (minifirewall_config_ips | changed or minifirewall_config_ports | changed)
+
+- debug:
+    var: minifirewall_init_restart
+    verbosity: 2
