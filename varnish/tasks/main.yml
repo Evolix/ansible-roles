@@ -32,8 +32,8 @@
 - name: Patch logrotate conf
   replace:
     name: /etc/logrotate.d/varnish
-    regexp: "/usr/sbin/invoke-rc.d {{item}} reload.*$"
-    replace: "systemctl -q is-active {{item}} && /usr/sbin/invoke-rc.d {{item}} reload > /dev/null ||true"
+    regexp: '^(\s+)(/usr/sbin/invoke-rc.d {{item}}.*)'
+    replace: '\1systemctl -q is-active {{item}} && \2'
   with_items:
     - varnishlog
     - varnishncsa
