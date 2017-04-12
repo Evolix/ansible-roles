@@ -24,9 +24,11 @@
     state: directory
 
 - name: Modify Varnish configuration files
-  copy:
-    src: varnish.conf
-    dest: /etc/systemd/system/varnish.service.d/
+  template:
+    src: varnish.conf.j2
+    dest: /etc/systemd/system/varnish.service.d/varnish.conf
+    force: yes
+    backup: yes
   notify: reload systemctl
 
 - name: Patch logrotate conf

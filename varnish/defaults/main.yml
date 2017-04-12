@@ -1,3 +1,18 @@
 ---
-thread_pools: "{{ ansible_processor_cores * ansible_processor_count }}"
-malloc: "2G"
+
+varnish_addresses:
+- 0.0.0.0:80
+
+varnish_management_address: localhost:6082
+
+varnish_malloc_size: "2G"
+
+varnish_storage: malloc,{{ varnish_malloc_size }}
+
+varnish_thread_pools: "{{ ansible_processor_cores * ansible_processor_count }}"
+varnish_thread_pool_add_delay: 2
+varnish_thread_pool_min: 500
+varnish_thread_pool_max: 5000
+
+varnish_config_file: /etc/varnish/default.vcl
+varnish_secret_file: /etc/varnish/secret
