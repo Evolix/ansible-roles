@@ -4,7 +4,6 @@
   stat:
     path: /etc/munin/plugin-conf.d/munin-node
   check_mode: no
-  
   register: munin_node_plugins_config
   tags:
     - mysql
