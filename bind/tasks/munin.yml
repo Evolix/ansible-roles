@@ -1,0 +1,39 @@
+--- 
+
+- name: is Munin present ?
+  stat:
+    path: /etc/munin/plugin-conf.d/munin-node
+  check_mode: no
+  register: munin_node_plugins_config
+  tags:
+    - bind
+    - munin
+
+- name: Enable munin plugins
+  file:
+    src: "/usr/share/munin/plugins/{{ item }}"
+    dest: "/etc/munin/plugins/{{ item }}"
+    state: link
+  with_items: 
+    - bind9
+    - bind9_rndc
+  notify: restart munin
+  when: munin_node_plugins_config.stat.exists
+  tags:
+    - bind
+    - munin
+
+- name: Add munin plugin configuration
+  template:
+    src: bind9.j2
+    dest: /etc/munin/plugin-conf.d/bind9
+    owner: root
+    group: root
+    mode: "0644"
+    force: yes
+    backup: yes
+  notify: restart munin
+  when: munin_node_plugins_config.stat.exists
+  tags:
+    - bind
+    - munin
