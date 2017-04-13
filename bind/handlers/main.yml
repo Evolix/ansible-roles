@@ -3,3 +3,10 @@
   service:
     name: bind9
     state: restarted
+
+- name: restart munin-node
+  service:
+    name: munin-node
+    state: restarted
+
+
