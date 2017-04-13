@@ -3,6 +3,17 @@
     name: bind9
     state: present
 
+- name: Set bind configuration
+  template:
+    src: named.conf.options.j2 
+    dest: /etc/bind/named.conf.options
+    owner: root
+    group: root
+    mode: "0644"
+    force: yes
+    backup: yes
+  notify: restart bind
+
 - name: Modify OPTIONS in /etc/default/bind9
   replace:
     dest: /etc/default/bind9
