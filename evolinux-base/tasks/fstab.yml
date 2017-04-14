@@ -12,7 +12,7 @@
 - name: /home partition is customized
   replace:
     dest: /etc/fstab
-    regexp: '(\s+/home\s+\w+\s+)([a-z,]+)(\s+)'
+    regexp: '([^#]\s+/home\s+\S+\s+)([a-z,]+)(\s+)'
     replace: '\1{{ evolinux_fstab_home_options | mandatory }}\3'
     backup: yes
   notify: remount /home
@@ -23,7 +23,7 @@
 - name: /tmp partition is customized
   replace:
     dest: /etc/fstab
-    regexp: '(\s+/tmp\s+\w+\s+)([a-z,]+)(\s+)'
+    regexp: '([^#]\s+/tmp\s+\S+\s+)([a-z,]+)(\s+)'
     replace: '\1{{ evolinux_fstab_tmp_options | mandatory }}\3'
     backup: yes
   when:
@@ -33,7 +33,7 @@
 - name: /usr partition is customized
   replace:
     dest: /etc/fstab
-    regexp: '(\s+/usr\s+\w+\s+)([a-z,]+)(\s+)'
+    regexp: '([^#]\s+/usr\s+\S+\s+)([a-z,]+)(\s+)'
     replace: '\1{{ evolinux_fstab_usr_options | mandatory }}\3'
     backup: yes
   when:
@@ -43,7 +43,7 @@
 - name: /var partition is customized
   replace:
     dest: /etc/fstab
-    regexp: '(\s+/var\s+\w+\s+)([a-z,]+)(\s+)'
+    regexp: '([^#]\s+/var\s+\S+\s+)([a-z,]+)(\s+)'
     replace: '\1{{ evolinux_fstab_var_options | mandatory }}\3'
     backup: yes
   notify: remount /var
