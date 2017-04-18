@@ -29,6 +29,6 @@ command[check_vpn]=sudo /usr/local/libexec/nagios/check_ipsecctl.sh IPDISTANTE I
 command[check_openvpn]=/usr/local/libexec/nagios/check_openvpn
 command[check_pf_states]=bash -x /usr/local/libexec/nagios/check_pf_states
 command[check_carp1]=/usr/local/libexec/nagios/check_carp_if carp0 master
-command[check_mem]=/usr/local/libexec/nagios/check_free_mem.sh -w 20 -c 10
+command[check_mem]=/usr/local/libexec/nagios/plugins/check_free_mem.sh -w 20 -c 10
 command[check_dhcpclient]=/usr/local/libexec/nagios/check_dhcp -i INTERFACE
 command[check_smb]=/usr/local/libexec/nagios/check_tcp -H IPLOCALE -p 445
