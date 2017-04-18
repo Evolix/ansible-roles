@@ -1,5 +1,9 @@
-SetEnvIf Request_URI "/.well-known/acme-challenge/*" no-jk
-ProxyPass /.well-known/acme-challenge/ !
+<IfModule jk>
+	SetEnvIf Request_URI "/.well-known/acme-challenge/*" no-jk
+</IfModule>
+<IfModule proxy>
+	ProxyPass /.well-known/acme-challenge/ !
+</IfModule>
 Alias /.well-known/acme-challenge {{ evoacme_acme_dir }}/.well-known/acme-challenge
 <Directory "{{ evoacme_acme_dir }}/.well-known/acme-challenge">
     Options -Indexes
