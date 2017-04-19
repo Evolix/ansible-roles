@@ -1,0 +1,16 @@
+---
+# handlers file for mongodb
+- name: restart mongodb
+  service:
+    name: mongodb
+    state: restarted
+
+- name: reload squid
+  service:
+    name: squid
+    state: reloaded
+
+- name: reload squid3
+  service:
+    name: squid3
+    state: reloaded

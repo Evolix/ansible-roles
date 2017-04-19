@@ -1,0 +1,15 @@
+# {{ ansible_managed }}
+
+{{ mongodborg_logfile_path }} {
+    daily
+    missingok
+    rotate 365
+    dateext
+    compress
+    delaycompress
+    notifempty
+    sharedscripts
+    postrotate
+        kill -0 $(cat {{ mongodborg_pidfile_path }}) && kill -USR1 $(cat {{ mongodborg_pidfile_path }})
+    endscript
+}

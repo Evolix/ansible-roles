@@ -1,0 +1,53 @@
+---
+# tasks file for mongodb
+- name: Check if Squid is present
+  stat:
+    path: /etc/squid3/whitelist-custom.conf
+  register: _squid3_whitelist
+  check_mode: no
+
+- name: add keyserver to Squid whitelist
+  lineinfile:
+    dest: /etc/squid3/whitelist-custom.conf
+    line: "{{ item }}"
+  notify: reload squid3
+  with_items:
+  - "http://keyserver.ubuntu.com/.*"
+  - "hkp://keyserver.ubuntu.com/.*"
+  - "http://repo.mongodb.org/.*"
+  when: _squid3_whitelist.stat.exists
+
+- meta: flush_handlers
+
+# Attention à bien indiquer le protocole et le port, sinon le firewall ne laisse pas passer
+- name: MongoDB public GPG Key
+  apt_key:
+    keyserver: "hkp://keyserver.ubuntu.com:80"
+    id: "0C49F3730359A14518585931BC711F9BA15703C6"
+
+- name: enable APT sources list
+  apt_repository:
+    repo: deb http://repo.mongodb.org/apt/debian jessie/mongodb-org/3.4 main
+    state: present
+    filename: mongodb
+    update_cache: yes
+
+- name: Install packages
+  apt:
+    name: mongodb-org
+    state: installed
+
+- name: Custom configuration
+  template:
+    src: mongod.conf.j2
+    dest: /etc/mongod.conf
+    force: yes
+    backup: no
+  notify: restart mongodb
+
+- name: Configure logrotate
+  template:
+    src: logrotate.j2
+    dest: /etc/logrotate.d/mongodb
+    force: yes
+    backup: no
