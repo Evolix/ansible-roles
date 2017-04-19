@@ -1,0 +1,35 @@
+---
+driver:
+  name: docker
+  privileged: true
+  use_sudo: false
+
+provisioner:
+  name: ansible_playbook
+  hosts: test-kitchen
+  roles_path: ../
+  ansible_verbose: true
+  require_ansible_source: true
+  install_source_rev: "stable-2.0.0.1"
+  require_chef_for_busser: false
+  idempotency_test: true
+
+platforms:
+  - name: debian-8
+
+verifier:
+  name: serverspec
+
+suites:
+  - name: default
+    provisioner:
+      name: ansible_playbook
+      playbook: ./tests/test.yml
+    verifier:
+      patterns:
+      - admin-users/tests/spec/admin-users_spec.rb
+      bundler_path: '/usr/local/bin'
+      rspec_path: '/usr/local/bin'
+
+transport:
+  max_ssh_sessions: 6
