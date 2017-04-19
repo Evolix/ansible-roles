@@ -48,7 +48,6 @@
   failed_when: False
   register: git_log
   check_mode: no
-  
 
 - name: initial commit is present?
   shell: "git add -A . && git commit -m \"Initial commit via Ansible\""
