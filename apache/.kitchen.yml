@@ -12,6 +12,7 @@ provisioner:
   require_ansible_source: true
   install_source_rev: "stable-2.2.1.0"
   require_chef_for_busser: false
+  idempotency_test: true
 
 platforms:
   - name: debian-8
@@ -21,7 +22,6 @@ suites:
     provisioner:
       name: ansible_playbook
       playbook: ./tests/test.yml
-      idempotency_test: true
 
 transport:
   max_ssh_sessions: 6
