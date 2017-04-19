@@ -10,7 +10,7 @@ provisioner:
   roles_path: ../
   ansible_verbose: true
   require_ansible_source: true
-  install_source_rev: "stable-2.0.0.1"
+  install_source_rev: "stable-2.2.1.0"
   require_chef_for_busser: false
   idempotency_test: true
 
