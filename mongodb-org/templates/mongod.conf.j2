@@ -17,15 +17,15 @@ systemLog:
   destination: file
   logRotate: reopen
   logAppend: true
-  path: {{ mongodborg_logfile_path }}
+  path: {{ mongodb_logfile_path }}
 
 # network interfaces
 net:
-  port: {{ mongodborg_port }}
-  bindIp: {{ mongodborg_bind }}
+  port: {{ mongodb_port }}
+  bindIp: {{ mongodb_bind }}
 
 processManagement:
-  pidFilePath: {{ mongodborg_pidfile_path }}
+  pidFilePath: {{ mongodb_pidfile_path }}
 
 #security:
 

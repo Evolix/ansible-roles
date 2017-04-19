@@ -1,6 +1,6 @@
 # {{ ansible_managed }}
 
-{{ mongodborg_logfile_path }} {
+{{ mongodb_logfile_path }} {
     daily
     missingok
     rotate 365
@@ -10,6 +10,6 @@
     notifempty
     sharedscripts
     postrotate
-        kill -0 $(cat {{ mongodborg_pidfile_path }}) && kill -USR1 $(cat {{ mongodborg_pidfile_path }})
+        kill -0 $(cat {{ mongodb_pidfile_path }}) && kill -USR1 $(cat {{ mongodb_pidfile_path }})
     endscript
 }

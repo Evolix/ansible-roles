@@ -1,5 +1,5 @@
 ---
-mongodborg_pidfile_path: /var/lib/mongodb/mongod.lock
-mongodborg_logfile_path: /var/log/mongodb/mongod.log
-mongodborg_port: 27017
-mongodborg_bind: 127.0.0.1
+mongodb_pidfile_path: /var/lib/mongodb/mongod.lock
+mongodb_logfile_path: /var/log/mongodb/mongod.log
+mongodb_port: 27017
+mongodb_bind: 127.0.0.1
