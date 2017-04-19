@@ -8,7 +8,7 @@ describe file("/etc/apt/sources.list.d/backports.list") do
   it { should be_file }
 end
 
-describe file("/etc/apt/preferences.d/backports") do
+describe file("/etc/apt/preferences.d/0-backports-defaults") do
   it { should be_file }
 end
 
