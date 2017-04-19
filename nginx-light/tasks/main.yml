@@ -1,8 +1,11 @@
 ---
 - name: Ensure Nginx (light) is installed
   apt:
-    name: nginx-light
+    name: "{{ item }}"
     state: present
+  with_items:
+    - nginx-light
+    - ssl-cert
   notify: reload nginx
   tags:
   - nginx
