@@ -7,6 +7,5 @@
     apt_repositories_install_backports: True
     apt_repositories_backports_components: "main contrib non-free"
 
-
   roles:
     - role: apt-repositories
