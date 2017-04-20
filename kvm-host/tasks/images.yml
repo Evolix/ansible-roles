@@ -12,3 +12,4 @@
     src: '/home/images'
     dest: '/var/lib/libvirt/images'
     state: link
+    force: yes

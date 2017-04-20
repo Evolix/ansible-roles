@@ -2,7 +2,7 @@
 
 - name: Get Munin plugins
   get_url:
-    url: "https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/virtualization/{{ item }}"
+    url: "https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/libvirt/{{ item }}"
     dest: "/etc/munin/plugins/"
     mode: "0755"
   with_items:
