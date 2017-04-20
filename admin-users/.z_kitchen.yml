@@ -3,6 +3,9 @@ driver:
   name: docker
   privileged: true
   use_sudo: false
+  # provision_command:
+  #   - /usr/bin/systemctl enable sshd
+  # run_command: /usr/sbin/init
 
 provisioner:
   name: ansible_playbook
