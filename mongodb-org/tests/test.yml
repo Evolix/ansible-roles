@@ -1,4 +1,11 @@
 ---
 - hosts: test-kitchen
+
+  vars:
+    mongodb_pidfile_path: /var/run/mongodb.pid
+    mongodb_logfile_path: /var/log/mongo-test.log
+    mongodb_port: 27042
+    mongodb_bind: 0.0.0.0
+
   roles:
     - role: mongodb-org
