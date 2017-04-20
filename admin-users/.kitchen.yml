@@ -3,9 +3,9 @@ driver:
   name: docker
   privileged: true
   use_sudo: false
-  # provision_command:
-  #   - /usr/bin/systemctl enable sshd
-  # run_command: /usr/sbin/init
+  # important if you need to interact with systemd
+  # otherwise a barebone ssh server is the main process
+  run_command: /sbin/init
 
 provisioner:
   name: ansible_playbook
@@ -19,6 +19,9 @@ provisioner:
 
 platforms:
   - name: debian-8
+    driver_config:
+      image: debian:jessie
+      platform: debian
 
 verifier:
   name: serverspec
