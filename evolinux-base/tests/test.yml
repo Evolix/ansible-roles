@@ -1,0 +1,11 @@
+---
+- hosts: test-kitchen
+
+  vars:
+    # apt_repositories_change_basics_components: True
+    # apt_repositories_basics_components: "main contrib non-free"
+    # apt_repositories_install_backports: True
+    # apt_repositories_backports_components: "main contrib non-free"
+
+  roles:
+    - role: evolinux-base
