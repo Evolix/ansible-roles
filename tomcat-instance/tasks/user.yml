@@ -17,6 +17,8 @@
   file:
     path: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}"
     state: directory
+    owner: "{{ tomcat_instance_name }}"
+    group: "{{ tomcat_instance_name }}"
     mode: "2770"
 
 - name: Set mail alias for user
