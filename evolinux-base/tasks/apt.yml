@@ -69,6 +69,7 @@
 - name: Updating APT cache
   apt:
     update_cache: yes
+  changed_when: False
 
 - name: Upgrading system
   apt:
