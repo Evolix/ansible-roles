@@ -2,6 +2,7 @@
 - name: Set hostname "{{ evolinux_hostname }}"
   hostname:
     name: "{{ evolinux_hostname }}"
+  when: evolinux_hostname_hosts
 
 - name: Set right localhost line in /etc/hosts
   replace:
