@@ -2,10 +2,11 @@
 - hosts: test-kitchen
 
   vars:
-    # apt_repositories_change_basics_components: True
-    # apt_repositories_basics_components: "main contrib non-free"
-    # apt_repositories_install_backports: True
-    # apt_repositories_backports_components: "main contrib non-free"
+    # setting the hostname via systemd within Docker doesn't work, it's a known bug
+    # cf. https://github.com/ansible/ansible/issues/19681
+    evolinux_hostname_hosts: False
+    # sysctl is also problematic in docker
+    evolinux_kernel_include: False
 
   roles:
     - role: evolinux-base
