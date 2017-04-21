@@ -140,12 +140,19 @@
 
 ## network interfaces
 
+- name: "Is there an \"allow-hotplug\" interface ?"
+  command: grep allow-hotplug /etc/network/interfaces
+  failed_when: False
+  changed_when: False
+  check_mode: no
+  register: grep_hotplug_eni
+
 - name: "Network interfaces must be \"auto\" and not \"allow-hotplug\""
   replace:
     dest: /etc/network/interfaces
     regexp: "allow-hotplug"
     replace: "auto"
     backup: yes
-  when: evolinux_system_eni_auto
+  when: evolinux_system_eni_auto and grep_hotplug_eni.rc == 0
 
 - meta: flush_handlers
