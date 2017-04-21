@@ -10,14 +10,14 @@
         password_hash: '$6$XFwV0M0b$hwArNeBI7jzp3Ykp14T.JTPoXLJx/Kbr3EQ0Seub4p9stgV/k9mLxlkltryaa3enZCpwGxY3n3oInAO1TrnJM.'
         ssh_key: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/SeCzyf+Fguc5pBaWEYuETH/Db9VqFQmgWbSmNPC1pzLlzOhKiN2QMZeq1WLwr676myzHdKSFW2YY+C9PhdFWARXfYdzDogwvaxlNKprryruJ+MCTF0nXIO9AL3JtAgnSRBSYxTRQffA7QfroKs4hNu3lXVBM6OaMaIZUKy4/9pCldyDVFcMCH0efr0jSLuFRsXnwAhMEh90Qg9XFRaLK+GXD4Zvb/Pi0ExlS3X9ZpME0IX7enAfi2OAja4gPNTK+haKl2RrO3N2hlHCuSCiPem3secUmnLU1P8JyibO7iC44hgQD0vmtd5XBdDfz5K1us8RmxBCXobhidqsen/JN foo@localhost'
 
-  pre_tasks:
-    - name: Create SSH privilege separation directory
-      file:
-        dest: /var/run/sshd
-        mode: "0755"
-        owner: root
-        group: root
-        state: director
+  # pre_tasks:
+  #   - name: Create SSH privilege separation directory
+  #     file:
+  #       dest: /var/run/sshd
+  #       mode: "0755"
+  #       owner: root
+  #       group: root
+  #       state: directory
 
   roles:
     - role: admin-users
