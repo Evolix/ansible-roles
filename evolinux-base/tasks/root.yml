@@ -45,14 +45,17 @@
 - name: Is .bash_history append-only
   shell: lsattr /root/.bash_history | grep -E "^.*a.* "
   check_mode: no
-  
   register: bash_history_append_only
-  failed_when: False
+  failed_when: "'Inappropriate ioctl' in bash_history_append_only.stderr"
+  ignore_errors: yes
   changed_when: False
 
 - name: Set .bash_history append-only
   command: chattr +a /root/.bash_history
-  when: evolinux_root_bash_history_appendonly and bash_history_append_only.rc != 0
+  when:
+  - evolinux_root_bash_history_appendonly
+  - bash_history_append_only.rc != 0
+  - "'Inappropriate ioctl' not in bash_history_append_only.stderr"
 
 - name: Setting vim as selected-editor
   lineinfile:
