@@ -1,4 +1,5 @@
 ---
+- include: ssh.yml
 - include: packages.yml
 
 - name: Check if /usr is a partition
