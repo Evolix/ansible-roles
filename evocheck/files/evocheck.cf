@@ -1,0 +1,5 @@
+# Managed by Ansible
+#
+# Configuration for evocheck
+# Use this file to change configuration values defined in evocheck.sh
+# Ex : IS_TMP_1777=0

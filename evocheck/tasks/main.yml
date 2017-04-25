@@ -1,0 +1,20 @@
+---
+- name: Copy evocheck.sh
+  copy:
+    src: evocheck.sh
+    dest: "{{ evocheck_bin_dir }}/evocheck.sh"
+    mode: "0700"
+    owner: root
+    force: yes
+    backup: yes
+  tags:
+  - evocheck
+
+- name: Copy evocheck.cf
+  copy:
+    src: evocheck.cf
+    dest: /etc/evocheck.cf
+    force: yes
+    backup: yes
+  tags:
+  - evocheck
