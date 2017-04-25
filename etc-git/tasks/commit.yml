@@ -1,0 +1,33 @@
+---
+- name: is /etc clean?
+  command: git status --porcelain
+  args:
+    chdir: /etc
+  changed_when: False
+  register: git_status
+  when: not ansible_check_mode
+  ignore_errors: yes
+  tags:
+  - commit-etc
+
+- debug:
+    var: git_status
+    verbosity: 3
+  tags:
+  - commit-etc
+
+- name: /etc modifications are committed
+  shell: "git add -A . && git commit -m \"{{ commit_message | mandatory }}\""
+  args:
+    chdir: /etc
+  register: etc_commit_end_run
+  when: not ansible_check_mode and git_status.stdout != ""
+  ignore_errors: yes
+  tags:
+  - commit-etc
+
+- debug:
+    var: etc_commit_end_run
+    verbosity: 4
+  tags:
+  - commit-etc
