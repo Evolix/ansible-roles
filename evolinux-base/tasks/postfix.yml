@@ -12,6 +12,24 @@
     - packages
     - postfix
 
+- name: configure postfix myhostname
+  lineinfile:
+    dest: /etc/postfix/main.cf
+    state: present
+    line: "myhostname = {{ evolinux_hostname }}"
+    regexp: '^myhostname'
+  tags:
+    - postfix
+
+- name: configure postfix mynetworks
+  lineinfile:
+    dest: /etc/postfix/main.cf
+    state: present
+    line: "mydestination = {{ evolinux_hostname }}, localhost.localdomain, , localhost"
+    regexp: '^mydestination'
+  tags:
+    - postfix
+
 - name: fetch users list
   shell: getent passwd | cut -d":" -f 1 | grep -v root
   check_mode: no
