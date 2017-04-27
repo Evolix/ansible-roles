@@ -2,7 +2,7 @@
 
 EvoAcme is an [Ansible](https://www.ansible.com/) role and a [Certbot](https://certbot.eff.org) wrapper for generate [Let's Encrypt](https://letsencrypt.org/) certificates.
 
-It is a project hosted at [Evolix's forge](https://forge.evolix.org/projects/ansible-roles/repository/revisions/master/show/evoacme)
+It is a project hosted at [Evolix's forge](https://forge.evolix.org/projects/ansible-roles/repository/)
 
 # How to install
 
