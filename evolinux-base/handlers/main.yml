@@ -58,3 +58,8 @@
   service:
     name: ssh
     state: reloaded
+
+- name: reload postfix
+  service:
+    name: postfix
+    state: reloaded

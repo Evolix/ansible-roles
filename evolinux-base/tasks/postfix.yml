@@ -16,8 +16,9 @@
   lineinfile:
     dest: /etc/postfix/main.cf
     state: present
-    line: "myhostname = {{ evolinux_hostname }}"
+    line: "myhostname = {{ evolinux_fqdn }}"
     regexp: '^myhostname'
+  notify: reload postfix
   tags:
     - postfix
 
@@ -25,8 +26,9 @@
   lineinfile:
     dest: /etc/postfix/main.cf
     state: present
-    line: "mydestination = {{ evolinux_hostname }}, localhost.localdomain, , localhost"
+    line: "mydestination = {{ evolinux_fqdn }}, localhost.localdomain, , localhost"
     regexp: '^mydestination'
+  notify: reload postfix
   tags:
     - postfix
 
