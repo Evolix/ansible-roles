@@ -8,7 +8,8 @@
 - name: Fetch ssh public keys
   shell: cat /root/.ssh/id_rsa.pub
   register: ssh_keys
-  always_run: yes
+  check_mode: no
+  changed_when: false
 
 - name: Print ssh public keys
   debug: 
@@ -22,4 +23,27 @@
   delegate_to: "{{ item[1] }}"
   with_nested:
     - "{{ ssh_keys.stdout }}"
-    - "{{groups['hypervisors']}}"
+    - "{{ groups['hypervisors'] }}"
+  when: item[1] != inventory_hostname
+
+- name: Crontab for sync libvirt xml file 
+  cron:
+    name: "sync libvirt xml on {{ item }}"
+    state: present
+    special_time: "hourly"
+    user: root
+    job: "rsync -a --delete /etc/libvirt/qemu/ {{ hostvars[item]['ansible_hostname'] }}:/root/libvirt-{{ inventory_hostname }}/"
+  with_items:
+    - "{{ groups['hypervisors'] }}"
+  when: item != inventory_hostname
+
+- name: Crontab for sync list of running vm 
+  cron:
+    name: "sync list of libvirt running vm on {{ item }}"
+    state: present
+    special_time: "daily"
+    user: root
+    job: "virsh list | ssh {{ hostvars[item]['ansible_hostname'] }} 'cat >/root/libvirt-{{ inventory_hostname }}/virsh-list.txt'"
+  with_items:
+    - "{{ groups['hypervisors'] }}"
+  when: item != inventory_hostname
