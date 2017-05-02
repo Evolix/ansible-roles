@@ -26,7 +26,7 @@
   lineinfile:
     dest: /etc/postfix/main.cf
     state: present
-    line: "mydestination = {{ evolinux_fqdn }}, localhost.localdomain, , localhost"
+    line: "mydestination = {{ evolinux_fqdn }} localhost.localdomain localhost"
     regexp: '^mydestination'
   notify: reload postfix
   tags:
@@ -35,7 +35,7 @@
 - name: fetch users list
   shell: getent passwd | cut -d":" -f 1 | grep -v root
   check_mode: no
-  
+
   register: non_root_users_list
   changed_when: False
   tags:
