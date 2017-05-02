@@ -27,6 +27,8 @@
   - iotop
   - tcpdump
   - mtr-tiny
+  - curl
+  - telnet
   when: evolinux_packages_diagnostic
 
 - name: Install/Update hardware tools
