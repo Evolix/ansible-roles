@@ -1,0 +1,7 @@
+---
+- name: Uncomment minifirewall start line
+  replace:
+    dest: /etc/init.d/alert5
+    regexp: '^#/etc/init.d/minifirewall start'
+    replace: '/etc/init.d/minifirewall start'
+  when: minifirewall_autostart == "yes" 
