@@ -29,3 +29,9 @@
 - name: configuration is copied
   command: "cp {{ minifirewall_checkout_path }}/minifirewall.conf /etc/default/minifirewall"
   when: not default_minifirewall.stat.exists
+
+- name: fix configuration rights
+  file:
+    path: /etc/default/minifirewall
+    mode: "0600"
+    state: file
