@@ -5,6 +5,8 @@
     path: /etc/munin/plugins/
   register: munin_plugins_dir
   check_mode: no
+  tags:
+  - drbd
 
 # https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/drbd/drbd
 - name: Get Munin plugin
@@ -14,6 +16,8 @@
     mode: "0755"
   when: munin_plugins_dir.stat.exists
   notify: restart munin-node
+  tags:
+  - drbd
 
 - name: Copy Munin plugin conf
   copy:
@@ -21,3 +25,5 @@
     dest: /etc/munin/plugin-conf.d/drbd
   when: munin_plugins_dir.stat.exists
   notify: restart munin-node
+  tags:
+  - drbd
