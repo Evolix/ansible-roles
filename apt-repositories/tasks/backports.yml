@@ -1,4 +1,9 @@
 ---
+- name: No backports config in default source.list
+  lineinfile:
+    dest: /etc/apt/sources.list
+    regexp: "backports"
+    state: absent
 
 - name: Backports sources list is installed
   template:
