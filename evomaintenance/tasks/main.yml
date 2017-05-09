@@ -1,9 +1,8 @@
 ---
-
 - name: evomaintenance is installed
-  command: "apt-get install -yq --allow-unauthenticated evomaintenance"
-  register: installed_evomaintenance
-  changed_when: not (installed_evomaintenance.stdout | search("0 upgraded") and installed_evomaintenance.stdout | search("0 newly installed"))
+  apt:
+    name: evomaintenance
+    allow_unauthenticated: yes
 
 - name: configuration is applied
   template:
@@ -14,7 +13,6 @@
   shell: "cat /etc/passwd | grep -vE \"^root:\"  | grep -E \":/[^:]+sh$\" | cut -d: -f6"
   changed_when: False
   check_mode: no
-  
   register: home_of_shell_users
 
 - include: trap.yml home={{ item }}
