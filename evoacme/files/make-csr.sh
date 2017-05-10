@@ -25,6 +25,8 @@ if [ -f $SSL_KEY_DIR/${vhost}.key ]; then
 	if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 		exit 1
 	fi
+	rm -f /etc/apache2/ssl/${vhost}.conf
+	rm -f /etc/nginx/ssl/${vhost}.conf
 fi
 
 SSL_KEY_SIZE=$(grep default_bits /etc/letsencrypt/openssl.cnf|cut -d'=' -f2|xargs)
