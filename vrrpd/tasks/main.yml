@@ -1,0 +1,23 @@
+---
+- name: Install vrrpd packages
+  apt:
+    name: vrrpd=1.0-2.evolix
+    allow_unauthenticated: yes
+    state: present
+  tags:
+  - vrrpd
+
+- name: Adjust sysctl config
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    sysctl_set: yes
+    state: present
+  with_items:
+  - { name: 'net.ipv4.conf.default.rp_filter', value: 0 }
+  - { name: 'net.ipv4.conf.eth0.rp_filter', value: 0 }
+  - { name: 'net.ipv4.conf.all.rp_filter', value: 0 }
+  - { name: 'net.ipv4.conf.all.arp_ignore', value: 1 }
+  - { name: 'net.ipv4.conf.all.arp_announce', value: 2 }
+  tags:
+  - vrrpd
