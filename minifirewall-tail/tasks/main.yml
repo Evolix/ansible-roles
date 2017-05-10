@@ -1,0 +1,56 @@
+---
+- name: Add some rules at the end of minifirewall file
+  template:
+    src: "{{ item }}"
+    dest: /etc/default/minifirewall.tail
+    force: yes
+  with_first_found:
+  - files:
+    - "{{ inventory_hostname }}"
+    - "{{ host_group }}"
+    - general
+    paths:
+    - templates/minifirewall-tail
+  - default
+  register: minifirewall_tail_file
+
+- debug:
+    var: minifirewall_tail_file
+    verbosity: 1
+
+- name: source minifirewall.tail at the end of the main file
+  blockinfile:
+    dest: /etc/default/minifirewall
+    marker: "# {mark} ANSIBLE MANAGED EXTERNAL RULES"
+    block: . /etc/default/minifirewall.tail
+    insertbefore: EOF
+  register: minifirewall_tail_source
+
+- debug:
+    var: minifirewall_tail_source
+    verbosity: 1
+
+- name: Check if minifirewall is running
+  shell: /sbin/iptables -L -n | grep -E "^(DROP\s+udp|ACCEPT\s+icmp)\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: minifirewall_is_running
+
+- debug:
+    var: minifirewall_is_running
+    verbosity: 1
+
+- name: restart minifirewall
+  # service:
+  #   name: minifirewall
+  #   state: restarted
+  command: /etc/init.d/minifirewall restart
+  register: minifirewall_init_restart
+  failed_when: "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
+  changed_when: "'starting IPTables rules is now finish : OK' in minifirewall_init_restart.stdout"
+  when: minifirewall_is_running.rc == 0 and (minifirewall_tail_file | changed or minifirewall_config_ips | changed or minifirewall_config_ports | changed)
+
+- debug:
+    var: minifirewall_init_restart
+    verbosity: 1
