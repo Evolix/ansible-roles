@@ -14,25 +14,29 @@
     - 'temp'
     - 'lib'
 
-- name: Copy conf dir
-  shell: "cd {{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/ && cp /usr/share/tomcat7/skel/conf/* . && chmod 660 * && chown {{ tomcat_instance_name }}: *"
-  args:
-    creates: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/catalina.properties"
-
-- name: Copy server.xml
+- name: Templating of config file
   template:
-    src: 'templates/server.xml.j2'
-    dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/server.xml"
+    src: 'templates/{{ item }}.j2'
+    dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/{{ item }}"
     mode: "0660"
     owner: "{{ tomcat_instance_name }}"
     group: "{{ tomcat_instance_name }}"
     force: no
+  with_items:
+  - server.xml
+  - env
 
-- name: Copy env file
-  template:
-    src: 'templates/env.j2'
-    dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/env"
+- name: Copy config file
+  copy:
+    src: "{{ item }}"
+    dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/{{ item }}"
     mode: "0660"
     owner: "{{ tomcat_instance_name }}"
     group: "{{ tomcat_instance_name }}"
     force: no
+  with_items:
+  - catalina.properties
+  - logging.properties
+  - context.xml
+  - tomcat-users.xml
+  - web.xml
