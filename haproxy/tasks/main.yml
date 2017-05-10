@@ -1,6 +1,28 @@
 ---
-# tasks file for haproxy
-- name: Install packages
+
+- name: ssl-cert package is installed
+  apt:
+    name: ssl-cert
+    state: installed
+
+- name: Install HAProxy package
   apt:
     name: haproxy
+    default_release: "{{ haproxy_package_release or general_package_release | mandatory }}"
+    update_cache: True
     state: present
+
+- name: Copy HAProxy configuration
+  template:
+    src: "{{ item }}"
+    dest: /etc/haproxy/haproxy.cfg
+    force: yes
+  with_first_found:
+  - files:
+    - "{{ inventory_hostname }}"
+    - "{{ host_group }}"
+    - "default"
+    paths:
+    - templates/haproxy-config
+  - default
+  notify: reload haproxy

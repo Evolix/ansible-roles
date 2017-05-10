@@ -1,2 +1,2 @@
 ---
-# defaults file for haproxy
+general_package_release: stable
