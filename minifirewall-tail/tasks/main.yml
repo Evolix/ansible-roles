@@ -5,17 +5,14 @@
     dest: /etc/default/minifirewall.tail
     force: yes
   with_first_found:
-  - files:
-    - "{{ inventory_hostname }}"
-    - "{{ host_group }}"
-    - general
-    paths:
-    - templates/minifirewall-tail
-  - default
-  register: minifirewall_tail_file
+  - "templates/minifirewall-tail/minifirewall.{{ inventory_hostname }}.tail.j2"
+  - "templates/minifirewall-tail/minifirewall.{{ host_group }}.tail.j2"
+  - "templates/minifirewall-tail/minifirewall.default.tail.j2"
+  - "minifirewall.default.tail.j2"
+  register: minifirewall_tail_template
 
 - debug:
-    var: minifirewall_tail_file
+    var: minifirewall_tail_template
     verbosity: 1
 
 - name: source minifirewall.tail at the end of the main file
@@ -49,7 +46,7 @@
   register: minifirewall_init_restart
   failed_when: "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
   changed_when: "'starting IPTables rules is now finish : OK' in minifirewall_init_restart.stdout"
-  when: minifirewall_is_running.rc == 0 and (minifirewall_tail_file | changed or minifirewall_config_ips | changed or minifirewall_config_ports | changed)
+  when: minifirewall_is_running.rc == 0 and (minifirewall_tail_template | changed or minifirewall_config_ips | changed or minifirewall_config_ports | changed)
 
 - debug:
     var: minifirewall_init_restart
