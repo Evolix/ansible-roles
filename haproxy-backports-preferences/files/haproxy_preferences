@@ -1,0 +1,3 @@
+Package: haproxy
+Pin: release a=jessie-backports
+Pin-Priority: 999

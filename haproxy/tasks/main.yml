@@ -8,9 +8,7 @@
 - name: Install HAProxy package
   apt:
     name: haproxy
-    default_release: "{{ haproxy_package_release or general_package_release | mandatory }}"
-    update_cache: True
-    state: present
+    state: installed
 
 - name: Copy HAProxy configuration
   template:
