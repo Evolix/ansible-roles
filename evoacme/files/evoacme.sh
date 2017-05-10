@@ -14,6 +14,14 @@ else
     emailopt="--register-unsafely-without-email"
 fi
 
+# Check master status for evoadmin-cluster
+if [ -f /home/${vhost}/state ]; then
+	grep -q "STATE=master" /home/${vhost}/state
+	if [ $? -ne 0 ]; then
+		exit 0
+	fi
+fi
+
 if [ -f $CRT_DIR/${vhost}.crt ]; then
     renew=true
     crt_end_date=`openssl x509 -noout -enddate -in $CRT_DIR/${vhost}.crt|sed -e "s/.*=//"`
