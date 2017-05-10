@@ -5,7 +5,7 @@
 [ -z "${CSR_DIR}" ] && CSR_DIR='/etc/ssl/requests'
 [ -z "${SELF_SIGNED_DIR}" ] && SELF_SIGNED_DIR='/etc/ssl/self-signed'
 
-vhost=$1
+vhost=$(basename $1 .conf)
 
 SSL_EMAIL=$(grep emailAddress /etc/letsencrypt/openssl.cnf|cut -d'=' -f2|xargs)
 if [ -n "$SSL_EMAIL" ]; then

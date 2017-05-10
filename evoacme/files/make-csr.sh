@@ -7,7 +7,7 @@
 
 shopt -s extglob
 
-vhost=$1
+vhost=$(basename $1 .conf)
 vhostfiles=$(ls -1 /etc/{nginx,apache2}/sites-enabled/${vhost}?(.conf) 2>/dev/null)
 
 if [ $(echo "${vhostfiles}"|wc -l) -lt 1 ]; then
