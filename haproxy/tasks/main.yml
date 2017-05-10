@@ -18,11 +18,8 @@
     dest: /etc/haproxy/haproxy.cfg
     force: yes
   with_first_found:
-  - files:
-    - "{{ inventory_hostname }}"
-    - "{{ host_group }}"
-    - "default"
-    paths:
-    - templates/haproxy-config
-  - default
+  - "templates/haproxy/haproxy.{{ inventory_hostname }}.cfg.j2"
+  - "templates/haproxy/haproxy.{{ host_group }}.cfg.j2"
+  - "templates/haproxy/haproxy.default.cfg.j2"
+  - "haproxy.default.cfg.j2"
   notify: reload haproxy
