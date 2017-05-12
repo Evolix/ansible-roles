@@ -39,3 +39,15 @@
   with_items:
     - varnishlog
     - varnishncsa
+
+- name: Copy Varnish configuration
+  template:
+    src: "{{ item }}"
+    dest: /etc/varnish/default.vcl
+    force: yes
+  with_first_found:
+  - "templates/varnish/default.{{ inventory_hostname }}.vcl.j2"
+  - "templates/varnish/default.{{ host_group }}.vcl.j2"
+  - "templates/varnish/default.default.vcl.j2"
+  - "default.vcl.j2"
+  notify: reload varnish
