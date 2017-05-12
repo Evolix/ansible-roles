@@ -3,12 +3,16 @@
   apt:
     name: varnish
     state: present
+  tags:
+  - varnish
 
 - name: Remove default varnish configuration files
   file:
     path: "{{ item }}"
     state: absent
   with_fileglob: "/etc/defaults/varnish*"
+  tags:
+  - varnish
 
 - name: Copy Custom Varnish ExecReload script
   copy:
@@ -17,11 +21,15 @@
     mode: "0700"
     owner: root
     group: root
+  tags:
+  - varnish
 
 - name: Create a system config directory for systemd overrides
   file:
     path: /etc/systemd/system/varnish.service.d
     state: directory
+  tags:
+  - varnish
 
 - name: Modify Varnish configuration files
   template:
@@ -30,6 +38,8 @@
     force: yes
     backup: yes
   notify: reload systemctl
+  tags:
+  - varnish
 
 - name: Patch logrotate conf
   replace:
@@ -39,6 +49,8 @@
   with_items:
     - varnishlog
     - varnishncsa
+  tags:
+  - varnish
 
 - name: Copy Varnish configuration
   template:
@@ -51,3 +63,5 @@
   - "templates/varnish/default.default.vcl.j2"
   - "default.vcl.j2"
   notify: reload varnish
+  tags:
+  - varnish
