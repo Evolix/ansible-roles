@@ -1,14 +1,17 @@
 ---
-
 - name: ssl-cert package is installed
   apt:
     name: ssl-cert
     state: installed
+  tags:
+  - haproxy
 
 - name: Install HAProxy package
   apt:
     name: haproxy
     state: installed
+  tags:
+  - haproxy
 
 - name: Copy HAProxy configuration
   template:
@@ -21,3 +24,5 @@
   - "templates/haproxy/haproxy.default.cfg.j2"
   - "haproxy.default.cfg.j2"
   notify: reload haproxy
+  tags:
+  - haproxy
