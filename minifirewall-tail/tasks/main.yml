@@ -27,17 +27,6 @@
     var: minifirewall_tail_source
     verbosity: 1
 
-- name: Check if minifirewall is running
-  shell: /sbin/iptables -L -n | grep -E "^(DROP\s+udp|ACCEPT\s+icmp)\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
-  changed_when: False
-  failed_when: False
-  check_mode: no
-  register: minifirewall_is_running
-
-- debug:
-    var: minifirewall_is_running
-    verbosity: 1
-
 - name: restart minifirewall
   # service:
   #   name: minifirewall
@@ -46,7 +35,7 @@
   register: minifirewall_init_restart
   failed_when: "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
   changed_when: "'starting IPTables rules is now finish : OK' in minifirewall_init_restart.stdout"
-  when: minifirewall_is_running.rc == 0 and (minifirewall_tail_template | changed or minifirewall_config_ips | changed or minifirewall_config_ports | changed)
+  when: minifirewall_tail_template | changed
 
 - debug:
     var: minifirewall_init_restart
