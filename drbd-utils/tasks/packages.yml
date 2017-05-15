@@ -3,3 +3,10 @@
     name: drbd-utils
   tags:
   - drbd
+
+- name: Enable drbd.service
+  service:
+    name: drbd
+    enabled: yes
+  tags:
+  - drbd
