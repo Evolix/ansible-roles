@@ -57,6 +57,7 @@ command[check_drbd]={{ nagios_plugins_directory }}/check_drbd -d All -c StandAlo
 command[check_mongodb_connect]={{ nagios_plugins_directory }}/check_mongodb -H localhost -P27017 -A connect
 command[check_glusterfs]={{ nagios_plugins_directory }}/check_glusterfs -v all -n 0
 command[check_supervisord_status]={{ nagios_plugins_directory }}/check_supervisord
+command[check_memcached]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 11211
 
 # Check HTTP "many". Use this to check many websites (http, https, ports, sockets and SSL certificates).
 # Beware! All checks must not take more than 10s!
