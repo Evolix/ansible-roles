@@ -13,3 +13,8 @@
 - name: apt update
   apt:
     update_cache: yes
+
+- name: reload squid3
+  service:
+    name: squid3
+    state: reloaded

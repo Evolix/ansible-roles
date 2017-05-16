@@ -3,7 +3,7 @@
 - block:
   - name: install jessie-backports
     include_role:
-      name: "{{ roles }}/apt-repositories"
+      name: apt-repositories
     vars:
       apt_repositories_install_backports: True
 
@@ -53,3 +53,18 @@
     src: certbot.cron
     dest: /etc/cron.daily/certbot
     mode: "0755"
+
+- name: Find squid3 config whitelist
+  shell: find /etc/squid3/whitelist-custom.conf /etc/squid3/whitelist.conf 2> /dev/null
+  failed_when: false
+  changed_when: false
+  check_mode: no
+  register: squid3_whitelist_files
+
+- name: Let's Encrypt OCSP server is authorized by squid
+  lineinfile:
+    dest: "{{ squid3_whitelist_files.stdout_lines | first }}"
+    line: "http://ocsp.int-x3.letsencrypt.org/.*"
+    state: present
+  notify: reload squid3
+  when: squid3_whitelist_files.stdout != ""
