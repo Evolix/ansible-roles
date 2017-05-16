@@ -57,9 +57,9 @@
   when: evolinux_packages_common
 
 - name: Install/Update serveur-base meta-package
-  command: "apt-get install -yq --allow-unauthenticated serveur-base"
-  register: install_server_base
-  changed_when: not (install_server_base.stdout | search("0 upgraded") and install_server_base.stdout | search("0 newly installed"))
+  apt:
+    name: serveur-base
+    allow_unauthenticated: yes
   when: evolinux_packages_serveur_base
 
 - name: Customize logcheck recipient
@@ -72,7 +72,7 @@
 - name: is an MTA installed?
   command: "dpkg -S /usr/sbin/sendmail"
   check_mode: no
-  
+
   register: mta_installed
   failed_when: False
   changed_when: False

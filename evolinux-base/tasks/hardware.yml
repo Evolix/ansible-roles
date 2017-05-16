@@ -9,7 +9,7 @@
 - name: Check if Broadcom NetXtreme II device is present
   shell: "lspci | grep -q 'NetXtreme II'"
   check_mode: no
-  
+
   register: broadcom
   failed_when: False
   changed_when: False
@@ -28,7 +28,7 @@
 - name: Detect if RAID is installed
   shell: lspci | grep "RAID bus controller" | grep -v Intel
   check_mode: no
-  
+
   register: raidmodel
   changed_when: "'FAILED' in raidmodel.stdout"
   failed_when: "'FAILED' in raidmodel.stdout"
@@ -54,17 +54,12 @@
 
 - block:
   - name: Install packages for DELL/LSI hardware
-    ## With Ansible 2.0, the apt module can't install unauthenticated packages
-    # apt:
-    #   name: "{{ item }}"
-    #   state: present
-    # with_items:
-    #   - megacli
-    #   - megaclisas-status
-    command: "apt-get install -yq --allow-unauthenticated megacli megaclisas-status"
-    register: install_megacli
-    changed_when: not (install_megacli.stdout | search("0 upgraded") and install_megacli.stdout | search("0 newly installed"))
-
+    apt:
+      name: "{{ item }}"
+      allow_unauthenticated: yes
+    with_items:
+    - megacli
+    - megaclisas-status
 
   - name: Configure packages for DELL/LSI hardware
     template:
