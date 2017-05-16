@@ -54,13 +54,6 @@
     dest: /etc/cron.daily/certbot
     mode: "0755"
 
-- name: Is Squid installed?
-  command: "command -v squid3"
-  failed_when: false
-  changed_when: false
-  check_mode: no
-  register: is_squid3_installed
-
 - name: Find squid3 config whitelist
   shell: find /etc/squid3/whitelist-custom.conf /etc/squid3/whitelist.conf 2> /dev/null
   failed_when: false
@@ -74,4 +67,4 @@
     line: "http://ocsp.int-x3.letsencrypt.org/.*"
     state: present
   notify: reload squid3
-  when: is_squid3_installed.rc == 0 and squid3_whitelist_files.stdout != ""
+  when: squid3_whitelist_files.stdout != ""
