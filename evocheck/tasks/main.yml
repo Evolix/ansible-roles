@@ -14,7 +14,6 @@
   copy:
     src: evocheck.cf
     dest: /etc/evocheck.cf
-    force: yes
-    backup: yes
+    force: no
   tags:
   - evocheck
