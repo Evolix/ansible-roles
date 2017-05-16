@@ -6,6 +6,7 @@ use warnings;
 use Getopt::Long;
 use FindBin;
 use lib "$FindBin::Bin/../perl/lib";
+# needs libmonitoring-plugin-perl package on Debian
 use Monitoring::Plugin;
 use File::Basename;
 
