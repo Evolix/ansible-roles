@@ -3,7 +3,7 @@
 - block:
   - name: install jessie-backports
     include_role:
-      name: "{{ roles }}/apt-repositories"
+      name: apt-repositories
     vars:
       apt_repositories_install_backports: True
 
