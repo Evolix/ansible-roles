@@ -59,6 +59,7 @@ command[check_mongodb_connect]={{ nagios_plugins_directory }}/check_mongodb -H l
 command[check_glusterfs]={{ nagios_plugins_directory }}/check_glusterfs -v all -n 0
 command[check_supervisord_status]={{ nagios_plugins_directory }}/check_supervisord
 command[check_varnish]={{ nagios_plugins_directory }}/check_varnish_health -i 127.0.0.1 -p 6082 -s /etc/varnish/secret -w 2 -c 4
+command[check_haproxy]={{ nagios_plugins_directory }}/check_haproxy_stats -s /var/run/haproxy.sock -w 80 -c 90
 
 # Check HTTP "many". Use this to check many websites (http, https, ports, sockets and SSL certificates).
 # Beware! All checks must not take more than 10s!
