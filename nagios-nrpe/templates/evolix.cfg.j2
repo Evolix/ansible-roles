@@ -45,6 +45,7 @@ command[check_redis]=/usr/lib/nagios/plugins/check_tcp -p 6379
 command[check_clamd]=/usr/lib/nagios/plugins/check_clamd -H /var/run/clamav/clamd.ctl -v
 command[check_ssl]=/usr/lib/nagios/plugins/check_http -f follow -I 127.0.0.1 -S -p 443 -H ssl.evolix.net -C 15,5
 command[check_elasticsearch]=/usr/lib/nagios/plugins/check_http -H localhost -u /_cluster/health -p 9200 -r '"status":"red",' --invert-regex
+command[check_memcached]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 11211
 
 # Local checks (not packaged)
 command[check_mem]={{ nagios_plugins_directory }}/check_mem -f -C -w 20 -c 10
@@ -57,7 +58,7 @@ command[check_drbd]={{ nagios_plugins_directory }}/check_drbd -d All -c StandAlo
 command[check_mongodb_connect]={{ nagios_plugins_directory }}/check_mongodb -H localhost -P27017 -A connect
 command[check_glusterfs]={{ nagios_plugins_directory }}/check_glusterfs -v all -n 0
 command[check_supervisord_status]={{ nagios_plugins_directory }}/check_supervisord
-command[check_memcached]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 11211
+command[check_varnish]={{ nagios_plugins_directory }}/check_varnish_health -i 127.0.0.1 -p 6082 -s /etc/varnish/secret -w 2 -c 4
 
 # Check HTTP "many". Use this to check many websites (http, https, ports, sockets and SSL certificates).
 # Beware! All checks must not take more than 10s!

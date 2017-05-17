@@ -1,6 +1,10 @@
 ---
 - include: debian.yml
   when: ansible_os_family == "Debian"
+  tags:
+  - nagios
 
 - include: openbsd.yml
   when: ansible_os_family == "OpenBSD"
+  tags:
+  - nagios
