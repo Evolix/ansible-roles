@@ -13,6 +13,7 @@
   - pv
   - apg
   - conntrack
+  - logrotate
   when: evolinux_packages_system
 
 - name: Install/Update diagnostic tools
