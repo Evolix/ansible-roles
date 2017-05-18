@@ -1,0 +1,27 @@
+---
+driver:
+  name: docker
+  privileged: true
+  use_sudo: false
+
+provisioner:
+  name: ansible_playbook
+  hosts: test-kitchen
+  roles_path: ../
+  ansible_verbose: true
+  require_ansible_source: true
+  install_source_rev: "stable-2.2.1.0"
+  require_chef_for_busser: false
+  idempotency_test: true
+
+platforms:
+  - name: debian-8
+
+suites:
+  - name: default
+    provisioner:
+      name: ansible_playbook
+      playbook: ./tests/test.yml
+
+transport:
+  max_ssh_sessions: 6
