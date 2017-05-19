@@ -7,18 +7,18 @@
   - ansible_distribution_release != "jessie"
   - ansible_distribution_release != "stretch"
 
-- include: tasks/certbot.yml
+- include: certbot.yml
 
-- include: tasks/acme.yml
+- include: acme.yml
 
-- include: tasks/conf.yml
+- include: conf.yml
 
-- include: tasks/scripts.yml
+- include: scripts.yml
 
-- include: tasks/webserver.yml
+- include: webserver.yml
 
-- include: tasks/apache.yml
+- include: apache.yml
   when: sta.stat.isreg is defined and sta.stat.isreg
 
-- include: tasks/nginx.yml
+- include: nginx.yml
   when: stn.stat.isreg is defined and stn.stat.isreg
