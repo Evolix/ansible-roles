@@ -1,4 +1,14 @@
 ---
+- name: Are Munin plugins present in /etc ?
+  stat:
+    path: /etc/munin/plugins
+  register: etc_munin_plugins
+
+- name: Are Munin plugins present in /usr/share ?
+  stat:
+    path: /usr/share/munin/plugins
+  register: usr_share_munin_plugins
+
 - name: Add Munin plugins for PostgreSQL
   file:
     state: link
@@ -11,6 +21,7 @@
   - postgres_users
   - postgres_xlog
   notify: restart munin-node
+  when: etc_munin_plugins.stat.exists and usr_share_munin_plugins.stat.exists
 
 - name: Add Munin plugins for PostgreSQL (for specific databases)
   file:
@@ -21,3 +32,4 @@
   - ['postgres_cache_', 'postgres_connections_', 'postgres_locks_', 'postgres_querylength_', 'postgres_scans_', 'postgres_size_', 'postgres_transactions_', 'postgres_tuples_']
   - '{{postgresql_databases}}'
   notify: restart munin-node
+  when: etc_munin_plugins.stat.exists and usr_share_munin_plugins.stat.exists

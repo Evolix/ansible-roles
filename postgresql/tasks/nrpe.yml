@@ -14,19 +14,27 @@
     name: python-psycopg2
     state: present
 
-- name: Create nrpe user
-  become: yes
-  become_user: postgres
-  postgresql_user:
-    name: nrpe
-    password: '{{ postgresql_nrpe_password.stdout }}'
-    no_password_changes: yes
-  register: postgresql_create_nrpe_user
+- name: Is nrpe present ?
+  stat:
+    path: /etc/nagios/nrpe.d/evolix.cfg
+  register: nrpe_evolix_config
 
-- name: Add NRPE check
-  lineinfile:
-    name: /etc/nagios/nrpe.d/evolix.cfg
-    regexp: '^command\[check_pgsql\]='
-    line: 'command[check_pgsql]=/usr/lib/nagios/plugins/check_pgsql -H localhost -l nrpe -p "{{postgresql_nrpe_password.stdout}}"'
-  when: postgresql_create_nrpe_user.changed
-  notify: restart nagios-nrpe-server
+- block:
+  - name: Create nrpe user
+    become: yes
+    become_user: postgres
+    postgresql_user:
+      name: nrpe
+      password: '{{ postgresql_nrpe_password.stdout }}'
+      no_password_changes: yes
+    register: postgresql_create_nrpe_user
+    when: nrpe_evolix_config.stat.exists
+
+  - name: Add NRPE check
+    lineinfile:
+      name: /etc/nagios/nrpe.d/evolix.cfg
+      regexp: '^command\[check_pgsql\]='
+      line: 'command[check_pgsql]=/usr/lib/nagios/plugins/check_pgsql -H localhost -l nrpe -p "{{postgresql_nrpe_password.stdout}}"'
+    notify: restart nagios-nrpe-server
+    when: postgresql_create_nrpe_user.changed
+  when: nrpe_evolix_config.stat.exists
