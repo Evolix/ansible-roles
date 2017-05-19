@@ -17,6 +17,7 @@
   args:
     chdir: /etc
     creates: /etc/.git/
+    warn: no
   register: git_init
 
 - name: Git user.email is configured
@@ -44,6 +45,7 @@
   command: "git log"
   args:
     chdir: /etc
+    warn: no
   changed_when: False
   failed_when: False
   register: git_log
@@ -53,5 +55,6 @@
   shell: "git add -A . && git commit -m \"Initial commit via Ansible\""
   args:
     chdir: /etc
+    warn: no
   register: git_commit
   when: git_log.rc != 0 or (git_init is defined and git_init.changed)

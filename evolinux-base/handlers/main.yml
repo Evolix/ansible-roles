@@ -23,9 +23,13 @@
 
 - name: remount /home
   command: mount -o remount /home
+  args:
+    warn: no
 
 - name: remount /var
   command: mount -o remount /var
+  args:
+    warn: no
 
 
 - name: restart nginx
