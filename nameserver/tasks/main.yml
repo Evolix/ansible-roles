@@ -1,0 +1,27 @@
+---
+- name: Get actual nameserver
+  shell: grep nameserver /etc/resolv.conf | awk '{ print $2 }'
+  register: grep_nameserver
+  check_mode: no
+  changed_when: false
+  tags:
+  - nameserver
+
+- name: Set nameserver
+  lineinfile:
+    dest: /etc/resolv.conf
+    line: "nameserver {{ item }}"
+    state: present
+  with_items: "{{ nameservers }}"
+  tags:
+  - nameserver
+
+- name: Unset others nameserver
+  lineinfile:
+    dest: /etc/resolv.conf
+    line: "nameserver {{ item }}"
+    state: absent
+  with_items: "{{ grep_nameserver.stdout_lines }}"
+  when: item not in nameservers
+  tags:
+  - nameserver
