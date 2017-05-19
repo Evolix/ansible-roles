@@ -21,3 +21,5 @@
     group: postgres
     mode: "0644"
   notify: restart postgresql
+
+- meta: flush_handlers
