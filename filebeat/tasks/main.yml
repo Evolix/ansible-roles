@@ -24,7 +24,7 @@
   register: logstash_plugin
 
 - name: is logstash-input-beats installed?
-  shell: grep logstash-input-beats /usr/share/logstash/Gemfile
+  command: grep logstash-input-beats /usr/share/logstash/Gemfile
   check_mode: no
   register: logstash_plugin_installed
   failed_when: false

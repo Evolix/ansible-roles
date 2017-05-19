@@ -6,7 +6,7 @@
     ssh_key_bits: 2048
 
 - name: Fetch ssh public keys
-  shell: cat /root/.ssh/id_rsa.pub
+  command: cat /root/.ssh/id_rsa.pub
   register: ssh_keys
   check_mode: no
   changed_when: false

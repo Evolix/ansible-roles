@@ -2,7 +2,7 @@
   command: newaliases
 
 - name: Test Apache conf
-  shell: apache2ctl -t
+  command: apache2ctl -t
   notify: "Reload Apache conf"
 
 - name: reload apache2
