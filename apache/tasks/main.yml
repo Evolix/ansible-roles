@@ -124,7 +124,6 @@
   changed_when: False
   register: envvar_grep_umask
   check_mode: no
-  
   tags:
   - apache
 

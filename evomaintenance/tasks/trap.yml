@@ -2,7 +2,6 @@
   stat:
     path: "{{ home }}/.bash_profile"
   check_mode: no
-  
   register: bash_profile
 
 - name: install shell trap in {{ home }}/.bash_profile
@@ -17,7 +16,6 @@
   stat:
     path: "{{ home }}/.profile"
   check_mode: no
-  
   register: profile
   when: not bash_profile.stat.exists
 

@@ -121,7 +121,6 @@
   stat:
     path: /etc/munin/plugin-conf.d/munin-node
   check_mode: no
-  
   register: stat_munin_node
   tags:
   - nginx

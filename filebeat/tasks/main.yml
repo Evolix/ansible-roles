@@ -21,13 +21,11 @@
   stat:
     path: /usr/share/logstash/bin/logstash-plugin
   check_mode: no
-  
   register: logstash_plugin
 
 - name: is logstash-input-beats installed?
   shell: grep logstash-input-beats /usr/share/logstash/Gemfile
   check_mode: no
-  
   register: logstash_plugin_installed
   failed_when: false
   changed_when: false
@@ -41,7 +39,6 @@
     changed_when: False
     failed_when: False
     check_mode: no
-    
     register: usr_partition
 
   - name: Mount /usr in rw

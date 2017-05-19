@@ -54,7 +54,6 @@
   stat:
     path: /etc/nginx/sites-available
   check_mode: no
-  
   register: nginx_sites_available
 
 - block:
@@ -87,7 +86,6 @@
   stat:
     path: /etc/apache2/sites-available
   check_mode: no
-  
   register: apache_sites_available
 
 - block:

@@ -6,7 +6,6 @@
   failed_when: False
   changed_when: False
   check_mode: no
-  
 
 - block:
   - name: "Create {{ elasticsearch_custom_tmpdir or elasticsearch_default_tmpdir | mandatory }}"
@@ -29,4 +28,4 @@
       - restart elasticsearch
     tags:
       - elasticsearch
-  when: elasticsearch_custom_tmpdir or fstab_tmp_noexec|success
+  when: elasticsearch_custom_tmpdir or fstab_tmp_noexec | success

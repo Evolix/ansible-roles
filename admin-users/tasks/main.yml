@@ -4,7 +4,8 @@
     msg: "Error: empty variable 'admin_users'!"
   when: admin_users == {}
 
-- include: adduser_debian.yml user={{ item.value }}
+- include: adduser_debian.yml
+    user: "{{ item.value }}"
   with_dict: "{{ admin_users }}"
   when: ansible_distribution == "Debian"
 

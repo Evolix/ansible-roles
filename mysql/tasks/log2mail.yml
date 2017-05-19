@@ -4,7 +4,6 @@
   stat:
     path: /etc/log2mail/config
   check_mode: no
-  
   register: log2mail_config_dir
   tags:
     - mysql

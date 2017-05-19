@@ -1,5 +1,6 @@
 ---
 - include: ssh.yml
+
 - include: packages.yml
 
 - name: Check if /usr is a partition
@@ -9,7 +10,6 @@
   changed_when: False
   failed_when: False
   check_mode: no
-  
   register: usr_partition
 
 - name: Mount /usr in rw
@@ -20,4 +20,5 @@
   when: usr_partition.rc == 0
 
 - include: munin.yml
+
 - include: images.yml

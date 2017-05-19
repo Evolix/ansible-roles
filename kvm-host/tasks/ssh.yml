@@ -12,7 +12,7 @@
   changed_when: false
 
 - name: Print ssh public keys
-  debug: 
+  debug:
     msg: "{{ ssh_keys.stdout }}"
 
 - name: Autorize other kvm ssh key
@@ -26,7 +26,7 @@
     - "{{ groups['hypervisors'] }}"
   when: item[1] != inventory_hostname
 
-- name: Crontab for sync libvirt xml file 
+- name: Crontab for sync libvirt xml file
   cron:
     name: "sync libvirt xml on {{ item }}"
     state: present
@@ -37,7 +37,7 @@
     - "{{ groups['hypervisors'] }}"
   when: item != inventory_hostname
 
-- name: Crontab for sync list of running vm 
+- name: Crontab for sync list of running vm
   cron:
     name: "sync list of libvirt running vm on {{ item }}"
     state: present
