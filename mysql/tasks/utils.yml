@@ -55,16 +55,24 @@
   tags:
     - mysql
 
-- name: Enable Weekly cron to optimize MySQL
+- name: "Cron dir is present"
+  file:
+    path: "/etc/cron.{{ mysql_cron_optimize_frequency | mandatory }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: "Enable cron to optimize MySQL"
   file:
     src: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysql-optimize.sh"
-    dest: /etc/cron.weekly/mysql-optimize.sh
+    dest: /etc/cron.{{ mysql_cron_optimize_frequency | mandatory }}/mysql-optimize.sh
     state: link
   when: mysql_cron_optimize
   tags:
     - mysql
 
-- name: Disable Weekly cron to optimize MySQL
+- name: "Disable cron to optimize MySQL"
   file:
     dest: /etc/cron.weekly/mysql-optimize.sh
     state: absent
