@@ -1,3 +1,18 @@
 ---
+galaxy_info:
+  author: Evolix
+  description: Installation of Java 8
+
+  issue_tracker_url: https://forge.evolix.org/projects/ansible-roles/issues
+
+  license: GPLv2
+
+  min_ansible_version: 2.2
+
+  platforms:
+  - name: Debian
+    versions:
+    - jessie
+
 dependencies:
-  - { role: apt-repositories, apt_repositories_backports: True}
+  - { role: apt-repositories, apt_repositories_backports: True }
