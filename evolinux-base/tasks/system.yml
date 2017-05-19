@@ -4,7 +4,7 @@
   file:
     path: /tmp
     state: directory
-    mode: "1777"
+    mode: "u=rwx,g=rwx,o=rwxt"
   when: evolinux_system_chmod_tmp
 
 - name: Setting default locales
