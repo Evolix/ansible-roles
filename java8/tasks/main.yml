@@ -1,5 +1,6 @@
 ---
-- set_fact:
+- name: Decide which Debian release to use
+  set_fact:
     java8_apt_release: '{% if ansible_distribution_release == "jessie" %}jessie-backports{% else %}{{ ansible_distribution_release }}{% endif %}'
 
 - name: Java 8 is installed
