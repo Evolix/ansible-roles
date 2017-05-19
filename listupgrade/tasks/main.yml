@@ -3,6 +3,8 @@
   file:
     path: "/usr/share/scripts"
     state: directory
+    owner: root
+    group: root
     mode: "0700"
 
 - name: Copy listupgrade script
@@ -19,6 +21,8 @@
   file:
     path: /etc/evolinux
     state: directory
+    owner: root
+    group: root
     mode: "0600"
 
 - name: Copy listupgrade config
@@ -29,6 +33,14 @@
     owner: root
     group: root
     force: no
+
+- name: Cron.d is present
+  file:
+    path: "/etc/cron.d"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
 
 - name: Enable listupgrade cron
   template:
