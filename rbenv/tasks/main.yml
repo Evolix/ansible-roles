@@ -18,91 +18,69 @@
   - rbenv
   - packages
 
-- name: Rbenv repository is checked out for {{ username }}
-  git:
-    repo: '{{ rbenv_repo }}'
-    dest: '{{ rbenv_root }}'
-    version: '{{ rbenv_version }}'
-    accept_hostkey: yes
-    force: yes
-  become_user: "{{ username }}"
-  tags:
-  - rbenv
+- block:
+  - name: Rbenv repository is checked out for {{ username }}
+    git:
+      repo: '{{ rbenv_repo }}'
+      dest: '{{ rbenv_root }}'
+      version: '{{ rbenv_version }}'
+      accept_hostkey: yes
+      force: yes
 
-- name: plugins directory for {{ username }}
-  file:
-    path: '{{ rbenv_root }}/plugins'
-    state: directory
-  become_user: "{{ username }}"
-  tags:
-  - rbenv
+  - name: plugins directory for {{ username }}
+    file:
+      path: '{{ rbenv_root }}/plugins'
+      state: directory
 
-- name: plugins are installed for {{ username }}
-  git:
-    repo: '{{ item.repo }}'
-    dest: '{{ rbenv_root }}/plugins/{{ item.name }}'
-    version: '{{ item.version }}'
-    accept_hostkey: yes
-    force: yes
-  with_items:
-  - "{{ rbenv_plugins }}"
-  become_user: "{{ username }}"
-  tags:
-  - rbenv
+  - name: plugins are installed for {{ username }}
+    git:
+      repo: '{{ item.repo }}'
+      dest: '{{ rbenv_root }}/plugins/{{ item.name }}'
+      version: '{{ item.version }}'
+      accept_hostkey: yes
+      force: yes
+    with_items:
+    - "{{ rbenv_plugins }}"
 
-- name: Rbenv is initialized in profile for {{ username }}
-  blockinfile:
-    dest: '~{{ username }}/.profile'
-    block: |
-      export PATH="{{ rbenv_root }}/bin:$PATH"
-      eval "$(rbenv init -)"
-    marker: "# {mark} ANSIBLE MANAGED RBENV INIT"
-  become_user: "{{ username }}"
+  - name: Rbenv is initialized in profile for {{ username }}
+    blockinfile:
+      dest: '~{{ username }}/.profile'
+      block: |
+        export PATH="{{ rbenv_root }}/bin:$PATH"
+        eval "$(rbenv init -)"
+      marker: "# {mark} ANSIBLE MANAGED RBENV INIT"
 
-- name: default gems are installed for {{ username }}
-  copy:
-    src: default-gems
-    dest: '{{ rbenv_root }}/default-gems'
-  become_user: "{{ username }}"
-  tags:
-  - rbenv
+  - name: default gems are installed for {{ username }}
+    copy:
+      src: default-gems
+      dest: '{{ rbenv_root }}/default-gems'
 
-- name: gemrc for {{ username }}
-  copy:
-    src: gemrc
-    dest: ~/.gemrc
-  become_user: "{{ username }}"
-  tags:
-  - rbenv
+  - name: gemrc for {{ username }}
+    copy:
+      src: gemrc
+      dest: ~/.gemrc
 
-- name: is Ruby {{ rbenv_ruby_version }} available for {{ username }} ?
-  shell: /bin/bash -lc "rbenv versions | grep {{ rbenv_ruby_version }}"
-  become_user: "{{ username }}"
-  failed_when: False
-  changed_when: False
-  register: ruby_installed
-  tags:
-  - rbenv
+  - name: is Ruby {{ rbenv_ruby_version }} available for {{ username }} ?
+    shell: /bin/bash -lc "rbenv versions | grep {{ rbenv_ruby_version }}"
+    failed_when: False
+    changed_when: False
+    register: ruby_installed
 
-- name: Ruby {{ rbenv_ruby_version }} is available for {{ username }} (be patient... could be long)
-  shell: /bin/bash -lc "TMPDIR=~/tmp rbenv install {{ rbenv_ruby_version }}"
-  become_user: "{{ username }}"
-  when: ruby_installed.rc != 0
-  tags:
-  - rbenv
+  - name: Ruby {{ rbenv_ruby_version }} is available for {{ username }} (be patient... could be long)
+    shell: /bin/bash -lc "TMPDIR=~/tmp rbenv install {{ rbenv_ruby_version }}"
+    when: ruby_installed.rc != 0
 
-- name: is Ruby {{ rbenv_ruby_version }} selected for {{ username }} ?
-  shell: /bin/bash -lc "rbenv version | cut -d ' ' -f 1 | grep -Fx '{{ rbenv_ruby_version }}'"
-  become_user: "{{ username }}"
-  register: ruby_selected
-  changed_when: False
-  failed_when: False
-  tags:
-  - rbenv
+  - name: is Ruby {{ rbenv_ruby_version }} selected for {{ username }} ?
+    shell: /bin/bash -lc "rbenv version | cut -d ' ' -f 1 | grep -Fx '{{ rbenv_ruby_version }}'"
+    register: ruby_selected
+    changed_when: False
+    failed_when: False
 
-- name: select Ruby {{ rbenv_ruby_version }} for {{ username }}
-  shell: /bin/bash -lc "rbenv global {{ rbenv_ruby_version }} && rbenv rehash"
+  - name: select Ruby {{ rbenv_ruby_version }} for {{ username }}
+    shell: /bin/bash -lc "rbenv global {{ rbenv_ruby_version }} && rbenv rehash"
+    when: ruby_selected.rc != 0
+
   become_user: "{{ username }}"
-  when: ruby_selected.rc != 0
+  become: yes
   tags:
   - rbenv
