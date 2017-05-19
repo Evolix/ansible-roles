@@ -56,4 +56,8 @@
     args:
       warn: no
     changed_when: False
-    when: usr_partition.rc == 0 and filebeat_logstash_plugin and logstash_plugin.stat.exists and not logstash_plugin_installed | success
+    when: usr_partition.rc == 0
+  when:
+  - filebeat_logstash_plugin
+  - logstash_plugin.stat.exists
+  - not logstash_plugin_installed | success
