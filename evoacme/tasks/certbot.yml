@@ -64,7 +64,15 @@
 - name: Let's Encrypt OCSP server is authorized by squid
   lineinfile:
     dest: "{{ squid3_whitelist_files.stdout_lines | first }}"
-    line: "http://ocsp.int-x3.letsencrypt.org/.*"
+    line: "{{ item }}"
     state: present
   notify: reload squid3
+  with-items:
+  - "http://acme-staging.api.letsencrypt.org/.*"
+  - "http://ocsp.int-x1.letsencrypt.org/.*"
+  - "http://ocsp.int-x2.letsencrypt.org/.*"
+  - "http://ocsp.int-x3.letsencrypt.org/.*"
+  - "http://ocsp.int-x4.letsencrypt.org/.*"
+  - "http://ocsp.root-x1.letsencrypt.org/.*"
+  - "http://ocsp.staging-x1.letsencrypt.org/.*"
   when: squid3_whitelist_files.stdout != ""
