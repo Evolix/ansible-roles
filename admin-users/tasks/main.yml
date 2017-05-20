@@ -5,6 +5,7 @@
   when: admin_users == {}
 
 - include: adduser_debian.yml
+  vars:
     user: "{{ item.value }}"
   with_dict: "{{ admin_users }}"
   when: ansible_distribution == "Debian"
