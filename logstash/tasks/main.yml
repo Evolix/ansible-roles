@@ -1,9 +1,20 @@
 ---
 
+- name: Install java8
+  include_role:
+    name: java8
+  tags:
+    - packages
+
+- name: Install Elastic sources list
+  include_role:
+    name: elastics-sources-list
+  tags:
+    - packages
+
 - name: Logstash is installed
   apt:
     name: logstash
-    update_cache: yes
     state: present
   tags:
     - packages
@@ -12,7 +23,6 @@
   service:
     name: logstash
     enabled: yes
-
 
 - name: JVM Heap size (min) is set
   lineinfile:

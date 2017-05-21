@@ -23,6 +23,4 @@ galaxy_info:
     # NOTE: A tag is limited to a single word comprised of
     # alphanumeric characters. Maximum 20 tags per role.
 
-dependencies:
-  - evogalaxy.java8
-  - evogalaxy.elastic-sources-list
+dependencies: []

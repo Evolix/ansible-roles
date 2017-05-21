@@ -1,9 +1,16 @@
 ---
 
+- name: Install java8
+  include_role:
+    name: java8
+
+- name: Install Elastic sources list
+  include_role:
+    name: elastics-sources-list
+
 - name: Kibana is installed
   apt:
     name: kibana
-    update_cache: yes
     state: present
   tags:
     - packages

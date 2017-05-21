@@ -13,6 +13,3 @@ galaxy_info:
   - name: Debian
     versions:
     - jessie
-
-dependencies:
-  - { role: apt-repositories, apt_repositories_backports: True }

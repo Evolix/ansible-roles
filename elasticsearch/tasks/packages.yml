@@ -1,9 +1,16 @@
 ---
 
+- name: install java8
+  include_role:
+    name: java8
+
+- name: install Elastic sources list
+  include_role:
+    name: elastics-sources-list
+
 - name: Elasticsearch is installed
   apt:
     name: elasticsearch
-    update_cache: yes
     state: present
   tags:
     - packages
