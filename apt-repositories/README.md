@@ -14,7 +14,8 @@ Tasks are extracted in several files, included in `tasks/main.yml` :
 * `apt_repositories_install_backports` : install backports sources (default: `False`) ;
 * `apt_repositories_backports_components` : backports sources (default: `main`) ;
 * `apt_repositories_change_basics_components` : change basic sources components (default: `False`) ;
-* `apt_repositories_backports_components` : basic sources components (default: `main`).
+* `apt_repositories_backports_components` : basic sources components (default: `main`) ;
+* `apt_repositories_install_evolix_public` : install Evolix public repositories (default: `True`).
 
 ## Examples
 

@@ -1,0 +1,10 @@
+---
+
+- name: Evolix public list is installed
+  template:
+    src: evolix_public.list.j2
+    dest: /etc/apt/sources.list.d/evolix_public.list
+    force: yes
+    backup: yes
+    mode: "0640"
+  notify: apt update

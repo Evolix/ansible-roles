@@ -51,15 +51,6 @@
   - "deb http://mirror.evolix.org/debian/ {{ ansible_distribution_release }}-updates {{ evolinux_apt_repositories_components | mandatory }}"
   when: evolinux_apt_basic_sources
 
-- name: Evolix public list is installed
-  template:
-    src: apt/evolix_public.list.j2
-    dest: /etc/apt/sources.list.d/evolix_public.list
-    force: yes
-    backup: yes
-    mode: "0640"
-  when: evolinux_apt_public_sources
-
 - name: Remove Aptitude
   apt:
     name: aptitude

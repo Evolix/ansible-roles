@@ -1,4 +1,10 @@
 ---
+- name: Install Evolix public repositry
+  include_role:
+    name: apt-repositories
+  vars:
+    apt_repositories_install_evolix_public: True
+
 - name: Install vrrpd packages
   apt:
     name: vrrpd=1.0-2.evolix
