@@ -3,4 +3,5 @@
   command: newaliases
 
 - name: systemd reload
-  shell: systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
