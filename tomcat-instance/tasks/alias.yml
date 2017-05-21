@@ -6,7 +6,7 @@
     mode: "0770"
     owner: "{{ tomcat_instance_name }}"
     group: "{{ tomcat_instance_name }}"
-    
+
 - name: Copy alias script for systemctl --user
   template:
     src: "{{ item }}"

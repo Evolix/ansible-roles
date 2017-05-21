@@ -11,7 +11,6 @@
   changed_when: False
   failed_when: False
   check_mode: no
-  
   register: usr_partition
 
 - name: Mount /usr in rw
@@ -23,11 +22,11 @@
 
 - name: Create Nagios plugins dir
   file:
-    path: '/usr/local/lib/nagios/plugins'
+    path: /usr/local/lib/nagios/plugins
     state: directory
 
 - name: Copy Tomcat instance check
   template:
-    src: 'templates/check_tomcat_instance.sh.j2'
-    dest: '/usr/local/lib/nagios/plugins/check_tomcat_instance.sh'
-    mode: 0755
+    src: templates/check_tomcat_instance.sh.j2
+    dest: /usr/local/lib/nagios/plugins/check_tomcat_instance.sh
+    mode: "0755"
