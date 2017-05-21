@@ -1,4 +1,12 @@
 ---
+- name: Scripts dir is present
+  file:
+    path: "{{ evocheck_bin_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
 - name: Copy evocheck.sh
   copy:
     src: evocheck.sh
