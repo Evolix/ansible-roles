@@ -3,7 +3,7 @@
   file:
     path: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/{{ item }}"
     state: directory
-    mode: "2770"
+    mode: "u=rwx,g=rwxs,o="
     owner: "{{ tomcat_instance_name }}"
     group: "{{ tomcat_instance_name }}"
   with_items:

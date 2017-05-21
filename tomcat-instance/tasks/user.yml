@@ -19,7 +19,7 @@
     state: directory
     owner: "{{ tomcat_instance_name }}"
     group: "{{ tomcat_instance_name }}"
-    mode: "2770"
+    mode: "u=rwx,g=rwxs,o="
 
 - name: Set mail alias for user
   lineinfile:
