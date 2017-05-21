@@ -1,4 +1,7 @@
 ---
 - hosts: test-kitchen
+  vars:
+    - tomcat_instance_mail: 'test@example.com'
+    - tomcat_instance_deploy_user: 'deploy'
   roles:
-    - role: tomcat-instance
+  - { role: tomcat-instance, tomcat_instance_name: 'instance1', tomcat_instance_port: 8888, tomcat_instance_ram: 256 }
