@@ -62,22 +62,30 @@
 
   - name: is Ruby {{ rbenv_ruby_version }} available for {{ username }} ?
     shell: /bin/bash -lc "rbenv versions | grep {{ rbenv_ruby_version }}"
+    args:
+      warn: no
     failed_when: False
     changed_when: False
     register: ruby_installed
 
   - name: Ruby {{ rbenv_ruby_version }} is available for {{ username }} (be patient... could be long)
     shell: /bin/bash -lc "TMPDIR=~/tmp rbenv install {{ rbenv_ruby_version }}"
+    args:
+      warn: no
     when: ruby_installed.rc != 0
 
   - name: is Ruby {{ rbenv_ruby_version }} selected for {{ username }} ?
     shell: /bin/bash -lc "rbenv version | cut -d ' ' -f 1 | grep -Fx '{{ rbenv_ruby_version }}'"
+    args:
+      warn: no
     register: ruby_selected
     changed_when: False
     failed_when: False
 
   - name: select Ruby {{ rbenv_ruby_version }} for {{ username }}
     shell: /bin/bash -lc "rbenv global {{ rbenv_ruby_version }} && rbenv rehash"
+    args:
+      warn: no
     when: ruby_selected.rc != 0
 
   become_user: "{{ username }}"
