@@ -6,7 +6,7 @@
 
 - name: install Elastic sources list
   include_role:
-    name: elastics-sources-list
+    name: elastic-sources-list
 
 - name: Elasticsearch is installed
   apt:
