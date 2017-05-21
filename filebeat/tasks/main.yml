@@ -2,7 +2,7 @@
 
 - name: Install Elastic sources list
   include_role:
-    name: elastics-sources-list
+    name: elastic-sources-list
 
 - name: Filebeat is installed
   apt:
