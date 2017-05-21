@@ -21,12 +21,18 @@
     group: "{{ tomcat_instance_name }}"
     mode: "u=rwx,g=rwxs,o="
 
+- name: Is /etc/aliases present?
+  stat:
+    path: /etc/aliases
+  register: etc_aliases
+
 - name: Set mail alias for user
   lineinfile:
     dest: '/etc/aliases'
     state: present
     line: "{{ tomcat_instance_name }}: {{ tomcat_instance_mail }}"
-  when: tomcat_instance_mail is defined
+    regexp: "{{ tomcat_instance_name }}:"
+  when: etc_aliases.stat.exists and tomcat_instance_mail is defined
   notify: new aliases
 
 - name: Enable sudo right

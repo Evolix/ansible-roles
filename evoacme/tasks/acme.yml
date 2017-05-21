@@ -38,9 +38,16 @@
     group: acme
     state: directory
 
+- name: Is /etc/aliases present?
+  stat:
+    path: /etc/aliases
+  register: etc_aliases
+
 - name: Set acme aliases
   lineinfile:
     state: present
     dest: /etc/aliases
     line: 'acme: root'
+    regexp: 'acme:'
+  when: etc_aliases.stat.exists
   notify: "newaliases"
