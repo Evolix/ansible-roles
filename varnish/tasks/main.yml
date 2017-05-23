@@ -11,9 +11,9 @@
     path: "{{ item }}"
     state: absent
   with_items:
-    -  /etc/defaults/varnish
-    -  /etc/defaults/varnishncsa
-    -  /etc/defaults/varnishlog
+    -  /etc/default/varnish
+    -  /etc/default/varnishncsa
+    -  /etc/default/varnishlog
   tags:
   - varnish
 
