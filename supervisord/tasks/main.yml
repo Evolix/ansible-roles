@@ -1,0 +1,18 @@
+---
+- name: Install supervisord
+  apt:
+    name: supervisor
+
+- name: Add http configuration for supvervisord
+  copy:
+    src: http.conf
+    dest: /etc/supervisor/conf.d/
+    mode: "0644"
+  notify: Restart supervisord
+
+  #- name: symlink kampn configuration for supervisord
+  #  file:
+  #    name: /etc/supervisord/conf.d/preprod.conf
+  #    src: /home/preprod/social/current/supervisord.conf
+  #    state: link
+  #  notify: Restart supervisord
