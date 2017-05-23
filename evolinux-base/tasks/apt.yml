@@ -1,5 +1,8 @@
 ---
 
+- include_role:
+    name: apt-repositories
+
 - name: Setting apt config
   lineinfile:
     dest: /etc/apt/apt.conf.d/z-evolinux.conf
