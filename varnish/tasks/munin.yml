@@ -1,0 +1,46 @@
+---
+- name: Install dependencies
+  apt:
+    name: libxml-parser-perl
+  tags: varnish
+
+- name: Create plugin directory
+  file:
+    name: /usr/local/share/munin/
+    state: directory
+    mode: "0755"
+  tags: varnish
+
+- name: Create plugin directory
+  file:
+    name: /usr/local/share/munin/plugins/
+    state: directory
+    mode: "0755"
+  tags: varnish
+
+- name: Copy varnish4 munin plugin
+  copy:
+    src: munin/varnish4_
+    dest: /usr/local/share/munin/plugins/
+    mode: "0755"
+  notify: restart munin-node
+  tags: varnish
+
+- name: Enable varnish4 munin plugin
+  file:
+    src: /usr/local/share/munin/plugins/varnish4_
+    dest: "/etc/munin/plugins/varnish4_{{item}}"
+    state: link
+  with_items:
+    - backend_traffic
+    - bad
+    - expunge
+    - hit_rate
+    - memory_usage
+    - objects
+    - request_rate
+    - threads
+    - transfer_rates
+    - uptime
+  notify: restart munin-node
+  tags: varnish

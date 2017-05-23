@@ -89,3 +89,5 @@
   notify: reload varnish
   tags:
   - varnish
+
+- include: munin.yml
