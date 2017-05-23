@@ -10,7 +10,10 @@
   file:
     path: "{{ item }}"
     state: absent
-  with_fileglob: "/etc/defaults/varnish*"
+  with_items:
+    -  /etc/defaults/varnish
+    -  /etc/defaults/varnishncsa
+    -  /etc/defaults/varnishlog
   tags:
   - varnish
 
