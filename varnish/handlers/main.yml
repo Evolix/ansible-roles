@@ -4,3 +4,6 @@
     name: varnish
     state: reloaded
     daemon_reload: yes
+
+- name: reload systemd
+  command: systemctl daemon-reload

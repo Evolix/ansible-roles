@@ -40,6 +40,7 @@
     dest: /etc/systemd/system/varnish.service.d/varnish.conf
     force: yes
     backup: yes
+  notify: reload systemd
   tags:
   - varnish
 
