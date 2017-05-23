@@ -12,3 +12,6 @@
   - 'deb(-src)? http://mirror.evolix.org/debian/? {{ ansible_distribution_release }}'
   - 'deb(-src)? http://mirror.evolix.org/debian/? {{ ansible_distribution_release }}-updates'
   notify: apt update
+
+- name: Intermediate flush of handlers
+  meta: flush_handlers

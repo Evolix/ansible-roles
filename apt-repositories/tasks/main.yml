@@ -18,6 +18,3 @@
 - name: Install Evolix Public APT repository
   include: evolix_public.yml
   when: apt_repositories_install_evolix_public
-
-- name: Intermediate flush of handlers
-  meta: flush_handlers

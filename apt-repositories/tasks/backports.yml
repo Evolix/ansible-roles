@@ -22,3 +22,6 @@
     backup: yes
     mode: "0640"
   notify: apt update
+
+- name: Intermediate flush of handlers
+  meta: flush_handlers
