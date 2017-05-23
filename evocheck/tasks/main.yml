@@ -1,4 +1,8 @@
 ---
+
+- include: remount_usr_rw.yml
+  when: evocheck_bin_dir | search ("/usr")
+
 - name: Scripts dir is present
   file:
     path: "{{ evocheck_bin_dir }}"
