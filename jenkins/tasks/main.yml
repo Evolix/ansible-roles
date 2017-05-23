@@ -39,18 +39,3 @@
     regexp: "^HTTP_PORT=.*$"
     replace: "HTTP_PORT=8081"
   notify: Restart Jenkins
-
-- name: Create .ssh directory
-  file:
-    name: /var/lib/jenkins/.ssh/
-    state: directory
-    mode: "0700"
-
-- name: Copy SSH keys
-  copy:
-    src: "{{item}}"
-    dest: /var/lib/jenkins/.ssh/
-    mode: "0600"
-  with_items:
-    - id_rsa
-    - id_rsa.pub
