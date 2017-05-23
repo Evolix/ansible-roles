@@ -9,10 +9,4 @@
     dest: /etc/supervisor/conf.d/
     mode: "0644"
   notify: Restart supervisord
-
-  #- name: symlink kampn configuration for supervisord
-  #  file:
-  #    name: /etc/supervisord/conf.d/preprod.conf
-  #    src: /home/preprod/social/current/supervisord.conf
-  #    state: link
-  #  notify: Restart supervisord
+  when: supervisord_enable_http

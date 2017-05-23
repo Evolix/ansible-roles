@@ -1,0 +1,2 @@
+---
+supervisord_enable_http: False
