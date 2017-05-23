@@ -1,0 +1,56 @@
+---
+- name: Add jenkins GPG key
+  apt_key:
+    url: https://jenkins-ci.org/debian/jenkins-ci.org.key
+
+- name: Check if Squid is present
+  stat:
+    path: /etc/squid3/whitelist-custom.conf
+  register: _squid3_whitelist
+  check_mode: no
+
+- name: Append jenkins repositories to Squid whitelist
+  lineinfile:
+    name: /etc/squid3/whitelist-custom.conf
+    line: "{{ item }}"
+  with_items:
+    - "http://pkg.jenkins-ci.org/.*"
+    - "http://mirrors.jenkins.io/.*"
+    - "http://jenkins.mirror.isppower.de/.*"
+    - "http://ftp.icm.edu.pl/.*"
+  notify: Reload Squid
+  when: _squid3_whitelist.stat.exists
+
+- meta: flush_handlers
+
+- name: Add jenkins APT repository
+  apt_repository:
+    repo: deb http://pkg.jenkins-ci.org/debian-stable binary/
+    filename: jenkins.list
+    update_cache: yes
+
+- name: Install Jenkins
+  apt:
+    name: jenkins
+
+- name: Change Jenkins port
+  replace:
+    name: /etc/default/jenkins
+    regexp: "^HTTP_PORT=.*$"
+    replace: "HTTP_PORT=8081"
+  notify: Restart Jenkins
+
+- name: Create .ssh directory
+  file:
+    name: /var/lib/jenkins/.ssh/
+    state: directory
+    mode: "0700"
+
+- name: Copy SSH keys
+  copy:
+    src: "{{item}}"
+    dest: /var/lib/jenkins/.ssh/
+    mode: "0600"
+  with_items:
+    - id_rsa
+    - id_rsa.pub

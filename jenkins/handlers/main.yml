@@ -1,0 +1,11 @@
+---
+- name: Reload Squid
+  service:
+    name: squid3
+    state: reloaded
+
+- name: Restart Jenkins
+  service:
+    name: jenkins
+    state: restarted
+
