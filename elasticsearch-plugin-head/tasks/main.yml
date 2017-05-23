@@ -9,7 +9,7 @@
     shell: /bin/false
 
 - block:
-  - name: Head repository is check-out
+  - name: Head repository is checked-out
     git:
       repo: "git://github.com/mobz/elasticsearch-head.git"
       dest: "{{ elasticsearch_plugin_head_clone_dir }}"
@@ -17,12 +17,19 @@
     tags:
       - packages
 
+  - name: Create tmpdir
+    file:
+      dest: "{{ elasticsearch_plugin_head_tmp_dir }}"
+      state: directory
+
   - name: NPM packages for head are installed
     npm:
       path: "{{ elasticsearch_plugin_head_clone_dir }}"
     tags:
       - packages
       - npm
+    environment:
+      TMPDIR: "{{ elasticsearch_plugin_head_tmp_dir }}"
   become_user: "{{ elasticsearch_plugin_head_owner }}"
 
 - name: Elasticsearch HTTP/CORS are enabled
