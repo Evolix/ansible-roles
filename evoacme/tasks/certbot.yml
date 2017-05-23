@@ -4,8 +4,7 @@
   - name: install jessie-backports
     include_role:
       name: apt-repositories
-    vars:
-      apt_repositories_install_backports: True
+      tasks_from: backports.yml
 
   - name: Add exceptions for certbot dependances
     copy:

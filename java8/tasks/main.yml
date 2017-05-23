@@ -6,8 +6,7 @@
 - name: install jessie-backports
   include_role:
     name: apt-repositories
-  vars:
-    apt_repositories_install_backports: True
+    tasks_from: backports.yml
   when: ansible_distribution_release == "jessie"
 
 - name: Java 8 is installed
