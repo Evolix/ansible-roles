@@ -30,6 +30,9 @@
 
 # mysqltuner
 
+- include: remount_usr_rw.yml
+  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
+
 - name: Install mysqltuner
   copy:
     src: mysqltuner.pl
@@ -46,6 +49,9 @@
     - mysql
 
 # automatic optimizations
+
+- include: remount_usr_rw.yml
+  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
 
 - name: Optimize script for MySQL
   copy:
@@ -82,12 +88,8 @@
 
 # my-add.sh
 
-- name: Install apg
-  apt:
-    name: apg
-  tags:
-    - mysql
-    - packages
+- include: remount_usr_rw.yml
+  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
 
 - name: Ensure /usr/share/scripts exists
   file:
@@ -104,3 +106,10 @@
     mode: "0700"
   tags:
     - mysql
+
+- name: Install apg
+  apt:
+    name: apg
+  tags:
+    - mysql
+    - packages
