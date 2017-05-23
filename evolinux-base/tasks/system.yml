@@ -41,6 +41,8 @@
 # TODO : find a way to force the console-data configuration
 # non-interactively (like tzdata ↑)
 
+- include: remount_usr_rw.yml
+
 - name: Setting vim as default editor
   alternatives:
     name: editor
