@@ -25,6 +25,9 @@
     state: directory
   notify: restart nagios-nrpe-server
 
+- include: remount_usr_rw.yml
+  when: nagios_plugins_directory | search ("/usr")
+
 - name: Nagios plugins are installed
   copy:
     src: plugins/
