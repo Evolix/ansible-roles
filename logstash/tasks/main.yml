@@ -39,3 +39,19 @@
     line: "-Xmx{{ logstash_jvm_xmx }}"
   tags:
     - config
+
+- name: Add a configuration
+  template:
+    src: "{{ item }}"
+    dest: /etc/logstash/conf.d/logstash.conf
+    force: yes
+  with_first_found:
+  - "templates/logstash/logstash.{{ inventory_hostname }}.conf.j2"
+  - "templates/logstash/logstash.{{ host_group }}.conf.j2"
+  - "templates/logstash/logstash.default.conf.j2"
+  - "logstash.default.conf.j2"
+  register: logstash_template
+
+- debug:
+    var: logstash_template
+    verbosity: 1
