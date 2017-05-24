@@ -25,5 +25,5 @@
 
 - name: Adjust ulimit
   lineinfile:
-     dest: /etc/default/rabbitmq-server
-     line: ulimit -n 2048
+    dest: /etc/default/rabbitmq-server
+    line: ulimit -n 2048
