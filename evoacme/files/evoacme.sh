@@ -42,7 +42,7 @@ if [ $? != 0 ]; then
 		[ -f /etc/apache2/ssl/${vhost}.conf ] && sed -i "s~^SSLCertificateFile.*$~SSLCertificateFile $SELF_SIGNED_DIR/${vhost}.pem~" /etc/apache2/ssl/${vhost}.conf
 	fi
 	if [ -d /etc/nginx ]; then
-		[ -f /etc/nginx/ssl/${vhost}.conf ] && sed -i "s~^ssl_certificate[^_]*$~ssl_certificate $SELF_SIGNED_DIR/${vhost}.pem;~" /etc/nginx/ssl/${vhost}.conf
+		[ -f /etc/nginx/ssl/${vhost}.conf ] && sed -i "s~^ssl_certificate[^_].*$~ssl_certificate $SELF_SIGNED_DIR/${vhost}.pem;~" /etc/nginx/ssl/${vhost}.conf
 	fi
 	exit 1
 fi
