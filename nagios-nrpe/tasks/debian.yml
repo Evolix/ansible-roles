@@ -27,6 +27,8 @@
 
 - include: remount_usr_rw.yml
   when: nagios_plugins_directory | search ("/usr")
+  tags:
+  - nagios-plugins
 
 - name: Nagios plugins are installed
   copy:
@@ -34,6 +36,8 @@
     dest: "{{ nagios_plugins_directory }}/"
     mode: "0755"
   notify: restart nagios-nrpe-server
+  tags:
+  - nagios-plugins
 
 - name: Nagios lib is secured
   file:
