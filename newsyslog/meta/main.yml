@@ -1,0 +1,15 @@
+galaxy_info:
+  author: Evolix
+  description: Basic configuration of newsyslog
+
+  issue_tracker_url: https://forge.evolix.org/projects/ansible-roles/issues
+
+  license: GPLv2
+
+  min_ansible_version: 2.2
+
+  platforms:
+  - name: OpenBSD
+    versions:
+      - 6.1
+

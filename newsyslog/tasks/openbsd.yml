@@ -1,0 +1,13 @@
+---
+# no need to enable any daemon, it's run (by default) with cron(8)
+- name: Configuring newsyslog
+  copy:
+    src: newsyslog.conf
+    dest: /etc/newsyslog.conf
+    owner: root
+    group: wheel
+    mode: "0644"
+    backup: yes
+  tags:
+    - log
+    - newsyslog
