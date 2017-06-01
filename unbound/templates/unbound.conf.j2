@@ -1,0 +1,45 @@
+server:
+	#interface: X.X.X.X
+	#interface: 127.0.0.1@5353      # listen on alternative port
+{% for interface in unbound_interfaces %}
+	interface: {{ interface }}
+{% endfor %}
+	#do-ip6: no
+	
+{% for acl in unbound_acls %}
+	access-control: {{ acl }}
+{% endfor %}
+	
+	hide-identity: yes
+	hide-version: yes
+	
+	# root-hints: "/var/unbound/etc/named.cache"
+	# Uncomment to enable DNSSEC validation.
+	#auto-trust-anchor-file: "/var/unbound/db/root.key"
+	# Serve zones authoritatively from Unbound to resolver clients.
+	# Not for external service.
+	
+	#local-zone: "local." static
+	#local-data: "mycomputer.local. IN A 192.0.2.51"
+	#local-zone: "2.0.192.in-addr.arpa." static
+	#local-data-ptr: "192.0.2.51 mycomputer.local
+	# UDP EDNS reassembly buffer advertised to peers. Default 4096.
+	# May need lowering on broken networks with fragmentation/MTU issues,
+	# particularly if validating DNSSEC.
+	
+	#edns-buffer-size: 1480
+	# Use TCP for "forward-zone" requests. Useful if you are making
+	# DNS requests over an SSH port forwarding.
+	#tcp-upstream: yes
+
+# Use an upstream forwarder (recursive resolver) for specific zones.
+# Example addresses given below are public resolvers valid as of 2014/03.
+#
+#forward-zone:
+#       name: "."                               # use for ALL queries
+#       forward-addr: 74.82.42.42               # he.net
+#       forward-addr: 2001:470:20::2            # he.net v6
+#       forward-addr: 8.8.8.8                   # google.com
+#       forward-addr: 2001:4860:4860::8888      # google.com v6
+#       forward-addr: 208.67.222.222            # opendns.com
+#       forward-first: yes                      # try direct if forwarder fails

@@ -1,0 +1,40 @@
+---
+- name: Install Unbound package
+  apt:
+    name: unbound
+    state: present
+  when: ansible_distribution == "Debian"
+  tags:
+  - unbound
+
+- name: Copy Unbound config
+  template:
+    src: unbound.conf.j2
+    dest: /etc/unbound/unbound.conf
+    owner: root
+    group: root
+    mode: "0644"
+  when: ansible_distribution == "Debian"
+  notify: reload unbound
+  tags:
+  - unbound
+
+- name: Copy Unbound config
+  template:
+    src: unbound.conf.j2
+    dest: /var/unbound/etc/unbound.conf
+    owner: root
+    group: wheel
+    mode: "0644"
+  when: ansible_distribution == "OpenBSD"
+  notify: reload unbound
+  tags:
+  - unbound
+
+- name: Starting and enabling Unbound
+  service:
+    name: unbound
+    enabled: yes
+    state: started
+  tags:
+  - unbound

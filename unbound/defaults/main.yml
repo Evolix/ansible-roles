@@ -1,0 +1,9 @@
+---
+unbound_interfaces:
+- '127.0.0.1'
+- '::1'
+unbound_acls:
+- '0.0.0.0/0 refuse'
+- '127.0.0.0/8 allow_snoop'
+- '::0/0 refuse'
+- '::1 allow_snoop'
