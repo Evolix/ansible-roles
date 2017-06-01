@@ -34,6 +34,7 @@ command[check_ftp]=/usr/lib/nagios/plugins/check_ftp -H localhost
 command[check_http]=/usr/lib/nagios/plugins/check_http -f follow -I 127.0.0.1 -H localhost
 command[check_https]=/usr/lib/nagios/plugins/check_http -f follow -I 127.0.0.1 -S -p 443 -H ssl.evolix.net
 command[check_bind]=/usr/lib/nagios/plugins/check_dig -l evolix.net -H localhost
+command[check_unbound]=/usr/lib/nagios/plugins/check_dig -l evolix.net -H localhost
 command[check_smb]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 445
 command[check_tse]=/usr/lib/nagios/plugins/check_tcp -H TSEADDR -p 3389
 command[check_jboss-http]=/usr/lib/nagios/plugins/check_tcp -p 8080
