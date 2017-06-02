@@ -5,20 +5,20 @@ server:
 	interface: {{ interface }}
 {% endfor %}
 	#do-ip6: no
-	
+
 {% for acl in unbound_acls %}
 	access-control: {{ acl }}
 {% endfor %}
-	
+
 	hide-identity: yes
 	hide-version: yes
-	
+
 	# root-hints: "/var/unbound/etc/named.cache"
 	# Uncomment to enable DNSSEC validation.
 	auto-trust-anchor-file: "/var/unbound/db/root.key"
 	# Serve zones authoritatively from Unbound to resolver clients.
 	# Not for external service.
-	
+
 	#local-zone: "local." static
 	#local-data: "mycomputer.local. IN A 192.0.2.51"
 	#local-zone: "2.0.192.in-addr.arpa." static
@@ -26,7 +26,7 @@ server:
 	# UDP EDNS reassembly buffer advertised to peers. Default 4096.
 	# May need lowering on broken networks with fragmentation/MTU issues,
 	# particularly if validating DNSSEC.
-	
+
 	#edns-buffer-size: 1480
 	# Use TCP for "forward-zone" requests. Useful if you are making
 	# DNS requests over an SSH port forwarding.
