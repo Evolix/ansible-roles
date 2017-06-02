@@ -5,3 +5,9 @@ memcached_user: 'nobody'
 memcached_bind_interface: '127.0.0.1'
 memcached_connections: 1024
 memcached_port: 11211
+phpmemcachedadmin_clusters:
+- { name: 'Default',
+    servers: [
+      { name: 'localhost', hostname: '127.0.0.1', port: 11211 }
+    ]
+  }

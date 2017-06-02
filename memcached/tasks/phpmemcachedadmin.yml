@@ -1,0 +1,26 @@
+---
+- name: Create phpMemcachedAdmin root dir
+  file:
+    path: /var/www/phpmemcachedadmin/
+    state: directory
+    mode: "0755"
+  tags:
+  - memcached
+
+- name: Install phpMemcachedAdmin
+  unarchive:
+    src: 'https://github.com/elijaa/phpmemcachedadmin/archive/1.3.0.tar.gz'
+    dest: /var/www/phpmemcachedadmin/
+    remote_src: True
+    extra_opts: --strip-components=1
+    mode: "0755"
+  tags:
+  - memcached
+
+- name: Copy phpMemcachedAdmin config
+  template:
+    src: Memcache.php.j2
+    dest: /var/www/phpmemcachedadmin/Config/Memcache.php
+    mode: "0755"
+  tags:
+  - memcached
