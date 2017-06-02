@@ -23,3 +23,5 @@
     state: started
   tags:
   - redis
+
+- include: munin.yml

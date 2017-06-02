@@ -1,0 +1,62 @@
+---
+- name: Install munin check dependencies
+  apt:
+    name: libswitch-perl
+    state: present
+  tags:
+  - redis
+
+- name: Check if /usr is a partition
+  shell: "mount | grep 'on /usr type'"
+  args:
+    warn: no
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: usr_partition
+  tags: redis
+
+- name: Mount /usr in rw
+  command: mount -o remount,rw /usr
+  args:
+    warn: no
+  changed_when: False
+  when: usr_partition.rc == 0
+  tags: redis
+
+- name: Create plugin directory
+  file:
+    name: /usr/local/share/munin/
+    state: directory
+    mode: "0755"
+  tags: redis
+
+- name: Create plugin directory
+  file:
+    name: /usr/local/share/munin/plugins/
+    state: directory
+    mode: "0755"
+  tags: redis
+
+- name: Copy redis munin plugin
+  copy:
+    src: munin_redis
+    dest: /usr/local/share/munin/plugins/redis_
+    mode: "0755"
+  notify: restart munin-node
+  tags: redis
+
+- name: Enable redis munin plugin
+  file:
+    src: /usr/local/share/munin/plugins/redis_
+    dest: "/etc/munin/plugins/redis_{{item}}"
+    state: link
+  with_items:
+    - connected_clients
+    - key_ratio
+    - keys_per_sec 
+    - per_sec
+    - used_keys
+    - used_memory
+  notify: restart munin-node
+  tags: redis
