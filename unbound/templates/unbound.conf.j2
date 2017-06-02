@@ -15,7 +15,11 @@ server:
 
 	# root-hints: "/var/unbound/etc/named.cache"
 	# Uncomment to enable DNSSEC validation.
+{% if ansible_os_family = "OpenBSD" %}
 	auto-trust-anchor-file: "/var/unbound/db/root.key"
+{% else %}
+	#auto-trust-anchor-file: "/etc/unbound/root.key"
+{% endif %}
 	# Serve zones authoritatively from Unbound to resolver clients.
 	# Not for external service.
 
