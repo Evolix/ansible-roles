@@ -1,0 +1,35 @@
+---
+
+- name: is Munin present ?
+  stat:
+    path: /etc/munin/plugin-conf.d/munin-node
+  check_mode: no
+  register: munin_node_plugins_config
+  tags:
+    - memcached
+    - munin
+
+- block:
+  - name: Install munin-plugins-extra and libcache-memcached-perl for Munin
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+    - 'munin-plugins-extra'
+    - 'libcache-memcached-perl'
+
+  - name: Enable core Munin plugins
+    file:
+      src: '/usr/share/munin/plugins/memcached_'
+      dest: /etc/munin/plugins/{{ item }}
+      state: link
+    with_items:
+      - memcached_bytes
+      - memcached_counters
+      - memcached_rates
+    notify: restart munin-node
+
+  when: munin_node_plugins_config.stat.exists
+  tags:
+    - memcached
+    - munin

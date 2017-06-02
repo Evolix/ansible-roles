@@ -3,3 +3,8 @@
   service:
     name: memcached
     state: restarted
+
+- name: restart munin-node
+  service:
+    name: munin-node
+    state: restarted

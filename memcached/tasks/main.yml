@@ -21,3 +21,5 @@
     state: started
   tags:
   - memcached
+
+- include: munin.yml
