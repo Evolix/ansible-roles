@@ -1,0 +1,8 @@
+---
+ntpd_servers:
+- 'pool.ntp.org'
+ntpd_acls:
+- '127.0.0.1'
+- '::1'
+- '-4 ignore'
+- '-6 ignore'

@@ -1,0 +1,16 @@
+---
+- name: Install ntp package
+  apt:
+    name: ntp
+    state: present
+  tags:
+  - ntp
+
+- name: Copy ntp config
+  template:
+    src: ntp.conf.j2
+    dest: /etc/ntp.conf
+    mode: "0644"
+  notify: restart ntp
+  tags:
+  - ntp
