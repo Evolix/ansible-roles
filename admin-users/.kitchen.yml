@@ -12,16 +12,14 @@ provisioner:
   hosts: test-kitchen
   roles_path: ../
   ansible_verbose: true
-  require_ansible_source: true
-  install_source_rev: "stable-2.2.1.0"
+  require_ansible_source: false
   require_chef_for_busser: false
   idempotency_test: true
 
 platforms:
-  - name: debian-8
+  - name: debian
     driver_config:
-      image: debian:jessie
-      platform: debian
+      image: evolix/ansible:2.2.1
 
 verifier:
   name: serverspec
