@@ -27,33 +27,6 @@
   - "DPkg::Post-Invoke { \"mount -oremount /tmp && mount -oremount /usr || exit 0\"; };"
   when: evolinux_apt_hooks
 
-- name: Original repositories are disabled
-  replace:
-    dest: /etc/apt/sources.list
-    regexp:  '^(deb(-src)? {{ item }}.+)'
-    replace: '# \1'
-  with_items:
-  # - '.+\.debian\.org'
-  - 'cdrom:'
-  when: evolinux_apt_disable_originals
-
-- name: deb-src repositories are disabled
-  replace:
-    dest: /etc/apt/sources.list
-    regexp:  '^(deb-src.+)'
-    replace: '# \1'
-  when: evolinux_apt_disable_debsrc
-
-- name: Basic sources list is installed
-  lineinfile:
-    dest: /etc/apt/sources.list
-    line: "{{ item }}"
-  with_items:
-  - "deb http://security.debian.org/ {{ ansible_distribution_release }}/updates {{ evolinux_apt_repositories_components | mandatory }}"
-  - "deb http://mirror.evolix.org/debian/ {{ ansible_distribution_release }} {{ evolinux_apt_repositories_components | mandatory }}"
-  - "deb http://mirror.evolix.org/debian/ {{ ansible_distribution_release }}-updates {{ evolinux_apt_repositories_components | mandatory }}"
-  when: evolinux_apt_basic_sources
-
 - name: Remove Aptitude
   apt:
     name: aptitude

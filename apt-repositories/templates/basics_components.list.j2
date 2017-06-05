@@ -1,0 +1,3 @@
+deb http://mirror.evolix.org/debian/ {{ ansible_distribution_release }} {{ apt_repositories_basics_components | mandatory }}
+deb http://mirror.evolix.org/debian/ {{ ansible_distribution_release }}-updates {{ apt_repositories_basics_components | mandatory }}
+deb http://security.debian.org/ {{ ansible_distribution_release }}/updates {{ apt_repositories_basics_components | mandatory }}
