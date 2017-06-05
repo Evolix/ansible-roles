@@ -23,6 +23,7 @@
   copy:
     src: munin/drbd-config
     dest: /etc/munin/plugin-conf.d/drbd
+    mode: "0644"
   when: munin_plugins_dir.stat.exists
   notify: restart munin-node
   tags:

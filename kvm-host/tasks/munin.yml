@@ -15,4 +15,5 @@
   copy:
     src: files/munin-plugins
     dest: "/etc/munin/plugin-conf.d/kvm"
+    mode: "0644"
   notify: restart munin-node
