@@ -72,7 +72,7 @@ fi
 mkdir -p $CSR_DIR -m 0755
 
 if [ $nb -eq 1 ]; then
-	openssl req -new -sha256 -key $SSL_KEY_DIR/${vhost}.key -config <(cat /etc/letsencrypt/openssl.cnf <(printf "CN=$domain")) -out $CSR_DIR/${vhost}.csr
+	openssl req -new -sha256 -key $SSL_KEY_DIR/${vhost}.key -config <(cat /etc/letsencrypt/openssl.cnf <(printf "CN=$domains")) -out $CSR_DIR/${vhost}.csr
 elif [ $nb -gt 1 ]; then
 	san=''
 	for domain in $domains
