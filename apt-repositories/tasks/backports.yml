@@ -1,5 +1,5 @@
 ---
-- name: No backports config in default source.list
+- name: No backports config in default sources.list
   lineinfile:
     dest: /etc/apt/sources.list
     regexp: "backports"

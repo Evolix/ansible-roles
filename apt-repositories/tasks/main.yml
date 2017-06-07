@@ -7,22 +7,22 @@
   - ansible_distribution_release != "jessie"
   - ansible_distribution_release != "stretch"
   tags:
-  - apt-repository
+  - apt-repositories
 
-- name: Add components to basic repositories
-  include: basics_components.yml
-  when: apt_repositories_change_basics_components
+- name: Install basics repositories
+  include: basics.yml
+  when: apt_repositories_install_basics
   tags:
-  - apt-repository
+  - apt-repositories
 
 - name: Install APT Backports repository
   include: backports.yml
   when: apt_repositories_install_backports
   tags:
-  - apt-repository
+  - apt-repositories
 
 - name: Install Evolix Public APT repository
   include: evolix_public.yml
   when: apt_repositories_install_evolix_public
   tags:
-  - apt-repository
+  - apt-repositories

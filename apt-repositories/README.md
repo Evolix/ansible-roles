@@ -11,10 +11,10 @@ Tasks are extracted in several files, included in `tasks/main.yml` :
 
 ## Available variables
 
+* `apt_repositories_install_basics` : change basic sources components (default: `True`) ;
+* `apt_repositories_basics_components` : basic sources components (default: `main`) ;
 * `apt_repositories_install_backports` : install backports sources (default: `False`) ;
 * `apt_repositories_backports_components` : backports sources (default: `main`) ;
-* `apt_repositories_change_basics_components` : change basic sources components (default: `False`) ;
-* `apt_repositories_backports_components` : basic sources components (default: `main`) ;
 * `apt_repositories_install_evolix_public` : install Evolix public repositories (default: `True`).
 
 ## Examples
@@ -23,7 +23,7 @@ To add "non-free" and "contrib" components to basic sources lists :
 
 ```
 { role: apt-repositories,
-    apt_repositories_change_basics_components: True,
+    apt_repositories_install_basics: True,
     apt_repositories_basics_components: "main non-free contrib"
 }
 ```
@@ -49,7 +49,7 @@ To install backports sources lists and have "non-free" and "contrib" for each re
 
 ```
 { role: apt-repositories,
-    apt_repositories_change_basics_components: True,
+    apt_repositories_install_basics: True,
     apt_repositories_basics_components: "main non-free contrib",
     apt_repositories_install_backports: True,
     apt_repositories_backports_components: "main non-free contrib"
