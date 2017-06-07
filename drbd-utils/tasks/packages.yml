@@ -1,6 +1,9 @@
 - name: Install dependency
   apt:
-    name: drbd-utils
+    name: "{{ item }}"
+  with_items:
+  - drbd-utils
+  - lvm2
   tags:
   - drbd
 
