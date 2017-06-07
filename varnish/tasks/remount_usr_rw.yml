@@ -1,0 +1,13 @@
+---
+- name: Get mount options for partitions
+  shell: "mount | grep 'on /usr type'"
+  args:
+    warn: no
+  register: mount
+  changed_when: False
+  failed_when: False
+  when: not ansible_check_mode
+
+- name: Remount /usr if it is a partition and it is not mounted in rw
+  command: "mount -o remount,rw /usr"
+  when: mount.rc == 0 and not mount.stdout_lines.0 | search("rw")

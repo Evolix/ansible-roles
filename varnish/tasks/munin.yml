@@ -4,6 +4,8 @@
     name: libxml-parser-perl
   tags: varnish
 
+- include: remount_usr_rw.yml
+
 - name: Create plugin directory
   file:
     name: /usr/local/share/munin/
