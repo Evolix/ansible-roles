@@ -37,6 +37,7 @@ evolinux_apt_include: True
 
 evolinux_apt_conf: True
 evolinux_apt_hooks: True
+evolinux_apt_replace_default_sources: True
 evolinux_apt_public_sources: True
 evolinux_apt_upgrade: True
 evolinux_apt_remove_aptitude: True

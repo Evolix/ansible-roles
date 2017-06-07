@@ -2,6 +2,9 @@
 
 - include_role:
     name: apt-repositories
+  vars:
+    apt_repositories_install_basics: "{{ evolinux_apt_replace_default_sources }}"
+    apt_repositories_install_evolix_public: "{{ evolinux_apt_public_sources }}"
 
 - name: Setting apt config
   lineinfile:
