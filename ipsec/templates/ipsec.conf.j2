@@ -5,6 +5,6 @@ remote_ip_{{ ipsec_name }}="{{ ipsec_remote_ip }}"
 remote_networks_{{ ipsec_name }}="{{ ipsec_remote_network }}"
 
 ike esp from $local_network to $remote_networks_{{ ipsec_name }} peer $remote_ip_{{ ipsec_name }} \
-main auth hmac-sha2-512 enc 3des group modp4096 \
-quick auth hmac-sha2-512 enc 3des group modp4096 \
+main auth hmac-sha2-512 enc aes group modp4096 \
+quick auth hmac-sha2-512 enc aes group modp4096 \
 psk "{{ ipsec_psk }}"
