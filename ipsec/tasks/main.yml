@@ -1,0 +1,42 @@
+---
+- name: Create /etc/ipsec dir
+  file:
+    path: /etc/ipsec
+    state: directory
+    mode: "0750"
+    owner: root
+    group: wheel
+  tags:
+  - ipsec
+
+- name: Enable and start isakmpd service
+  service:
+    name: isakmpd
+    arguments: '-K'
+    state: started
+    enabled: yes
+  tags:
+  - ipsec
+
+- name: "Copy /etc/ipsec/{{ ipsec_name }}.conf"
+  template:
+    src: ipsec.conf.j2
+    dest: "/etc/ipsec/{{ ipsec_name }}.conf"
+    mode: "0640"
+    owner: root
+    group: wheel
+  register: ipsec_conf
+  tags:
+  - ipsec
+
+- name: "Check {{ ipsec_name }} config"
+  command: "ipsecctl -nf /etc/ipsec/{{ ipsec_name }}.conf"
+  changed_when: false
+  tags:
+  - ipsec
+
+#- name: "Reload ipsec {{ ipsec_name }}"
+#  command: "ipsecctl -f /etc/ipsec/{{ ipsec_name }}.conf"
+#  when: ipsec_conf.changed
+#  tags:
+#  - ipsec
