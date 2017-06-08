@@ -35,8 +35,8 @@
   tags:
   - ipsec
 
-#- name: "Reload ipsec {{ ipsec_name }}"
-#  command: "ipsecctl -f /etc/ipsec/{{ ipsec_name }}.conf"
-#  when: ipsec_conf.changed
-#  tags:
-#  - ipsec
+- name: "Reload ipsec {{ ipsec_name }}"
+  command: "ipsecctl -f /etc/ipsec/{{ ipsec_name }}.conf"
+  when: ipsec_conf.changed
+  tags:
+  - ipsec
