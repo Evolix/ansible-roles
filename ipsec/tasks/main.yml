@@ -18,6 +18,29 @@
   tags:
   - ipsec
 
+- name: Deploy nrpe scripts
+  copy:
+    src: "{{ item }}"
+    dest: /usr/local/libexec/nagios/
+    mode: "0755" 
+  with_items:
+  - 'check_ipsecctl.sh'
+  - 'check_ipsecctl_multi.sh'
+  tags:
+  - ipsec
+
+- name: Add sudo right to _nrpe for check ipsecctl
+  lineinfile:
+    dest: /etc/sudoers
+    line: "{{ item }}"
+    state: present
+    validate: "visudo -cf %s" 
+  with_items:
+  - "_nrpe  ALL=(root) NOPASSWD: /usr/local/libexec/nagios/check_ipsecctl_multi.sh"
+  - "_nrpe  ALL=(root) NOPASSWD: /usr/local/libexec/nagios/check_ipsecctl.sh"
+  tags:
+  - ipsec
+
 - name: "Copy /etc/ipsec/{{ ipsec_name }}.conf"
   template:
     src: ipsec.conf.j2
