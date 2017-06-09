@@ -4,11 +4,17 @@
   set_fact:
     mysql_packages: "{{ mysql_packages_oracle }}"
   when: mysql_variant == "oracle"
+  tags:
+  - mysql
+  - packages
 
 - name: Choose packages (MariaDB)
   set_fact:
     mysql_packages: "{{ mysql_packages_mariadb }}"
   when: mysql_variant == "mariadb"
+  tags:
+  - mysql
+  - packages
 
 - name: Install MySQL packages
   apt:
@@ -17,15 +23,21 @@
     state: present
   with_items: "{{ mysql_packages }}"
   tags:
-    - mysql
-    - packages
+  - mysql
+  - packages
 
 - name: MySQL is started
   service:
     name: mysql
     state: started
+  tags:
+  - mysql
+  - services
 
 - name: apg package is installed
   apt:
     name: apg
     state: present
+  tags:
+  - mysql
+  - packages
