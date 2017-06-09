@@ -27,8 +27,7 @@
   failed_when: False
   changed_when: False
   register: envvar_grep_path
-  #check_mode: no (for migration to Ansible 2.2)
-  always_run: yes
+  check_mode: no
 
 - name: Add a PATH envvar for Apache
   blockinfile:
