@@ -28,3 +28,26 @@
     mode: "0644"
     owner: root
     group: root
+
+- name: Get mount options for /usr partition
+  shell: "mount | grep 'on /usr type'"
+  args:
+    warn: no
+  register: mount
+  changed_when: False
+  failed_when: False
+  when: not ansible_check_mode
+
+- block:
+  - name: Remount /usr as writable
+    command: "mount -o remount,rw /usr"
+
+  - name: Move kibana optimize directory
+    shell: "mv /usr/share/kibana/optimize /var/lib/kibana/optimize && ln -s /var/lib/kibana/optimize /usr/share/kibana/optimize"
+    args:
+      creates: /var/lib/kibana/optimize
+    notify: restart kibana
+
+  - name: Remount /usr as read-only
+    command: "mount -o remount /usr"
+  when: mount.rc == 0 and not mount.stdout_lines.0 | search("rw")
