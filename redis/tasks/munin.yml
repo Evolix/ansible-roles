@@ -54,7 +54,7 @@
   with_items:
     - connected_clients
     - key_ratio
-    - keys_per_sec 
+    - keys_per_sec
     - per_sec
     - used_keys
     - used_memory
