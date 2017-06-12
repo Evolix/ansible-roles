@@ -11,3 +11,5 @@
 - name: Remount /usr if it is a partition and it is not mounted in rw
   command: "mount -o remount,rw /usr"
   when: mount.rc == 0 and not mount.stdout_lines.0 | search("rw")
+  args:
+    warn: no

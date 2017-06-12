@@ -41,6 +41,8 @@
 - block:
   - name: Remount /usr as writable
     command: "mount -o remount,rw /usr"
+    args:
+      warn: no
 
   - name: Move kibana optimize directory
     shell: "mv /usr/share/kibana/optimize /var/lib/kibana/optimize && ln -s /var/lib/kibana/optimize /usr/share/kibana/optimize"
@@ -50,4 +52,6 @@
 
   - name: Remount /usr as read-only
     command: "mount -o remount /usr"
+    args:
+      warn: no
   when: mount.rc == 0 and not mount.stdout_lines.0 | search("rw")
