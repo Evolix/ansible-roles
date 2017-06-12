@@ -8,5 +8,6 @@
     src: http.conf
     dest: /etc/supervisor/conf.d/
     mode: "0644"
+    force: no
   notify: Restart supervisord
   when: supervisord_enable_http
