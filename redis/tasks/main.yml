@@ -30,4 +30,4 @@
   register: _munin_installed
 
 - include: munin.yml
-  when: _munin_installed.stat.exists && _munin_installed.stat.isdir
+  when: _munin_installed.stat.exists and _munin_installed.stat.isdir
