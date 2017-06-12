@@ -1,6 +1,17 @@
-#!/bin/bash
+#!/bin/sh
 
-ls /etc/letsencrypt/*.crt 2>/dev/null |sed 's/.crt//'|while read vhost;
-do 
-	evoacme $(basename $vhost)>/dev/null
+[ -f /etc/default/evoacme ] && . /etc/default/evoacme
+[ -z "${CRT_DIR}" ] && CRT_DIR='/etc/letsencrypt'
+[ -z "${SELF_SIGNED_DIR}" ] && SELF_SIGNED_DIR='/etc/ssl/self-signed'
+
+find ${CRT_DIR} -maxdepth 1 -mindepth 1 -type d ! -path "*accounts" -exec basename {} \; | while read vhost; do
+	evoacme $vhost >/dev/null
+done
+
+# Compatibility with older version of evoacme
+find ${CRT_DIR} -maxdepth 1 -mindepth 1 -type f -name "*.crt" -exec basename {} .crt \; | while read vhost; do
+	[ -f /etc/apache2/ssl/${vhost}.conf ] && sed -i "s~^SSLCertificateFile.*$~SSLCertificateFile $SELF_SIGNED_DIR/${vhost}.pem~" /etc/apache2/ssl/${vhost}.conf
+        [ -f /etc/nginx/ssl/${vhost}.conf ] && sed -i "s~^ssl_certificate[^_].*$~ssl_certificate $SELF_SIGNED_DIR/${vhost}.pem;~" /etc/nginx/ssl/${vhost}.conf
+	rm ${CRT_DIR}/${vhost}.crt ${CRT_DIR}/${vhost}-chain.pem ${CRT_DIR}/${vhost}-fullchain.pem
+	evoacme $vhost >/dev/null
 done
