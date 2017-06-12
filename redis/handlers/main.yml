@@ -3,3 +3,8 @@
   service:
     name: "{{ redis_daemon }}"
     state: restarted
+
+- name: restart munin-node
+  service:
+    name: munin-node
+    state: restarted
