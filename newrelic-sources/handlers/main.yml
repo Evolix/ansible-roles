@@ -1,0 +1,10 @@
+---
+
+- name: Reload Squid
+  service:
+    name: squid3
+    state: reloaded
+
+- name: apt update
+  apt:
+    update_cache: yes

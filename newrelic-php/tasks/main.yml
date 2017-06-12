@@ -1,0 +1,23 @@
+---
+- include_role:
+    name: newrelic-sources
+
+- name: Pre-seed package configuration with app name
+  debconf:
+    name: newrelic-php5
+    question: "newrelic-php5/application-name"
+    value: "{{ newrelic_app_name }}"
+    vtype: string
+  when: newrelic_app_name != ""
+
+- name: Pre-seed package configuration with license
+  debconf:
+    name: newrelic-php5
+    question: "newrelic-php5/license-key"
+    value: "{{ newrelic_license }}"
+    vtype: "string"
+  when: newrelic_license != ""
+
+- name: Install package for PHP
+  apt:
+    name: newrelic-php5
