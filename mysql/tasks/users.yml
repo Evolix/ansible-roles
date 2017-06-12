@@ -7,14 +7,14 @@
     name: python-mysqldb
     state: present
   tags:
-    - mysql
+  - mysql
 
 - name: create a password for mysqladmin
   shell: perl -e 'print map{("a".."z","A".."Z",0..9)[int(rand(62))]}(1..16)'
   register: mysql_admin_password
   changed_when: False
   tags:
-    - mysql
+  - mysql
 
 - name: there is a mysqladmin user
   mysql_user:
@@ -23,19 +23,8 @@
     priv: "*.*:ALL,GRANT"
     update_password: on_create
     state: present
+    config_file: "/etc/mysql/debian.cnf"
   register: create_mysqladmin_user
-  tags:
-    - mysql
-
-# Ansible 2.2 allows to create with ini_file
-# before: we have to create the file beforehand
-
-- name: touch /root/.my.cnf
-  file:
-    path: /root/.my.cnf
-    state: touch
-  changed_when: False
-  when: create_mysqladmin_user.changed
   tags:
   - mysql
 
@@ -46,19 +35,20 @@
     section: client
     option: '{{ item.option }}'
     value: '{{ item.value }}'
+    create: yes
   with_items:
     - { option: 'user', value: 'mysqladmin' }
     - { option: password, value: '{{ mysql_admin_password.stdout }}' }
   when: create_mysqladmin_user.changed
   tags:
-    - mysql
+  - mysql
 
 - name: remove root user
   mysql_user:
     name: root
     #host_all: yes
     host: "{{ item }}"
-    config_file: /root/.my.cnf
+    config_file: "/etc/mysql/debian.cnf"
     state: absent
   with_items:
     - "localhost"
@@ -66,4 +56,4 @@
     - "::1"
     - "{{ ansible_hostname }}"
   tags:
-    - mysql
+  - mysql
