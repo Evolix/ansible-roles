@@ -1,6 +1,6 @@
 ---
 
-- name: Test if uid exists for '{{ user.name }}'
+- name: "Test if uid exists for '{{ user.name }}'"
   command: 'getent passwd {{ user.uid }}'
   register: uidisbusy
   failed_when: False
@@ -8,7 +8,7 @@
   check_mode: no
 
 
-- name: Add Unix account with classical uid for '{{ user.name }}'
+- name: "Add Unix account with classical uid for '{{ user.name }}'"
   user:
    state: present
    uid: '{{ user.uid }}'
@@ -19,7 +19,7 @@
    update_password: on_create
   when: uidisbusy|failed
 
-- name: Add Unix account with random uid for '{{ user.name }}'
+- name: "Add Unix account with random uid for '{{ user.name }}'"
   user:
    state: present
    name: '{{ user.name }}'
@@ -29,7 +29,7 @@
    update_password: on_create
   when: uidisbusy|success
 
-- name: Fix perms on homedirectory for '{{ user.name }}'
+- name: "Fix perms on homedirectory for '{{ user.name }}'"
   file:
    name: '/home/{{ user.name }}'
    mode: "0700"
@@ -42,7 +42,7 @@
   check_mode: no
 
 
-- name: Add evomaintenance trap for '{{ user.name }}'
+- name: "Add evomaintenance trap for '{{ user.name }}'"
   lineinfile:
     state: present
     dest: '/home/{{ user.name }}/.profile'
@@ -50,7 +50,7 @@
     line: 'trap "sudo /usr/share/scripts/evomaintenance.sh" 0'
   when: evomaintenance_script.stat.exists
 
-- name: Create .ssh directory for '{{ user.name }}'
+- name: "Create .ssh directory for '{{ user.name }}'"
   file:
     dest: '/home/{{ user.name }}/.ssh/'
     state: directory
@@ -58,7 +58,7 @@
     owner: '{{ user.name }}'
     group: '{{ user.name }}'
 
-- name: Add user's SSH public key for '{{ user.name }}'
+- name: "Add user's SSH public key for '{{ user.name }}'"
   authorized_key:
     user: "{{ user.name }}"
     key: "{{ user.ssh_key }}"
@@ -72,7 +72,7 @@
   check_mode: no
 
 
-- name: Add AllowUsers sshd directive for '{{ user.name }}'
+- name: "Add AllowUsers sshd directive for '{{ user.name }}'"
   lineinfile:
     dest: /etc/ssh/sshd_config
     line: "\nAllowUsers {{ user.name }}"
@@ -81,7 +81,7 @@
   notify: reload sshd
   when: grep_allowusers_ssh.rc != 0
 
-- name: Modify AllowUsers sshd directive for '{{ user.name }}'
+- name: "Modify AllowUsers sshd directive for '{{ user.name }}'"
   replace:
     dest: /etc/ssh/sshd_config
     regexp: '^(AllowUsers ((?!{{ user.name }}).)*)$'
@@ -98,7 +98,7 @@
   check_mode: no
 
 
-- name: Add Match User sshd directive for '{{ user.name }}'
+- name: "Add Match User sshd directive for '{{ user.name }}'"
   lineinfile:
     dest: /etc/ssh/sshd_config
     line: "\nMatch User {{ user.name }}\n    PasswordAuthentication no"
@@ -106,7 +106,7 @@
   notify: reload sshd
   when: grep_matchuser_ssh.rc != 0
 
-- name: Modify Match User's sshd directive for '{{ user.name }}'
+- name: "Modify Match User's sshd directive for '{{ user.name }}'"
   replace:
     dest: /etc/ssh/sshd_config
     regexp: '^(Match User ((?!{{ user.name }}).)*)$'
@@ -129,7 +129,7 @@
     mode: "0440"
     state: file
 
-- name: Add user in sudoers file for '{{ user.name }}'
+- name: "Add user in sudoers file for '{{ user.name }}'"
   replace:
     dest: /etc/sudoers.d/evolinux
     regexp: '^(User_Alias\s+ADMINS\s+=((?!{{ user.name }}).)*)$'
