@@ -9,7 +9,6 @@
 - name: Check if Broadcom NetXtreme II device is present
   shell: "lspci | grep -q 'NetXtreme II'"
   check_mode: no
-
   register: broadcom
   failed_when: False
   changed_when: False
@@ -18,9 +17,10 @@
 # instead of adding a new source
 
 - name: Add non-free repo for Broadcom NetXtreme II
-  apt_repository:
-    repo: 'deb http://mirror.evolix.org/debian/ {{ ansible_distribution_release }} non-free'
-    state: present
+  include_role: apt-repositories
+    tasks_from: basics.yml
+  vars:
+    apt_repositories_basics_components: "main contrib non-free"
   when: broadcom|success
 
 ## RAID
@@ -28,7 +28,6 @@
 - name: Detect if RAID is installed
   shell: lspci | grep "RAID bus controller" | grep -v Intel
   check_mode: no
-
   register: raidmodel
   changed_when: "'FAILED' in raidmodel.stdout"
   failed_when: "'FAILED' in raidmodel.stdout"
