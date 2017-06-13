@@ -17,7 +17,8 @@
 # instead of adding a new source
 
 - name: Add non-free repo for Broadcom NetXtreme II
-  include_role: apt-repositories
+  include_role:
+    name: apt-repositories
     tasks_from: basics.yml
   vars:
     apt_repositories_basics_components: "main contrib non-free"
