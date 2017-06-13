@@ -6,9 +6,9 @@
   debconf:
     name: newrelic-php5
     question: "newrelic-php5/application-name"
-    value: "{{ newrelic_app_name }}"
+    value: "{{ newrelic_appname }}"
     vtype: string
-  when: newrelic_app_name != ""
+  when: newrelic_appname != ""
 
 - name: Pre-seed package configuration with license
   debconf:

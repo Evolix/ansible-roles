@@ -1,0 +1,28 @@
+---
+driver:
+  name: docker
+  privileged: true
+  use_sudo: false
+
+provisioner:
+  name: ansible_playbook
+  hosts: test-kitchen
+  roles_path: ../
+  ansible_verbose: true
+  require_ansible_source: false
+  require_chef_for_busser: false
+  idempotency_test: true
+
+platforms:
+  - name: debian
+    driver_config:
+      image: evolix/ansible:2.2.1
+
+suites:
+  - name: default
+    provisioner:
+      name: ansible_playbook
+      playbook: ./tests/test.yml
+
+transport:
+  max_ssh_sessions: 6
