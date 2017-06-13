@@ -1,5 +1,12 @@
 ---
 
+- name: Fail if distribution is not supported
+  fail:
+    msg: "Error: Evolix public repository is not compatble with 'Debian Stretch' yet."
+  when: ansible_distribution_release == "stretch"
+  tags:
+  - apt-repositories
+
 - name: Evolix public list is installed
   template:
     src: evolix_public.list.j2
@@ -8,6 +15,10 @@
     backup: yes
     mode: "0640"
   notify: apt update
+  tags:
+  - apt-repositories
 
 - name: Intermediate flush of handlers
   meta: flush_handlers
+  tags:
+  - apt-repositories

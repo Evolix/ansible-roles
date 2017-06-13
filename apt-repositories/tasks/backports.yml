@@ -4,6 +4,8 @@
     dest: /etc/apt/sources.list
     regexp: "backports"
     state: absent
+  tags:
+  - apt-repositories
 
 - name: Backports sources list is installed
   template:
@@ -13,6 +15,8 @@
     backup: yes
     mode: "0640"
   notify: apt update
+  tags:
+  - apt-repositories
 
 - name: Backports configuration
   copy:
@@ -22,6 +26,10 @@
     backup: yes
     mode: "0640"
   notify: apt update
+  tags:
+  - apt-repositories
 
 - name: Intermediate flush of handlers
   meta: flush_handlers
+  tags:
+  - apt-repositories
