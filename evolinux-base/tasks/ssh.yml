@@ -30,6 +30,7 @@
     dest: /etc/ssh/sshd_config
     regexp: '^PermitRootLogin (yes|without-password)'
     replace: "PermitRootLogin no"
+  notify: reload sshd
   when: evolinux_ssh_disable_root
 
 - name: disable AcceptEnv in ssh config
@@ -37,6 +38,17 @@
     dest: /etc/ssh/sshd_config
     regexp: '^AcceptEnv'
     replace: "#AcceptEnv"
+  notify: reload sshd
   when: evolinux_ssh_disable_acceptenv
+
+- name: Set log level to verbose (for Debian >= 9)
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '^LogLevel [A-Z]+'
+    replace: "LogLevel VERBOSE"
+  notify: reload sshd
+  when:
+  - ansible_distribution == "Debian"
+  - ansible_distribution_major_version | version_compare('9.0', '>=')
 
 - meta: flush_handlers
