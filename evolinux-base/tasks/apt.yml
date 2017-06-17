@@ -27,7 +27,7 @@
     mode: "0640"
   with_items:
   - "DPkg::Pre-Invoke { \"mount -oremount,exec /tmp && mount -oremount,rw /usr || true\"; };"
-  - "DPkg::Post-Invoke { \"mount -oremount /tmp && mount -oremount /usr || exit 0\"; };"
+  - "DPkg::Post-Invoke { \"mount -oremount /tmp && mount -oremount /usr || true\"; };"
   when: evolinux_apt_hooks
 
 - name: Remove Aptitude
