@@ -14,8 +14,8 @@
     state: present
     mode: "0640"
   with_items:
-  - "APT::Install-Recommends \"0\";"
-  - "APT::Install-Suggests \"0\";"
+  - "APT::Install-Recommends \"false\";"
+  - "APT::Install-Suggests \"false\";"
   when: evolinux_apt_conf
 
 - name: DPKg invoke hooks
