@@ -1,4 +1,4 @@
-location /.well-known/acme-challenge {
+location ~ /.well-known/acme-challenge {
     alias {{ evoacme_acme_dir }}/.well-known/acme-challenge;
     try_files $uri =404;
     allow all;
