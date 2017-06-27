@@ -1,7 +1,0 @@
----
-- name: new aliases
-  command: newaliases
-
-- name: systemd reload
-  systemd:
-    daemon_reload: yes

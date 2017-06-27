@@ -21,4 +21,3 @@
     src: 'tomcat.service'
     dest: "/etc/systemd/user/tomcat.service"
     mode: "0755"
-  notify: systemd reload
