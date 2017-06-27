@@ -5,7 +5,6 @@ Install a Tomcat Instance with an independent Unix user and use of systemd user 
 ## Available variables
 
 **tomcat_instance_name **: Name of Tomcat instance and proprietary user and group (***required***)
-**tomcat_instance_root:** Root dir for Tomcat instance (default: /srv/tomcat)
 **tomcat_instance_port**: HTTP port for Tomcat instance and uid/gid for Tomcat user and group (default: 8080)
 **tomcat_instance_shutdown**: Port for Tomcat shutdown (default: HTTP port + 1)
 **tomcat_instance_ram**: Max memory for Tomcat instance (default: 512)

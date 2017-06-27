@@ -27,6 +27,6 @@
 
 - name: Copy Tomcat instance check
   template:
-    src: templates/check_tomcat_instance.sh.j2
+    src: check_tomcat_instance.sh.j2
     dest: /usr/local/lib/nagios/plugins/check_tomcat_instance.sh
     mode: "0755"
