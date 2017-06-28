@@ -1,0 +1,71 @@
+---
+- name: Check if FTP account exist
+  command: grep "^{{ proftpd_name }}:" /etc/proftpd/vpasswd
+  failed_when: false
+  check_mode: no
+  changed_when: check_ftp_account.rc != 0
+  register: check_ftp_account
+  tags:
+  - proftpd
+
+- name: Generate FTP password
+  command: apg -n1
+  register: ftp_password
+  check_mode: no
+  when: check_ftp_account.rc != 0
+  tags:
+  - proftpd
+
+- name: Print generated password
+  debug:
+    msg: "{{ ftp_password.stdout }}"
+  when: check_ftp_account.rc != 0
+  tags:
+  - proftpd
+
+- name: Hash generated FTP password
+  set_fact:
+    proftpd_password: "{{ ftp_password.stdout | password_hash('sha512') }}"
+  check_mode: no
+  when: check_ftp_account.rc != 0
+  tags:
+  - proftpd
+
+- name: Get current FTP password
+  shell: grep "^{{ proftpd_name }}:" /etc/proftpd/vpasswd | cut -d':' -f2
+  register: hashed_ftp_password
+  check_mode: no
+  when: check_ftp_account.rc == 0
+  changed_when: false
+  tags:
+  - proftpd
+
+- name: Get current FTP password
+  set_fact:
+    proftpd_password: "{{ hashed_ftp_password.stdout }}"
+  check_mode: no
+  when: check_ftp_account.rc == 0
+  changed_when: false
+  tags:
+  - proftpd
+
+- name: Create FTP account
+  lineinfile:
+    dest: /etc/proftpd/vpasswd
+    state: present
+    create: yes
+    mode: "0440"
+    line: "{{ proftpd_name }}:{{ proftpd_password }}:{{ proftpd_uid }}:{{ proftpd_gid }}::{{ proftpd_home }}:/bin/false"
+  notify: restart proftpd
+  tags:
+  - proftpd
+
+- name: Allow FTP account
+  lineinfile:
+    dest: /etc/proftpd/conf.d/z-evolinux.conf
+    state: present
+    line: "	AllowUser {{ proftpd_name }}"
+    insertbefore: "DenyAll"    
+  notify: restart proftpd
+  tags:
+  - proftpd
