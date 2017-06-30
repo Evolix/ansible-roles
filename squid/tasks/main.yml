@@ -20,14 +20,14 @@
     dest: "{{ squid_conf_path }}/whitelist-evolinux.conf"
     force: yes
     backup: yes
-  notify: "restart {{ squid_daemon }}"
+  notify: "reload {{ squid_daemon }}"
 
 - name: custom whitelist is present
   copy:
     src: whitelist-custom.conf
     dest: "{{ squid_conf_path }}/whitelist-custom.conf"
     force: no
-  notify: "restart {{ squid_daemon }}"
+  notify: "reload {{ squid_daemon }}"
 
 - name: add some URL in whitelist
   lineinfile:
