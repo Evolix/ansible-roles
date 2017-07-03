@@ -20,12 +20,21 @@
   register: cmd_a2ensite
   changed_when: "'Enabling site' in cmd_a2ensite.stdout"
   notify: reload apache2
+  when: evoadmin_enable_vhost
+
+- name: Disable evoadmin vhost
+  command: "a2dissite evoadmin.conf"
+  register: cmd_a2dissite
+  changed_when: "'Disabling site' in cmd_a2dissite.stdout"
+  notify: reload apache2
+  when: not evoadmin_enable_vhost
 
 - name: Copy config file for evoadmin
-  copy:
-    src: config.local.php
-    dest: "{{ evoadmin_home_dir}}/www/conf/"
+  template:
+    src: config.local.php.j2
+    dest: "{{ evoadmin_document_root}}/conf/config.local.php"
     mode: "0644"
+    force: no
 
 - name: add www-evoadmin to shadow group
   user:

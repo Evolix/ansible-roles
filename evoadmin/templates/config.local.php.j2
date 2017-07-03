@@ -1,0 +1,8 @@
+<?php
+
+$localconf['admin']['mail'] = '{{ evoadmin_contact_email or general_alert_email | mandatory }}';
+$localconf['debug'] = FALSE;
+// Add local users that should be superadmin
+$localconf['superadmin'] = array();
+$localconf['script_path'] = '{{ evoadmin_scripts_dir }}';
+$localconf['cluster'] = FALSE;

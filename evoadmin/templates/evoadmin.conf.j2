@@ -10,7 +10,7 @@
     #ServerAlias {{ evoadmin_host }}
 
     # Repertoire principal
-    DocumentRoot /home/evoadmin/www/htdocs/
+    DocumentRoot {{ evoadmin_document_root }}/htdocs/
 
     # SSL
     SSLEngine on
@@ -19,7 +19,7 @@
     SSLProtocol all -SSLv2 -SSLv3
 
     # Propriete du repertoire
-    <Directory /home/evoadmin/www/htdocs/>
+    <Directory {{ evoadmin_document_root }}/htdocs/>
         #Options Indexes SymLinksIfOwnerMatch
         Options SymLinksIfOwnerMatch
         AllowOverride AuthConfig Limit FileInfo
@@ -31,8 +31,8 @@
 
     # LOG
     CustomLog /var/log/apache2/access.log combined
-    CustomLog /home/evoadmin/log/access.log combined
-    ErrorLog  /home/evoadmin/log/error.log
+    CustomLog {{ evoadmin_log_dir }}/access.log combined
+    ErrorLog  {{ evoadmin_log_dir }}/error.log
 
     # AWSTATS
     SetEnv AWSTATS_FORCE_CONFIG evoadmin
@@ -54,7 +54,6 @@
     #php_admin_value upload_max_filesize 8M
     #php_admin_flag allow_url_fopen Off
     php_admin_value sendmail_path "/usr/sbin/sendmail -t -i -f www-evoadmin"
-    php_admin_value error_log "/home/evoadmin/log/php.log"
+    php_admin_value error_log "{{ evoadmin_home_dir }}/log/php.log"
     php_admin_value open_basedir "none"
-
 </VirtualHost>

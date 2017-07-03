@@ -2,4 +2,4 @@
 # defaults file for packweb-apache
 general_alert_email: "root@localhost"
 log2mail_alert_email: Null
-packweb_install_evoadmin: True
+packweb_enable_evoadmin_vhost: True
