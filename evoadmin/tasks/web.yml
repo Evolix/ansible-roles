@@ -1,0 +1,33 @@
+---
+
+- name: Set default values in /etc/php5/apache2/conf.d/z-evolinux_defaults.ini
+  ini_file:
+    dest: /etc/php5/apache2/conf.d/z-evolinux_defaults.ini
+    section: PHP
+    option: "disable_functions"
+    value: "shell-exec,system,passthru,putenv,popen"
+  notify: reload apache
+
+
+- name: Install evoadmin VHost
+  template:
+    src: evoadmin.conf.j2
+    dest: /etc/apache2/sites-available/evoadmin.conf
+  notify: reload apache2
+
+- name: Enable evoadmin vhost
+  command: "a2ensite evoadmin.conf"
+  register: cmd_a2ensite
+  changed_when: "'Enabling site' in cmd_a2ensite.stdout"
+  notify: reload apache2
+
+- name: Copy config file for evoadmin
+  copy:
+    src: config.local.php
+    dest: "{{ evoadmin_home_dir}}/www/conf/"
+    mode: "0644"
+
+- name: add www-evoadmin to shadow group
+  user:
+    name: www-evoadmin
+    groups: shadow

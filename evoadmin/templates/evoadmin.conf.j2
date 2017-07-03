@@ -1,0 +1,60 @@
+<VirtualHost *:80>
+    ServerName {{ evoadmin_host }}
+    Redirect permanent / https://{{ evoadmin_host }}/
+</VirtualHost>
+
+<VirtualHost *:443>
+
+    # FQDN principal
+    ServerName {{ evoadmin_host }}
+    #ServerAlias {{ evoadmin_host }}
+
+    # Repertoire principal
+    DocumentRoot /home/evoadmin/www/htdocs/
+
+    # SSL
+    SSLEngine on
+    SSLCertificateFile    /etc/ssl/certs/{{ evoadmin_host }}.crt
+    SSLCertificateKeyFile /etc/ssl/private/{{ evoadmin_host }}.key
+    SSLProtocol all -SSLv2 -SSLv3
+
+    # Propriete du repertoire
+    <Directory /home/evoadmin/www/htdocs/>
+        #Options Indexes SymLinksIfOwnerMatch
+        Options SymLinksIfOwnerMatch
+        AllowOverride AuthConfig Limit FileInfo
+        Require all granted
+    </Directory>
+
+    # user - group (thanks to sesse@debian.org)
+    AssignUserID www-evoadmin evoadmin
+
+    # LOG
+    CustomLog /var/log/apache2/access.log combined
+    CustomLog /home/evoadmin/log/access.log combined
+    ErrorLog  /home/evoadmin/log/error.log
+
+    # AWSTATS
+    SetEnv AWSTATS_FORCE_CONFIG evoadmin
+
+    # REWRITE
+    UseCanonicalName On
+    RewriteEngine On
+    RewriteCond %{HTTP_HOST} !^{{ evoadmin_host }}$
+    RewriteRule ^/(.*) https://%{SERVER_NAME}/$1 [L,R]
+
+    # PHP
+    #php_admin_flag engine off
+    #AddType text/html .html
+    #php_admin_flag display_errors On
+    #php_flag short_open_tag On
+    #php_flag register_globals On
+    #php_admin_value memory_limit 256M
+    #php_admin_value max_execution_time 60
+    #php_admin_value upload_max_filesize 8M
+    #php_admin_flag allow_url_fopen Off
+    php_admin_value sendmail_path "/usr/sbin/sendmail -t -i -f www-evoadmin"
+    php_admin_value error_log "/home/evoadmin/log/php.log"
+    php_admin_value open_basedir "none"
+
+</VirtualHost>

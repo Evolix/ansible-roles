@@ -1,0 +1,13 @@
+---
+
+- include: packages.yml
+
+- include: user.yml
+
+- include: config.yml
+
+- include: ssl.yml
+
+- include: web.yml
+
+- include: ftp.yml

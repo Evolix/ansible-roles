@@ -2,7 +2,7 @@
 
 - name: Include apache role
   include_role:
-    name: "{{ roles }}/apache"
+    name: "apache"
 
 - name: Add elements to user account template
   file:
@@ -13,8 +13,22 @@
   - { path: log, mode: "0750", state: directory }
   - { path: awstats, mode: "0750", state: directory }
   - { path: www, mode: "0750", state: directory }
-  - { path: log/access.log, mode: "0644", state: touch }
-  - { path: log/error.log, mode: "0644", state: touch }
+
+- name: Copy apache empty log files if missing
+  copy:
+    src: "log/{{ item }}"
+    dest: "/etc/skel/log/{{ item }}"
+    mode: "0644"
+    force: no
+  with_items:
+  - access.log
+  - error.log
+
+- name: Install userlogrotate
+  copy:
+    src: userlogrotate
+    dest: /etc/cron.weekly/userlogrotate
+    mode: "0755"
 
 - name: Force DIR_MODE to 0750 in /etc/adduser.conf
   lineinfile:
@@ -107,9 +121,14 @@
   tags:
   - apache
 
-- name: Set default values in /etc/php5/apache2/conf.d/z-evolinux_defaults.ini
+- name: Set variables for php config files
+  set_fact:
+    php5_apache5_defaults_file: /etc/php5/apache2/conf.d/z-evolinux_defaults.ini
+    php5_apache5_custom_file: /etc/php5/apache2/conf.d/zzz-evolinux_custom.ini
+
+- name: Set default values for PHP
   ini_file:
-    dest: /etc/php5/apache2/conf.d/z-evolinux_defaults.ini
+    dest: "{{ php5_apache5_defaults_file }}"
     section: PHP
     option: "{{ item.option }}"
     value: "{{ item.value }}"
@@ -117,16 +136,31 @@
     create: yes
   with_items:
   - { option: "short_open_tag", value: "Off" }
-  - { option: "disable_functions", value: "exec, shell-exec, system, passthru, putenv, popen" }
   - { option: "expose_php", value: "Off" }
   - { option: "display_errors", value: "Off" }
   - { option: "log_errors", value: "On" }
   - { option: "allow_url_fopen", value: "Off" }
   notify: reload apache
 
+- name: Disable PHP exec function without evoadmin
+  ini_file:
+    dest: "{{ php5_apache5_defaults_file }}"
+    section: PHP
+    option: disable_functions
+    value: "exec,shell-exec,system,passthru,putenv,popen"
+  when: not packweb_install_evoadmin
+
+- name: Don't disable PHP exec function with evoadmin
+  ini_file:
+    dest: "{{ php5_apache5_defaults_file }}"
+    section: PHP
+    option: disable_functions
+    value: "shell-exec,system,passthru,putenv,popen"
+  when: packweb_install_evoadmin
+
 - name: Custom php.ini
   copy:
-    dest: /etc/php5/apache2/conf.d/zzz-evolinux_custom.ini
+    dest: "{{ php5_apache5_custom_file }}"
     content: |
       # Put customized values here.
     force: no
@@ -186,7 +220,7 @@
     content: |
       Alias /awstats-icon/ /usr/share/awstats/icon/
       <Directory /usr/share/awstats/icon/>
-        Require All Granted
+        Require all granted
       </Directory>
     force: no
     mode: "0644"
@@ -275,3 +309,12 @@
   - /var/log/debug
   - /var/log/mail.err
   - /var/log/mail.warn
+
+- name: Install Evoadmin
+  include_role:
+    name: evoadmin
+  when: packweb_install_evoadmin
+
+- name: Install web-add script
+  include: web-add.yml
+  when: not packweb_install_evoadmin

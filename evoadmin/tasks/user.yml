@@ -1,0 +1,60 @@
+---
+
+- name: Create evoadmin account
+  user:
+    name: evoadmin
+    comment: "Evoadmin Web Account"
+    home: "{{ evoadmin_home_dir}}"
+    password: "!"
+
+- name: Create www-evoadmin group
+  group:
+    name: www-evoadmin
+    state: present
+
+- name: Install Git
+  apt:
+    name: git
+    state: present
+
+- name: Clone evoadmin repository
+  git:
+    repo: https://forge.evolix.org/evoadmin-web.git
+    dest: "{{ evoadmin_document_root}}"
+    update: no
+  # Warning: Need sudo!
+  become_user: "{{ evoadmin_username }}"
+
+- name: "Create {{ evoadmin_scripts_dir }}"
+  file:
+    dest: "{{ evoadmin_scripts_dir }}"
+    # recurse: yes
+    mode: "0700"
+    state: directory
+
+- name: Install scripts like web-add.sh
+  shell: "cp {{ evoadmin_document_root}}/scripts/* {{ evoadmin_scripts_dir }}/"
+  args:
+    creates: "{{ evoadmin_scripts_dir }}/web-add.sh"
+
+# we use a shell command to have a "changed" thet really reflects the result.
+- name: Fix permissions
+  shell: "test -f {{ item }} && chmod -R --verbose u=rwX,g=rX,o= {{ item }}"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  failed_when: False
+  with_items:
+  - "{{ evoadmin_home_dir}}/www"
+
+- name: Add www-evoadmin to group shadow
+  user:
+    name: www-evoadmin
+    groups: shadow
+    append: yes
+
+- name: Add evoadmin sudoers file
+  template:
+    src: sudoers.j2
+    dest: /etc/sudoers.d/evoadmin
+    mode: "0600"
+    validate: "visudo -cf %s"

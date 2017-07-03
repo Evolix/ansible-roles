@@ -1,0 +1,17 @@
+---
+
+- name: "Create /etc/evolinux"
+  file:
+    dest: "/etc/evolinux"
+    recurse: yes
+    state: directory
+
+- name: Configure web-add config file
+  template:
+    src: web-add.conf.j2
+    dest: /etc/evolinux/web-add.conf
+
+- name: Configure web-add template file for mail
+  template:
+    src: web-mail.tpl.j2
+    dest: "{{ evoadmin_scripts_dir }}/web-mail.tpl"

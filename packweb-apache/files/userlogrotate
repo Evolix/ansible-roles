@@ -1,0 +1,38 @@
+#!/bin/bash
+
+DATE=`/bin/date +"%d-%m-%Y"`
+HOMEPREFIX="/home"
+
+rotate () {
+  mv $1 $1.$DATE
+  gzip $1.$DATE
+  touch $1
+  chown $2 $1
+  chmod g+r $1
+}
+
+user_for() {
+  homedir=`echo $1 | sed "s#\($HOMEPREFIX/\([^/]\+\)\).*#\1#"`
+  stat -L -c '%G' $homedir
+}
+
+for log in access.log access-*.log error.log; do
+  for i in `ls -1 -d $HOMEPREFIX/*/log/$log 2>/dev/null | grep -v \.bak\.`; do
+    USER=`user_for $i`
+    rotate $i root:$USER
+  done
+done
+
+for i in `ls -1 -d $HOMEPREFIX/*/log/php.log 2>/dev/null | grep -v \.bak\.`; do
+  USER=`user_for $i`
+  rotate $i www-$USER:$USER
+done
+
+for log in production.log delayed_job.log development.log test.log; do
+  for i in `ls -1 -d $HOMEPREFIX/*/www/{,current/}log/$log 2>/dev/null | grep -v \.bak\.`; do
+    USER=`user_for $i`
+    rotate $i $USER:$USER
+  done
+done
+
+apache2ctl restart > /dev/null

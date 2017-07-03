@@ -1,0 +1,11 @@
+---
+general_alert_email: "root@localhost"
+evoadmin_contact_email: Null
+evoadmin_bounce_email: "{{ evoadmin_contact_email }}"
+
+evoadmin_home_dir: "/home/{{ evoadmin_username }}"
+evoadmin_document_root: "{{ evoadmin_home_dir }}/www"
+evoadmin_scripts_dir: /usr/share/scripts/evoadmin/
+evoadmin_host: "evoadmin.{{ ansible_fqdn }}"
+evoadmin_username: evoadmin
+evoadmin_ssl_subject: "/CN={{ ansible_fqdn }}"
