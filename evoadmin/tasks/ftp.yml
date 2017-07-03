@@ -1,0 +1,24 @@
+---
+
+- name: Verify if proftpd has evolinux config file
+  stat:
+    path: /etc/proftpd/conf.d/z-evolinux.conf
+  register: proftpd_config
+
+- block:
+    - name: Patch ProFTPd config file
+      patch:
+        remote_src: no
+        src: evolinux.conf.diff
+        dest: /etc/proftpd/conf.d/z-evolinux.conf
+    # Why 440? Because should be edited with ftpasswd.
+    # So, readonly when opened with vim.
+    # Then readable by group.
+    - name: Create /etc/proftpd/vpasswd file in 0440 mode
+      file:
+        state: touch
+        path: /etc/proftpd/vpasswd
+        mode: "0440"
+        owner: root
+        group: root
+  when: proftpd_config.stat.exists

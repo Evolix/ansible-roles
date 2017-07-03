@@ -3,12 +3,34 @@
     name: '{{ item }}'
     state: present
   with_items:
-  - apache2-mpm-itk
+  - apache2
+  - apache2-mpm-prefork
   - apachetop
-  - libapache2-mod-evasive
   - libwww-perl
   tags:
   - apache
+
+- name: manually disable mpm_event
+  command: a2dismod mpm_event
+  register: cmd_disable_event
+  changed_when: "'Module mpm_event already disabled' not in cmd_disable_event.stdout"
+
+- name: manually enable mpm_prefork
+  command: a2enmod mpm_prefork
+  register: cmd_disable_prefork
+  changed_when: "'Module mpm_prefork already enabled' not in cmd_disable_prefork.stdout"
+
+# With Ansible 2.2 the module check the config for conflicts
+# With 2.3 it can be disabled.
+# https://docs.ansible.com/ansible/apache2_module_module.html
+# - name: mpm_event modules is disabled
+#   apache2_module:
+#     name: '{{ item }}'
+#     state: absent
+#   with_items:
+#   - mpm_event
+#   tags:
+#   - apache
 
 - name: basic modules are enabled
   apache2_module:
@@ -18,8 +40,8 @@
   - rewrite
   - expires
   - headers
-  - rewrite
   - cgi
+  - ssl
   tags:
   - apache
 
@@ -45,6 +67,17 @@
   tags:
   - apache
 
+- name: Copy Apache SSL (strong security) config file
+  copy:
+    src: evolinux-ssl.conf
+    dest: "/etc/apache2/conf-available/evolinux-ssl.conf"
+    owner: root
+    group: root
+    mode: "0644"
+    force: no
+  tags:
+  - apache
+
 - name: Ensure Apache config files are enabled
   command: "a2enconf {{ item }}"
   register: command_result
@@ -52,6 +85,7 @@
   with_items:
   - z-evolinux-defaults.conf
   - zzz-evolinux-custom.conf
+  - evolinux-ssl.conf
   tags:
   - apache
 

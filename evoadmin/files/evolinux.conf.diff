@@ -1,0 +1,12 @@
+--- evolinux.conf 2015-04-09 16:39:41.862242460 +0200
++++ evolinux.conf 2015-04-09 16:51:11.902241748 +0200
+@@ -23,7 +23,5 @@
+ # Allow RESUME (REST command)
+ AllowStoreRestart on
+ 
+-<Limit LOGIN>
+-    AllowGroup ftpusers
+-    DenyAll
+-</Limit>
++AuthOrder    mod_auth_file.c
++AuthUserFile /etc/proftpd/vpasswd

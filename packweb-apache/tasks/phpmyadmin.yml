@@ -1,0 +1,26 @@
+---
+
+- name: Install phpmyadmin
+  apt:
+    name: phpmyadmin
+    state: present
+
+- name: Check if phpmyadmin default configuration is present
+  stat:
+    path: /etc/apache2/conf-enabled/phpmyadmin.conf
+  register: pma_default_config
+
+- debug:
+    var: pma_default_config
+    verbosity: 1
+
+- name: Disable phpmyadmin default configuration
+  command: "a2disconf phpmyadmin"
+  register: command_result
+  changed_when: "'Disabling' in command_result.stderr"
+  when: pma_default_config.stat.exists
+
+- name: Change group to www-data for /etc/phpmyadmin/
+  file:
+    dest: /etc/phpmyadmin/
+    group: www-data

@@ -1,0 +1,24 @@
+---
+
+
+- name: ssl-cert package is installed
+  apt:
+    name: ssl-cert
+    state: present
+
+- name: Create private key and csr for default site ({{ ansible_fqdn }})
+  command: openssl req -newkey rsa:2048 -sha256 -nodes -keyout /etc/ssl/private/{{ evoadmin_host }}.key -out /etc/ssl/{{ evoadmin_host }}.csr -batch -subj "{{ evoadmin_ssl_subject }}"
+  args:
+    creates: "/etc/ssl/private/{{ evoadmin_host }}.key"
+
+- name: Adjust rights on private key
+  file:
+    path: /etc/ssl/private/{{ evoadmin_host }}.key
+    owner: root
+    group: ssl-cert
+    mode: "0640"
+
+- name: Create certificate for default site
+  command: openssl x509 -req -days 3650 -sha256 -in /etc/ssl/{{ evoadmin_host }}.csr -signkey /etc/ssl/private/{{ evoadmin_host }}.key -out /etc/ssl/certs/{{ evoadmin_host }}.crt
+  args:
+    creates: "/etc/ssl/certs/{{ evoadmin_host }}.crt"

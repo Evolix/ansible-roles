@@ -1,0 +1,123 @@
+---
+
+- name: Include apache role
+  include_role:
+    name: "apache"
+
+- name: Add elements to user account template
+  file:
+    path: "/etc/skel/{{ item.path }}"
+    state: "{{ item.state }}"
+    mode: "{{ item.mode }}"
+  with_items:
+  - { path: log, mode: "0750", state: directory }
+  - { path: awstats, mode: "0750", state: directory }
+  - { path: www, mode: "0750", state: directory }
+
+- name: Copy apache empty log files if missing
+  copy:
+    src: "log/{{ item }}"
+    dest: "/etc/skel/log/{{ item }}"
+    mode: "0644"
+    force: no
+  with_items:
+  - access.log
+  - error.log
+
+- name: Install userlogrotate
+  copy:
+    src: userlogrotate
+    dest: /etc/cron.weekly/userlogrotate
+    mode: "0755"
+
+- name: Force DIR_MODE to 0750 in /etc/adduser.conf
+  lineinfile:
+    dest: /etc/adduser.conf
+    regexp: '^DIR_MODE='
+    line: 'DIR_MODE=0750'
+
+- include: apache.yml
+
+- include: php.yml
+
+- include: phpmyadmin.yml
+
+- include: awstats.yml
+
+- name: Remove read permission on some folders (/, /etc, ...)
+  shell: "test -d {{ item }} && chmod --verbose o-r {{ item }}"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  failed_when: False
+  with_items:
+  - /
+  - /etc
+  - /usr
+  - /usr/bin
+  - /var
+  - /var/log
+  - /home
+  - /bin
+  - /sbin
+  - /lib
+  - /usr/lib
+  - /usr/include
+  - /usr/bin
+  - /usr/sbin
+  - /usr/share
+  - /usr/share/doc
+  - /etc/default
+
+- name: Set 750 permission on some folders (/var/log/apt, /var/log/munin, ...)
+  shell: "test -d {{ item }} && chmod --verbose 750 {{ item }}"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  failed_when: False
+  with_items:
+  - /var/log/apt
+  - /var/lib/dpkg
+  - /var/log/munin
+  - /var/backups
+  - /var/cache/apt
+  - /etc/init.d
+  - /etc/apt
+  - /etc/apache2
+  - /etc/network
+  - /etc/phpmyadmin
+  - /var/log/installer
+
+- name: Set u-s permission on some binaries (/bin/ping, /usr/bin/mtr, ...)
+  shell: "test -f {{ item }} && chmod --verbose u-s {{ item }}"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  failed_when: False
+  with_items:
+  - /bin/ping
+  - /bin/ping6
+  - /usr/bin/fping
+  - /usr/bin/fping6
+  - /usr/bin/mtr
+
+- name: Set 640 permission on some files (/var/log/evolix.log, ...)
+  shell: "test -f {{ item }} && chmod --verbose 640 {{ item }}"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  failed_when: False
+  with_items:
+  - /var/log/evolix.log
+  - /etc/warnquota.conf
+
+- name: Remove some log files (/var/log/mail.err, ...)
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+  - /var/log/debug
+  - /var/log/mail.err
+  - /var/log/mail.warn
+
+- name: Install Evoadmin
+  include_role:
+    name: evoadmin
+  vars:
+    evoadmin_enable_vhost: "{{ packweb_enable_evoadmin_vhost }}"
