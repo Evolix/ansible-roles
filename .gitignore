@@ -1,4 +1,3 @@
 .kitchen/
-.vagrant/
-tests/.vagrant
 .kateproject.d
+.vagrant/
