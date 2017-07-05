@@ -4,6 +4,7 @@
     name: fail2ban
     state: present
   tags:
+    - fail2ban
     - packages
 
 - name: custom filters are installed
@@ -15,6 +16,8 @@
     - dovecot-evolix.conf
     - sasl-evolix.conf
   notify: restart fail2ban
+  tags:
+    - fail2ban
 
 - name: local jail is installed
   template:
@@ -22,3 +25,5 @@
     dest: /etc/fail2ban/jail.local
     mode: "0644"
   notify: restart fail2ban
+  tags:
+    - fail2ban
