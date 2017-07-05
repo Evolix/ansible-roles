@@ -92,7 +92,7 @@
   - name: Apache vhost is installed
     template:
       src: default_www/apache_default_site.j2
-      dest: /etc/apache2/sites-available/000-default.conf
+      dest: /etc/apache2/sites-available/000-evolinux-default.conf
       mode: "0640"
       # force: yes
     notify: reload apache
@@ -101,8 +101,8 @@
 
   - name: Apache vhost is enabled
     file:
-      src: /etc/apache2/sites-available/000-default.conf
-      dest: /etc/apache2/sites-enabled/000-default.conf
+      src: /etc/apache2/sites-available/000-evolinux-default.conf
+      dest: /etc/apache2/sites-enabled/000-evolinux-default.conf
       state: link
     notify: reload apache
     when: evolinux_default_www_apache_enabled
