@@ -45,7 +45,7 @@ command[check_proxy]=/usr/lib/nagios/plugins/check_http -H www.debian.org
 command[check_redis]=/usr/lib/nagios/plugins/check_tcp -p 6379
 command[check_clamd]=/usr/lib/nagios/plugins/check_clamd -H /var/run/clamav/clamd.ctl -v
 command[check_ssl]=/usr/lib/nagios/plugins/check_http -f follow -I 127.0.0.1 -S -p 443 -H ssl.evolix.net -C 15,5
-command[check_elasticsearch]=/usr/lib/nagios/plugins/check_http -H localhost -u /_cluster/health -p 9200 -r '"status":"red",' --invert-regex
+command[check_elasticsearch]=/usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /_cat/health?h=st -p 9200 -r 'red' --invert-regex
 command[check_memcached]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 11211
 
 # Local checks (not packaged)
