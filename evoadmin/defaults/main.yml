@@ -9,6 +9,6 @@ evoadmin_log_dir: "{{ evoadmin_home_dir }}/log"
 evoadmin_scripts_dir: /usr/share/scripts/evoadmin/
 evoadmin_host: "evoadmin.{{ ansible_fqdn }}"
 evoadmin_username: evoadmin
-evoadmin_ssl_subject: "/CN={{ ansible_fqdn }}"
+evoadmin_ssl_subject: "/CN={{ evoadmin_host }}"
 
 evoadmin_enable_vhost: True
