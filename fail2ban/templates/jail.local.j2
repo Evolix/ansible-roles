@@ -5,7 +5,7 @@
 # "ignoreip" can be an IP address, a CIDR mask or a DNS host
 ignoreip = \
 {% for ip in fail2ban_ignoreip %}
-{{ ip }}, \
+{{ ip }} \
 {% endfor %}
 127.0.0.1/8
 
