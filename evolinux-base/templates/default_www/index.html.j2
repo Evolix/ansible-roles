@@ -57,15 +57,15 @@
     <div id="container">
         <h1 class="hostname">{{ ansible_hostname }}</h1>
 
-        <ul>
+        <ul id="evolinks">
             <li><a href="/munin/{{ ansible_domain }}/{{ ansible_fqdn }}/">Stats système</a></li>
             <!--
-            <li><a href="/phpmyadmin-PHPMASECRET/">Accès PhpMyAdmin</a></li>
+            <li><a href="/phpmyadmin-__PHPMYADMIN_SUFFIX__/">Accès PhpMyAdmin</a></li>
             <li><a href="/mysqlreport.html">Dernier rapport MySQL Tuner</a></li>
             <li><a href="/cgi-bin/awstats.pl">Stats web</a></li>
             <li><a href="/info.php">Infos PHP</a></li>
             <li><a href="/opcache.php">Infos OpCache PHP</a></li>
-            <li><a href="/server-status-RANDOM_SERVERSTATUS/">Server Status</a></li>
+            <li><a href="/server-status-__SERVERSTATUS_SUFFIX__/">Server Status</a></li>
             -->
         </ul>
 

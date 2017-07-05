@@ -18,7 +18,7 @@ server {
 
     access_log  /var/log/nginx/access.log;
     error_log  /var/log/nginx/error.log;
-    error_page 403 {{ evolinux_default_www_redirect_url }};
+    error_page 403 {{ nginx_default_redirect_url }};
 
     root /var/www;
 

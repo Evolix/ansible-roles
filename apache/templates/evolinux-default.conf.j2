@@ -11,6 +11,7 @@
     # Redirect to HTTPS, execpt for server-status, because Munin plugin
     # can't handle HTTPS! :(
     RewriteEngine on
+    RewriteCond %{HTTPS} !=on
     RewriteCond %{REQUEST_URI} !^/server-status.*$ [NC]
     RewriteCond %{REQUEST_URI} !^/munin_opcache.php$ [NC]
     RewriteRule ^/(.*) https://{{ ansible_fqdn }}/$1 [L,R=permanent]
@@ -39,13 +40,13 @@
         Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
     </Directory>
 
-    ErrorDocument 403 {{ evolinux_default_www_redirect_url }}
+    ErrorDocument 403 {{ apache_default_redirect_url }}
     CustomLog /var/log/apache2/access.log vhost_combined
     ErrorLog /var/log/apache2/error.log
     LogLevel warn
 
     Alias /munin /var/cache/munin/www
-    Alias /phpmyadmin-SED_RANDOM /usr/share/phpmyadmin/
+    Alias /phpmyadmin-{{ apache_phpmyadmin_suffix }} /usr/share/phpmyadmin/
     IncludeOptional /etc/apache2/conf-available/phpmyadmin*
 
     <Files ~ "\.(inc|bak)$">

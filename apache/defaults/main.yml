@@ -4,3 +4,9 @@ apache_private_ipaddr_whitelist_absent: []
 
 apache_private_htpasswd_present: []
 apache_private_htpasswd_absent: []
+
+apache_default_redirect_url: "http://evolix.fr"
+apache_evolinux_default_enabled: True
+
+apache_phpmyadmin_suffix: "{{ lookup('env', 'RANDOM') }}"
+apache_serverstatus_suffix: "{{ lookup('env', 'RANDOM') }}"

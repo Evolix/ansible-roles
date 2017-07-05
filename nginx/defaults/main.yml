@@ -4,3 +4,9 @@ nginx_private_ipaddr_whitelist_absent: []
 
 nginx_private_htpasswd_present: []
 nginx_private_htpasswd_absent: []
+
+nginx_default_redirect_url: "http://evolix.fr"
+nginx_evolinux_default_enabled: True
+
+# nginx_phpmyadmin_suffix: "{{ lookup('env', 'RANDOM') }}"
+# nginx_serverstatus_suffix: "{{ lookup('env', 'RANDOM') }}"

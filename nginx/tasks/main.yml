@@ -109,6 +109,38 @@
   tags:
   - nginx
 
+- name: nginx vhost is installed
+  template:
+    src: evolinux-default.conf.j2
+    dest: /etc/nginx/sites-available/evolinux-default.conf
+    mode: "0640"
+  notify: reload nginx
+  tags:
+  - nginx
+
+- name: default vhost is enabled
+  file:
+    src: /etc/nginx/sites-available/evolinux-default.conf
+    dest: /etc/nginx/sites-enabled/default.conf
+    state: link
+    force: yes
+  notify: reload nginx
+  when: nginx_evolinux_default_enabled
+  tags:
+  - nginx
+
+# - name: replace phpmyadmin suffix in default site index
+#   replace:
+#     dest: /var/www/index.html
+#     regexp: '__PHPMYADMIN_SUFFIX__'
+#     replace: "{{ nginx_phpmyadmin_suffix }}"
+#
+# - name: replace server-status suffix in default site index
+#   replace:
+#     dest: /var/www/index.html
+#     regexp: '__SERVERSTATUS_SUFFIX__'
+#     replace: "{{ nginx_serverstatus_suffix }}"
+
 - name: Verify that the service is enabled and started
   service:
     name: nginx

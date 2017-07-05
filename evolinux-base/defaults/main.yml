@@ -135,14 +135,6 @@ evolinux_default_www_files: True
 evolinux_default_www_ssl_cert: True
 evolinux_default_www_ssl_subject: "/CN={{ ansible_fqdn }}"
 
-evolinux_default_www_nginx_vhost: True
-evolinux_default_www_nginx_enabled: False
-
-evolinux_default_www_apache_vhost: True
-evolinux_default_www_apache_enabled: False
-
-evolinux_default_www_redirect_url: "http://evolix.fr"
-
 # hardware
 
 evolinux_hardware_include: True

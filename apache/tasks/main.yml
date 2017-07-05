@@ -152,6 +152,39 @@
   tags:
   - apache
 
+- name: default vhost is installed
+  template:
+    src: evolinux-default.conf.j2
+    dest: /etc/apache2/sites-available/000-evolinux-default.conf
+    mode: "0640"
+    # force: yes
+  notify: reload apache
+  tags:
+  - apache
+
+- name: default vhost is enabled
+  file:
+    src: /etc/apache2/sites-available/000-evolinux-default.conf
+    dest: /etc/apache2/sites-enabled/000-default.conf
+    state: link
+    force: yes
+  notify: reload apache
+  when: apache_evolinux_default_enabled
+  tags:
+  - apache
+
+- name: replace phpmyadmin suffix in default site index
+  replace:
+    dest: /var/www/index.html
+    regexp: '__PHPMYADMIN_SUFFIX__'
+    replace: "{{ apache_phpmyadmin_suffix }}"
+
+- name: replace server-status suffix in default site index
+  replace:
+    dest: /var/www/index.html
+    regexp: '__SERVERSTATUS_SUFFIX__'
+    replace: "{{ apache_serverstatus_suffix }}"
+
 - name: is umask already present?
   command: "grep -E '^umask ' /etc/apache2/envvars"
   failed_when: False
