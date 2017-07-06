@@ -103,7 +103,7 @@
 - name: add IP addresses to private IP whitelist
   lineinfile:
     dest: /etc/apache2/private_ipaddr_whitelist.conf
-    line: "Allow from {{ item }}"
+    line: "Require ip {{ item }}"
     state: present
   with_items: "{{ apache_private_ipaddr_whitelist_present }}"
   notify: reload apache
@@ -113,12 +113,19 @@
 - name: remove IP addresses from private IP whitelist
   lineinfile:
     dest: /etc/apache2/private_ipaddr_whitelist.conf
-    line: "Allow from {{ item }}"
+    line: "Require ip {{ item }}"
     state: absent
   with_items: "{{ apache_private_ipaddr_whitelist_absent }}"
   notify: reload apache
   tags:
   - apache
+
+- name: include private IP whitelist for server-status
+  lineinfile:
+    dest: /etc/apache2/mods-available/status.conf
+    line: "        include /etc/apache2/private_ipaddr_whitelist.conf"
+    insertafter: 'SetHandler server-status'
+    state: present
 
 - name: Copy private_htpasswd
   copy:

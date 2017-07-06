@@ -1,36 +1,40 @@
-<VirtualHost *:80 *:443>
+<VirtualHost *:80>
     ServerName {{ ansible_fqdn }}
     ServerAdmin webmaster@localhost
+
+    RewriteEngine on
+    RewriteCond %{REQUEST_URI} !^/server-status.*$ [NC]
+    # RewriteCond %{REQUEST_URI} !^/munin_opcache.php$ [NC]
+    RewriteRule ^/(.*) https://{{ ansible_fqdn }}/$1 [L,R=permanent]
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName {{ ansible_fqdn }}
+    ServerAdmin webmaster@localhost
+
     DocumentRoot /var/www/
 
     SSLEngine on
     SSLCertificateFile    /etc/ssl/certs/{{ ansible_fqdn }}.crt
     SSLCertificateKeyFile /etc/ssl/private/{{ ansible_fqdn }}.key
-    SSLProtocol all -SSLv2 -SSLv3
+    # SSLProtocol all -SSLv2 -SSLv3
 
-    # Redirect to HTTPS, execpt for server-status, because Munin plugin
-    # can't handle HTTPS! :(
-    RewriteEngine on
-    RewriteCond %{HTTPS} !=on
-    RewriteCond %{REQUEST_URI} !^/server-status.*$ [NC]
-    RewriteCond %{REQUEST_URI} !^/munin_opcache.php$ [NC]
-    RewriteRule ^/(.*) https://{{ ansible_fqdn }}/$1 [L,R=permanent]
-
-    <Directory />
-        Options FollowSymLinks
+    <Directory /var/www/>
+        Options +Indexes +FollowSymLinks +MultiViews
         AllowOverride None
-        Deny from all
+
         Include /etc/apache2/private_ipaddr_whitelist.conf
     </Directory>
 
-    <Directory /var/www/>
-        Options Indexes FollowSymLinks MultiViews
+    Alias /munin /var/cache/munin/www
+    <Directory /var/cache/munin/www/>
+        Options +Indexes +FollowSymLinks +MultiViews
         AllowOverride None
+
+        Include /etc/apache2/private_ipaddr_whitelist.conf
     </Directory>
 
     <Location /munin_opcache.php>
-        Deny from all
-        Allow from 127.0.0.1
         Include /etc/apache2/private_ipaddr_whitelist.conf
     </Location>
 
@@ -41,11 +45,11 @@
     </Directory>
 
     ErrorDocument 403 {{ apache_default_redirect_url }}
+
     CustomLog /var/log/apache2/access.log vhost_combined
     ErrorLog /var/log/apache2/error.log
     LogLevel warn
 
-    Alias /munin /var/cache/munin/www
     Alias /phpmyadmin-{{ apache_phpmyadmin_suffix }} /usr/share/phpmyadmin/
     IncludeOptional /etc/apache2/conf-available/phpmyadmin*
 
