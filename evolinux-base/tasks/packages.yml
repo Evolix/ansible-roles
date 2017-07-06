@@ -14,6 +14,7 @@
   - apg
   - conntrack
   - logrotate
+  - bash-completion
   when: evolinux_packages_system
 
 - name: Install/Update diagnostic tools
