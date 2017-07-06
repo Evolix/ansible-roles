@@ -5,4 +5,6 @@ nagios_nrpe_ldap_passwd: LDAP_PASSWD
 nagios_nrpe_pgsql_passwd: PGSQL_PASSWD
 nagios_nrpe_amavis_from: "foobar@{{ ansible_domain }}"
 
+nagios_nrpe_check_proxy_host: "www.debian.org"
+
 nagios_plugins_directory: "/usr/local/lib/nagios/plugins"
