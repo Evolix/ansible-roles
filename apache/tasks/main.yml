@@ -103,7 +103,7 @@
 - name: add IP addresses to private IP whitelist
   lineinfile:
     dest: /etc/apache2/private_ipaddr_whitelist.conf
-    line: "Allow from {{ item }}"
+    line: "Require ip {{ item }}"
     state: present
   with_items: "{{ apache_private_ipaddr_whitelist_present }}"
   notify: reload apache
@@ -113,12 +113,19 @@
 - name: remove IP addresses from private IP whitelist
   lineinfile:
     dest: /etc/apache2/private_ipaddr_whitelist.conf
-    line: "Allow from {{ item }}"
+    line: "Require ip {{ item }}"
     state: absent
   with_items: "{{ apache_private_ipaddr_whitelist_absent }}"
   notify: reload apache
   tags:
   - apache
+
+- name: include private IP whitelist for server-status
+  lineinfile:
+    dest: /etc/apache2/mods-available/status.conf
+    line: "        include /etc/apache2/private_ipaddr_whitelist.conf"
+    insertafter: 'SetHandler server-status'
+    state: present
 
 - name: Copy private_htpasswd
   copy:
@@ -151,6 +158,61 @@
   notify: reload apache
   tags:
   - apache
+
+- name: default vhost is installed
+  template:
+    src: evolinux-default.conf.j2
+    dest: /etc/apache2/sites-available/000-evolinux-default.conf
+    mode: "0640"
+    # force: yes
+  notify: reload apache
+  tags:
+  - apache
+
+- name: default vhost is enabled
+  file:
+    src: /etc/apache2/sites-available/000-evolinux-default.conf
+    dest: /etc/apache2/sites-enabled/000-default.conf
+    state: link
+    force: yes
+  notify: reload apache
+  when: apache_evolinux_default_enabled
+  tags:
+  - apache
+
+- block:
+  - name: generate random string for phpmyadmin suffix
+    command: "apg -a 1 -M N -n 1"
+    changed_when: False
+    register: _random_phpmyadmin_suffix
+
+  - name: overwrite apache_phpmyadmin_suffix
+    set_fact:
+      apache_phpmyadmin_suffix: "{{ _random_phpmyadmin_suffix.stdout }}"
+  when: apache_phpmyadmin_suffix == ""
+
+- name: replace phpmyadmin suffix in default site index
+  replace:
+    dest: /var/www/index.html
+    regexp: '__PHPMYADMIN_SUFFIX__'
+    replace: "{{ apache_phpmyadmin_suffix }}"
+
+# - block:
+#   - name: generate random string for serverstatus suffix
+#     command: "apg -a 1 -M N -n 1"
+#     changed_when: False
+#     register: _random_serverstatus_suffix
+#
+#   - name: overwrite apache_serverstatus_suffix
+#     set_fact:
+#       apache_serverstatus_suffix: "{{ _random_serverstatus_suffix.stdout }}"
+#   when: apache_serverstatus_suffix == ""
+#
+# - name: replace server-status suffix in default site index
+#   replace:
+#     dest: /var/www/index.html
+#     regexp: '__SERVERSTATUS_SUFFIX__'
+#     replace: "{{ apache_serverstatus_suffix }}"
 
 - name: is umask already present?
   command: "grep -E '^umask ' /etc/apache2/envvars"
