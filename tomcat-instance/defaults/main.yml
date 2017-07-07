@@ -1,2 +1,4 @@
 ---
 tomcat_instance_root: '/srv/tomcat'
+tomcat_instance_shutdown: "{{ tomcat_instance_port | int + 1 }}"
+tomcat_instance_mps: 256
