@@ -26,8 +26,10 @@
     state: present
     mode: "0640"
   with_items:
-  - "DPkg::Pre-Invoke { \"mount -oremount,exec /tmp && mount -oremount,rw /usr || true\"; };"
-  - "DPkg::Post-Invoke { \"mount -oremount /tmp && mount -oremount /usr || true\"; };"
+  - "DPkg::Pre-Invoke { \"df /tmp | grep -q /tmp && mount -oremount,exec /tmp || true\"; };"
+  - "DPkg::Pre-Invoke { \"df /usr | grep -q /usr && mount -oremount,rw /usr || true\"; };"
+  - "DPkg::Post-Invoke { \"df /tmp | grep -q /tmp && mount -oremount /tmp || true\"; };"
+  - "DPkg::Post-Invoke { \"df /usr | grep -q /usr && mount -oremount /usr || true\"; };"
   when: evolinux_apt_hooks
 
 - name: Remove Aptitude
