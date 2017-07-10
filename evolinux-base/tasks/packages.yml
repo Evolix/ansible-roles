@@ -104,6 +104,6 @@
   with_items:
   - { option: "confirm", value: "1" }
   - { option: "which",   value: "both" }
-  when: evolinux_packages_listchanges
+  when: evolinux_packages_listchanges and ansible_distribution == "Debian" and ansible_distribution_major_version | version_compare('9', '<')
 
 - meta: flush_handlers
