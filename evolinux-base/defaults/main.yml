@@ -81,6 +81,11 @@ evolinux_system_timezone: "Europe/Paris"
 evolinux_system_vim_default: True
 evolinux_system_profile: True
 evolinux_system_dirmode_adduser: True
+evolinux_system_restrict_securetty: False
+evolinux_system_set_timeout: True
+evolinux_system_cron_verboselog: True
+evolinux_system_cron_umask: True
+evolinux_system_cron_random: True
 evolinux_system_alert5_init: True
 evolinux_system_alert5_enable: True
 evolinux_system_eni_auto: True
