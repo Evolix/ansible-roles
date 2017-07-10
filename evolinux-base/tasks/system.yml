@@ -76,8 +76,9 @@
 
 - name: Setting TMOUT to deconnect inactive users
   lineinfile:
-    dest: /etc/profile
+    dest: /etc/profile.d/evolinux.sh
     line: "export TMOUT=36000"
+    create: yes
     state: present
   when: evolinux_system_dirmode_adduser
 
