@@ -1,7 +1,8 @@
 ---
 - name: Add jenkins GPG key
   apt_key:
-    url: https://jenkins-ci.org/debian/jenkins-ci.org.key
+    # url: https://jenkins-ci.org/debian/jenkins-ci.org.key
+    data: "{{ lookup('file', 'jenkins.key') }}"
 
 - name: Check if Squid is present
   stat:
