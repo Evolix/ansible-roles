@@ -40,10 +40,7 @@
     dest: /etc/vim/vimrc
     regexp: 'let g:skip_defaults_vim ='
     line: 'let g:skip_defaults_vim = 1'
-  when:
-  - evolinux_system_vim_skip_defaults
-  - ansible_distribution == "Debian"
-  - ansible_distribution_major_version | version_compare('9.0', '>=')
+  when: evolinux_system_vim_skip_defaults
 
 - name: Setting vim as default editor
   alternatives:
