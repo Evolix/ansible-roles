@@ -53,17 +53,24 @@
     dest: /etc/cron.daily/certbot
     mode: "0755"
 
-- name: Find squid3 config whitelist
-  shell: find /etc/squid3/whitelist-custom.conf /etc/squid3/whitelist.conf 2> /dev/null
+- name: Find squid config whitelist
+  shell: find /etc/squid/whitelist-custom.conf /etc/squid3/whitelist-custom.conf /etc/squid/whitelist.conf /etc/squid3/whitelist.conf 2> /dev/null
   failed_when: false
   changed_when: false
   check_mode: no
-  register: squid3_whitelist_files
+  register: squid_whitelist_files
+
+- name: set squid_service_name=squid3 for Debian < 9
+  set_fact:
+    squid_service_name: squid3
+  when:
+  - ansible_distribution == "Debian"
+  - ansible_distribution_major_version | version_compare('9', '<')
 
 - name: Let's Encrypt OCSP server is authorized by squid
   lineinfile:
-    dest: "{{ squid3_whitelist_files.stdout_lines | first }}"
+    dest: "{{ squid_whitelist_files.stdout_lines | first }}"
     line: "http://.*.letsencrypt.org/.*"
     state: present
-  notify: reload squid3
-  when: squid3_whitelist_files.stdout != ""
+  notify: "reload {{ squid_service_name | default('squid') }}"
+  when: squid_whitelist_files.stdout != ""

@@ -4,11 +4,27 @@
     # url: https://download.newrelic.com/548C16BF.gpg
     data: "{{ lookup('file', '548C16BF.gpg') }}"
 
+- name: Find squid config whitelist
+  shell: find /etc/squid/whitelist-custom.conf /etc/squid3/whitelist-custom.conf /etc/squid/whitelist.conf /etc/squid3/whitelist.conf 2> /dev/null
+  failed_when: false
+  changed_when: false
+  check_mode: no
+  register: squid_whitelist_files
+
+- name: set squid_service_name=squid3 for Debian < 9
+  set_fact:
+    squid_service_name: squid3
+  when:
+  - ansible_distribution == "Debian"
+  - ansible_distribution_major_version | version_compare('9', '<')
+
 - name: Append packages.dotdeb.org to Squid whitelist
   lineinfile:
-    name: /etc/squid3/whitelist-custom.conf
+    dest: "{{ squid_whitelist_files.stdout_lines | first }}"
     line: "http://apt.newrelic.com/.*"
-  notify: Reload Squid
+    state: present
+  notify: "reload {{ squid_service_name | default('squid') }}"
+  when: squid_whitelist_files.stdout != ""
 
 - meta: flush_handlers
 

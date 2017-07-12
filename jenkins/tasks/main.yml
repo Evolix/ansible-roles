@@ -4,23 +4,32 @@
     # url: https://jenkins-ci.org/debian/jenkins-ci.org.key
     data: "{{ lookup('file', 'jenkins.key') }}"
 
-- name: Check if Squid is present
-  stat:
-    path: /etc/squid3/whitelist-custom.conf
-  register: _squid3_whitelist
+- name: Find squid config whitelist
+  shell: find /etc/squid/whitelist-custom.conf /etc/squid3/whitelist-custom.conf /etc/squid/whitelist.conf /etc/squid3/whitelist.conf 2> /dev/null
+  failed_when: false
+  changed_when: false
   check_mode: no
+  register: squid_whitelist_files
 
-- name: Append jenkins repositories to Squid whitelist
+- name: set squid_service_name=squid3 for Debian < 9
+  set_fact:
+    squid_service_name: squid3
+  when:
+  - ansible_distribution == "Debian"
+  - ansible_distribution_major_version | version_compare('9', '<')
+
+- name: Append packages.dotdeb.org to Squid whitelist
   lineinfile:
-    name: /etc/squid3/whitelist-custom.conf
+    dest: "{{ squid_whitelist_files.stdout_lines | first }}"
     line: "{{ item }}"
+    state: present
   with_items:
     - "http://pkg.jenkins-ci.org/.*"
     - "http://mirrors.jenkins.io/.*"
     - "http://jenkins.mirror.isppower.de/.*"
     - "http://ftp.icm.edu.pl/.*"
-  notify: Reload Squid
-  when: _squid3_whitelist.stat.exists
+  notify: "reload {{ squid_service_name | default('squid') }}"
+  when: squid_whitelist_files.stdout != ""
 
 - meta: flush_handlers
 
