@@ -1,6 +1,23 @@
 ---
 
+- name: Ensure /usr/share/scripts exists
+  file:
+    dest: /usr/share/scripts
+    mode: "0700"
+    state: directory
+  tags:
+    - mysql
+
 # mytop
+
+# mytop is installed with MariaB
+# the package has been removed of Stretch repositories
+- name: Is mytop available ?
+  command: which mytop
+  failed_when: False
+  changed_when: False
+  check_mode: no
+  register: which_mytop
 
 - name: Install mytop
   apt:
@@ -10,6 +27,7 @@
     - packages
     - mytop
     - mysql
+  when: which_mytop.rc != 0
 
 - name: Read debian-sys-maint password
   shell: cat /etc/mysql/debian.cnf | grep -m1 "password = .*" | cut -d" " -f3
@@ -90,14 +108,6 @@
 
 - include: remount_usr_rw.yml
   when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
-
-- name: Ensure /usr/share/scripts exists
-  file:
-    dest: /usr/share/scripts
-    mode: "0700"
-    state: directory
-  tags:
-    - mysql
 
 - name: Install my-add.sh
   copy:

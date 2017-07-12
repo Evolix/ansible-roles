@@ -1,0 +1,53 @@
+---
+
+# dependency for mysql_user and mysql_db
+
+- name: python-mysqldb is installed (Ansible dependency)
+  apt:
+    name: python-mysqldb
+    state: present
+  tags:
+  - mysql
+
+- name: create a password for mysqladmin
+  shell: perl -e 'print map{("a".."z","A".."Z",0..9)[int(rand(62))]}(1..16)'
+  register: mysql_admin_password
+  changed_when: False
+  tags:
+  - mysql
+
+- name: there is a mysqladmin user
+  mysql_user:
+    name: mysqladmin
+    password: '{{ mysql_admin_password.stdout }}'
+    priv: "*.*:ALL,GRANT"
+    update_password: on_create
+    state: present
+    config_file: "/etc/mysql/debian.cnf"
+  register: create_mysqladmin_user
+  tags:
+  - mysql
+
+- name: mysqladmin is the default user
+  ini_file:
+    dest: /root/.my.cnf
+    mode: "0600"
+    section: client
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+    create: yes
+  with_items:
+    - { option: 'user', value: 'mysqladmin' }
+    - { option: password, value: '{{ mysql_admin_password.stdout }}' }
+  when: create_mysqladmin_user.changed
+  tags:
+  - mysql
+
+- name: remove root user
+  mysql_user:
+    name: root
+    host_all: yes
+    config_file: "/root/.my.cnf"
+    state: absent
+  tags:
+  - mysql

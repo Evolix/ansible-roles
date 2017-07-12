@@ -43,17 +43,48 @@
   tags:
   - mysql
 
+
+- name: create a password for debian-sys-maint
+  shell: perl -e 'print map{("a".."z","A".."Z",0..9)[int(rand(62))]}(1..16)'
+  register: mysql_debian_password
+  changed_when: False
+  tags:
+  - mysql
+
+- name: there is a debian-sys-maint user
+  mysql_user:
+    name: debian-sys-maint
+    password: '{{ mysql_debian_password.stdout }}'
+    priv: "*.*:ALL,GRANT"
+    update_password: on_create
+    state: present
+    config_file: "/root/.my.cnf"
+  register: create_debian_user
+  tags:
+  - mysql
+
+- name: store debian-sys-maint user credentials
+  ini_file:
+    dest: /etc/mysql/debian.cnf
+    mode: "0600"
+    section: "{{ item[0] }}"
+    option: '{{ item[1].option }}'
+    value: '{{ item[1].value }}'
+    create: yes
+  with_nested:
+  - [ "client", "mysql_upgrade" ]
+  - [ { option: 'user', value: 'debian-sys-maint' },
+      { option: password, value: '{{ mysql_debian_password.stdout }}' }
+    ]
+  when: create_debian_user.changed
+  tags:
+  - mysql
+
 - name: remove root user
   mysql_user:
     name: root
-    #host_all: yes
-    host: "{{ item }}"
-    config_file: "/etc/mysql/debian.cnf"
+    host_all: yes
+    config_file: "/root/.my.cnf"
     state: absent
-  with_items:
-    - "localhost"
-    - "127.0.0.1"
-    - "::1"
-    - "{{ ansible_hostname }}"
   tags:
   - mysql
