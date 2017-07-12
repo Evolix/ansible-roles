@@ -43,11 +43,18 @@
 
 - include: remount_usr_rw.yml
 
+- name: Ensure automagic vim conf is disabled
+  lineinfile:
+    dest: /etc/vim/vimrc
+    regexp: 'let g:skip_defaults_vim ='
+    line: 'let g:skip_defaults_vim = 1'
+  when: evolinux_system_vim_skip_defaults
+
 - name: Setting vim as default editor
   alternatives:
     name: editor
     path: /usr/bin/vim.basic
-  when: evolinux_system_vim_default
+  when: evolinux_system_vim_default_editor
 
 - name: Add "umask 027" to /etc/profile.d/evolinux.sh
   lineinfile:

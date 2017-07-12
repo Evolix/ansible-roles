@@ -79,7 +79,8 @@ evolinux_system_include: True
 evolinux_system_chmod_tmp: True
 evolinux_system_locales: True
 evolinux_system_timezone: "Europe/Paris"
-evolinux_system_vim_default: True
+evolinux_system_vim_skip_defaults: true
+evolinux_system_vim_default_editor: True
 evolinux_system_profile: True
 evolinux_system_dirmode_adduser: True
 evolinux_system_restrict_securetty: False
