@@ -74,7 +74,7 @@
     state: present
   when: evolinux_system_restrict_securetty
 
-- name: Setting TMOUT to deconnect inactive users
+- name: Setting TMOUT to disconnect inactive users
   lineinfile:
     dest: /etc/profile.d/evolinux.sh
     line: "export TMOUT=36000"
