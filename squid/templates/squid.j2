@@ -17,4 +17,4 @@ tcp_outgoing_address {{ squid_address }}
 
 # Logs
 logformat combined %>a %[ui %[un [%tl] "%rm %ru HTTP/%rv" %>Hs %<st "%{Referer}>h" "%{User-Agent}>h" %Ss:%Sh
-access_log /var/log/squid3/access.log combined
+access_log {{ squid_log_path }}/access.log combined
