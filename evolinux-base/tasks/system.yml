@@ -28,7 +28,7 @@
   timezone:
     name: "{{ evolinux_system_timezone | mandatory }}"
   notify: restart cron
-  when: evolinux_system_timezone != False
+  when: evolinux_system_timezone
 
 # TODO : find a way to force the console-data configuration
 # non-interactively (like tzdata ↑)
@@ -120,7 +120,7 @@
     regexp: "^server .*$"
     replace: "server {{ evolinux_system_ntp_server }}"
     backup: yes
-  when: evolinux_system_ntp_server != False
+  when: evolinux_system_ntp_server
 
 ## alert5
 
