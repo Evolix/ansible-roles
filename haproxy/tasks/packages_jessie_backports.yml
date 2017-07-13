@@ -1,0 +1,20 @@
+---
+
+- name: Prefer HAProxy package from jessie-backports
+  copy:
+    src: haproxy_apt_preferences
+    dest: /etc/apt/preferences.d/999-haproxy
+    force: yes
+    mode: "0640"
+  register: haproxy_apt_preferences
+  tags:
+  - haproxy
+  - packages
+
+- name: update apt
+  apt:
+    update_cache: yes
+  when: haproxy_apt_preferences | changed
+  tags:
+  - haproxy
+  - packages
