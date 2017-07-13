@@ -8,7 +8,9 @@ Everything is in the `tasks/main.yml` file.
 
 ## Available variables
 
-The only variables are derived from gathered facts.
+* `kibana_proxy_nginx` : configure an Nginx proxy (not enabled) for Kibana (default: `False`) ;
+* `kibana_proxy_domain` : domain to use for the proxy ;
+* `kibana_proxy_ssl_cert` : certificate to use for the proxy ;
+* `kibana_proxy_ssl_key` : private key to use for the proxy ;
 
 By default, Kibana will bind to localhost:5601.
-If Nginx is installed, a typical proxy configuration is copied into `/etc/nginx/sites-available`. It can be tweeked and enabled by hand.

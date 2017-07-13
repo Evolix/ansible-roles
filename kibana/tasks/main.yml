@@ -78,3 +78,6 @@
     args:
       warn: no
   when: mount.rc == 0 and not mount.stdout_lines.0 | search("rw")
+
+- include: proxy_nginx.yml
+  when: kibana_proxy_nginx
