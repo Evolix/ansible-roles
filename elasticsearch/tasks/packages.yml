@@ -3,19 +3,48 @@
 - name: install java8
   include_role:
     name: java8
+  tags:
+  - elasticsearch
+  - packages
 
-- name: install Elastic sources list
-  include_role:
-    name: elastic-sources-list
+- name: APT https transport is enabled
+  apt:
+    name: apt-transport-https
+    state: present
+  tags:
+  - elasticsearch
+  - packages
+
+- name: Elastic GPG key is installed
+  apt_key:
+    # url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    data: "{{ lookup('file', 'elasticsearch.key') }}"
+    state: present
+  tags:
+  - elasticsearch
+  - packages
+
+- name: Elastic sources list is available
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/5.x/apt stable main"
+    filename: elastic.list
+    state: present
+    update_cache: yes
+  tags:
+  - elasticsearch
+  - packages
 
 - name: Elasticsearch is installed
   apt:
     name: elasticsearch
     state: present
   tags:
-    - packages
+  - elasticsearch
+  - packages
 
 - name: Elasticsearch service is enabled
   service:
     name: elasticsearch
     enabled: yes
+  tags:
+  - elasticsearch

@@ -1,15 +1,39 @@
 ---
 
-- name: Install Elastic sources list
-  include_role:
-    name: elastic-sources-list
+- name: APT https transport is enabled
+  apt:
+    name: apt-transport-https
+    state: present
+  tags:
+  - filebeat
+  - packages
+
+- name: Elastic GPG key is installed
+  apt_key:
+    # url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    data: "{{ lookup('file', 'elasticsearch.key') }}"
+    state: present
+  tags:
+  - filebeat
+  - packages
+
+- name: Elastic sources list is available
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/5.x/apt stable main"
+    filename: elastic.list
+    state: present
+    update_cache: yes
+  tags:
+  - filebeat
+  - packages
 
 - name: Filebeat is installed
   apt:
     name: filebeat
     state: present
   tags:
-    - packages
+  - filebeat
+  - packages
 
 - name: Filebeat service is enabled
   service:

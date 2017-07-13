@@ -6,11 +6,32 @@
   tags:
     - packages
 
-- name: Install Elastic sources list
-  include_role:
-    name: elastic-sources-list
+- name: APT https transport is enabled
+  apt:
+    name: apt-transport-https
+    state: present
   tags:
-    - packages
+  - logstash
+  - packages
+
+- name: Elastic GPG key is installed
+  apt_key:
+    # url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    data: "{{ lookup('file', 'elasticsearch.key') }}"
+    state: present
+  tags:
+  - logstash
+  - packages
+
+- name: Elastic sources list is available
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/5.x/apt stable main"
+    filename: elastic.list
+    state: present
+    update_cache: yes
+  tags:
+  - logstash
+  - packages
 
 - name: Logstash is installed
   apt:
