@@ -1,5 +1,12 @@
 ---
 
+- include_role:
+    name: apt-repositories
+    tasks_from: backports.yml
+  tags:
+  - haproxy
+  - packages
+
 - name: Prefer HAProxy package from jessie-backports
   copy:
     src: haproxy_apt_preferences

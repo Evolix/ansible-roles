@@ -1,5 +1,12 @@
 ---
 
+- include_role:
+    name: apt-repositories
+    tasks_from: backports.yml
+  tags:
+  - haproxy
+  - packages
+
 - name: Prefer Nginx packages from jessie-backports
   copy:
     src: apt/nginx_preferences
