@@ -8,3 +8,10 @@ elasticsearch_custom_tmpdir: Null
 elasticsearch_default_tmpdir: /var/lib/elasticsearch/tmp
 elasticsearch_jvm_xms: 2g
 elasticsearch_jvm_xmx: 2g
+
+elasticsearch_plugin_head: False
+elasticsearch_plugin_head_owner: "elasticsearch-head"
+elasticsearch_plugin_head_group: "{{ elasticsearch_plugin_head_owner }}"
+elasticsearch_plugin_head_home: "/home/{{ elasticsearch_plugin_head_owner }}"
+elasticsearch_plugin_head_clone_dir: "{{ elasticsearch_plugin_head_home }}/www"
+elasticsearch_plugin_head_tmp_dir: "{{ elasticsearch_plugin_head_home }}/tmp"

@@ -24,3 +24,19 @@ Tasks are extracted in several files, included in `tasks/main.yml` :
 * `elasticsearch_jvm_xmx`: maximum heap size reserved for the JVM (defaults to 2g).
 
 By default, Elasticsearch will listen to the public interfaces (`_site_` cf. https://www.elastic.co/guide/en/elasticsearch/reference/5.0/important-settings.html#network.host), so you will have to secure it, with firewall rules for example.
+
+## Head plugin
+
+The "head" plugin can be installed :
+
+* `elasticsearch_plugin_head` : enable the plugin installation (default: `False`) ;
+* `elasticsearch_plugin_head_basedir`: base directory (default : `/var/www`) ;
+* `elasticsearch_plugin_head_clone_name`: directory name for git clone.
+
+To use this plugin, you have to run the built-in webserver (using Grunt/NodeJS), or point a webserver to the path. More details here : https://github.com/mobz/elasticsearch-head#running-with-built-in-server
+
+For example, to run the built-in server, with "www-data" user :
+
+```
+# sudo -u www-data bash -c 'cd /var/www/elasticsearch-head && grunt server'
+```

@@ -9,3 +9,6 @@
 - include: datadir.yml
 
 - include: tmpdir.yml
+
+- include: plugin_head.yml
+  when: elasticsearch_plugin_head
