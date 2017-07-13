@@ -1,15 +1,9 @@
 ---
+
 - name: Add dotdeb GPG key
   apt_key:
     # url: https://download.newrelic.com/548C16BF.gpg
     data: "{{ lookup('file', '548C16BF.gpg') }}"
-
-- name: Find squid config whitelist
-  shell: find /etc/squid/whitelist-custom.conf /etc/squid3/whitelist-custom.conf /etc/squid/whitelist.conf /etc/squid3/whitelist.conf 2> /dev/null
-  failed_when: false
-  changed_when: false
-  check_mode: no
-  register: squid_whitelist_files
 
 - name: set squid_service_name=squid3 for Debian < 9
   set_fact:
@@ -17,6 +11,13 @@
   when:
   - ansible_distribution == "Debian"
   - ansible_distribution_major_version | version_compare('9', '<')
+
+- name: Find squid config whitelist
+  shell: find /etc/{{ squid_service_name | default('squid') }}/whitelist-custom.conf /etc/{{ squid_service_name | default('squid') }}/whitelist.conf 2> /dev/null
+  failed_when: false
+  changed_when: false
+  check_mode: no
+  register: squid_whitelist_files
 
 - name: Append packages.dotdeb.org to Squid whitelist
   lineinfile:
@@ -33,5 +34,4 @@
     repo: "deb http://apt.newrelic.com/debian/ newrelic non-free"
     state: present
     filename: newrelic
-
-- meta: flush_handlers
+    update_cache: yes

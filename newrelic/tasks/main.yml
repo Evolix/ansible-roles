@@ -1,0 +1,9 @@
+---
+
+- include: sources.yml
+
+- include: php.yml
+  when: newrelic_php
+
+- include: sysmond.yml
+  when: newrelic_sysmond

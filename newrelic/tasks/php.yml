@@ -1,6 +1,4 @@
 ---
-- include_role:
-    name: newrelic-sources
 
 - name: Pre-seed package configuration with app name
   debconf:
@@ -41,3 +39,4 @@
 - name: Install package for PHP
   apt:
     name: newrelic-php5
+    state: installed

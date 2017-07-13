@@ -1,6 +1,0 @@
----
-
-- name: restart newrelic-sysmond
-  systemd:
-    name: newrelic-sysmond
-    state: restarted

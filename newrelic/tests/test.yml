@@ -1,4 +1,4 @@
 ---
 - hosts: test-kitchen
   roles:
-    - role: newrelic-sources
+    - role: newrelic

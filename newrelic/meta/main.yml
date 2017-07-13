@@ -1,6 +1,6 @@
 galaxy_info:
   author: Evolix
-  description: Installation of NewRelic repository for APT sources.
+  description: Installation of NewRelic tools.
 
   issue_tracker_url: https://forge.evolix.org/projects/ansible-roles/issues
 
