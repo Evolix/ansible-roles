@@ -78,7 +78,10 @@ evolinux_system_include: True
 
 evolinux_system_chmod_tmp: True
 evolinux_system_locales: True
+
+evolinux_system_set_timezone: True
 evolinux_system_timezone: "Europe/Paris"
+
 evolinux_system_vim_skip_defaults: true
 evolinux_system_vim_default_editor: True
 evolinux_system_profile: True
@@ -91,7 +94,9 @@ evolinux_system_cron_random: True
 evolinux_system_alert5_init: True
 evolinux_system_alert5_enable: True
 evolinux_system_eni_auto: True
-evolinux_system_ntp_server: False
+
+evolinux_system_set_ntpserver: True
+evolinux_system_ntpserver: "ntp.evolix.net"
 
 # root
 
