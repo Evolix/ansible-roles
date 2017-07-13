@@ -38,7 +38,11 @@
 
 - include: apache.yml
 
+- include: php5.yml
+  when: ansible_distribution_release == "jessie"
+
 - include: php.yml
+  when: ansible_distribution_release == "stretch"
 
 - include: phpmyadmin.yml
 

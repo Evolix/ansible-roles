@@ -1,48 +1,48 @@
 ---
 
-- name: Install PHP packages
+- name: Install PHP5 packages
   apt:
     name: '{{ item }}'
     state: present
   with_items:
-  - libapache2-mod-php7.0
-  - php7.0
-  - php7.0-gd
-  - php7.0-imap
-  - php7.0-ldap
-  - php7.0-mcrypt
-  - php7.0-mysql
-  - php7.0-pgsql
-  - php7.0-curl
+  - libapache2-mod-php5
+  - php5
+  - php5-gd
+  - php5-imap
+  - php5-ldap
+  - php5-mcrypt
+  - php5-mysql
+  - php5-pgsql
   - php-gettext
-  - php-ssh2
+  - php5-curl
+  - libssh2-php
   tags:
   - apache
 
 - name: Set variables for php config files
   set_fact:
-    php7_apache_defaults_file: /etc/php/7.0/apache2/conf.d/z-evolinux_defaults.ini
-    php7_apache_custom_file: /etc/php/7.0/apache2/conf.d/zzz-evolinux_custom.ini
+    php5_apache5_defaults_file: /etc/php5/apache2/conf.d/z-evolinux_defaults.ini
+    php5_apache5_custom_file: /etc/php5/apache2/conf.d/zzz-evolinux_custom.ini
 
 - name: Set default values for PHP
   ini_file:
-    dest: "{{ php7_apache_defaults_file }}"
+    dest: "{{ php5_apache5_defaults_file }}"
     section: PHP
     option: "{{ item.option }}"
     value: "{{ item.value }}"
     mode: "0644"
     create: yes
   with_items:
-  - { option: "short_open_tag",  value: "Off" }
-  - { option: "expose_php",      value: "Off" }
-  - { option: "display_errors",  value: "Off" }
-  - { option: "log_errors",      value: "On"  }
+  - { option: "short_open_tag", value: "Off" }
+  - { option: "expose_php", value: "Off" }
+  - { option: "display_errors", value: "Off" }
+  - { option: "log_errors", value: "On" }
   - { option: "allow_url_fopen", value: "Off" }
   notify: reload apache
 
 - name: Disable PHP exec function without evoadmin
   ini_file:
-    dest: "{{ php7_apache_defaults_file }}"
+    dest: "{{ php5_apache5_defaults_file }}"
     section: PHP
     option: disable_functions
     value: "exec,shell-exec,system,passthru,putenv,popen"
@@ -50,7 +50,7 @@
 
 - name: Don't disable PHP exec function with evoadmin
   ini_file:
-    dest: "{{ php7_apache_defaults_file }}"
+    dest: "{{ php5_apache5_defaults_file }}"
     section: PHP
     option: disable_functions
     value: "shell-exec,system,passthru,putenv,popen"
@@ -58,7 +58,7 @@
 
 - name: Custom php.ini
   copy:
-    dest: "{{ php7_apache_custom_file }}"
+    dest: "{{ php5_apache5_custom_file }}"
     content: |
       # Put customized values here.
     force: no

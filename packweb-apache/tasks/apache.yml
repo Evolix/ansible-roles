@@ -16,14 +16,24 @@
       export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
   when: envvar_grep_path.rc != 0
 
+- name: Install ITK module for Jessie
+  apt:
+    name: apache2-mpm-itk
+  when: ansible_distribution_release == "jessie"
+
+- name: Install ITK module for Stretch
+  apt:
+    name: libapache2-mpm-itk
+  when: ansible_distribution_release == "stretch"
+
 - name: Additional packages are installed
   apt:
     name: '{{ item }}'
     state: present
   with_items:
-  - apache2-mpm-itk
   - libapache2-mod-evasive
   - libapache2-mod-security2
+  - modsecurity-crs
 
 - name: Copy Apache settings for modules
   copy:
