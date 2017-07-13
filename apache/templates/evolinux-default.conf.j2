@@ -15,8 +15,8 @@
     DocumentRoot /var/www/
 
     SSLEngine on
-    SSLCertificateFile    /etc/ssl/certs/{{ ansible_fqdn }}.crt
-    SSLCertificateKeyFile /etc/ssl/private/{{ ansible_fqdn }}.key
+    SSLCertificateFile    {{ apache_evolinux_default_ssl_cert }}
+    SSLCertificateKeyFile {{ apache_evolinux_default_ssl_key }}
     # SSLProtocol all -SSLv2 -SSLv3
 
     <Directory /var/www/>
