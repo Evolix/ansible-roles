@@ -14,6 +14,8 @@
   - apg
   - conntrack
   - logrotate
+  - ssl-cert
+  - ca-certificates
   when: evolinux_packages_system
 
 - name: Install/Update diagnostic tools
