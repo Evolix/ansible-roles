@@ -1,12 +1,10 @@
 ---
-- name: Ensure Nginx is installed
-  apt:
-    name: nginx-full
-    state: present
-  notify: restart nginx
-  tags:
-  - nginx
-  - packages
+
+- include: packages_jessie.yml
+  when: ansible_distribution_release == "jessie"
+
+- include: packages_stretch.yml
+  when: ansible_distribution_release == "stretch"
 
 # TODO: find a way to override the main configuration
 # without touching the main file

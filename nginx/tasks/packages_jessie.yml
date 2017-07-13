@@ -1,0 +1,11 @@
+- include: jessie_backports.yml
+  when: ansible_distribution_release == "jessie" and nginx_jessie_backports
+
+- name: Ensure Nginx is installed
+  apt:
+    name: nginx-full
+    state: present
+  notify: restart nginx
+  tags:
+  - nginx
+  - packages

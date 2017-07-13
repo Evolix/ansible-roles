@@ -1,0 +1,20 @@
+---
+
+- name: Prefer Nginx packages from jessie-backports
+  copy:
+    src: apt/nginx_preferences
+    dest: /etc/apt/preferences.d/999-nginx
+    force: yes
+    mode: "0640"
+  register: nginx_apt_preferences
+  tags:
+  - nginx
+  - packages
+
+- name: update apt
+  apt:
+    update_cache: yes
+  when: nginx_apt_preferences | changed
+  tags:
+  - nginx
+  - packages

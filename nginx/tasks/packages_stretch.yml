@@ -1,0 +1,11 @@
+---
+# TODO: install "nginx" + only necessary modules, instead of "nginx-full"
+
+- name: Ensure Nginx is installed
+  apt:
+    name: nginx-full
+    state: present
+  notify: restart nginx
+  tags:
+  - nginx
+  - packages
