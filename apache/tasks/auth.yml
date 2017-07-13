@@ -1,0 +1,73 @@
+---
+
+- name: Init private_ipaddr_whitelist.conf file
+  copy:
+    src: private_ipaddr_whitelist.conf
+    dest: /etc/apache2/private_ipaddr_whitelist.conf
+    owner: root
+    group: root
+    mode: "0640"
+    force: no
+  tags:
+  - apache
+
+- name: add IP addresses to private IP whitelist
+  lineinfile:
+    dest: /etc/apache2/private_ipaddr_whitelist.conf
+    line: "Require ip {{ item }}"
+    state: present
+  with_items: "{{ apache_private_ipaddr_whitelist_present }}"
+  notify: reload apache
+  tags:
+  - apache
+
+- name: remove IP addresses from private IP whitelist
+  lineinfile:
+    dest: /etc/apache2/private_ipaddr_whitelist.conf
+    line: "Require ip {{ item }}"
+    state: absent
+  with_items: "{{ apache_private_ipaddr_whitelist_absent }}"
+  notify: reload apache
+  tags:
+  - apache
+
+- name: include private IP whitelist for server-status
+  lineinfile:
+    dest: /etc/apache2/mods-available/status.conf
+    line: "        include /etc/apache2/private_ipaddr_whitelist.conf"
+    insertafter: 'SetHandler server-status'
+    state: present
+  tags:
+  - apache
+
+- name: Copy private_htpasswd
+  copy:
+    src: private_htpasswd
+    dest: /etc/apache2/private_htpasswd
+    owner: root
+    group: root
+    mode: "0640"
+    force: no
+  notify: reload apache
+  tags:
+  - apache
+
+- name: add user:pwd to private htpasswd
+  lineinfile:
+    dest: /etc/apache2/private_htpasswd
+    line: "{{ item }}"
+    state: present
+  with_items: "{{ apache_private_htpasswd_present }}"
+  notify: reload apache
+  tags:
+  - apache
+
+- name: remove user:pwd from private htpasswd
+  lineinfile:
+    dest: /etc/apache2/private_htpasswd
+    line: "{{ item }}"
+    state: absent
+  with_items: "{{ apache_private_htpasswd_absent }}"
+  notify: reload apache
+  tags:
+  - apache

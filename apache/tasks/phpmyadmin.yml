@@ -1,0 +1,24 @@
+---
+
+- block:
+  - name: generate random string for phpmyadmin suffix
+    command: "apg -a 1 -M N -n 1"
+    changed_when: False
+    register: _random_phpmyadmin_suffix
+
+  - name: overwrite apache_phpmyadmin_suffix
+    set_fact:
+      apache_phpmyadmin_suffix: "{{ _random_phpmyadmin_suffix.stdout }}"
+  when: apache_phpmyadmin_suffix == ""
+  tags:
+  - apache
+  - phpmyadmin
+
+- name: replace phpmyadmin suffix in default site index
+  replace:
+    dest: /var/www/index.html
+    regexp: '__PHPMYADMIN_SUFFIX__'
+    replace: "{{ apache_phpmyadmin_suffix }}"
+  tags:
+  - apache
+  - phpmyadmin

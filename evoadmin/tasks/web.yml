@@ -7,7 +7,16 @@
     option: "disable_functions"
     value: "shell-exec,system,passthru,putenv,popen"
   notify: reload apache
+  when: ansible_distribution_release == "jessie"
 
+- name: Set default values in /etc/php5/apache2/conf.d/z-evolinux_defaults.ini
+  ini_file:
+    dest: /etc/php/7.0/apache2/conf.d/z-evolinux_defaults.ini
+    section: PHP
+    option: "disable_functions"
+    value: "shell-exec,system,passthru,putenv,popen"
+  notify: reload apache
+  when: ansible_distribution_release == "stretch"
 
 - name: Install evoadmin VHost
   template:

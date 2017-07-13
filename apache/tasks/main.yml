@@ -1,24 +1,41 @@
-- name: packages are installed
+---
+
+- name: Main packages are installed
   apt:
     name: '{{ item }}'
     state: present
   with_items:
   - apache2
-  - apache2-mpm-prefork
-  - apachetop
-  - libwww-perl
   tags:
   - apache
+  - packages
+
+- name: Install packages for Jessie
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - apache2-mpm-prefork
+  tags:
+  - apache
+  - packages
+  when: ansible_distribution_release == "jessie"
 
 - name: manually disable mpm_event
   command: a2dismod mpm_event
   register: cmd_disable_event
   changed_when: "'Module mpm_event already disabled' not in cmd_disable_event.stdout"
+  notify: restart apache
+  tags:
+  - apache
 
 - name: manually enable mpm_prefork
   command: a2enmod mpm_prefork
   register: cmd_disable_prefork
   changed_when: "'Module mpm_prefork already enabled' not in cmd_disable_prefork.stdout"
+  notify: restart apache
+  tags:
+  - apache
 
 # With Ansible 2.2 the module check the config for conflicts
 # With 2.3 it can be disabled.
@@ -31,6 +48,18 @@
 #   - mpm_event
 #   tags:
 #   - apache
+
+- name: Additional packages are installed
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - apg
+  - apachetop
+  - libwww-perl
+  tags:
+  - apache
+  - packages
 
 - name: basic modules are enabled
   apache2_module:
@@ -89,75 +118,7 @@
   tags:
   - apache
 
-- name: Init private_ipaddr_whitelist.conf file
-  copy:
-    src: private_ipaddr_whitelist.conf
-    dest: /etc/apache2/private_ipaddr_whitelist.conf
-    owner: root
-    group: root
-    mode: "0640"
-    force: no
-  tags:
-  - apache
-
-- name: add IP addresses to private IP whitelist
-  lineinfile:
-    dest: /etc/apache2/private_ipaddr_whitelist.conf
-    line: "Require ip {{ item }}"
-    state: present
-  with_items: "{{ apache_private_ipaddr_whitelist_present }}"
-  notify: reload apache
-  tags:
-  - apache
-
-- name: remove IP addresses from private IP whitelist
-  lineinfile:
-    dest: /etc/apache2/private_ipaddr_whitelist.conf
-    line: "Require ip {{ item }}"
-    state: absent
-  with_items: "{{ apache_private_ipaddr_whitelist_absent }}"
-  notify: reload apache
-  tags:
-  - apache
-
-- name: include private IP whitelist for server-status
-  lineinfile:
-    dest: /etc/apache2/mods-available/status.conf
-    line: "        include /etc/apache2/private_ipaddr_whitelist.conf"
-    insertafter: 'SetHandler server-status'
-    state: present
-
-- name: Copy private_htpasswd
-  copy:
-    src: private_htpasswd
-    dest: /etc/apache2/private_htpasswd
-    owner: root
-    group: root
-    mode: "0640"
-    force: no
-  notify: reload apache
-  tags:
-  - apache
-
-- name: add user:pwd to private htpasswd
-  lineinfile:
-    dest: /etc/apache2/private_htpasswd
-    line: "{{ item }}"
-    state: present
-  with_items: "{{ apache_private_htpasswd_present }}"
-  notify: reload apache
-  tags:
-  - apache
-
-- name: remove user:pwd from private htpasswd
-  lineinfile:
-    dest: /etc/apache2/private_htpasswd
-    line: "{{ item }}"
-    state: absent
-  with_items: "{{ apache_private_htpasswd_absent }}"
-  notify: reload apache
-  tags:
-  - apache
+- include: auth.yml
 
 - name: default vhost is installed
   template:
@@ -180,40 +141,6 @@
   tags:
   - apache
 
-- block:
-  - name: generate random string for phpmyadmin suffix
-    command: "apg -a 1 -M N -n 1"
-    changed_when: False
-    register: _random_phpmyadmin_suffix
-
-  - name: overwrite apache_phpmyadmin_suffix
-    set_fact:
-      apache_phpmyadmin_suffix: "{{ _random_phpmyadmin_suffix.stdout }}"
-  when: apache_phpmyadmin_suffix == ""
-
-- name: replace phpmyadmin suffix in default site index
-  replace:
-    dest: /var/www/index.html
-    regexp: '__PHPMYADMIN_SUFFIX__'
-    replace: "{{ apache_phpmyadmin_suffix }}"
-
-# - block:
-#   - name: generate random string for serverstatus suffix
-#     command: "apg -a 1 -M N -n 1"
-#     changed_when: False
-#     register: _random_serverstatus_suffix
-#
-#   - name: overwrite apache_serverstatus_suffix
-#     set_fact:
-#       apache_serverstatus_suffix: "{{ _random_serverstatus_suffix.stdout }}"
-#   when: apache_serverstatus_suffix == ""
-#
-# - name: replace server-status suffix in default site index
-#   replace:
-#     dest: /var/www/index.html
-#     regexp: '__SERVERSTATUS_SUFFIX__'
-#     replace: "{{ apache_serverstatus_suffix }}"
-
 - name: is umask already present?
   command: "grep -E '^umask ' /etc/apache2/envvars"
   failed_when: False
@@ -234,3 +161,32 @@
   when: envvar_grep_umask.rc != 0
   tags:
   - apache
+
+- name: Stat /default index
+  stat:
+    path: /var/www/index.html
+  register: _default_index
+  check_mode: no
+  tags:
+  - apache
+
+- include: phpmyadmin.yml
+  when: _default_index.stat.exists
+
+
+# - block:
+#   - name: generate random string for serverstatus suffix
+#     command: "apg -a 1 -M N -n 1"
+#     changed_when: False
+#     register: _random_serverstatus_suffix
+#
+#   - name: overwrite apache_serverstatus_suffix
+#     set_fact:
+#       apache_serverstatus_suffix: "{{ _random_serverstatus_suffix.stdout }}"
+#   when: apache_serverstatus_suffix == ""
+#
+# - name: replace server-status suffix in default site index
+#   replace:
+#     dest: /var/www/index.html
+#     regexp: '__SERVERSTATUS_SUFFIX__'
+#     replace: "{{ apache_serverstatus_suffix }}"
