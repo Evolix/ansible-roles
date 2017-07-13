@@ -5,3 +5,6 @@
 - include: config.yml
 
 - include: activate.yml
+
+- include: tail.yml
+  when: minifirewall_tail_included

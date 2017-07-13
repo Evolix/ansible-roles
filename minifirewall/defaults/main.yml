@@ -1,4 +1,6 @@
 ---
+minifirewall_tail_included: False
+
 minifirewall_git_url: "https://forge.evolix.org/minifirewall.git"
 minifirewall_checkout_path: "/tmp/minifirewall"
 minifirewall_int: "{{ ansible_default_ipv4.interface }}"
