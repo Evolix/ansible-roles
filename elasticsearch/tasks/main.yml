@@ -12,3 +12,6 @@
 
 - include: plugin_head.yml
   when: elasticsearch_plugin_head
+
+- include: curator.yml
+  when: elasticsearch_curator

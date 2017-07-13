@@ -25,6 +25,12 @@ Tasks are extracted in several files, included in `tasks/main.yml` :
 
 By default, Elasticsearch will listen to the public interfaces (`_site_` cf. https://www.elastic.co/guide/en/elasticsearch/reference/5.0/important-settings.html#network.host), so you will have to secure it, with firewall rules for example.
 
+## Curator
+
+Curator can be installed. :
+
+* `elasticsearch_curator` : enable the package installation (default: `False`) ;
+
 ## Head plugin
 
 The "head" plugin can be installed :
