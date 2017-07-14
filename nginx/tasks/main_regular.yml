@@ -1,0 +1,193 @@
+---
+
+- include: packages_jessie.yml
+  when: ansible_distribution_release == "jessie"
+
+- include: packages_stretch.yml
+  when: ansible_distribution_release == "stretch"
+
+# TODO: find a way to override the main configuration
+# without touching the main file
+
+- name: customize worker_connections
+  lineinfile:
+    dest: /etc/nginx/nginx.conf
+    regexp: '^(\s*worker_connections)\s+.+;'
+    line: '    worker_connections 1024;'
+    insertafter: 'events \{'
+  tags:
+  - nginx
+
+- name: use epoll
+  lineinfile:
+    dest: /etc/nginx/nginx.conf
+    regexp: '^(\s*use)\s+.+;'
+    line: '    use epoll;'
+    insertafter: 'events \{'
+  tags:
+  - nginx
+
+- name: Install Nginx http configuration
+  copy:
+    src: nginx/evolinux-defaults.conf
+    dest: /etc/nginx/conf.d/z-evolinux-defaults.conf
+    mode: "0640"
+    # force: yes
+  notify: reload nginx
+  tags:
+  - nginx
+
+# TODO: verify that those permissions are correct :
+# not too strict for private_ipaddr_whitelist
+# and not too loose for private_htpasswd
+
+- name: Copy private_ipaddr_whitelist
+  copy:
+    src: nginx/snippets/private_ipaddr_whitelist
+    dest: /etc/nginx/snippets/private_ipaddr_whitelist
+    owner: www-data
+    group: www-data
+    directory_mode: "0640"
+    mode: "0640"
+    force: no
+  notify: reload nginx
+  tags:
+  - nginx
+
+- name: add IP addresses to private IP whitelist
+  lineinfile:
+    dest: /etc/nginx/snippets/private_ipaddr_whitelist
+    line: "allow {{ item }};"
+    state: present
+  with_items: "{{ nginx_private_ipaddr_whitelist_present }}"
+  notify: reload nginx
+  tags:
+  - nginx
+
+- name: remove IP addresses from private IP whitelist
+  lineinfile:
+    dest: /etc/nginx/snippets/private_ipaddr_whitelist
+    line: "allow {{ item }};"
+    state: absent
+  with_items: "{{ nginx_private_ipaddr_whitelist_absent }}"
+  notify: reload nginx
+  tags:
+  - nginx
+
+- name: Copy private_htpasswd
+  copy:
+    src: nginx/snippets/private_htpasswd
+    dest: /etc/nginx/snippets/private_htpasswd
+    owner: www-data
+    group: www-data
+    directory_mode: "0640"
+    mode: "0640"
+    force: no
+  notify: reload nginx
+  tags:
+  - nginx
+
+- name: add user:pwd to private htpasswd
+  lineinfile:
+    dest: /etc/nginx/snippets/private_htpasswd
+    line: "{{ item }}"
+    state: present
+  with_items: "{{ nginx_private_htpasswd_present }}"
+  notify: reload nginx
+  tags:
+  - nginx
+
+- name: remove user:pwd from private htpasswd
+  lineinfile:
+    dest: /etc/nginx/snippets/private_htpasswd
+    line: "{{ item }}"
+    state: absent
+  with_items: "{{ nginx_private_htpasswd_absent }}"
+  notify: reload nginx
+  tags:
+  - nginx
+
+- name: nginx vhost is installed
+  template:
+    src: evolinux-default.conf.j2
+    dest: /etc/nginx/sites-available/evolinux-default.conf
+    mode: "0640"
+  notify: reload nginx
+  tags:
+  - nginx
+
+- name: default vhost is enabled
+  file:
+    src: /etc/nginx/sites-available/evolinux-default.conf
+    dest: /etc/nginx/sites-enabled/default.conf
+    state: link
+    force: yes
+  notify: reload nginx
+  when: nginx_evolinux_default_enabled
+  tags:
+  - nginx
+
+# - block:
+#   - name: generate random string for phpmyadmin suffix
+#     command: "apg -a 1 -M N -n 1"
+#     changed_when: False
+#     register: random_phpmyadmin_suffix
+#
+#   - name: overwrite nginx_phpmyadmin_suffix
+#     set_fact:
+#       nginx_phpmyadmin_suffix: "{{ random_phpmyadmin_suffix.stdout }}"
+#   when: nginx_phpmyadmin_suffix == ""
+#
+# - name: replace phpmyadmin suffix in default site index
+#   replace:
+#     dest: /var/www/index.html
+#     regexp: '__PHPMYADMIN_SUFFIX__'
+#     replace: "{{ nginx_phpmyadmin_suffix }}"
+#
+# - block:
+#   - name: generate random string for serverstatus suffix
+#     command: "apg -a 1 -M N -n 1"
+#     changed_when: False
+#     register: random_serverstatus_suffix
+#
+#   - name: overwrite nginx_serverstatus_suffix
+#     set_fact:
+#       nginx_serverstatus_suffix: "{{ random_phpmyadmin_suffix.stdout }}"
+#   when: nginx_serverstatus_suffix == ""
+#
+# - name: replace server-status suffix in default site index
+#   replace:
+#     dest: /var/www/index.html
+#     regexp: '__SERVERSTATUS_SUFFIX__'
+#     replace: "{{ nginx_serverstatus_suffix }}"
+
+- name: Verify that the service is enabled and started
+  service:
+    name: nginx
+    enabled: yes
+    state: started
+  tags:
+  - nginx
+
+- name: Check if Munin is installed
+  stat:
+    path: /etc/munin/plugin-conf.d/munin-node
+  check_mode: no
+  register: stat_munin_node
+  tags:
+  - nginx
+  - munin
+
+- include: munin_vhost.yml
+  when: stat_munin_node.stat.exists
+  tags:
+  - nginx
+  - munin
+
+- include: munin_graphs.yml
+  when: stat_munin_node.stat.exists
+  tags:
+  - nginx
+  - munin
+
+- include: logrotate.yml

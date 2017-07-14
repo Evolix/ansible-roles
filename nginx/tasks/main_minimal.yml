@@ -1,5 +1,5 @@
 ---
-- name: Ensure Nginx (light) is installed
+- name: Ensure Nginx is installed
   apt:
     name: "{{ item }}"
     state: present
@@ -13,8 +13,8 @@
 
 - name: Copy default vhost
   template:
-    src: default.j2
-    dest: /etc/nginx/sites-available/default
+    src: evolinux-default.minimal.conf.j2
+    dest: /etc/nginx/sites-available/evolinux-default.minimal.conf
     mode: 0644
   notify: reload nginx
   tags:
@@ -23,8 +23,8 @@
 
 - name: Enable default vhost
   file:
-    src: /etc/nginx/sites-available/default
-    dest: /etc/nginx/sites-enabled/default
+    src: /etc/nginx/sites-available/evolinux-default.minimal.conf
+    dest: /etc/nginx/sites-enabled/default.conf
     state: link
   notify: reload nginx
   tags:

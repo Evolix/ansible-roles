@@ -1,4 +1,6 @@
 ---
+
+nginx_minimal: False
 nginx_jessie_backports: False
 
 nginx_private_ipaddr_whitelist_present: []
