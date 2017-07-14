@@ -1,9 +1,0 @@
----
-- name: restart clamav-daemon
-  service:
-    name: clamav-daemon
-    state: restarted
-- name: restart clamav-freshclam
-  service:
-    name: clamav-freshclam
-    state: restarted
