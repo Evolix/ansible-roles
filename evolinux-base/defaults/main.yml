@@ -95,6 +95,7 @@ evolinux_system_alert5_init: True
 evolinux_system_alert5_enable: True
 evolinux_system_eni_auto: True
 
+evolinux_system_ntprestrict: True
 evolinux_system_set_ntpserver: True
 evolinux_system_ntpserver: "ntp.evolix.net"
 
