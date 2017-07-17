@@ -6,7 +6,6 @@
     dest: /etc/apt/sources.list
     mode: "0644"
     force: yes
-    backup: yes
   notify: apt update
   tags:
   - apt-repositories

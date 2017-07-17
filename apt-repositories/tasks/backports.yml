@@ -12,7 +12,6 @@
     src: '{{ ansible_distribution_release }}_backports.list.j2'
     dest: /etc/apt/sources.list.d/backports.list
     force: yes
-    backup: yes
     mode: "0640"
   notify: apt update
   tags:
@@ -23,7 +22,6 @@
     src: '{{ ansible_distribution_release }}_backports_preferences'
     dest: /etc/apt/preferences.d/0-backports-defaults
     force: yes
-    backup: yes
     mode: "0640"
   notify: apt update
   tags:

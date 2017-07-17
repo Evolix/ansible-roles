@@ -7,7 +7,6 @@
     owner: root
     group: wheel
     mode: "0644"
-    backup: yes
   tags:
     - log
     - newsyslog
