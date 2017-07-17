@@ -65,6 +65,13 @@
     allow_unauthenticated: yes
   when: evolinux_packages_serveur_base
 
+- name: Be sure that openntpd package is absent/purged
+  apt:
+    name: openntpd
+    state: absent
+    purge: yes
+  when: evolinux_packages_purge_openntpd
+
 - name: Install/Update packages for Stretch and later
   apt:
     name: "{{ item }}"
