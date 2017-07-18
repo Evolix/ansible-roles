@@ -11,7 +11,6 @@
     group: bind
     mode: "0644"
     force: yes
-    backup: yes
   notify: restart bind
 
 - name: Modify OPTIONS in /etc/default/bind9
