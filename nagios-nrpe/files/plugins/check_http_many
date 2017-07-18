@@ -43,7 +43,7 @@ done
 sites=""
 for site in $sites; do
     echo -n "Site ${site}: " >> $result
-    /usr/lib/nagios/plugins/check_http -w4 -c6 -f critical -e 200 -p 443 -S -I 127.0.0.1 -H ${site%%/*} -u /${site#*/} >> $result
+    /usr/lib/nagios/plugins/check_http -f critical -e 200 -p 443 -S -I 127.0.0.1 -H ${site%%/*} -u /${site#*/} >> $result
     check_state $?
 done
 
