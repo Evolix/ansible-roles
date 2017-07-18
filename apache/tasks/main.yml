@@ -71,6 +71,9 @@
   - headers
   - cgi
   - ssl
+  - include
+  - negotiation
+  - alias
   tags:
   - apache
 
@@ -82,6 +85,38 @@
     group: root
     mode: "0644"
     force: yes
+  tags:
+  - apache
+
+- name: Copy Apache localized error pages config file
+  copy:
+    src: evolinux-localized-error-pages.conf
+    dest: "/etc/apache2/conf-available/z-evolinux-localized-error-pages.conf"
+    owner: root
+    group: root
+    mode: "0644"
+    force: yes
+  tags:
+  - apache
+
+- name: Create directory which will contain apache error pages
+  file:
+    path: /usr/local/share/apache2/error
+    mode: u=rwX,g=rX,o=rX
+    owner: root
+    group: root
+    state: directory
+  tags:
+  - apache
+
+- name: Copy apache error pages
+  copy:
+    src: error-pages/
+    dest: "/usr/local/share/apache2/error/"
+    directory_mode: u=rwX,g=rX,o=rX
+    mode: u=rw,g=r,o=r
+    owner: root
+    group: root
   tags:
   - apache
 
@@ -113,6 +148,7 @@
   changed_when: "'Enabling' in command_result.stderr"
   with_items:
   - z-evolinux-defaults.conf
+  - z-evolinux-localized-error-pages.conf
   - zzz-evolinux-custom.conf
   - evolinux-ssl.conf
   tags:
