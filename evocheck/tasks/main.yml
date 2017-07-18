@@ -18,7 +18,6 @@
     mode: "0700"
     owner: root
     force: yes
-    backup: yes
   tags:
   - evocheck
 
