@@ -29,7 +29,6 @@
     group: root
     mode: "0644"
     force: yes
-    backup: yes
   notify: restart bind
 
 - name: Create directories

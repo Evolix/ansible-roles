@@ -19,7 +19,6 @@
     src: whitelist-evolinux.conf
     dest: "{{ squid_conf_path }}/whitelist-evolinux.conf"
     force: yes
-    backup: yes
   notify: "reload {{ squid_daemon }}"
 
 - name: custom whitelist is present

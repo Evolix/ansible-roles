@@ -169,7 +169,6 @@
     dest: /etc/network/interfaces
     regexp: "allow-hotplug"
     replace: "auto"
-    backup: yes
   when: evolinux_system_eni_auto and grep_hotplug_eni.rc == 0
 
 - meta: flush_handlers
