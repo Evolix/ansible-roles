@@ -8,4 +8,4 @@ Everything is in the `tasks/main.yml` file.
 
 ## Available variables
 
-There is no variable.
+* `kvm_custom_libvirt_images_path`: a custom directory for libvirt images (default: empty) ;

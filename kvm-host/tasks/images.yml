@@ -1,15 +1,38 @@
 ---
-- name: Create images directory
-  file:
-    path: '/home/images'
-    state: directory
-    owner: root
-    group: libvirt
-    mode: 02775
 
-- name: Symlink for libvirt images directory
-  file:
-    src: '/home/images'
-    dest: '/var/lib/libvirt/images'
-    state: link
-    force: yes
+- block:
+  - name: "Is {{ kvm_custom_libvirt_images_path }} present ?"
+    stat:
+      path: "{{ kvm_custom_libvirt_images_path }}"
+    check_mode: no
+    register: kvm_custom_libvirt_images_path_test
+
+  - name: "read the real datadir"
+    command: readlink -f /var/lib/libvirt/images
+    changed_when: False
+    check_mode: no
+    register: kvm_libvirt_images_current_real_path_test
+  when: kvm_custom_libvirt_images_path != ''
+
+- block:
+    - name: "Move libvirt images to {{ kvm_custom_libvirt_images_path }}"
+      command: mv /var/lib/libvirt/images {{ kvm_custom_libvirt_images_path }}
+      args:
+        creates: "{{ kvm_custom_libvirt_images_path }}"
+
+    - name: Fix owner/group/permissions
+      file:
+        path: "{{ kvm_custom_libvirt_images_path }}"
+        owner: root
+        group: libvirt
+        mode: "02775"
+
+    - name: "Symlink {{ kvm_custom_libvirt_images_path }} to /var/lib/libvirt/images"
+      file:
+        src: "{{ kvm_custom_libvirt_images_path }}"
+        dest: '/var/lib/libvirt/images'
+        state: link
+  when:
+  - kvm_custom_libvirt_images_path != ''
+  - kvm_custom_libvirt_images_path != kvm_libvirt_images_current_real_path_test.stdout
+  - not kvm_custom_libvirt_images_path_test.stat.exists
