@@ -73,13 +73,11 @@
     state: present
   with_items:
     - "syntax on"
-    - "set hlsearch"
     - "set background=dark"
     - "set expandtab"
     - "set tabstop=4"
-    - "set softtabstop=0"
+    - "set softtabstop=4"
     - "set shiftwidth=4"
-    - "set smarttab"
   when: evolinux_root_vim_conf
 
 - meta: flush_handlers
