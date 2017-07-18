@@ -67,6 +67,7 @@ evolinux_packages_hardware: True
 evolinux_packages_common: True
 evolinux_packages_stretch: True
 evolinux_packages_serveur_base: True
+evolinux_packages_purge_openntpd: True
 evolinux_packages_invalid_mta: True
 evolinux_packages_delete_nfs: True
 evolinux_packages_listchanges: True
