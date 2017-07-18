@@ -82,9 +82,7 @@
   - /var/lib/dpkg
   - /var/log/munin
   - /var/backups
-  - /var/cache/apt
   - /etc/init.d
-  - /etc/apt
   - /etc/apache2
   - /etc/network
   - /etc/phpmyadmin
