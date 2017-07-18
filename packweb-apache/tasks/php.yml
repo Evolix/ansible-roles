@@ -36,6 +36,7 @@
   - { option: "short_open_tag",  value: "Off" }
   - { option: "expose_php",      value: "Off" }
   - { option: "display_errors",  value: "Off" }
+  - { option: "html_errors",     value: "Off" }
   - { option: "log_errors",      value: "On"  }
   - { option: "allow_url_fopen", value: "Off" }
   notify: reload apache
