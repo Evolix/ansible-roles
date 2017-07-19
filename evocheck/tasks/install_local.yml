@@ -1,0 +1,29 @@
+---
+- include: remount_usr_rw.yml
+  when: evocheck_bin_dir | search ("/usr")
+
+- name: Scripts dir is present
+  file:
+    path: "{{ evocheck_bin_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Copy evocheck.sh
+  copy:
+    src: evocheck.sh
+    dest: "{{ evocheck_bin_dir }}/evocheck.sh"
+    mode: "0700"
+    owner: root
+    force: yes
+  tags:
+  - evocheck
+
+- name: Copy evocheck.cf
+  copy:
+    src: evocheck.cf
+    dest: /etc/evocheck.cf
+    force: no
+  tags:
+  - evocheck
