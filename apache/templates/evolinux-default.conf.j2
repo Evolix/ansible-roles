@@ -55,7 +55,7 @@
     IncludeOptional /etc/apache2/conf-available/phpmyadmin*
 
     <Files ~ "\.(inc|bak)$">
-        deny from all
+        Require all denied
     </Files>
 
 </VirtualHost>
