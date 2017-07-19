@@ -1,0 +1,24 @@
+---
+
+- name: install packages for Apache and Munin
+  apt:
+    name: libapache2-mod-fcgid
+    state: installed
+  notify: reload apache
+  tags:
+  - apache
+  - munin
+
+- name: install munin plugins
+  file:
+    src: "/etc/munin/plugins/{{ item }}"
+    dest: "/usr/share/munin/plugins/{{ item }}"
+    state: link
+  with_items:
+  - apache_accesses
+  - apache_processes
+  - apache_volume
+  notify: restart munin-node
+  tags:
+  - apache
+  - munin

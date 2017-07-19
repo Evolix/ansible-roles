@@ -209,6 +209,16 @@
 - include: phpmyadmin.yml
   when: _default_index.stat.exists
 
+- name: Check if Munin plugins exists
+  stat:
+    path: /etc/munin/plugins/
+  register: _munin_plugins
+  check_mode: no
+  tags:
+  - apache
+
+- include: munin.yml
+  when: _munin_plugins.stat.exists
 
 # - block:
 #   - name: generate random string for serverstatus suffix
