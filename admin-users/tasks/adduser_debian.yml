@@ -63,12 +63,11 @@
     state: present
 
 - name: verify AllowUsers directive
-  command: "grep AllowUsers /etc/ssh/sshd_config"
+  command: "egrep '^\s+AllowUsers' /etc/ssh/sshd_config"
   changed_when: False
   failed_when: False
   register: grep_allowusers_ssh
   check_mode: no
-
 
 - name: "Add AllowUsers sshd directive for '{{ user.name }}'"
   lineinfile:
