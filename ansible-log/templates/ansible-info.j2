@@ -1,0 +1,10 @@
+date: {{ ansible_date_time.iso8601 }}
+
+inventory: {{ inventory_file }}
+playbook_dir: {{ playbook_dir}}
+
+hosts: 
+{{ ansible_play_hosts | to_nice_yaml }}
+roles:
+{{ role_names | to_nice_yaml }}
+
