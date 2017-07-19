@@ -16,7 +16,7 @@
    shell: /bin/bash
    password: '{{ user.password_hash }}'
    update_password: on_create
-  when: uidisbusy.rc == 0
+  when: uidisbusy.rc != 0
 
 - name: "Add Unix account with random uid for '{{ user.name }}'"
   user:
@@ -26,7 +26,7 @@
    shell: /bin/bash
    password: '{{ user.password_hash }}'
    update_password: on_create
-  when: uidisbusy.rc != 0
+  when: uidisbusy.rc == 0
 
 - name: "Fix perms on homedirectory for '{{ user.name }}'"
   file:
