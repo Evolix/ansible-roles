@@ -18,6 +18,7 @@
     dest: /etc/fail2ban/jail.local
     mode: "0644"
     notify: restart fail2ban
+    force: no
   tags:
   - fail2ban
 
