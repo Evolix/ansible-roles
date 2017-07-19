@@ -64,7 +64,7 @@
 
 # we must double-escape caracters, because python
 - name: verify AllowUsers directive
-  command: "egrep '^\\s+AllowUsers' /etc/ssh/sshd_config"
+  shell: "egrep '^AllowUsers' /etc/ssh/sshd_config"
   changed_when: False
   failed_when: False
   register: grep_allowusers_ssh
@@ -74,7 +74,7 @@
   lineinfile:
     dest: /etc/ssh/sshd_config
     line: "\nAllowUsers {{ user.name }}"
-    insertafter: '^UsePAM'
+    insertafter: '^#   ForceCommand cvs server'
     validate: '/usr/sbin/sshd -T -f %s'
   notify: reload sshd
   when: grep_allowusers_ssh.rc != 0
