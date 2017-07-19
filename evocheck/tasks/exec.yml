@@ -3,13 +3,13 @@
   command: "{{ evocheck_bin_dir }}/evocheck.sh"
   register: evocheck_run
   changed_when: False
-  failed_when: evocheck_run.stdout != ""
+  failed_when: False
   check_mode: no
   tags:
   - evocheck-exec
 
 - debug:
-    var: evocheck_run
-    verbosity: 1
+    var: evocheck_run.stdout_lines
+  when: evocheck_run.stdout != ""
   tags:
   - evocheck-exec
