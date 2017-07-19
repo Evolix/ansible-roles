@@ -7,7 +7,6 @@
   changed_when: False
   check_mode: no
 
-
 - name: "Add Unix account with classical uid for '{{ user.name }}'"
   user:
    state: present
@@ -17,7 +16,7 @@
    shell: /bin/bash
    password: '{{ user.password_hash }}'
    update_password: on_create
-  when: uidisbusy|failed
+  when: uidisbusy | failed
 
 - name: "Add Unix account with random uid for '{{ user.name }}'"
   user:
@@ -27,7 +26,7 @@
    shell: /bin/bash
    password: '{{ user.password_hash }}'
    update_password: on_create
-  when: uidisbusy|success
+  when: uidisbusy | success
 
 - name: "Fix perms on homedirectory for '{{ user.name }}'"
   file:
@@ -40,7 +39,6 @@
     path: "/usr/share/scripts/evomaintenance.sh"
   register: evomaintenance_script
   check_mode: no
-
 
 - name: "Add evomaintenance trap for '{{ user.name }}'"
   lineinfile:
@@ -96,7 +94,6 @@
   failed_when: False
   register: grep_matchuser_ssh
   check_mode: no
-
 
 - name: "Add Match User sshd directive for '{{ user.name }}'"
   lineinfile:
