@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+
+deb http://mirror.evolix.org/debian/ jessie {{ apt_basics_components | mandatory }}
+deb http://mirror.evolix.org/debian/ jessie-updates {{ apt_basics_components | mandatory }}
+deb http://security.debian.org/ jessie/updates {{ apt_basics_components | mandatory }}

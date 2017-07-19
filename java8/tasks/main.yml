@@ -5,7 +5,7 @@
 
 - name: install jessie-backports
   include_role:
-    name: apt-repositories
+    name: apt
     tasks_from: backports.yml
   when: ansible_distribution_release == "jessie"
 

@@ -5,7 +5,7 @@
 #     msg: "Error: Evolix public repository is not compatble with 'Debian Stretch' yet."
 #   when: ansible_distribution_release == "stretch"
 #   tags:
-#   - apt-repositories
+#   - apt
 
 
 - name: Add Evolix GPG key
@@ -21,9 +21,9 @@
     mode: "0640"
   notify: apt update
   tags:
-  - apt-repositories
+  - apt
 
 - name: Intermediate flush of handlers
   meta: flush_handlers
   tags:
-  - apt-repositories
+  - apt

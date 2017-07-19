@@ -28,7 +28,7 @@ suites:
       playbook: ./tests/test.yml
     verifier:
       patterns:
-      - apt-repositories/tests/spec/main_spec.rb
+      - apt/tests/spec/main_spec.rb
       bundler_path: '/usr/local/bin'
       rspec_path: '/usr/local/bin'
 

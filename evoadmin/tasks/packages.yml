@@ -1,7 +1,7 @@
 ---
 
 - include_role:
-    name: apt-repositories
+    name: apt
     tasks_from: evolix_public.yml
 
 - meta: flush_handlers

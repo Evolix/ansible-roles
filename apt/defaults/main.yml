@@ -1,0 +1,7 @@
+apt_install_basics: True
+apt_basics_components: "main"
+
+apt_install_backports: False
+apt_backports_components: "main"
+
+apt_install_evolix_public: True

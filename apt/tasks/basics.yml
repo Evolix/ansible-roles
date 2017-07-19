@@ -8,9 +8,9 @@
     force: yes
   notify: apt update
   tags:
-  - apt-repositories
+  - apt
 
 - name: Intermediate flush of handlers
   meta: flush_handlers
   tags:
-  - apt-repositories
+  - apt

@@ -5,7 +5,7 @@
     regexp: "backports"
     state: absent
   tags:
-  - apt-repositories
+  - apt
 
 - name: Backports sources list is installed
   template:
@@ -15,7 +15,7 @@
     mode: "0640"
   notify: apt update
   tags:
-  - apt-repositories
+  - apt
 
 - name: Backports configuration
   copy:
@@ -25,9 +25,9 @@
     mode: "0640"
   notify: apt update
   tags:
-  - apt-repositories
+  - apt
 
 - name: Intermediate flush of handlers
   meta: flush_handlers
   tags:
-  - apt-repositories
+  - apt

@@ -7,25 +7,25 @@
   - ansible_distribution_release != "jessie"
   - ansible_distribution_release != "stretch"
   tags:
-  - apt-repositories
+  - apt
 
 - name: Install basics repositories
   include: basics.yml
-  when: apt_repositories_install_basics
+  when: apt_install_basics
   tags:
-  - apt-repositories
+  - apt
 
 - name: Install APT Backports repository
   include: backports.yml
-  when: apt_repositories_install_backports
+  when: apt_install_backports
   tags:
-  - apt-repositories
+  - apt
 
 - debug:
-    var: apt_repositories_install_evolix_public
+    var: apt_install_evolix_public
 
 - name: Install Evolix Public APT repository
   include: evolix_public.yml
-  when: apt_repositories_install_evolix_public
+  when: apt_install_evolix_public
   tags:
-  - apt-repositories
+  - apt
