@@ -1,0 +1,6 @@
+---
+- name: Set message of the day
+  template:
+    src: motd.j2
+    dest: /etc/motd
+    force: yes
