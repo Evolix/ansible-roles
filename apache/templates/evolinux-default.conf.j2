@@ -45,7 +45,7 @@
         Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
     </Directory>
 
-    ErrorDocument 403 {{ apache_default_redirect_url }}
+    #ErrorDocument 403 {{ apache_default_redirect_url }}
 
     CustomLog /var/log/apache2/access.log vhost_combined
     ErrorLog /var/log/apache2/error.log
