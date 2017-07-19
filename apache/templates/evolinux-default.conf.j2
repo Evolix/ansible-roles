@@ -22,6 +22,7 @@
     <Directory /var/www/>
         Options +Indexes +FollowSymLinks +MultiViews
         AllowOverride None
+        Require all denied
 
         Include /etc/apache2/private_ipaddr_whitelist.conf
     </Directory>
