@@ -1,4 +1,26 @@
 ---
+# We have to copy the local jail before installing the package
+# or we risk being jailed by fail2ban
+
+- name: Prepare /etc/fail2ban
+  file:
+    path: /etc/fail2ban
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  tags:
+  - fail2ban
+
+- name: local jail is installed
+  template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.local
+    mode: "0644"
+    notify: restart fail2ban
+  tags:
+  - fail2ban
+
 - name: package is installed
   apt:
     name: fail2ban
@@ -15,15 +37,6 @@
   with_items:
     - dovecot-evolix.conf
     - sasl-evolix.conf
-  notify: restart fail2ban
-  tags:
-    - fail2ban
-
-- name: local jail is installed
-  template:
-    src: jail.local.j2
-    dest: /etc/fail2ban/jail.local
-    mode: "0644"
   notify: restart fail2ban
   tags:
     - fail2ban
