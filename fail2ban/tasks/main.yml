@@ -17,8 +17,8 @@
     src: jail.local.j2
     dest: /etc/fail2ban/jail.local
     mode: "0644"
-    notify: restart fail2ban
     force: no
+  notify: restart fail2ban
   tags:
   - fail2ban
 
