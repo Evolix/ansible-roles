@@ -3,11 +3,15 @@
   local_action: "template src=ansible-info.j2 dest=/tmp/ansible-playbook-{{ ansible_date_time.epoch }}.log"
   changed_when: no
   become: no
+  tags:
+  - always
 
 - name: Get info on local environment with info.sh
   local_action: "script info.sh >> /tmp/ansible-playbook-{{ ansible_date_time.epoch }}.log"
   changed_when: no
   become: no
+  tags:
+  - always
 
 - name: Create ansible log dir on remote server
   file:
@@ -16,6 +20,8 @@
     owner: root
     group: adm
     mode: "0750"
+  tags:
+  - always
 
 - name: Copy ansible-playbook log on remote server
   copy:
@@ -25,8 +31,12 @@
     group: adm
     mode: "0640"
   changed_when: no
+  tags:
+  - always
 
 - name: Purge local log
   local_action: "file path=/tmp/ansible-playbook-{{ ansible_date_time.epoch }}.log state=absent"
   changed_when: no
   become: no
+  tags:
+  - always
