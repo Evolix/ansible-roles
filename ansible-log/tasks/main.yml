@@ -2,6 +2,7 @@
 - name: Get info on local Ansible environment
   local_action: "template src=ansible-info.j2 dest=/tmp/ansible-playbook-{{ ansible_date_time.epoch }}.log"
   changed_when: no
+  check_mode: no
   become: no
   tags:
   - always
@@ -9,6 +10,7 @@
 - name: Get info on local environment with info.sh
   local_action: "script info.sh >> /tmp/ansible-playbook-{{ ansible_date_time.epoch }}.log"
   changed_when: no
+  check_mode: no
   become: no
   tags:
   - always
@@ -20,6 +22,7 @@
     owner: root
     group: adm
     mode: "0750"
+  check_mode: no
   tags:
   - always
 
@@ -31,12 +34,14 @@
     group: adm
     mode: "0640"
   changed_when: no
+  check_mode: no
   tags:
   - always
 
 - name: Purge local log
   local_action: "file path=/tmp/ansible-playbook-{{ ansible_date_time.epoch }}.log state=absent"
   changed_when: no
+  check_mode: no
   become: no
   tags:
   - always
