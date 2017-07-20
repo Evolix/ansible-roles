@@ -14,8 +14,8 @@
 
 - name: be sure to enable libapache2-mod-fcgid
   command: a2enmod fcgid
-  register: cmd_disable_fcgid
-  changed_when: "'Module fcgid already enabled' not in cmd_disable_fcgid.stdout"
+  register: cmd_enable_fcgid
+  changed_when: "'Module fcgid already enabled' not in cmd_enable_fcgid.stdout"
   notify: restart apache
   tags:
   - apache
