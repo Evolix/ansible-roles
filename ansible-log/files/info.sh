@@ -1,5 +1,12 @@
 #!/bin/sh
 
+ppid=$(ps -p "$$" -o ppid=)
+pppid=$(ps -p "$ppid" -o ppid=)
+ppppid=$(ps -p "$pppid" -o ppid=)
+
+ps --pid "$ppppid" -o command=
+echo ""
+
 git config --get remote.origin.url
 git log --pretty="%h - %s" -3
 
