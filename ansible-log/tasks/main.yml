@@ -1,16 +1,32 @@
 ---
-- name: Template
-  local_action: template src=ansible-info.j2 dest=/tmp/ansible-info.log
+- name: Get info on local Ansible environment
+  local_action: "template src=ansible-info.j2 dest=/tmp/ansible-playbook-{{ ansible_date_time.epoch }}.log"
   changed_when: no
   become: no
 
-- name: Get info on local environment
-  local_action: script info.sh >> /tmp/ansible-info.log
+- name: Get info on local environment with info.sh
+  local_action: "script info.sh >> /tmp/ansible-playbook-{{ ansible_date_time.epoch }}.log"
   changed_when: no
   become: no
 
-- name: Copy ansible-info on remote server
+- name: Create ansible log dir on remote server
+  file:
+    path: /var/log/ansible
+    state: directory
+    owner: root
+    group: adm
+    mode: "0750"
+
+- name: Copy ansible-playbook log on remote server
   copy:
-    src: /tmp/ansible-info.log
-    dest: /var/log/ansible-info.log
+    src: "/tmp/ansible-playbook-{{ ansible_date_time.epoch }}.log"
+    dest: "/var/log/ansible/ansible-playbook-{{ ansible_date_time.epoch }}.log"
+    owner: root
+    group: adm
+    mode: "0640"
   changed_when: no
+
+- name: Purge local log
+  local_action: "file path=/tmp/ansible-playbook-{{ ansible_date_time.epoch }}.log state=absent"
+  changed_when: no
+  become: no
