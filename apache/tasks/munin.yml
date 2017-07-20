@@ -12,6 +12,15 @@
   - apache
   - munin
 
+- name: be sure to enable libapache2-mod-fcgid
+  command: a2enmod fcgid
+  register: cmd_disable_fcgid
+  changed_when: "'Module fcgid already enabled' not in cmd_disable_fcgid.stdout"
+  notify: restart apache
+  tags:
+  - apache
+  - munin
+
 - name: change group for /var/log/munin/
   file:
     group: www-data
