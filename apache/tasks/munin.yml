@@ -2,12 +2,19 @@
 
 - name: install packages for Apache and Munin
   apt:
-    name: libapache2-mod-fcgid
+    name: "{{ item }}"
     state: installed
+  with_items:
+  - libapache2-mod-fcgid
+  - libcgi-fast-perl
   notify: reload apache
   tags:
   - apache
   - munin
+
+- name: change group for /var/log/munin/
+  file:
+    group: www-data
 
 - name: install munin plugins
   file:
