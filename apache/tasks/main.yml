@@ -1,65 +1,33 @@
 ---
 
-- name: Main packages are installed
+- name: packages are installed (stretch)
   apt:
     name: '{{ item }}'
     state: present
   with_items:
   - apache2
-  tags:
-  - apache
-  - packages
-
-- name: Install packages for Jessie
-  apt:
-    name: '{{ item }}'
-    state: present
-  with_items:
-  - apache2-mpm-prefork
-  tags:
-  - apache
-  - packages
-  when: ansible_distribution_release == "jessie"
-
-- name: manually disable mpm_event
-  command: a2dismod mpm_event
-  register: cmd_disable_event
-  changed_when: "'Module mpm_event already disabled' not in cmd_disable_event.stdout"
-  notify: restart apache
-  tags:
-  - apache
-
-- name: manually enable mpm_prefork
-  command: a2enmod mpm_prefork
-  register: cmd_disable_prefork
-  changed_when: "'Module mpm_prefork already enabled' not in cmd_disable_prefork.stdout"
-  notify: restart apache
-  tags:
-  - apache
-
-# With Ansible 2.2 the module check the config for conflicts
-# With 2.3 it can be disabled.
-# https://docs.ansible.com/ansible/apache2_module_module.html
-# - name: mpm_event modules is disabled
-#   apache2_module:
-#     name: '{{ item }}'
-#     state: absent
-#   with_items:
-#   - mpm_event
-#   tags:
-#   - apache
-
-- name: Additional packages are installed
-  apt:
-    name: '{{ item }}'
-    state: present
-  with_items:
-  - apg
+  - libapache2-mpm-itk
+  - libapache2-mod-evasive
   - apachetop
   - libwww-perl
   tags:
   - apache
   - packages
+  when: ansible_distribution_release == "stretch"
+
+- name: packages are installed (jessie)
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - apache2-mpm-itk
+  - libapache2-mod-evasive
+  - apachetop
+  - libwww-perl
+  tags:
+  - apache
+  - packages
+  when: ansible_distribution_release == "jessie"
 
 - name: basic modules are enabled
   apache2_module:
@@ -70,10 +38,6 @@
   - expires
   - headers
   - cgi
-  - ssl
-  - include
-  - negotiation
-  - alias
   tags:
   - apache
 
@@ -83,40 +47,8 @@
     dest: "/etc/apache2/conf-available/z-evolinux-defaults.conf"
     owner: root
     group: root
-    mode: "0644"
+    mode: "0640"
     force: yes
-  tags:
-  - apache
-
-- name: Copy Apache localized error pages config file
-  copy:
-    src: evolinux-localized-error-pages.conf
-    dest: "/etc/apache2/conf-available/z-evolinux-localized-error-pages.conf"
-    owner: root
-    group: root
-    mode: "0644"
-    force: yes
-  tags:
-  - apache
-
-- name: Create directory which will contain apache error pages
-  file:
-    path: /usr/local/share/apache2/error
-    mode: u=rwX,g=rX,o=rX
-    owner: root
-    group: root
-    state: directory
-  tags:
-  - apache
-
-- name: Copy apache error pages
-  copy:
-    src: error-pages/
-    dest: "/usr/local/share/apache2/error/"
-    directory_mode: u=rwX,g=rX,o=rX
-    mode: u=rw,g=r,o=r
-    owner: root
-    group: root
   tags:
   - apache
 
@@ -126,18 +58,7 @@
     dest: "/etc/apache2/conf-available/zzz-evolinux-custom.conf"
     owner: root
     group: root
-    mode: "0644"
-    force: no
-  tags:
-  - apache
-
-- name: Copy Apache SSL (strong security) config file
-  copy:
-    src: evolinux-ssl.conf
-    dest: "/etc/apache2/conf-available/evolinux-ssl.conf"
-    owner: root
-    group: root
-    mode: "0644"
+    mode: "0640"
     force: no
   tags:
   - apache
@@ -148,9 +69,7 @@
   changed_when: "'Enabling' in command_result.stderr"
   with_items:
   - z-evolinux-defaults.conf
-  - z-evolinux-localized-error-pages.conf
   - zzz-evolinux-custom.conf
-  - evolinux-ssl.conf
   tags:
   - apache
 
@@ -205,10 +124,10 @@
   check_mode: no
   tags:
   - apache
+  when: apache_phpmyadmin_set
 
 - include: phpmyadmin.yml
-  when: _default_index.stat.exists
-
+  when: apache_phpmyadmin_set and _default_index.stat.exists
 
 # - block:
 #   - name: generate random string for serverstatus suffix
