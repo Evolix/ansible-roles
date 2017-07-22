@@ -129,6 +129,20 @@
 - include: phpmyadmin.yml
   when: apache_phpmyadmin_set and _default_index.stat.exists
 
+- name: Check if log2mail is installed
+  apt:
+    name: log2mail
+    state: present
+
+- name: Add log2mail config for Apache segfaults
+  template:
+    src: log2mail-apache.j2
+    dest: "/etc/log2mail/config/apache"
+    owner: root
+    group: root
+    mode: "0644"
+    force: no
+
 # - block:
 #   - name: generate random string for serverstatus suffix
 #     command: "apg -a 1 -M N -n 1"
