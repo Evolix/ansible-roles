@@ -16,62 +16,48 @@
       export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
   when: envvar_grep_path.rc != 0
 
-- name: Install ITK module for Jessie
-  apt:
-    name: apache2-mpm-itk
-  when: ansible_distribution_release == "jessie"
-
-- name: Install ITK module for Stretch
-  apt:
-    name: libapache2-mpm-itk
-  when: ansible_distribution_release == "stretch"
-
 - name: Additional packages are installed
   apt:
     name: '{{ item }}'
     state: present
   with_items:
-  - libapache2-mod-evasive
   - libapache2-mod-security2
   - modsecurity-crs
+  - apg
+
+- name: Additional modules are enabled
+  apache2_module:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - ssl
+  - include
+  - negotiation
+  - alias
 
 - name: Copy Apache settings for modules
   copy:
-    src: "{{ item }}"
-    dest: "/etc/apache2/conf-available/{{ item }}"
+    src: "evolinux-modsec.conf"
+    dest: "/etc/apache2/conf-available/evolinux-modsec.conf"
     owner: root
     group: root
     mode: "0644"
     force: no
-  with_items:
-  - evolinux-itk.conf
-  - evolinux-evasive.conf
-  - evolinux-modsec.conf
+
+- name: Copy Apache settings for modules
+  template:
+    src: "evolinux-evasive.conf.j2"
+    dest: "/etc/apache2/conf-available/evolinux-evasive.conf"
+    owner: root
+    group: root
+    mode: "0644"
+    force: no
 
 - name: Ensure Apache modules configs are enabled
   command: "a2enconf {{ item }}"
   register: command_result
   changed_when: "'Enabling' in command_result.stderr"
   with_items:
-  - evolinux-itk
   - evolinux-evasive
   - evolinux-modsec
 
-- name: Check if log2mail is installed
-  command: "apt list --installed log2mail"
-  register: command_result
-  changed_when: False
-
-- debug:
-    var: command_result
-    verbosity: 1
-
-- name: Add log2mail config for Apache segfaults
-  template:
-    src: log2mail-apache.j2
-    dest: "/etc/log2mail/config/apache"
-    owner: root
-    group: root
-    mode: "0644"
-    force: no
-  when: "'log2mail' in command_result.stdout"
