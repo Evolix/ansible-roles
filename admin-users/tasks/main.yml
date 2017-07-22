@@ -1,14 +1,14 @@
 ---
 
-- fail:
-    msg: "Error: empty variable 'admin_users'!"
+- debug:
+    msg: "Warning: empty variable 'admin_users' admin-users tasks will skipped!"
   when: admin_users == {}
 
 - include: adduser_debian.yml
   vars:
     user: "{{ item.value }}"
   with_dict: "{{ admin_users }}"
-  when: ansible_distribution == "Debian"
+  when: ansible_distribution == "Debian" and admin_users != {}
 
 # - include: adduser_openbsd.yml user={{ item.value }}
 #   with_dict: "{{ admin_users }}"
