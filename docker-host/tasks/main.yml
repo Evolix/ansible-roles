@@ -24,11 +24,9 @@
     repo: 'deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable'
     state: present
     update_cache: no
+    filename: docker.list
 
-- name: Enable backports repository for python-docker (Jessie only)
-  apt_repository:
-    repo: 'deb http://ftp.debian.org/debian {{ ansible_distribution_release }}-backports main'
-    state: present
+- include: jessie_backports.yml
   when: ansible_distribution_release == 'jessie'
 
 - name: Add Docker's official GPG key
