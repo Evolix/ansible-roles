@@ -4,7 +4,7 @@
     name: apt
     tasks_from: backports.yml
   tags:
-  - haproxy
+  - nginx
   - packages
 
 - name: Prefer Nginx packages from jessie-backports
