@@ -4,7 +4,8 @@ Install and run evocheck ; a script for checking various settings automatically.
 
 ## Tasks
 
-The tasks in `main.yml` install the script. This is temporary as evocheck is a package on Debian which is a bit outdated for the moment. For OpenBSD, it should also be packaged, but the work is not done yet.
+The roles does not install evocheck by default as it should be installed through dependencies.
+For OpenBSD, it should be packaged, but the work is not done yet.
 
 A separate `exec.yml` file can be imported manually in playbooks or roles to execute the script. Example :
 
@@ -13,3 +14,8 @@ A separate `exec.yml` file can be imported manually in playbooks or roles to exe
     name: evocheck
     tasks_from: exec.yml
 ```
+## Variables
+
+We can force install via :
+* `evocheck_force_install: local` : will copy the script provided by the role
+* `evocheck_force_install: package` : will install the package via repositories

@@ -1,0 +1,18 @@
+---
+- name: Deploy log2mail systemd unit
+  copy:
+    src: log2mail.service
+    dest: /etc/systemd/system/log2mail.service
+    mode: "0644"
+
+- name: Remove log2mail sysvinit service
+  file:
+    path: /etc/init.d/log2mail
+    state: absent
+
+- name: Enable and start log2mail service
+  systemd:
+    name: log2mail
+    daemon-reload: yes
+    state: restarted
+    enabled: yes

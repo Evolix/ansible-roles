@@ -5,10 +5,10 @@ apache_private_ipaddr_whitelist_absent: []
 apache_private_htpasswd_present: []
 apache_private_htpasswd_absent: []
 
-apache_default_redirect_url: "http://evolix.fr"
 apache_evolinux_default_enabled: True
 apache_evolinux_default_ssl_cert: /etc/ssl/certs/ssl-cert-snakeoil.pem
 apache_evolinux_default_ssl_key: /etc/ssl/private/ssl-cert-snakeoil.key
 
+apache_phpmyadmin_set: False
 apache_phpmyadmin_suffix: ""
 apache_serverstatus_suffix: ""

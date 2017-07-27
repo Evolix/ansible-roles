@@ -44,6 +44,7 @@ command[check_tomcat-ajp13]=/usr/lib/nagios/plugins/check_tcp -p 8009
 command[check_proxy]=/usr/lib/nagios/plugins/check_http -H {{ nagios_nrpe_check_proxy_host }}
 command[check_redis]=/usr/lib/nagios/plugins/check_tcp -p 6379
 command[check_clamd]=/usr/lib/nagios/plugins/check_clamd -H /var/run/clamav/clamd.ctl -v
+command[check_clamav_db]=/usr/lib/nagios/plugins/check_file_age -w 86400 -c 172800 -f /var/lib/clamav/evolix.ndb
 command[check_ssl]=/usr/lib/nagios/plugins/check_http -f follow -I 127.0.0.1 -S -p 443 -H ssl.evolix.net -C 15,5
 command[check_elasticsearch]=/usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /_cat/health?h=st -p 9200 -r 'red' --invert-regex
 command[check_memcached]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 11211

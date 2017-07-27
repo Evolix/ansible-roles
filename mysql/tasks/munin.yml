@@ -10,10 +10,13 @@
     - munin
 
 - block:
-  - name: Install libcache-cache-perl for Munin
+  - name: Install perl libraries for Munin
     apt:
-      name: libcache-cache-perl
+      name: "{{ item }}"
       state: present
+    with_items:
+    - libdbd-mysql-perl
+    - libcache-cache-perl
 
   - name: Enable core Munin plugins
     file:

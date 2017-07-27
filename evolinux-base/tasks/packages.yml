@@ -89,20 +89,6 @@
     line: 'SENDMAILTO="{{ logcheck_alert_email or general_alert_email | mandatory }}"'
   when: evolinux_packages_logcheck_recipient
 
-- name: is an MTA installed?
-  command: "dpkg -S /usr/sbin/sendmail"
-  check_mode: no
-
-  register: mta_installed
-  failed_when: False
-  changed_when: False
-
-- name: Install lsb-invalid-mta
-  apt:
-    name: lsb-invalid-mta
-  when: evolinux_packages_invalid_mta and mta_installed.rc != 0
-
-
 - name: Deleting rpcbin and nfs-common
   apt:
     name: "{{ item }}"

@@ -1,6 +1,14 @@
 ---
 
 - block:
+  - name: packages are installed
+    apt:
+      name: '{{ item }}'
+      state: present
+    with_items:
+    - phpmyadmin
+    - apg
+
   - name: generate random string for phpmyadmin suffix
     command: "apg -a 1 -M N -n 1"
     changed_when: False
