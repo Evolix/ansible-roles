@@ -1,0 +1,23 @@
+---
+
+- name: Verify Evolinux sudoers file presence
+  template:
+    src: sudoers_debian.j2
+    dest: /etc/sudoers.d/evolinux
+    force: false
+    validate: '/usr/sbin/visudo -cf %s'
+  register: copy_sudoers_evolinux
+
+- name: Verify Evolinux sudoers file permissions
+  file:
+    path: /etc/sudoers.d/evolinux
+    mode: "0440"
+    state: file
+
+- name: "Add user in sudoers file for '{{ user.name }}'"
+  replace:
+    dest: /etc/sudoers.d/evolinux
+    regexp: '^(User_Alias\s+ADMINS\s+=((?!{{ user.name }}).)*)$'
+    replace: '\1,{{ user.name }}'
+    validate: '/usr/sbin/visudo -cf %s'
+  when: not copy_sudoers_evolinux.changed

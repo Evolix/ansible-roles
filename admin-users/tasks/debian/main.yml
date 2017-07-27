@@ -1,0 +1,15 @@
+---
+
+- include: user.yml
+
+- include: profile.yml
+
+- include: ssh.yml
+
+- include: sudo_jessie.yml
+  when: ansible_distribution_release == 'jessie'
+
+- include: sudo_stretch.yml
+  when: ansible_distribution_release == 'stretch'
+
+- meta: flush_handlers
