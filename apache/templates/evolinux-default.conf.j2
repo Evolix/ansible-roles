@@ -49,6 +49,15 @@
     <Location /munin_opcache.php>
         Require local
     </Location>
+
+    <IfModule mod_status.c>
+        <Location /server-status>
+            SetHandler server-status
+            include /etc/apache2/private_ipaddr_whitelist.conf
+            Require local
+        </Location>
+    </IfModule>
+
 </VirtualHost>
 
 <IfModule mod_ssl.c>
@@ -100,6 +109,14 @@
         CustomLog /var/log/apache2/access.log vhost_combined
         ErrorLog /var/log/apache2/error.log
         LogLevel warn
+
+        <IfModule mod_status.c>
+            <Location /server-status>
+                SetHandler server-status
+                include /etc/apache2/private_ipaddr_whitelist.conf
+                Require local
+            </Location>
+        </IfModule>
 
     </VirtualHost>
 </IfModule>

@@ -66,6 +66,12 @@
   tags:
   - apache
 
+- name: disable status.conf
+  file:
+    dest: /etc/apache2/mods-enabled/status.conf
+    state: absent
+  notify: reload apache
+
 - name: Ensure Apache config files are enabled
   command: "a2enconf {{ item }}"
   register: command_result
