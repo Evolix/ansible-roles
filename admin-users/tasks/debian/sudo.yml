@@ -2,9 +2,9 @@
 
 - name: Verify Evolinux sudoers file presence
   template:
-    src: sudoers_debian.j2
+    src: sudoers_{{ ansible_distribution_release }}.j2
     dest: /etc/sudoers.d/evolinux
-    force: false
+    force: no
     validate: '/usr/sbin/visudo -cf %s'
   register: copy_sudoers_evolinux
 
@@ -20,4 +20,7 @@
     regexp: '^(User_Alias\s+ADMINS\s+=((?!{{ user.name }}).)*)$'
     replace: '\1,{{ user.name }}'
     validate: '/usr/sbin/visudo -cf %s'
-  when: not copy_sudoers_evolinux.changed
+  when:
+  - ansible_distribution == "Debian"
+  - ansible_distribution_major_version | version_compare('9', '<')
+  - not copy_sudoers_evolinux.changed

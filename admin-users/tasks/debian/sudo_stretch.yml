@@ -1,7 +1,0 @@
----
-
-- name: "'{{ user.name }}' is in the sudo group"
-  user:
-    name: "{{ user.name }}"
-    groups: sudo
-    append: yes

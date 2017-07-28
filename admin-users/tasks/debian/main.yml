@@ -6,10 +6,6 @@
 
 - include: ssh.yml
 
-- include: sudo_jessie.yml
-  when: ansible_distribution_release == 'jessie'
-
-- include: sudo_stretch.yml
-  when: ansible_distribution_release == 'stretch'
+- include: sudo.yml
 
 - meta: flush_handlers
