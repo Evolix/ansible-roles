@@ -38,6 +38,7 @@
   - expires
   - headers
   - cgi
+  notify: reload apache
   tags:
   - apache
 
@@ -49,6 +50,7 @@
     group: root
     mode: "0640"
     force: yes
+  notify: reload apache
   tags:
   - apache
 
@@ -60,6 +62,7 @@
     group: root
     mode: "0640"
     force: no
+  notify: reload apache
   tags:
   - apache
 
@@ -70,6 +73,7 @@
   with_items:
   - z-evolinux-defaults.conf
   - zzz-evolinux-custom.conf
+  notify: reload apache
   tags:
   - apache
 
