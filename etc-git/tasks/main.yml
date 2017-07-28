@@ -1,12 +1,12 @@
 ---
 
-- name: Git is installed
+- name: Git is installed (Debian)
   apt:
     name: git
     state: present
   when: ansible_os_family == "Debian"
 
-- name: Git is installed
+- name: Git is installed (OpenBSD)
   openbsd_pkg:
     name: git
     state: present
