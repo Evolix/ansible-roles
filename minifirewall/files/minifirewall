@@ -1,0 +1,385 @@
+#!/bin/sh
+
+# minifirewall is shellscripts for easy firewalling on a standalone server
+# we used netfilter/iptables http://netfilter.org/ designed for recent Linux kernel
+# See https://forge.evolix.org/projects/minifirewall
+
+# Copyright (c) 2007-2015 Evolix
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License.
+
+# Description
+# script for standalone server
+
+# Start or stop minifirewall
+#
+
+### BEGIN INIT INFO
+# Provides:          minfirewall
+# Required-Start:
+# Required-Stop:
+# Should-Start:      $network $syslog $named
+# Should-Stop:       $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: start and stop the firewall
+# Description:       Firewall designed for standalone server
+### END INIT INFO
+
+DESC="minifirewall"
+NAME="minifirewall"
+
+
+# Variables configuration
+#########################
+
+# iptables paths
+IPT=/sbin/iptables
+IPT6=/sbin/ip6tables
+
+# TCP/IP variables
+LOOPBACK='127.0.0.0/8'
+CLASSA='10.0.0.0/8'
+CLASSB='172.16.0.0/12'
+CLASSC='192.168.0.0/16'
+CLASSD='224.0.0.0/4'
+CLASSE='240.0.0.0/5'
+ALL='0.0.0.0'
+BROAD='255.255.255.255'
+PORTSROOT='0:1023'
+PORTSUSER='1024:65535'
+
+
+case "$1" in
+ start)
+
+     echo "Start IPTables rules..."
+
+# Stop and warn if error!
+set -e
+trap 'echo "ERROR in minifirewall configuration (fix it now!) or script manipulation (fix yourself)." ' INT TERM EXIT
+
+
+# sysctl network security settings
+##################################
+
+# Don't answer to broadcast pings
+echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
+
+# Ignore bogus ICMP responses
+echo 1 > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
+
+# Disable Source Routing
+for i in /proc/sys/net/ipv4/conf/*/accept_source_route; do
+echo 0 > $i
+done
+
+# Enable TCP SYN cookies to avoid TCP-SYN-FLOOD attacks
+# cf http://cr.yp.to/syncookies.html
+echo 1 > /proc/sys/net/ipv4/tcp_syncookies
+
+# Disable ICMP redirects
+for i in /proc/sys/net/ipv4/conf/*/accept_redirects; do
+echo 0 > $i
+done
+
+for i in /proc/sys/net/ipv4/conf/*/send_redirects; do
+echo 0 > $i
+done
+
+# Enable Reverse Path filtering : verify if responses use same network interface
+for i in /proc/sys/net/ipv4/conf/*/rp_filter; do
+echo 1 > $i
+done
+
+# log des paquets avec adresse incoherente
+for i in /proc/sys/net/ipv4/conf/*/log_martians; do
+echo 1 > $i
+done
+
+# IPTables configuration
+########################
+
+$IPT -N LOG_DROP
+$IPT -A LOG_DROP -j LOG  --log-prefix '[IPTABLES DROP] : '
+$IPT -A LOG_DROP -j DROP
+$IPT -N LOG_ACCEPT
+$IPT -A LOG_ACCEPT -j LOG  --log-prefix '[IPTABLES ACCEPT] : '
+$IPT -A LOG_ACCEPT -j ACCEPT
+
+# Configuration
+oldconfigfile="/etc/firewall.rc"
+configfile="/etc/default/minifirewall"
+
+if test -f $oldconfigfile; then
+    echo "$oldconfigfile is deprecated, rename to $configfile" >&2
+    exit 1
+fi
+
+if ! test -f $configfile; then
+    echo "$configfile does not exist" >&2
+    exit 1
+fi
+
+tmpfile=`mktemp`
+. $configfile 2>$tmpfile >&2
+if [ -s $tmpfile ]; then
+        echo "$configfile returns standard or error output (see below). Stopping." >&2
+        cat $tmpfile
+        exit 1
+fi
+rm $tmpfile
+
+# Trusted ip addresses
+$IPT -N ONLYTRUSTED
+$IPT -A ONLYTRUSTED -j LOG_DROP
+for x in $TRUSTEDIPS
+    do
+        $IPT -I ONLYTRUSTED -s $x -j ACCEPT
+    done
+
+# Privilegied ip addresses
+# (trusted ip addresses *are* privilegied)
+$IPT -N ONLYPRIVILEGIED
+$IPT -A ONLYPRIVILEGIED -j ONLYTRUSTED
+for x in $PRIVILEGIEDIPS
+    do
+        $IPT -I ONLYPRIVILEGIED -s $x -j ACCEPT
+    done
+
+# Chain for restrictions (blacklist IPs/ranges)
+$IPT -N NEEDRESTRICT
+
+# We allow all on loopback interface
+$IPT -A INPUT -i lo -j ACCEPT
+[ "$IPV6" != "off" ] && $IPT6 -A INPUT -i lo -j ACCEPT
+# if OUTPUTDROP
+$IPT -A OUTPUT -o lo -j ACCEPT
+[ "$IPV6" != "off" ] && $IPT6 -A OUTPUT -o lo -j ACCEPT
+
+# We avoid "martians" packets, typical when W32/Blaster virus
+# attacked windowsupdate.com and DNS was changed to 127.0.0.1
+# $IPT -t NAT -I PREROUTING -s $LOOPBACK -i ! lo -j DROP
+$IPT -A INPUT -s $LOOPBACK ! -i lo -j DROP
+
+
+# Local services restrictions
+#############################
+
+# Allow services for $INTLAN (local server or local network)
+$IPT -A INPUT -s $INTLAN -j ACCEPT
+
+# Enable protection chain for sensible services
+for x in $SERVICESTCP1p
+    do
+        $IPT -A INPUT -p tcp --dport $x -j NEEDRESTRICT
+    done
+
+for x in $SERVICESUDP1p
+    do
+        $IPT -A INPUT -p udp --dport $x -j NEEDRESTRICT
+    done
+
+# Public service
+for x in $SERVICESTCP1
+    do
+        $IPT -A INPUT -p tcp --dport $x -j ACCEPT
+        [ "$IPV6" != "off" ] && $IPT6 -A INPUT -p tcp --dport $x -j ACCEPT
+    done
+
+for x in $SERVICESUDP1
+    do
+        $IPT -A INPUT -p udp --dport $x -j ACCEPT
+        [ "$IPV6" != "off" ] && $IPT6 -A INPUT -p udp --dport $x -j ACCEPT
+    done
+
+# Privilegied services
+for x in $SERVICESTCP2
+    do
+        $IPT -A INPUT -p tcp --dport $x -j ONLYPRIVILEGIED
+    done
+
+for x in $SERVICESUDP2
+    do
+        $IPT -A INPUT -p udp --dport $x -j ONLYPRIVILEGIED
+    done
+
+# Private services
+for x in $SERVICESTCP3
+    do
+        $IPT -A INPUT -p tcp --dport $x -j ONLYTRUSTED
+    done
+
+for x in $SERVICESUDP3
+    do
+        $IPT -A INPUT -p udp --dport $x -j ONLYTRUSTED
+    done
+
+
+# External services
+###################
+
+# DNS authorizations
+for x in $DNSSERVEURS
+    do
+        $IPT -A INPUT -p tcp ! --syn --sport 53 --dport $PORTSUSER -s $x -j ACCEPT
+        $IPT -A INPUT -p udp --sport 53 --dport $PORTSUSER -s $x -m state --state ESTABLISHED,RELATED -j ACCEPT
+        $IPT -A OUTPUT -o $INT -p udp -d $x --dport 53 --match state --state NEW -j ACCEPT
+    done
+
+# HTTP (TCP/80) authorizations
+for x in $HTTPSITES
+    do
+        $IPT -A INPUT -p tcp ! --syn --sport 80 --dport $PORTSUSER -s $x -j ACCEPT
+    done
+
+# HTTPS (TCP/443) authorizations
+for x in $HTTPSSITES
+    do
+        $IPT -A INPUT -p tcp ! --syn --sport 443 --dport $PORTSUSER -s $x -j ACCEPT
+    done
+
+# FTP (so complex protocol...) authorizations
+for x in $FTPSITES
+    do
+        # requests on Control connection
+        $IPT -A INPUT -p tcp ! --syn --sport 21 --dport $PORTSUSER -s $x -j ACCEPT
+        # FTP port-mode on Data Connection
+        $IPT -A INPUT -p tcp --sport 20 --dport $PORTSUSER -s $x -j ACCEPT
+        # FTP passive-mode on Data Connection
+        # WARNING, this allow all connections on TCP ports > 1024
+        $IPT -A INPUT -p tcp ! --syn --sport $PORTSUSER --dport $PORTSUSER -s $x -j ACCEPT
+    done
+
+# SSH authorizations
+for x in $SSHOK
+        do
+                $IPT -A INPUT -p tcp ! --syn --sport 22 -s $x -j ACCEPT
+        done
+
+# SMTP authorizations
+for x in $SMTPOK
+    do
+        $IPT -A INPUT -p tcp ! --syn --sport 25 --dport $PORTSUSER -j ACCEPT
+    done
+
+# secure SMTP (TCP/465 et TCP/587) authorizations
+for x in $SMTPSECUREOK
+    do
+        $IPT -A INPUT -p tcp ! --syn --sport 465 --dport $PORTSUSER -j ACCEPT
+        $IPT -A INPUT -p tcp ! --syn --sport 587 --dport $PORTSUSER -j ACCEPT
+    done
+
+# NTP authorizations
+for x in $NTPOK
+        do
+            $IPT -A INPUT -p udp --sport 123 -s $x -j ACCEPT
+            $IPT -A OUTPUT -o $INT -p udp -d $x --dport 123 --match state --state NEW -j ACCEPT
+        done
+
+# Always allow ICMP
+$IPT -A INPUT -p icmp -j ACCEPT
+[ "$IPV6" != "off" ] && $IPT6 -A INPUT -p icmpv6 -j ACCEPT
+
+
+# IPTables policy
+#################
+
+# by default DROP INPUT packets
+$IPT -P INPUT DROP
+[ "$IPV6" != "off" ] && $IPT6 -P INPUT DROP
+
+# by default, no FORWARING (deprecated for Virtual Machines)
+#echo 0 > /proc/sys/net/ipv4/ip_forward
+#$IPT -P FORWARD DROP
+#$IPT6 -P FORWARD DROP
+
+# by default allow OUTPUT packets... but drop UDP packets (see OUTPUTDROP to drop OUTPUT packets)
+$IPT -P OUTPUT ACCEPT
+[ "$IPV6" != "off" ] && $IPT6 -P OUTPUT ACCEPT
+$IPT -A OUTPUT -o $INT -p udp --dport 33434:33523 --match state --state NEW -j ACCEPT
+$IPT -A OUTPUT -p udp --match state --state ESTABLISHED,RELATED -j ACCEPT
+$IPT -A OUTPUT -p udp -j DROP
+[ "$IPV6" != "off" ] && $IPT6 -A OUTPUT -o $INT -p udp --dport 33434:33523 --match state --state NEW -j ACCEPT
+[ "$IPV6" != "off" ] && $IPT6 -A OUTPUT -p udp --match state --state ESTABLISHED,RELATED -j ACCEPT
+[ "$IPV6" != "off" ] && $IPT6 -A OUTPUT -p udp -j DROP
+
+trap - INT TERM EXIT
+
+    echo "...starting IPTables rules is now finish : OK"
+  ;;
+
+  stop)
+
+    echo "Flush all rules and accept everything..."
+
+    # Delete all rules
+    $IPT -F INPUT
+    $IPT -F OUTPUT
+    $IPT -F LOG_DROP
+    $IPT -F LOG_ACCEPT
+    $IPT -F ONLYTRUSTED
+    $IPT -F ONLYPRIVILEGIED
+    $IPT -F NEEDRESTRICT
+    $IPT -t nat -F
+    $IPT -t mangle -F
+    [ "$IPV6" != "off" ] && $IPT6 -F INPUT
+    [ "$IPV6" != "off" ] && $IPT6 -F OUTPUT
+
+    # Accept all
+    $IPT -P INPUT ACCEPT
+    $IPT -P OUTPUT ACCEPT
+    [ "$IPV6" != "off" ] && $IPT6 -P INPUT ACCEPT
+    [ "$IPV6" != "off" ] && $IPT6 -P OUTPUT ACCEPT
+    #$IPT -P FORWARD ACCEPT
+    #$IPT -t nat -P PREROUTING ACCEPT
+    #$IPT -t nat -P POSTROUTING ACCEPT
+
+    # Delete non-standard chains
+    $IPT -X LOG_DROP
+    $IPT -X LOG_ACCEPT
+    $IPT -X ONLYPRIVILEGIED
+    $IPT -X ONLYTRUSTED
+    $IPT -X NEEDRESTRICT
+
+    echo "...flushing IPTables rules is now finish : OK"
+  ;;
+
+  status)
+
+    $IPT -L -n -v --line-numbers
+    $IPT -t nat -L -n -v --line-numbers
+    $IPT -t mangle -L -n -v --line-numbers
+    $IPT6 -L -n -v --line-numbers
+    $IPT6 -t mangle -L -n -v --line-numbers
+  ;;
+
+  reset)
+
+    echo "Reset all IPTables counters..."
+
+    $IPT -Z
+    $IPT -t nat -Z
+    $IPT -t mangle -Z
+    [ "$IPV6" != "off" ] && $IPT6 -Z
+    [ "$IPV6" != "off" ] && $IPT6 -t mangle -Z
+
+    echo "...reseting IPTables counters is now finish : OK"
+  ;;
+
+  restart)
+
+    $0 stop
+    $0 start
+  ;;
+
+  *)
+
+    echo "Usage: $0 {start|stop|restart|status|reset|squid}"
+    exit 1
+esac
+
+exit 0
+
