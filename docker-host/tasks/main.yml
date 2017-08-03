@@ -53,7 +53,7 @@
 
 - name: Remove options from docker systemd service
   lineinfile:
-    path: /lib/systemd/system/docker.service
+    dest: /lib/systemd/system/docker.service
     regexp: '^ExecStart='
     line: 'ExecStart=/usr/bin/dockerd'
 
