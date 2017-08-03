@@ -1,4 +1,15 @@
-- name: ensure packages are installed
+- name: Ensure php5-fpm package is installed
   apt:
     name: php5-fpm
     state: present
+  when: ansible_distribution_major_version | version_compare('8', '<=')
+  tags:
+  - php-fpm
+
+- name: Ensure php-fpm packages is installed
+  apt:
+    name: php-fpm
+    state: present
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+  tags:
+  - php-fpm
