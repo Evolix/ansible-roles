@@ -25,6 +25,9 @@
   # Warning: Need sudo!
   become_user: "{{ evoadmin_username }}"
 
+- include: remount_usr_rw.yml
+  when: evoadmin_scripts_dir | search ("/usr")
+
 - name: "Create {{ evoadmin_scripts_dir }}"
   file:
     dest: "{{ evoadmin_scripts_dir }}"
