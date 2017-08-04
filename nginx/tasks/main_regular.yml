@@ -119,7 +119,7 @@
 - name: default vhost is enabled
   file:
     src: /etc/nginx/sites-available/evolinux-default.conf
-    dest: /etc/nginx/sites-enabled/default.conf
+    dest: /etc/nginx/sites-enabled/default
     state: link
     force: yes
   notify: reload nginx
