@@ -15,6 +15,8 @@
   template:
     src: evolix.cfg.j2
     dest: /etc/nagios/nrpe.d/evolix.cfg
+    group: nagios
+    mode: "0640"
   notify: restart nagios-nrpe-server
 
 - name: Nagios config is secured
