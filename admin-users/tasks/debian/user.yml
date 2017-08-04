@@ -28,6 +28,13 @@
    update_password: on_create
   when: uidisbusy.rc == 0
 
+- name: "Add user to sudo group (Stretch)"
+  user:
+    name: '{{ user.name }}'
+    groups: sudo
+    append: yes
+  when: ansible_distribution_release == "stretch"
+
 - name: "Fix perms on homedirectory for '{{ user.name }}'"
   file:
    name: '/home/{{ user.name }}'
