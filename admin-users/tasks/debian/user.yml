@@ -28,10 +28,14 @@
    update_password: on_create
   when: uidisbusy.rc == 0
 
+- name: "Create {{ admin_users_group }}"
+  group:
+    name: "{{ admin_users_group }}"
+
 - name: "Add user to sudo group (Stretch)"
   user:
     name: '{{ user.name }}'
-    groups: sudo
+    groups: 'sudo,{{ admin_users_group }}'
     append: yes
   when: ansible_distribution_release == "stretch"
 

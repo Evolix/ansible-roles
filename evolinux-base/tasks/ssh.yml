@@ -1,29 +1,51 @@
 ---
-- name: verify Match Address directive
-  command: "grep 'Match Address' /etc/ssh/sshd_config"
-  changed_when: False
-  failed_when: False
-  check_mode: no
 
-  register: grep_matchaddress_ssh
-
-- name: Add Match Address sshd directive
-  lineinfile:
+- name: Security directives for Evolinux
+  blockinfile:
     dest: /etc/ssh/sshd_config
-    line: "\nMatch Address {{ evolinux_ssh_password_auth_addresses | join(',') }}\n    PasswordAuthentication yes"
+    block: |
+      Match Group sudo
+          PasswordAuthentication no
+      Match Address {{ evolinux_ssh_password_auth_addresses | join(',') }}
+          PasswordAuthentication yes
+    marker: "# {mark} EVOLINUX PASSWORD RESTRICTIONS"
+    insertafter: EOF
     validate: '/usr/sbin/sshd -T -f %s'
   notify: reload sshd
-  when: evolinux_ssh_match_address and grep_matchaddress_ssh.rc != 0 and evolinux_ssh_password_auth_addresses != []
 
-- name: Modify Match Address sshd directive
-  replace:
-    dest: /etc/ssh/sshd_config
-    regexp: '^(Match Address ((?!{{ item }}).)*)$'
-    replace: '\1,{{ item }}'
-    validate: '/usr/sbin/sshd -T -f %s'
-  with_items: "{{ evolinux_ssh_password_auth_addresses }}"
-  notify: reload sshd
-  when: evolinux_ssh_match_address and grep_matchaddress_ssh.rc == 0
+# - name: verify Match Address directive
+#   command: "grep 'Match Address' /etc/ssh/sshd_config"
+#   changed_when: False
+#   failed_when: False
+#   check_mode: no
+#   register: grep_matchaddress_ssh
+#
+# - name: Add Match Address sshd directive
+#   lineinfile:
+#     dest: /etc/ssh/sshd_config
+#     line: "\nMatch Address {{ evolinux_ssh_password_auth_addresses | join(',') }}\n    PasswordAuthentication yes"
+#     insertafter: '# +ForceCommand cvs server'
+#     validate: '/usr/sbin/sshd -T -f %s'
+#   notify: reload sshd
+#   when: evolinux_ssh_match_address and grep_matchaddress_ssh.rc != 0 and evolinux_ssh_password_auth_addresses != []
+#
+# - name: Modify Match Address sshd directive
+#   replace:
+#     dest: /etc/ssh/sshd_config
+#     regexp: '^(Match Address ((?!{{ item }}).)*)$'
+#     replace: '\1,{{ item }}'
+#     validate: '/usr/sbin/sshd -T -f %s'
+#   with_items: "{{ evolinux_ssh_password_auth_addresses }}"
+#   notify: reload sshd
+#   when: evolinux_ssh_match_address and grep_matchaddress_ssh.rc == 0
+#
+# - name: Add Match Group sudo without password
+#   lineinfile:
+#     dest: /etc/ssh/sshd_config
+#     line: "\nMatch Group sudo\n    PasswordAuthentication no"
+#     insertbefore: '^Match Address'
+#     validate: '/usr/sbin/sshd -T -f %s'
+#   notify: reload sshd
 
 - name: disable SSH access for root
   replace:

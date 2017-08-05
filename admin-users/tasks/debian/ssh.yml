@@ -27,7 +27,7 @@
   lineinfile:
     dest: /etc/ssh/sshd_config
     line: "\nAllowUsers {{ user.name }}"
-    insertafter: '^#   ForceCommand cvs server'
+    insertafter: 'Subsystem'
     validate: '/usr/sbin/sshd -T -f %s'
   notify: reload sshd
   when: grep_allowusers_ssh.rc != 0
