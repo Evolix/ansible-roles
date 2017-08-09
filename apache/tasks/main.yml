@@ -38,6 +38,7 @@
   - expires
   - headers
   - cgi
+  notify: reload apache
   tags:
   - apache
 
@@ -49,6 +50,7 @@
     group: root
     mode: "0640"
     force: yes
+  notify: reload apache
   tags:
   - apache
 
@@ -60,8 +62,15 @@
     group: root
     mode: "0640"
     force: no
+  notify: reload apache
   tags:
   - apache
+
+- name: disable status.conf
+  file:
+    dest: /etc/apache2/mods-enabled/status.conf
+    state: absent
+  notify: reload apache
 
 - name: Ensure Apache config files are enabled
   command: "a2enconf {{ item }}"
@@ -70,6 +79,7 @@
   with_items:
   - z-evolinux-defaults.conf
   - zzz-evolinux-custom.conf
+  notify: reload apache
   tags:
   - apache
 

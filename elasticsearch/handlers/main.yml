@@ -1,10 +1,7 @@
 ---
 
 - name: restart elasticsearch
-  service:
-    name: elasticsearch
-    state: restarted
-
-- name: reload elasticsearch unit
   systemd:
     daemon_reload: yes
+    name: elasticsearch
+    state: restarted

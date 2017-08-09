@@ -23,15 +23,22 @@
 - include: trap.yml home={{ item }}
   with_items: "{{ home_of_shell_users.stdout_lines }}"
 
+- name: Is minifirewall installed?
+  stat:
+    path: /etc/default/minifirewall
+  register: minifirewall_default_file
+
 - name: minifirewall section for evomaintenance
   lineinfile:
     dest: /etc/default/minifirewall
     line: "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s {{ item }} -m state --state ESTABLISHED,RELATED -j ACCEPT"
     insertafter: "^# EvoMaintenance"
   with_items: "{{ evomaintenance_hosts }}"
+  when: minifirewall_default_file.stat.exists
 
 - name: remove minifirewall example rule for the proxy
   lineinfile:
     dest: /etc/default/minifirewall
     regexp: '^#.*(--sport 5432).*(-s X\.X\.X\.X)'
     state: absent
+  when: minifirewall_default_file.stat.exists

@@ -1,37 +1,19 @@
 ---
 
-- name: clone git repository
-  git:
-    repo: "{{ minifirewall_git_url}}"
-    dest: "{{ minifirewall_checkout_path }}"
-    clone: yes
-
-# WARN: these tasks copy the file if there are not already there
-# They don't update files.
-
-- name: is init script present?
-  stat:
-    path: /etc/init.d/minifirewall
-  check_mode: no
-  register: init_minifirewall
-
 - name: init script is copied
-  command: "cp {{ minifirewall_checkout_path }}/minifirewall /etc/init.d/minifirewall"
-  when: not init_minifirewall.stat.exists
-
-
-- name: is configuration present?
-  stat:
-    path: /etc/default/minifirewall
-  check_mode: no
-  register: default_minifirewall
+  copy:
+    src: minifirewall
+    dest: /etc/init.d/minifirewall
+    force: no
+    mode: "0700"
+    owner: root
+    group: root
 
 - name: configuration is copied
-  command: "cp {{ minifirewall_checkout_path }}/minifirewall.conf /etc/default/minifirewall"
-  when: not default_minifirewall.stat.exists
-
-- name: fix configuration rights
-  file:
-    path: /etc/default/minifirewall
+  copy:
+    src: minifirewall.conf
+    dest: /etc/default/minifirewall
+    force: no
     mode: "0600"
-    state: file
+    owner: root
+    group: root

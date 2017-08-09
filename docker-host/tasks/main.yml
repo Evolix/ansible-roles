@@ -1,43 +1,61 @@
 # This role installs the docker daemon
 ---
-- name: Install apt-transport-https
+- name: Remove older docker packages
   apt:
-    name: apt-transport-https
+    name: '{{ item }}'
+    state: absent
+  with_items:
+    - docker
+    - docker-engine
+    - docker.io
+
+- name: Install source requirements
+  apt:
+    name: '{{ item }}'
     state: present
     update_cache: yes
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - gnupg2
 
-- name: Enable Docker repositories
+- name: Add Docker repository
   apt_repository:
-    repo: 'deb https://apt.dockerproject.org/repo debian-{{ ansible_distribution_release }} main'
+    repo: 'deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable'
     state: present
     update_cache: no
+    filename: docker.list
 
-- name: Enable backports repository for docker-py
-  apt_repository:
-    repo: 'deb http://ftp.debian.org/debian {{ ansible_distribution_release }}-backports main'
+- include: jessie_backports.yml
+  when: ansible_distribution_release == 'jessie'
+
+- name: Add Docker's official GPG key
+  apt_key:
+    url: "https://download.docker.com/linux/debian/gpg"
     state: present
 
-- name: Install Docker repo keys
-  apt_key:
-    keyserver: pgp.mit.edu
-    id: 58118E89F3A912897C070ADBF76221572C52609D
-
-- name: Install docker and docker-py
+- name: Install docker and python-docker
   apt:
     name: "{{ item }}"
     state: latest
     update_cache: yes
   with_items:
-    - docker-engine
+    - docker-ce
     - python-docker
 
-- name: Configure docker service
+- name: Copy Docker daemon configuration file
   template:
-    src: docker.service.j2
-    dest: /lib/systemd/system/docker.service
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
   notify:
     - reload systemd
     - restart docker
+
+- name: Remove options from docker systemd service
+  lineinfile:
+    dest: /lib/systemd/system/docker.service
+    regexp: '^ExecStart='
+    line: 'ExecStart=/usr/bin/dockerd'
 
 - name: Creating Docker tmp directory
   file:
@@ -52,7 +70,7 @@
     state: directory
     mode: "0644"
     owner: root
-  when: "{{ docker_tls_enabled }}"
+  when: docker_tls_enabled
 
 - name: Copy shellpki utility to Docker TLS directory
   template:
@@ -62,8 +80,13 @@
   with_items:
     - shellpki.sh
     - openssl.cnf
-  when: "{{ docker_tls_enabled }}"
+  when: docker_tls_enabled
+
+- name: Check if certs are already created
+  stat:
+    path: "{{ docker_tls_path }}/certs"
+  register: tls_certs_stat
 
 - name: Creating a CA, server key
   command: "{{ docker_tls_path }}/shellpki.sh init"
-  when: "{{ docker_tls_enabled }}"
+  when: docker_tls_enabled and not tls_certs_stat.stat.isdir is defined

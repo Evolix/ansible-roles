@@ -16,8 +16,19 @@
   tags:
   - commit-etc
 
+- name: fetch current Git user.email
+  git_config:
+    name: user.email
+    repo: /etc
+    scope: local
+  register: git_config_user_email
+
+- name: set commit author
+  set_fact:
+    etc_git_commit_options: "{% if ansible_env.SUDO_USER %} --author \"{{ ansible_env.SUDO_USER }} <{{ git_config_user_email.config_value }}>\"{% endif %}"
+
 - name: /etc modifications are committed
-  shell: "git add -A . && git commit -m \"{{ commit_message | mandatory }}\""
+  shell: "git add -A . && git commit -m \"{{ commit_message | mandatory }}\"{{ etc_git_commit_options }}"
   args:
     chdir: /etc
   register: etc_commit_end_run

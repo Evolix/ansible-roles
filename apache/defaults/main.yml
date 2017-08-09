@@ -12,3 +12,6 @@ apache_evolinux_default_ssl_key: /etc/ssl/private/ssl-cert-snakeoil.key
 apache_phpmyadmin_set: False
 apache_phpmyadmin_suffix: ""
 apache_serverstatus_suffix: ""
+
+general_alert_email: "root@localhost"
+log2mail_alert_email: Null

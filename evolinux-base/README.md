@@ -21,7 +21,7 @@ Various tasks for Evolinux setup.
 
 ## Available variables
 
-Each tasks group is included in the `main.yml` file with a condition based on a variable like `evolinux_hostname_include` (mostly `True` by default). The variables can be set to `False` to disable a . Finer grained tasks disabling is done in each group of tasks.
+Each tasks group is included in the `main.yml` file with a condition based on a variable like `evolinux_hostname_include` (mostly `True` by default). The variables can be set to `False` to disable a task group. Finer grained tasks disabling is done in each group of tasks.
 
 Main variables are:
 

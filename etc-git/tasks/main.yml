@@ -1,12 +1,12 @@
 ---
 
-- name: Git is installed
+- name: Git is installed (Debian)
   apt:
     name: git
     state: present
   when: ansible_os_family == "Debian"
 
-- name: Git is installed
+- name: Git is installed (OpenBSD)
   openbsd_pkg:
     name: git
     state: present
@@ -21,11 +21,11 @@
   register: git_init
 
 - name: Git user.email is configured
-  ini_file:
-    dest: /etc/.git/config
-    section: user
-    option: email
-    value: "<root@{{ ansible_fqdn | default('localhost.localdomain') }}>"
+  git_config:
+    name: user.email
+    repo: /etc
+    scope: local
+    value: "root@{{ ansible_fqdn | default('localhost') }}"
 
 - name: /etc/.git is secure
   file:

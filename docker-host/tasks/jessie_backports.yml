@@ -1,0 +1,23 @@
+---
+- include_role:
+    name: apt
+    tasks_from: backports.yml
+  tags:
+  - packages
+
+- name: Prefer python-docker package from jessie-backports
+  copy:
+    src: docker_preferences
+    dest: /etc/apt/preferences.d/999-docker
+    force: yes
+    mode: "0640"
+  register: docker_apt_preferences
+  tags:
+  - packages
+
+- name: update apt
+  apt:
+    update_cache: yes
+  when: docker_apt_preferences | changed
+  tags:
+  - packages
