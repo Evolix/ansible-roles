@@ -7,7 +7,7 @@
 
 - name: Prefer python-docker package from jessie-backports
   copy:
-    src: apt/docker_preferences
+    src: docker_preferences
     dest: /etc/apt/preferences.d/999-docker
     force: yes
     mode: "0640"
