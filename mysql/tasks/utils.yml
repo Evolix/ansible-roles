@@ -52,12 +52,16 @@
   when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
 
 - name: Install mysqltuner
-  copy:
-    src: mysqltuner.pl
-    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysqltuner.pl"
-    mode: "0700"
+  # copy:
+  #   src: mysqltuner.pl
+  #   dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysqltuner.pl"
+  #   mode: "0700"
+  apt:
+    name: mysqltuner
+    state: present
   tags:
     - mysql
+    - mysqltuner
     - mysqltuner
 
 - name: Install aha
