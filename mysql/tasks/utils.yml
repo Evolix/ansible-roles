@@ -1,8 +1,8 @@
 ---
 
-- name: Ensure /usr/share/scripts exists
+- name: Ensure scripts directory exists
   file:
-    dest: /usr/share/scripts
+    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}"
     mode: "0700"
     state: directory
   tags:
@@ -52,12 +52,16 @@
   when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
 
 - name: Install mysqltuner
-  copy:
-    src: mysqltuner.pl
-    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysqltuner.pl"
-    mode: "0700"
+  # copy:
+  #   src: mysqltuner.pl
+  #   dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysqltuner.pl"
+  #   mode: "0700"
+  apt:
+    name: mysqltuner
+    state: present
   tags:
     - mysql
+    - mysqltuner
     - mysqltuner
 
 - name: Install aha
@@ -79,7 +83,7 @@
   tags:
     - mysql
 
-- name: "Cron dir is present"
+- name: "Cron dir for optimize is present"
   file:
     path: "/etc/cron.{{ mysql_cron_optimize_frequency | mandatory }}"
     state: directory
@@ -98,9 +102,33 @@
 
 - name: "Disable cron to optimize MySQL"
   file:
-    dest: /etc/cron.weekly/mysql-optimize.sh
+    dest: /etc/cron.{{ mysql_cron_optimize_frequency | mandatory }}/mysql-optimize.sh
     state: absent
   when: not mysql_cron_optimize
+  tags:
+    - mysql
+
+- name: "Cron dir for mysqltuner is present"
+  file:
+    path: "/etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: "Enable mysqltuner in cron"
+  copy:
+    src: mysqltuner.cron.sh
+    dest: /etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}/mysqltuner.sh
+  when: mysql_cron_mysqltuner
+  tags:
+    - mysql
+
+- name: "Disable mysqltuner in cron"
+  file:
+    dest: /etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}/mysqltuner.sh
+    state: absent
+  when: not mysql_cron_mysqltuner
   tags:
     - mysql
 
