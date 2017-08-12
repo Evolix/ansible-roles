@@ -1,6 +1,6 @@
-From: %MAIL_FROM%
+From: {{ evoadmin_tpl_mail_from }}
 To: RCPTTO
-Bcc: %MAIL_BCC%
+Bcc: {{ evoadmin_tpl_mail_bcc }}
 Subject: Parametres hebergement web : LOGIN
 
 Bonjour,
@@ -11,7 +11,7 @@ Votre compte d'hebergement web a ete cree.
 * CONNEXION SFTP/SSH
 **********************************
 
-NOM DU SERVEUR : %SERVER_NAME%
+NOM DU SERVEUR : {{ evoadmin_tpl_servername }}
 USER : LOGIN
 PASSWORD : PASSE1
 
@@ -20,10 +20,10 @@ PASSWORD : PASSE1
 *****************************************
 
 URL du site :
-http://SERVERNAME
+http://{{ evoadmin_tpl_servername }}
 
 URL des stats :
-http://SERVERNAME/cgi-RANDOM/awstats.pl
+http://{{ evoadmin_tpl_servername }}/cgi-RANDOM/awstats.pl
 (acces par IP ou login a demander !)
 
 Repertoire de connexion : HOME_DIR/LOGIN/
@@ -47,20 +47,20 @@ USER : LOGIN
 PASSWORD : PASSE2
 NOM BASE : DBNAME
 URL interface d'admin :
-%PMA_URL%
+{{ evoadmin_tpl_phpmyadmin_url }}
 
 ***********************************
 * Rappels divers
 ***********************************
 
 Votre nom de domaine doit etre configure pour pointer
-sur l'adresse IP %SERVER_ADDR% (enregistrement DNS A)
-ou etre un alias de %SERVER_NAME% (enregistrement DNS CNAME).
+sur l'adresse IP {{ evoadmin_tpl_address }} (enregistrement DNS A)
+ou etre un alias de {{ evoadmin_tpl_servername }} (enregistrement DNS CNAME).
 
 Si vous avez besoin de faire des tests, vous devez
 ajouter la ligne suivante au fichier "/etc/hosts" sous Linux/Unix
 ou au fichier "system32\drivers\etc\hosts" sous Windows NT/XP :
-%SERVER_ADDR% SERVERNAME
+{{ evoadmin_tpl_address }} {{ evoadmin_tpl_servername }}
 
 Attention, par defaut, toutes les connexions vers l'exterieur
 sont bloquees. Si vous avez besoin de recuperer des donnees
@@ -71,16 +71,16 @@ Afin de securiser au maximum le serveur, certaines URL
 particulieres sont non autorisees pour eviter diverses
 attaques (XSS, robots, trojans, injections, etc.).
 Exemple d'URL refusee :
-http://SERVERNAME/cmd32.exe
+http://{{ evoadmin_tpl_servername }}/cmd32.exe
 En cas de soucis avec votre application, prevenez-nous.
 
 Si vous desirez mettre en place des parametres particuliers
-pour votre site (PHP, etc.) ou pour tout autre demande (scripts en crontab, 
+pour votre site (PHP, etc.) ou pour tout autre demande (scripts en crontab,
 etc.), n'hesitez pas a nous contacter a l'adresse
-%MAIL_STANDARD% (ou %MAIL_URGENT% si votre demande est
+{{ evoadmin_tpl_mail_standard }} (ou {{ evoadmin_tpl_mail_urgent }} si votre demande est
 urgente).
 
 
 Cordialement,
--- 
-%FOOTER%
+--
+{{ evoadmin_tpl_signature }}
