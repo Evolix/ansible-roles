@@ -148,8 +148,8 @@
   template:
     src: log2mail-apache.j2
     dest: "/etc/log2mail/config/apache"
-    owner: root
-    group: root
+    owner: log2mail
+    group: adm
     mode: "0644"
     force: no
 
