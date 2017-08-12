@@ -1,6 +1,10 @@
 ---
 
-- include: packages.yml
+- include: packages_stretch.yml
+  when: ansible_distribution_release == "stretch"
+
+- include: packages_jessie.yml
+  when: ansible_distribution_release == "jessie"
 
 - include: users_stretch.yml
   when: ansible_distribution_release == "stretch"

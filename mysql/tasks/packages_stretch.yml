@@ -1,0 +1,37 @@
+---
+
+- name: Choose packages
+  set_fact:
+    mysql_packages: "{{ item }}"
+  with_items:
+  - mariadb-server
+  - mariadb-client
+  tags:
+  - mysql
+  - packages
+
+- name: Install MySQL packages
+  apt:
+    name: '{{ item }}'
+    update_cache: yes
+    state: present
+  with_items: "{{ mysql_packages }}"
+  tags:
+  - mysql
+  - packages
+
+- name: MySQL is started
+  service:
+    name: mysql
+    state: started
+  tags:
+  - mysql
+  - services
+
+- name: apg package is installed
+  apt:
+    name: apg
+    state: present
+  tags:
+  - mysql
+  - packages
