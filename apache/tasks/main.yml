@@ -169,3 +169,6 @@
 #     dest: /var/www/index.html
 #     regexp: '__SERVERSTATUS_SUFFIX__'
 #     replace: "{{ apache_serverstatus_suffix }}"
+
+- include: munin.yml
+  when: apache_munin_include
