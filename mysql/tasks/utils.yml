@@ -1,8 +1,8 @@
 ---
 
-- name: Ensure /usr/share/scripts exists
+- name: Ensure scripts directory exists
   file:
-    dest: /usr/share/scripts
+    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}"
     mode: "0700"
     state: directory
   tags:
