@@ -220,7 +220,7 @@ if [ -e /etc/debian_version ]; then
     fi
 
     if [ "$IS_TMOUTPROFILE" = 1 ]; then
-        grep -q TMOUT= /etc/profile || echo 'IS_TMOUTPROFILE FAILED!'
+        grep -q TMOUT= /etc/profile /etc/profile.d/evolinux.sh || echo 'IS_TMOUTPROFILE FAILED!'
     fi
 
     if [ "$IS_ALERT5BOOT" = 1 ]; then
