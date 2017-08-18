@@ -1,21 +1,13 @@
 ---
 
-- name: Choose packages
-  set_fact:
-    mysql_packages: "{{ item }}"
-  with_items:
-  - mariadb-server
-  - mariadb-client
-  tags:
-  - mysql
-  - packages
-
 - name: Install MySQL packages
   apt:
     name: '{{ item }}'
     update_cache: yes
     state: present
-  with_items: "{{ mysql_packages }}"
+  with_items:
+  - mariadb-server
+  - mariadb-client
   tags:
   - mysql
   - packages
