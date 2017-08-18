@@ -1,9 +1,9 @@
 ---
 
-- name: Init private_ipaddr_whitelist.conf file
+- name: Init ipaddr_whitelist.conf file
   copy:
     src: private_ipaddr_whitelist.conf
-    dest: /etc/apache2/private_ipaddr_whitelist.conf
+    dest: /etc/apache2/ipaddr_whitelist.conf
     owner: root
     group: root
     mode: "0640"
@@ -13,7 +13,7 @@
 
 - name: add IP addresses to private IP whitelist
   lineinfile:
-    dest: /etc/apache2/private_ipaddr_whitelist.conf
+    dest: /etc/apache2/ipaddr_whitelist.conf
     line: "Require ip {{ item }}"
     state: present
   with_items: "{{ apache_private_ipaddr_whitelist_present }}"
@@ -23,7 +23,7 @@
 
 - name: remove IP addresses from private IP whitelist
   lineinfile:
-    dest: /etc/apache2/private_ipaddr_whitelist.conf
+    dest: /etc/apache2/ipaddr_whitelist.conf
     line: "Require ip {{ item }}"
     state: absent
   with_items: "{{ apache_private_ipaddr_whitelist_absent }}"
@@ -34,7 +34,7 @@
 - name: include private IP whitelist for server-status
   lineinfile:
     dest: /etc/apache2/mods-available/status.conf
-    line: "        include /etc/apache2/private_ipaddr_whitelist.conf"
+    line: "        include /etc/apache2/ipaddr_whitelist.conf"
     insertafter: 'SetHandler server-status'
     state: present
   tags:
