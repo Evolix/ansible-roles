@@ -17,7 +17,7 @@
   - apache_accesses
   - apache_processes
   - apache_volume
-  notify: restart munin-node
+  notify: reload munin-node
   tags:
   - apache
   - munin
