@@ -1,6 +1,7 @@
 # Ansible-roles
 
-A repository for Ansible roles used by Evolix.
+A repository for Ansible roles used by Evolix on Debian GNU/Linux 9 (stretch) servers.
+Few roles are also be compatible with Debian GNU/Linux 8 (jessie) servers.
 
 It contains only roles, everything else is available at
 https://forge.evolix.org/projects/ansible-public
