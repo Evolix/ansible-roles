@@ -39,12 +39,12 @@
   group:
     name: "{{ admin_users_group }}"
 
-- name: "Add user to sudo group (Stretch)"
+- name: "Add user to sudo group (Debian 9 or later)"
   user:
     name: '{{ user.name }}'
     groups: 'sudo,{{ admin_users_group }}'
     append: yes
-  when: ansible_distribution_release == "stretch"
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: "Fix perms on homedirectory for '{{ user.name }}'"
   file:

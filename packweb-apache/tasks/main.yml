@@ -42,7 +42,7 @@
   when: ansible_distribution_release == "jessie"
 
 - include: php.yml
-  when: ansible_distribution_release == "stretch"
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - include: phpmyadmin.yml
 

@@ -5,12 +5,12 @@
     # url: https://download.newrelic.com/548C16BF.gpg
     data: "{{ lookup('file', '548C16BF.gpg') }}"
 
-- name: set squid_service_name=squid3 for Debian < 9
+- name: set squid_service_name=squid3 for Debian 8
   set_fact:
     squid_service_name: squid3
   when:
   - ansible_distribution == "Debian"
-  - ansible_distribution_major_version | version_compare('9', '<')
+  - ansible_distribution_release == "jessie"
 
 - name: Find squid config whitelist
   shell: find /etc/{{ squid_service_name | default('squid') }}/whitelist-custom.conf /etc/{{ squid_service_name | default('squid') }}/whitelist.conf 2> /dev/null

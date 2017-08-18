@@ -1,6 +1,6 @@
 ---
 
-- name: packages are installed (stretch)
+- name: packages are installed (Debian 9 or later)
   apt:
     name: '{{ item }}'
     state: present
@@ -13,7 +13,7 @@
   tags:
   - apache
   - packages
-  when: ansible_distribution_release == "stretch"
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: packages are installed (jessie)
   apt:

@@ -22,5 +22,5 @@
     validate: '/usr/sbin/visudo -cf %s'
   when:
   - ansible_distribution == "Debian"
-  - ansible_distribution_major_version | version_compare('9', '<')
+  - ansible_distribution_release == "jessie"
   - not copy_sudoers_evolinux.changed

@@ -4,7 +4,7 @@
   when: ansible_distribution_release == "jessie"
 
 - include: packages_stretch.yml
-  when: ansible_distribution_release == "stretch"
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 # TODO: find a way to override the main configuration
 # without touching the main file

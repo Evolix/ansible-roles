@@ -65,7 +65,7 @@
     squid_service_name: squid3
   when:
   - ansible_distribution == "Debian"
-  - ansible_distribution_major_version | version_compare('9', '<')
+  - ansible_distribution_release == "jessie"
 
 - name: Let's Encrypt OCSP server is authorized by squid
   lineinfile:

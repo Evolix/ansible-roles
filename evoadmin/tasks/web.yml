@@ -16,7 +16,7 @@
     option: "disable_functions"
     value: "shell-exec,system,passthru,putenv,popen"
   notify: reload apache
-  when: ansible_distribution_release == "stretch"
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: Install evoadmin VHost
   template:
