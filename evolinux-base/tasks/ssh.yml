@@ -1,5 +1,9 @@
 ---
 
+- fail:
+    msg: You must provide at least 1 ssh trusted IP
+  when: evolinux_ssh_password_auth_addresses == []
+
 - name: Security directives for Evolinux
   blockinfile:
     dest: /etc/ssh/sshd_config
