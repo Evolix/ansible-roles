@@ -59,6 +59,8 @@
   notify: reload sshd
   when: evolinux_ssh_disable_root
 
+# We disable AcceptEnv because it can be a security issue, but also because we
+# do not want clients to push their environment variables like LANG.
 - name: disable AcceptEnv in ssh config
   replace:
     dest: /etc/ssh/sshd_config
