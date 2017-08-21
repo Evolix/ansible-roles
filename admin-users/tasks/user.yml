@@ -35,22 +35,9 @@
    update_password: on_create
   when: loginisbusy.rc != 0 and uidisbusy.rc == 0
 
-- name: "Create evolinux-sudo group"
-  group:
-    name: evolinux-sudo
-    system: yes
-  when: ansible_distribution_major_version | version_compare('9', '>=')
-
 - name: "Create {{ admin_users_group }} group"
   group:
     name: "{{ admin_users_group }}"
-  when: ansible_distribution_major_version | version_compare('9', '>=')
-
-- name: "Add user to sudo group (Debian 9 or later)"
-  user:
-    name: '{{ user.name }}'
-    groups: 'evolinux-sudo,{{ admin_users_group }}'
-    append: yes
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: "Fix perms on homedirectory for '{{ user.name }}'"

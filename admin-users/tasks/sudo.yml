@@ -24,3 +24,16 @@
   - ansible_distribution == "Debian"
   - ansible_distribution_release == "jessie"
   - not copy_sudoers_evolinux.changed
+
+- name: "Create evolinux-sudo group"
+  group:
+    name: evolinux-sudo
+    system: yes
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: "Add user to sudo group (Debian 9 or later)"
+  user:
+    name: '{{ user.name }}'
+    groups: 'evolinux-sudo,{{ admin_users_group }}'
+    append: yes
+  when: ansible_distribution_major_version | version_compare('9', '>=')
