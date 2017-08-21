@@ -79,7 +79,6 @@
   - net-tools
   when:
   - evolinux_packages_stretch
-  - ansible_distribution == "Debian"
   - ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: Customize logcheck recipient
@@ -111,7 +110,6 @@
   - { option: "which",   value: "both" }
   when:
   - evolinux_packages_listchanges
-  - ansible_distribution == "Debian"
   - ansible_distribution_release == "jessie"
 
 - meta: flush_handlers
