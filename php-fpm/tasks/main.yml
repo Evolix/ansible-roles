@@ -2,7 +2,9 @@
   apt:
     name: php5-fpm
     state: present
-  when: ansible_distribution_major_version | version_compare('8', '<=')
+  when:
+  - ansible_distribution == "Debian"
+  - ansible_distribution_release == "jessie"
   tags:
   - php-fpm
 
@@ -10,6 +12,8 @@
   apt:
     name: php-fpm
     state: present
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when:
+  - ansible_distribution == "Debian"
+  - ansible_distribution_major_version | version_compare('9', '>=')
   tags:
   - php-fpm

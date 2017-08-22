@@ -204,7 +204,7 @@ if [ -e /etc/debian_version ]; then
     fi
 
     if [ "$IS_LISTCHANGESCONF" = 1 ]; then
-        egrep "(which=both|confirm=1)" /etc/apt/listchanges.conf | wc -l | grep -q ^2$ || echo 'IS_LISTCHANGESCONF FAILED!'
+        is_debianversion stretch || ( test -e /etc/apt/listchanges.conf && egrep "(which=both|confirm=1)" /etc/apt/listchanges.conf | wc -l | grep -q ^2$ || echo 'IS_LISTCHANGESCONF FAILED!' )
     fi
 
     if [ "$IS_CUSTOMCRONTAB" = 1 ]; then
@@ -220,7 +220,7 @@ if [ -e /etc/debian_version ]; then
     fi
 
     if [ "$IS_TMOUTPROFILE" = 1 ]; then
-        grep -q TMOUT= /etc/profile || echo 'IS_TMOUTPROFILE FAILED!'
+        grep -q TMOUT= /etc/profile /etc/profile.d/evolinux.sh || echo 'IS_TMOUTPROFILE FAILED!'
     fi
 
     if [ "$IS_ALERT5BOOT" = 1 ]; then

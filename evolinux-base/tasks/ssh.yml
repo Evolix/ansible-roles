@@ -1,5 +1,9 @@
 ---
 
+- fail:
+    msg: You must provide at least 1 ssh trusted IP
+  when: evolinux_ssh_password_auth_addresses == []
+
 - name: Security directives for Evolinux
   blockinfile:
     dest: /etc/ssh/sshd_config
@@ -55,6 +59,8 @@
   notify: reload sshd
   when: evolinux_ssh_disable_root
 
+# We disable AcceptEnv because it can be a security issue, but also because we
+# do not want clients to push their environment variables like LANG.
 - name: disable AcceptEnv in ssh config
   replace:
     dest: /etc/ssh/sshd_config
@@ -69,8 +75,6 @@
     regexp: '^#?LogLevel [A-Z]+'
     replace: "LogLevel VERBOSE"
   notify: reload sshd
-  when:
-  - ansible_distribution == "Debian"
-  - ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - meta: flush_handlers

@@ -1,6 +1,6 @@
 ---
 
-- name: packages are installed (stretch)
+- name: packages are installed (Debian 9 or later)
   apt:
     name: '{{ item }}'
     state: present
@@ -13,7 +13,7 @@
   tags:
   - apache
   - packages
-  when: ansible_distribution_release == "stretch"
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: packages are installed (jessie)
   apt:
@@ -139,19 +139,6 @@
 - include: phpmyadmin.yml
   when: apache_phpmyadmin_set and _default_index.stat.exists
 
-- name: Check if log2mail is installed
-  apt:
-    name: log2mail
-    state: present
-
-- name: Add log2mail config for Apache segfaults
-  template:
-    src: log2mail-apache.j2
-    dest: "/etc/log2mail/config/apache"
-    owner: root
-    group: root
-    mode: "0644"
-    force: no
 
 # - block:
 #   - name: generate random string for serverstatus suffix
@@ -169,3 +156,9 @@
 #     dest: /var/www/index.html
 #     regexp: '__SERVERSTATUS_SUFFIX__'
 #     replace: "{{ apache_serverstatus_suffix }}"
+
+- include: log2mail.yml
+  when: apache_log2mail_include
+
+- include: munin.yml
+  when: apache_munin_include

@@ -1,5 +1,12 @@
 ---
 
+- name: "Test if '{{ user.name }}' exists"
+  command: 'getent passwd {{ user.name }}'
+  register: loginisbusy
+  failed_when: False
+  changed_when: False
+  check_mode: no
+
 - name: "Test if uid exists for '{{ user.name }}'"
   command: 'getent passwd {{ user.uid }}'
   register: uidisbusy
@@ -16,7 +23,7 @@
    shell: /bin/bash
    password: '{{ user.password_hash }}'
    update_password: on_create
-  when: uidisbusy.rc != 0
+  when: loginisbusy.rc != 0 and uidisbusy.rc != 0
 
 - name: "Add Unix account with random uid for '{{ user.name }}'"
   user:
@@ -26,18 +33,19 @@
    shell: /bin/bash
    password: '{{ user.password_hash }}'
    update_password: on_create
-  when: uidisbusy.rc == 0
+  when: loginisbusy.rc != 0 and uidisbusy.rc == 0
 
-- name: "Create {{ admin_users_group }}"
+- name: "Create {{ admin_users_group }} group (Debian 9 or later)"
   group:
     name: "{{ admin_users_group }}"
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
-- name: "Add user to sudo group (Stretch)"
+- name: "Add user to {{ admin_users_group }} group (Debian 9 or later)"
   user:
     name: '{{ user.name }}'
-    groups: 'sudo,{{ admin_users_group }}'
+    groups: '{{ admin_users_group }}'
     append: yes
-  when: ansible_distribution_release == "stretch"
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: "Fix perms on homedirectory for '{{ user.name }}'"
   file:

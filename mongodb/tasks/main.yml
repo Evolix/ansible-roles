@@ -7,12 +7,12 @@
   check_mode: no
   register: squid_whitelist_files
 
-- name: set squid_service_name=squid3 for Debian < 9
+- name: set squid_service_name=squid3 for Debian 8
   set_fact:
     squid_service_name: squid3
   when:
   - ansible_distribution == "Debian"
-  - ansible_distribution_major_version | version_compare('9', '<')
+  - ansible_distribution_release == "jessie"
 
 - name: Append packages.dotdeb.org to Squid whitelist
   lineinfile:

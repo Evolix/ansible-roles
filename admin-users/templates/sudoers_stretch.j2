@@ -5,4 +5,5 @@ Cmnd_Alias      MAINT = /usr/share/scripts/evomaintenance.sh, /usr/share/scripts
 nagios          ALL = NOPASSWD: /usr/lib/nagios/plugins/check_procs
 nagios          ALL = (clamav) NOPASSWD: /usr/bin/clamscan /tmp/safe.txt
 
-%sudo           ALL = NOPASSWD: MAINT
+%evolinux-sudo  ALL=(ALL:ALL) ALL
+%evolinux-sudo  ALL = NOPASSWD: MAINT

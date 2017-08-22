@@ -1,0 +1,23 @@
+---
+
+- name: munin-node and core plugins are installed
+  apt:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - munin-node
+    - munin-plugins-core
+
+- name: enable munin plugins
+  file:
+    src: "/usr/share/munin/plugins/{{ item }}"
+    dest: "/etc/munin/plugins/{{ item }}"
+    state: link
+  with_items:
+  - apache_accesses
+  - apache_processes
+  - apache_volume
+  notify: reload munin-node
+  tags:
+  - apache
+  - munin
