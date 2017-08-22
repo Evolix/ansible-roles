@@ -120,7 +120,7 @@
 
 - name: Install Evoadmin
   include_role:
-    name: evoadmin
+    name: webapps/evoadmin-web
   vars:
     evoadmin_enable_vhost: "{{ packweb_enable_evoadmin_vhost }}"
 
