@@ -15,7 +15,8 @@
   - php5-pgsql
   - php-gettext
   - php5-curl
-  - libssh2-php
+  - php5-ssh2
+  - libphp-phpmailer
 
 - name: "Set php.ini config for CLI (jessie)"
   set_fact:
