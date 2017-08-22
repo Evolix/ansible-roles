@@ -40,9 +40,9 @@
     system: yes
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
-- name: "Add user to sudo group (Debian 9 or later)"
+- name: "Add user to evolinux-sudo group (Debian 9 or later)"
   user:
     name: '{{ user.name }}'
-    groups: 'evolinux-sudo,{{ admin_users_group }}'
+    groups: 'evolinux-sudo'
     append: yes
   when: ansible_distribution_major_version | version_compare('9', '>=')
