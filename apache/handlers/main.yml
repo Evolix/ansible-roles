@@ -9,7 +9,7 @@
     name: apache2
     state: reloaded
 
-- name: reload munin-node
+- name: restart munin-node
   service:
     name: munin-node
-    state: reloaded
+    state: restarted
