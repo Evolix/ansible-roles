@@ -1,0 +1,90 @@
+---
+
+- name: "Install PHP FPM packages (jessie)"
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - php5-fpm
+  when: ansible_distribution_release == "jessie"
+
+- name: "Install PHP FPM packages (Debian 9 or later)"
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - php-fpm
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: "Set config files for FPM (jessie)"
+  set_fact:
+    phpini_fpm_defaults_file: /etc/php5/fpm/conf.d/z-evolinux-defaults.ini
+    phpini_fpm_custom_file: /etc/php5/fpm/conf.d/zzz-evolinux-custom.ini
+    php_fpm_defaults_file: /etc/php5/fpm/pool.d/z-evolinux-defaults.conf
+    php_fpm_custom_file: /etc/php5/fpm/pool.d/zzz-evolinux-custom.conf
+  when: ansible_distribution_release == "jessie"
+
+- name: "Set config files for FPM (Debian 9 or later)"
+  set_fact:
+    phpini_fpm_defaults_file: /etc/php/7.0/fpm/conf.d/z-evolinux-defaults.ini
+    phpini_fpm_custom_file: /etc/php/7.0/fpm/conf.d/zzz-evolinux-custom.ini
+    php_fpm_defaults_file: /etc/php/7.0/fpm/pool.d/z-evolinux-defaults.conf
+    php_fpm_custom_file: /etc/php/7.0/fpm/pool.d/zzz-evolinux-custom.conf
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: Set default php.ini values for FPM
+  ini_file:
+    dest: "{{ phpini_fpm_defaults_file }}"
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+    create: yes
+  with_items:
+  - { option: "short_open_tag", value: "Off" }
+  - { option: "expose_php", value: "Off" }
+  - { option: "display_errors", value: "Off" }
+  - { option: "log_errors", value: "On" }
+  - { option: "html_errors", value: "Off" }
+  - { option: "allow_url_fopen", value: "Off" }
+
+- name: Disable PHP functions for FPM
+  ini_file:
+    dest: "{{ phpini_fpm_defaults_file }}"
+    section: PHP
+    option: disable_functions
+    value: "exec,shell-exec,system,passthru,putenv,popen"
+
+- name: Custom php.ini for FPM
+  copy:
+    dest: "{{ phpini_fpm_custom_file }}"
+    content: |
+      # Put customized values here.
+    force: no
+
+- name: Set default PHP FPM values
+  ini_file:
+    dest: "{{ php_fpm_defaults_file }}"
+    section: www
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+    create: yes
+  with_items:
+  - { option: "pm", value: "ondemand" }
+  - { option: "pm.max_children", value: "100" }
+  - { option: "pm.process_idle_timeout", value: "10s" }
+  - { option: "slowlog", value: "log/$pool.log.slow" }
+  - { option: "request_slowlog_timeout", value: "5s" }
+  - { option: "pm.status_path", value: "/fpm_status" }
+  - { option: "request_terminate_timeout", value: "60s" }
+  - { option: "chroot", value: "/var/www/html" }
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: Custom PHP FPM values
+  copy:
+    dest: "{{ php_fpm_custom_file }}"
+    content: |
+      # Put customized values here.
+    force: no
+
