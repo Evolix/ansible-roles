@@ -2,7 +2,13 @@
 
 - name: Include apache role
   include_role:
-    name: "apache"
+    name: apache
+
+- name: Include PHP role
+  include_role:
+    name: php
+  vars:
+    php_apache_enable: True
 
 - name: Add elements to user account template
   file:
@@ -37,12 +43,6 @@
     line: 'DIR_MODE=0750'
 
 - include: apache.yml
-
-- include: php5.yml
-  when: ansible_distribution_release == "jessie"
-
-- include: php.yml
-  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - include: phpmyadmin.yml
 
@@ -123,3 +123,4 @@
     name: evoadmin
   vars:
     evoadmin_enable_vhost: "{{ packweb_enable_evoadmin_vhost }}"
+
