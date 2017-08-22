@@ -1,11 +1,9 @@
 ---
 
-- name: Fail if distribution is not supported
-  fail:
-    msg: "Error: '{{ ansible_os_family }} {{ ansible_distribution_release }}' is not a supported distribution."
+- fail:
+    msg: only compatible with Debian >= 8
   when:
-  - ansible_distribution_release != "jessie"
-  - ansible_distribution_release != "stretch"
+  - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
   tags:
   - apt
 
