@@ -1,0 +1,2 @@
+CONFIG=/etc/squid/evolinux-defaults.conf
+SQUID_ARGS="-YC -f $CONFIG"

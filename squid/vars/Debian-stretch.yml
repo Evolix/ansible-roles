@@ -1,6 +1,0 @@
----
-squid_package: squid
-squid_daemon: squid
-squid_conf_path: /etc/squid
-squid_conf_file: /etc/squid/squid.conf
-squid_log_path: /var/log/squid
