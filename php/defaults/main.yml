@@ -1,1 +1,4 @@
 ---
+
+php_fpm_enable: False
+php_apache_enable: False

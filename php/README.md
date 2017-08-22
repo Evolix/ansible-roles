@@ -1,6 +1,6 @@
-# PHP-FPM
+# PHP
 
-Installation and basic configuration of php-fpm
+Installation and basic configuration of PHP
 
 ## Tasks
 
