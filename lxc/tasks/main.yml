@@ -1,0 +1,21 @@
+---
+- name: Install lxc tools
+  apt:
+    name: lxc
+
+- name: Copy LXC default containers configuration
+  template:
+    src: default.conf
+    dest: /etc/lxc/
+
+- name: Check if root has subuids
+  command: grep '^root:100000:10000$' /etc/subuid
+  register: root_subuids
+
+- name: Add subuid and subgid ranges to root
+  command: usermod -v 100000-199999 -w 100000-109999 root
+  when: not root_subuids.rc
+
+- name: Create containers
+  include: "create-container.yml name={{item.name}} release={{item.release}}"
+  with_items: lxc_containers

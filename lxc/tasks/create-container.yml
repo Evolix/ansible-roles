@@ -1,0 +1,52 @@
+---
+- name: Check if container exists
+  command: "lxc-ls {{name}}"
+  register: container_exists
+
+- name: Create container
+  command: "lxc-create -n {{name}} -t download -- --dist debian --release {{release}} --arch amd64"
+  when: container_exists.stdout_lines == []
+
+- name: Disable network configuration inside container
+  replace:
+    name: "/var/lib/lxc/{{name}}/rootfs/etc/default/networking"
+    regexp: "^#CONFIGURE_INTERFACES=yes"
+    replace: CONFIGURE_INTERFACES=no
+  when: lxc_network_type == "none"
+
+- name: Disable interface shut down on halt inside container
+  lineinfile:
+    name: "/var/lib/lxc/{{name}}/rootfs/etc/default/halt"
+    line: "NETDOWN=no"
+  when: lxc_network_type == "none"
+
+- name: Make the container poweroff on SIGPWR (sent by lxc-stop) on jessie
+  file:
+    src: /lib/systemd/system/poweroff.target
+    dest: "/var/lib/lxc/{{name}}/rootfs/etc/systemd/system/sigpwr.target"
+    state: link
+  when: release == 'jessie'
+
+- name: Set the DNS resolvers
+  command: "cp /etc/resolv.conf /var/lib/lxc/{{name}}/rootfs/etc/"
+
+- name: Add hostname in /etc/hosts
+  lineinfile:
+    name: "/var/lib/lxc/{{name}}/rootfs/etc/hosts"
+    line: "127.0.0.1 {{name}}"
+
+# Still needed?
+- name: Fix permission on /dev
+  lineinfile:
+    name: "/var/lib/lxc/{{name}}/rootfs/etc/rc.local"
+    line: "chmod 755 /dev"
+    insertbefore: "^exit 0$"
+
+- name: Check if container is running
+  command: "lxc-ls --running {{name}}"
+  register: container_running
+
+- name: "Start {{name}} container"
+  command: "lxc-start -dn {{name}}"
+  when: container_running.stdout_lines == []
+
