@@ -10,8 +10,8 @@
 
 - name: Add Evolix GPG key
   apt_key:
-    keyserver: "hkp://keyserver.ubuntu.com:80"
-    id: 44975278B8612B5D
+    #url: http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x44975278B8612B5D
+    data: "{{ lookup('file', 'reg.gpg') }}"
 
 - name: Evolix public list is installed
   template:

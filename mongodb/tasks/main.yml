@@ -8,8 +8,8 @@
 # Attention à bien indiquer le protocole et le port, sinon le firewall ne laisse pas passer
 - name: MongoDB public GPG Key
   apt_key:
-    keyserver: "hkp://keyserver.ubuntu.com:80"
-    id: "0C49F3730359A14518585931BC711F9BA15703C6"
+    # url: https://www.mongodb.org/static/pgp/server-3.4.asc
+    data: "{{ lookup('file', 'server-3.4.asc') }}"
 
 - name: enable APT sources list
   apt_repository:
