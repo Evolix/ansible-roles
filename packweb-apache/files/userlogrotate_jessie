@@ -23,6 +23,11 @@ for log in access.log access-*.log error.log; do
   done
 done
 
+for i in `ls -1 -d $HOMEPREFIX/*/log/php.log 2>/dev/null | grep -v \.bak\.`; do
+  USER=`user_for $i`
+  rotate $i www-$USER:$USER
+done
+
 for log in production.log delayed_job.log development.log test.log; do
   for i in `ls -1 -d $HOMEPREFIX/*/www/{,current/}log/$log 2>/dev/null | grep -v \.bak\.`; do
     USER=`user_for $i`
@@ -30,8 +35,4 @@ for log in production.log delayed_job.log development.log test.log; do
   done
 done
 
-if /etc/init.d/apache2 status > /dev/null ; then \
-    /etc/init.d/apache2 reload > /dev/null; \
-fi;
-
-test -x /usr/sbin/nginx && invoke-rc.d nginx rotate >/dev/null 2>&1
+apache2ctl restart > /dev/null

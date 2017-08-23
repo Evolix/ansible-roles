@@ -1,5 +1,10 @@
 ---
 
+- fail:
+    msg: only compatible with Debian >= 8
+  when:
+  - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
+
 - name: Include apache role
   include_role:
     name: apache
@@ -30,11 +35,19 @@
   - access.log
   - error.log
 
-- name: Install userlogrotate
+- name: "Install userlogrotate (jessie)"
+  copy:
+    src: userlogrotate_jessie
+    dest: /etc/cron.weekly/userlogrotate
+    mode: "0755"
+  when: ansible_distribution_release == "jessie"
+
+- name: "Install userlogrotate (Debian 9 or later)"
   copy:
     src: userlogrotate
     dest: /etc/cron.weekly/userlogrotate
     mode: "0755"
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: Force DIR_MODE to 0750 in /etc/adduser.conf
   lineinfile:
