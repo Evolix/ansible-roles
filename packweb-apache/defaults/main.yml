@@ -2,3 +2,4 @@
 # defaults file for packweb-apache
 general_alert_email: "root@localhost"
 packweb_enable_evoadmin_vhost: True
+packweb_fhs_retrictions: True
