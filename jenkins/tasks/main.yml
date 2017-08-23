@@ -1,4 +1,9 @@
 ---
+
+- name: Include java8 role
+  include_role:
+    name: java8
+
 - name: Add jenkins GPG key
   apt_key:
     # url: https://jenkins-ci.org/debian/jenkins-ci.org.key
@@ -7,7 +12,7 @@
 - name: Add jenkins APT repository
   apt_repository:
     repo: deb http://pkg.jenkins-ci.org/debian-stable binary/
-    filename: jenkins.list
+    filename: jenkins
     update_cache: yes
 
 - name: Install Jenkins
