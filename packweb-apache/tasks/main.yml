@@ -109,15 +109,6 @@
   - /var/log/evolix.log
   - /etc/warnquota.conf
 
-- name: Remove some log files (/var/log/mail.err, ...)
-  file:
-    path: "{{ item }}"
-    state: absent
-  with_items:
-  - /var/log/debug
-  - /var/log/mail.err
-  - /var/log/mail.warn
-
 - name: Install Evoadmin
   include_role:
     name: webapps/evoadmin-web
