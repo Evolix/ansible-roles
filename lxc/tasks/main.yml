@@ -10,12 +10,15 @@
 
 - name: Check if root has subuids
   command: grep '^root:100000:10000$' /etc/subuid
+  failed_when: false
+  changed_when: false
   register: root_subuids
+  when: lxc_unprivilegied_containers
 
 - name: Add subuid and subgid ranges to root
   command: usermod -v 100000-199999 -w 100000-109999 root
-  when: not root_subuids.rc
+  when: lxc_unprivilegied_containers and root_subuids.rc
 
 - name: Create containers
   include: "create-container.yml name={{item.name}} release={{item.release}}"
-  with_items: lxc_containers
+  with_items: "{{lxc_containers}}"

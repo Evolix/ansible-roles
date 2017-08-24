@@ -10,7 +10,7 @@ Everything is in the `tasks/main.yml` file.
 
 Here is the list of available variables:
 
-* `lxc_unprivilegied_containers`: should LXC containers run in unprivilegied (non root) mode? Default: `true`
+* `lxc_unprivilegied_containers`: should LXC containers run in unprivilegied (non root) mode? Currently `lxc_unprivilegied_containers: true` does not work. Default: `false`
 * `lxc_network_type`: network type to use. See lxc.container.conf(5). Default: `"none"`
 * `lxc_mount_part`: partition to bind mount into containers. Default: `"/home"`
 * `lxc_containers`: list of LXC containers to create. Default: `[]` (empty).

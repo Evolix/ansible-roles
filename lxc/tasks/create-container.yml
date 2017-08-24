@@ -1,6 +1,7 @@
 ---
 - name: Check if container exists
   command: "lxc-ls {{name}}"
+  changed_when: false
   register: container_exists
 
 - name: Create container
@@ -18,7 +19,7 @@
   lineinfile:
     name: "/var/lib/lxc/{{name}}/rootfs/etc/default/halt"
     line: "NETDOWN=no"
-  when: lxc_network_type == "none"
+  when: lxc_network_type == "none" and release != "stretch"
 
 - name: Make the container poweroff on SIGPWR (sent by lxc-stop) on jessie
   file:
@@ -35,18 +36,18 @@
     name: "/var/lib/lxc/{{name}}/rootfs/etc/hosts"
     line: "127.0.0.1 {{name}}"
 
-# Still needed?
 - name: Fix permission on /dev
   lineinfile:
     name: "/var/lib/lxc/{{name}}/rootfs/etc/rc.local"
     line: "chmod 755 /dev"
     insertbefore: "^exit 0$"
+  when: release != 'stretch'
 
 - name: Check if container is running
   command: "lxc-ls --running {{name}}"
+  changed_when: false
   register: container_running
 
 - name: "Start {{name}} container"
   command: "lxc-start -dn {{name}}"
   when: container_running.stdout_lines == []
-

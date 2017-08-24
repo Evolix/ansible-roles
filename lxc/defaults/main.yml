@@ -1,6 +1,6 @@
 ---
 # Should LXC containers run in unprivilegied (non root) mode?
-lxc_unprivilegied_containers: true
+lxc_unprivilegied_containers: false
 
 # Network type to use. See lxc.container.conf(5).
 lxc_network_type: "none"
