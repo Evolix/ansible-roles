@@ -10,7 +10,7 @@
 - name: Copy make-csr.sh script
   copy:
     src: files/make-csr.sh
-    dest: /usr/local/bin/make-csr
+    dest: /usr/local/sbin/make-csr
     owner: root
     group: root
     mode: "0755"
@@ -18,7 +18,15 @@
 - name: Copy evoacme script
   copy:
     src: files/evoacme.sh
-    dest: /usr/local/bin/evoacme
+    dest: /usr/local/sbin/evoacme
     owner: root
     group: root
     mode: "0755"
+
+- name: Delete scripts in old location
+  file:
+    path: "/usr/local/bin/{{ item }}"
+    state: absent
+  with_items:
+  - 'make-csr'
+  - 'evoacme'
