@@ -7,7 +7,7 @@
   - haproxy
   - packages
 
-- include: jessie_backports.yml
+- include: packages_jessie_backports.yml
   when: ansible_distribution_release == "jessie" and haproxy_jessie_backports
 
 - name: Install HAProxy package
