@@ -20,7 +20,8 @@
     group: root
     mode: "0644"
     force: yes
-  when: default_main_cf.stdout == "5450c05d65878e99dad696c7c722e511  -"
+  when: default_main_cf.stdout == "5450c05d65878e99dad696c7c722e511  -" or
+        default_main_cf.stdout == "30022953f1f61f002bfb72e163ecb27e  -"
   notify: restart postfix
 
 - meta: flush_handlers

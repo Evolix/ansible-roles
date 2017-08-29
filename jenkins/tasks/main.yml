@@ -1,42 +1,18 @@
 ---
+
+- name: Include java8 role
+  include_role:
+    name: java8
+
 - name: Add jenkins GPG key
   apt_key:
     # url: https://jenkins-ci.org/debian/jenkins-ci.org.key
     data: "{{ lookup('file', 'jenkins.key') }}"
 
-- name: Find squid config whitelist
-  shell: find /etc/squid/whitelist-custom.conf /etc/squid3/whitelist-custom.conf /etc/squid/whitelist.conf /etc/squid3/whitelist.conf 2> /dev/null
-  failed_when: false
-  changed_when: false
-  check_mode: no
-  register: squid_whitelist_files
-
-- name: set squid_service_name=squid3 for Debian 8
-  set_fact:
-    squid_service_name: squid3
-  when:
-  - ansible_distribution == "Debian"
-  - ansible_distribution_release == "jessie"
-
-- name: Append packages.dotdeb.org to Squid whitelist
-  lineinfile:
-    dest: "{{ squid_whitelist_files.stdout_lines | first }}"
-    line: "{{ item }}"
-    state: present
-  with_items:
-    - "http://pkg.jenkins-ci.org/.*"
-    - "http://mirrors.jenkins.io/.*"
-    - "http://jenkins.mirror.isppower.de/.*"
-    - "http://ftp.icm.edu.pl/.*"
-  notify: "reload {{ squid_service_name | default('squid') }}"
-  when: squid_whitelist_files.stdout != ""
-
-- meta: flush_handlers
-
 - name: Add jenkins APT repository
   apt_repository:
     repo: deb http://pkg.jenkins-ci.org/debian-stable binary/
-    filename: jenkins.list
+    filename: jenkins
     update_cache: yes
 
 - name: Install Jenkins

@@ -31,8 +31,8 @@
 
 - name: Add Docker's official GPG key
   apt_key:
-    url: "https://download.docker.com/linux/debian/gpg"
-    state: present
+    #url: https://download.docker.com/linux/debian/gpg
+    data: "{{ lookup('file', 'docker-debian.gpg') }}"
 
 - name: Install docker and python-docker
   apt:

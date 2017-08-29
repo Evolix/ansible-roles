@@ -1,41 +1,127 @@
 ---
 
-- name: Include OS-specific variables
-  include_vars: "{{ ansible_os_family }}-{{ ansible_distribution_release }}.yml"
+- fail:
+    msg: only compatible with Debian >= 8
+  when:
+  - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
 
-- name: package is installed
+- name: "Set squid name (jessie)"
+  set_fact:
+    squid_daemoname: squid3
+  when: ansible_distribution_release == "jessie"
+
+- name: "Set squid name (Debian 9 or later)"
+  set_fact:
+    squid_daemoname: squid
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: "Install Squid packages"
   apt:
-    name: "{{ squid_package }}"
+    name: '{{ item }}'
     state: present
+  with_items:
+  - "{{ squid_daemoname }}"
+  - squidclient
 
-- name: squid.conf is present
+- name: "Set alternative config file (Debian 9 or later)"
+  copy:
+    src: default_squid
+    dest: /etc/default/squid
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: "squid.conf is present (jessie)"
   template:
-    src: squid.j2
-    dest: "{{ squid_conf_file }}"
-  notify: "restart {{ squid_daemon }}"
+    src: squid.conf.j2
+    dest: /etc/squid3/squid.conf
+  notify: "restart squid3"
+  when: ansible_distribution_release == "jessie"
 
-- name: evolix whitelist is present
+- name: "evolix whitelist is present (jessie)"
   copy:
     src: whitelist-evolinux.conf
-    dest: "{{ squid_conf_path }}/whitelist-evolinux.conf"
-    force: yes
-  notify: "reload {{ squid_daemon }}"
+    dest: /etc/squid3/whitelist.conf
+  notify: "reload squid3"
+  when: ansible_distribution_release == "jessie"
 
-- name: custom whitelist is present
+- name: "evolinux custom squid file (Debian 9 or later)"
   copy:
-    src: whitelist-custom.conf
-    dest: "{{ squid_conf_path }}/whitelist-custom.conf"
+    src: evolinux-defaults.conf
+    dest: /etc/squid/evolinux-defaults.conf
+  notify: "restart squid"
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: "evolinux defaults whitelist (Debian 9 or later)"
+  copy:
+    src: evolinux-whitelist-defaults.conf
+    dest: /etc/squid/evolinux-whitelist-defaults.conf
+  notify: "reload squid"
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: "evolinux custom whitelist (Debian 9 or later)"
+  copy:
+    dest: /etc/squid/evolinux-whitelist-custom.conf
+    content: |
+      # Put customized values here.
     force: no
-  notify: "reload {{ squid_daemon }}"
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: "evolinux acl for local proxy (Debian 9 or later)"
+  template:
+    src: evolinux-acl.conf.j2
+    dest: /etc/squid/evolinux-acl.conf
+    force: no
+  notify: "reload squid"
+  when: squid_localproxy_enable and ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: "evolinux custom acl (Debian 9 or later)"
+  copy:
+    dest: /etc/squid/evolinux-acl.conf
+    content: |
+      # Put customized values here.
+    force: no
+  when: squid_localproxy_enable == False and ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: "evolinux http_access for local proxy (Debian 9 or later)"
+  copy:
+    src: evolinux-httpaccess.conf
+    dest: /etc/squid/evolinux-httpaccess.conf
+    force: no
+  notify: "reload squid"
+  when: squid_localproxy_enable and ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: "evolinux custom http_access (Debian 9 or later)"
+  copy:
+    dest: /etc/squid/evolinux-httpaccess.conf
+    content: |
+      # Put customized values here.
+    force: no
+  when: squid_localproxy_enable == False and ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: "evolinux overrides for local proxy (Debian 9 or later)"
+  template:
+    src: evolinux-custom.conf.j2
+    dest: /etc/squid/evolinux-custom.conf
+    force: no
+  notify: "reload squid"
+  when: squid_localproxy_enable and ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: "evolinux custom overrides (Debian 9 or later)"
+  copy:
+    dest: /etc/squid/evolinux-custom.conf
+    content: |
+      # Put customized values here.
+    force: no
+  when: squid_localproxy_enable == False and ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: add some URL in whitelist
   lineinfile:
     insertafter: EOF
-    dest: "{{ squid_conf_path }}/whitelist-custom.conf"
+    dest: /etc/squid/evolinux-whitelist-custom.conf
     line: "{{ item }}"
     state: present
   with_items: '{{ squid_whitelist_items }}'
-  notify: "reload {{ squid_daemon }}"
+  notify: "reload squid"
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - include: logrotate.yml
 

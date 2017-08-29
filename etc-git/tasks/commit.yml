@@ -26,7 +26,7 @@
 
 - name: set commit author
   set_fact:
-    etc_git_commit_options: "{% if ansible_env.SUDO_USER %} --author \"{{ ansible_env.SUDO_USER }} <{{ git_config_user_email.config_value |default()}}>\"{% endif %}"
+    etc_git_commit_options: "{ --author \"{{ ansible_env.SUDO_USER |default(\"root\")}} <{{ git_config_user_email.config_value |default(\"root@localhost\")}}>\""
 
 - name: /etc modifications are committed
   shell: "git add -A . && git commit -m \"{{ commit_message | mandatory }}\"{{ etc_git_commit_options }}"
