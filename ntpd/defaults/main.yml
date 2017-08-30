@@ -1,4 +1,5 @@
 ---
+ntpd_only_local: true
 ntpd_servers:
 - 'pool.ntp.org'
 ntpd_acls:
