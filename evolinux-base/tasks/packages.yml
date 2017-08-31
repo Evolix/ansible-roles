@@ -6,7 +6,6 @@
   with_items:
   - locales
   - sudo
-  - ntp
   - ntpdate
   - lsb-release
   - dnsutils
