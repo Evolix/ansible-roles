@@ -124,9 +124,7 @@
     umask: "027"
     update: yes
   become_user: "{{ redmine_user }}"
-  notify:
-  - bundle update
-  - rake migrate
+  register: redmine_git_task
   tags:
   - redmine
 
@@ -137,7 +135,7 @@
     owner: "{{ redmine_user }}"
     group: "{{ redmine_user }}"
     mode: "0640"
-  notify: bundle update
+  register: redmine_local_gemfile_task
 
 - name: Get actual Mysql password
   shell: "grep password /home/{{ redmine_user }}/.my.cnf | awk '{ print $3 }'"
@@ -212,7 +210,21 @@
   tags:
   - redmine
 
-- meta: flush_handlers
+- name: Update local gems with bundle
+  bundler:
+    state: present
+    gemfile: "/home/{{ redmine_user }}/www/Gemfile"
+    gem_path: "/home/{{ redmine_user }}/.gems"
+    user_install: yes
+  become_user: "{{ redmine_user }}"
+  when: redmine_git_task.changed or redmine_local_gemfile_task.changed
+
+- name: Migrate database with rake
+  shell: bundle exec rake -qf ~/www/Rakefile db:migrate
+  become_user: "{{ redmine_user }}"
+  become_method: sudo
+  become_flags: '-iu {{ redmine_user }}'
+  when: redmine_git_task.changed
 
 - name: Populate Mysql database
   shell: bundle exec rake -qf ~/www/Rakefile redmine:load_default_data REDMINE_LANG=fr && touch ~/.populated
@@ -239,8 +251,7 @@
     owner: "{{ redmine_user }}"
     group: "{{ redmine_user }}"
     mode: "0640"
-  notify:
-  - puma reload
+  register: redmine_puma_config_task
   tags:
   - redmine
 
@@ -257,4 +268,13 @@
   tags:
   - redmine
 
-- meta: flush_handlers
+- name: Reload puma service
+  systemd:
+    name: puma
+    daemon_reload: yes
+    state: reloaded
+    user: yes
+  become_user: "{{ redmine_user }}"
+  become_method: sudo
+  become_flags: '-iu {{ redmine_user }}'
+  when: redmine_puma_config_task.changed
