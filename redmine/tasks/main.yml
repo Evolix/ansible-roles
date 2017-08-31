@@ -96,6 +96,7 @@
     owner: "root"
     group: "{{ redmine_user }}"
     mode: "0640"
+  changed_when: false
   with_items:
   - nginx_access.log
   - nginx_error.log
