@@ -1,0 +1,17 @@
+[Unit]
+Description=Puma HTTP server for Ruby Apps : %u
+After=network.target
+
+[Service]
+WorkingDirectory=%h/www
+UMask=0027
+PIDFile=%h/ruby.pid
+ExecStartPre=/bin/mkdir -m 0750 -p %h/run
+ExecStart=/usr/bin/bundle exec puma --bind unix://%h/run/puma.sock?umask=0007 --pidfile %h/run/puma.pid --dir %h/www --config /etc/puma/%u.rb
+ExecReload=/bin/kill -USR2 $MAINPID
+KillMode=process
+#Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+Alias=puma.service

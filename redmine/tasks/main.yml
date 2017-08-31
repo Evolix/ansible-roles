@@ -1,0 +1,260 @@
+---
+- name: Install dependancy
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - libpam-systemd
+  - ruby
+  - ruby-dev
+  - bundler
+  - imagemagick
+  - git-core
+  - git-svn
+  - gcc
+  - build-essential
+  - libxml2-dev
+  - libxslt1-dev
+  - libssl-dev
+  - libmagickwand-dev
+  - libmagickcore-dev
+  - libmysqlclient-dev
+  - python-mysqldb
+  tags:
+  - redmine
+
+#- name: 
+#  lineinfile:
+#  with_items:
+#  - 'https://github.com/.*'
+#  - 'http://rubygems.org/.*'
+#  - 'http://.*.rubygems.org/.*'
+#  tags:
+#  - redmine
+
+- name: Deploy systemd unit
+  copy:
+    src: puma.service
+    dest: /etc/systemd/user/puma.service
+    mode: "0644"
+  tags:
+  - redmine
+
+- name: Create puma config dir
+  file:
+    path: /etc/puma
+    state: directory
+    mode: "0755"
+    owner: root
+  tags:
+  - redmine
+
+- name: Create redmine group
+  group:
+    name: "{{ redmine_user }}"
+    state: present
+  tags:
+  - redmine
+
+- name: Add www-data to redmine group
+  user:
+    name: www-data
+    groups: "{{ redmine_user }}"
+    append: yes
+  tags:
+  - redmine
+
+- name: Create redmine user
+  user:
+    name: "{{ redmine_user }}"
+    state: present
+    group: "{{ redmine_user }}"
+    createhome: yes
+    home: "/home/{{ redmine_user }}"
+    shell: /bin/bash
+  tags:
+  - redmine
+
+- name: Create required directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0750"
+  with_items:
+  - "/home/{{ redmine_user }}"
+  - "/home/{{ redmine_user }}/files"
+  - "/home/{{ redmine_user }}/log"
+  tags:
+  - redmine
+
+- name: Touch Nginx logs file
+  file:
+    path: "/home/{{ redmine_user }}/log/{{ item }}"
+    state: touch
+    owner: "root"
+    group: "{{ redmine_user }}"
+    mode: "0640"
+  with_items:
+  - nginx_access.log
+  - nginx_error.log
+  tags:
+  - redmine
+
+- name: Enable systemd user mode
+  command: "loginctl enable-linger {{ redmine_user }}"
+  changed_when: false
+
+- name: Set user .profile
+  copy:
+    src: profile
+    dest: "/home/{{ redmine_user }}/.profile"
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0640"
+  tags:
+  - redmine
+
+- name: Update or clone Redmine git
+  git:
+    repo: 'https://github.com/redmine/redmine.git'
+    dest: "/home/{{ redmine_user }}/www"
+    version: '3.4-stable'
+    umask: "027"
+    update: yes
+  become_user: "{{ redmine_user }}"
+  notify:
+  - bundle update
+  - rake migrate
+  tags:
+  - redmine
+
+- name: Deploy custom Gemfile
+  copy:
+    src: Gemfile.local
+    dest: "/home/{{ redmine_user }}/www"
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0640"
+  notify: bundle update
+
+- name: Get actual Mysql password
+  shell: "grep password /home/{{ redmine_user }}/.my.cnf | awk '{ print $3 }'"
+  register: redmine_get_mysql_password
+  check_mode: no
+  changed_when: False
+  failed_when: false
+  tags:
+  - redmine
+
+- name: Generate Mysql password
+  shell: perl -e 'print map{("a".."z","A".."Z",0..9)[int(rand(62))]}(1..16)'
+  register: redmine_generate_mysql_password
+  check_mode: no
+  changed_when: False
+  when: redmine_get_mysql_password.stdout == ""
+  tags:
+  - redmine
+
+- name: Set Mysql password
+  set_fact:
+    redmine_db_pass: "{{ redmine_generate_mysql_password.stdout | default(redmine_get_mysql_password.stdout) }}"
+  tags:
+  - redmine
+
+- name: Create Mysql database
+  mysql_db:
+    name: "{{ redmine_db_name }}"
+    config_file: "/root/.my.cnf"
+    state: present
+  tags:
+  - redmine
+
+- name: Create Mysql user
+  mysql_user:
+    name: "{{ redmine_db_username }}"
+    password: '{{ redmine_db_pass }}'
+    priv: "{{ redmine_user }}.*:ALL"
+    config_file: "/root/.my.cnf"
+    update_password: always
+    state: present
+  tags:
+  - redmine
+
+- name: Store credentials in my.cnf
+  ini_file:
+    dest: "/home/{{ redmine_user }}/.my.cnf"
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0600"
+    section: client
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+  with_items:
+    - { option: 'user', value: "{{ redmine_db_username }}" }
+    - { option: 'database', value: "{{ redmine_db_name }}" }
+    - { option: 'password', value: '{{ redmine_db_pass }}' }
+  tags:
+  - redmine
+
+- name: Copy configurations file
+  template:
+    src: "{{ item }}.j2"
+    dest: "/home/{{ redmine_user }}/www/config/{{ item }}"
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0640"
+  with_items:
+  - 'configuration.yml'
+  - 'database.yml'
+  - 'additional_environment.rb'
+  tags:
+  - redmine
+
+- meta: flush_handlers
+
+- name: Populate Mysql database
+  shell: bundle exec rake -qf ~/www/Rakefile redmine:load_default_data REDMINE_LANG=fr && touch ~/.populated
+  args:
+    creates: "/home/{{ redmine_user }}/.populated"
+  become_user: "{{ redmine_user }}"
+  become_method: sudo
+  become_flags: '-iu {{ redmine_user }}'
+
+- name: Generate secret token
+  shell: bundle exec rake -qf ~/www/Rakefile generate_secret_token
+  args:
+    creates: "/home/{{ redmine_user }}/www/config/initializers/secret_token.rb"
+  become_user: "{{ redmine_user }}"
+  become_method: sudo
+  become_flags: '-iu {{ redmine_user }}'
+  tags:
+  - redmine
+
+- name: Copy puma config
+  template:
+    src: puma.rb.j2
+    dest: "/etc/puma/{{ redmine_user }}.rb"
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0640"
+  notify:
+  - puma reload
+  tags:
+  - redmine
+
+- name: Start puma service
+  systemd:
+    name: puma
+    daemon_reload: yes
+    enabled: yes
+    state: started
+    user: yes
+  become_user: "{{ redmine_user }}"
+  become_method: sudo
+  become_flags: '-iu {{ redmine_user }}'
+  tags:
+  - redmine
+
+- meta: flush_handlers
