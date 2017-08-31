@@ -4,13 +4,6 @@
   apt:
     name: git
     state: present
-  when: ansible_os_family == "Debian"
-
-- name: Git is installed (OpenBSD)
-  openbsd_pkg:
-    name: git
-    state: present
-  when: ansible_os_family == "OpenBSD"
 
 - name: /etc is versioned with git
   command: "git init ."

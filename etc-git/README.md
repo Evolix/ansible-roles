@@ -27,5 +27,5 @@ There is also an independant task that can be executed to commit changes made in
       name: etc-git
       tasks_from: commit.yml
     vars:
-      commit_message: "Ansible pre-run my splendid playbook"
+      commit_message: "Ansible post-run my splendid playbook"
 ```

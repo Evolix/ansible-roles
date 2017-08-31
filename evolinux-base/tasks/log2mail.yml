@@ -14,5 +14,5 @@
   systemd:
     name: log2mail
     daemon-reload: yes
-    state: restarted
+    state: started
     enabled: yes

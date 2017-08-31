@@ -1,6 +1,7 @@
 ---
+ntpd_only_local: True
 ntpd_servers:
-- 'pool.ntp.org'
+- 'ntp.evolix.net'
 ntpd_acls:
 - '127.0.0.1'
 - '::1'
