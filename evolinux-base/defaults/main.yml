@@ -83,7 +83,7 @@ evolinux_system_locales: True
 evolinux_system_set_timezone: True
 evolinux_system_timezone: "Europe/Paris"
 
-evolinux_system_vim_skip_defaults: true
+evolinux_system_vim_skip_defaults: True
 evolinux_system_vim_default_editor: True
 evolinux_system_profile: True
 evolinux_system_dirmode_adduser: True
