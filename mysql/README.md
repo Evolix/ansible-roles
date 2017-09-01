@@ -18,7 +18,7 @@ Tasks are extracted in several files, included in `tasks/main.yml` :
 
 ## Available variables
 
-* `mysql_variant` : install Oracle's MySQL or MariaDB (default: `oracle`) ;
+* `mysql_variant` : install Oracle's MySQL or MariaDB (default: `oracle`) [Debian 8 only];
 * `mysql_replace_root_with_mysqladmin`: switch from `root` to `mysqladmin` user or not ;
 * `mysql_thread_cache_size`: number of threads for the cache ;
 * `mysql_innodb_buffer_pool_size`: amount of RAM dedicated to InnoDB ;
@@ -30,4 +30,4 @@ Tasks are extracted in several files, included in `tasks/main.yml` :
 * `mysql_scripts_dir`: email address to send Log2mail messages to (default: `general_scripts_dir`).
 * `mysql_force_new_nrpe_password` : change the password for NRPE even if it exists already (default: `False`).
 
-NB : changing the _datadir_ location can be done multiple times, as long as it is not restored to the default initial location, (because a symlink is created  and can't be switched back, yet).
+NB : changing the _datadir_ location can be done multiple times, as long as it is not restored to the default initial location, (because a symlink is created and can't be switched back, yet).

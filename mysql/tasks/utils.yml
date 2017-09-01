@@ -62,7 +62,6 @@
   tags:
     - mysql
     - mysqltuner
-    - mysqltuner
 
 - name: Install aha
   apt:
