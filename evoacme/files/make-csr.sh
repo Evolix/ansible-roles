@@ -20,7 +20,7 @@ get_domains() {
 	valid_domains=""
 	nb=0
 	
-	echo "Valid Domain(s) for $vhost :"
+	echo "Domain(s) in $vhost :"
 	for domain in $domains
 	do
 		real_ip=$(dig +short "$domain"|grep -oE "([0-9]+\.){3}[0-9]+")
@@ -28,16 +28,19 @@ get_domains() {
 			if [ "${ip}" = "${real_ip}" ]; then
 	                        valid_domains="$valid_domains $domain"
 		                nb=$(( nb  + 1 ))
-				echo "* $domain"
+				echo "* $domain : OK ($real_ip)"
+			else
+				echo "* $domain : INVALID ($real_ip)"
 			fi
 		done
 	done
 	
 	if [ "$nb" -eq 0 ]; then
 	        nb=$(echo "$domains"|wc -l)
-		echo "No valid domains : $domains" >&2
+		echo "No valid domain found, all domains will be used for CSR creation."
 		domains="$domains"
 	else
+		echo "CSR will be created only with valid domains."
 		domains="$valid_domains"
 	fi
 	domains=$(echo "$domains"|xargs -n1)
