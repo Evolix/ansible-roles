@@ -55,6 +55,7 @@ main() {
 	    date_diff=$(((date_crt - date_today) / (60*60*24)))
 	    [ "$date_diff" -ge "$SSL_MINDAY" ] && exit 0
 	fi
+	rm -rf "$CRT_DIR/${vhost}/${DATE}"
 	mkdir -pm 755 "$CRT_DIR/${vhost}/${DATE}"
 	chown -R acme: "$CRT_DIR/${vhost}"
 	sudo -u acme certbot certonly --quiet --webroot --csr "$CSR_DIR/${vhost}.csr" --webroot-path "$ACME_DIR" -n --agree-tos --cert-path="$CRT_DIR/${vhost}/${DATE}/cert.crt" --fullchain-path="$CRT_DIR/${vhost}/${DATE}/fullchain.pem" --chain-path="$CRT_DIR/${vhost}/${DATE}/chain.pem" "$emailopt" --logs-dir "$LOG_DIR" 2>&1 | grep -v "certbot.crypto_util"
