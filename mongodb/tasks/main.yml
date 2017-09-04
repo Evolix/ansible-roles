@@ -3,7 +3,7 @@
 - fail:
     msg: only compatible with Debian 8
   when:
-  - ansible_distribution =! "Debian" or ansible_distribution_release != "jessie"
+  - ansible_distribution != "Debian" or ansible_distribution_release != "jessie"
 
 # Attention à bien indiquer le protocole et le port, sinon le firewall ne laisse pas passer
 - name: MongoDB public GPG Key
