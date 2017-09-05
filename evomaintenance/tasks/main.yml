@@ -14,14 +14,14 @@
     src: evomaintenance.j2
     dest: /etc/evomaintenance.cf
 
-- name: list users with a shell
-  shell: "cat /etc/passwd | grep -vE \"^root:\"  | grep -E \":/[^:]+sh$\" | cut -d: -f6"
-  changed_when: False
-  check_mode: no
-  register: home_of_shell_users
-
-- include: trap.yml home={{ item }}
-  with_items: "{{ home_of_shell_users.stdout_lines }}"
+# - name: list users with a shell
+#   shell: "cat /etc/passwd | grep -vE \"^root:\"  | grep -E \":/[^:]+sh$\" | cut -d: -f6"
+#   changed_when: False
+#   check_mode: no
+#   register: home_of_shell_users
+#
+# - include: trap.yml home={{ item }}
+#   with_items: "{{ home_of_shell_users.stdout_lines }}"
 
 - name: Is minifirewall installed?
   stat:
