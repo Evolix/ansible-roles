@@ -52,3 +52,15 @@
     content: |
       # Put customized values here.
     force: no
+
+- name: "Set custom values for PHP to enable Symfony (jessie)"
+  ini_file:
+    dest: "{{ phpini_cli_custom_file }}"
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  with_items:
+  - { option: "date.timezone", value: "Europe/Paris" }
+  when: php_symfony_requirements
+
