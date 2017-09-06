@@ -20,7 +20,3 @@
   changed_when: "'Disabling' in command_result.stderr"
   when: pma_default_config.stat.exists
 
-- name: Change group to www-data for /etc/phpmyadmin/
-  file:
-    dest: /etc/phpmyadmin/
-    group: www-data
