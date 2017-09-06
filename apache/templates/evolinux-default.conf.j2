@@ -106,14 +106,8 @@
             Include /etc/apache2/ipaddr_whitelist.conf
         </Directory>
 
-        # phpMyAdmin
-        #Alias /phpmyadmin /var/www
-        #Alias /pma-42 /usr/share/phpmyadmin/
-        #Include /etc/phpmyadmin/apache.conf
-        #<Directory /usr/share/phpmyadmin/>
-        #    Require all denied
-        #    Include /etc/apache2/ipaddr_whitelist.conf
-        #</Directory>
+# BEGIN phpMyAdmin section
+# END phpMyAdmin section
 
         CustomLog /var/log/apache2/access.log vhost_combined
         ErrorLog /var/log/apache2/error.log
