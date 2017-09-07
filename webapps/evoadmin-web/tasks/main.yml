@@ -11,3 +11,11 @@
 - include: web.yml
 
 - include: ftp.yml
+
+- name: enable evoadmin-web link in default site index
+  blockinfile:
+    dest: /var/www/index.html
+    marker: "<!-- {mark} evoadmin-web section -->"
+    block: |
+      <li><a href="https://{{ evoadmin_host }}">Interface admin web (EvoAdmin-web)</a></li>
+
