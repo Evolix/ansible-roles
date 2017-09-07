@@ -47,10 +47,10 @@
       </Directory>
 
 - name: enable phpmyadmin link in default site index
-  lineinfile:
+  replace:
     dest: /var/www/index.html
-    line: '            <li><a href="/phpmyadmin-__PHPMYADMIN_SUFFIX__/">Accès PhpMyAdmin</a></li>'
-    regexp: "__PHPMYADMIN_SUFFIX__" 
+    regexp:  '<!-- <li><a href="/phpmyadmin-__PHPMYADMIN_SUFFIX__/">Accès PhpMyAdmin</a></li> -->'
+    replace: '     <li><a href="/phpmyadmin-__PHPMYADMIN_SUFFIX__/">Accès PhpMyAdmin</a></li>'
 
 - name: replace phpmyadmin suffix in default site index
   replace:
