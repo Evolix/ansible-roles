@@ -143,7 +143,6 @@ evolinux_default_www_include: True
 
 evolinux_default_www_files: True
 evolinux_default_www_ssl_cert: True
-evolinux_default_www_ssl_subject: "/CN={{ ansible_fqdn }}"
 
 # hardware
 
