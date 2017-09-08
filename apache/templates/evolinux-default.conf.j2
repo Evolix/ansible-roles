@@ -67,6 +67,8 @@
 
         DocumentRoot /var/www/
 
+        # We override these 2 Directory directives setted in apache2.conf.
+        # We want no access except from allowed IP address.
         <Directory />
             Include /etc/apache2/ipaddr_whitelist.conf
         </Directory>
@@ -79,12 +81,6 @@
         SSLEngine on
         SSLCertificateFile    {{ apache_evolinux_default_ssl_cert }}
         SSLCertificateKeyFile {{ apache_evolinux_default_ssl_key }}
-
-        # We override these 2 Directory directives setted in apache2.conf.
-        # We want no access except from allowed IP address.
-        <Directory />
-            Include /etc/apache2/ipaddr_whitelist.conf
-        </Directory>
 
         # Munin. We need to set Directory directive as Alias take precedence.
         Alias /munin /var/cache/munin/www
@@ -105,6 +101,9 @@
             Require all denied
             Include /etc/apache2/ipaddr_whitelist.conf
         </Directory>
+
+# BEGIN phpMyAdmin section
+# END phpMyAdmin section
 
         CustomLog /var/log/apache2/access.log vhost_combined
         ErrorLog /var/log/apache2/error.log

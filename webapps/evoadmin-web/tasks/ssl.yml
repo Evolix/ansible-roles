@@ -7,7 +7,7 @@
     state: present
 
 - name: Create private key and csr for default site ({{ ansible_fqdn }})
-  command: openssl req -newkey rsa:2048 -sha256 -nodes -keyout /etc/ssl/private/{{ evoadmin_host }}.key -out /etc/ssl/{{ evoadmin_host }}.csr -batch -subj "{{ evoadmin_ssl_subject }}"
+  command: openssl req -newkey rsa:2048 -sha256 -nodes -keyout /etc/ssl/private/{{ evoadmin_host }}.key -out /etc/ssl/{{ evoadmin_host }}.csr -batch -subj "/CN={{ evoadmin_host }}"
   args:
     creates: "/etc/ssl/private/{{ evoadmin_host }}.key"
 

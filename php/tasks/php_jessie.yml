@@ -23,7 +23,7 @@
     phpini_cli_defaults_file: /etc/php5/cli/conf.d/z-evolinux-defaults.ini
     phpini_cli_custom_file: /etc/php5/cli/conf.d/zzz-evolinux-custom.ini
 
-- name: Set default php.ini values for CLI
+- name: "Set default php.ini values for CLI (jessie)"
   ini_file:
     dest: "{{ phpini_cli_defaults_file }}"
     section: PHP
@@ -39,7 +39,7 @@
   - { option: "html_errors", value: "Off" }
   - { option: "allow_url_fopen", value: "Off" }
 
-- name: Disable PHP functions for CLI
+- name: "Disable PHP functions for CLI (jessie)"
   ini_file:
     dest: "{{ phpini_cli_defaults_file }}"
     section: PHP
@@ -52,3 +52,15 @@
     content: |
       # Put customized values here.
     force: no
+
+- name: "Set custom values for PHP to enable Symfony (jessie)"
+  ini_file:
+    dest: "{{ phpini_cli_custom_file }}"
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  with_items:
+  - { option: "date.timezone", value: "Europe/Paris" }
+  when: php_symfony_requirements
+

@@ -1,0 +1,11 @@
+production:
+  email_delivery:
+    delivery_method: :smtp
+    smtp_settings:
+      address: localhost
+      port: 25
+      domain: "{{ ansible_domain }}"
+      ssl: false
+      enable_starttls_auto: false
+  attachments_storage_path: /home/{{ redmine_user }}/files
+  autologin_cookie_secure: true

@@ -57,3 +57,14 @@
     content: |
       # Put customized values here.
     force: no
+
+- name: "Set custom values for PHP to enable Symfony"
+  ini_file:
+    dest: "{{ php_apache_custom_file }}"
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  with_items:
+  - { option: "date.timezone", value: "Europe/Paris" }
+  when: php_symfony_requirements

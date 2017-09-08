@@ -12,7 +12,11 @@
 - include: users_jessie.yml
   when: ansible_distribution_release == "jessie"
 
-- include: config.yml
+- include: config_stretch.yml
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- include: config_jessie.yml
+  when: ansible_distribution_release == "jessie"
 
 - include: datadir.yml
 

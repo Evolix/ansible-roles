@@ -20,6 +20,7 @@
     src: default_www/index.html.j2
     dest: /var/www/index.html
     mode: "0755"
+    force: no
   when: evolinux_default_www_files
 
 # SSL cert
@@ -27,7 +28,7 @@
 - block:
 
   - name: Create private key and csr for default site ({{ ansible_fqdn }})
-    command: openssl req -newkey rsa:2048 -sha256 -nodes -keyout /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/{{ ansible_fqdn }}.csr -batch -subj "{{ evolinux_default_www_ssl_subject }}"
+    command: openssl req -newkey rsa:2048 -sha256 -nodes -keyout /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/{{ ansible_fqdn }}.csr -batch -subj "/CN={{ ansible_fqdn }}"
     args:
       creates: "/etc/ssl/private/{{ ansible_fqdn }}.key"
 

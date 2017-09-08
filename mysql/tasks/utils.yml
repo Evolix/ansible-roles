@@ -10,16 +10,7 @@
 
 # mytop
 
-# mytop is installed with MariaB
-# the package has been removed of Stretch repositories
-- name: Is mytop available ?
-  command: which mytop
-  failed_when: False
-  changed_when: False
-  check_mode: no
-  register: which_mytop
-
-- name: Install mytop
+- name: "Install mytop (jessie)"
   apt:
     name: mytop
     state: present
@@ -27,7 +18,16 @@
     - packages
     - mytop
     - mysql
-  when: which_mytop.rc != 0
+  when: ansible_distribution_release == "jessie"
+
+- name: "Install depends for mytop (Debian 9 or later)"
+  apt:
+    name: "{{ item }}"
+  with_items:
+  - mariadb-client-10.1
+  - libconfig-inifiles-perl
+  - libterm-readkey-perl
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: Read debian-sys-maint password
   shell: cat /etc/mysql/debian.cnf | grep -m1 "password = .*" | cut -d" " -f3
@@ -61,7 +61,6 @@
     state: present
   tags:
     - mysql
-    - mysqltuner
     - mysqltuner
 
 - name: Install aha

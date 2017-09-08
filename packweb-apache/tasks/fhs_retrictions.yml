@@ -40,6 +40,11 @@
   - /etc/phpmyadmin
   - /var/log/installer
 
+- name: Change group to www-data for /etc/phpmyadmin/
+  file:
+    dest: /etc/phpmyadmin/
+    group: www-data
+
 - name: Set u-s permission on some binaries (/bin/ping, /usr/bin/mtr, ...)
   shell: "test -f {{ item }} && chmod --verbose u-s {{ item }}"
   register: command_result

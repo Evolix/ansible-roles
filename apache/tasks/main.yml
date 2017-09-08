@@ -90,7 +90,7 @@
     src: evolinux-default.conf.j2
     dest: /etc/apache2/sites-available/000-evolinux-default.conf
     mode: "0640"
-    # force: yes
+    force: no
   notify: reload apache
   tags:
   - apache
@@ -134,11 +134,6 @@
   check_mode: no
   tags:
   - apache
-  when: apache_phpmyadmin_set
-
-- include: phpmyadmin.yml
-  when: apache_phpmyadmin_set and _default_index.stat.exists
-
 
 # - block:
 #   - name: generate random string for serverstatus suffix

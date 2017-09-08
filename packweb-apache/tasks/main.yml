@@ -23,6 +23,18 @@
     php_fpm_enable: True
   when: packweb_apache_fpm
 
+- name: install info.php
+  copy:
+    src: info.php
+    dest: /var/www/info.php
+    mode: "0644"
+
+- name: enable info.php link in default site index
+  lineinfile:
+    dest: /var/www/index.html
+    line: '            <li><a href="/info.php">Infos PHP</a></li>'
+    regexp: "Infos PHP"
+
 - name: Add elements to user account template
   file:
     path: "/etc/skel/{{ item.path }}"

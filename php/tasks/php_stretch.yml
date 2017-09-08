@@ -24,7 +24,7 @@
     phpini_cli_defaults_file: /etc/php/7.0/cli/conf.d/z-evolinux-defaults.ini
     phpini_cli_custom_file: /etc/php/7.0/cli/conf.d/zzz-evolinux-custom.ini
 
-- name: Set default php.ini values for CLI
+- name: "Set default php.ini values for CLI (Debian 9 or later)"
   ini_file:
     dest: "{{ phpini_cli_defaults_file }}"
     section: PHP
@@ -40,16 +40,27 @@
   - { option: "html_errors", value: "Off" }
   - { option: "allow_url_fopen", value: "Off" }
 
-- name: Disable PHP functions for CLI
+- name: "Disable PHP functions for CLI (Debian 9 or later)"
   ini_file:
     dest: "{{ phpini_cli_defaults_file }}"
     section: PHP
     option: disable_functions
     value: "exec,shell-exec,system,passthru,putenv,popen"
 
-- name: Custom php.ini for CLI
+- name: "Custom php.ini for CLI (Debian 9 or later)"
   copy:
     dest: "{{ phpini_cli_custom_file }}"
     content: |
       # Put customized values here.
     force: no
+
+- name: "Set custom values for PHP to enable Symfony (Debian 9 or later)"
+  ini_file:
+    dest: "{{ phpini_cli_custom_file }}"
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  with_items:
+  - { option: "date.timezone", value: "Europe/Paris" }
+  when: php_symfony_requirements
