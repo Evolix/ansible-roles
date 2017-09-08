@@ -24,7 +24,7 @@
 - name: Enable default vhost
   file:
     src: /etc/nginx/sites-available/evolinux-default.minimal.conf
-    dest: /etc/nginx/sites-enabled/default.conf
+    dest: /etc/nginx/sites-enabled/default
     state: link
   notify: reload nginx
   tags:
