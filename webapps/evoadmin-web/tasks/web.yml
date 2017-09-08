@@ -46,9 +46,3 @@
     owner: evoadmin
     group: evoadmin
     force: no
-
-- name: add www-evoadmin to shadow group
-  user:
-    name: www-evoadmin
-    groups: shadow
-    append: yes
