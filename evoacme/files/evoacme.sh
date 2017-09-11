@@ -20,7 +20,7 @@ mkconf_nginx() {
 mkconf_haproxy() {
 	mkdir -p /etc/ssl/haproxy -m 700
 	cat "$CRT_DIR/${vhost}/live/fullchain.pem" "$SSL_KEY_DIR/${vhost}.key" > "/etc/ssl/haproxy/${vhost}.pem"
-	[ -f "$DH_DIR/${vhost}" ] && cat "$DH_DIR/${vhost}" >> "/etc/ssl/haproxy/${vhost}.pem"
+	[ -f "$DH_DIR/${vhost}.pem" ] && cat "$DH_DIR/${vhost}.pem" >> "/etc/ssl/haproxy/${vhost}.pem"
 	haproxy -c -f /etc/haproxy/haproxy.cfg >/dev/null && service haproxy reload
 }
 
