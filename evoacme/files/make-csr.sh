@@ -102,7 +102,7 @@ EOF
 mkconf_nginx() {
 	mkdir -p /etc/nginx/ssl
 	if [ ! -f "/etc/nginx/ssl/${vhost}.conf" ]; then
-		"cat > /etc/nginx/ssl/${vhost}.conf" <<EOF
+		cat > "/etc/nginx/ssl/${vhost}.conf" <<EOF
 ssl_certificate $SELF_SIGNED_DIR/${vhost}.pem;
 ssl_certificate_key $SSL_KEY_DIR/${vhost}.key;
 EOF
