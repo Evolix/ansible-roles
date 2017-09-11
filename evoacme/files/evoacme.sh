@@ -7,6 +7,15 @@
 # Licence: AGPLv3
 #
 
+usage() {
+	echo "Usage: $0 NAME"
+	echo ""
+	echo "NAME must be correspond to :"
+	echo "- a CSR in ${CSR_DIR}/NAME.csr"
+	echo "- a KEY in ${SSL_KEY_DIR}/NAME.key"
+	echo ""
+}
+
 mkconf_apache() {
         [ -f "/etc/apache2/ssl/${vhost}.conf" ] && sed -i "s~^SSLCertificateFile.*$~SSLCertificateFile $CRT_DIR/${vhost}/live/fullchain.pem~" "/etc/apache2/ssl/${vhost}.conf"
         apache2ctl -t 2>/dev/null && service apache2 reload
@@ -25,13 +34,6 @@ mkconf_haproxy() {
 }
 
 main() {
-	vhost=$(basename "$1" .conf)
-
-	# Check master status for evoadmin-cluster
-	if [ -f "/home/${vhost}/state" ]; then
-		grep -q "STATE=master" "/home/${vhost}/state" || exit 0
-	fi
-
 	[ -f /etc/default/evoacme ] && . /etc/default/evoacme
 	[ -z "${SSL_KEY_DIR}" ] && SSL_KEY_DIR='/etc/ssl/private'
 	[ -z "${CRT_DIR}" ] && CRT_DIR='/etc/letsencrypt'
@@ -40,6 +42,15 @@ main() {
 	[ -z "${DH_DIR}" ] && DH_DIR='/etc/ssl/dhparam'
 	[ -z "${LOG_DIR}" ] && LOG_DIR='/var/log/evoacme'
 	
+	[ "$#" -ne 1 ] && usage && exit 1
+
+	vhost=$(basename "$1" .conf)
+
+	# Check master status for evoadmin-cluster
+	if [ -f "/home/${vhost}/state" ]; then
+		grep -q "STATE=master" "/home/${vhost}/state" || exit 0
+	fi
+
 	SSL_EMAIL=$(grep emailAddress "${CRT_DIR}/openssl.cnf"|cut -d'=' -f2|xargs)
 	if [ -n "$SSL_EMAIL" ]; then
 	    emailopt="-m $SSL_EMAIL"
