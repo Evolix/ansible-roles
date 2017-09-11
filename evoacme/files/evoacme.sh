@@ -60,8 +60,8 @@ main() {
 	chown -R acme: "$CRT_DIR/${vhost}"
 	sudo -u acme certbot certonly --quiet --webroot --csr "$CSR_DIR/${vhost}.csr" --webroot-path "$ACME_DIR" -n --agree-tos --cert-path="$CRT_DIR/${vhost}/${DATE}/cert.crt" --fullchain-path="$CRT_DIR/${vhost}/${DATE}/fullchain.pem" --chain-path="$CRT_DIR/${vhost}/${DATE}/chain.pem" "$emailopt" --logs-dir "$LOG_DIR" 2>&1 | grep -v "certbot.crypto_util"
 	if [ -f "$CRT_DIR/${vhost}/${DATE}/fullchain.pem" ]; then
-		rm -f live
-		ln -s "${DATE}" live
+		rm -f "$CRT_DIR/${vhost}/live"
+		ln -s "$CRT_DIR/${vhost}/${DATE}" "$CRT_DIR/${vhost}/live"
 		which apache2ctl >/dev/null && mkconf_apache
 		which nginx >/dev/null && mkconf_nginx
 		which haproxy >/dev/null && mkconf_haproxy
