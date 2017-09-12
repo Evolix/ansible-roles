@@ -52,6 +52,7 @@
     dest: "{{ phpini_cli_custom_file }}"
     content: |
       ; Put customized values here.
+      ; default_charset = "ISO-8859-1"
     force: no
 
 - name: "Set custom values for PHP to enable Symfony (Debian 9 or later)"
