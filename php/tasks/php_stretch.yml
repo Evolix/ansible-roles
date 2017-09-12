@@ -51,7 +51,7 @@
   copy:
     dest: "{{ phpini_cli_custom_file }}"
     content: |
-      # Put customized values here.
+      ; Put customized values here.
     force: no
 
 - name: "Set custom values for PHP to enable Symfony (Debian 9 or later)"
