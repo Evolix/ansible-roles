@@ -124,7 +124,7 @@ main() {
 	[ -z "${CRT_DIR}" ] && CRT_DIR='/etc/letsencrypt'
 	[ -z "${SELF_SIGNED_DIR}" ] && SELF_SIGNED_DIR='/etc/ssl/self-signed'
 	SSL_KEY_SIZE=$(grep default_bits /etc/letsencrypt/openssl.cnf|cut -d'=' -f2|xargs)
-	[ -n "${SRV_IP}" ] && SRV_IP="${SRV_IP} local_ip" || SRV_IP="$local_ip"
+	[ -n "${SRV_IP}" ] && SRV_IP="${SRV_IP} $local_ip" || SRV_IP="$local_ip"
 	
 	vhostfile=$(ls "/etc/nginx/sites-enabled/${vhost}" "/etc/nginx/sites-enabled/${vhost}.conf" "/etc/apache2/sites-enabled/${vhost}" "/etc/apache2/sites-enabled/${vhost}.conf" 2>/dev/null|head -n1)
 	
