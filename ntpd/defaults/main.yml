@@ -1,5 +1,4 @@
 ---
-ntpd_only_local: True
 ntpd_servers:
 - 'ntp.evolix.net'
 ntpd_acls:

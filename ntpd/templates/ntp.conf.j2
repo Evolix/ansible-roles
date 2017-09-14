@@ -2,11 +2,6 @@
 
 driftfile /var/lib/ntp/ntp.drift
 
-{% if ntpd_only_local is defined and ntpd_only_local %}
-# Only listen on 127.0.0.1 and ::1
-interface ignore wildcard
-
-{% endif %}
 # Enable this if you want statistics to be logged.
 #statsdir /var/log/ntpstats/
 
@@ -23,7 +18,6 @@ filegen clockstats file clockstats type day enable
 # pool: <http://www.pool.ntp.org/join.html>
 
 #server pool.ntp.org
-
 {% for server in ntpd_servers %}
 server {{ server }}
 {% endfor %}
