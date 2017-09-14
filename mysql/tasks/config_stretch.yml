@@ -20,3 +20,15 @@
     force: no
   tags:
     - mysql
+
+- name: Create a system config directory for systemd overrides
+  file:
+    path: /etc/systemd/system/mariadb.service.d
+    state: directory
+
+- name: Override MariaDB systemd unit
+  template:
+    src: mariadb.systemd.j2
+    dest: /etc/systemd/system/mariadb.service.d/evolinux.conf
+    force: yes
+  notify: reload systemd
