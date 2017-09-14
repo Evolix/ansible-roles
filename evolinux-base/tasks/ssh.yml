@@ -1,7 +1,6 @@
 ---
-
-- fail:
-    msg: You must provide at least 1 ssh trusted IP
+- debug:
+    msg: "Warning: empty 'evolinux_ssh_password_auth_addresses' variable, tasks will be skipped!"
   when: evolinux_ssh_password_auth_addresses == []
 
 - name: Security directives for Evolinux
@@ -16,6 +15,7 @@
     insertafter: EOF
     validate: '/usr/sbin/sshd -T -f %s'
   notify: reload sshd
+  when: not evolinux_ssh_password_auth_addresses == []
 
 # - name: verify Match Address directive
 #   command: "grep 'Match Address' /etc/ssh/sshd_config"
