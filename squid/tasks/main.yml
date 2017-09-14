@@ -7,12 +7,12 @@
 
 - name: "Set squid name (jessie)"
   set_fact:
-    squid_daemoname: squid3
+    squid_daemon_name: squid3
   when: ansible_distribution_release == "jessie"
 
 - name: "Set squid name (Debian 9 or later)"
   set_fact:
-    squid_daemoname: squid
+    squid_daemon_name: squid
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: "Install Squid packages"
@@ -20,7 +20,7 @@
     name: '{{ item }}'
     state: present
   with_items:
-  - "{{ squid_daemoname }}"
+  - "{{ squid_daemon_name }}"
   - squidclient
 
 - name: "Set alternative config file (Debian 9 or later)"
