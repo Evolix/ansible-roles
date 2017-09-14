@@ -5,10 +5,10 @@
   when:
   - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
 
-- name: "Set squid name (Debian 8)"
+- name: "Set squid name (jessie)"
   set_fact:
     squid_daemon_name: squid3
-  when: ansible_distribution_major_version == "8"
+  when: ansible_distribution_release == "jessie"
 
 - name: "Set squid name (Debian 9 or later)"
   set_fact:
@@ -29,20 +29,20 @@
     dest: /etc/default/squid
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
-- name: "squid.conf is present (Debian 8)"
+- name: "squid.conf is present (jessie)"
   template:
     src: squid.conf.j2
     dest: /etc/squid3/squid.conf
   notify: "restart squid3"
-  when: ansible_distribution_major_version == "8"
+  when: ansible_distribution_release == "jessie"
 
-- name: "evolix whitelist is present (Debian 8)"
+- name: "evolix whitelist is present (jessie)"
   copy:
     src: whitelist-evolinux.conf
     dest: /etc/squid3/whitelist.conf
     force: no
   notify: "reload squid3"
-  when: ansible_distribution_major_version == "8"
+  when: ansible_distribution_release == "jessie"
 
 - name: "evolinux custom squid file (Debian 9 or later)"
   copy:
