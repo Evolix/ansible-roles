@@ -113,7 +113,17 @@
     force: no
   when: squid_localproxy_enable == False and ansible_distribution_major_version | version_compare('9', '>=')
 
-- name: add some URL in whitelist
+- name: add some URL in whitelist (Debian 8)
+  lineinfile:
+    insertafter: EOF
+    dest: /etc/squid3/whitelist.conf
+    line: "{{ item }}"
+    state: present
+  with_items: '{{ squid_whitelist_items }}'
+  notify: "reload squid3"
+  when: ansible_distribution_major_version == '8'
+
+- name: add some URL in whitelist (Debian 9 or later)
   lineinfile:
     insertafter: EOF
     dest: /etc/squid/evolinux-whitelist-custom.conf
