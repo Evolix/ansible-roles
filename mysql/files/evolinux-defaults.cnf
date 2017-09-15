@@ -8,7 +8,8 @@ back_log = 100
 # Maximum d'erreurs avant de blacklister un hote
 max_connect_errors = 10
 # Loguer les requetes trop longues
-slow_query_log = /var/log/mysql/mysql-slow.log
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/mysql-slow.log
 long_query_time = 10
 
 ###### Tailles
