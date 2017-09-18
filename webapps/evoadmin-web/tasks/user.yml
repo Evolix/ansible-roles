@@ -12,6 +12,18 @@
     name: www-evoadmin
     state: present
 
+- name: "Create www-evoadmin and add to group shadow (jessie)"
+  user:
+    name: www-evoadmin
+    groups: shadow
+    append: yes
+  when: ansible_distribution_release == "jessie"
+
+- name: "Create www-evoadmin (Debian 9 or later)"
+  user:
+    name: www-evoadmin
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
 - name: Install Git
   apt:
     name: git
@@ -60,13 +72,6 @@
   # failed_when: False
   with_items:
   - "{{ evoadmin_home_dir}}/www"
-
-- name: "Add www-evoadmin to group shadow (jessie)"
-  user:
-    name: www-evoadmin
-    groups: shadow
-    append: yes
-  when: ansible_distribution_release == "jessie"
 
 - name: Add evoadmin sudoers file
   template:
