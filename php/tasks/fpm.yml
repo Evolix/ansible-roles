@@ -59,7 +59,7 @@
   copy:
     dest: "{{ phpini_fpm_custom_file }}"
     content: |
-      # Put customized values here.
+      ; Put customized values here.
     force: no
 
 - name: Set default PHP FPM values
@@ -85,7 +85,8 @@
   copy:
     dest: "{{ php_fpm_custom_file }}"
     content: |
-      # Put customized values here.
+      ; Put customized values here.
+      ; default_charset = "ISO-8859-1"
     force: no
 
 - name: "Set custom values for PHP to enable Symfony"

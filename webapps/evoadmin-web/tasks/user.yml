@@ -12,12 +12,24 @@
     name: www-evoadmin
     state: present
 
+- name: "Create www-evoadmin and add to group shadow (jessie)"
+  user:
+    name: www-evoadmin
+    groups: shadow
+    append: yes
+  when: ansible_distribution_release == "jessie"
+
+- name: "Create www-evoadmin (Debian 9 or later)"
+  user:
+    name: www-evoadmin
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
 - name: Install Git
   apt:
     name: git
     state: present
 
-- name: Clone evoadmin repository
+- name: "Clone evoadmin repository (jessie)"
   git:
     repo: https://forge.evolix.org/evoadmin-web.git
     dest: "{{ evoadmin_document_root}}"
@@ -27,7 +39,7 @@
   become_user: "{{ evoadmin_username }}"
   when: ansible_distribution_release == "jessie"
 
-- name: Clone evoadmin repository
+- name: "Clone evoadmin repository (Debian 9 or later)"
   git:
     repo: https://forge.evolix.org/evoadmin-web.git
     dest: "{{ evoadmin_document_root}}"
@@ -60,12 +72,6 @@
   # failed_when: False
   with_items:
   - "{{ evoadmin_home_dir}}/www"
-
-- name: Add www-evoadmin to group shadow
-  user:
-    name: www-evoadmin
-    groups: shadow
-    append: yes
 
 - name: Add evoadmin sudoers file
   template:

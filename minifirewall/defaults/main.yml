@@ -6,7 +6,7 @@ minifirewall_checkout_path: "/tmp/minifirewall"
 minifirewall_int: "{{ ansible_default_ipv4.interface }}"
 minifirewall_ipv6: "on"
 minifirewall_intlan: "{{ ansible_default_ipv4.address }}/32"
-minifirewall_trusted_ips: []
+minifirewall_trusted_ips: ["0.0.0.0/0"]
 minifirewall_privilegied_ips: []
 
 minifirewall_protected_ports_tcp: [22]

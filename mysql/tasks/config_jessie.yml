@@ -1,5 +1,5 @@
 ---
-- name: Copy MySQL defaults config file
+- name: "Copy MySQL defaults config file (jessie)"
   copy:
     src: evolinux-defaults.cnf
     dest: /etc/mysql/conf.d/z-evolinux-defaults.cnf
@@ -10,13 +10,13 @@
   tags:
     - mysql
 
-- name: Copy MySQL custom config file
+- name: "Copy MySQL custom config file (jessie)"
   template:
     src: evolinux-custom.cnf.j2
     dest: /etc/mysql/conf.d/zzz-evolinux-custom.cnf
     owner: root
     group: root
-    mode: "0640"
+    mode: "0644"
     force: no
   tags:
     - mysql

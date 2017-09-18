@@ -34,10 +34,10 @@
   tags:
   - varnish
 
-- name: Modify Varnish configuration files
+- name: Override Varnish systemd unit
   template:
     src: varnish.conf.j2
-    dest: /etc/systemd/system/varnish.service.d/varnish.conf
+    dest: /etc/systemd/system/varnish.service.d/evolinux.conf
     force: yes
   notify: reload systemd
   tags:

@@ -7,12 +7,12 @@
 
 - name: "Set squid name (jessie)"
   set_fact:
-    squid_daemoname: squid3
+    squid_daemon_name: squid3
   when: ansible_distribution_release == "jessie"
 
 - name: "Set squid name (Debian 9 or later)"
   set_fact:
-    squid_daemoname: squid
+    squid_daemon_name: squid
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: "Install Squid packages"
@@ -20,7 +20,7 @@
     name: '{{ item }}'
     state: present
   with_items:
-  - "{{ squid_daemoname }}"
+  - "{{ squid_daemon_name }}"
   - squidclient
 
 - name: "Set alternative config file (Debian 9 or later)"
@@ -40,6 +40,7 @@
   copy:
     src: whitelist-evolinux.conf
     dest: /etc/squid3/whitelist.conf
+    force: no
   notify: "reload squid3"
   when: ansible_distribution_release == "jessie"
 
@@ -113,7 +114,17 @@
     force: no
   when: squid_localproxy_enable == False and ansible_distribution_major_version | version_compare('9', '>=')
 
-- name: add some URL in whitelist
+- name: add some URL in whitelist (Debian 8)
+  lineinfile:
+    insertafter: EOF
+    dest: /etc/squid3/whitelist.conf
+    line: "{{ item }}"
+    state: present
+  with_items: '{{ squid_whitelist_items }}'
+  notify: "reload squid3"
+  when: ansible_distribution_major_version == '8'
+
+- name: add some URL in whitelist (Debian 9 or later)
   lineinfile:
     insertafter: EOF
     dest: /etc/squid/evolinux-whitelist-custom.conf

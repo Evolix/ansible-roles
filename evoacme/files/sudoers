@@ -1,1 +1,0 @@
-acme ALL=(ALL:ALL) NOPASSWD: /opt/certbot/certbot-auto
