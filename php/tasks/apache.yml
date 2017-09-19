@@ -6,6 +6,7 @@
     state: present
   with_items:
   - libapache2-mod-php5
+  - php5
   when: ansible_distribution_release == "jessie"
 
 - name: "Install mod_php packages (Debian 9 or later)"
@@ -14,6 +15,7 @@
     state: present
   with_items:
   - libapache2-mod-php
+  - php
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: "Set php.ini config for apache2 (jessie)"

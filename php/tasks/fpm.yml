@@ -6,6 +6,7 @@
     state: present
   with_items:
   - php5-fpm
+  - php5
   when: ansible_distribution_release == "jessie"
 
 - name: "Install PHP FPM packages (Debian 9 or later)"
@@ -14,6 +15,7 @@
     state: present
   with_items:
   - php-fpm
+  - php
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: "Set config files for FPM (jessie)"
