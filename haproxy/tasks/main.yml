@@ -32,3 +32,5 @@
   tags:
   - haproxy
   - config
+
+- include: nagios.yml
