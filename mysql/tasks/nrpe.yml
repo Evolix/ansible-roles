@@ -28,6 +28,7 @@
     mysql_user:
       name: nrpe
       password: '{{ mysql_nrpe_password.stdout }}'
+      priv: "*.*:REPLICATION CLIENT"
       config_file: /root/.my.cnf
       update_password: always
       state: present
