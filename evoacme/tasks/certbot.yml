@@ -42,6 +42,18 @@
     path: /usr/local/bin/certbot
     state: absent
 
+- name: stat /etc/cron.d/certbot
+  stat:
+    path: /etc/cron.d/certbot
+  register: etc_cron_d_certbot
+
+- name: Rename certbot dpkg cron to .disabled
+  copy:
+    remote_src: True
+    src: /etc/cron.d/certbot
+    dest: /etc/cron.d/certbot.disabled
+  when: etc_cron_d_certbot.stat.exists
+
 - name: Remove certbot dpkg cron
   file:
     path: /etc/cron.d/certbot
