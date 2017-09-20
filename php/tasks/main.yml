@@ -8,6 +8,9 @@
 - include: php_jessie.yml
   when: ansible_distribution_release == "jessie"
 
+- include: php_stretch_sury.yml
+  when: ansible_distribution_major_version | version_compare('9', '>=') and php_sury_enable
+
 - include: php_stretch.yml
   when: ansible_distribution_major_version | version_compare('9', '>=')
 

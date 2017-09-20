@@ -1,0 +1,24 @@
+---
+
+- name: Setup deb.sury.org repository - Add GPG key
+  get_url:
+    url: https://packages.sury.org/php/apt.gpg
+    dest: /etc/apt/trusted.gpg.d/php71-sury.gpg
+    mode: "0644"
+
+- name: Setup deb.sury.org repository - Install apt-transport-https
+  apt:
+    state: present
+    name: apt-transport-https
+
+- name: Setup deb.sury.org repository - Add source list
+  copy:
+    dest: /etc/apt/sources.list.d/php71-sury.list
+    force: no
+    mode: "0600"
+    content: |
+        deb https://packages.sury.org/php/ stretch main
+  notify: apt update
+
+- name: Intermediate flush of handlers
+  meta: flush_handlers

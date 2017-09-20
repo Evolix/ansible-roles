@@ -3,3 +3,7 @@
   service:
     name: php-fpm
     state: restarted
+
+- name: apt update
+  apt:
+    update_cache: yes
