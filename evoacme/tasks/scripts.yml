@@ -9,7 +9,7 @@
 
 - name: Copy make-csr.sh script
   copy:
-    src: files/make-csr.sh
+    src: make-csr.sh
     dest: /usr/local/sbin/make-csr
     owner: root
     group: root
@@ -17,7 +17,7 @@
 
 - name: Copy evoacme script
   copy:
-    src: files/evoacme.sh
+    src: evoacme.sh
     dest: /usr/local/sbin/evoacme
     owner: root
     group: root
