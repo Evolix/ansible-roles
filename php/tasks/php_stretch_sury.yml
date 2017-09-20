@@ -11,6 +11,11 @@
     state: present
     name: apt-transport-https
 
+- name: Setup deb.sury.org repository - Add preferences file
+  copy:
+    src: sury.preferences
+    dest: /etc/apt/preferences.d/z-sury
+
 - name: Setup deb.sury.org repository - Add source list
   apt_repository:
     repo: "deb https://packages.sury.org/php/ stretch main"

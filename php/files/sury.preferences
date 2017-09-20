@@ -1,0 +1,7 @@
+Package: php7.1* libapache2-mod-php7.1
+Pin: origin packages.sury.org
+Pin-Priority: 999
+
+Package: *
+Pin: origin packages.sury.org
+Pin-Priority: 50
