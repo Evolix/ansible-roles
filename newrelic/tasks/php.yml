@@ -1,0 +1,42 @@
+---
+
+- name: Pre-seed package configuration with app name
+  debconf:
+    name: newrelic-php5
+    question: "newrelic-php5/application-name"
+    value: "{{ newrelic_appname }}"
+    vtype: string
+  when: newrelic_appname != ""
+
+- name: Pre-seed package configuration with license
+  debconf:
+    name: newrelic-php5
+    question: "newrelic-php5/license-key"
+    value: "{{ newrelic_license }}"
+    vtype: "string"
+  when: newrelic_license != ""
+
+- name: list newrelic config files
+  shell: "find /etc/php* -type f -name newrelic.ini"
+  changed_when: false
+  check_mode: no
+  register: find_newrelic_ini
+
+- name: Disable AWS detection
+  lineinfile:
+    dest: "{{ item }}"
+    regexp: '^;?newrelic.daemon.utilization.detect_aws'
+    line: 'newrelic.daemon.utilization.detect_aws = false'
+  with_items: "{{ find_newrelic_ini.stdout_lines }}"
+
+- name: Disable Docker detection
+  lineinfile:
+    dest: "{{ item }}"
+    regexp: '^;?newrelic.daemon.utilization.detect_docker'
+    line: 'newrelic.daemon.utilization.detect_docker = false'
+  with_items: "{{ find_newrelic_ini.stdout_lines }}"
+
+- name: Install package for PHP
+  apt:
+    name: newrelic-php5
+    state: installed

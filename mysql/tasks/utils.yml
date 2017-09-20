@@ -1,8 +1,16 @@
 ---
 
+- name: Ensure scripts directory exists
+  file:
+    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}"
+    mode: "0700"
+    state: directory
+  tags:
+    - mysql
+
 # mytop
 
-- name: Install mytop
+- name: "Install mytop (jessie)"
   apt:
     name: mytop
     state: present
@@ -10,6 +18,16 @@
     - packages
     - mytop
     - mysql
+  when: ansible_distribution_release == "jessie"
+
+- name: "Install depends for mytop (Debian 9 or later)"
+  apt:
+    name: "{{ item }}"
+  with_items:
+  - mariadb-client-10.1
+  - libconfig-inifiles-perl
+  - libterm-readkey-perl
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: Read debian-sys-maint password
   shell: cat /etc/mysql/debian.cnf | grep -m1 "password = .*" | cut -d" " -f3
@@ -34,10 +52,13 @@
   when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
 
 - name: Install mysqltuner
-  copy:
-    src: mysqltuner.pl
-    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysqltuner.pl"
-    mode: "0700"
+  # copy:
+  #   src: mysqltuner.pl
+  #   dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysqltuner.pl"
+  #   mode: "0700"
+  apt:
+    name: mysqltuner
+    state: present
   tags:
     - mysql
     - mysqltuner
@@ -61,7 +82,7 @@
   tags:
     - mysql
 
-- name: "Cron dir is present"
+- name: "Cron dir for optimize is present"
   file:
     path: "/etc/cron.{{ mysql_cron_optimize_frequency | mandatory }}"
     state: directory
@@ -80,9 +101,33 @@
 
 - name: "Disable cron to optimize MySQL"
   file:
-    dest: /etc/cron.weekly/mysql-optimize.sh
+    dest: /etc/cron.{{ mysql_cron_optimize_frequency | mandatory }}/mysql-optimize.sh
     state: absent
   when: not mysql_cron_optimize
+  tags:
+    - mysql
+
+- name: "Cron dir for mysqltuner is present"
+  file:
+    path: "/etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: "Enable mysqltuner in cron"
+  copy:
+    src: mysqltuner.cron.sh
+    dest: /etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}/mysqltuner.sh
+  when: mysql_cron_mysqltuner
+  tags:
+    - mysql
+
+- name: "Disable mysqltuner in cron"
+  file:
+    dest: /etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}/mysqltuner.sh
+    state: absent
+  when: not mysql_cron_mysqltuner
   tags:
     - mysql
 
@@ -90,14 +135,6 @@
 
 - include: remount_usr_rw.yml
   when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
-
-- name: Ensure /usr/share/scripts exists
-  file:
-    dest: /usr/share/scripts
-    mode: "0700"
-    state: directory
-  tags:
-    - mysql
 
 - name: Install my-add.sh
   copy:

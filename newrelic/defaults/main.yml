@@ -1,0 +1,7 @@
+---
+newrelic_sysmond: True
+
+newrelic_php: False
+
+newrelic_license: ""
+newrelic_appname: ""

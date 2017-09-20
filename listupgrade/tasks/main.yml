@@ -15,7 +15,6 @@
     owner: root
     group: root
     force: yes
-    backup: yes
 
 - name: Create /etc/evolinux
   file:

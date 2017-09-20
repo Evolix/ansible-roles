@@ -1,22 +1,4 @@
-[core]
-  filemode = true
-  bare = false
 [color]
-  branch = auto
-  status = auto
-  diff = auto
-  interactive = auto
-  decorate = auto
-  grep = auto
   ui = true
-[apply]
-  whitespace = nowarn
 [alias]
-  a = add
-  aa = add -A .
-  c = commit -v
-  ca = commit -v -a
-  d = diff --ignore-space-change --patience --no-prefix
-  dw = diff --word-diff
   lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
-  s = status -s -b

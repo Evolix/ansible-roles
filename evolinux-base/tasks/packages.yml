@@ -6,7 +6,6 @@
   with_items:
   - locales
   - sudo
-  - ntp
   - ntpdate
   - lsb-release
   - dnsutils
@@ -15,6 +14,8 @@
   - conntrack
   - logrotate
   - bash-completion
+  - ssl-cert
+  - ca-certificates
   when: evolinux_packages_system
 
 - name: Install/Update diagnostic tools
@@ -64,26 +65,28 @@
     allow_unauthenticated: yes
   when: evolinux_packages_serveur_base
 
+- name: Be sure that openntpd package is absent/purged
+  apt:
+    name: openntpd
+    state: absent
+    purge: yes
+  when: evolinux_packages_purge_openntpd
+
+- name: Install/Update packages for Stretch and later
+  apt:
+    name: "{{ item }}"
+  with_items:
+  - net-tools
+  when:
+  - evolinux_packages_stretch
+  - ansible_distribution_major_version | version_compare('9', '>=')
+
 - name: Customize logcheck recipient
   lineinfile:
     dest: /etc/logcheck/logcheck.conf
     regexp: '^SENDMAILTO=".*"$'
     line: 'SENDMAILTO="{{ logcheck_alert_email or general_alert_email | mandatory }}"'
   when: evolinux_packages_logcheck_recipient
-
-- name: is an MTA installed?
-  command: "dpkg -S /usr/sbin/sendmail"
-  check_mode: no
-
-  register: mta_installed
-  failed_when: False
-  changed_when: False
-
-- name: Install lsb-invalid-mta
-  apt:
-    name: lsb-invalid-mta
-  when: evolinux_packages_invalid_mta and mta_installed.rc != 0
-
 
 - name: Deleting rpcbin and nfs-common
   apt:
@@ -105,6 +108,8 @@
   with_items:
   - { option: "confirm", value: "1" }
   - { option: "which",   value: "both" }
-  when: evolinux_packages_listchanges
+  when:
+  - evolinux_packages_listchanges
+  - ansible_distribution_release == "jessie"
 
 - meta: flush_handlers

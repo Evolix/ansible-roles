@@ -1,4 +1,10 @@
 ---
+
+- fail:
+    msg: only compatible with Debian >= 8
+  when:
+  - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
+
 - name: Hostname
   include: hostname.yml
   when: evolinux_hostname_include
@@ -54,3 +60,7 @@
 - name: Customize for Orange FCE
   include: provider_orange_fce.yml
   when: evolinux_provider_orange_fce_include
+
+- name: Override Logmail service
+  include: log2mail.yml
+  when: evolinux_packages_serveur_base

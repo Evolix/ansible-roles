@@ -1,0 +1,29 @@
+---
+
+# - name: Fail if distribution is not supported
+#   fail:
+#     msg: "Error: Evolix public repository is not compatble with 'Debian Stretch' yet."
+#   when: ansible_distribution_release == "stretch"
+#   tags:
+#   - apt
+
+
+- name: Add Evolix GPG key
+  apt_key:
+    #url: http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x44975278B8612B5D
+    data: "{{ lookup('file', 'reg.gpg') }}"
+
+- name: Evolix public list is installed
+  template:
+    src: evolix_public.list.j2
+    dest: /etc/apt/sources.list.d/evolix_public.list
+    force: yes
+    mode: "0640"
+  notify: apt update
+  tags:
+  - apt
+
+- name: Intermediate flush of handlers
+  meta: flush_handlers
+  tags:
+  - apt

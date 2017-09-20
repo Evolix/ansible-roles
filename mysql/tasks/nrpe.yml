@@ -20,7 +20,7 @@
 
 - block:
   - name: Create a password for NRPE
-    shell: perl -e 'print map{("a".."z","A".."Z",0..9)[int(rand(62))]}(1..16)'
+    command: "apg -n 1 -m 16 -M lcN"
     register: mysql_nrpe_password
     changed_when: False
 
@@ -28,6 +28,7 @@
     mysql_user:
       name: nrpe
       password: '{{ mysql_nrpe_password.stdout }}'
+      priv: "*.*:REPLICATION CLIENT"
       config_file: /root/.my.cnf
       update_password: always
       state: present

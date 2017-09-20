@@ -20,18 +20,15 @@
     src: default_www/index.html.j2
     dest: /var/www/index.html
     mode: "0755"
+    force: no
   when: evolinux_default_www_files
 
 # SSL cert
 
 - block:
-  - name: ssl-cert package is installed
-    apt:
-      name: ssl-cert
-      state: present
 
   - name: Create private key and csr for default site ({{ ansible_fqdn }})
-    command: openssl req -newkey rsa:2048 -sha256 -nodes -keyout /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/{{ ansible_fqdn }}.csr -batch -subj "{{ evolinux_default_www_ssl_subject }}"
+    command: openssl req -newkey rsa:2048 -sha256 -nodes -keyout /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/{{ ansible_fqdn }}.csr -batch -subj "/CN={{ ansible_fqdn }}"
     args:
       creates: "/etc/ssl/private/{{ ansible_fqdn }}.key"
 
@@ -47,68 +44,5 @@
     args:
       creates: "/etc/ssl/certs/{{ ansible_fqdn }}.crt"
   when: evolinux_default_www_ssl_cert
-
-# Nginx vhost
-
-- name: is Nginx installed?
-  stat:
-    path: /etc/nginx/sites-available
-  check_mode: no
-  register: nginx_sites_available
-
-- block:
-  - name: nginx vhost is installed
-    template:
-      src: default_www/nginx_default_site.j2
-      dest: /etc/nginx/sites-available/000-default
-      mode: "0640"
-      # force: yes
-    notify: reload nginx
-    tags:
-    - nginx
-
-  - name: nginx vhost is enabled
-    file:
-      src: /etc/nginx/sites-available/000-default
-      dest: /etc/nginx/sites-enabled/000-default
-      state: link
-    notify: reload nginx
-    when: evolinux_default_www_nginx_enabled
-    tags:
-    - nginx
-
-  when: evolinux_default_www_nginx_vhost and nginx_sites_available.stat.exists
-
-
-# Apache vhost
-
-- name: is Apache installed?
-  stat:
-    path: /etc/apache2/sites-available
-  check_mode: no
-  register: apache_sites_available
-
-- block:
-  - name: Apache vhost is installed
-    template:
-      src: default_www/apache_default_site.j2
-      dest: /etc/apache2/sites-available/000-default.conf
-      mode: "0640"
-      # force: yes
-    notify: reload apache
-    tags:
-    - apache
-
-  - name: Apache vhost is enabled
-    file:
-      src: /etc/apache2/sites-available/000-default.conf
-      dest: /etc/apache2/sites-enabled/000-default.conf
-      state: link
-    notify: reload apache
-    when: evolinux_default_www_apache_enabled
-    tags:
-    - apache
-
-  when: evolinux_default_www_apache_vhost and apache_sites_available.stat.exists
 
 - meta: flush_handlers

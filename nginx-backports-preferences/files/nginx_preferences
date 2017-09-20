@@ -1,3 +1,0 @@
-Package: nginx nginx-common nginx-doc nginx-extras nginx-extras-dbg nginx-full nginx-full-dbg nginx-light nginx-light-dbg libssl1.0.0
-Pin: release a=jessie-backports
-Pin-Priority: 999

@@ -1,32 +1,18 @@
 ---
+
+- name: Include java8 role
+  include_role:
+    name: java8
+
 - name: Add jenkins GPG key
   apt_key:
-    url: https://jenkins-ci.org/debian/jenkins-ci.org.key
-
-- name: Check if Squid is present
-  stat:
-    path: /etc/squid3/whitelist-custom.conf
-  register: _squid3_whitelist
-  check_mode: no
-
-- name: Append jenkins repositories to Squid whitelist
-  lineinfile:
-    name: /etc/squid3/whitelist-custom.conf
-    line: "{{ item }}"
-  with_items:
-    - "http://pkg.jenkins-ci.org/.*"
-    - "http://mirrors.jenkins.io/.*"
-    - "http://jenkins.mirror.isppower.de/.*"
-    - "http://ftp.icm.edu.pl/.*"
-  notify: Reload Squid
-  when: _squid3_whitelist.stat.exists
-
-- meta: flush_handlers
+    # url: https://jenkins-ci.org/debian/jenkins-ci.org.key
+    data: "{{ lookup('file', 'jenkins.key') }}"
 
 - name: Add jenkins APT repository
   apt_repository:
     repo: deb http://pkg.jenkins-ci.org/debian-stable binary/
-    filename: jenkins.list
+    filename: jenkins
     update_cache: yes
 
 - name: Install Jenkins

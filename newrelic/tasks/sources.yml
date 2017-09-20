@@ -1,0 +1,13 @@
+---
+
+- name: Add dotdeb GPG key
+  apt_key:
+    # url: https://download.newrelic.com/548C16BF.gpg
+    data: "{{ lookup('file', '548C16BF.gpg') }}"
+
+- name: Install NewRelic repository
+  apt_repository:
+    repo: "deb http://apt.newrelic.com/debian/ newrelic non-free"
+    state: present
+    filename: newrelic
+    update_cache: yes

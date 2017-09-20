@@ -1,0 +1,16 @@
+options {
+    directory "/var/cache/bind";
+    version "Bingo";
+    auth-nxdomain no;
+    listen-on-v6 { ::1; };
+    listen-on { 127.0.0.1; };
+    allow-recursion { ::1; 127.0.0.1; };
+};
+
+logging {
+        category default { default_file; };
+        channel default_file {
+                file "/var/log/bind.log";
+                severity info;
+        };
+};

@@ -1,0 +1,23 @@
+# ~/.profile: executed by the command interpreter for login shells.
+
+umask 027
+
+# if running bash
+if [ -n "$BASH_VERSION" ]; then
+    # include .bashrc if it exists
+    if [ -f "$HOME/.bashrc" ]; then
+        . "$HOME/.bashrc"
+    fi
+fi
+
+# set PATH so it includes gems bin
+if [ -d "$HOME/bin" ] ; then
+    export PATH="$HOME/.gems/ruby/2.1.0/bin:$PATH"
+fi
+
+# For systemctl --user
+export XDG_RUNTIME_DIR=/run/user/$UID
+
+# Ruby vars
+export RAILS_ENV=production
+export BUNDLE_GEMFILE="$HOME/www/Gemfile"

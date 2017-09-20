@@ -1,0 +1,13 @@
+---
+
+- name: Install system monitor daemon
+  apt:
+    name: newrelic-sysmond
+
+- name: Set license key for newrelic-sysmond
+  replace:
+    dest: /etc/newrelic/nrsysmond.cfg
+    regexp: "license_key=REPLACE_WITH_REAL_KEY"
+    replace: "license_key={{ newrelic_license }}"
+  when: newrelic_license != ""
+  notify: restart newrelic-sysmond

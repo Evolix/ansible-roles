@@ -1,0 +1,33 @@
+---
+- name: No backports config in default sources.list
+  lineinfile:
+    dest: /etc/apt/sources.list
+    regexp: "backports"
+    state: absent
+  tags:
+  - apt
+
+- name: Backports sources list is installed
+  template:
+    src: '{{ ansible_distribution_release }}_backports.list.j2'
+    dest: /etc/apt/sources.list.d/backports.list
+    force: yes
+    mode: "0640"
+  notify: apt update
+  tags:
+  - apt
+
+- name: Backports configuration
+  copy:
+    src: '{{ ansible_distribution_release }}_backports_preferences'
+    dest: /etc/apt/preferences.d/0-backports-defaults
+    force: yes
+    mode: "0640"
+  notify: apt update
+  tags:
+  - apt
+
+- name: Intermediate flush of handlers
+  meta: flush_handlers
+  tags:
+  - apt

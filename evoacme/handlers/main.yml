@@ -18,3 +18,8 @@
   service:
     name: squid3
     state: reloaded
+
+- name: reload squid
+  service:
+    name: squid
+    state: reloaded

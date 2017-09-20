@@ -1,29 +1,55 @@
 ---
-- name: verify Match Address directive
-  command: "grep 'Match Address' /etc/ssh/sshd_config"
-  changed_when: False
-  failed_when: False
-  check_mode: no
+- debug:
+    msg: "Warning: empty 'evolinux_ssh_password_auth_addresses' variable, tasks will be skipped!"
+  when: evolinux_ssh_password_auth_addresses == []
 
-  register: grep_matchaddress_ssh
-
-- name: Add Match Address sshd directive
-  lineinfile:
+- name: Security directives for Evolinux
+  blockinfile:
     dest: /etc/ssh/sshd_config
-    line: "\nMatch Address {{ evolinux_ssh_password_auth_addresses | join(',') }}\n    PasswordAuthentication yes"
+    block: |
+      Match Group evolinux-sudo
+          PasswordAuthentication no
+      Match Address {{ evolinux_ssh_password_auth_addresses | join(',') }}
+          PasswordAuthentication yes
+    marker: "# {mark} EVOLINUX PASSWORD RESTRICTIONS"
+    insertafter: EOF
     validate: '/usr/sbin/sshd -T -f %s'
   notify: reload sshd
-  when: evolinux_ssh_match_address and grep_matchaddress_ssh.rc != 0 and evolinux_ssh_password_auth_addresses != []
+  when: not evolinux_ssh_password_auth_addresses == []
 
-- name: Modify Match Address sshd directive
-  replace:
-    dest: /etc/ssh/sshd_config
-    regexp: '^(Match Address ((?!{{ item }}).)*)$'
-    replace: '\1,{{ item }}'
-    validate: '/usr/sbin/sshd -T -f %s'
-  with_items: "{{ evolinux_ssh_password_auth_addresses }}"
-  notify: reload sshd
-  when: evolinux_ssh_match_address and grep_matchaddress_ssh.rc == 0
+# - name: verify Match Address directive
+#   command: "grep 'Match Address' /etc/ssh/sshd_config"
+#   changed_when: False
+#   failed_when: False
+#   check_mode: no
+#   register: grep_matchaddress_ssh
+#
+# - name: Add Match Address sshd directive
+#   lineinfile:
+#     dest: /etc/ssh/sshd_config
+#     line: "\nMatch Address {{ evolinux_ssh_password_auth_addresses | join(',') }}\n    PasswordAuthentication yes"
+#     insertafter: '# +ForceCommand cvs server'
+#     validate: '/usr/sbin/sshd -T -f %s'
+#   notify: reload sshd
+#   when: evolinux_ssh_match_address and grep_matchaddress_ssh.rc != 0 and evolinux_ssh_password_auth_addresses != []
+#
+# - name: Modify Match Address sshd directive
+#   replace:
+#     dest: /etc/ssh/sshd_config
+#     regexp: '^(Match Address ((?!{{ item }}).)*)$'
+#     replace: '\1,{{ item }}'
+#     validate: '/usr/sbin/sshd -T -f %s'
+#   with_items: "{{ evolinux_ssh_password_auth_addresses }}"
+#   notify: reload sshd
+#   when: evolinux_ssh_match_address and grep_matchaddress_ssh.rc == 0
+#
+# - name: Add Match Group sudo without password
+#   lineinfile:
+#     dest: /etc/ssh/sshd_config
+#     line: "\nMatch Group sudo\n    PasswordAuthentication no"
+#     insertbefore: '^Match Address'
+#     validate: '/usr/sbin/sshd -T -f %s'
+#   notify: reload sshd
 
 - name: disable SSH access for root
   replace:
@@ -33,6 +59,8 @@
   notify: reload sshd
   when: evolinux_ssh_disable_root
 
+# We disable AcceptEnv because it can be a security issue, but also because we
+# do not want clients to push their environment variables like LANG.
 - name: disable AcceptEnv in ssh config
   replace:
     dest: /etc/ssh/sshd_config
@@ -44,11 +72,9 @@
 - name: Set log level to verbose (for Debian >= 9)
   replace:
     dest: /etc/ssh/sshd_config
-    regexp: '^LogLevel [A-Z]+'
+    regexp: '^#?LogLevel [A-Z]+'
     replace: "LogLevel VERBOSE"
   notify: reload sshd
-  when:
-  - ansible_distribution == "Debian"
-  - ansible_distribution_major_version | version_compare('9.0', '>=')
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - meta: flush_handlers

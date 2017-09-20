@@ -1,0 +1,48 @@
+---
+
+- name: "Verify Evolinux sudoers file presence (jessie)"
+  template:
+    src: sudoers_jessie.j2
+    dest: /etc/sudoers.d/evolinux
+    force: no
+    validate: '/usr/sbin/visudo -cf %s'
+  register: copy_sudoers_evolinux
+  when: ansible_distribution_release == "jessie"
+
+- name: "Verify Evolinux sudoers file presence (Debian 9 or later)"
+  template:
+    src: sudoers_stretch.j2
+    dest: /etc/sudoers.d/evolinux
+    force: no
+    validate: '/usr/sbin/visudo -cf %s'
+  register: copy_sudoers_evolinux
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: "Verify Evolinux sudoers file permissions"
+  file:
+    path: /etc/sudoers.d/evolinux
+    mode: "0440"
+    state: file
+
+- name: "Add user in sudoers file for '{{ user.name }}' (jessie)"
+  replace:
+    dest: /etc/sudoers.d/evolinux
+    regexp: '^(User_Alias\s+ADMINS\s+=((?!{{ user.name }}).)*)$'
+    replace: '\1,{{ user.name }}'
+    validate: '/usr/sbin/visudo -cf %s'
+  when:
+  - ansible_distribution_release == "jessie"
+  - not copy_sudoers_evolinux.changed
+
+- name: "Create evolinux-sudo group (Debian 9 or later)"
+  group:
+    name: evolinux-sudo
+    system: yes
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: "Add user to evolinux-sudo group (Debian 9 or later)"
+  user:
+    name: '{{ user.name }}'
+    groups: 'evolinux-sudo'
+    append: yes
+  when: ansible_distribution_major_version | version_compare('9', '>=')

@@ -1,5 +1,10 @@
 ---
-- name: Reload Squid
+- name: reload squid
+  service:
+    name: squid
+    state: reloaded
+
+- name: reload squid3
   service:
     name: squid3
     state: reloaded
@@ -8,4 +13,3 @@
   service:
     name: jenkins
     state: restarted
-

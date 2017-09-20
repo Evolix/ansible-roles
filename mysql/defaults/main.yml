@@ -2,7 +2,7 @@
 general_alert_email: "root@localhost"
 log2mail_alert_email: Null
 
-general_scripts_dir: "/usr/local/bin"
+general_scripts_dir: "/usr/share/scripts"
 mysql_scripts_dir: Null
 
 mysql_variant: oracle
@@ -17,5 +17,8 @@ mysql_innodb_buffer_pool_size: '{{ (ansible_memtotal_mb * 0.3) | int }}M'
 
 mysql_cron_optimize: True
 mysql_cron_optimize_frequency: weekly
+
+mysql_cron_mysqltuner: True
+mysql_cron_mysqltuner_frequency: monthly
 
 mysql_force_new_nrpe_password: False

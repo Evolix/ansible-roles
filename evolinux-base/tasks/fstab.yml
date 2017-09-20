@@ -14,7 +14,6 @@
     dest: /etc/fstab
     regexp: '([^#]\s+/home\s+\S+\s+)([a-z,]+)(\s+)'
     replace: '\1{{ evolinux_fstab_home_options | mandatory }}\3'
-    backup: yes
   notify: remount /home
   when:
   - "' /home ' in fstab_content.stdout"
@@ -25,7 +24,6 @@
     dest: /etc/fstab
     regexp: '([^#]\s+/tmp\s+\S+\s+)([a-z,]+)(\s+)'
     replace: '\1{{ evolinux_fstab_tmp_options | mandatory }}\3'
-    backup: yes
   when:
   - "' /tmp ' in fstab_content.stdout"
   - evolinux_fstab_tmp
@@ -35,7 +33,6 @@
     dest: /etc/fstab
     regexp: '([^#]\s+/usr\s+\S+\s+)([a-z,]+)(\s+)'
     replace: '\1{{ evolinux_fstab_usr_options | mandatory }}\3'
-    backup: yes
   when:
   - "' /usr ' in fstab_content.stdout"
   - evolinux_fstab_usr
@@ -45,7 +42,6 @@
     dest: /etc/fstab
     regexp: '([^#]\s+/var\s+\S+\s+)([a-z,]+)(\s+)'
     replace: '\1{{ evolinux_fstab_var_options | mandatory }}\3'
-    backup: yes
   notify: remount /var
   when:
   - "' /var ' in fstab_content.stdout"

@@ -11,8 +11,8 @@
 
 - name: Node GPG key is installed
   apt_key:
-    url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
-    state: present
+    #url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+    data: "{{ lookup('file', 'nodesource.gpg.key') }}"
   tags:
     - system
     - packages

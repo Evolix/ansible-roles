@@ -38,6 +38,6 @@
     option: "LimitMEMLOCK"
     value: "infinity"
   notify:
-  - reload elasticsearch unit
+  - restart elasticsearch
   tags:
   - config

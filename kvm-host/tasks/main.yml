@@ -1,4 +1,6 @@
 ---
+
+## TODO: check why it's disabled
 #- include: ssh.yml
 
 - include: packages.yml

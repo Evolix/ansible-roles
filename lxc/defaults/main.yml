@@ -1,0 +1,18 @@
+---
+# Should LXC containers run in unprivilegied (non root) mode?
+lxc_unprivilegied_containers: false
+
+# Network type to use. See lxc.container.conf(5).
+lxc_network_type: "none"
+
+# Partition to bind mount into containers.
+lxc_mount_part: "/home"
+
+# List of LXC containers to create.
+# Eg.:
+# lxc_containers:
+#   - name: php56
+#     release: jessie
+#   - name: php70
+#     release: stretch
+lxc_containers: []

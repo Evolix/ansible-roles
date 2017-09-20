@@ -33,7 +33,11 @@
     line: "{{ tomcat_instance_name }}: {{ tomcat_instance_mail }}"
     regexp: "{{ tomcat_instance_name }}:"
   when: etc_aliases.stat.exists and tomcat_instance_mail is defined
-  notify: new aliases
+  register: tomcat_instance_mail_alias
+
+- name: Run newaliases
+  command: newaliases
+  when: tomcat_instance_mail_alias | changed  
 
 - name: Enable sudo right
   lineinfile:

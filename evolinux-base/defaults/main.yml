@@ -65,7 +65,9 @@ evolinux_packages_system: True
 evolinux_packages_diagnostic: True
 evolinux_packages_hardware: True
 evolinux_packages_common: True
+evolinux_packages_stretch: True
 evolinux_packages_serveur_base: True
+evolinux_packages_purge_openntpd: True
 evolinux_packages_invalid_mta: True
 evolinux_packages_delete_nfs: True
 evolinux_packages_listchanges: True
@@ -77,14 +79,22 @@ evolinux_system_include: True
 
 evolinux_system_chmod_tmp: True
 evolinux_system_locales: True
+
+evolinux_system_set_timezone: True
 evolinux_system_timezone: "Europe/Paris"
-evolinux_system_vim_default: True
+
+evolinux_system_vim_skip_defaults: True
+evolinux_system_vim_default_editor: True
 evolinux_system_profile: True
 evolinux_system_dirmode_adduser: True
+evolinux_system_restrict_securetty: False
+evolinux_system_set_timeout: True
+evolinux_system_cron_verboselog: True
+evolinux_system_cron_umask: True
+evolinux_system_cron_random: True
 evolinux_system_alert5_init: True
 evolinux_system_alert5_enable: True
 evolinux_system_eni_auto: True
-evolinux_system_ntp_server: False
 
 # root
 
@@ -133,15 +143,6 @@ evolinux_default_www_include: True
 
 evolinux_default_www_files: True
 evolinux_default_www_ssl_cert: True
-evolinux_default_www_ssl_subject: "/CN={{ ansible_fqdn }}"
-
-evolinux_default_www_nginx_vhost: True
-evolinux_default_www_nginx_enabled: False
-
-evolinux_default_www_apache_vhost: True
-evolinux_default_www_apache_enabled: False
-
-evolinux_default_www_redirect_url: "http://evolix.fr"
 
 # hardware
 

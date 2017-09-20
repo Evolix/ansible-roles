@@ -1,4 +1,0 @@
----
-kibana_proxy_domain: "kibana.{{ ansible_fqdn }}"
-kibana_proxy_ssl_cert: "/etc/ssl/certs/{{ ansible_fqdn }}.crt"
-kibana_proxy_ssl_key: "/etc/ssl/private/{{ ansible_fqdn }}.key"

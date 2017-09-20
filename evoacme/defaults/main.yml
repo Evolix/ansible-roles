@@ -6,7 +6,7 @@ evoacme_acme_dir: /var/lib/letsencrypt
 evoacme_csr_dir: /etc/ssl/requests
 evoacme_crt_dir: /etc/letsencrypt
 evoacme_log_dir: /var/log/evoacme
-evoacme_ssl_minday: 15
+evoacme_ssl_minday: 30
 evoacme_ssl_ct: 'FR'
 evoacme_ssl_state: 'France'
 evoacme_ssl_loc: 'Marseille'

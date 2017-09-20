@@ -1,6 +1,6 @@
 # squid
 
-Installation and configuration of Squid as an outgoing proxy.
+Installation and configuration of Squid
 
 ## Tasks
 
@@ -12,7 +12,9 @@ A blank file is created at `/etc/squid3/whitelist-custom.conf` to add addresses 
 
 * `squid_address` : IP address for internal/outgoing traffic (default: Ansible detected IPv4 address) ;
 * `squid_whitelist_items` : list of URL to add to the whitelist (default: `[]`) ;
-* `general_alert_email`: email address to send various alert messages (default: `root@localhost`).
+* `squid_localproxy_enable` : enable configuration for squid as local proxy (default: False) ;
+* `general_alert_email`: email address to send various alert messages (default: `root@localhost`) ;
 * `log2mail_alert_email`: email address to send Log2mail messages to (default: `general_alert_email`).
+
 
 The full list of variables (with default values) can be found in `defaults/main.yml`.

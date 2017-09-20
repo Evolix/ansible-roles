@@ -1,0 +1,24 @@
+---
+
+- include_role:
+    name: apt
+    tasks_from: evolix_public.yml
+
+- meta: flush_handlers
+
+- name: Install PHP packages
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - php-pear
+  - php-log
+
+- name: Install PHP5 packages
+  apt:
+    name: '{{ item }}'
+    state: present
+    allow_unauthenticated: yes
+  with_items:
+  - php5-pam
+  when: ansible_distribution_release == "jessie"

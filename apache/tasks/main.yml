@@ -1,36 +1,33 @@
-- name: packages are installed
+---
+
+- name: packages are installed (Debian 9 or later)
   apt:
     name: '{{ item }}'
     state: present
   with_items:
   - apache2
-  - apache2-mpm-prefork
+  - libapache2-mpm-itk
+  - libapache2-mod-evasive
   - apachetop
   - libwww-perl
   tags:
   - apache
+  - packages
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
-- name: manually disable mpm_event
-  command: a2dismod mpm_event
-  register: cmd_disable_event
-  changed_when: "'Module mpm_event already disabled' not in cmd_disable_event.stdout"
-
-- name: manually enable mpm_prefork
-  command: a2enmod mpm_prefork
-  register: cmd_disable_prefork
-  changed_when: "'Module mpm_prefork already enabled' not in cmd_disable_prefork.stdout"
-
-# With Ansible 2.2 the module check the config for conflicts
-# With 2.3 it can be disabled.
-# https://docs.ansible.com/ansible/apache2_module_module.html
-# - name: mpm_event modules is disabled
-#   apache2_module:
-#     name: '{{ item }}'
-#     state: absent
-#   with_items:
-#   - mpm_event
-#   tags:
-#   - apache
+- name: packages are installed (jessie)
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - apache2-mpm-itk
+  - libapache2-mod-evasive
+  - apachetop
+  - libwww-perl
+  tags:
+  - apache
+  - packages
+  when: ansible_distribution_release == "jessie"
 
 - name: basic modules are enabled
   apache2_module:
@@ -41,7 +38,7 @@
   - expires
   - headers
   - cgi
-  - ssl
+  notify: reload apache
   tags:
   - apache
 
@@ -51,8 +48,9 @@
     dest: "/etc/apache2/conf-available/z-evolinux-defaults.conf"
     owner: root
     group: root
-    mode: "0644"
+    mode: "0640"
     force: yes
+  notify: reload apache
   tags:
   - apache
 
@@ -62,21 +60,17 @@
     dest: "/etc/apache2/conf-available/zzz-evolinux-custom.conf"
     owner: root
     group: root
-    mode: "0644"
+    mode: "0640"
     force: no
+  notify: reload apache
   tags:
   - apache
 
-- name: Copy Apache SSL (strong security) config file
-  copy:
-    src: evolinux-ssl.conf
-    dest: "/etc/apache2/conf-available/evolinux-ssl.conf"
-    owner: root
-    group: root
-    mode: "0644"
-    force: no
-  tags:
-  - apache
+- name: disable status.conf
+  file:
+    dest: /etc/apache2/mods-enabled/status.conf
+    state: absent
+  notify: reload apache
 
 - name: Ensure Apache config files are enabled
   command: "a2enconf {{ item }}"
@@ -85,70 +79,30 @@
   with_items:
   - z-evolinux-defaults.conf
   - zzz-evolinux-custom.conf
-  - evolinux-ssl.conf
-  tags:
-  - apache
-
-- name: Init private_ipaddr_whitelist.conf file
-  copy:
-    src: private_ipaddr_whitelist.conf
-    dest: /etc/apache2/private_ipaddr_whitelist.conf
-    owner: root
-    group: root
-    mode: "0640"
-    force: no
-  tags:
-  - apache
-
-- name: add IP addresses to private IP whitelist
-  lineinfile:
-    dest: /etc/apache2/private_ipaddr_whitelist.conf
-    line: "Allow from {{ item }}"
-    state: present
-  with_items: "{{ apache_private_ipaddr_whitelist_present }}"
   notify: reload apache
   tags:
   - apache
 
-- name: remove IP addresses from private IP whitelist
-  lineinfile:
-    dest: /etc/apache2/private_ipaddr_whitelist.conf
-    line: "Allow from {{ item }}"
-    state: absent
-  with_items: "{{ apache_private_ipaddr_whitelist_absent }}"
-  notify: reload apache
-  tags:
-  - apache
+- include: auth.yml
 
-- name: Copy private_htpasswd
-  copy:
-    src: private_htpasswd
-    dest: /etc/apache2/private_htpasswd
-    owner: root
-    group: root
+- name: default vhost is installed
+  template:
+    src: evolinux-default.conf.j2
+    dest: /etc/apache2/sites-available/000-evolinux-default.conf
     mode: "0640"
     force: no
   notify: reload apache
   tags:
   - apache
 
-- name: add user:pwd to private htpasswd
-  lineinfile:
-    dest: /etc/apache2/private_htpasswd
-    line: "{{ item }}"
-    state: present
-  with_items: "{{ apache_private_htpasswd_present }}"
+- name: default vhost is enabled
+  file:
+    src: /etc/apache2/sites-available/000-evolinux-default.conf
+    dest: /etc/apache2/sites-enabled/000-default.conf
+    state: link
+    force: yes
   notify: reload apache
-  tags:
-  - apache
-
-- name: remove user:pwd from private htpasswd
-  lineinfile:
-    dest: /etc/apache2/private_htpasswd
-    line: "{{ item }}"
-    state: absent
-  with_items: "{{ apache_private_htpasswd_absent }}"
-  notify: reload apache
+  when: apache_evolinux_default_enabled
   tags:
   - apache
 
@@ -172,3 +126,34 @@
   when: envvar_grep_umask.rc != 0
   tags:
   - apache
+
+- name: Stat /default index
+  stat:
+    path: /var/www/index.html
+  register: _default_index
+  check_mode: no
+  tags:
+  - apache
+
+# - block:
+#   - name: generate random string for serverstatus suffix
+#     command: "apg -a 1 -M N -n 1"
+#     changed_when: False
+#     register: _random_serverstatus_suffix
+#
+#   - name: overwrite apache_serverstatus_suffix
+#     set_fact:
+#       apache_serverstatus_suffix: "{{ _random_serverstatus_suffix.stdout }}"
+#   when: apache_serverstatus_suffix == ""
+#
+# - name: replace server-status suffix in default site index
+#   replace:
+#     dest: /var/www/index.html
+#     regexp: '__SERVERSTATUS_SUFFIX__'
+#     replace: "{{ apache_serverstatus_suffix }}"
+
+- include: log2mail.yml
+  when: apache_log2mail_include
+
+- include: munin.yml
+  when: apache_munin_include

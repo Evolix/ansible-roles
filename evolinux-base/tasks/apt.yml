@@ -1,10 +1,10 @@
 ---
 
 - include_role:
-    name: apt-repositories
+    name: apt
   vars:
-    apt_repositories_install_basics: "{{ evolinux_apt_replace_default_sources }}"
-    apt_repositories_install_evolix_public: "{{ evolinux_apt_public_sources }}"
+    apt_install_basics: "{{ evolinux_apt_replace_default_sources }}"
+    apt_install_evolix_public: "{{ evolinux_apt_public_sources }}"
 
 - name: Setting apt config
   lineinfile:
@@ -14,8 +14,8 @@
     state: present
     mode: "0640"
   with_items:
-  - "APT::Install-Recommends \"0\";"
-  - "APT::Install-Suggests \"0\";"
+  - "APT::Install-Recommends \"false\";"
+  - "APT::Install-Suggests \"false\";"
   when: evolinux_apt_conf
 
 - name: DPKg invoke hooks
@@ -26,8 +26,10 @@
     state: present
     mode: "0640"
   with_items:
-  - "DPkg::Pre-Invoke { \"mount -oremount,exec /tmp && mount -oremount,rw /usr || true\"; };"
-  - "DPkg::Post-Invoke { \"mount -oremount /tmp && mount -oremount /usr || exit 0\"; };"
+  - "DPkg::Pre-Invoke { \"df /tmp | grep -q /tmp && mount -oremount,exec /tmp || true\"; };"
+  - "DPkg::Pre-Invoke { \"df /usr | grep -q /usr && mount -oremount,rw /usr || true\"; };"
+  - "DPkg::Post-Invoke { \"df /tmp | grep -q /tmp && mount -oremount /tmp || true\"; };"
+  - "DPkg::Post-Invoke { \"df /usr | grep -q /usr && mount -oremount /usr || true\"; };"
   when: evolinux_apt_hooks
 
 - name: Remove Aptitude

@@ -1,5 +1,10 @@
 ---
 # defaults file for packweb-apache
 general_alert_email: "root@localhost"
-log2mail_alert_email: Null
+
 packweb_enable_evoadmin_vhost: True
+packweb_fhs_retrictions: True
+packweb_apache_modphp: True
+packweb_apache_fpm: False
+
+packweb_phpmyadmin_suffix: ""

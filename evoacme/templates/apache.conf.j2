@@ -7,6 +7,5 @@
 Alias /.well-known/acme-challenge {{ evoacme_acme_dir }}/.well-known/acme-challenge
 <Directory "{{ evoacme_acme_dir }}/.well-known/acme-challenge">
     Options -Indexes
-    Allow from all
     Require all granted
 </Directory>

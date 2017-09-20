@@ -1,0 +1,66 @@
+---
+
+- name: "Install PHP packages (Debian 9 or later)"
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - php-cli
+  - php-gd
+  - php-imap
+  - php-ldap
+  - php-mcrypt
+  - php-mysql
+  - php-pgsql
+  - php-gettext
+  - php-curl
+  - php-ssh2
+  - composer
+  - libphp-phpmailer
+
+- name: "Set php.ini config for CLI (Debian 9 or later)"
+  set_fact:
+    phpini_cli_defaults_file: /etc/php/7.0/cli/conf.d/z-evolinux-defaults.ini
+    phpini_cli_custom_file: /etc/php/7.0/cli/conf.d/zzz-evolinux-custom.ini
+
+- name: "Set default php.ini values for CLI (Debian 9 or later)"
+  ini_file:
+    dest: "{{ phpini_cli_defaults_file }}"
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+    create: yes
+  with_items:
+  - { option: "short_open_tag", value: "Off" }
+  - { option: "expose_php", value: "Off" }
+  - { option: "display_errors", value: "Off" }
+  - { option: "log_errors", value: "On" }
+  - { option: "html_errors", value: "Off" }
+  - { option: "allow_url_fopen", value: "Off" }
+
+- name: "Disable PHP functions for CLI (Debian 9 or later)"
+  ini_file:
+    dest: "{{ phpini_cli_defaults_file }}"
+    section: PHP
+    option: disable_functions
+    value: "exec,shell-exec,system,passthru,putenv,popen"
+
+- name: "Custom php.ini for CLI (Debian 9 or later)"
+  copy:
+    dest: "{{ phpini_cli_custom_file }}"
+    content: |
+      ; Put customized values here.
+      ; default_charset = "ISO-8859-1"
+    force: no
+
+- name: "Set custom values for PHP to enable Symfony (Debian 9 or later)"
+  ini_file:
+    dest: "{{ phpini_cli_custom_file }}"
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  with_items:
+  - { option: "date.timezone", value: "Europe/Paris" }
+  when: php_symfony_requirements

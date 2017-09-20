@@ -1,0 +1,34 @@
+---
+- name: "Copy MySQL defaults config file (Debian 9 or later)"
+  copy:
+    src: evolinux-defaults.cnf
+    dest: /etc/mysql/mariadb.conf.d/z-evolinux-defaults.cnf
+    owner: root
+    group: root
+    mode: "0644"
+    force: yes
+  tags:
+    - mysql
+
+- name: "Copy MySQL custom config file (Debian 9 or later)"
+  template:
+    src: evolinux-custom.cnf.j2
+    dest: /etc/mysql/mariadb.conf.d/zzz-evolinux-custom.cnf
+    owner: root
+    group: root
+    mode: "0644"
+    force: no
+  tags:
+    - mysql
+
+- name: "Create a system config directory for systemd overrides (Debian 9 or later)"
+  file:
+    path: /etc/systemd/system/mariadb.service.d
+    state: directory
+
+- name: "Override MariaDB systemd unit (Debian 9 or later)"
+  template:
+    src: mariadb.systemd.j2
+    dest: /etc/systemd/system/mariadb.service.d/evolinux.conf
+    force: yes
+  notify: reload systemd

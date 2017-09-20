@@ -1,4 +1,0 @@
-- name: ensure packages are installed
-  apt:
-    name: php5-fpm
-    state: present

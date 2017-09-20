@@ -2,8 +2,11 @@
 
 - name: Install phpmyadmin
   apt:
-    name: phpmyadmin
+    name: '{{ item }}'
     state: present
+  with_items:
+  - phpmyadmin
+  - apg
 
 - name: Check if phpmyadmin default configuration is present
   stat:
@@ -20,7 +23,37 @@
   changed_when: "'Disabling' in command_result.stderr"
   when: pma_default_config.stat.exists
 
-- name: Change group to www-data for /etc/phpmyadmin/
-  file:
-    dest: /etc/phpmyadmin/
-    group: www-data
+- name: generate random string for phpmyadmin suffix
+  command: "apg -a 1 -M N -n 1"
+  changed_when: False
+  register: _random_phpmyadmin_suffix
+
+- name: overwrite packweb_phpmyadmin_suffix
+  set_fact:
+    packweb_phpmyadmin_suffix: "{{ _random_phpmyadmin_suffix.stdout }}"
+  when: packweb_phpmyadmin_suffix == ""
+
+- name: enable phpMyAdmin config
+  blockinfile:
+    dest: /etc/apache2/sites-available/000-evolinux-default.conf
+    marker: "# {mark} phpMyAdmin section"
+    block: |
+      Alias /phpmyadmin /var/www
+      Alias /phpmyadmin-{{ packweb_phpmyadmin_suffix }} /usr/share/phpmyadmin/
+      Include /etc/phpmyadmin/apache.conf
+      <Directory /usr/share/phpmyadmin/>
+          Require all denied
+          Include /etc/apache2/ipaddr_whitelist.conf
+      </Directory>
+
+- name: enable phpmyadmin link in default site index
+  replace:
+    dest: /var/www/index.html
+    regexp:  '<!-- <li><a href="/phpmyadmin-__PHPMYADMIN_SUFFIX__/">Accès PhpMyAdmin</a></li> -->'
+    replace: '     <li><a href="/phpmyadmin-__PHPMYADMIN_SUFFIX__/">Accès PhpMyAdmin</a></li>'
+
+- name: replace phpmyadmin suffix in default site index
+  replace:
+    dest: /var/www/index.html
+    regexp: '__PHPMYADMIN_SUFFIX__'
+    replace: "{{ packweb_phpmyadmin_suffix }}"

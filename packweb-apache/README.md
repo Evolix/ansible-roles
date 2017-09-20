@@ -10,6 +10,6 @@ Everything is in the `tasks/main.yml` file for now.
 
 Main variables are :
 
-* `log2mail_alert_email`: email address to send Log2mail messages to (default: `general_alert_email`).
+* `packweb_enable_evoadmin_vhost` : enable VirtualHost for evoadmin (web interface to create web accounts)
 
 The full list of variables (with default values) can be found in `defaults/main.yml`.

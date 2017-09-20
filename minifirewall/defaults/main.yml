@@ -1,17 +1,19 @@
 ---
+minifirewall_tail_included: False
+
 minifirewall_git_url: "https://forge.evolix.org/minifirewall.git"
 minifirewall_checkout_path: "/tmp/minifirewall"
 minifirewall_int: "{{ ansible_default_ipv4.interface }}"
 minifirewall_ipv6: "on"
 minifirewall_intlan: "{{ ansible_default_ipv4.address }}/32"
-minifirewall_trusted_ips: []
+minifirewall_trusted_ips: ["0.0.0.0/0"]
 minifirewall_privilegied_ips: []
 
 minifirewall_protected_ports_tcp: [22]
 minifirewall_protected_ports_udp: []
-minifirewall_public_ports_tcp: [25, 53, 443, 993, 995, 2222]
-minifirewall_public_ports_udp: [53]
-minifirewall_semipublic_ports_tcp: [20, 21, 22, 80, 110, 143]
+minifirewall_public_ports_tcp: [22, 80, 443]
+minifirewall_public_ports_udp: []
+minifirewall_semipublic_ports_tcp: [20, 21, 25]
 minifirewall_semipublic_ports_udp: []
 minifirewall_private_ports_tcp: [5666]
 minifirewall_private_ports_udp: []

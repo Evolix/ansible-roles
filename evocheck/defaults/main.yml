@@ -1,2 +1,3 @@
 ---
+evocheck_force_install: False
 evocheck_bin_dir: /usr/share/scripts

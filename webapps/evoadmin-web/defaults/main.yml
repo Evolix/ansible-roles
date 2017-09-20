@@ -1,0 +1,23 @@
+---
+general_alert_email: "root@localhost"
+evoadmin_contact_email: Null
+evoadmin_bounce_email: "{{ evoadmin_contact_email }}"
+
+evoadmin_home_dir: "/home/{{ evoadmin_username }}"
+evoadmin_document_root: "{{ evoadmin_home_dir }}/www"
+evoadmin_log_dir: "{{ evoadmin_home_dir }}/log"
+evoadmin_scripts_dir: /usr/share/scripts/evoadmin/
+evoadmin_host: "evoadmin.{{ ansible_fqdn }}"
+evoadmin_username: evoadmin
+
+evoadmin_enable_vhost: True
+
+evoadmin_tpl_servername: "{{ ansible_fqdn }}"
+evoadmin_tpl_address:  "{{ ansible_default_ipv4.address }}"
+evoadmin_tpl_phpmyadmin_url: Null
+evoadmin_tpl_cgi_suffix: Null
+evoadmin_tpl_signature: evoadmin
+evoadmin_tpl_mail_from: root@localhost
+evoadmin_tpl_mail_bcc: Null
+evoadmin_tpl_mail_standard: "{{ general_alert_email }}"
+evoadmin_tpl_mail_urgent: "{{ general_alert_email }}"

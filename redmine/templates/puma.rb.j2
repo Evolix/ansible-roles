@@ -1,0 +1,4 @@
+environment '{{ puma_env }}'
+workers {{ puma_worker }}
+threads {{ puma_min_thread }}, {{ puma_max_thread }}
+tag 'Redmine {{ redmine_user }}'

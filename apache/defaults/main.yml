@@ -4,3 +4,15 @@ apache_private_ipaddr_whitelist_absent: []
 
 apache_private_htpasswd_present: []
 apache_private_htpasswd_absent: []
+
+apache_evolinux_default_enabled: True
+apache_evolinux_default_ssl_cert: /etc/ssl/certs/ssl-cert-snakeoil.pem
+apache_evolinux_default_ssl_key: /etc/ssl/private/ssl-cert-snakeoil.key
+
+apache_serverstatus_suffix: ""
+
+apache_log2mail_include: True
+apache_munin_include: True
+
+general_alert_email: "root@localhost"
+log2mail_alert_email: Null

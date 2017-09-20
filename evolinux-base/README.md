@@ -21,7 +21,7 @@ Various tasks for Evolinux setup.
 
 ## Available variables
 
-Each tasks group is included in the `main.yml` file with a condition based on a variable like `evolinux_hostname_include` (mostly `True` by default). The variables can be set to `False` to disable a . Finer grained tasks disabling is done in each group of tasks.
+Each tasks group is included in the `main.yml` file with a condition based on a variable like `evolinux_hostname_include` (mostly `True` by default). The variables can be set to `False` to disable a task group. Finer grained tasks disabling is done in each group of tasks.
 
 Main variables are:
 
@@ -33,7 +33,6 @@ Main variables are:
 * `evolinux_apt_hooks`: install APT hooks (default: `True`)
 * `evolinux_apt_remove_aptitude`: uninstall aptitude (default: `True`)
 * `evolinux_delete_nfs`: delete NFS tools (default: `True`)
-* `evolinux_ntp_server`: custom NTP server host or IP (default: `Null`)
 * `evolinux_additional_packages`: optional additional packages to install (default: `[]`)
 * `evolinux_postfix_purge_exim`: purge Exim packages (default: `True`) ;
 * `evolinux_ssh_password_auth_addresses`: list of addresses that can authenticate with a password (default: `[]`)

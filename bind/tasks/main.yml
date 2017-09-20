@@ -1,25 +1,40 @@
-- name: Ensure bind9 installed
+- name: package are installed
   apt:
-    name: bind9
+    name: '{{ item }}'
     state: present
+  with_items:
+  - bind9
+  - dnstop
 
-- name: Set bind configuration
+- name: Set bind configuration for recursive server
   template:
-    src: named.conf.options.j2
+    src: named.conf.options_recursive.j2
     dest: /etc/bind/named.conf.options
     owner: bind
     group: bind
     mode: "0644"
     force: yes
-    backup: yes
   notify: restart bind
+  when: bind_recursive_server
 
-- name: Modify OPTIONS in /etc/default/bind9
-  replace:
-    dest: /etc/default/bind9
-    regexp: '^OPTIONS=.*'
-    replace: 'OPTIONS="-u bind -t {{ bind_chroot_root }}"'
+- name: enable zones.rfc1918 for recursive server
+  lineinfile:
+    dest: /etc/bind/named.conf.local
+    line: 'include "/etc/bind/zones.rfc1918";'
+    regexp: "zones.rfc1918"
   notify: restart bind
+  when: bind_recursive_server
+
+- name: Set bind configuration for authoritative server
+  template:
+    src: named.conf.options_authoritative.j2
+    dest: /etc/bind/named.conf.options
+    owner: bind
+    group: bind
+    mode: "0644"
+    force: yes
+  notify: restart bind
+  when: bind_authoritative_server
 
 - name: Create systemd service
   template:
@@ -29,175 +44,78 @@
     group: root
     mode: "0644"
     force: yes
-    backup: yes
-  notify: restart bind
+  notify:
+  - reload systemd
+  - restart bind
+  when: ansible_distribution_release == "jessie"
 
-- name: Create directories
+- name: touch /var/log/bind.log if non chroot
   file:
-    path: "{{ bind_chroot_root }}/{{ item }}"
-    state: directory
+    path: /var/log/bind.log
     owner: bind
-    group: bind
-    mode: "0700"
-    recurse: no
-  with_items:
-  - bin
-  - dev
-  - etc
-  - lib
-  - usr/lib
-  - usr/sbin
-  - var/cache/bind
-  - var/log
-  - var/run/bind/run
-  register: create_bind_dir
-  notify: restart bind
-
-- name: Stat /etc/bind
-  stat:
-    path: "/etc/bind"
-  check_mode: no
-  register: etc_bind
-
-- name: Move /etc/bind in chroot
-  command: "mv /etc/bind/ {{ bind_chroot_root }}/etc/"
-  when: etc_bind.stat.exists and not etc_bind.stat.islnk
-  notify: restart bind
-
-- name: Create symlink
-  file:
-    src:  "{{ bind_chroot_root }}/etc/bind"
-    dest: "/etc/bind"
-    state: link
-  notify: restart bind
-
-- name: is there a log file?
-  stat:
-    path: "{{ bind_chroot_root }}/var/log/bind.log"
-  register: bind_log
-
-- name: create log file
-  file:
-    path: "{{ bind_chroot_root }}/var/log/bind.log"
-    state: touch
-  when: not bind_log.stat.exists
-
-- name: verify log file permissions
-  file:
-    path: "{{ bind_chroot_root }}/var/log/bind.log"
-    owner: bind
-    group: bind
+    group: adm
     mode: "0640"
-    state: file
+    state: touch
+  when: bind_chroot_set == False
 
-- name: Create log symlink
+- name: touch /var/log/bind_queries.log if non chroot
   file:
-    src:  "{{ bind_chroot_root }}/var/log/bind.log"
-    dest: "/var/log/bind.log"
-    state: link
-  notify: restart bind
-
-- name: Create run directory
-  file:
-    path: "/var/run/bind/run"
-    state: directory
-    owner: root
-    group: bind
-    mode: "0770"
-    recurse: yes
-  notify: restart bind
-
-- name: "Stat var/run/bind/run/named in chroot"
-  stat:
-    path: "{{ bind_chroot_root }}/var/run/bind/run/named"
-  check_mode: no
-  register: named_run
-
-- name: "Clean var/run/bind/run/named in chroot"
-  file:
-    path: "{{ bind_chroot_root }}/var/run/bind/run/named"
-    state: absent
-  when: named_run.stat.exists and named_run.stat.isdir
-
-- name: Clean /var/run/bind/run/named.pid
-  file:
-    path: "/var/run/bind/run/named.pid"
-    state: absent
-  when: named_run.stat.exists and named_run.stat.isdir
-
-- name: Stat /var/run/bind/run/named.pid
-  stat:
-    path: "/var/run/bind/run/named.pid"
-  check_mode: no
-  register: named_pid
-
-- name: Cat pid content
-  command: "cat /var/run/bind/run/named.pid > {{ bind_chroot_root }}/var/run/bind/run/named.pid"
-  when: named_pid.stat.exists and named_pid.stat.isreg and not named_pid.stat.islnk
-
-- name: Clean /var/run/bind/run/named.pid
-  file:
-    path: "/var/run/bind/run/named.pid"
-    state: absent
-  when: named_pid.stat.exists and named_pid.stat.isreg and not named_pid.stat.islnk
-
-- name: Clean /var/run/bind/run/named.pid
-  file:
-    path: "/var/run/bind/run/named.pid"
-    state: absent
-  when: named_pid.stat.exists and not named_pid.stat.islnk
-
-- name: Create pid symlink in chroot
-  file:
-    src:  "{{ bind_chroot_root }}/var/run/bind/run/named.pid"
-    dest: "/var/run/bind/run/named.pid"
-    state: link
-  when: named_pid.stat.exists and not named_pid.stat.islnk
-  notify: restart bind
-
-- name: "Stat dev/random in chroot"
-  stat:
-    path: "{{ bind_chroot_root }}/dev/random"
-  check_mode: no
-  register: named_random
-
-- name: clean dev/random in chroot
-  shell: "mv {{ bind_chroot_root }}/dev/random {{ bind_chroot_root }}/dev/random.$(date +%s)"
-  when: named_random.stat.exists and not named_random.stat.ischr
-
-- name: mknod dev/random in chroot
-  command: "mknod -m 666 {{ bind_chroot_root }}/dev/random c 1 3"
-  args:
-    creates: "{{ bind_chroot_root }}/dev/random"
-  notify: restart bind
-
-- name: get essential libraries
-  shell: 'ldd $(which named) | grep -v linux-vdso.so.1 | cut -d">" -f2 | cut -d"(" -f1 | grep -oE "\S+"'
-  register: bind_ldd
-  check_mode: no
-  changed_when: False
-
-- name: copy essential libs
-  command: "install -D {{ item }} {{ bind_chroot_root }}{{ item }}"
-  args:
-    creates: "{{ bind_chroot_root }}{{ item }}"
-  with_items:
-  - "{{ bind_ldd.stdout_lines }}"
-  - /usr/lib/x86_64-linux-gnu/openssl-1.0.0/engines/libgost.so
-  register: install_libraries
-  notify: restart bind
-
-- name: Copy bind
-  copy:
-    src: /usr/sbin/named
-    dest: "{{ bind_chroot_root }}/usr/sbin/"
-    remote_src: True
-  notify: restart bind
-
-- name: Set the good rights
-  file:
-    path: "{{ bind_chroot_root }}"
+    path: /var/log/bind_queries.log
     owner: bind
-    group: bind
-    recurse: yes
+    group: adm
+    mode: "0640"
+    state: touch
+  when: bind_authoritative_server and bind_chroot_set == False
+
+- name: send chroot-bind.sh in /root
+  copy:
+    src: chroot-bind.sh
+    dest: /root/chroot-bind.sh
+    mode: "0700"
+    owner: root
+    force: yes
+    backup: yes
+  when: bind_chroot_set
+
+- name: exec chroot-bind.sh
+  command: "/root/chroot-bind.sh"
+  register: chrootbind_run
+  changed_when: False
+  check_mode: no
+  when: bind_chroot_set
+
+- debug:
+    var: chrootbind_run.stdout_lines
+  when: bind_chroot_set and chrootbind_run.stdout != ""
+
+- name: Modify OPTIONS in /etc/default/bind9 for chroot
+  replace:
+    dest: /etc/default/bind9
+    regexp: '^OPTIONS=.*'
+    replace: 'OPTIONS="-u bind -t {{ bind_chroot_path }}"'
   notify: restart bind
+  when: bind_chroot_set
+
+- name: logrotate for non chroot bind
+  template:
+    src: logrotate_bind
+    dest: /etc/logrotate.d/bind
+    owner: root
+    group: root
+    mode: "0644"
+    force: yes
+  notify: restart bind
+  when: bind_chroot_set == False
+
+- name: logrotate for chroot bind
+  template:
+    src: logrotate_bind_chroot.j2
+    dest: /etc/logrotate.d/bind
+    owner: root
+    group: root
+    mode: "0644"
+    force: yes
+  notify: restart bind
+  when: bind_chroot_set
+
+

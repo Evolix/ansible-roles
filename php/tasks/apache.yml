@@ -1,0 +1,73 @@
+---
+
+- name: "Install mod_php packages (jessie)"
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - libapache2-mod-php5
+  - php5
+  when: ansible_distribution_release == "jessie"
+
+- name: "Install mod_php packages (Debian 9 or later)"
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - libapache2-mod-php
+  - php
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: "Set php.ini config for apache2 (jessie)"
+  set_fact:
+    php_apache_defaults_file: /etc/php5/apache2/conf.d/z-evolinux-defaults.ini
+    php_apache_custom_file: /etc/php5/apache2/conf.d/zzz-evolinux-custom.ini
+  when: ansible_distribution_release == "jessie"
+
+- name: "Set php.ini config for apache2 (Debian 9 or later)"
+  set_fact:
+    php_apache_defaults_file: /etc/php/7.0/apache2/conf.d/z-evolinux-defaults.ini
+    php_apache_custom_file: /etc/php/7.0/apache2/conf.d/zzz-evolinux-custom.ini
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: Set default values for PHP
+  ini_file:
+    dest: "{{ php_apache_defaults_file }}"
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+    create: yes
+  with_items:
+  - { option: "short_open_tag", value: "Off" }
+  - { option: "expose_php", value: "Off" }
+  - { option: "display_errors", value: "Off" }
+  - { option: "log_errors", value: "On" }
+  - { option: "html_errors", value: "Off" }
+  - { option: "allow_url_fopen", value: "Off" }
+
+- name: Disable PHP functions
+  ini_file:
+    dest: "{{ php_apache_defaults_file }}"
+    section: PHP
+    option: disable_functions
+    value: "exec,shell-exec,system,passthru,putenv,popen"
+
+- name: Custom php.ini
+  copy:
+    dest: "{{ php_apache_custom_file }}"
+    content: |
+      ; Put customized values here.
+      ; default_charset = "ISO-8859-1"
+    force: no
+
+- name: "Set custom values for PHP to enable Symfony"
+  ini_file:
+    dest: "{{ php_apache_custom_file }}"
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  with_items:
+  - { option: "date.timezone", value: "Europe/Paris" }
+  when: php_symfony_requirements

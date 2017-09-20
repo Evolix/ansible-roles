@@ -21,17 +21,3 @@
 
 #- name: Check use of http port
 #  command: grep '<Connector port="{{ tomcat_instance_port }}" protocol="HTTP/1.1"' $(ls {{ tomcat_instance_root }}/*/conf/server.xml|grep -v {{ tomcat_instance_name }})
-
-- name: Set shutdown port (default=http port + 1)
-  set_fact:
-    tomcat_instance_shutdown: "{{ tomcat_instance_port | int + 1 }}"
-  when: tomcat_instance_shutdown is undefined
-
-- name: Set tomcat mps (default=ram/2)
-  set_fact:
-    tomcat_instance_mps: "{{ tomcat_instance_ram | int / 2 }}"
-  when: tomcat_instance_mps is undefined
-
-- name: Fix mps type
-  set_fact:
-    tomcat_instance_mps: "{{ tomcat_instance_mps | int }}"

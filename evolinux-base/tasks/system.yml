@@ -25,29 +25,28 @@
   when: evolinux_system_locales and default_locales | changed
 
 - name: Setting default timezone
-  lineinfile:
-    dest: /etc/timezone
-    regexp: '^\w+/\w+$'
-    line: "{{ evolinux_system_timezone | mandatory }}"
-    insertbefore: BOF
-    create: yes
-  register: change_timezone
-  when: evolinux_system_timezone != False
-
-- name: Reconfigure tzdata
-  command: dpkg-reconfigure --frontend noninteractive tzdata
-  when: evolinux_system_timezone != False and change_timezone | changed
+  timezone:
+    name: "{{ evolinux_system_timezone | mandatory }}"
+  notify: restart cron
+  when: evolinux_system_set_timezone
 
 # TODO : find a way to force the console-data configuration
 # non-interactively (like tzdata ↑)
 
 - include: remount_usr_rw.yml
 
+- name: Ensure automagic vim conf is disabled
+  lineinfile:
+    dest: /etc/vim/vimrc
+    regexp: 'let g:skip_defaults_vim ='
+    line: 'let g:skip_defaults_vim = 1'
+  when: evolinux_system_vim_skip_defaults
+
 - name: Setting vim as default editor
   alternatives:
     name: editor
     path: /usr/bin/vim.basic
-  when: evolinux_system_vim_default
+  when: evolinux_system_vim_default_editor
 
 - name: Add "umask 027" to /etc/profile.d/evolinux.sh
   lineinfile:
@@ -72,16 +71,25 @@
     line: "tty2"
     create: yes
     state: present
-  when: evolinux_system_dirmode_adduser
+  when: evolinux_system_restrict_securetty
 
-- name: Setting TMOUT to deconnect inactive users
+- name: Setting TMOUT to disconnect inactive users
   lineinfile:
-    dest: /etc/profile
+    dest: /etc/profile.d/evolinux.sh
     line: "export TMOUT=36000"
+    create: yes
     state: present
-  when: evolinux_system_dirmode_adduser
+  when: evolinux_system_set_timeout
 
 #- name: Customizing /etc/fstab
+
+- name: Set verbose logging for cron deamon
+  lineinfile:
+    dest: /etc/default/cron
+    line: "EXTRA_OPTS='-L 15'"
+    create: yes
+    state: present
+  when: evolinux_system_cron_verboselog
 
 - name: Modify default umask for cron deamon
   lineinfile:
@@ -89,30 +97,22 @@
     line: "umask 022"
     create: yes
     state: present
-  when: evolinux_system_dirmode_adduser
+  when: evolinux_system_cron_umask
 
 - name: Randomize periodic crontabs
   replace:
     dest: /etc/crontab
     regexp:  "{{ item.regexp }}"
     replace: "{{ item.replace }}"
-    backup:  "{{ item.backup }}"
   with_items:
-  - {regexp: '^17((\s*\*){4})', replace: '{{ 59|random(start=1) }}\1', backup: "yes"}
-  - {regexp: '^25\s*6((\s*\*){3})', replace: '{{ 59|random(start=1) }} {{ [0,1,3,4,5,6,7]|random }}\1', backup: "no"}
-  - {regexp: '^47\s*6((\s*\*){2}\s*7)', replace: '{{ 59|random(start=1) }} {{ [0,1,3,4,5,6,7]|random }}\1', backup: "no"}
-  - {regexp: '^52\s*6(\s*1(\s*\*){2})', replace: '{{ 59|random(start=1) }} {{ [0,1,3,4,5,6,7]|random }}\1', backup: "no"}
-  when: evolinux_system_dirmode_adduser
+  - { regexp: '^17((\s*\*){4})',         replace: '{{ 59|random(start=1) }}\1' }
+  - { regexp: '^25\s*6((\s*\*){3})',     replace: '{{ 59|random(start=1) }} {{ [0,1,3,4,5,6,7]|random }}\1' }
+  - { regexp: '^47\s*6((\s*\*){2}\s*7)', replace: '{{ 59|random(start=1) }} {{ [0,1,3,4,5,6,7]|random }}\1' }
+  - { regexp: '^52\s*6(\s*1(\s*\*){2})', replace: '{{ 59|random(start=1) }} {{ [0,1,3,4,5,6,7]|random }}\1' }
+  when: evolinux_system_cron_random
 
-# NTP server address
-
-- name: Configure NTP
-  replace:
-    dest: /etc/ntp.conf
-    regexp: "^server .*$"
-    replace: "server {{ evolinux_system_ntp_server }}"
-    backup: yes
-  when: evolinux_system_ntp_server != False
+- include_role:
+    name: ntpd
 
 ## alert5
 
@@ -154,7 +154,6 @@
     dest: /etc/network/interfaces
     regexp: "allow-hotplug"
     replace: "auto"
-    backup: yes
   when: evolinux_system_eni_auto and grep_hotplug_eni.rc == 0
 
 - meta: flush_handlers

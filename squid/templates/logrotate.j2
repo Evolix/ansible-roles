@@ -1,4 +1,4 @@
-/var/log/{{ squid_daemon }}/*.log {
+/var/log/{{ squid_daemon_name }}/*.log {
     monthly
     compress
     rotate 12
@@ -6,6 +6,6 @@
     create 640 proxy adm
     sharedscripts
     postrotate
-        test ! -e /var/run/{{ squid_daemon }}.pid || /usr/sbin/{{ squid_daemon }} -k rotate
+        test ! -e /var/run/{{ squid_daemon_name }}.pid || /usr/sbin/{{ squid_daemon_name }} -k rotate
     endscript
 }

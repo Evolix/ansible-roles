@@ -2,5 +2,8 @@
 - hosts: test-kitchen
   vars:
     - minifirewall_trusted_ips: ["{{ ansible_default_ipv4.address }}/24"]
+  pre_tasks:
+    - apt:
+        name: git
   roles:
     - role: minifirewall

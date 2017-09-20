@@ -1,0 +1,20 @@
+---
+
+- name: reload squid3
+  service:
+    name: squid3
+    state: reloaded
+
+- name: reload squid
+  service:
+    name: squid
+    state: reloaded
+
+- name: apt update
+  apt:
+    update_cache: yes
+
+- name: restart newrelic-sysmond
+  systemd:
+    name: newrelic-sysmond
+    state: restarted

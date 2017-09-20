@@ -1,0 +1,10 @@
+---
+- hosts: test-kitchen
+
+  vars:
+    apt_basics_components: "main contrib non-free"
+    apt_install_backports: True
+    apt_backports_components: "main contrib non-free"
+
+  roles:
+    - role: apt

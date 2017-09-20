@@ -1,6 +1,0 @@
----
-elasticsearch_plugin_head_owner: "elasticsearch-head"
-elasticsearch_plugin_head_group: "{{ elasticsearch_plugin_head_owner }}"
-elasticsearch_plugin_head_home: "/home/{{ elasticsearch_plugin_head_owner }}"
-elasticsearch_plugin_head_clone_dir: "{{ elasticsearch_plugin_head_home }}/www"
-elasticsearch_plugin_head_tmp_dir: "{{ elasticsearch_plugin_head_home }}/tmp"
