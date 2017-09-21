@@ -7,8 +7,10 @@
 # Licence: AGPLv3
 #
 
+set -e
+
 usage() {
-    echo "Usage: $0 NAME"
+    echo "Usage: $0 [ --cron ] NAME"
     echo ""
     echo "NAME must be correspond to :"
     echo "- a CSR in ${CSR_DIR}/NAME.csr"
@@ -17,68 +19,97 @@ usage() {
 }
 
 mkconf_apache() {
-        [ -f "/etc/apache2/ssl/${vhost}.conf" ] && sed -i "s~^SSLCertificateFile.*$~SSLCertificateFile $CRT_DIR/${vhost}/live/fullchain.pem~" "/etc/apache2/ssl/${vhost}.conf"
-        apache2ctl -t 2>/dev/null && service apache2 reload
+    echo "Apache detected... first configuration"
+    [ -f "/etc/apache2/ssl/${vhost}.conf" ] && sed -i "s~^SSLCertificateFile.*$~SSLCertificateFile $CRT_DIR/${vhost}/live/fullchain.pem~" "/etc/apache2/ssl/${vhost}.conf"
+    apache2ctl -t
 }
 
 mkconf_nginx() {
-        [ -f "/etc/nginx/ssl/${vhost}.conf" ] && sed -i "s~^ssl_certificate[^_].*$~ssl_certificate $CRT_DIR/${vhost}/live/fullchain.pem;~" "/etc/nginx/ssl/${vhost}.conf"
-        nginx -t 2>/dev/null && service nginx reload
-}
-
-mkconf_haproxy() {
-    mkdir -p /etc/ssl/haproxy -m 700
-    cat "$CRT_DIR/${vhost}/live/fullchain.pem" "$SSL_KEY_DIR/${vhost}.key" > "/etc/ssl/haproxy/${vhost}.pem"
-    [ -f "$DH_DIR/${vhost}.pem" ] && cat "$DH_DIR/${vhost}.pem" >> "/etc/ssl/haproxy/${vhost}.pem"
-    haproxy -c -f /etc/haproxy/haproxy.cfg >/dev/null && service haproxy reload
+    echo "Nginx detected... first configuration"
+    [ -f "/etc/nginx/ssl/${vhost}.conf" ] && sed -i "s~^ssl_certificate[^_].*$~ssl_certificate $CRT_DIR/${vhost}/live/fullchain.pem;~" "/etc/nginx/ssl/${vhost}.conf"
+    nginx -t
 }
 
 main() {
     [ -f /etc/default/evoacme ] && . /etc/default/evoacme
-    [ -z "${SSL_KEY_DIR}" ] && SSL_KEY_DIR='/etc/ssl/private'
-    [ -z "${CRT_DIR}" ] && CRT_DIR='/etc/letsencrypt'
-    [ -z "${CSR_DIR}" ] && CSR_DIR='/etc/ssl/requests'
-    [ -z "${SELF_SIGNED_DIR}" ] && SELF_SIGNED_DIR='/etc/ssl/self-signed'
-    [ -z "${DH_DIR}" ] && DH_DIR='/etc/ssl/dhparam'
-    [ -z "${LOG_DIR}" ] && LOG_DIR='/var/log/evoacme'
-    
-    [ "$#" -ne 1 ] && usage && exit 1
+    [ -z "${SSL_KEY_DIR}" ] && SSL_KEY_DIR=/etc/ssl/private
+    [ -z "${ACME_DIR}" ] && ACME_DIR=/var/lib/letsencrypt
+    [ -z "${CSR_DIR}" ] && CSR_DIR=/etc/ssl/requests
+    [ -z "${CRT_DIR}" ] && CRT_DIR=/etc/letsencrypt
+    [ -z "${LOG_DIR}" ] && LOG_DIR=/var/log/evoacme
+    [ -z "${SSL_MINDAY}" ] && SSL_MINDAY=30
+    [ -z "${SELF_SIGNED_DIR}" ] && SELF_SIGNED_DIR=/etc/ssl/self-signed
+    [ -z "${DH_DIR}" ] && DH_DIR=etc/ssl/dhparam
 
-    vhost=$(basename "$1" .conf)
+    # misc verifications
+    [ "$1" = "-h" ] || [ "$1" = "--help" ] && usage && exit 0
+    which openssl >/dev/null || ( echo "error: openssl command not installed" && exit 1 )
+    which certbot >/dev/null || ( echo "error: certbot command not installed" && exit 1 )
+    [ ! -d $ACME_DIR ] && echo "error: $ACME_DIR is not a directory" && exit 1
+    [ ! -d $CSR_DIR ] && echo "error: $CSR_DIR is not a directory" && exit 1
+    [ ! -d $LOG_DIR ] && echo "error: $LOG_DIR is not a directory" && exit 1
+    [ "$#" -ge 3 ] || [ "$#" -le 0 ] && echo "error: invalid argument(s)" && usage && exit 1
+    [ "$#" -eq 2 ] && [ "$1" != "--cron" ] && echo "error: invalid argument(s)" && usage && exit 1
 
-    # Check master status for evoadmin-cluster
+    [ "$#" -eq 1 ] && vhost=$(basename "$1" .conf) && CRON=NO
+    [ "$#" -eq 2 ] && vhost=$(basename "$2" .conf) && CRON=YES
+
+    # verify .csr file
+    test ! -f "$CSR_DIR/${vhost}.csr" && echo "error: $CSR_DIR/${vhost}.csr absent" && exit 1
+    test ! -r "$CSR_DIR/${vhost}.csr" && echo "error: $CSR_DIR/${vhost}.csr is not readable" && exit 1
+    openssl req -noout -modulus -in "$CSR_DIR/${vhost}.csr" >/dev/null || ( echo "error: $CSR_DIR/${vhost}.csr is invalid" && exit 1 )
+    [ "$CRON" = "NO" ] && echo "Using CSR file: $CSR_DIR/${vhost}.csr"
+
+    # Hook for evoadmin-web in cluster mode : check master status
     if [ -f "/home/${vhost}/state" ]; then
         grep -q "STATE=master" "/home/${vhost}/state" || exit 0
     fi
 
-    SSL_EMAIL=$(grep emailAddress "${CRT_DIR}/openssl.cnf"|cut -d'=' -f2|xargs)
     if [ -n "$SSL_EMAIL" ]; then
         emailopt="-m $SSL_EMAIL"
     else
         emailopt="--register-unsafely-without-email"
     fi
+
     DATE=$(date "+%Y%m%d")
-    
+    [ ! -n "$DATE" ] && echo "error: invalid date" && exit 1
+
+
+    # If live link already exists, it's not our first time...
     if [ -h "$CRT_DIR/${vhost}/live" ]; then
-        crt_end_date=$(openssl x509 -noout -enddate -in "$CRT_DIR/${vhost}/live/cert.crt"|sed -e "s/.*=//")
-        date_crt=$(date -ud "$crt_end_date" +"%s")
+        openssl x509 -noout -modulus -in "$CRT_DIR/${vhost}/live/cert.crt"  >/dev/null || ( echo "error: $CRT_DIR/${vhost}/live/cert.crt is invalid" && exit 1 )
+
+        # Verify if our certificate will expire
+        crt_end_date=$(openssl x509 -noout -enddate -in "$CRT_DIR/${vhost}/live/cert.crt" | cut -d= -f2)
+        date_renew=$(date -ud "$crt_end_date - $SSL_MINDAY days" +"%s")
         date_today=$(date +'%s')
-        date_diff=$(((date_crt - date_today) / (60*60*24)))
-        [ "$date_diff" -ge "$SSL_MINDAY" ] && exit 0
-    fi
-    rm -rf "$CRT_DIR/${vhost}/${DATE}"
-    mkdir -pm 755 "$CRT_DIR/${vhost}/${DATE}"
-    chown -R acme: "$CRT_DIR/${vhost}"
-    sudo -u acme certbot certonly --quiet --webroot --csr "$CSR_DIR/${vhost}.csr" --webroot-path "$ACME_DIR" -n --agree-tos --cert-path="$CRT_DIR/${vhost}/${DATE}/cert.crt" --fullchain-path="$CRT_DIR/${vhost}/${DATE}/fullchain.pem" --chain-path="$CRT_DIR/${vhost}/${DATE}/chain.pem" "$emailopt" --logs-dir "$LOG_DIR" 2>&1 | grep -v "certbot.crypto_util"
-    if [ -f "$CRT_DIR/${vhost}/${DATE}/fullchain.pem" ]; then
-        rm -f "$CRT_DIR/${vhost}/live"
-        ln -s "$CRT_DIR/${vhost}/${DATE}" "$CRT_DIR/${vhost}/live"
+        [ "$date_today" -lt "$date_renew" ] && ( [ "$CRON" = "NO" ] && echo "Cert $CRT_DIR/${vhost}/live/cert.crt expires at $crt_end_date => more than $SSL_MINDAY days: thxbye." || true ) && exit 0
+    else
         which apache2ctl >/dev/null && mkconf_apache
         which nginx >/dev/null && mkconf_nginx
-        which haproxy >/dev/null && mkconf_haproxy
-    else
-        rmdir "$CRT_DIR/${vhost}/${DATE}"
     fi
+
+    # renew certificate with certbot
+    [ -d "$CRT_DIR/${vhost}/${DATE}" ] && echo "error: $CRT_DIR/${vhost}/${DATE} directory already exists, remove it manually." && exit 1
+    mkdir -pm 755 "$CRT_DIR/${vhost}/${DATE}"
+    chown -R acme: "$CRT_DIR/${vhost}/${DATE}"
+    [ "$CRON" = "YES" ] && CERTBOT_OPTS="--quiet"
+    sudo -u acme certbot certonly $CERTBOT_OPTS --webroot --csr "$CSR_DIR/${vhost}.csr" --webroot-path "$ACME_DIR" -n --agree-tos --cert-path="$CRT_DIR/${vhost}/${DATE}/cert.crt" --fullchain-path="$CRT_DIR/${vhost}/${DATE}/fullchain.pem" --chain-path="$CRT_DIR/${vhost}/${DATE}/chain.pem" "$emailopt" --logs-dir "$LOG_DIR" 2>&1 | grep -v "certbot.crypto_util"
+
+    # verify if all is right
+    openssl x509 -noout -modulus -in "$CRT_DIR/${vhost}/${DATE}/cert.crt" >/dev/null || ( echo "error: new $CRT_DIR/${vhost}/${DATE}/cert.crt is invalid" && exit 1 )
+    openssl x509 -noout -modulus -in "$CRT_DIR/${vhost}/${DATE}/fullchain.pem" >/dev/null || ( echo "error: new $CRT_DIR/${vhost}/${DATE}/fullchain.pem is invalid" && exit 1 )
+    openssl x509 -noout -modulus -in "$CRT_DIR/${vhost}/${DATE}/chain.pem" >/dev/null || ( echo "error: new $CRT_DIR/${vhost}/${DATE}/chain.pem is invalid" && exit 1 )
+
+    # link dance
+    [ -h "$CRT_DIR/${vhost}/live" ] && rm "$CRT_DIR/${vhost}/live"
+    ln -s "$CRT_DIR/${vhost}/${DATE}" "$CRT_DIR/${vhost}/live"
+    openssl x509 -noout -modulus -in "$CRT_DIR/${vhost}/live/cert.crt" >/dev/null || ( echo "error: new $CRT_DIR/{vhost}/live/cert.crt is invalid" && exit 1 )
+
+    # reload apache or nginx (TODO: need improvments)
+    pidof apache2 >/dev/null && apache2ctl -t 2>/dev/null && ( [ "$CRON" = "NO" ] && echo "Apache detected... reloading" || true ) && systemctl reload apache2
+    pidof nginx >/dev/null && nginx -t 2>/dev/null && ( [ "$CRON" = "NO" ] && echo "Nginx detected... reloading" || true ) && systemctl reload apache2
+
 }
 
 main "$@"
