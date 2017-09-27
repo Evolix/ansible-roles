@@ -34,3 +34,12 @@
 
 - include: munin.yml
   when: _munin_installed.stat.exists and _munin_installed.stat.isdir
+
+- name: is NRPE present ?
+  stat:
+    path: /etc/nagios/nrpe.d/evolix.cfg
+  check_mode: no
+  register: nrpe_evolix_config
+
+- include: nrpe_stretch.yml
+  when: ansible_distribution_release == "stretch" and nrpe_evolix_config == true
