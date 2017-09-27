@@ -1,8 +1,11 @@
 ---
 - name: Redis is installed.
   apt:
-    name: redis-server
+    name: "{{ item }}"
     state: present
+  with_items:
+  - redis-server
+  - redis-tools
   tags:
   - redis
   - packages
