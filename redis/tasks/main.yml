@@ -42,4 +42,4 @@
   register: nrpe_evolix_config
 
 - include: nrpe_stretch.yml
-  when: ansible_distribution_release == "stretch" and nrpe_evolix_config == true
+  when: ansible_distribution_release == "stretch" and nrpe_evolix_config.stat.exists == true
