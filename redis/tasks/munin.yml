@@ -60,3 +60,13 @@
     - used_memory
   notify: restart munin-node
   tags: redis
+
+- name: Add redis password for munin
+  ini_file:
+    dest: /etc/munin/plugin-conf.d/munin-node
+    section: 'redis_*'
+    option: env.password
+    value: '{{ redis_password }}'
+  notify: restart munin-node
+  when: redis_password != ''
+  tags: redis
