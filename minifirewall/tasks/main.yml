@@ -1,5 +1,12 @@
 ---
 
+- name: packages are installed
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - iptables
+
 - include: install.yml
 
 - include: config.yml
