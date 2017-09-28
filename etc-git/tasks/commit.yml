@@ -26,7 +26,7 @@
 
 - name: "set commit author"
   set_fact:
-    commit_author: '{% if ansible_env.SUDO_USER == "" %}root{% else %}{{ ansible_env.SUDO_USER }}{% endif %}'
+    commit_author: '{% if ansible_env.SUDO_USER is not defined %}root{% else %}{{ ansible_env.SUDO_USER }}{% endif %}'
     commit_email:  '{% if git_config_user_email.config_value == "" %}root@localhost{% else %}{{ git_config_user_email.config_value }}{% endif %}'
 
 - name: "/etc modifications are committed"
