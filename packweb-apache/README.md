@@ -4,7 +4,7 @@ Install the web pack, with Apache.
 
 ## Tasks
 
-Everything is in the `tasks/main.yml` file for now.
+See `tasks/main.yml`.
 
 ## Available variables
 
