@@ -37,7 +37,6 @@
 - name: Install docker and python-docker
   apt:
     name: "{{ item }}"
-    state: latest
     update_cache: yes
   with_items:
     - docker-ce
