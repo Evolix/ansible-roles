@@ -68,5 +68,5 @@
     option: env.password
     value: '{{ redis_password }}'
   notify: restart munin-node
-  when: redis_password != ''
+  when: redis_password != '' and redis_password != None
   tags: redis
