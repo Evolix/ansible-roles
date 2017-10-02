@@ -20,10 +20,10 @@ PASSWORD : PASSE1
 *****************************************
 
 URL du site :
-http://{{ evoadmin_tpl_servername }}
+http://SERVERNAME
 
 URL des stats :
-http://{{ evoadmin_tpl_servername }}/cgi-RANDOM/awstats.pl
+http://SERVERNAME/cgi-RANDOM/awstats.pl
 (acces par IP ou login a demander !)
 
 Repertoire de connexion : HOME_DIR/LOGIN/
@@ -60,7 +60,7 @@ ou etre un alias de {{ evoadmin_tpl_servername }} (enregistrement DNS CNAME).
 Si vous avez besoin de faire des tests, vous devez
 ajouter la ligne suivante au fichier "/etc/hosts" sous Linux/Unix
 ou au fichier "system32\drivers\etc\hosts" sous Windows NT/XP :
-{{ evoadmin_tpl_address }} {{ evoadmin_tpl_servername }}
+{{ evoadmin_tpl_address }} SERVERNAME
 
 Attention, par defaut, toutes les connexions vers l'exterieur
 sont bloquees. Si vous avez besoin de recuperer des donnees
@@ -71,7 +71,7 @@ Afin de securiser au maximum le serveur, certaines URL
 particulieres sont non autorisees pour eviter diverses
 attaques (XSS, robots, trojans, injections, etc.).
 Exemple d'URL refusee :
-http://{{ evoadmin_tpl_servername }}/cmd32.exe
+http://SERVERNAME/cmd32.exe
 En cas de soucis avec votre application, prevenez-nous.
 
 Si vous desirez mettre en place des parametres particuliers
