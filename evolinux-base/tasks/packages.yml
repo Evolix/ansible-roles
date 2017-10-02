@@ -13,6 +13,7 @@
   - apg
   - conntrack
   - logrotate
+  - bash-completion
   - ssl-cert
   - ca-certificates
   when: evolinux_packages_system
