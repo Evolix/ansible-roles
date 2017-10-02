@@ -30,8 +30,11 @@ for log in production.log delayed_job.log development.log test.log; do
   done
 done
 
-if /etc/init.d/apache2 status > /dev/null ; then \
+test -x /usr/sbin/apache2ctl && if /etc/init.d/apache2 status > /dev/null ; then \
     /etc/init.d/apache2 reload > /dev/null; \
 fi;
 
 test -x /usr/sbin/nginx && invoke-rc.d nginx rotate >/dev/null 2>&1
+
+# we want exit 0
+true

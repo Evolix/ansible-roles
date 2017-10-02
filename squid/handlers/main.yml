@@ -28,3 +28,6 @@
   service:
     name: log2mail
     state: restarted
+
+- name: restart minifirewall
+  command: /etc/init.d/minifirewall restart

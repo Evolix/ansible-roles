@@ -37,7 +37,6 @@
 - name: Install docker and python-docker
   apt:
     name: "{{ item }}"
-    state: latest
     update_cache: yes
   with_items:
     - docker-ce
@@ -47,15 +46,20 @@
   template:
     src: daemon.json.j2
     dest: /etc/docker/daemon.json
-  notify:
-    - reload systemd
-    - restart docker
+  notify: restart docker
 
-- name: Remove options from docker systemd service
-  lineinfile:
-    dest: /lib/systemd/system/docker.service
-    regexp: '^ExecStart='
-    line: 'ExecStart=/usr/bin/dockerd'
+- name: Create override directory for docker unit
+  file:
+    name: /etc/systemd/system/docker.service.d/
+    state: directory
+    mode: "0755"
+
+- name: Remove options in ExecStart from docker unit
+  copy:
+    src: docker.conf
+    dest: /etc/systemd/system/docker.service.d/
+    mode: "0644"
+  notify: reload systemd
 
 - name: Creating Docker tmp directory
   file:
