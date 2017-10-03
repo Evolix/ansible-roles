@@ -6,8 +6,72 @@
     - slapd
     - ldap-utils
     - ldapvi
+    - shelldap
+
+- name: "Is /root/.ldapvirc present ?"
+  stat:
+    path: /root/.ldapvirc
+  check_mode: no
+  register: root_ldapvirc_path
 
 - name: apg package is installed
   apt:
     name: apg
     state: present
+  when: not root_ldapvirc_path.stat.exists
+
+- name: create a password for cn=admin
+  command: "apg -n 1 -m 16 -M lcN"
+  register: ldap_admin_password
+  changed_when: False
+  when: not root_ldapvirc_path.stat.exists
+
+- name: create a password for cn=nagios
+  command: "apg -n 1 -m 16 -M lcN"
+  register: ldap_nagios_password
+  changed_when: False
+  when: not root_ldapvirc_path.stat.exists
+
+- name: hash password for cn=admin
+  command: "slappasswd -s {{ ldap_admin_password.stdout }}"
+  register: ldap_admin_password_ssha
+  changed_when: False
+  when: not root_ldapvirc_path.stat.exists
+
+- name: hash password for cn=nagios
+  command: "slappasswd -s {{ ldap_nagios_password.stdout }}"
+  register: ldap_nagios_password_ssha
+  changed_when: False
+  when: not root_ldapvirc_path.stat.exists
+
+- name: create ldapvirc config
+  template:
+    src: ldapvirc.j2
+    dest: /root/.ldapvirc
+    mode: "0640"
+  when: not root_ldapvirc_path.stat.exists
+
+- name: upload ldap initial config
+  template:
+    src: config_ldapvi.j2
+    dest: /root/evolinux_ldap_config.ldapvi
+    mode: "0640"
+  when: not root_ldapvirc_path.stat.exists
+
+- name: upload ldap initial entries
+  template:
+    src: first-entries.ldif.j2
+    dest: /root/evolinux_ldap_first-entries.ldif
+    mode: "0640"
+  when: not root_ldapvirc_path.stat.exists
+
+- name: inject config
+  command: ldapvi -Y EXTERNAL -h ldapi:// --ldapmodify /root/evolinux_ldap_config.ldapvi
+  environment:
+    TERM: xterm
+  when: not root_ldapvirc_path.stat.exists
+
+- name: inject first entries
+  command: slapadd -l /root/evolinux_ldap_first-entries.ldif
+  when: not root_ldapvirc_path.stat.exists
+
