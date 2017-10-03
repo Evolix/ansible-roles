@@ -116,10 +116,26 @@ main() {
     ln -s "$CRT_DIR/${vhost}/${DATE}" "$CRT_DIR/${vhost}/live"
     openssl x509 -noout -modulus -in "$CRT_DIR/${vhost}/live/cert.crt" >/dev/null || error "new $CRT_DIR/{vhost}/live/cert.crt is invalid"
 
-    # reload apache or nginx (TODO: need improvments)
-    pidof apache2 >/dev/null && apache2ctl -t 2>/dev/null && debug "Apache detected... reloading" && systemctl reload apache2
-    pidof nginx >/dev/null && nginx -t 2>/dev/null && debug "Nginx detected... reloading" && systemctl reload apache2
-
+    # reload apache or nginx
+    set +e
+    pidof apache2 >/dev/null
+    if [ "$?" -eq 0 ]; then
+        apache2ctl -t 2>/dev/null
+        if [ "$?" -eq 0 ]; then
+            debug "Apache detected... reloading" && service apache2 reload
+        else
+            error "Apache config is broken, you must fix it !"
+        fi
+    fi
+    pidof nginx >/dev/null
+    if [ "$?" -eq 0 ]; then
+        nginx -t 2>/dev/null
+        if [ "$?" -eq 0 ]; then
+            debug "Nginx detected... reloading" && service nginx reload
+        else
+            error "Nginx config is broken, you must fix it !"
+        fi
+    fi
 }
 
 main "$@"
