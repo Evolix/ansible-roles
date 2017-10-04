@@ -10,6 +10,21 @@ logcheck_alert_email: Null
 raid_alert_email: Null
 postfix_alias_email: Null
 
+# apt
+
+evolinux_apt_include: True
+
+evolinux_apt_conf: True
+evolinux_apt_hooks: True
+evolinux_apt_replace_default_sources: True
+evolinux_apt_public_sources: True
+evolinux_apt_upgrade: True
+evolinux_apt_remove_aptitude: True
+
+# etc-git
+
+evolinux_etcgit_include: True
+
 # hostname
 
 evolinux_hostname_include: True
@@ -30,17 +45,6 @@ evolinux_kernel_reboot_after_panic: True
 evolinux_kernel_disable_tcp_timestamps: True
 evolinux_kernel_reduce_swapiness: True
 evolinux_kernel_cve20165696: True
-
-# apt
-
-evolinux_apt_include: True
-
-evolinux_apt_conf: True
-evolinux_apt_hooks: True
-evolinux_apt_replace_default_sources: True
-evolinux_apt_public_sources: True
-evolinux_apt_upgrade: True
-evolinux_apt_remove_aptitude: True
 
 # fstab
 
