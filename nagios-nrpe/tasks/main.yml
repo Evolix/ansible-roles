@@ -17,6 +17,7 @@
     dest: /etc/nagios/nrpe.d/evolix.cfg
     group: nagios
     mode: "0640"
+    force: no
   notify: restart nagios-nrpe-server
 
 - name: Nagios config is secured
