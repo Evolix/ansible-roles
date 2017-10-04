@@ -116,29 +116,56 @@
 
 ## alert5
 
-- name: Install alert5 init script
+- name: Install alert5 init script (jessie)
   template:
-    src: system/init_alert5.j2
+    src: system/alert5.sysvinit.j2
     dest: /etc/init.d/alert5
     force: no
     mode: "0755"
-  when: evolinux_system_alert5_init
+  when:
+    - evolinux_system_alert5_init
+    - ansible_distribution_release == "jessie"
 
-
-#TODO: switch service/systemd modules with Ansible 2.2+
-
-- name: Enable alert5 init script
+- name: Enable alert5 init script (jessie)
   service:
     name: alert5
     enabled: yes
-  when: evolinux_system_alert5_init and evolinux_system_alert5_enable
+  when:
+    - evolinux_system_alert5_init
+    - evolinux_system_alert5_enable
+    - ansible_distribution_release == "jessie"
 
-# - name: Enable alert5 init script
-#   systemd:
-#     name: alert5
-#     daemon_reload: yes
-#     enabled: yes
-#   when: evolinux_system_alert5_init and evolinux_system_alert5_enable
+
+
+- name: Install alert5 init script (stretch)
+  template:
+    src: system/alert5.sh.j2
+    dest: /usr/share/scripts/alert5.sh
+    force: no
+    mode: "0755"
+  when:
+    - evolinux_system_alert5_init
+    - ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: Install alert5 service (stretch)
+  copy:
+    src: alert5.service
+    dest: /etc/systemd/system/alert5.service
+    force: yes
+    mode: "0755"
+  when:
+    - evolinux_system_alert5_init
+    - ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: Enable alert5 init script (stretch)
+  systemd:
+    name: alert5
+    daemon_reload: yes
+    enabled: yes
+  when:
+    - evolinux_system_alert5_init
+    - evolinux_system_alert5_enable
+    - ansible_distribution_major_version | version_compare('9', '>=')
 
 ## network interfaces
 
