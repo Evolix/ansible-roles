@@ -16,6 +16,7 @@ Main variables are :
 * `redis_conf_path`: config file location ;
 * `redis_port`: listening TCP port ;
 * `redis_bind_interface`: listening IP address ;
+* `redis_password`: password for redis. Empty means no password ;
 * `redis_unixsocket`: Unix socket ;
 * `redis_loglevel`: log verbosity ;
 * `redis_logfile`: log file location.
