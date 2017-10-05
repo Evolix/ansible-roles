@@ -116,7 +116,7 @@
 
 ## alert5
 
-- name: Install alert5 init script (jessie)
+- name: Install alert5 init script (jessie/stretch)
   template:
     src: system/alert5.sysvinit.j2
     dest: /etc/init.d/alert5
@@ -124,20 +124,20 @@
     mode: "0755"
   when:
     - evolinux_system_alert5_init
-    - ansible_distribution_release == "jessie"
+    - ansible_distribution_release == "jessie" or ansible_distribution_release == "stretch"
 
-- name: Enable alert5 init script (jessie)
+- name: Enable alert5 init script (jessie/stretch)
   service:
     name: alert5
     enabled: yes
   when:
     - evolinux_system_alert5_init
     - evolinux_system_alert5_enable
-    - ansible_distribution_release == "jessie"
+    - ansible_distribution_release == "jessie" or ansible_distribution_release == "stretch"
 
 
 
-- name: Install alert5 init script (stretch)
+- name: Install alert5 init script (buster)
   template:
     src: system/alert5.sh.j2
     dest: /usr/share/scripts/alert5.sh
@@ -145,9 +145,9 @@
     mode: "0755"
   when:
     - evolinux_system_alert5_init
-    - ansible_distribution_major_version | version_compare('9', '>=')
+    - ansible_distribution_major_version | version_compare('10', '>=')
 
-- name: Install alert5 service (stretch)
+- name: Install alert5 service (buster)
   copy:
     src: alert5.service
     dest: /etc/systemd/system/alert5.service
@@ -155,9 +155,9 @@
     mode: "0755"
   when:
     - evolinux_system_alert5_init
-    - ansible_distribution_major_version | version_compare('9', '>=')
+    - ansible_distribution_major_version | version_compare('10', '>=')
 
-- name: Enable alert5 init script (stretch)
+- name: Enable alert5 init script (buster)
   systemd:
     name: alert5
     daemon_reload: yes
@@ -165,7 +165,7 @@
   when:
     - evolinux_system_alert5_init
     - evolinux_system_alert5_enable
-    - ansible_distribution_major_version | version_compare('9', '>=')
+    - ansible_distribution_major_version | version_compare('10', '>=')
 
 ## network interfaces
 
