@@ -100,6 +100,22 @@ evolinux_system_alert5_init: True
 evolinux_system_alert5_enable: True
 evolinux_system_eni_auto: True
 
+# evomaintenance
+
+evolinux_evomaintenance_include: True
+
+# ssh
+
+evolinux_ssh_include: True
+
+evolinux_ssh_password_auth_addresses: []
+evolinux_ssh_match_address: True
+evolinux_ssh_disable_acceptenv: True
+
+# evolinux users
+
+evolinux_users_include: True
+
 # root
 
 evolinux_root_include: True
@@ -112,15 +128,7 @@ evolinux_root_gitconfig: True
 evolinux_root_bash_history_appendonly: True
 evolinux_root_vim_default: True
 evolinux_root_vim_conf: True
-
-# ssh
-
-evolinux_ssh_include: True
-
-evolinux_ssh_password_auth_addresses: []
-evolinux_ssh_match_address: True
-evolinux_ssh_disable_root: False
-evolinux_ssh_disable_acceptenv: True
+evolinux_root_disable_ssh: True
 
 # postfix
 

@@ -1,6 +1,6 @@
-# admin-users
+# evolinux-users
 
-Creates admin users accounts, based on a configuration data structure.
+Creates evolinux users accounts, based on a configuration data structure.
 
 ## Tasks
 
@@ -8,10 +8,10 @@ Everything is in the `tasks/main.yml` file.
 
 ## Available variables
 
-The variable `admin_users` must be a "dict" of one or more users :
+The variable `evolinux_users` must be a "dict" of one or more users :
 
 ```
-admin_users:
+evolinux_users:
   foo:
     name: foo
     uid: 1001

@@ -6,11 +6,11 @@
   - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
 
 - debug:
-    msg: "Warning: empty 'admin_users' variable, tasks will be skipped!"
-  when: admin_users == {}
+    msg: "Warning: empty 'evolinux_users' variable, tasks will be skipped!"
+  when: evolinux_users == {}
 
-- include: admin_user.yml
+- include: user.yml
   vars:
     user: "{{ item.value }}"
-  with_dict: "{{ admin_users }}"
-  when: admin_users != {}
+  with_dict: "{{ evolinux_users }}"
+  when: evolinux_users != {}

@@ -34,13 +34,23 @@
   include: system.yml
   when: evolinux_system_include
 
-- name: Root user configuration
-  include: root.yml
-  when: evolinux_root_include
+- name: Evomaintenance
+  include_role:
+    name: evomaintenance
+  when: evolinux_evomaintenance_include
 
 - name: SSH configuration
   include: ssh.yml
   when: evolinux_ssh_include
+
+- name: Create evolinux users
+  include_role:
+    name: evolinux-users
+  when: evolinux_users_include
+
+- name: Root user configuration
+  include: root.yml
+  when: evolinux_root_include
 
 - name: Postfix
   include: postfix.yml

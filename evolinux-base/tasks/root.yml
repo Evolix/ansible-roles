@@ -80,4 +80,12 @@
     - "set shiftwidth=4"
   when: evolinux_root_vim_conf
 
+- name: disable SSH access for root
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin (yes|without-password)'
+    replace: "PermitRootLogin no"
+  notify: reload sshd
+  when: evolinux_root_disable_ssh
+
 - meta: flush_handlers

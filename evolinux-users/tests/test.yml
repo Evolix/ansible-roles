@@ -2,7 +2,7 @@
 - hosts: test-kitchen
 
   vars:
-    admin_users:
+    evolinux_users:
       foo:
         name: foo
         uid: 1001
@@ -20,4 +20,4 @@
   #       state: directory
 
   roles:
-    - role: admin-users
+    - role: evolinux-users

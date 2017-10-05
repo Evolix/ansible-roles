@@ -31,7 +31,7 @@ suites:
       playbook: ./tests/test.yml
     verifier:
       patterns:
-      - admin-users/tests/spec/admin-users_spec.rb
+      - evolinux-users/tests/spec/evolinux-users_spec.rb
       bundler_path: '/usr/local/bin'
       rspec_path: '/usr/local/bin'
 
