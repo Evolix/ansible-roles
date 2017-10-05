@@ -16,12 +16,18 @@ evolinux_users:
     name: foo
     uid: 1001
     fullname: 'Mr Foo'
+    groups: "baz"
     password_hash: 'sdfgsdfgsdfgsdfg'
     ssh_key: 'ssh-rsa AZERTYXYZ'
   bar:
     name: bar
     uid: 1002
     fullname: 'Mr Bar'
+    groups:
+    - "baz"
+    - "qux"
     password_hash: 'gsdfgsdfgsdfgsdf'
-    ssh_key: 'ssh-rsa QWERTYUIOP'
+    ssh_keys:
+      - 'ssh-rsa QWERTYUIOP'
+      - 'ssh-ed25519 QWERTYUIOP'
 ```
