@@ -1,0 +1,9 @@
+[Unit]
+Description=Evolix alert5 script
+
+[Service]
+Type=oneshot
+ExecStart=/usr/share/scripts/alert5.sh
+
+[Install]
+WantedBy=multi-user.target

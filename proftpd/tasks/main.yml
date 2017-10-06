@@ -32,3 +32,12 @@
   notify: restart proftpd
   tags:
   - proftpd
+
+- name: Put empty vpasswd file if missing
+  copy:
+    src: vpasswd
+    dest: /etc/proftpd/vpasswd
+    force: no
+    mode: "0440"
+  tags:
+  - proftpd

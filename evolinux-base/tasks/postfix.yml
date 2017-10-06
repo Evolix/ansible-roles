@@ -1,6 +1,6 @@
 ---
 
-- name: packages are installed
+- name: Postfix packages are installed
   apt:
     name: "{{ item }}"
     state: present

@@ -1,8 +1,11 @@
 ---
 - name: Redis is installed.
   apt:
-    name: redis-server
+    name: "{{ item }}"
     state: present
+  with_items:
+  - redis-server
+  - redis-tools
   tags:
   - redis
   - packages
@@ -31,3 +34,12 @@
 
 - include: munin.yml
   when: _munin_installed.stat.exists and _munin_installed.stat.isdir
+
+- name: is NRPE present ?
+  stat:
+    path: /etc/nagios/nrpe.d/evolix.cfg
+  check_mode: no
+  register: nrpe_evolix_config
+
+- include: nrpe_stretch.yml
+  when: ansible_distribution_release == "stretch" and nrpe_evolix_config.stat.exists == true

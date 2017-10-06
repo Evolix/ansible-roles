@@ -1,6 +1,6 @@
 galaxy_info:
   author: Evolix
-  description: Creates admin users accounts.
+  description: Creates evolinux users accounts.
 
   issue_tracker_url: https://forge.evolix.org/projects/ansible-roles/issues
 

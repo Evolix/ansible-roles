@@ -16,7 +16,7 @@
     replace: '\1{{ evolinux_fstab_home_options | mandatory }}\3'
   notify: remount /home
   when:
-  - "' /home ' in fstab_content.stdout"
+  - fstab_content.stdout | regex_search('\s/home\s')
   - evolinux_fstab_home
 
 - name: /tmp partition is customized
@@ -25,7 +25,7 @@
     regexp: '([^#]\s+/tmp\s+\S+\s+)([a-z,]+)(\s+)'
     replace: '\1{{ evolinux_fstab_tmp_options | mandatory }}\3'
   when:
-  - "' /tmp ' in fstab_content.stdout"
+  - fstab_content.stdout | regex_search('\s/tmp\s')
   - evolinux_fstab_tmp
 
 - name: /usr partition is customized
@@ -34,7 +34,7 @@
     regexp: '([^#]\s+/usr\s+\S+\s+)([a-z,]+)(\s+)'
     replace: '\1{{ evolinux_fstab_usr_options | mandatory }}\3'
   when:
-  - "' /usr ' in fstab_content.stdout"
+  - fstab_content.stdout | regex_search('\s/usr\s')
   - evolinux_fstab_usr
 
 - name: /var partition is customized
@@ -44,7 +44,7 @@
     replace: '\1{{ evolinux_fstab_var_options | mandatory }}\3'
   notify: remount /var
   when:
-  - "' /var ' in fstab_content.stdout"
+  - fstab_content.stdout | regex_search('\s/var\s')
   - evolinux_fstab_var
 
 - name: /var/tmp is created

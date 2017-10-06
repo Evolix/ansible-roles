@@ -10,6 +10,21 @@ logcheck_alert_email: Null
 raid_alert_email: Null
 postfix_alias_email: Null
 
+# apt
+
+evolinux_apt_include: True
+
+evolinux_apt_conf: True
+evolinux_apt_hooks: True
+evolinux_apt_replace_default_sources: True
+evolinux_apt_public_sources: True
+evolinux_apt_upgrade: True
+evolinux_apt_remove_aptitude: True
+
+# etc-git
+
+evolinux_etcgit_include: True
+
 # hostname
 
 evolinux_hostname_include: True
@@ -30,17 +45,6 @@ evolinux_kernel_reboot_after_panic: True
 evolinux_kernel_disable_tcp_timestamps: True
 evolinux_kernel_reduce_swapiness: True
 evolinux_kernel_cve20165696: True
-
-# apt
-
-evolinux_apt_include: True
-
-evolinux_apt_conf: True
-evolinux_apt_hooks: True
-evolinux_apt_replace_default_sources: True
-evolinux_apt_public_sources: True
-evolinux_apt_upgrade: True
-evolinux_apt_remove_aptitude: True
 
 # fstab
 
@@ -96,6 +100,22 @@ evolinux_system_alert5_init: True
 evolinux_system_alert5_enable: True
 evolinux_system_eni_auto: True
 
+# evomaintenance
+
+evolinux_evomaintenance_include: True
+
+# ssh
+
+evolinux_ssh_include: True
+
+evolinux_ssh_password_auth_addresses: []
+evolinux_ssh_match_address: True
+evolinux_ssh_disable_acceptenv: True
+
+# evolinux users
+
+evolinux_users_include: True
+
 # root
 
 evolinux_root_include: True
@@ -108,15 +128,7 @@ evolinux_root_gitconfig: True
 evolinux_root_bash_history_appendonly: True
 evolinux_root_vim_default: True
 evolinux_root_vim_conf: True
-
-# ssh
-
-evolinux_ssh_include: True
-
-evolinux_ssh_password_auth_addresses: []
-evolinux_ssh_match_address: True
-evolinux_ssh_disable_root: True
-evolinux_ssh_disable_acceptenv: True
+evolinux_root_disable_ssh: True
 
 # postfix
 

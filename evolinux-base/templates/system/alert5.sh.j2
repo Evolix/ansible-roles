@@ -1,0 +1,7 @@
+#!/bin/sh
+
+## sends a mail when booting
+date | mail -s'boot/reboot' {{ reboot_alert_email or general_alert_email | mandatory }}
+
+## starts the firewall
+#/etc/init.d/minifirewall start

@@ -5,6 +5,15 @@
   when:
   - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
 
+- name: Apt configuration
+  include: apt.yml
+  when: evolinux_apt_include
+
+- name: /etc versioning with Git
+  include_role:
+    name: etc-git
+  when: evolinux_etcgit_include
+
 - name: Hostname
   include: hostname.yml
   when: evolinux_hostname_include
@@ -12,10 +21,6 @@
 - name: Kernel tuning
   include: kernel.yml
   when: evolinux_kernel_include
-
-- name: Apt configuration and packages install
-  include: apt.yml
-  when: evolinux_apt_include
 
 - name: Fstab configuration
   include: fstab.yml
@@ -29,13 +34,23 @@
   include: system.yml
   when: evolinux_system_include
 
-- name: Root user configuration
-  include: root.yml
-  when: evolinux_root_include
+- name: Evomaintenance
+  include_role:
+    name: evomaintenance
+  when: evolinux_evomaintenance_include
 
 - name: SSH configuration
   include: ssh.yml
   when: evolinux_ssh_include
+
+- name: Create evolinux users
+  include_role:
+    name: evolinux-users
+  when: evolinux_users_include
+
+- name: Root user configuration
+  include: root.yml
+  when: evolinux_root_include
 
 - name: Postfix
   include: postfix.yml
