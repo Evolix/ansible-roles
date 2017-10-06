@@ -8,7 +8,6 @@
     mode: "0440"
     validate: '/usr/sbin/visudo -cf %s'
   register: copy_sudoers_evolinux
-  when: ansible_distribution_release == "jessie"
 
 - name: "Add user in sudoers file for '{{ user.name }}' (jessie)"
   replace:
@@ -16,6 +15,4 @@
     regexp: '^(User_Alias\s+ADMINS\s+=((?!{{ user.name }}).)*)$'
     replace: '\1,{{ user.name }}'
     validate: '/usr/sbin/visudo -cf %s'
-  when:
-  - ansible_distribution_release == "jessie"
-  - not copy_sudoers_evolinux.changed
+  when: not copy_sudoers_evolinux.changed
