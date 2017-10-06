@@ -21,3 +21,48 @@
   tags:
   - apache
   - munin
+
+---
+
+- name: install packages for Apache and Munin
+  apt:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+  - libapache2-mod-fcgid
+  - libcgi-fast-perl
+  notify: reload apache
+  tags:
+  - apache
+  - munin
+
+- name: be sure to enable libapache2-mod-fcgid
+  command: a2enmod fcgid
+  register: cmd_enable_fcgid
+  changed_when: "'Module fcgid already enabled' not in cmd_enable_fcgid.stdout"
+  notify: restart apache
+  tags:
+  - apache
+  - munin
+
+- name: change group for /var/log/munin/
+  file:
+    path: /var/log/munin/
+    group: www-data
+  tags:
+  - apache
+  - munin
+
+- name: install munin plugins
+  file:
+    src: "/etc/munin/plugins/{{ item }}"
+    dest: "/usr/share/munin/plugins/{{ item }}"
+    state: link
+  with_items:
+  - apache_accesses
+  - apache_processes
+  - apache_volume
+  notify: restart munin-node
+  tags:
+  - apache
+  - munin
