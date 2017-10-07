@@ -39,6 +39,7 @@
   command: logname
   register: logname
   check_mode: no
+  changed_when: False
   when: evolinux_ssh_allow_current_user
 
 # we must double-escape caracters, because python
