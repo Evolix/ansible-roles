@@ -18,7 +18,7 @@
   - "APT::Install-Suggests \"false\";"
   when: evolinux_apt_conf
 
-- name: DPKg invoke hooks
+- name: DPKG invoke hooks
   lineinfile:
     dest: /etc/apt/apt.conf.d/z-evolinux.conf
     line: "{{ item }}"
@@ -26,8 +26,8 @@
     state: present
     mode: "0640"
   with_items:
-  - "DPkg::Pre-Invoke { \"df /tmp | grep -q /tmp && mount -oremount,exec /tmp || true\"; };"
-  - "DPkg::Pre-Invoke { \"df /usr | grep -q /usr && mount -oremount,rw /usr || true\"; };"
+  - "DPkg::Pre-Invoke  { \"df /tmp | grep -q /tmp && mount -oremount,exec /tmp || true\"; };"
+  - "DPkg::Pre-Invoke  { \"df /usr | grep -q /usr && mount -oremount,rw /usr || true\"; };"
   - "DPkg::Post-Invoke { \"df /tmp | grep -q /tmp && mount -oremount /tmp || true\"; };"
   - "DPkg::Post-Invoke { \"df /usr | grep -q /usr && mount -oremount /usr || true\"; };"
   when: evolinux_apt_hooks
