@@ -127,6 +127,15 @@
   tags:
   - apache
 
+- include: remount_usr_rw.yml
+
+- name: "Install save_apache_status.sh"
+  copy:
+    src: save_apache_status.sh
+    dest: /usr/share/scripts/save_apache_status.sh
+    mode: "0755"
+    force: no
+
 - include: log2mail.yml
   when: apache_log2mail_include
 
