@@ -127,17 +127,6 @@
   tags:
   - apache
 
-- name: Stat /default index
-  stat:
-    path: /var/www/index.html
-  register: _default_index
-  check_mode: no
-  tags:
-  - apache
-
-- include: phpmyadmin.yml
-  when: _default_index.stat.exists
-
 # - block:
 #   - name: generate random string for serverstatus suffix
 #     command: "apg -a 1 -M N -n 1"
