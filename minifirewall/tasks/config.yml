@@ -94,6 +94,20 @@
       SERVICESUDP3='{{ minifirewall_private_ports_udp | join(' ') }}'
   register: minifirewall_config_ports
 
+- name: evomaintenance
+  lineinfile:
+    dest: /etc/default/minifirewall
+    line: "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s {{ item }} -m state --state ESTABLISHED,RELATED -j ACCEPT"
+    insertafter: "^# EvoMaintenance"
+  with_items: "{{ evomaintenance_hosts }}"
+
+- name: remove minifirewall example rule for the evomaintenance
+  lineinfile:
+    dest: /etc/default/minifirewall
+    regexp: '^#.*(--sport 5432).*(-s X\.X\.X\.X)'
+    state: absent
+  when: evomaintenance_hosts != []
+
 - name: restart minifirewall
   # service:
   #   name: minifirewall
