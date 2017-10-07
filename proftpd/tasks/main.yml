@@ -38,6 +38,19 @@
     src: vpasswd
     dest: /etc/proftpd/vpasswd
     force: no
+  notify: restart proftpd
+  tags:
+  - proftpd
+
+# Why 440? Because should be edited with ftpasswd.
+# So, readonly when opened with vim.
+# Then readable by group.
+- name: Enforce permissions on password file
+  file:
+    path: /etc/proftpd/vpasswd
     mode: "0440"
+    owner: root
+    group: root
+  notify: restart proftpd
   tags:
   - proftpd
