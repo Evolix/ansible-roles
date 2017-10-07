@@ -165,3 +165,25 @@ evolinux_hardware_include: True
 
 evolinux_provider_online_include: False
 evolinux_provider_orange_fce_include: False
+
+# log2mail
+
+evolinux_log2mail_include: True
+
+# Minifirewall
+
+evolinux_minifirewall_include: True
+
+# Munin
+
+evolinux_munin_include: True
+
+# Nagios/NRPE
+
+evolinux_nagios_nrpe_include: True
+
+# fail2ban
+evolinux_fail2ban_include: True
+
+# Listupgrade
+evolinux_listupgrade_include: True

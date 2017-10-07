@@ -78,4 +78,29 @@
 
 - name: Override Logmail service
   include: log2mail.yml
-  when: evolinux_packages_serveur_base
+  when: evolinux_log2mail_include
+
+- name: Minifirewall
+  include_role:
+    name: minifirewall
+  when: evolinux_minifirewall_include
+
+- name: Munin
+  include_role:
+    name: munin
+  when: evolinux_munin_include
+
+- name: Nagios/NRPE
+  include_role:
+    name: nagios-nrpe
+  when: evolinux_nagios_nrpe_include
+
+- name: fail2ban
+  include_role:
+    name: fail2ban
+  when: evolinux_fail2ban_include
+
+- name: Listupgrade
+  include_role:
+    name: listupgrade
+  when: evolinux_listupgrade_include
