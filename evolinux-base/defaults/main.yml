@@ -111,6 +111,7 @@ evolinux_ssh_include: True
 evolinux_ssh_password_auth_addresses: []
 evolinux_ssh_match_address: True
 evolinux_ssh_disable_acceptenv: True
+evolinux_ssh_allow_current_user: False
 
 # evolinux users
 

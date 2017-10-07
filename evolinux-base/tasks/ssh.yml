@@ -35,4 +35,17 @@
   notify: reload sshd
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
+- name: "Get current user"
+  command: logname
+  register: logname
+  check_mode: no
+  when: evolinux_ssh_allow_current_user
+
+- name: "Allow current user"
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    line: "AllowUsers {{ logname.stdout }}"
+    insertafter: 'Subsystem'
+  when: evolinux_ssh_allow_current_user
+
 - meta: flush_handlers
