@@ -9,7 +9,7 @@
 - name: Check if Broadcom NetXtreme II device is present
   shell: "lspci | grep -q 'NetXtreme II'"
   check_mode: no
-  register: broadcom
+  register: broadcom_netextreme_search
   failed_when: False
   changed_when: False
 
@@ -22,7 +22,7 @@
     tasks_from: basics.yml
   vars:
     apt_basics_components: "main contrib non-free"
-  when: broadcom|success
+  when: broadcom_netextreme_search.rc == 0
 
 ## RAID
 
