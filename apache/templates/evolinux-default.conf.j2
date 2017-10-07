@@ -24,7 +24,7 @@
     <Location /munin-cgi/munin-cgi-graph>
         Options +ExecCGI
         Require all denied
-        Include /etc/apache2/private_ipaddr_whitelist.conf
+        Include /etc/apache2/ipaddr_whitelist.conf
     </Location>
 
     # For CGI Scripts. We need to set Directory directive as ScriptAlias take precedence.
