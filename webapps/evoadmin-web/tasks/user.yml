@@ -49,6 +49,7 @@
   file:
     dest: "{{ evoadmin_document_root}}"
     owner: "{{ evoadmin_username }}"
+    group: "{{ evoadmin_username }}"
     recurse: yes
 
 - include: remount_usr_rw.yml
