@@ -20,6 +20,7 @@
     src: evolinux.conf.j2
     dest: /etc/proftpd/conf.d/z-evolinux.conf
     mode: "0644"
+    force: no
   notify: restart proftpd
   tags:
   - proftpd
