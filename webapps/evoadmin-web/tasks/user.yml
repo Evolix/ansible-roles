@@ -24,7 +24,7 @@
     name: www-evoadmin
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
-- name: Install Git
+- name: Git is needed to clone the evoadmin repository
   apt:
     name: git
     state: present
@@ -68,12 +68,12 @@
 
 # we use a shell command to have a "changed" thet really reflects the result.
 - name: Fix permissions
-  shell: "chmod -R --verbose u=rwX,g=rX,o= {{ item }}"
+  command: "chmod -R --verbose u=rwX,g=rX,o= {{ evoadmin_document_root }}"
   register: command_result
   changed_when: "'changed' in command_result.stdout"
   # failed_when: False
-  with_items:
-  - "{{ evoadmin_home_dir}}/www"
+  args:
+    warn: no
 
 - name: Add evoadmin sudoers file
   template:
