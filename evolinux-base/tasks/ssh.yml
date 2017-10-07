@@ -41,11 +41,31 @@
   check_mode: no
   when: evolinux_ssh_allow_current_user
 
-- name: "Allow current user"
+# we must double-escape caracters, because python
+- name: verify AllowUsers directive
+  shell: "egrep '^AllowUsers' /etc/ssh/sshd_config"
+  changed_when: False
+  failed_when: False
+  register: grep_allowusers_ssh
+  check_mode: no
+  when: evolinux_ssh_allow_current_user
+
+- name: "Add AllowUsers sshd directive for current user"
   lineinfile:
     dest: /etc/ssh/sshd_config
-    line: "AllowUsers {{ logname.stdout }}"
+    line: "\nAllowUsers {{ logname.stdout }}"
     insertafter: 'Subsystem'
-  when: evolinux_ssh_allow_current_user
+    validate: '/usr/sbin/sshd -T -f %s'
+  notify: reload sshd
+  when: evolinux_ssh_allow_current_user and grep_allowusers_ssh.rc != 0
+
+- name: "Modify AllowUsers sshd directive for current user"
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '^(AllowUsers ((?!{{ logname.stdout }}).)*)$'
+    replace: '\1 {{ logname.stdout }}'
+    validate: '/usr/sbin/sshd -T -f %s'
+  notify: reload sshd
+  when: evolinux_ssh_allow_current_user and grep_allowusers_ssh.rc == 0
 
 - meta: flush_handlers
