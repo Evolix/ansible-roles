@@ -1,68 +1,55 @@
 ---
 
-- name: munin-node and core plugins are installed
+- name: "Install munin-node and core plugins packages"
   apt:
     name: "{{ item }}"
     state: installed
   with_items:
     - munin-node
     - munin-plugins-core
+  tags:
+    - apache
+    - munin
 
-- name: enable munin plugins
+- name: "Enable Munin plugins"
   file:
     src: "/usr/share/munin/plugins/{{ item }}"
     dest: "/etc/munin/plugins/{{ item }}"
     state: link
   with_items:
-  - apache_accesses
-  - apache_processes
-  - apache_volume
+    - apache_accesses
+    - apache_processes
+    - apache_volume
   notify: restart munin-node
   tags:
-  - apache
-  - munin
+    - apache
+    - munin
 
----
-
-- name: install packages for Apache and Munin
+- name: "Install fcgi packages for Munin graphs"
   apt:
     name: "{{ item }}"
     state: installed
   with_items:
-  - libapache2-mod-fcgid
-  - libcgi-fast-perl
+    - libapache2-mod-fcgid
+    - libcgi-fast-perl
   notify: reload apache
   tags:
-  - apache
-  - munin
+    - apache
+    - munin
 
-- name: be sure to enable libapache2-mod-fcgid
+- name: "Enable libapache2-mod-fcgid"
   command: a2enmod fcgid
   register: cmd_enable_fcgid
   changed_when: "'Module fcgid already enabled' not in cmd_enable_fcgid.stdout"
   notify: restart apache
   tags:
-  - apache
-  - munin
+    - apache
+    - munin
 
-- name: change group for /var/log/munin/
+- name: "Apache has access to /var/log/munin/"
   file:
     path: /var/log/munin/
     group: www-data
   tags:
-  - apache
-  - munin
-
-- name: install munin plugins
-  file:
-    src: "/etc/munin/plugins/{{ item }}"
-    dest: "/usr/share/munin/plugins/{{ item }}"
-    state: link
-  with_items:
-  - apache_accesses
-  - apache_processes
-  - apache_volume
-  notify: restart munin-node
-  tags:
-  - apache
-  - munin
+    - apache
+    - munin
