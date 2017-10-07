@@ -1,8 +1,14 @@
 ---
 
+- name: "Rename private_ipaddr_whitelist if present"
+  command: "mv /etc/apache2/private_ipaddr_whitelist.conf /etc/apache2/ipaddr_whitelist.conf"
+  args:
+    removes: /etc/apache2/private_ipaddr_whitelist.conf
+    creates: /etc/apache2/ipaddr_whitelist.conf
+
 - name: Init ipaddr_whitelist.conf file
   copy:
-    src: private_ipaddr_whitelist.conf
+    src: ipaddr_whitelist.conf
     dest: /etc/apache2/ipaddr_whitelist.conf
     owner: root
     group: root
@@ -16,7 +22,7 @@
     dest: /etc/apache2/ipaddr_whitelist.conf
     line: "Require ip {{ item }}"
     state: present
-  with_items: "{{ apache_private_ipaddr_whitelist_present }}"
+  with_items: "{{ apache_ipaddr_whitelist_present }}"
   notify: reload apache
   tags:
   - apache
@@ -26,7 +32,7 @@
     dest: /etc/apache2/ipaddr_whitelist.conf
     line: "Require ip {{ item }}"
     state: absent
-  with_items: "{{ apache_private_ipaddr_whitelist_absent }}"
+  with_items: "{{ apache_ipaddr_whitelist_absent }}"
   notify: reload apache
   tags:
   - apache

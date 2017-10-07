@@ -3,8 +3,8 @@
 nginx_minimal: False
 nginx_jessie_backports: False
 
-nginx_private_ipaddr_whitelist_present: []
-nginx_private_ipaddr_whitelist_absent: []
+nginx_ipaddr_whitelist_present: []
+nginx_ipaddr_whitelist_absent: []
 
 nginx_private_htpasswd_present: []
 nginx_private_htpasswd_absent: []
