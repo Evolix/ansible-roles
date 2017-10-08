@@ -11,7 +11,7 @@
 
 - name: Java 8 is installed
   apt:
-    name: openjdk-8-jre
+    name: openjdk-8-jre-headless
     default_release: "{{ java8_apt_release }}"
     state: present
   tags:
