@@ -1,9 +1,5 @@
 ---
 
-- name: Install java8
-  include_role:
-    name: java8
-
 - name: APT https transport is enabled
   apt:
     name: apt-transport-https
@@ -39,7 +35,7 @@
     - packages
 
 - name: Kibana service is enabled and started
-  service:
+  systemd:
     name: kibana
     enabled: yes
     state: started

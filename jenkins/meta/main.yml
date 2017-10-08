@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   author: Evolix
-  description: Install Elasticsearch
+  description: Install Jenkins
 
   issue_tracker_url: https://forge.evolix.org/projects/ansible-roles/issues
 
@@ -13,7 +13,6 @@ galaxy_info:
   - name: Debian
     versions:
     - jessie
-    - stretch
 
   galaxy_tags: []
     # List tags for your role here, one per line. A tag is

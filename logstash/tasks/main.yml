@@ -1,11 +1,5 @@
 ---
 
-- name: Install java8
-  include_role:
-    name: java8
-  tags:
-    - packages
-
 - name: APT https transport is enabled
   apt:
     name: apt-transport-https
@@ -41,7 +35,7 @@
     - packages
 
 - name: Logstash service is enabled
-  service:
+  systemd:
     name: logstash
     enabled: yes
 

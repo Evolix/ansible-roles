@@ -1,12 +1,5 @@
 ---
 
-- name: install java8
-  include_role:
-    name: java8
-  tags:
-  - elasticsearch
-  - packages
-
 - name: APT https transport is enabled
   apt:
     name: apt-transport-https
