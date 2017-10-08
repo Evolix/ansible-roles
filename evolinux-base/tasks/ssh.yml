@@ -15,7 +15,7 @@
     insertafter: EOF
     validate: '/usr/sbin/sshd -T -f %s'
   notify: reload sshd
-  when: not evolinux_ssh_password_auth_addresses == []
+  when: evolinux_ssh_password_auth_addresses != []
 
 # We disable AcceptEnv because it can be a security issue, but also because we
 # do not want clients to push their environment variables like LANG.
