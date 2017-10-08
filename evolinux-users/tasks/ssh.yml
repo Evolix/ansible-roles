@@ -59,13 +59,14 @@
   register: grep_matchuser_ssh
   check_mode: no
 
-- name: "Add Match User sshd directive for '{{ user.name }}'"
-  lineinfile:
-    dest: /etc/ssh/sshd_config
-    line: "\nMatch User {{ user.name }}\n    PasswordAuthentication no"
-    validate: '/usr/sbin/sshd -T -f %s'
-  notify: reload sshd
-  when: grep_matchuser_ssh.rc != 0
+# - name: "Add Match User sshd directive for '{{ user.name }}'"
+#   lineinfile:
+#     dest: /etc/ssh/sshd_config
+#     line: "\nMatch User {{ user.name }}\n    PasswordAuthentication no"
+#     insertbefore: "# BEGIN EVOLINUX PASSWORD RESTRICTIONS"
+#     validate: '/usr/sbin/sshd -T -f %s'
+#   notify: reload sshd
+#   when: grep_matchuser_ssh.rc != 0
 
 - name: "Modify Match User's sshd directive for '{{ user.name }}'"
   replace:
