@@ -7,7 +7,7 @@
   blockinfile:
     dest: /etc/ssh/sshd_config
     block: |
-      Match Group evolinux-sudo
+      Match Group evolix
           PasswordAuthentication no
       Match Address {{ evolinux_ssh_password_auth_addresses | join(',') }}
           PasswordAuthentication yes
