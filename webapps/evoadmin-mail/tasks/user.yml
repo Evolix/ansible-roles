@@ -1,0 +1,67 @@
+---
+
+- name: Create evoadmin account
+  user:
+    name: "{{ evoadminmail_username }}"
+    comment: "Evoadmin Web Account"
+    home: "{{ evoadminmail_home_dir}}"
+    password: "!"
+
+- name: Create log/ directory
+  file:
+    path: "{{ evoadminmail_home_dir}}/log"
+    state: directory
+    owner: "{{ evoadminmail_username }}"
+    group: "{{ evoadminmail_username }}"
+    mode: "0750"
+
+- name: Create www-evoadminmail group
+  group:
+    name: "www-{{ evoadminmail_username }}"
+    state: present
+
+- name: "Create www-evoadmin (Debian 9 or later)"
+  user:
+    name: "www-{{ evoadminmail_username }}"
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: Install Git
+  apt:
+    name: git
+    state: present
+
+- name: "Clone evoadmin repository (Debian 9 or later)"
+  git:
+    repo: https://forge.evolix.org/evoadmin-mail.git
+    dest: "{{ evoadminmail_document_root}}"
+    version: master
+    update: yes
+  # Warning: Need sudo!
+  become_user: "{{ evoadminmail_username }}"
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- include: remount_usr_rw.yml
+  when: evoadminmail_scripts_dir | search ("/usr")
+
+- name: "Create {{ evoadminmail_scripts_dir }}"
+  file:
+    dest: "{{ evoadminmail_scripts_dir }}"
+    # recurse: yes
+    mode: "0700"
+    state: directory
+
+# we use a shell command to have a "changed" thet really reflects the result.
+- name: Fix permissions
+  shell: "chmod -R --verbose u=rwX,g=rX,o= {{ item }}"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  # failed_when: False
+  with_items:
+  - "{{ evoadminmail_home_dir}}/www"
+
+#- name: Add evoadmin sudoers file
+#  template:
+#    src: sudoers.j2
+#    dest: /etc/sudoers.d/evoadmin
+#    mode: "0600"
+#    validate: "visudo -cf %s"

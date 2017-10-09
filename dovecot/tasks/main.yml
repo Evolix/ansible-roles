@@ -1,0 +1,11 @@
+- name: ensure packages are installed
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - dovecot-ldap
+  - dovecot-imapd
+  - dovecot-pop3d
+  - dovecot-sieve
+
+- include: munin.yml

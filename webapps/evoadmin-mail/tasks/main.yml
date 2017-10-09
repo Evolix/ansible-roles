@@ -1,0 +1,19 @@
+---
+
+- include: packages.yml
+
+- include: user.yml
+
+- include: config.yml
+
+- include: ssl.yml
+
+- include: web.yml
+
+- name: enable evoadmin-mail link in default site index
+  blockinfile:
+    dest: /var/www/index.html
+    marker: "<!-- {mark} evoadmin-mail section -->"
+    block: |
+      <li><a href="https://{{ evoadminmail_host }}">Interface admin mail (EvoAdmin-mail)</a></li>
+

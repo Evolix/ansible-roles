@@ -1,0 +1,21 @@
+---
+
+- name: Additional packages are installed
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - libapache2-mod-security2
+  - modsecurity-crs
+  - apg
+
+- name: Additional modules are enabled
+  apache2_module:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - ssl
+  - include
+  - negotiation
+  - alias
+
