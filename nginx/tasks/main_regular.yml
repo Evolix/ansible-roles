@@ -43,7 +43,7 @@
 
 
 - name: "Rename private_ipaddr_whitelist if present"
-  command: "mv /etc/nginx/snippets/private_ipaddr_whitelist /etc/nginx/snippets/ipaddr_whitelist
+  command: "mv /etc/nginx/snippets/private_ipaddr_whitelist /etc/nginx/snippets/ipaddr_whitelist"
   args:
     removes: /etc/nginx/snippets/private_ipaddr_whitelist
     creates: /etc/nginx/snippets/ipaddr_whitelist
