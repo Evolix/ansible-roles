@@ -11,7 +11,7 @@
 - block:
   - name: Head repository is checked-out
     git:
-      repo: "git://github.com/mobz/elasticsearch-head.git"
+      repo: "https://github.com/mobz/elasticsearch-head.git"
       dest: "{{ elasticsearch_plugin_head_clone_dir }}"
       clone: yes
     tags:
