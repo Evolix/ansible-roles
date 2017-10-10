@@ -1,0 +1,53 @@
+# {{ ansible_managed }}
+
+disable_plaintext_auth = no
+auth_mechanisms = plain login
+!include auth-ldap.conf.ext
+service auth {
+    unix_listener auth-userdb {
+        mode = 0600
+        user = vmail
+        group = vmail
+    }
+    unix_listener /var/spool/postfix/private/auth-client {
+        mode = 0666
+        user = postfix
+        group = postfix
+    }
+}
+
+mail_location = maildir:/home/vmail/%d/%n
+mail_uid = 5000
+mail_gid = 5000
+
+protocol lda {
+    mail_plugins = sieve
+}
+
+service managesieve-login {
+  inet_listener sieve {
+    port = 4190
+  }
+
+  inet_listener sieve_deprecated {
+    port = 2000
+  }
+  service_count = 1
+  process_min_avail = 0
+  vsz_limit = 64M
+}
+
+service managesieve {
+
+}
+
+protocol sieve {
+  managesieve_max_line_length = 65536
+  mail_max_userip_connections = 10
+  mail_plugins =
+  managesieve_logout_format = bytes=%i/%o
+  managesieve_implementation_string = Dovecot Pigeonhole
+  managesieve_sieve_capability =
+  managesieve_notify_capability =
+  managesieve_max_compile_errors = 5
+}
