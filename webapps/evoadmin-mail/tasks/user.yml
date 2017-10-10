@@ -36,9 +36,14 @@
     dest: "{{ evoadminmail_document_root}}"
     version: master
     update: yes
-  # Warning: Need sudo!
-  become_user: "{{ evoadminmail_username }}"
   when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: "Change perms on evoadminmail document root"
+  file:
+    dest: "{{ evoadminmail_document_root}}"
+    owner: "www-{{ evoadminmail_username }}"
+    group: "{{ evoadminmail_username }}"
+    recurse: yes
 
 - include: remount_usr_rw.yml
   when: evoadminmail_scripts_dir | search ("/usr")
