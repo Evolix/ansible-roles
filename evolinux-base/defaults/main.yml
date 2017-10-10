@@ -113,9 +113,10 @@ evolinux_ssh_match_address: True
 evolinux_ssh_disable_acceptenv: True
 evolinux_ssh_allow_current_user: False
 
-# evolinux users
-
-evolinux_users_include: True
+### disabled because of a memory leak
+# # evolinux users
+#
+# evolinux_users_include: True
 
 # root
 
@@ -129,7 +130,7 @@ evolinux_root_gitconfig: True
 evolinux_root_bash_history_appendonly: True
 evolinux_root_vim_default: True
 evolinux_root_vim_conf: True
-evolinux_root_disable_ssh: True
+evolinux_root_disable_ssh: False
 
 # postfix
 
