@@ -47,10 +47,10 @@
   include: ssh.yml
   when: evolinux_ssh_include
 
-- name: Create evolinux users
-  include_role:
-    name: evolinux-users
-  when: evolinux_users_include
+# - name: Create evolinux users
+#   include_role:
+#     name: evolinux-users
+#   when: evolinux_users_include
 
 - name: Root user configuration
   include: root.yml
