@@ -7,6 +7,12 @@
   tags:
   - apt
 
+- name: Custom configuration
+  include: config.yml
+  when: apt_config
+  tags:
+  - apt
+
 - name: Install basics repositories
   include: basics.yml
   when: apt_install_basics
