@@ -1,0 +1,7 @@
+---
+dependencies:
+  - { role: ldap, ldap_schema: 'cn4evolix.ldif' }
+  - { role: postfix }
+  - { role: dovecot }
+  - { role: apache }
+  - { role: php, php_apache_enable: True }

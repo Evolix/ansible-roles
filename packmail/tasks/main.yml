@@ -1,42 +1,27 @@
 ---
-
 - fail:
     msg: only compatible with Debian >= 9
   when:
   - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('9', '<')
 
-- name: Include ldap role
-  include_role:
-    name: ldap
+- name: Additional packages are installed
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - libapache2-mod-security2
+  - modsecurity-crs
+  - apg
 
-- name: upload evolix schema
-  copy:
-    src: cn4evolix.ldif
-    dest: /root/cn4evolix.ldif
-    mode: "0640"
-
-- name: inject evolix schema
-  command: ldapadd -Y EXTERNAL -H ldapi:/// -f /root/cn4evolix.ldif
-
-- name: Include postfix role
-  include_role:
-    name: postfix
-
-- name: Include dovecot role
-  include_role:
-    name: dovecot
-
-- name: Include apache role
-  include_role:
-    name: apache
-
-- name: Include PHP role
-  include_role:
-    name: php
-  vars:
-    php_apache_enable: True
-
-- include: apache.yml
+- name: Additional modules are enabled
+  apache2_module:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - ssl
+  - include
+  - negotiation
+  - alias
 
 - name: Install Evoadmin
   include_role:
