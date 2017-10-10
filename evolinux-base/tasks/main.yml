@@ -6,7 +6,11 @@
   - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
 
 - name: Apt configuration
-  include: apt.yml
+  include_role:
+    name: apt
+  vars:
+    apt_install_basics: "{{ evolinux_apt_replace_default_sources }}"
+    apt_install_evolix_public: "{{ evolinux_apt_public_sources }}"
   when: evolinux_apt_include
 
 - name: /etc versioning with Git
