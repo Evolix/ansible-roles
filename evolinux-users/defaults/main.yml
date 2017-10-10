@@ -1,3 +1,4 @@
 ---
 evolinux_users: {}
 evolinux_sudo_group: "evolinux-sudo"
+evolinux_root_disable_ssh: True
