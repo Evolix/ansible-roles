@@ -46,7 +46,7 @@
 - name: "Modify AllowUsers sshd directive for '{{ user.name }}'"
   replace:
     dest: /etc/ssh/sshd_config
-    regexp: '^(AllowUsers ((?!{{ user.name }}).)*)$'
+    regexp: '^(AllowUsers ((?!\b{{ user.name }}\b).)*)$'
     replace: '\1 {{ user.name }}'
     validate: '/usr/sbin/sshd -T -f %s'
   notify: reload sshd
