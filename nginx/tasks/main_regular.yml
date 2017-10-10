@@ -37,16 +37,35 @@
   tags:
   - nginx
 
-# TODO: verify that those permissions are correct :
-# not too strict for ipaddr_whitelist
-# and not too loose for private_htpasswd
-
+### Compatibility : change private_ipaddr_whitelist to ipaddr_whitelist ########
 
 - name: "Rename private_ipaddr_whitelist if present"
   command: "mv /etc/nginx/snippets/private_ipaddr_whitelist /etc/nginx/snippets/ipaddr_whitelist"
   args:
     removes: /etc/nginx/snippets/private_ipaddr_whitelist
     creates: /etc/nginx/snippets/ipaddr_whitelist
+
+- name: "search vhosts with private_ipaddr_whitelist"
+  command: "grep -lr private_ipaddr_whitelist /etc/nginx/sites-available/"
+  register: vhosts_with_private
+  changed_when: False
+  failed_when: False
+  check_mode: no
+
+- name: "change inclusion of ipaddr_whitelist in default vhost"
+  replace:
+    dest: /etc/nginx/sites-available/evolinux-default.conf
+    regexp: 'include /etc/nginx/snippets/private_ipaddr_whitelist;'
+    replace: 'include /etc/nginx/snippets/ipaddr_whitelist;'
+  notify: reload nginx
+  with_items: "{{ vhosts_with_private.stdout_lines }}"
+  when: vhosts_with_private.rc == 0
+
+################################################################################
+
+# TODO: verify that those permissions are correct :
+# not too strict for ipaddr_whitelist
+# and not too loose for private_htpasswd
 
 - name: Copy ipaddr_whitelist
   copy:
