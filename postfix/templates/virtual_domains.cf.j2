@@ -1,0 +1,5 @@
+search_base = {{ ldap_suffix }}
+query_filter = (&(cn=%s)(objectClass=postfixDomain)(isActive=TRUE))
+result_attribute = cn
+scope = sub
+version = 3

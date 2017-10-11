@@ -13,3 +13,19 @@ recipient_delimiter = +
 inet_interfaces = all
 inet_protocols = ipv4
 disable_vrfy_command = yes
+
+{% if postfix_slow_transport_include == True %}
+# Slow transports configuration
+minimal_backoff_time = 2h
+maximal_backoff_time = 6h
+maximal_queue_lifetime = 4d
+queue_run_delay = 100s
+bounce_queue_lifetime = 1d
+initial_destination_concurrency = 5
+default_destination_concurrency_limit = 20
+slow_destination_rate_delay = 0
+slow_destination_concurrency_limit = 1
+slow_destination_concurrency_failed_cohort_limit = 100
+slow_destination_recipient_limit = 25
+transport_maps = hash:$config_directory/transport
+{% endif %}

@@ -5,26 +5,72 @@
   with_items:
     - postfix
     - mailgraph
+  tags:
+  - postfix
+
+- name: ensure ldap packages are installed
+  apt:
+    name: "postfix-ldap"
+    state: present
+  when: postfix_packmail == True
+  tags:
+  - postfix
 
 - name: check if main.cf is default
   shell: grep -v -E "^(myhostname|mydestination|mailbox_command)" /etc/postfix/main.cf  | md5sum -
   changed_when: False
   check_mode: no
   register: default_main_cf
+  tags:
+  - postfix
 
-- name: create minimal main.cf
-  template:
-    src: evolinux_main.cf.j2
-    dest: /etc/postfix/main.cf
-    owner: root
-    group: root
-    mode: "0644"
-    force: yes
-  when: default_main_cf.stdout == "5450c05d65878e99dad696c7c722e511  -" or
+- block:
+
+  - name: create minimal main.cf
+    template:
+      src: evolinux_main.cf.j2
+      dest: /etc/postfix/main.cf
+      owner: root
+      group: root
+      mode: "0644"
+      force: yes
+    when: postfix_packmail != True
+    notify: restart postfix
+    tags:
+    - postfix
+  
+  - name: create packmail main.cf
+    template:
+      src: packmail_main.cf.j2
+      dest: /etc/postfix/main.cf
+      owner: root
+      group: root
+      mode: "0644"
+      force: yes
+    when: postfix_packmail == True
+    notify: restart postfix
+    tags:
+    - postfix
+
+  when: postfix_force_main_cf == True or
+        default_main_cf.stdout == "5450c05d65878e99dad696c7c722e511  -" or
         default_main_cf.stdout == "30022953f1f61f002bfb72e163ecb27e  -"
-  notify: restart postfix
 
-- meta: flush_handlers
+- name: deploy ldap postfix config
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/postfix/{{ item }}"
+    mode: "0644" 
+  with_items:
+    - virtual_aliases.cf
+    - virtual_domains.cf
+    - virtual_mailboxes.cf
+  when: postfix_packmail == True
+  notify: restart postfix
+  tags:
+  - postfix
 
 - include: slow_transport.yml
   when: postfix_slow_transport_include
+  tags:
+  - postfix

@@ -1,0 +1,415 @@
+## fichier principal de configuration de Postfix
+## commentaires de Gregory Colpart reg AT evolix DOT fr
+## version 1.0 : 1ere version publique (05.04.2010)
+
+########################
+# Section : Emplacements
+########################
+
+# Repertoire ou se trouvent les commandes de postfix [OBLIGATOIRE]
+#par defaut, = $program_directory
+command_directory = /usr/sbin
+
+# Repertoire ou se trouvent les demons de postfix [OBLIGATOIRE]
+#par defaut, = $program_directory
+daemon_directory = /usr/lib/postfix
+
+# Variable pour indiquer les emplacements des commandes et demons de postfix
+#program_directory = /usr/lib/postfix
+
+# Repertoire contenant les fichiers de boites aux lettres
+#par defaut, = /var/mail
+#mail_spool_directory =
+
+# Repertoire de la file d'attente de postfix
+#par defaut, = /var/spool/postfix
+#queue_directory =
+
+# Boites aux lettres
+#par defaut, =
+home_mailbox = Maildir/
+
+# Transmettre les mails a un MDA
+#par defaut, =
+#mailbox_command = /usr/bin/procmail
+
+# Separateur entre noms d'utilisateur et extensions d'adresse
+# mettre + pour integration avec amavis
+#par defaut, =
+recipient_delimiter = +
+
+# Controle si le repertoire existe (souvent pour les systemes de fichiers montes)
+#par defaut, = no
+#require_home_directory =
+
+# Commande pour transmettre le courrier a un MDA
+#par defaut, =
+#mailbox_command = /usr/bin/procmail
+
+# Banniere SMTP affichee
+#par default, = $myhostname ESMTP $mail_name
+smtpd_banner = $myhostname ESMTP mail server
+
+# Groupe des commandes set-gid ayant des acces en ecriture
+#par defaut, = postdrop
+# setgid_group = postdrop
+
+# Produire des "biff notifications" aux utilisateurs pour
+# prevenir de l'arrivee de nouveaux mails
+# par default, = yes
+#biff = no
+
+
+####################
+# Section : domaines
+####################
+
+# Indique le nom d'hote pleinement qualifie ou se trouve postfix [OBLIGATOIRE]
+#par defaut, = [retour de la commande Unix hostname]
+myhostname = {{ ansible_fqdn }}
+
+# Variable indiquant le domaine dans lequel se trouve la machine
+#par defaut, = [partie domain de la variable $myhostname]
+#mydomain =
+
+# Liste des noms de domaine (ou IP) consideres comme local
+#par defaut, = $myhostname, localhost.$mydomain, localhost
+mydestination = $myhostname
+
+# Indique le domaine apparaissant dans le courrier envoye
+#par defaut, = $myhostname
+myorigin = {{ ansible_fqdn }}
+
+# Liste de domaine fonctionnant UNIQUEMENT avec des alias virtuels
+#par defaut, = $virtual_alias_maps
+#virtual_alias_domains = [ domaines avec alias virtuels ]
+
+# Liste de domaine fonctionnant avec des comptes virtuels
+#par defaut, = $virtual_mailbox_maps
+virtual_mailbox_domains = ldap:$config_directory/virtual_domains.cf
+
+# Repertoire de base de l'espace de stockage
+#par defaut, =
+virtual_mailbox_base = /
+
+# Ajoute $mydomain aux adresse ne compoirtant que la partie hote sans le domaine
+#par defaut, = yes
+#append_dot_mydomain = no
+
+# Ajoute $myorigin aux adresses ne comportant pas de composante de domaine
+#par defaut, = yes
+#append_at_myorigin = no
+
+# Liste de domaines cachant des sous-domaines internes
+#par defaut, =
+#masquerade_domains =
+
+# A l'exception de certains comptes :
+#par defaut, =
+#masquerade_exceptions = root, admin
+
+# Champs d'application de la reecriture des sous-domaines caches
+#par defaut, = envelope_sender, header_sender, header_recipient
+#masquerade_classes =
+
+# Sites eligibles pour un vidage rapide (postqueue -s [domain.tld])
+#par defaut, = $relay_domains
+#fast_flush_domains =
+
+# Interfaces sur lesquelles ecoutent postfix
+#par defaut, = all
+#inet_interfaces = all
+
+# Adresse IP externe du firewall/proxy si derriere NAT ou proxy
+# evite principalement les boucles si MX secondaire et MX primaire indisponible
+#par defaut, =
+#proxy_interfaces = [adresse IP]
+
+# Domaines acceptes pour faire relai (MX 2aire)
+#relay_domains = [domaine a relayer]
+
+
+###########################
+# Section : base de donnees
+###########################
+
+# Liste des bases de donnees utilisees par l'agent de distribution locale
+# Pour regenerer une base de donnees : postalias /etc/aliases (par ex)
+#par defaut, = hash:/etc/aliases, nis:mail.aliases
+alias_maps = hash:/etc/aliases
+
+# Liste des bases de donnees locales 
+# Pour regenerer avec newaliases
+#par defaut, = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+
+# Chemin vers la commande newaliases
+#par defaut, = /usr/bin/newaliases
+#newaliases_path =
+
+# Base de donnes d'alias virtuels
+# ne pas oublier : postmap /etc/postfix/virtual
+#par defaut, = $virtual_maps
+virtual_alias_maps = hash:$config_directory/virtual, ldap:$config_directory/virtual_aliases.cf
+
+# Base de donners des boites virtuelles
+# ne pas oublier : postmap /etc/postfix/vmailbox
+#par defaut, = 
+virtual_mailbox_maps = ldap:$config_directory/virtual_mailboxes.cf
+
+virtual_uid_maps = static:5000
+virtual_gid_maps = static:5000
+virtual_transport = dovecot
+dovecot_destination_recipient_limit = 1
+
+# Reecriture des adresses
+#par defaut, =
+#canonical_maps = hash:/etc/postfix/canonical
+
+# Reecriture des adresses a l'arrivee (ecrase $canonical_maps)
+#par defaut, =
+#recipient_canonical_maps = hash:/etc/postfix/canonical
+
+# Reecriture des adresses au depart
+#par defaut, =
+#sender_canonical_maps = hash:/etc/postfix/canonical
+
+# Adresses changees
+#relocated_maps = hash:/etc/postfix/relocated
+
+# Boite pour receptionner tous les utilisateurs inconnus
+#luser_relay = spam
+
+# Liste de base de donnees contenant les adresses locales permettant de rejeter les messages aux utilisateurs inconnus
+# (sera nulle pour recuperer les courriels vers les utilisateurs inconnus)
+#par defaut, = proxy:unix:passwd.byname $alias_maps
+#local_recipient_maps =
+
+# MAILING-LIST nommee xx
+# dans le fichier /etc/aliases :
+# xx: user1@domain1 user2@domain2 etc.
+# owner-xx: admin@domain
+# Utiliser ou non l'alias xx-owner comme adresse d'enveloppe d'expedition
+#par defaut, = yes
+#owner_request_special = 
+
+# Utiliser l'adresse relle de l'admin au lieu de xx-owner
+#par defaut, = no
+#expand_owner_alias =
+
+
+###########################################
+# Section : parametres de la file d'attente
+###########################################
+
+# Lorsqu'un message n'a pas ete delivre, Postfix adjoint une marque indiquant le moment ou la prochaine tentaive pourra avoir lieu
+
+# Delai au-dela duquel les messages non delivres seront renvoyes a l'expediteur
+#par defaut, = 5d
+#maximal_queue_lifetime = 
+
+# Delai au-dela duquel les *bounces* non delivres ne seront plus envoyes
+#par defaut, = 5d
+bounce_queue_lifetime = 1d
+
+# Intervalle de temps ou postfix examinera la file 
+# Il examine notamment la file deferred pour voir si de NOUVEAUX messages sont arrives
+# Il faut aussi que la marque indique qu'ils soient prets
+#par defaut, = 1000s
+#queue_run_delay = 
+
+# A chaque echec, le delai de la prochaine distribution double, avec les restrictions suivantes :
+# Delai minimal
+#par defaut, = 1000s
+#minimal_backoff_time = 
+# Delai maximal
+#par defaut, = 4000s
+#maximal_backoff_time =
+
+# Si maxproc est vide (master.cf), nombre maximal est :
+#par defaut, = 100
+#default_process_limit = 
+
+# Nombre maximal de destinataires stockes en memoire par qmgr pour un transport particulier
+#par defaut, = 10000
+#default_recipient_limit =
+
+# Nombre limitant de messages envoyes simultanement INITIALEMENT pour une destination particuliere
+# (forcement majoree par maxproc du master.cf ou $default_process_limit)
+#par defaut, = 5
+#initial_destination_concurrency =
+
+# Une fois ces messages distribues, si il reste des messages dans la file d'attente pour cette destination
+# particuliere, postfix augmente le nombre de tentative tant qu'il ne detecte pas de probleme avec
+# la destination, avec la limite suivante :
+#par defaut, = 20
+#default_destination_concurrency_limit = 
+
+# Cette limite peut etre differente selon le type de transport utilise :
+#par defaut, = $default_destination_concurrency_limit
+#lmtp_destination_concurrency_limit = 
+#par defaut, = 2
+#local_destination_concurrency_limit = 
+#par defaut, = $default_destination_concurrency_limit
+#relay_destination_concurrency_limit = 
+#par defaut, = $default_destination_concurrency_limit
+#smtp_destination_concurrency_limit = 
+#par defaut, = $default_destination_concurrency_limit
+#virtual_destination_concurrency_limit = 
+
+# On peut aussi limiter le nombre maximum de destinataire pour un meme message
+# Si le nombre de destinataire depasse la limite, postfix divise en groupe d'adresses plus petites et envoie des copies distinctes du message
+#par defaut, =  10000
+#default_destination_recipient_limit =
+#par defaut, = $default_destination_recipient_limit
+#lmtp_destination_recipient_limit = 
+#par defaut, = 1
+#local_destination_recipient_limit = 
+#par defaut, = 20000
+#qmgr_message_recipient_limit = 
+#par defaut, = $default_destination_recipient_limit
+#relay_destination_recipient_limit = 
+#par defaut, = $default_destination_recipient_limit
+#smtp_destination_recipient_limit = 
+#par defaut, = 1000
+#smtpd_recipient_limit = 
+#par defaut, = $default_destination_recipient_limit
+#virtual_destination_recipient_limit =
+
+# Nombre maximum de destinataires pour un transport lorsque priorite superieure de transport
+#par defaut, = 1000
+#default_extra_recipient_limit = 
+
+slow_destination_rate_delay = 0
+slow_destination_concurrency_limit = 1
+slow_destination_recipient_limit = 25
+slow_destination_concurrency_failed_cohort_limit = 100
+
+# Types d'incidents a rapporter
+# resource : message non delivre pour probleme de ressource
+# software : message non delivre pour probleme de logiciels 
+# policy   : envoie le transcription smtp d'un message rejete par restrictions
+# protocol : envoie toute transcription smtp erronee
+# delay    : envoie les entetes de messages differes
+# bounce   : envoie les entetes de tous les message renvoyes
+# 2bounce  : envoie les entetes de tous les messages renvoyes non delivres
+#par defaut, = resource, software
+notify_classes = resource, software, bounce, 2bounce, delay, policy, protocol
+
+# A qui les reporter ?
+#Pour delay
+#par defaut, = postmaster
+delay_notice_recipient = delay
+#Pour policy, protocol, resource, software
+#par defaut, = postmaster
+error_notice_recipient = error
+#Pour bounce
+#par defaut, = postmaster
+bounce_notice_recipient = bounce
+#Pour 2bounce
+#par defaut, = postmaster
+2bounce_notice_recipient = bounce
+
+
+########################
+# Section : restrictions
+########################
+
+# Restrictions au depart de la conversation 
+#par defaut, = 
+smtpd_client_restrictions =
+    permit_mynetworks,
+    permit_sasl_authenticated,
+    cidr:$config_directory/spamd.cidr,
+
+# Restrictions au niveau de la commande HELO/EHLO
+#par defaut, = 
+smtpd_helo_restrictions =
+    reject_invalid_hostname
+
+# Restrictions au niveau de la commande MAIL FROM
+#par defaut, = 
+smtpd_sender_restrictions =
+    permit_mynetworks,
+    check_sender_access hash:$config_directory/sa-blacklist.access
+
+# Restrictions au niveau de la commande MAIL FROM
+#par defaut, = permit_mynetworks, reject_unauth_destination
+smtpd_recipient_restrictions =
+    permit_mynetworks,
+    permit_sasl_authenticated,
+    reject_unauth_destination,
+    check_client_access hash:$config_directory/client.access_local,
+    check_client_access hash:$config_directory/client.access,
+    check_sender_access hash:$config_directory/sender.access_local,
+    check_sender_access hash:$config_directory/sender.access,
+    check_recipient_access hash:$config_directory/recipient.access_local,
+    check_recipient_access hash:$config_directory/recipient.access,
+    reject_unlisted_recipient,
+    reject_unknown_sender_domain,
+    reject_non_fqdn_sender,
+    reject_unauth_pipelining,
+
+header_checks =
+    regexp:$config_directory/header_kill_local,
+    regexp:$config_directory/header_kill
+
+transport_maps = hash:$config_directory/transport
+
+# Attendre la commande 'RCPT TO' avant d'evaluer les restrictions ?
+# (peut poser pb avec certains clients et permet d'avoir renseignements suppl)
+#par defaut, = yes
+#smtpd_delay_reject = 
+
+# Definition des plages IP appartenant a mynetworks
+#par defaut, toutes les plages d'adresses IPv4 (et IPv6) des interfaces
+mynetworks = 127.0.0.0/8,[::1]/128,10.0.0.0/16
+
+# Exiger la commande HELO/EHLO
+#par defaut, = no
+smtpd_helo_required = yes
+
+# Exiger syntaxe conforme dans les commandes MAIL FROM ou RCPT TO
+#par defaut, = no
+strict_rfc821_envelopes = yes
+
+# Rejeter le courrier provenant d'une adresse inexistante ?
+#par defaut, = no
+#smtpd_reject_unlisted_sender =
+
+# Rejeter le courrier a destination d'une adresse inexistante ?
+#par defaut, = yes
+#smtpd_reject_unlisted_recipient =
+
+
+#######################
+# Section : Chiffrement
+#######################
+
+smtpd_tls_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+smtpd_tls_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+smtpd_use_tls=yes
+smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+
+# SASL
+smtpd_sasl_auth_enable = yes
+broken_sasl_auth_clients = yes
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth-client
+
+{% if postfix_slow_transport_include == True %}
+# Slow transports configuration
+minimal_backoff_time = 2h
+maximal_backoff_time = 6h
+maximal_queue_lifetime = 4d
+queue_run_delay = 100s
+bounce_queue_lifetime = 1d
+initial_destination_concurrency = 5
+default_destination_concurrency_limit = 20
+slow_destination_rate_delay = 0
+slow_destination_concurrency_limit = 1
+slow_destination_concurrency_failed_cohort_limit = 100
+slow_destination_recipient_limit = 25
+transport_maps = hash:$config_directory/transport
+{% endif %}
