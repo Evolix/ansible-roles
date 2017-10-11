@@ -1,11 +1,5 @@
 ---
 
-- name: "Rename private_ipaddr_whitelist if present"
-  command: "mv /etc/apache2/private_ipaddr_whitelist.conf /etc/apache2/ipaddr_whitelist.conf"
-  args:
-    removes: /etc/apache2/private_ipaddr_whitelist.conf
-    creates: /etc/apache2/ipaddr_whitelist.conf
-
 - name: Init ipaddr_whitelist.conf file
   copy:
     src: ipaddr_whitelist.conf
