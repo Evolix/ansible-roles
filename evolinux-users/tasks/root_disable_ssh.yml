@@ -7,10 +7,11 @@
     replace: "PermitRootLogin no"
   notify: reload sshd
 
-- name: remove root from AllowUsers directive
-  replace:
-    dest: /etc/ssh/sshd_config
-    regexp: '^(AllowUsers ((?!root(?:@\S+)?).)*)(\sroot(?:@\S+)?|root(?:@\S+)?\s)(.*)$'
-    replace: '\1\4'
-    validate: '/usr/sbin/sshd -T -f %s'
-  notify: reload sshd
+### Disabled : it seems useless and too dangerous for now
+# - name: remove root from AllowUsers directive
+#   replace:
+#     dest: /etc/ssh/sshd_config
+#     regexp: '^(AllowUsers ((?!root(?:@\S+)?).)*)(\sroot(?:@\S+)?|root(?:@\S+)?\s)(.*)$'
+#     replace: '\1\4'
+#     validate: '/usr/sbin/sshd -T -f %s'
+#   notify: reload sshd
