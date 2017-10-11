@@ -3,7 +3,7 @@
 - name: disable root login
   replace:
     dest: /etc/ssh/sshd_config
-    regexp: '^PermitRootLogin (yes|without-password)'
+    regexp: '^PermitRootLogin (yes|without-password|prohibit-password)'
     replace: "PermitRootLogin no"
   notify: reload sshd
 
