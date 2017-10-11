@@ -1,0 +1,7 @@
+---
+general_scripts_dir: "/usr/share/scripts"
+
+client_number: XXX
+monitoring_mode: "everytime"
+monitoring_type: "icmp"
+monitoring_timeout: "10"
