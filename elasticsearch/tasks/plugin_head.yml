@@ -6,7 +6,7 @@
     home: "{{ elasticsearch_plugin_head_home }}"
     createhome: yes
     system: yes
-    shell: /bin/bash
+    shell: /bin/false
 
 - block:
   - name: Head repository is checked-out
