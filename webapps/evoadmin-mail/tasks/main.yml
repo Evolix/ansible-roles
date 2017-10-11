@@ -11,9 +11,9 @@
 - include: web.yml
 
 - name: enable evoadmin-mail link in default site index
-  blockinfile:
+  lineinfile:
     dest: /var/www/index.html
-    marker: "<!-- {mark} evoadmin-mail section -->"
-    block: |
-      <li><a href="https://{{ evoadminmail_host }}">Interface admin mail (EvoAdmin-mail)</a></li>
-
+    state: present
+    regexp: "EvoAdmin-mail"
+    line: '            <li><a href="https://{{ evoadminmail_host }}">Interface admin mail (EvoAdmin-mail)</a></li>'
+    insertbefore: "</ul>"
