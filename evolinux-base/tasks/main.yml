@@ -109,3 +109,8 @@
   include_role:
     name: listupgrade
   when: evolinux_listupgrade_include
+
+- name: Generate ldif script
+  include_role:
+    name: generate-ldif
+  when: evolinux_generateldif_include

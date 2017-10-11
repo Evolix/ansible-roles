@@ -184,7 +184,13 @@ evolinux_munin_include: True
 evolinux_nagios_nrpe_include: True
 
 # fail2ban
+
 evolinux_fail2ban_include: True
 
 # Listupgrade
+
 evolinux_listupgrade_include: True
+
+# Generate ldif
+
+evolinux_generateldif_include: True
