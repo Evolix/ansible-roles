@@ -1,7 +1,7 @@
 <?php
 
 // Email pour les notifications
-$conf['admin']['mail'] = 'evoadminmail_contact_email or general_alert_email | mandatory';
+$conf['admin']['mail'] = '{{ evoadminmail_contact_email or general_alert_email | mandatory }}';
 // login des superadmins
 // Note: utile uniquement si domaines/driver=ldap, laisser vide sinon...
 $conf['admin']['logins'] = array('evoadmin');
