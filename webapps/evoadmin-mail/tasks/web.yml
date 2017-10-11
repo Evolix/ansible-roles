@@ -28,12 +28,3 @@
   changed_when: "'Disabling site' in cmd_a2dissite.stdout"
   notify: reload apache2
   when: not evoadminmail_enable_vhost
-
-#- name: Copy config file for evoadmin
-#  template:
-#    src: config.local.php.j2
-#    dest: "{{ evoadminmail_document_root}}/conf/config.local.php"
-#    mode: "0644"
-#    owner: evoadmin
-#    group: evoadmin
-#    force: no

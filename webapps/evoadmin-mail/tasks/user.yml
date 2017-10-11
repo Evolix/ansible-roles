@@ -40,10 +40,47 @@
 
 - name: "Change perms on evoadminmail document root"
   file:
-    dest: "{{ evoadminmail_document_root}}"
+    dest: "{{ evoadminmail_document_root }}"
     owner: "www-{{ evoadminmail_username }}"
     group: "{{ evoadminmail_username }}"
     recurse: yes
+
+- name: "Copy connect.php"
+  template:
+    src: connect.php.j2
+    dest: "{{ evoadminmail_document_root }}/evoadmin/htdocs/connect.php"
+    owner: "www-{{ evoadminmail_username }}"
+    group: "{{ evoadminmail_username }}"
+  when: ldap_admin_password is defined 
+
+- name: "Copy conf.php"
+  template:
+    src: conf.php.j2
+    dest: "{{ evoadminmail_document_root }}/evoadmin/htdocs/config/conf.php"
+    owner: "www-{{ evoadminmail_username }}"
+    group: "{{ evoadminmail_username }}"
+
+- name: create a password for evoadmin user
+  command: "apg -n 1 -m 16 -M lcN"
+  register: evoadminmail_admin_password
+  changed_when: False
+
+- name: upload ldif for evoadmin user
+  template:
+    src: evoadmin.ldif.j2
+    dest: /root/evolinux_evoadminmail_admin.ldif
+    mode: "0640"
+
+- name: inject config
+  command: slapadd -l /root/evolinux_evoadminmail_admin.ldif
+
+- name: create log file
+  file:
+    dest: /var/log/evoadmin-mail.log
+    state: touch
+    owner: "www-{{ evoadminmail_username }}"
+    group: "adm"
+    mode: "0640"
 
 - include: remount_usr_rw.yml
   when: evoadminmail_scripts_dir | search ("/usr")
