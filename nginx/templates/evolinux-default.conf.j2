@@ -24,7 +24,6 @@ server {
 
     # Auth.
     include /etc/nginx/snippets/ipaddr_whitelist;
-    deny all;
     auth_basic "Reserved {{ ansible_fqdn }}";
     auth_basic_user_file /etc/nginx/snippets/private_htpasswd;
     satisfy any;
