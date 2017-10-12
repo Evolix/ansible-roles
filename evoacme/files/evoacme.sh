@@ -29,7 +29,7 @@ error() {
     exit 1
 }
 
-change_cert_path_for_apache() {
+sed_cert_path_for_apache() {
     vhost=$1
     vhost_full_path="/etc/apache2/ssl/${vhost}.conf"
     cert_path=$2
@@ -39,7 +39,7 @@ change_cert_path_for_apache() {
     ${APACHE2CTL_BIN} -t
 }
 
-change_cert_path_for_nginx() {
+sed_cert_path_for_nginx() {
     vhost=$1
     vhost_full_path="/etc/nginx/ssl/${vhost}.conf"
     cert_path=$2
@@ -142,12 +142,8 @@ main() {
     else
         # We don't have a live symlink yet
         # Let's start from scratch and configure our web server(s)
-        if [ -n "${APACHE2CTL_BIN}" ]; then
-            change_cert_path_for_apache "${VHOST}" "${LIVE_FULLCHAIN}"
-        fi
-        if [ -n "${NGINX_BIN}" ]; then
-            change_cert_path_for_nginx "${VHOST}" "${LIVE_FULLCHAIN}"
-        fi
+        command -v apache2ctl && sed_cert_path_for_apache "${VHOST}" "${LIVE_FULLCHAIN}"
+        command -v nginx && sed_cert_path_for_nginx "${VHOST}" "${LIVE_FULLCHAIN}"
     fi
 
     #### CERTIFICATE CREATION WITH CERTBOT
