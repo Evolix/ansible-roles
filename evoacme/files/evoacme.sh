@@ -40,7 +40,7 @@ sed_cert_path_for_apache() {
 
     debug "Apache detected... first configuration in ${vhost_full_path}"
     [ -f "${vhost_full_path}" ] && sed -i "s~^SSLCertificateFile.*$~SSLCertificateFile ${cert_path}~" "${vhost_full_path}"
-    ${APACHE2CTL_BIN} -t
+    $(command -v apache2ctl) -t
 }
 
 sed_cert_path_for_nginx() {
@@ -50,7 +50,7 @@ sed_cert_path_for_nginx() {
 
     debug "Nginx detected... first configuration in ${vhost_full_path}"
     [ -f "${vhost_full_path}" ] && sed -i "s~^ssl_certificate[^_].*$~ssl_certificate ${cert_path};~" "${vhost_full_path}"
-    ${NGINX_BIN} -t
+    $(command -v nginx) -t
 }
 
 x509_verify() {
@@ -64,15 +64,18 @@ x509_enddate() {
 }
 
 main() {
+    # Read configuration file, if it exists
     [ -f /etc/default/evoacme ] && . /etc/default/evoacme
-    [ -z "${SSL_KEY_DIR}" ] && SSL_KEY_DIR=/etc/ssl/private
-    [ -z "${ACME_DIR}" ] && ACME_DIR=/var/lib/letsencrypt
-    [ -z "${CSR_DIR}" ] && CSR_DIR=/etc/ssl/requests
-    [ -z "${CRT_DIR}" ] && CRT_DIR=/etc/letsencrypt
-    [ -z "${LOG_DIR}" ] && LOG_DIR=/var/log/evoacme
-    [ -z "${SSL_MINDAY}" ] && SSL_MINDAY=30
-    [ -z "${SELF_SIGNED_DIR}" ] && SELF_SIGNED_DIR=/etc/ssl/self-signed
-    [ -z "${DH_DIR}" ] && DH_DIR=etc/ssl/dhparam
+
+    # Default value for main variables
+    SSL_KEY_DIR=${SSL_KEY_DIR:-"/etc/ssl/private"}
+    ACME_DIR=${ACME_DIR:-"/var/lib/letsencrypt"}
+    CSR_DIR=${CSR_DIR:-"/etc/ssl/requests"}
+    CRT_DIR=${CRT_DIR:-"/etc/letsencrypt"}
+    LOG_DIR=${LOG_DIR:-"/var/log/evoacme"}
+    SSL_MINDAY=${SSL_MINDAY:-"30"}
+    SELF_SIGNED_DIR=${SELF_SIGNED_DIR:-"/etc/ssl/self-signed"}
+    SSL_EMAIL=${SSL_EMAIL:-""}
 
     CRON=${CRON:-"0"}
     TEST=${TEST:-"0"}
@@ -80,24 +83,13 @@ main() {
 
     [ "$1" = "-h" ] || [ "$1" = "--help" ] && usage && exit 0
     # check arguments
-    [ "$#" -ge 3 ] || [ "$#" -le 0 ] && error "invalid argument(s)"
-    [ "$#" -eq 2 ] && [ "$1" != "--cron" ] && error "invalid argument(s)"
+    [ "$#" -eq 1 ] || error "invalid argument(s)"
 
-    [ "$#" -eq 1 ] && VHOST=$(basename "$1" .conf) && CRON=NO
-    [ "$#" -eq 2 ] && VHOST=$(basename "$2" .conf) && CRON=YES
+    VHOST=$(basename "$1" .conf)
 
     # check for important programs
-    OPENSSL_BIN=$(command -v openssl)
-    if [ "$?" -eq 0 ]; then
-        error "openssl command not installed"
-    fi
-    CERTBOT_BIN=$(command -v certbot)
-    if [ "$?" -eq 0 ]; then
-        error "certbot command not installed"
-    fi
-
-    APACHE2CTL_BIN=$(command -v apache2ctl)
-    NGINX_BIN=$(command -v nginx)
+    OPENSSL_BIN=$(command -v openssl) || error "openssl command not installed"
+    CERTBOT_BIN=$(command -v certbot) || error "certbot command not installed"
 
     # double check for directories
     [ ! -d "${ACME_DIR}" ] && error "${ACME_DIR} is not a directory"
@@ -116,13 +108,10 @@ main() {
 
     # Hook for evoadmin-web in cluster mode : check master status
     evoadmin_state_file="/home/${VHOST}/state"
-    if [ -f "${evoadmin_state_file}" ]; then
-        grep -q "STATE=master" "${evoadmin_state_file}"
-        if [ "$?" != 0 ]; then
-          debug "We are not the master of this evoadmin cluster. Quit!"
-          exit 0
-        fi
-    fi
+    [ -f "${evoadmin_state_file}" ] \
+      && grep -q "STATE=slave" "${evoadmin_state_file}" \
+      && debug "We are slave of this evoadmin cluster. Quit!" \
+      && exit 0
 
     #### INIT OR RENEW?
 
@@ -183,20 +172,21 @@ main() {
     fi
 
     # create a certificate with certbot
-    sudo -u acme ${CERTBOT_BIN} \
+    sudo -u acme \
+        ${CERTBOT_BIN} \
         certonly \
-            ${CERTBOT_MODE} \
-            ${CERTBOT_REGISTRATION} \
-            --non-interactive \
-            --webroot \
-            --csr "${CSR_FILE}" \
-            --webroot-path "${ACME_DIR}" \
-            --cert-path "${NEW_CERT}" \
-            --fullchain-path "${NEW_FULLCHAIN}" \
-            --chain-path "${NEW_CHAIN}" \
-            --logs-dir "$LOG_DIR" \
-            2>&1 \
-                | grep -v "certbot.crypto_util"
+        ${CERTBOT_MODE} \
+        ${CERTBOT_REGISTRATION} \
+        --non-interactive \
+        --webroot \
+        --csr "${CSR_FILE}" \
+        --webroot-path "${ACME_DIR}" \
+        --cert-path "${NEW_CERT}" \
+        --fullchain-path "${NEW_FULLCHAIN}" \
+        --chain-path "${NEW_CHAIN}" \
+        --logs-dir "$LOG_DIR" \
+        2>&1 \
+            | grep -v "certbot.crypto_util"
 
     # verify if all is right
     x509_verify "${NEW_CERT}" || error "${NEW_CERT} is invalid"
@@ -221,8 +211,7 @@ main() {
 
     # reload apache if present
     if [ -n "$(pidof apache2)" ]; then
-        ${APACHE2CTL_BIN} -t 2>/dev/null
-        if [ "$?" -eq 0 ]; then
+        if [ $(${APACHE2CTL_BIN} -t 2>/dev/null) ]; then
             debug "Apache detected... reloading"
             service apache2 reload
         else
@@ -232,8 +221,7 @@ main() {
 
     # reload nginx if present
     if [ -n "$(pidof nginx)" ]; then
-        ${NGINX_BIN} -t 2>/dev/null
-        if [ "$?" -eq 0 ]; then
+        if [ $(${NGINX_BIN} -t 2>/dev/null) ]; then
             debug "Nginx detected... reloading"
             service nginx reload
         else
