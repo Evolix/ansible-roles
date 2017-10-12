@@ -8,6 +8,7 @@
 #
 
 set -e
+set -u
 
 usage() {
     echo "Usage: $0 [ --cron ] NAME"
