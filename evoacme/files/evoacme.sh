@@ -50,15 +50,13 @@ sed_cert_path_for_nginx() {
 }
 
 x509_verify() {
-    file=$1
-
-    ${OPENSSL_BIN} x509 -noout -modulus -in "${file}" >/dev/null
+    ${OPENSSL_BIN} x509 -noout -modulus -in "$1" >/dev/null
 }
-
+csr_verify() {
+    ${OPENSSL_BIN} req -noout -modulus -in "$1" >/dev/null
+}
 x509_enddate() {
-    file=$1
-
-    ${OPENSSL_BIN} x509 -noout -enddate -in "${file}"
+    ${OPENSSL_BIN} x509 -noout -enddate -in "$1"
 }
 
 main() {
@@ -106,7 +104,7 @@ main() {
     [ ! -f "${CSR_FILE}" ] && error "${CSR_FILE} absent"
     [ ! -r "${CSR_FILE}" ] && error "${CSR_FILE} is not readable"
 
-    x509_verify "${CSR_FILE}" || error "${CSR_FILE} is invalid"
+    csr_verify "${CSR_FILE}" || error "${CSR_FILE} is invalid"
 
     # Hook for evoadmin-web in cluster mode : check master status
     evoadmin_state_file="/home/${VHOST}/state"
