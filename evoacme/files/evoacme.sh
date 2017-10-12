@@ -11,16 +11,20 @@ set -e
 set -u
 
 usage() {
-    echo "Usage: $0 [ --cron ] NAME"
+    echo "Usage: $0 NAME"
     echo ""
     echo "NAME must be correspond to :"
     echo "- a CSR in ${CSR_DIR}/NAME.csr"
     echo "- a KEY in ${SSL_KEY_DIR}/NAME.key"
     echo ""
+    echo "If env variable TEST=1, certbot is run in staging mode"
+    echo "If env variable DRY_RUN=1, certbot is run in dry-run mode"
+    echo "If env variable CRON=1, no message is output"
+    echo ""
 }
 
 debug() {
-    [ "$CRON" = "NO" ] && echo "$1"
+    [ "${CRON}" = "0" ] && echo "$1"
 }
 
 error() {
@@ -69,6 +73,10 @@ main() {
     [ -z "${SSL_MINDAY}" ] && SSL_MINDAY=30
     [ -z "${SELF_SIGNED_DIR}" ] && SELF_SIGNED_DIR=/etc/ssl/self-signed
     [ -z "${DH_DIR}" ] && DH_DIR=etc/ssl/dhparam
+
+    CRON=${CRON:-"0"}
+    TEST=${TEST:-"0"}
+    DRY_RUN=${DRY_RUN:-"0"}
 
     [ "$1" = "-h" ] || [ "$1" = "--help" ] && usage && exit 0
     # check arguments
@@ -161,9 +169,9 @@ main() {
     NEW_CHAIN="${NEW_DIR}/chain.pem"
 
     CERTBOT_MODE=""
-    [ "$TEST" = "YES" ] && CERTBOT_MODE="${CERTBOT_MODE} --test-cert"
-    [ "$CRON" = "YES" ] && CERTBOT_MODE="${CERTBOT_MODE} --quiet"
-    [ "$DRY_RUN" = "YES" ] && CERTBOT_MODE="${CERTBOT_MODE} --dry-run"
+    [ "${TEST}" = "1" ] && CERTBOT_MODE="${CERTBOT_MODE} --test-cert"
+    [ "${CRON}" = "1" ] && CERTBOT_MODE="${CERTBOT_MODE} --quiet"
+    [ "${DRY_RUN}" = "1" ] && CERTBOT_MODE="${CERTBOT_MODE} --dry-run"
 
     CERTBOT_REGISTRATION="--agree-tos"
     if [ -n "${SSL_EMAIL}" ]; then
