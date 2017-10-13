@@ -213,7 +213,7 @@ main() {
 
     # reload apache if present
     if [ -n "$(pidof apache2)" ]; then
-        if [ $(${APACHE2CTL_BIN} -t 2>/dev/null) ]; then
+        if $($(command -v apache2ctl) -t 2>/dev/null); then
             debug "Apache detected... reloading"
             service apache2 reload
         else
@@ -223,7 +223,7 @@ main() {
 
     # reload nginx if present
     if [ -n "$(pidof nginx)" ]; then
-        if [ $(${NGINX_BIN} -t 2>/dev/null) ]; then
+        if $($(command -v nginx) -t 2>/dev/null); then
             debug "Nginx detected... reloading"
             service nginx reload
         else
