@@ -143,7 +143,7 @@ main() {
 
     #### CERTIFICATE CREATION WITH CERTBOT
 
-    ITERATION=$(date "+%Y%m%d")
+    ITERATION=$(date "+%Y%m%d%H%M%S")
     [ -z "${ITERATION}" ] && error "invalid iteration (${ITERATION})"
 
     NEW_DIR="${CRT_DIR}/${VHOST}/${ITERATION}"
