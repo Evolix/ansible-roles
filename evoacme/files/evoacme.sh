@@ -55,23 +55,23 @@ sed_cert_path_for_nginx() {
 
 x509_verify() {
     file="$1"
-    [ -f "$file" ] || error "File ${file} not found"
+    [ -r "$file" ] || error "File ${file} not found"
     ${OPENSSL_BIN} x509 -noout -modulus -in "$file" >/dev/null
 }
 csr_verify() {
     file="$1"
-    [ -f "$file" ] || error "File ${file} not found"
+    [ -r "$file" ] || error "File ${file} not found"
     ${OPENSSL_BIN} req -noout -modulus -in "$file" >/dev/null
 }
 x509_enddate() {
     file="$1"
-    [ -f "$file" ] || error "File ${file} not found"
+    [ -r "$file" ] || error "File ${file} not found"
     ${OPENSSL_BIN} x509 -noout -enddate -in "$file"
 }
 
 main() {
     # Read configuration file, if it exists
-    [ -f /etc/default/evoacme ] && . /etc/default/evoacme
+    [ -r /etc/default/evoacme ] && . /etc/default/evoacme
 
     # Default value for main variables
     SSL_KEY_DIR=${SSL_KEY_DIR:-"/etc/ssl/private"}
@@ -114,7 +114,7 @@ main() {
 
     # Hook for evoadmin-web in cluster mode : check master status
     evoadmin_state_file="/home/${VHOST}/state"
-    [ -f "${evoadmin_state_file}" ] \
+    [ -r "${evoadmin_state_file}" ] \
       && grep -q "STATE=slave" "${evoadmin_state_file}" \
       && debug "We are slave of this evoadmin cluster. Quit!" \
       && exit 0
