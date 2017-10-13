@@ -134,11 +134,6 @@ main() {
             debug "Cert ${LIVE_CERT} expires at ${crt_end_date} => more than ${SSL_MINDAY} days: kthxbye."
             exit 0
         fi
-    else
-        # We don't have a live symlink yet
-        # Let's start from scratch and configure our web server(s)
-        command -v apache2ctl && sed_cert_path_for_apache "${VHOST}" "${LIVE_FULLCHAIN}"
-        command -v nginx && sed_cert_path_for_nginx "${VHOST}" "${LIVE_FULLCHAIN}"
     fi
 
     #### CERTIFICATE CREATION WITH CERTBOT
@@ -194,6 +189,13 @@ main() {
     x509_verify "${NEW_CHAIN}" || error "${NEW_CHAIN} is invalid"
 
     #### CERTIFICATE ACTIVATION
+
+    if [ -h "${LIVE_DIR}" ]; then
+        # We don't have a live symlink yet
+        # Let's start from scratch and configure our web server(s)
+        command -v apache2ctl && sed_cert_path_for_apache "${VHOST}" "${LIVE_FULLCHAIN}"
+        command -v nginx && sed_cert_path_for_nginx "${VHOST}" "${LIVE_FULLCHAIN}"
+    fi
 
     # link dance
     if [ -h "${LIVE_DIR}" ]; then
