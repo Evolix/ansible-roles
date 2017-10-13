@@ -209,7 +209,7 @@ main() {
 
     #### CERTIFICATE ACTIVATION
 
-    if [ -h "${LIVE_DIR}" ]; then
+    if [ ! -h "${LIVE_DIR}" ]; then
         # We don't have a live symlink yet
         # Let's start from scratch and configure our web server(s)
         command -v apache2ctl && sed_cert_path_for_apache "${VHOST}" "${LIVE_FULLCHAIN}"
