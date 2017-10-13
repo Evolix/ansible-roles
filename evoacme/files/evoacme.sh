@@ -94,7 +94,7 @@ main() {
     # double check for directories
     [ ! -d "${ACME_DIR}" ] && error "${ACME_DIR} is not a directory"
     [ ! -d "${CSR_DIR}" ] && error "${CSR_DIR} is not a directory"
-    [ ! -d "${LOG_DIR} "] && error "${LOG_DIR} is not a directory"
+    [ ! -d "${LOG_DIR}" ] && error "${LOG_DIR} is not a directory"
 
     #### CSR VALIDATION
 
