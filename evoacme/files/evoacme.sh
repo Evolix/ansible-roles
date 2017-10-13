@@ -54,13 +54,19 @@ sed_cert_path_for_nginx() {
 }
 
 x509_verify() {
-    ${OPENSSL_BIN} x509 -noout -modulus -in "$1" >/dev/null
+    file="$1"
+    [ -f "$file" ] || error "File ${file} not found"
+    ${OPENSSL_BIN} x509 -noout -modulus -in "$file" >/dev/null
 }
 csr_verify() {
-    ${OPENSSL_BIN} req -noout -modulus -in "$1" >/dev/null
+    file="$1"
+    [ -f "$file" ] || error "File ${file} not found"
+    ${OPENSSL_BIN} req -noout -modulus -in "$file" >/dev/null
 }
 x509_enddate() {
-    ${OPENSSL_BIN} x509 -noout -enddate -in "$1"
+    file="$1"
+    [ -f "$file" ] || error "File ${file} not found"
+    ${OPENSSL_BIN} x509 -noout -enddate -in "$file"
 }
 
 main() {
@@ -144,8 +150,9 @@ main() {
     NEW_DIR="${CRT_DIR}/${VHOST}/${ITERATION}"
 
     [ -d "${NEW_DIR}" ] && error "${NEW_DIR} directory already exists, remove it manually."
-    mkdir -pm 755 "${NEW_DIR}"
-    chown -R acme: "${NEW_DIR}"
+    mkdir -p "${NEW_DIR}"
+    chmod -R 0700 "${CRT_DIR}"
+    chown -R acme: "${CRT_DIR}"
     debug "New cert will be created in ${NEW_DIR}"
 
     NEW_CERT="${NEW_DIR}/cert.crt"
@@ -165,6 +172,10 @@ main() {
         debug "Registering at certbot without email"
         CERTBOT_REGISTRATION="${CERTBOT_REGISTRATION} --register-unsafely-without-email"
     fi
+
+    # Permissions checks for acme user
+    sudo -u acme test -r "${CSR_FILE}" || error "File ${CSR_FILE} is not readable by user 'acme'"
+    sudo -u acme test -w "${NEW_DIR}" || error "File ${NEW_DIR} is not writable by user 'acme'"
 
     # create a certificate with certbot
     sudo -u acme \
