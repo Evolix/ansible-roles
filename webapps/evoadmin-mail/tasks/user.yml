@@ -48,7 +48,7 @@
 - name: "Copy connect.php"
   template:
     src: connect.php.j2
-    dest: "{{ evoadminmail_document_root }}/evoadmin/htdocs/connect.php"
+    dest: "{{ evoadminmail_document_root }}/htdocs/config/connect.php"
     owner: "www-{{ evoadminmail_username }}"
     group: "{{ evoadminmail_username }}"
   when: ldap_admin_password is defined 
@@ -56,7 +56,7 @@
 - name: "Copy conf.php"
   template:
     src: conf.php.j2
-    dest: "{{ evoadminmail_document_root }}/evoadmin/htdocs/config/conf.php"
+    dest: "{{ evoadminmail_document_root }}/htdocs/config/conf.php"
     owner: "www-{{ evoadminmail_username }}"
     group: "{{ evoadminmail_username }}"
 
