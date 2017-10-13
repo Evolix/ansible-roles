@@ -98,17 +98,17 @@ main() {
     CERTBOT_BIN=$(command -v certbot) || error "certbot command not installed"
 
     # double check for directories
-    [ ! -d "${ACME_DIR}" ] && error "${ACME_DIR} is not a directory"
-    [ ! -d "${CSR_DIR}" ] && error "${CSR_DIR} is not a directory"
-    [ ! -d "${LOG_DIR}" ] && error "${LOG_DIR} is not a directory"
+    [ -d "${ACME_DIR}" ] || error "${ACME_DIR} is not a directory"
+    [ -d "${CSR_DIR}" ]  || error "${CSR_DIR} is not a directory"
+    [ -d "${LOG_DIR}" ]  || error "${LOG_DIR} is not a directory"
 
     #### CSR VALIDATION
 
     # verify .csr file
     CSR_FILE="${CSR_DIR}/${VHOST}.csr"
     debug "Using CSR file: ${CSR_FILE}"
-    [ ! -f "${CSR_FILE}" ] && error "${CSR_FILE} absent"
-    [ ! -r "${CSR_FILE}" ] && error "${CSR_FILE} is not readable"
+    [ -f "${CSR_FILE}" ] || error "${CSR_FILE} absent"
+    [ -r "${CSR_FILE}" ] || error "${CSR_FILE} is not readable"
 
     csr_verify "${CSR_FILE}" || error "${CSR_FILE} is invalid"
 
@@ -145,7 +145,7 @@ main() {
     #### CERTIFICATE CREATION WITH CERTBOT
 
     ITERATION=$(date "+%Y%m%d%H%M%S")
-    [ -z "${ITERATION}" ] && error "invalid iteration (${ITERATION})"
+    [ -n "${ITERATION}" ] || error "invalid iteration (${ITERATION})"
 
     NEW_DIR="${CRT_DIR}/${VHOST}/${ITERATION}"
 
