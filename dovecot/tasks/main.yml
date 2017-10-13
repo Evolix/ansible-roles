@@ -11,6 +11,14 @@
   tags:
   - dovecot
 
+- name: disable pam auth
+  replace:
+    dest: /etc/dovecot/conf.d/10-auth.conf
+    regexp: "[^#]!include auth-system.conf.ext"
+    replace: "#!include auth-system.conf.ext"
+  tags:
+  - dovecot
+
 - name: update ldap auth
   lineinfile:
     dest: /etc/dovecot/dovecot-ldap.conf.ext
