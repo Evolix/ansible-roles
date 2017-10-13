@@ -24,7 +24,7 @@ usage() {
 }
 
 debug() {
-    [ "${CRON}" = "0" ] && echo "$1"
+    [ "${CRON}" != "1" ] && echo "$1"
 }
 
 error() {
@@ -38,9 +38,18 @@ sed_cert_path_for_apache() {
     vhost_full_path="/etc/apache2/ssl/${vhost}.conf"
     cert_path=$2
 
-    debug "Apache detected... first configuration in ${vhost_full_path}"
-    [ -f "${vhost_full_path}" ] && sed -i "s~^SSLCertificateFile.*$~SSLCertificateFile ${cert_path}~" "${vhost_full_path}"
-    $(command -v apache2ctl) -t
+    [ ! -r "${vhost_full_path}" ] || return 0
+
+    search="^SSLCertificateFile.*$"
+    replace="SSLCertificateFile ${cert_path}"
+
+    if ! $(grep -qE "${search}" "${vhost_full_path}"); then
+        [ -w "${vhost_full_path}" ] || error "File ${vhost_full_path} is not writable"
+
+        sed -i "s~^${search}~${replace}~" "${vhost_full_path}"
+        debug "Config in ${vhost_full_path} has been updated"
+        $(command -v apache2ctl) -t
+    fi
 }
 
 sed_cert_path_for_nginx() {
@@ -48,9 +57,18 @@ sed_cert_path_for_nginx() {
     vhost_full_path="/etc/nginx/ssl/${vhost}.conf"
     cert_path=$2
 
-    debug "Nginx detected... first configuration in ${vhost_full_path}"
-    [ -f "${vhost_full_path}" ] && sed -i "s~^ssl_certificate[^_].*$~ssl_certificate ${cert_path};~" "${vhost_full_path}"
-    $(command -v nginx) -t
+    [ ! -r "${vhost_full_path}" ] || return 0
+
+    search="^ssl_certificate[^_].*$"
+    replace="ssl_certificate ${cert_path};"
+
+    if ! $(grep -qE "${search}" "${vhost_full_path}"); then
+        [ -w "${vhost_full_path}" ] || error "File ${vhost_full_path} is not writable"
+
+        sed -i "s~${search}~${replace}~" "${vhost_full_path}"
+        debug "Config in ${vhost_full_path} has been updated"
+        $(command -v nginx) -t
+    fi
 }
 
 x509_verify() {
@@ -89,7 +107,6 @@ main() {
     [ -w "${CRT_DIR}" ]         || error "Directory ${CRT_DIR} is not writable"
     [ -w "${LOG_DIR}" ]         || error "Directory ${LOG_DIR} is not writable"
     [ -w "${SELF_SIGNED_DIR}" ] || error "Directory ${SELF_SIGNED_DIR} is not writable"
-    [ -r "${SSL_CONFIG_FILE}" ] || error "File ${SSL_CONFIG_FILE} is not readable"
 
     CRON=${CRON:-"0"}
     TEST=${TEST:-"0"}
@@ -214,13 +231,6 @@ main() {
 
     #### CERTIFICATE ACTIVATION
 
-    if [ ! -h "${LIVE_DIR}" ]; then
-        # We don't have a live symlink yet
-        # Let's start from scratch and configure our web server(s)
-        command -v apache2ctl && sed_cert_path_for_apache "${VHOST}" "${LIVE_FULLCHAIN}"
-        command -v nginx && sed_cert_path_for_nginx "${VHOST}" "${LIVE_FULLCHAIN}"
-    fi
-
     # link dance
     if [ -h "${LIVE_DIR}" ]; then
         rm "${LIVE_DIR}"
@@ -231,11 +241,8 @@ main() {
     # verify final path
     x509_verify "${LIVE_CERT}" || error "${LIVE_CERT} is invalid"
 
-    # disable error catching
-    # below this point anything can break
-    set +e
-
-    # reload apache if present
+    # update and reload Apache
+    command -v apache2ctl > /dev/null && sed_cert_path_for_apache "${VHOST}" "${LIVE_FULLCHAIN}"
     if [ -n "$(pidof apache2)" ]; then
         if $($(command -v apache2ctl) -t 2>/dev/null); then
             debug "Apache detected... reloading"
@@ -245,7 +252,8 @@ main() {
         fi
     fi
 
-    # reload nginx if present
+    # update and reload Nginx
+    command -v nginx > /dev/null && sed_cert_path_for_nginx "${VHOST}" "${LIVE_FULLCHAIN}"
     if [ -n "$(pidof nginx)" ]; then
         if $($(command -v nginx) -t 2>/dev/null); then
             debug "Nginx detected... reloading"
