@@ -195,9 +195,9 @@ main() {
             | grep -v "certbot.crypto_util"
 
     # verify if all is right
-    x509_verify "${NEW_CERT}" || error "${NEW_CERT} is invalid"
+    x509_verify "${NEW_CERT}"      || error "${NEW_CERT} is invalid"
     x509_verify "${NEW_FULLCHAIN}" || error "${NEW_FULLCHAIN} is invalid"
-    x509_verify "${NEW_CHAIN}" || error "${NEW_CHAIN} is invalid"
+    x509_verify "${NEW_CHAIN}"     || error "${NEW_CHAIN} is invalid"
 
     #### CERTIFICATE ACTIVATION
 
