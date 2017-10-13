@@ -10,6 +10,9 @@
 real_ip_for_domain() {
   dig +short "$1" | grep -oE "([0-9]+\.){3}[0-9]+"
 }
+local_ip() {
+  ip a | grep brd | cut -d'/' -f1 | grep -oE "([0-9]+\.){3}[0-9]+"
+}
 
 get_domains() {
     echo "$vhostfile" | grep -q nginx
@@ -174,11 +177,11 @@ main() {
     LIVE_DIR="${CRT_DIR}/${VHOST}/live"
     CSR_FILE="${CSR_DIR}/${VHOST}.csr"
 
-    local_ip=$(ip a | grep brd | cut -d'/' -f1 | grep -oE "([0-9]+\.){3}[0-9]+")
+    LOCAL_IP=$(local_ip)
     if [ -n "${SRV_IP}" ]; then
-        SRV_IP="${SRV_IP} ${local_ip}"
+        SRV_IP="${SRV_IP} ${LOCAL_IP}"
     else
-        SRV_IP="${local_ip}"
+        SRV_IP="${LOCAL_IP}"
     fi
 
     vhostfile=$(first_vhost_file_found "${VHOST}")
