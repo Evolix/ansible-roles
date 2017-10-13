@@ -202,6 +202,11 @@ main() {
         2>&1 \
             | grep -v "certbot.crypto_util"
 
+    if [ "${DRY_RUN}" = "1" ]; then
+        echo "In dry-run mode, we stop here. Bye"
+        exit 0
+    fi
+
     # verify if all is right
     x509_verify "${NEW_CERT}"      || error "${NEW_CERT} is invalid"
     x509_verify "${NEW_FULLCHAIN}" || error "${NEW_FULLCHAIN} is invalid"
