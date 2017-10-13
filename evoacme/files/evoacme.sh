@@ -175,7 +175,7 @@ main() {
 
     # Permissions checks for acme user
     sudo -u acme test -r "${CSR_FILE}" || error "File ${CSR_FILE} is not readable by user 'acme'"
-    sudo -u acme test -w "${NEW_DIR}" || error "File ${NEW_DIR} is not writable by user 'acme'"
+    sudo -u acme test -w "${NEW_DIR}" || error "Directory ${NEW_DIR} is not writable by user 'acme'"
 
     # create a certificate with certbot
     sudo -u acme \
