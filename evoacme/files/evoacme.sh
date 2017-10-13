@@ -83,6 +83,14 @@ main() {
     SELF_SIGNED_DIR=${SELF_SIGNED_DIR:-"/etc/ssl/self-signed"}
     SSL_EMAIL=${SSL_EMAIL:-""}
 
+    [ -w "${SSL_KEY_DIR}" ]     || error "Directory ${SSL_KEY_DIR} is not writable"
+    [ -w "${ACME_DIR}" ]        || error "Directory ${ACME_DIR} is not writable"
+    [ -w "${CSR_DIR}" ]         || error "Directory ${CSR_DIR} is not writable"
+    [ -w "${CRT_DIR}" ]         || error "Directory ${CRT_DIR} is not writable"
+    [ -w "${LOG_DIR}" ]         || error "Directory ${LOG_DIR} is not writable"
+    [ -w "${SELF_SIGNED_DIR}" ] || error "Directory ${SELF_SIGNED_DIR} is not writable"
+    [ -r "${SSL_CONFIG_FILE}" ] || error "File ${SSL_CONFIG_FILE} is not readable"
+
     CRON=${CRON:-"0"}
     TEST=${TEST:-"0"}
     DRY_RUN=${DRY_RUN:-"0"}

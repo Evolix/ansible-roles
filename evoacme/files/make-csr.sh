@@ -81,7 +81,7 @@ make_csr() {
     nb=$(echo "${domains}" | wc -l)
     config_file="/tmp/make-csr-${VHOST}.conf"
 
-    mkdir -p -m 0755 "${CSR_DIR}"
+    mkdir -p -m 0755 "${CSR_DIR}" || error "Unable to mkdir ${CSR_DIR}"
 
     if [ "${nb}" -eq 1 ]; then
         cat ${SSL_CONFIG_FILE} - > "${config_file}" <<EOF
@@ -110,7 +110,7 @@ EOF
 }
 
 sed_selfsigned_cert_path_for_apache() {
-    apache_ssl_vhost_path=$1
+    apache_ssl_vhost_path="$1"
 
     mkdir -p $(dirname "${apache_ssl_vhost_path}")
     if [ ! -f "${apache_ssl_vhost_path}" ]; then
@@ -125,7 +125,7 @@ EOF
 }
 
 sed_selfsigned_cert_path_for_nginx() {
-    nginx_ssl_vhost_path=$1
+    nginx_ssl_vhost_path="$1"
 
     mkdir -p $(dirname "${nginx_ssl_vhost_path}")
     if [ ! -f "${nginx_ssl_vhost_path}" ]; then
@@ -160,7 +160,7 @@ main() {
     fi
 
     # Read configuration file, if it exists
-    [ -f /etc/default/evoacme ] && . /etc/default/evoacme
+    [ -r /etc/default/evoacme ] && . /etc/default/evoacme
 
     # Default value for main variables
     CSR_DIR=${CSR_DIR:-'/etc/ssl/requests'}
@@ -170,6 +170,12 @@ main() {
     SSL_KEY_DIR=${SSL_KEY_DIR:-'/etc/ssl/private'}
     SSL_KEY_SIZE=${SSL_KEY_SIZE:-$(default_key_size)}
     SRV_IP=${SRV_IP:-""}
+
+    [ -w "${CSR_DIR}" ]         || error "Directory ${CSR_DIR} is not writable"
+    [ -w "${CRT_DIR}" ]         || error "Directory ${CRT_DIR} is not writable"
+    [ -w "${SELF_SIGNED_DIR}" ] || error "Directory ${SELF_SIGNED_DIR} is not writable"
+    [ -w "${SSL_KEY_DIR}" ]     || error "Directory ${SSL_KEY_DIR} is not writable"
+    [ -r "${SSL_CONFIG_FILE}" ] || error "File ${SSL_CONFIG_FILE} is not readable"
 
     VHOST=$(basename "$1" .conf)
     SELF_SIGNED_FILE="${SELF_SIGNED_DIR}/${VHOST}.pem"
