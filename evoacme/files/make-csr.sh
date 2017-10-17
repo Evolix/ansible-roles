@@ -87,6 +87,8 @@ openssl_selfsigned() {
     [ -w "${crt_dir}" ] || error "Directory ${crt_dir} is not writable"
 
     "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -signkey "${key}" -out "${crt}" 2> /dev/null
+
+    [ -r "${crt}" ] || error "Something went wrong, ${crt} has not been generated"
 }
 openssl_key(){
     local key="$1"
@@ -96,8 +98,10 @@ openssl_key(){
     [ -w "${key_dir}" ] || error "Directory ${key_dir} is not writable"
 
     "${OPENSSL_BIN}" genrsa -out "${key}" "${size}" 2> /dev/null
+
+    [ -r "${key}" ] || error "Something went wrong, ${key} has not been generated"
 }
-openssl_csr_san() {
+openssl_csr() {
     local csr="$1"
     local csr_dir=$(dirname "${csr}")
     local key="$2"
@@ -105,17 +109,15 @@ openssl_csr_san() {
 
     [ -w "${csr_dir}" ] || error "Directory ${csr_dir} is not writable"
 
-    "${OPENSSL_BIN}" req -new -sha256 -key "${key}" -reqexts SAN -config "${cfg}" -out "${csr}"
-}
-openssl_csr_single() {
-    local csr="$1"
-    local csr_dir=$(dirname "${csr}")
-    local key="$2"
-    local cfg="$3"
+    if $(grep -q "DNS:" "${cfg}"); then
+        # CSR with SAN
+        "${OPENSSL_BIN}" req -new -sha256 -key "${key}" -reqexts SAN -config "${cfg}" -out "${csr}"
+    else
+        # Single domain CSR
+        "${OPENSSL_BIN}" req -new -sha256 -key "${key}" -config "${cfg}" -out "${csr}"
+    fi
 
-    [ -w "${csr_dir}" ] || error "Directory ${csr_dir} is not writable"
-
-    "${OPENSSL_BIN}" req -new -sha256 -key "${key}" -config "${cfg}" -out "${csr}"
+    [ -r "${csr}" ] || error "Something went wrong, ${csr} has not been generated"
 }
 
 make_key() {
@@ -141,18 +143,17 @@ make_csr() {
         cat "${SSL_CONFIG_FILE}" - > "${config_file}" <<EOF
 CN=$domains
 EOF
-        openssl_csr_single "${CSR_FILE}" "${SSL_KEY_FILE}" "${config_file}"
     elif [ "${nb}" -gt 1 ]; then
-        for domain in $domains; do
+        for domain in ${domains}; do
             san="${san},DNS:${domain}"
         done
-        san=$(echo "${san}" | sed 's/,//')
-        cat ${SSL_CONFIG_FILE} - > "${config_file}" <<EOF
+        san=$(echo "${san}" | sed 's/^,//')
+        cat "${SSL_CONFIG_FILE}" - > "${config_file}" <<EOF
 [SAN]
 subjectAltName=${san}
 EOF
-        openssl_csr_san "${CSR_FILE}" "${SSL_KEY_FILE}" "${config_file}"
     fi
+    openssl_csr "${CSR_FILE}" "${SSL_KEY_FILE}" "${config_file}"
     debug "CSR stored at ${CSR_FILE}"
 
     if [ -r "${CSR_FILE}" ]; then
@@ -227,10 +228,10 @@ readonly VERBOSE=${VERBOSE:-"0"}
 [ -r /etc/default/evoacme ] && . /etc/default/evoacme
 
 # Default value for main variables
-CSR_DIR=${CSR_DIR:-'/etc/ssl/requests'}
-SSL_CONFIG_FILE=${SSL_CONFIG_FILE:-"${CRT_DIR}/openssl.cnf"}
-SELF_SIGNED_DIR=${SELF_SIGNED_DIR:-'/etc/ssl/self-signed'}
-SSL_KEY_DIR=${SSL_KEY_DIR:-'/etc/ssl/private'}
-SSL_KEY_SIZE=${SSL_KEY_SIZE:-$(default_key_size)}
+readonly CSR_DIR=${CSR_DIR:-'/etc/ssl/requests'}
+readonly SSL_CONFIG_FILE=${SSL_CONFIG_FILE:-"/etc/letsencrypt/openssl.cnf"}
+readonly SELF_SIGNED_DIR=${SELF_SIGNED_DIR:-'/etc/ssl/self-signed'}
+readonly SSL_KEY_DIR=${SSL_KEY_DIR:-'/etc/ssl/private'}
+readonly SSL_KEY_SIZE=${SSL_KEY_SIZE:-$(default_key_size)}
 
 main ${ARGS}
