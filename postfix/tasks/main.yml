@@ -56,6 +56,56 @@
         default_main_cf.stdout == "5450c05d65878e99dad696c7c722e511  -" or
         default_main_cf.stdout == "30022953f1f61f002bfb72e163ecb27e  -"
 
+- name: deploy packmail master.cf
+  copy:
+    src: packmail_master.cf
+    dest: /etc/postfix/master.cf
+    mode: "0644"
+  when: postfix_packmail == True
+  notify: restart postfix
+  tags:
+  - postfix
+
+- name: copy default filter files
+  copy:
+    src: filter
+    dest: "/etc/postfix/{{ item }}"
+    force: no
+  with_items:
+  - virtual
+  - client.access
+  - client.access_local
+  - header_kill
+  - header_kill_local
+  - recipient.access
+  - recipient.access_local
+  - sa-blacklist.access
+  - sender.access
+  - sender.access_local
+  - spamd.cidr
+  when: postfix_packmail == True
+  register: postfix_copy_filter
+  tags:
+  - postfix
+
+- name: postmap filter files
+  command: "postmap /etc/postfix/{{ item }}"
+  with_items:
+  - virtual
+  - client.access
+  - client.access_local
+  - header_kill
+  - header_kill_local
+  - recipient.access
+  - recipient.access_local
+  - sa-blacklist.access
+  - sender.access
+  - sender.access_local
+  - spamd.cidr
+  when: postfix_packmail == True and postfix_copy_filter.changed
+  tags:
+  - postfix
+
 - name: deploy ldap postfix config
   template:
     src: "{{ item }}.j2"
