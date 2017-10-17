@@ -23,7 +23,7 @@
     flat: yes
 
 - name: Generate random password
-  command: apg -n1 -m 12 -M SCN
+  command: apg -n1 -m 12 -M LCN
   register: shell_password
   changed_when: false
 
