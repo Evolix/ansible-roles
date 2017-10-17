@@ -47,7 +47,7 @@
     creates: "{{ ansible_env.HOME }}/www/wp-config.php"  
 
 - name: Configure site
-  shell: 'php {{ ansible_env.HOME }}/bin/wp-cli.phar core install --url={{ wordpress_host | quote }} --title={{ wordpress_title | quote }} --admin_user=admin --admin_password={{ admin_pwd | quote }} --admin_email={{ wordpress_email }} --path={{ ansible_env.HOME }}/www'
+  shell: 'php {{ ansible_env.HOME }}/bin/wp-cli.phar core install --url={{ wordpress_host | quote }} --title={{ wordpress_title | quote }} --admin_user=admin --admin_password={{ admin_pwd | quote }} --admin_email={{ wordpress_email }} --path={{ ansible_env.HOME }}/www --skip-email'
 
 - name: Check if Wordpress is up to date
   shell: 'php {{ ansible_env.HOME }}/bin/wp-cli.phar core check-update --path={{ ansible_env.HOME }}/www | grep -q Success'
@@ -68,11 +68,20 @@
     port: 25
     to: "{{ wordpress_email }}"
     from: "{{ ansible_user }}@{{ ansible_fqdn }}"
-    subject: "Accès Wordpress {{ wordpress_host }}"
+    subject: "Nouveau site Wordpress {{ ansible_user }}"
+    charset: "utf-8"
     body: |
-      Installation du Wordpress {{ ansible_user }} sur {{ ansible_fqdn }}
-      
-      Server : {{ ansible_fqdn }}
-      Url : http://{{ wordpress_host }}
-      Utilisateur : admin
+      Votre nouveau site WordPress a bien été installé à l’adresse :
+
+      http://{{ wordpress_host }}
+ 
+      Vous pouvez vous y connecter en tant qu’administrateur avec les informations suivantes :
+
+      Identifiant : admin
       Mot de passe : {{ admin_pwd }}
+      Connectez-vous ici : http://{{ wordpress_host }}/wp-login.php
+
+      Nous espérons que vous aimerez votre nouveau site ! Merci à vous !
+      --
+      Équipe Evolix <equipe@evolix.fr>
+      Evolix - Hébergement et Infogérance Open Source http://www.evolix.fr/
