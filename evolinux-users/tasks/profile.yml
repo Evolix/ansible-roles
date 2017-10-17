@@ -1,15 +1,16 @@
 ---
 
-- name: is evomaintenance installed?
-  stat:
-    path: "/usr/share/scripts/evomaintenance.sh"
-  register: evomaintenance_script
-  check_mode: no
+- name: search profile for presence of evomaintenance
+  command: 'grep -q "trap.*sudo.*evomaintenance.sh"'
+  changed_when: False
+  failed_when: False
+  register: grep_profile_evomaintenance
 
+# Don't add the trap if it is present or commented
 - name: "Add evomaintenance trap for '{{ user.name }}'"
   lineinfile:
     state: present
     dest: '/home/{{ user.name }}/.profile'
     insertafter: EOF
     line: 'trap "sudo /usr/share/scripts/evomaintenance.sh" 0'
-  when: evomaintenance_script.stat.exists
+  when: grep_profile_evomaintenance.rc != 0
