@@ -3,19 +3,45 @@
     msg: "Warning: empty 'evolinux_ssh_password_auth_addresses' variable, tasks will be skipped!"
   when: evolinux_ssh_password_auth_addresses == []
 
-- name: Security directives for Evolinux
+# From 'man sshd_config' :
+# « If all of the criteria on the Match line are satisfied, the keywords
+# on the following lines override those set in the global section of the config
+# file, until either another Match line or the end of the file.
+# If a keyword appears in multiple Match blocks that are satisfied,
+# only the first instance of the keyword is applied. »
+#
+# We want to allow any user from a list of IP addresses to login with password,
+# but users of the "evolix" group can't login with password from other IP addresses
+
+- name: Security directives for Evolinux (Debian 9 or later)"
   blockinfile:
     dest: /etc/ssh/sshd_config
     block: |
-      Match Group evolix
-          PasswordAuthentication no
       Match Address {{ evolinux_ssh_password_auth_addresses | join(',') }}
           PasswordAuthentication yes
+      Match Group evolix
+          PasswordAuthentication no
     marker: "# {mark} EVOLINUX PASSWORD RESTRICTIONS"
     insertafter: EOF
     validate: '/usr/sbin/sshd -T -f %s'
   notify: reload sshd
-  when: evolinux_ssh_password_auth_addresses != []
+  when:
+    - evolinux_ssh_password_auth_addresses != []
+    - ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: Security directives for Evolinux (Jessie)
+  blockinfile:
+    dest: /etc/ssh/sshd_config
+    block: |
+      Match Address {{ evolinux_ssh_password_auth_addresses | join(',') }}
+          PasswordAuthentication yes
+    marker: "# {mark} EVOLINUX PASSWORD RESTRICTIONS BY ADDRESS"
+    insertafter: EOF
+    validate: '/usr/sbin/sshd -T -f %s'
+  notify: reload sshd
+  when:
+    - evolinux_ssh_password_auth_addresses != []
+    - ansible_distribution_release == "jessie"
 
 # We disable AcceptEnv because it can be a security issue, but also because we
 # do not want clients to push their environment variables like LANG.
