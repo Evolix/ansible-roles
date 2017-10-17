@@ -46,6 +46,9 @@
   args:
     creates: "{{ ansible_env.HOME }}/www/wp-config.php"  
 
+- name: Configure site
+  shell: 'php {{ ansible_env.HOME }}/bin/wp-cli.phar core install --url={{ wordpress_host | quote }} --title={{ wordpress_title | quote }} --admin_user=admin --admin_password={{ admin_pwd | quote }} --admin_email={{ wordpress_email }} --path={{ ansible_env.HOME }}/www'
+
 - name: Check if Wordpress is up to date
   shell: 'php {{ ansible_env.HOME }}/bin/wp-cli.phar core check-update --path={{ ansible_env.HOME }}/www | grep -q Success'
   register: check_version
@@ -58,9 +61,6 @@
   args:
     removes: "{{ ansible_env.HOME }}/www/index.php"
   when: check_version.rc
-
-- name: Configure site
-  shell: 'php {{ ansible_env.HOME }}/bin/wp-cli.phar core install --url={{ wordpress_host | quote }} --title={{ wordpress_title | quote }} --admin_user=admin --admin_password={{ admin_pwd | quote }} --admin_email={{ wordpress_email }} --path={{ ansible_env.HOME }}/www'
 
 - name: Send a summary mail
   mail:
