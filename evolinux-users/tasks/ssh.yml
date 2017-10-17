@@ -52,27 +52,31 @@
   notify: reload sshd
   when: grep_allowusers_ssh.rc == 0
 
-- name: verify Match User directive
+- name: "verify Match User directive"
   command: "grep 'Match User' /etc/ssh/sshd_config"
   changed_when: False
   failed_when: False
   register: grep_matchuser_ssh
   check_mode: no
 
-# - name: "Add Match User sshd directive for '{{ user.name }}'"
-#   lineinfile:
-#     dest: /etc/ssh/sshd_config
-#     line: "\nMatch User {{ user.name }}\n    PasswordAuthentication no"
-#     insertbefore: "# BEGIN EVOLINUX PASSWORD RESTRICTIONS"
-#     validate: '/usr/sbin/sshd -T -f %s'
-#   notify: reload sshd
-#   when: grep_matchuser_ssh.rc != 0
+- name: "Add Match User sshd directive for '{{ user.name }}' (Jessie)"
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    line: "\nMatch User {{ user.name }}\n    PasswordAuthentication no"
+    insertafter: "# END EVOLINUX PASSWORD RESTRICTIONS BY ADDRESS"
+    validate: '/usr/sbin/sshd -T -f %s'
+  notify: reload sshd
+  when:
+    - ansible_distribution_release == "jessie"
+    - grep_matchuser_ssh.rc != 0
 
-- name: "Modify Match User's sshd directive for '{{ user.name }}'"
+- name: "Modify Match User's sshd directive for '{{ user.name }}' (Jessie)"
   replace:
     dest: /etc/ssh/sshd_config
     regexp: '^(Match User ((?!{{ user.name }}).)*)$'
     replace: '\1,{{ user.name }}'
     validate: '/usr/sbin/sshd -T -f %s'
   notify: reload sshd
-  when: grep_matchuser_ssh.rc == 0
+  when:
+    - ansible_distribution_release == "jessie"
+    - grep_matchuser_ssh.rc == 0
