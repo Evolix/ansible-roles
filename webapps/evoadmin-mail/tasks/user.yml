@@ -5,6 +5,7 @@
     name: "{{ evoadminmail_username }}"
     comment: "Evoadmin Web Account"
     home: "{{ evoadminmail_home_dir}}"
+    shell: /bin/bash
     password: "!"
 
 - name: Create log/ directory
@@ -23,6 +24,9 @@
 - name: "Create www-evoadmin (Debian 9 or later)"
   user:
     name: "www-{{ evoadminmail_username }}"
+    home: "{{ evoadminmail_home_dir}}/www"
+    shell: /bin/bash
+    createhome: no
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: Install Git
