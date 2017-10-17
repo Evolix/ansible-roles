@@ -252,7 +252,7 @@ main() {
 }
 
 readonly PROGNAME=$(basename "$0")
-readonly PROGDIR=$(readlink -m $(dirname "$0"))
+readonly PROGDIR=$(realpath -m $(dirname "$0"))
 readonly ARGS=$@
 
 readonly VERBOSE=${VERBOSE:-"0"}
