@@ -1,6 +1,6 @@
 galaxy_info:
   author: Evolix
-  description: your description
+  description: Install Wordpress site
 
   issue_tracker_url: https://forge.evolix.org/projects/ansible-roles/issues
 

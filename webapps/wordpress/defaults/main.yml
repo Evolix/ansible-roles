@@ -1,0 +1,4 @@
+---
+wordpress_host: "{{ ansible_fqdn }}"
+wordpress_title: "Wordpress Saas Evolix"
+wordpress_email: "root@localhost"

@@ -1,6 +1,0 @@
----
-webapps_wordpress_install: False
-webapps_wordpress_version: 4.7-branch
-webapps_wordpress_upstream: https://github.com/WordPress/WordPress
-webapps_wordpress_upstream_default_title: "new blog Evolix SaaS"
-
