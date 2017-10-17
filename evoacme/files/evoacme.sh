@@ -25,10 +25,14 @@ EOT
 }
 
 log() {
-    [ "${QUIET}" != "1" ] && echo "${PROGNAME}: $1"
+    if [ "${QUIET}" != "1" ]; then
+        echo "${PROGNAME}: $1"
+    fi
 }
 debug() {
-    [ "${VERBOSE}" = "1" ] && [ "${QUIET}" != "1" ] && >&2 echo "${PROGNAME}: $1"
+    if [ "${VERBOSE}" = "1" ] && [ "${QUIET}" != "1" ]; then
+        >&2 echo "${PROGNAME}: $1"
+    fi
 }
 error() {
     >&2 echo "${PROGNAME}: $1"
