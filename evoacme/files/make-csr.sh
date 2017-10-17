@@ -7,110 +7,38 @@
 # Licence: AGPLv3
 #
 
-real_ip_for_domain() {
-  dig +short "$1" | grep -oE "([0-9]+\.){3}[0-9]+"
+set -u
+
+usage() {
+    cat <<EOT
+Usage: ${PROGNAME} VHOST DOMAIN...
+VHOST must correspond to an Apache or Nginx enabled VHost
+If VHOST ends with ".conf" it is stripped,
+then files are seached at those paths:
+- /etc/apache2/sites-enables/VHOST.conf
+- /etc/nginx/sites-enabled/VHOST.conf
+- /etc/nginx/sites-enabled/VHOST
+DOMAIN... is a list of domains for the CSR (passed as arguments or input)
+
+If env variable VERBOSE=1, debug messages are sent to stderr
+EOT
 }
-local_ip() {
-  ip a | grep brd | cut -d'/' -f1 | grep -oE "([0-9]+\.){3}[0-9]+"
+debug() {
+    if [ "${VERBOSE}" = 1 ]; then
+        >&2 echo "${PROGNAME}: $1"
+    fi
 }
-
-get_domains() {
-    echo "$vhostfile" | grep -q nginx
-    if [ "$?" -eq 0 ]; then
-        domains=$(
-          grep -oE "^( )*[^#]+" "$vhostfile" \
-          | grep -oE "[^\$]server_name.*;$" \
-          | sed 's/server_name//' \
-          | tr -d ';' \
-          | sed 's/\s\{1,\}//' \
-          | sed 's/\s\{1,\}/\n/g' \
-          | sort \
-          | uniq
-        )
-    fi
-
-    echo "$vhostfile" | grep -q apache2
-    if [ "$?" -eq 0 ]; then
-        domains=$(
-          grep -oE "^( )*[^#]+" "$vhostfile" \
-          | grep -oE "(ServerName|ServerAlias).*" \
-          | sed 's/ServerName//' \
-          | sed 's/ServerAlias//' \
-          | sed 's/\s\{1,\}//' \
-          | sort \
-          | uniq
-        )
-    fi
-    valid_domains=""
-    nb=0
-
-    echo "Valid(s) domain(s) in ${VHOST} :"
-    for domain in $domains; do
-        real_ip=$(real_ip_for_domain "${domain}")
-        for ip in $(echo "${SRV_IP}" | xargs -n1); do
-            if [ "${ip}" = "${real_ip}" ]; then
-                valid_domains="${valid_domains} ${domain}"
-                nb=$(( nb  + 1 ))
-                echo "* ${domain} -> ${real_ip}"
-            fi
-        done
-    done
-
-    if [ "${nb}" -eq 0 ]; then
-        nb=$(echo "${domains}" | wc -l)
-        echo "* No valid domain found"
-        echo "All following(s) domain(s) will be used for CSR creation :"
-        for domain in $domains; do
-            echo "* ${domain}"
-        done
-    else
-        domains="${valid_domains}"
-    fi
-
-    domains=$(echo "$domains" | xargs -n1)
+error() {
+    >&2 echo "${PROGNAME}: $1"
+    exit 1
 }
 
-make_key() {
-    openssl genrsa -out "${SSL_KEY_FILE}" "${SSL_KEY_SIZE}" 2>/dev/null
-    chown root: "${SSL_KEY_FILE}"
-    chmod 600 "${SSL_KEY_FILE}"
-}
-
-make_csr() {
-    domains="$1"
-    nb=$(echo "${domains}" | wc -l)
-    config_file="/tmp/make-csr-${VHOST}.conf"
-
-    mkdir -p -m 0755 "${CSR_DIR}" || error "Unable to mkdir ${CSR_DIR}"
-
-    if [ "${nb}" -eq 1 ]; then
-        cat ${SSL_CONFIG_FILE} - > "${config_file}" <<EOF
-CN=$domains
-EOF
-        openssl req -new -sha256 -key "${SSL_KEY_FILE}" -config "${config_file}" -out "${CSR_FILE}"
-    elif [ "${nb}" -gt 1 ]; then
-        san=""
-        for domain in $domains; do
-            san="${san},DNS:${domain}"
-        done
-        san=$(echo "${san}" | sed 's/,//')
-        cat ${SSL_CONFIG_FILE} - > "${config_file}" <<EOF
-[SAN]
-subjectAltName=${san}
-EOF
-        openssl req -new -sha256 -key "${SSL_KEY_FILE}" -reqexts SAN -config "${config_file}" > "${CSR_FILE}"
-    fi
-
-    if [ -f "${CSR_FILE}" ]; then
-        chmod 644 "${CSR_FILE}"
-        mkdir -p -m 0755 "${SELF_SIGNED_DIR}"
-        openssl x509 -req -sha256 -days 365 -in "${CSR_FILE}" -signkey "${SSL_KEY_FILE}" -out "${SELF_SIGNED_FILE}"
-        [ -f "${SELF_SIGNED_FILE}" ] && chmod 644 "${SELF_SIGNED_FILE}"
-    fi
+default_key_size() {
+    grep default_bits "${SSL_CONFIG_FILE}" | cut -d'=' -f2 | xargs
 }
 
 sed_selfsigned_cert_path_for_apache() {
-    apache_ssl_vhost_path="$1"
+    local apache_ssl_vhost_path="$1"
 
     mkdir -p $(dirname "${apache_ssl_vhost_path}")
     if [ ! -f "${apache_ssl_vhost_path}" ]; then
@@ -119,13 +47,18 @@ SSLEngine On
 SSLCertificateFile    ${SELF_SIGNED_FILE}
 SSLCertificateKeyFile ${SSL_KEY_FILE}
 EOF
+        debug "SSL config added in ${apache_ssl_vhost_path}"
     else
-        sed -i "s~^SSLCertificateFile.*$~SSLCertificateFile ${SELF_SIGNED_FILE}~" "${apache_ssl_vhost_path}"
+        local search="^SSLCertificateFile.*$"
+        local replace="SSLCertificateFile ${SELF_SIGNED_FILE}"
+
+        sed -i "s~${search}~${replace}~" "${apache_ssl_vhost_path}"
+        debug "SSL config updated in ${apache_ssl_vhost_path}"
     fi
 }
 
 sed_selfsigned_cert_path_for_nginx() {
-    nginx_ssl_vhost_path="$1"
+    local nginx_ssl_vhost_path="$1"
 
     mkdir -p $(dirname "${nginx_ssl_vhost_path}")
     if [ ! -f "${nginx_ssl_vhost_path}" ]; then
@@ -133,85 +66,171 @@ sed_selfsigned_cert_path_for_nginx() {
 ssl_certificate ${SELF_SIGNED_FILE};
 ssl_certificate_key ${SSL_KEY_FILE};
 EOF
+        debug "SSL config added in ${nginx_ssl_vhost_path}"
     else
-        sed -i "s~^ssl_certificate[^_].*$~ssl_certificate ${SELF_SIGNED_FILE};~" "${nginx_ssl_vhost_path}"
+        local search="^ssl_certificate[^_].*$"
+        local replace="ssl_certificate ${SELF_SIGNED_FILE};"
+
+        sed -i "s~${search}~${replace}~" "${nginx_ssl_vhost_path}"
+        debug "SSL config updated in ${nginx_ssl_vhost_path}"
     fi
 }
 
-first_vhost_file_found() {
-  vhost=$1
+openssl_selfsigned() {
+    local csr="$1"
+    local key="$2"
+    local crt="$3"
+    local crt_dir=$(dirname ${crt})
 
-  ls "/etc/nginx/sites-enabled/${vhost}" \
-     "/etc/nginx/sites-enabled/${vhost}.conf" \
-     "/etc/apache2/sites-enabled/${vhost}.conf" 2>/dev/null \
-  | head -n 1
+    [ -r "${csr}" ] || error "File ${csr} is not readable"
+    [ -r "${key}" ] || error "File ${key} is not readable"
+    [ -w "${crt_dir}" ] || error "Directory ${crt_dir} is not writable"
+
+    "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -signkey "${key}" -out "${crt}" 2> /dev/null
+}
+openssl_key(){
+    local key="$1"
+    local key_dir=$(dirname "${key}")
+    local size="$2"
+
+    [ -w "${key_dir}" ] || error "Directory ${key_dir} is not writable"
+
+    "${OPENSSL_BIN}" genrsa -out "${key}" "${size}" 2> /dev/null
+}
+openssl_csr_san() {
+    local csr="$1"
+    local csr_dir=$(dirname "${csr}")
+    local key="$2"
+    local cfg="$3"
+
+    [ -w "${csr_dir}" ] || error "Directory ${csr_dir} is not writable"
+
+    "${OPENSSL_BIN}" req -new -sha256 -key "${key}" -reqexts SAN -config "${cfg}" -out "${csr}"
+}
+openssl_csr_single() {
+    local csr="$1"
+    local csr_dir=$(dirname "${csr}")
+    local key="$2"
+    local cfg="$3"
+
+    [ -w "${csr_dir}" ] || error "Directory ${csr_dir} is not writable"
+
+    "${OPENSSL_BIN}" req -new -sha256 -key "${key}" -config "${cfg}" -out "${csr}"
 }
 
-default_key_size() {
-  grep default_bits ${SSL_CONFIG_FILE} \
-  | cut -d'=' -f2 \
-  | xargs
+make_key() {
+    local key="$1"
+    local size="$2"
+
+    openssl_key "${key}" "${size}"
+    debug "Private key stored at ${key}"
+
+    chown root: "${key}"
+    chmod 600 "${key}"
+}
+
+make_csr() {
+    local domains=$@
+    local nb=$#
+    local config_file="/tmp/make-csr-${VHOST}.conf"
+    local san=
+
+    mkdir -p -m 0755 "${CSR_DIR}" || error "Unable to mkdir ${CSR_DIR}"
+
+    if [ "${nb}" -eq 1 ]; then
+        cat "${SSL_CONFIG_FILE}" - > "${config_file}" <<EOF
+CN=$domains
+EOF
+        openssl_csr_single "${CSR_FILE}" "${SSL_KEY_FILE}" "${config_file}"
+    elif [ "${nb}" -gt 1 ]; then
+        for domain in $domains; do
+            san="${san},DNS:${domain}"
+        done
+        san=$(echo "${san}" | sed 's/,//')
+        cat ${SSL_CONFIG_FILE} - > "${config_file}" <<EOF
+[SAN]
+subjectAltName=${san}
+EOF
+        openssl_csr_san "${CSR_FILE}" "${SSL_KEY_FILE}" "${config_file}"
+    fi
+    debug "CSR stored at ${CSR_FILE}"
+
+    if [ -r "${CSR_FILE}" ]; then
+        chmod 644 "${CSR_FILE}"
+        mkdir -p -m 0755 "${SELF_SIGNED_DIR}"
+
+        openssl_selfsigned "${CSR_FILE}" "${SSL_KEY_FILE}" "${SELF_SIGNED_FILE}"
+
+        [ -r "${SELF_SIGNED_FILE}" ] && chmod 644 "${SELF_SIGNED_FILE}"
+        debug "Self-signed certificate stored at ${SELF_SIGNED_FILE}"
+    fi
 }
 
 main() {
-    if [ "$#" -ne 1 ]; then
-        echo "You need to provide one argument !" >&2
-        exit 1
+    if [ -t 0 ]; then
+        # We have STDIN, so we should have at least 2 arguments
+        if [ "$#" -lt 2 ]; then
+            >&2 echo "invalid arguments"
+            >&2 usage
+            exit 1
+        fi
+        # read VHOST from first argument
+        readonly VHOST="$1"
+        # remove the first argument
+        shift
+        # read domains from remaining arguments
+        readonly DOMAINS=$@
+    else
+        # We don't have STDIN, so we should have only 1 argument
+        if [ "$#" != 1 ]; then
+            >&2 echo "invalid arguments"
+            >&2 usage
+            exit 1
+        fi
+        # read VHOST from first argument
+        readonly VHOST="$1"
+        # read domains from input
+        DOMAINS=
+        while read -r line ; do
+            DOMAINS="${DOMAINS} ${line}"
+        done
+        # trim the string to remove leading/trailing spaces
+        DOMAINS=$(echo "${DOMAINS}" | xargs)
     fi
 
-    # Read configuration file, if it exists
-    [ -r /etc/default/evoacme ] && . /etc/default/evoacme
-
-    # Default value for main variables
-    CSR_DIR=${CSR_DIR:-'/etc/ssl/requests'}
-    CRT_DIR=${CRT_DIR:-'/etc/letsencrypt'}
-    SSL_CONFIG_FILE=${SSL_CONFIG_FILE:-"${CRT_DIR}/openssl.cnf"}
-    SELF_SIGNED_DIR=${SELF_SIGNED_DIR:-'/etc/ssl/self-signed'}
-    SSL_KEY_DIR=${SSL_KEY_DIR:-'/etc/ssl/private'}
-    SSL_KEY_SIZE=${SSL_KEY_SIZE:-$(default_key_size)}
-    SRV_IP=${SRV_IP:-""}
-
     [ -w "${CSR_DIR}" ]         || error "Directory ${CSR_DIR} is not writable"
-    [ -w "${CRT_DIR}" ]         || error "Directory ${CRT_DIR} is not writable"
     [ -w "${SELF_SIGNED_DIR}" ] || error "Directory ${SELF_SIGNED_DIR} is not writable"
     [ -w "${SSL_KEY_DIR}" ]     || error "Directory ${SSL_KEY_DIR} is not writable"
     [ -r "${SSL_CONFIG_FILE}" ] || error "File ${SSL_CONFIG_FILE} is not readable"
 
-    VHOST=$(basename "$1" .conf)
+    # check for important programs
+    readonly OPENSSL_BIN=$(command -v openssl) || error "openssl command not installed"
+
     SELF_SIGNED_FILE="${SELF_SIGNED_DIR}/${VHOST}.pem"
     SSL_KEY_FILE="${SSL_KEY_DIR}/${VHOST}.key"
-    LIVE_DIR="${CRT_DIR}/${VHOST}/live"
     CSR_FILE="${CSR_DIR}/${VHOST}.csr"
 
-    LOCAL_IP=$(local_ip)
-    if [ -n "${SRV_IP}" ]; then
-        SRV_IP="${SRV_IP} ${LOCAL_IP}"
-    else
-        SRV_IP="${LOCAL_IP}"
-    fi
-
-    vhostfile=$(first_vhost_file_found "${VHOST}")
-
-    if [ ! -h "${vhostfile}" ]; then
-        echo "${VHOST} is not a valid virtualhost !" >&2
-        exit 1
-    fi
-
-    if [ -f "${SSL_KEY_FILE}" ]; then
-        echo "${VHOST} key already exist, overwrite it? [yN]"
-        read REPLY
-
-        [ "${REPLY}" = "Y" ] || [ "${REPLY}" = "y" ] || exit 0
-        rm -f "/etc/apache2/ssl/${VHOST}.conf /etc/nginx/ssl/${VHOST}.conf"
-        [ -h "${LIVE_DIR}" ] && rm "${LIVE_DIR}"
-    fi
-
-    get_domains
-    make_key
-    make_csr "${domains}"
+    make_key "${SSL_KEY_FILE}" "${SSL_KEY_SIZE}"
+    make_csr ${DOMAINS}
 
     command -v apache2ctl >/dev/null && sed_selfsigned_cert_path_for_apache "/etc/apache2/ssl/${VHOST}.conf"
     command -v nginx >/dev/null && sed_selfsigned_cert_path_for_nginx "/etc/nginx/ssl/${VHOST}.conf"
 }
 
-main "$@"
+readonly PROGNAME=$(basename "$0")
+readonly PROGDIR=$(readlink -m $(dirname "$0"))
+readonly ARGS=$@
+
+readonly VERBOSE=${VERBOSE:-"0"}
+
+# Read configuration file, if it exists
+[ -r /etc/default/evoacme ] && . /etc/default/evoacme
+
+# Default value for main variables
+CSR_DIR=${CSR_DIR:-'/etc/ssl/requests'}
+SSL_CONFIG_FILE=${SSL_CONFIG_FILE:-"${CRT_DIR}/openssl.cnf"}
+SELF_SIGNED_DIR=${SELF_SIGNED_DIR:-'/etc/ssl/self-signed'}
+SSL_KEY_DIR=${SSL_KEY_DIR:-'/etc/ssl/private'}
+SSL_KEY_SIZE=${SSL_KEY_SIZE:-$(default_key_size)}
+
+main ${ARGS}

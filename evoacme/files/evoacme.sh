@@ -11,37 +11,40 @@ set -e
 set -u
 
 usage() {
-    echo "Usage: $0 NAME"
-    echo ""
-    echo "NAME must be correspond to :"
-    echo "- a CSR in ${CSR_DIR}/NAME.csr"
-    echo "- a KEY in ${SSL_KEY_DIR}/NAME.key"
-    echo ""
-    echo "If env variable TEST=1, certbot is run in staging mode"
-    echo "If env variable DRY_RUN=1, certbot is run in dry-run mode"
-    echo "If env variable CRON=1, no message is output"
-    echo ""
+    cat <<EOT
+Usage: ${PROGNAME} NAME
+  NAME must be correspond to :
+  - a CSR in ${CSR_DIR}/NAME.csr
+  - a KEY in ${SSL_KEY_DIR}/NAME.key
+
+  If env variable TEST=1, certbot is run in staging mode
+  If env variable DRY_RUN=1, certbot is run in dry-run mode
+  If env variable QUIET=1, no message is output
+  If env variable VERBOSE=1, debug messages are output
+EOT
 }
 
+log() {
+    [ "${QUIET}" != "1" ] && echo "${PROGNAME}: $1"
+}
 debug() {
-    [ "${CRON}" != "1" ] && echo "$1"
+    [ "${VERBOSE}" = "1" ] && [ "${QUIET}" != "1" ] && >&2 echo "${PROGNAME}: $1"
 }
-
 error() {
-    echo "error: $1" >&2
-    [ "$1" = "invalid argument(s)" ] && usage
+    >&2 echo "${PROGNAME}: $1"
+    [ "$1" = "invalid argument(s)" ] && >&2 usage
     exit 1
 }
 
 sed_cert_path_for_apache() {
-    vhost=$1
-    vhost_full_path="/etc/apache2/ssl/${vhost}.conf"
-    cert_path=$2
+    local vhost=$1
+    local vhost_full_path="/etc/apache2/ssl/${vhost}.conf"
+    local cert_path=$2
 
     [ ! -r "${vhost_full_path}" ] || return 0
 
-    search="^SSLCertificateFile.*$"
-    replace="SSLCertificateFile ${cert_path}"
+    local search="^SSLCertificateFile.*$"
+    local replace="SSLCertificateFile ${cert_path}"
 
     if ! $(grep -qE "${search}" "${vhost_full_path}"); then
         [ -w "${vhost_full_path}" ] || error "File ${vhost_full_path} is not writable"
@@ -51,16 +54,15 @@ sed_cert_path_for_apache() {
         $(command -v apache2ctl) -t
     fi
 }
-
 sed_cert_path_for_nginx() {
-    vhost=$1
-    vhost_full_path="/etc/nginx/ssl/${vhost}.conf"
-    cert_path=$2
+    local vhost=$1
+    local vhost_full_path="/etc/nginx/ssl/${vhost}.conf"
+    local cert_path=$2
 
     [ ! -r "${vhost_full_path}" ] || return 0
 
-    search="^ssl_certificate[^_].*$"
-    replace="ssl_certificate ${cert_path};"
+    local search="^ssl_certificate[^_].*$"
+    local replace="ssl_certificate ${cert_path};"
 
     if ! $(grep -qE "${search}" "${vhost_full_path}"); then
         [ -w "${vhost_full_path}" ] || error "File ${vhost_full_path} is not writable"
@@ -70,36 +72,27 @@ sed_cert_path_for_nginx() {
         $(command -v nginx) -t
     fi
 }
-
 x509_verify() {
-    file="$1"
+    local file="$1"
     [ -r "$file" ] || error "File ${file} not found"
-    ${OPENSSL_BIN} x509 -noout -modulus -in "$file" >/dev/null
-}
-csr_verify() {
-    file="$1"
-    [ -r "$file" ] || error "File ${file} not found"
-    ${OPENSSL_BIN} req -noout -modulus -in "$file" >/dev/null
+    "${OPENSSL_BIN}" x509 -noout -modulus -in "$file" >/dev/null
 }
 x509_enddate() {
-    file="$1"
+    local file="$1"
     [ -r "$file" ] || error "File ${file} not found"
-    ${OPENSSL_BIN} x509 -noout -enddate -in "$file"
+    "${OPENSSL_BIN}" x509 -noout -enddate -in "$file"
+}
+csr_verify() {
+    local file="$1"
+    [ -r "$file" ] || error "File ${file} not found"
+    "${OPENSSL_BIN}" req -noout -modulus -in "$file" >/dev/null
 }
 
 main() {
-    # Read configuration file, if it exists
-    [ -r /etc/default/evoacme ] && . /etc/default/evoacme
-
-    # Default value for main variables
-    SSL_KEY_DIR=${SSL_KEY_DIR:-"/etc/ssl/private"}
-    ACME_DIR=${ACME_DIR:-"/var/lib/letsencrypt"}
-    CSR_DIR=${CSR_DIR:-"/etc/ssl/requests"}
-    CRT_DIR=${CRT_DIR:-"/etc/letsencrypt"}
-    LOG_DIR=${LOG_DIR:-"/var/log/evoacme"}
-    SSL_MINDAY=${SSL_MINDAY:-"30"}
-    SELF_SIGNED_DIR=${SELF_SIGNED_DIR:-"/etc/ssl/self-signed"}
-    SSL_EMAIL=${SSL_EMAIL:-""}
+    [ "$1" = "-h" ] || [ "$1" = "--help" ] && usage && exit 0
+    # check arguments
+    echo "1: '$1'"
+    [ "$#" -eq 1 ] || error "invalid argument(s)"
 
     [ -w "${SSL_KEY_DIR}" ]     || error "Directory ${SSL_KEY_DIR} is not writable"
     [ -w "${ACME_DIR}" ]        || error "Directory ${ACME_DIR} is not writable"
@@ -108,19 +101,11 @@ main() {
     [ -w "${LOG_DIR}" ]         || error "Directory ${LOG_DIR} is not writable"
     [ -w "${SELF_SIGNED_DIR}" ] || error "Directory ${SELF_SIGNED_DIR} is not writable"
 
-    CRON=${CRON:-"0"}
-    TEST=${TEST:-"0"}
-    DRY_RUN=${DRY_RUN:-"0"}
-
-    [ "$1" = "-h" ] || [ "$1" = "--help" ] && usage && exit 0
-    # check arguments
-    [ "$#" -eq 1 ] || error "invalid argument(s)"
-
-    VHOST=$(basename "$1" .conf)
+    readonly VHOST=$(basename "$1" .conf)
 
     # check for important programs
-    OPENSSL_BIN=$(command -v openssl) || error "openssl command not installed"
-    CERTBOT_BIN=$(command -v certbot) || error "certbot command not installed"
+    readonly OPENSSL_BIN=$(command -v openssl) || error "openssl command not installed"
+    readonly CERTBOT_BIN=$(command -v certbot) || error "certbot command not installed"
 
     # double check for directories
     [ -d "${ACME_DIR}" ] || error "${ACME_DIR} is not a directory"
@@ -130,7 +115,7 @@ main() {
     #### CSR VALIDATION
 
     # verify .csr file
-    CSR_FILE="${CSR_DIR}/${VHOST}.csr"
+    readonly CSR_FILE="${CSR_DIR}/${VHOST}.csr"
     debug "Using CSR file: ${CSR_FILE}"
     [ -f "${CSR_FILE}" ] || error "${CSR_FILE} absent"
     [ -r "${CSR_FILE}" ] || error "${CSR_FILE} is not readable"
@@ -138,7 +123,7 @@ main() {
     csr_verify "${CSR_FILE}" || error "${CSR_FILE} is invalid"
 
     # Hook for evoadmin-web in cluster mode : check master status
-    evoadmin_state_file="/home/${VHOST}/state"
+    local evoadmin_state_file="/home/${VHOST}/state"
     [ -r "${evoadmin_state_file}" ] \
       && grep -q "STATE=slave" "${evoadmin_state_file}" \
       && debug "We are slave of this evoadmin cluster. Quit!" \
@@ -146,10 +131,10 @@ main() {
 
     #### INIT OR RENEW?
 
-    LIVE_DIR="${CRT_DIR}/${VHOST}/live"
-    LIVE_CERT="${LIVE_DIR}/cert.crt"
-    LIVE_FULLCHAIN="${LIVE_DIR}/fullchain.pem"
-    LIVE_CHAIN="${LIVE_DIR}/chain.pem"
+    readonly LIVE_DIR="${CRT_DIR}/${VHOST}/live"
+    readonly LIVE_CERT="${LIVE_DIR}/cert.crt"
+    readonly LIVE_FULLCHAIN="${LIVE_DIR}/fullchain.pem"
+    readonly LIVE_CHAIN="${LIVE_DIR}/chain.pem"
 
     # If live symlink already exists, it's not our first time...
     if [ -h "${LIVE_DIR}" ]; then
@@ -169,10 +154,10 @@ main() {
 
     #### CERTIFICATE CREATION WITH CERTBOT
 
-    ITERATION=$(date "+%Y%m%d%H%M%S")
-    [ -n "${ITERATION}" ] || error "invalid iteration (${ITERATION})"
+    local iteration=$(date "+%Y%m%d%H%M%S")
+    [ -n "${iteration}" ] || error "invalid iteration (${iteration})"
 
-    NEW_DIR="${CRT_DIR}/${VHOST}/${ITERATION}"
+    readonly NEW_DIR="${CRT_DIR}/${VHOST}/${iteration}"
 
     [ -d "${NEW_DIR}" ] && error "${NEW_DIR} directory already exists, remove it manually."
     mkdir -p "${NEW_DIR}"
@@ -180,16 +165,16 @@ main() {
     chown -R acme: "${CRT_DIR}"
     debug "New cert will be created in ${NEW_DIR}"
 
-    NEW_CERT="${NEW_DIR}/cert.crt"
-    NEW_FULLCHAIN="${NEW_DIR}/fullchain.pem"
-    NEW_CHAIN="${NEW_DIR}/chain.pem"
+    readonly NEW_CERT="${NEW_DIR}/cert.crt"
+    readonly NEW_FULLCHAIN="${NEW_DIR}/fullchain.pem"
+    readonly NEW_CHAIN="${NEW_DIR}/chain.pem"
 
-    CERTBOT_MODE=""
+    local CERTBOT_MODE=""
     [ "${TEST}" = "1" ] && CERTBOT_MODE="${CERTBOT_MODE} --test-cert"
-    [ "${CRON}" = "1" ] && CERTBOT_MODE="${CERTBOT_MODE} --quiet"
+    [ "${QUIET}" = "1" ] && CERTBOT_MODE="${CERTBOT_MODE} --quiet"
     [ "${DRY_RUN}" = "1" ] && CERTBOT_MODE="${CERTBOT_MODE} --dry-run"
 
-    CERTBOT_REGISTRATION="--agree-tos"
+    local CERTBOT_REGISTRATION="--agree-tos"
     if [ -n "${SSL_EMAIL}" ]; then
         debug "Registering at certbot with ${SSL_EMAIL} as email"
         CERTBOT_REGISTRATION="${CERTBOT_REGISTRATION} -m ${SSL_EMAIL}"
@@ -204,7 +189,7 @@ main() {
 
     # create a certificate with certbot
     sudo -u acme \
-        ${CERTBOT_BIN} \
+        "${CERTBOT_BIN}" \
         certonly \
         ${CERTBOT_MODE} \
         ${CERTBOT_REGISTRATION} \
@@ -220,7 +205,7 @@ main() {
             | grep -v "certbot.crypto_util"
 
     if [ "${DRY_RUN}" = "1" ]; then
-        echo "In dry-run mode, we stop here. Bye"
+        debug "In dry-run mode, we stop here. Bye"
         exit 0
     fi
 
@@ -228,6 +213,8 @@ main() {
     x509_verify "${NEW_CERT}"      || error "${NEW_CERT} is invalid"
     x509_verify "${NEW_FULLCHAIN}" || error "${NEW_FULLCHAIN} is invalid"
     x509_verify "${NEW_CHAIN}"     || error "${NEW_CHAIN} is invalid"
+
+    log "New certificate available at ${NEW_CERT}"
 
     #### CERTIFICATE ACTIVATION
 
@@ -264,4 +251,26 @@ main() {
     fi
 }
 
-main "$@"
+readonly PROGNAME=$(basename "$0")
+readonly PROGDIR=$(readlink -m $(dirname "$0"))
+readonly ARGS=$@
+
+readonly VERBOSE=${VERBOSE:-"0"}
+readonly QUIET=${QUIET:-"0"}
+readonly TEST=${TEST:-"0"}
+readonly DRY_RUN=${DRY_RUN:-"0"}
+
+# Read configuration file, if it exists
+[ -r /etc/default/evoacme ] && . /etc/default/evoacme
+
+# Default value for main variables
+readonly SSL_KEY_DIR=${SSL_KEY_DIR:-"/etc/ssl/private"}
+readonly ACME_DIR=${ACME_DIR:-"/var/lib/letsencrypt"}
+readonly CSR_DIR=${CSR_DIR:-"/etc/ssl/requests"}
+readonly CRT_DIR=${CRT_DIR:-"/etc/letsencrypt"}
+readonly LOG_DIR=${LOG_DIR:-"/var/log/evoacme"}
+readonly SSL_MINDAY=${SSL_MINDAY:-"30"}
+readonly SELF_SIGNED_DIR=${SELF_SIGNED_DIR:-"/etc/ssl/self-signed"}
+readonly SSL_EMAIL=${SSL_EMAIL:-""}
+
+main ${ARGS}
