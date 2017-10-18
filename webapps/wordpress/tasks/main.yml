@@ -12,7 +12,7 @@
     mode: "0750"
 
 - name: Download Wordpress
-  shell: 'php {{ ansible_env.HOME }}/bin/wp-cli.phar core download --locale=fr_FR --version=latest --path={{ ansible_env.HOME }}/www'
+  shell: '{{ wordpress_wpcli }} core download --locale=fr_FR --version={{ wordpress_version }}'
   args:
     creates: "{{ ansible_env.HOME }}/www/index.php"
 
@@ -42,25 +42,41 @@
   delegate_to: localhost
 
 - name: Configure Wordpress (wp-config.php)
-  shell: 'php {{ ansible_env.HOME }}/bin/wp-cli.phar core config --path={{ ansible_env.HOME }}/www/ --dbhost={{ db_host }} --dbuser={{ db_user }} --dbpass={{ db_pwd }} --dbname={{ db_name }}'
+  shell: '{{ wordpress_wpcli }} core config --dbhost={{ db_host }} --dbuser={{ db_user }} --dbpass={{ db_pwd }} --dbname={{ db_name }}'
   args:
     creates: "{{ ansible_env.HOME }}/www/wp-config.php"  
 
 - name: Configure site
-  shell: 'php {{ ansible_env.HOME }}/bin/wp-cli.phar core install --url={{ wordpress_host | quote }} --title={{ wordpress_title | quote }} --admin_user=admin --admin_password={{ admin_pwd | quote }} --admin_email={{ wordpress_email }} --path={{ ansible_env.HOME }}/www --skip-email'
+  shell: '{{ wordpress_wpcli }} core install --url={{ wordpress_host | quote }} --title={{ wordpress_title | quote }} --admin_user=admin --admin_password="{{ admin_pwd | quote }}" --admin_email={{ wordpress_email }} --skip-email'
+  changed_when: false
 
 - name: Check if Wordpress is up to date
-  shell: 'php {{ ansible_env.HOME }}/bin/wp-cli.phar core check-update --path={{ ansible_env.HOME }}/www | grep -q Success'
+  shell: '{{ wordpress_wpcli }} core check-update | grep -q Success'
   register: check_version
   check_mode: no
   failed_when: false
   changed_when: check_version.rc
 
 - name: Update Wordpress
-  shell: 'php {{ ansible_env.HOME }}/bin/wp-cli.phar core update --path={{ ansible_env.HOME }}/www'
+  shell: '{{ wordpress_wpcli }} core update --version={{ wordpress_version }}'
   args:
     removes: "{{ ansible_env.HOME }}/www/index.php"
   when: check_version.rc
+
+- name: Install default plugin
+  shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} || {{ wordpress_wpcli }} plugin install {{ item }}'
+  changed_when: false
+  with_items: "{{ wordpress_plugins }}"
+
+- name: Update default plugins
+  shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} && {{ wordpress_wpcli }} plugin update {{ item }}'
+  changed_when: false
+  with_items: "{{ wordpress_plugins }}"
+
+- name: Activate default plugins
+  shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} && {{ wordpress_wpcli }} plugin activate {{ item }}'
+  changed_when: false
+  with_items: "{{ wordpress_plugins }}"
 
 - name: Send a summary mail
   mail:

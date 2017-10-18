@@ -1,4 +1,7 @@
 ---
+wordpress_wpcli: "php {{ ansible_env.HOME }}/bin/wp-cli.phar --path={{ ansible_env.HOME }}/www"
+wordpress_version: 'latest'
+wordpress_plugins: ['wp-fail2ban']
 wordpress_host: "{{ ansible_fqdn }}"
 wordpress_title: "Wordpress Saas Evolix"
 wordpress_email: "root@localhost"
