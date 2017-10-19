@@ -97,7 +97,6 @@ main() {
     # check arguments
     [ "$#" -eq 1 ] || error "invalid argument(s)"
 
-    [ -w "${SSL_KEY_DIR}" ]     || error "Directory ${SSL_KEY_DIR} is not writable"
 
     mkdir -p "${ACME_DIR}"
     chown root: "${ACME_DIR}"
@@ -112,7 +111,6 @@ main() {
     mkdir -p "${LOG_DIR}"
     chown root: "${LOG_DIR}"
     [ -w "${LOG_DIR}" ]         || error "Directory ${LOG_DIR} is not writable"
-    [ -w "${SELF_SIGNED_DIR}" ] || error "Directory ${SELF_SIGNED_DIR} is not writable"
 
     readonly VHOST=$(basename "$1" .conf)
 
@@ -283,7 +281,6 @@ readonly CSR_DIR=${CSR_DIR:-"/etc/ssl/requests"}
 readonly CRT_DIR=${CRT_DIR:-"/etc/letsencrypt"}
 readonly LOG_DIR=${LOG_DIR:-"/var/log/evoacme"}
 readonly SSL_MINDAY=${SSL_MINDAY:-"30"}
-readonly SELF_SIGNED_DIR=${SELF_SIGNED_DIR:-"/etc/ssl/self-signed"}
 readonly SSL_EMAIL=${SSL_EMAIL:-""}
 
 main ${ARGS}
