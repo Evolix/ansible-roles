@@ -1,0 +1,28 @@
+#!/bin/sh
+
+readonly PROGNAME=$(basename "$0")
+readonly ARGS=$@
+
+readonly VERBOSE=${VERBOSE:-"0"}
+readonly QUIET=${QUIET:-"0"}
+
+error() {
+    >&2 echo "${PROGNAME}: $1"
+    exit 1
+}
+debug() {
+    if [ "${VERBOSE}" = "1" ] && [ "${QUIET}" != "1" ]; then
+        >&2 echo "${PROGNAME}: $1"
+    fi
+}
+
+if [ -n "$(pidof apache2)" ]; then
+    if $($(command -v apache2ctl) -t 2> /dev/null); then
+        debug "Apache detected... reloading"
+        service apache2 reload
+    else
+        error " Apache config is broken, you must fix it !"
+    fi
+else
+    debug "Apache is not running. Skip."
+fi

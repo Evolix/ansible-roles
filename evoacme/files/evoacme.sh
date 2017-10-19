@@ -92,6 +92,20 @@ csr_verify() {
     "${OPENSSL_BIN}" req -noout -modulus -in "$file" >/dev/null
 }
 
+exec_hooks() {
+    local hooks_dir="$1"
+
+    export EVOACME_VHOST_NAME="${VHOST}"
+    export EVOACME_LIVE_FULLCHAIN="${LIVE_FULLCHAIN}"
+
+    for hook in $(find ${HOOKS_DIR} -type f | grep -v ".disabled$"); do
+        if [ -x "${hook}" ]; then
+            debug "Executing ${hook}"
+            ${hook}
+        fi
+    done
+}
+
 main() {
     # check arguments
     [ "$#" -eq 1 ] || error "invalid argument(s)"
@@ -111,6 +125,10 @@ main() {
     mkdir -p "${LOG_DIR}"
     chown root: "${LOG_DIR}"
     [ -w "${LOG_DIR}" ]         || error "Directory ${LOG_DIR} is not writable"
+
+    mkdir -p "${HOOKS_DIR}"
+    chown root: "${HOOKS_DIR}"
+    [ -d "${HOOKS_DIR}" ]        || error "Directory ${HOOKS_DIR} is not found"
 
     readonly VHOST=$(basename "$1" .conf)
 
@@ -239,27 +257,12 @@ main() {
     # verify final path
     x509_verify "${LIVE_CERT}" || error "${LIVE_CERT} is invalid"
 
-    # update and reload Apache
-    command -v apache2ctl > /dev/null && sed_cert_path_for_apache "${VHOST}" "${LIVE_FULLCHAIN}"
-    if [ -n "$(pidof apache2)" ]; then
-        if $($(command -v apache2ctl) -t 2>/dev/null); then
-            debug "Apache detected... reloading"
-            service apache2 reload
-        else
-            error "Apache config is broken, you must fix it !"
-        fi
-    fi
+    # update Apache
+    sed_cert_path_for_apache "${VHOST}" "${LIVE_FULLCHAIN}"
+    # update Nginx
+    sed_cert_path_for_nginx "${VHOST}" "${LIVE_FULLCHAIN}"
 
-    # update and reload Nginx
-    command -v nginx > /dev/null && sed_cert_path_for_nginx "${VHOST}" "${LIVE_FULLCHAIN}"
-    if [ -n "$(pidof nginx)" ]; then
-        if $($(command -v nginx) -t 2>/dev/null); then
-            debug "Nginx detected... reloading"
-            service nginx reload
-        else
-            error "Nginx config is broken, you must fix it !"
-        fi
-    fi
+    exec_hooks "${HOOKS_DIR}"
 }
 
 readonly PROGNAME=$(basename "$0")
@@ -280,6 +283,7 @@ readonly ACME_DIR=${ACME_DIR:-"/var/lib/letsencrypt"}
 readonly CSR_DIR=${CSR_DIR:-"/etc/ssl/requests"}
 readonly CRT_DIR=${CRT_DIR:-"/etc/letsencrypt"}
 readonly LOG_DIR=${LOG_DIR:-"/var/log/evoacme"}
+readonly HOOKS_DIR=${HOOKS_DIR:-"${CRT_DIR}/hooks"}
 readonly SSL_MINDAY=${SSL_MINDAY:-"30"}
 readonly SSL_EMAIL=${SSL_EMAIL:-""}
 
