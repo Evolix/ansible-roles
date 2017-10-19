@@ -98,7 +98,7 @@ exec_hooks() {
     export EVOACME_VHOST_NAME="${VHOST}"
     export EVOACME_LIVE_FULLCHAIN="${LIVE_FULLCHAIN}"
 
-    for hook in $(find ${HOOKS_DIR} -type f | grep -v ".disabled$"); do
+    for hook in $(find ${hooks_dir} -type f | grep -v ".disabled$"); do
         if [ -x "${hook}" ]; then
             debug "Executing ${hook}"
             ${hook}
