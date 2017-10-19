@@ -93,10 +93,10 @@ csr_verify() {
 }
 
 main() {
-    [ "$1" = "-h" ] || [ "$1" = "--help" ] && usage && exit 0
     # check arguments
     [ "$#" -eq 1 ] || error "invalid argument(s)"
 
+    [ "$1" = "-h" ] || [ "$1" = "--help" ] && usage && exit 0
 
     mkdir -p "${ACME_DIR}"
     chown root: "${ACME_DIR}"
