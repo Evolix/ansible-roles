@@ -98,9 +98,19 @@ main() {
     [ "$#" -eq 1 ] || error "invalid argument(s)"
 
     [ -w "${SSL_KEY_DIR}" ]     || error "Directory ${SSL_KEY_DIR} is not writable"
+
+    mkdir -p "${ACME_DIR}"
+    chown root: "${ACME_DIR}"
     [ -w "${ACME_DIR}" ]        || error "Directory ${ACME_DIR} is not writable"
-    [ -w "${CSR_DIR}" ]         || error "Directory ${CSR_DIR} is not writable"
+
+    [ -d "${CSR_DIR}" ]         || error "Directory ${CSR_DIR} is not found"
+
+    mkdir -p "${CRT_DIR}"
+    chown root: "${CRT_DIR}"
     [ -w "${CRT_DIR}" ]         || error "Directory ${CRT_DIR} is not writable"
+
+    mkdir -p "${LOG_DIR}"
+    chown root: "${LOG_DIR}"
     [ -w "${LOG_DIR}" ]         || error "Directory ${LOG_DIR} is not writable"
     [ -w "${SELF_SIGNED_DIR}" ] || error "Directory ${SELF_SIGNED_DIR} is not writable"
 
