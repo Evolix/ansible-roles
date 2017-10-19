@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # make-csr is a shell script designed to automatically generate a
 # certificate signing request (CSR) from an Apache or a Nginx vhost

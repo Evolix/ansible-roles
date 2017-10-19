@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # make-csr is a shell script designed to automatically generate a
 # certificate signing request (CSR) from an Apache or a Nginx vhost
@@ -135,7 +135,7 @@ make_csr() {
     local domains=$@
     local nb=$#
     local config_file="/tmp/make-csr-${VHOST}.conf"
-    local san=
+    local san=""
 
     mkdir -p -m 0755 "${CSR_DIR}" || error "Unable to mkdir ${CSR_DIR}"
 
@@ -176,11 +176,11 @@ main() {
             exit 1
         fi
         # read VHOST from first argument
-        readonly VHOST="$1"
+        VHOST="$1"
         # remove the first argument
         shift
         # read domains from remaining arguments
-        readonly DOMAINS=$@
+        DOMAINS=$@
     else
         # We don't have STDIN, so we should have only 1 argument
         if [ "$#" != 1 ]; then
@@ -189,7 +189,7 @@ main() {
             exit 1
         fi
         # read VHOST from first argument
-        readonly VHOST="$1"
+        VHOST="$1"
         # read domains from input
         DOMAINS=
         while read -r line ; do
@@ -198,6 +198,8 @@ main() {
         # trim the string to remove leading/trailing spaces
         DOMAINS=$(echo "${DOMAINS}" | xargs)
     fi
+    readonly VHOST
+    readonly DOMAINS
 
     [ -w "${CSR_DIR}" ]         || error "Directory ${CSR_DIR} is not writable"
     [ -w "${SELF_SIGNED_DIR}" ] || error "Directory ${SELF_SIGNED_DIR} is not writable"
@@ -207,9 +209,9 @@ main() {
     # check for important programs
     readonly OPENSSL_BIN=$(command -v openssl) || error "openssl command not installed"
 
-    SELF_SIGNED_FILE="${SELF_SIGNED_DIR}/${VHOST}.pem"
-    SSL_KEY_FILE="${SSL_KEY_DIR}/${VHOST}.key"
-    CSR_FILE="${CSR_DIR}/${VHOST}.csr"
+    readonly SELF_SIGNED_FILE="${SELF_SIGNED_DIR}/${VHOST}.pem"
+    readonly SSL_KEY_FILE="${SSL_KEY_DIR}/${VHOST}.key"
+    readonly CSR_FILE="${CSR_DIR}/${VHOST}.csr"
 
     make_key "${SSL_KEY_FILE}" "${SSL_KEY_SIZE}"
     make_csr ${DOMAINS}

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # evoacme is a shell script to manage Let's Encrypt certificate with
 # certbot tool but with a dedicated user (no-root) and from a csr
