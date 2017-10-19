@@ -95,7 +95,6 @@ csr_verify() {
 main() {
     [ "$1" = "-h" ] || [ "$1" = "--help" ] && usage && exit 0
     # check arguments
-    echo "1: '$1'"
     [ "$#" -eq 1 ] || error "invalid argument(s)"
 
     [ -w "${SSL_KEY_DIR}" ]     || error "Directory ${SSL_KEY_DIR} is not writable"
