@@ -201,9 +201,18 @@ main() {
     readonly VHOST
     readonly DOMAINS
 
+    mkdir -p "${CSR_DIR}"
+    chown root: "${CSR_DIR}"
     [ -w "${CSR_DIR}" ]         || error "Directory ${CSR_DIR} is not writable"
+
+    mkdir -p "${SELF_SIGNED_DIR}"
+    chown root: "${SELF_SIGNED_DIR}"
     [ -w "${SELF_SIGNED_DIR}" ] || error "Directory ${SELF_SIGNED_DIR} is not writable"
+
+    mkdir -p "${SSL_KEY_DIR}"
+    chown root: "${SSL_KEY_DIR}"
     [ -w "${SSL_KEY_DIR}" ]     || error "Directory ${SSL_KEY_DIR} is not writable"
+
     [ -r "${SSL_CONFIG_FILE}" ] || error "File ${SSL_CONFIG_FILE} is not readable"
 
     # check for important programs
