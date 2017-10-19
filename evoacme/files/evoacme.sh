@@ -92,20 +92,6 @@ csr_verify() {
     "${OPENSSL_BIN}" req -noout -modulus -in "$file" >/dev/null
 }
 
-exec_hooks() {
-    local hooks_dir="$1"
-
-    export EVOACME_VHOST_NAME="${VHOST}"
-    export EVOACME_LIVE_FULLCHAIN="${LIVE_FULLCHAIN}"
-
-    for hook in $(find ${hooks_dir} -type f | grep -v ".disabled$"); do
-        if [ -x "${hook}" ]; then
-            debug "Executing ${hook}"
-            ${hook}
-        fi
-    done
-}
-
 main() {
     # check arguments
     [ "$#" -eq 1 ] || error "invalid argument(s)"
@@ -262,7 +248,22 @@ main() {
     # update Nginx
     sed_cert_path_for_nginx "${VHOST}" "${LIVE_FULLCHAIN}"
 
-    exec_hooks "${HOOKS_DIR}"
+    #### EXECUTE HOOKS
+    #
+    # executable scripts placed in ${HOOKS_DIR}
+    # are executed, unless their name ends with ".disabled"
+
+    export EVOACME_VHOST_NAME="${VHOST}"
+    export EVOACME_CERT="${LIVE_CERT}"
+    export EVOACME_CHAIN="${LIVE_CHAIN}"
+    export EVOACME_FULLCHAIN="${LIVE_FULLCHAIN}"
+
+    for hook in $(find ${HOOKS_DIR} -type f | grep -v ".disabled$"); do
+        if [ -x "${hook}" ]; then
+            debug "Executing ${hook}"
+            ${hook}
+        fi
+    done
 }
 
 readonly PROGNAME=$(basename "$0")
