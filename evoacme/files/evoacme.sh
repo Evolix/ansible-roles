@@ -258,8 +258,10 @@ main() {
     export EVOACME_CHAIN="${LIVE_CHAIN}"
     export EVOACME_FULLCHAIN="${LIVE_FULLCHAIN}"
 
-    for hook in $(find ${HOOKS_DIR} -type f | grep -v ".disabled$"); do
-        if [ -x "${hook}" ]; then
+    # search for files in hooks directory
+    for hook in $(find ${HOOKS_DIR} -type f); do
+        # keep only executables files, not containing a "."
+        if [ -x "${hook}" ] && $(basename "${hook}" | grep -vq .); then
             debug "Executing ${hook}"
             ${hook}
         fi
