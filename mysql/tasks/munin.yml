@@ -36,18 +36,25 @@
       dest: '/etc/munin/plugins/mysql_{{ item }}'
       state: link
     with_items:
+      - commands
       - connections
       - files_tables
       - innodb_bpool
       - innodb_bpool_act
+      - innodb_insert_buf
       - innodb_io
+      - innodb_io_pend
       - innodb_log
       - innodb_rows
       - innodb_semaphores
       - myisam_indexes
+      - network_traffic
       - qcache
       - qcache_mem
+      - select_types
+      - slow
       - sorts
+      - table_locks
       - tmp_tables
     notify: restart munin-node
 
