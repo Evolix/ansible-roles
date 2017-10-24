@@ -30,5 +30,7 @@ protocol lda {
 }
 
 # Optimisations
-login_max_processes_count = 256
+service login {
+    process_limit = 256
+}
 mail_max_userip_connections = 42
