@@ -15,6 +15,14 @@
     group: root
     mode: "0755"
 
+- name: Copy vhost-domains.sh script
+  copy:
+    src: vhost-domains.sh
+    dest: /usr/local/sbin/vhost-domains
+    owner: root
+    group: root
+    mode: "0755"
+
 - name: Copy evoacme script
   copy:
     src: evoacme.sh
