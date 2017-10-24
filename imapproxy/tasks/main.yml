@@ -1,0 +1,15 @@
+---
+- name: install imapproxy
+  apt:
+    name: imapproxy
+    state: present
+  tags:
+  - imapproxy
+
+- name: enable imapproxy
+  service:
+    name: imapproxy
+    state: started
+    enabled: True
+  tags:
+  - imapproxy
