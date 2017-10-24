@@ -99,21 +99,21 @@ main() {
     [ "$1" = "-h" ] || [ "$1" = "--help" ] && usage && exit 0
 
     mkdir -p "${ACME_DIR}"
-    chown root: "${ACME_DIR}"
+    chown acme: "${ACME_DIR}"
     [ -w "${ACME_DIR}" ]        || error "Directory ${ACME_DIR} is not writable"
 
     [ -d "${CSR_DIR}" ]         || error "Directory ${CSR_DIR} is not found"
 
     mkdir -p "${CRT_DIR}"
-    chown root: "${CRT_DIR}"
+    chown acme: "${CRT_DIR}"
     [ -w "${CRT_DIR}" ]         || error "Directory ${CRT_DIR} is not writable"
 
     mkdir -p "${LOG_DIR}"
-    chown root: "${LOG_DIR}"
+    chown acme: "${LOG_DIR}"
     [ -w "${LOG_DIR}" ]         || error "Directory ${LOG_DIR} is not writable"
 
     mkdir -p "${HOOKS_DIR}"
-    chown root: "${HOOKS_DIR}"
+    chown acme: "${HOOKS_DIR}"
     [ -d "${HOOKS_DIR}" ]        || error "Directory ${HOOKS_DIR} is not found"
 
     readonly VHOST=$(basename "$1" .conf)
