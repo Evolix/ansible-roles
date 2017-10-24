@@ -1,0 +1,57 @@
+use strict;
+
+## Liste des domaines considérés comme locaux
+#@local_domains_acl = qw(.);
+@local_domains_acl = (".example.net","example.com");
+
+# On customise la ligne ajoutée dans les entêtes
+$X_HEADER_LINE = "by Amavis at $mydomain";
+
+# On precise les FROM pour etre (bugs dans certaines version d'Amavis)
+$mailfrom_notify_admin = "postmaster\@$mydomain";
+$mailfrom_notify_recip = "postmaster\@$mydomain";
+$mailfrom_notify_spamadmin = "postmaster\@$mydomain";
+
+# Notifications de fichiers bannis / virus
+$virus_admin = "postmaster\@$mydomain";
+# Ne pas recevoir des notifications pour les mails UNCHECKED
+delete $admin_maps_by_ccat{&CC_UNCHECKED};
+
+# Que faire avec les messages détectés
+$final_virus_destiny      = D_DISCARD;
+$final_banned_destiny     = D_BOUNCE;
+$final_spam_destiny       = D_BOUNCE;
+$final_bad_header_destiny = D_PASS;
+
+# Pour recevoir des bounces (mails originals) des fichiers bloqués / virus
+#$banned_quarantine_to = "banned\@$mydomain";
+#$virus_quarantine_to = "virus\@$mydomain";
+
+# Note tueuse
+$sa_tag2_level_deflt = 6.31;
+# Pour un comportement "normal" de SA
+$sa_tag_level_deflt  = -1999;
+$sa_kill_level_deflt = 1999;
+$sa_dsn_cutoff_level = -99;
+$sa_spam_subject_tag = '[SPAM]';
+
+# log
+$log_level = 2;
+
+# En fonction besoin/ressources, on a juste le nbre de process
+$max_servers = 2;
+
+$enable_ldap = 1;
+$default_ldap = {
+   hostname => '127.0.0.1', tls => 0,
+   base => '{{ ldap_suffix }}', scope => 'sub',
+   query_filter => '(&(mailacceptinggeneralid=%m)(isActive=TRUE))'
+};
+
+# Activer l'antivirus et antivirus
+@bypass_virus_checks_maps = (
+   \%bypass_virus_checks, \@bypass_virus_checks_acl, \$bypass_virus_checks_re);
+@bypass_spam_checks_maps = (
+   \%bypass_spam_checks, \@bypass_spam_checks_acl, \$bypass_spam_checks_re);
+
+1;  # ensure a defined return

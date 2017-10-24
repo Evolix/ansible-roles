@@ -1,0 +1,43 @@
+---
+- name: install Amavis
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - postgrey
+  - amavisd-new
+  tags:
+  - amavis
+
+- name: configure Amavis
+  template:
+    src: amavis.conf.j2
+    dest: /etc/amavis/conf.d/49-evolinux-defaults.conf
+    mode: "0644"
+  notify: restart amavis
+  tags:
+  - amavis
+
+- name: copy spam.sh script
+  copy:
+    src: spam.sh
+    dest: /usr/share/scripts/spam.sh
+    mode: "0700"
+  tags:
+  - amavis
+
+- name: enable spam.sh cron
+  lineinfile:
+    dest: /etc/cron.d/spam
+    line: "42 * * * * /usr/share/scripts/spam.sh"
+    create: yes
+    state: present
+    mode: "0640"
+  tags:
+  - amavis
+
+- name: update antispam list
+  command: /usr/share/scripts/spam.sh
+  changed_when: false
+  tags:
+  - amavis

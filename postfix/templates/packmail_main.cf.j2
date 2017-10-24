@@ -413,3 +413,7 @@ slow_destination_concurrency_failed_cohort_limit = 100
 slow_destination_recipient_limit = 25
 transport_maps = hash:$config_directory/transport
 {% endif %}
+
+{% if amavis_is_active is defined and amavis_is_active == True %}
+content_filter = smtp-amavis:[127.0.0.1]:10024
+{% endif %}

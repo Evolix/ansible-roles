@@ -1,0 +1,111 @@
+---
+- name: install ClamAV
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - clamav-daemon
+  - clamav
+  - clamdscan
+  - clamav-freshclam
+  - arc
+  - arj
+  - zoo
+  - pax
+  - bzip2
+  - cabextract
+  - rpm
+  - lzop
+  - razor
+  tags:
+  - clamav
+
+- name: add clamav user to amavis group
+  user:
+    name: clamav
+    groups: amavis
+    append: True
+  tags:
+  - clamav
+
+- name: allow supplementary groups
+  replace:
+    dest: /etc/clamav/clamd.conf
+    regexp: 'AllowSupplementaryGroups false'
+    replace: 'AllowSupplementaryGroups true'
+  notify: restart clamav
+  tags:
+  - clamav 
+
+- name: configure clamav-daemon
+  debconf:
+    name: clamav-daemon
+    question: "{{ item.key }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.type }}"
+  with_items:
+  - { key: 'clamav-daemon/debconf', type: 'boolean', value: 'true' }
+  - { key: 'clamav-daemon/MaxHTMLNormalize', type: 'string', value: '10M' }
+  - { key: 'clamav-daemon/StatsPEDisabled', type: 'boolean', value: 'true' }
+  - { key: 'clamav-daemon/FollowDirectorySymlinks', type: 'boolean', value: 'false' }
+  - { key: 'clamav-daemon/StreamMaxLength', type: 'string', value: '25' }
+  - { key: 'clamav-daemon/ReadTimeout', type: 'string', value: '180' }
+  - { key: 'clamav-daemon/StatsEnabled', type: 'boolean', value: 'false' }
+  - { key: 'clamav-daemon/MaxConnectionQueueLength', type: 'string', value: '15' }
+  - { key: 'clamav-daemon/LogRotate', type: 'boolean', value: 'true' }
+  - { key: 'clamav-daemon/AllowAllMatchScan', type: 'boolean', value: 'true' }
+  - { key: 'clamav-daemon/ScanOnAccess', type: 'boolean', value: 'false' }
+  - { key: 'clamav-daemon/LogFile', type: 'string', value: '/var/log/clamav/clamav.log' }
+  - { key: 'clamav-daemon/ScanMail', type: 'boolean', value: 'true' }
+  - { key: 'clamav-daemon/BytecodeTimeout', type: 'string', value: '60000' }
+  - { key: 'clamav-daemon/LogTime', type: 'boolean', value: 'true' }
+  - { key: 'clamav-daemon/OnAccessMaxFileSize', type: 'string', value: '5M' }
+  - { key: 'clamav-daemon/TcpOrLocal', type: 'select', value: 'UNIX' }
+  - { key: 'clamav-daemon/MaxEmbeddedPE', type: 'string', value: '10M' }
+  - { key: 'clamav-daemon/FixStaleSocket', type: 'boolean', value: 'true' }
+  - { key: 'clamav-daemon/User', type: 'string', value: 'clamav' }
+  - { key: 'clamav-daemon/BytecodeSecurity', type: 'select', value: 'TrustSigned' }
+  - { key: 'clamav-daemon/ScanSWF', type: 'boolean', value: 'true' }
+  - { key: 'clamav-daemon/MaxDirectoryRecursion', type: 'string', value: '0' }
+  - { key: 'clamav-daemon/MaxThreads', type: 'string', value: '12' }
+  - { key: 'clamav-daemon/LocalSocketGroup', type: 'string', value: 'clamav' }
+  - { key: 'clamav-daemon/MaxScriptNormalize', type: 'string', value: '5M' }
+  - { key: 'clamav-daemon/ForceToDisk', type: 'boolean', value: 'false' }
+  - { key: 'clamav-daemon/StatsHostID', type: 'string', value: 'auto' }
+  - { key: 'clamav-daemon/FollowFileSymlinks', type: 'boolean', value: 'false' }
+  - { key: 'clamav-daemon/TCPSocket', type: 'string', value: '3310' }
+  - { key: 'clamav-daemon/TCPAddr', type: 'string', value: 'any' }
+  - { key: 'clamav-daemon/DisableCertCheck', type: 'boolean', value: 'false' }
+  - { key: 'clamav-daemon/SelfCheck', type: 'string', value: '3600' }
+  - { key: 'clamav-daemon/LocalSocket', type: 'string', value: '/var/run/clamav/clamd.ctl' }
+  - { key: 'clamav-daemon/LocalSocketMode', type: 'string', value: '666' }
+  - { key: 'clamav-daemon/StatsTimeout', type: 'string', value: '10' }
+  - { key: 'clamav-daemon/MaxZipTypeRcg', type: 'string', value: '1M' }
+  - { key: 'clamav-daemon/MaxHTMLNoTags', type: 'string', value: '2M' }
+  - { key: 'clamav-daemon/LogSyslog', type: 'boolean', value: 'false' }
+  - { key: 'clamav-daemon/AddGroups', type: 'string', value: '' }
+  - { key: 'clamav-daemon/Bytecode', type: 'boolean', value: 'true' }
+  - { key: 'clamav-daemon/ScanArchive', type: 'boolean', value: 'true' }
+  tags:
+  - clamav
+
+- name: configure clamav-freshclam
+  debconf:
+    name: clamav-freshclam
+    question: "{{ item.key }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.type }}"
+  with_items:
+  - { key: 'clamav-freshclam/autoupdate_freshclam', type: 'select', value: 'daemon' }
+  - { key: 'clamav-freshclam/proxy_user', type: 'string', value: '' }
+  - { key: 'clamav-freshclam/NotifyClamd', type: 'boolean', value: 'true' }
+  - { key: 'clamav-freshclam/local_mirror', type: 'select', value: 'db.fr.clamav.net' }
+  - { key: 'clamav-freshclam/http_proxy', type: 'string', value: '' }
+  - { key: 'clamav-freshclam/LogRotate', type: 'boolean', value: 'true' }
+  - { key: 'clamav-freshclam/Bytecode', type: 'boolean', value: 'true' }
+  - { key: 'clamav-freshclam/update_interval', type: 'string', value: '24' }
+  - { key: 'clamav-freshclam/SafeBrowsing', type: 'boolean', value: 'false' }
+  - { key: 'clamav-freshclam/PrivateMirror', type: 'string', value: '' }
+  - { key: 'clamav-freshclam/internet_interface', type: 'string', value: '' }
+  tags:
+  - clamav

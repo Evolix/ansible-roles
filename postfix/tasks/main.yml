@@ -57,8 +57,8 @@
         default_main_cf.stdout == "30022953f1f61f002bfb72e163ecb27e  -"
 
 - name: deploy packmail master.cf
-  copy:
-    src: packmail_master.cf
+  template:
+    src: packmail_master.cf.j2
     dest: /etc/postfix/master.cf
     mode: "0644"
   when: postfix_packmail == True
