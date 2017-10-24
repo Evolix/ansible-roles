@@ -29,3 +29,6 @@
   vars:
     evoadminmail_enable_vhost: '{{ packmail_enable_evoadmin_vhost }}'
 
+- name: Install Roundcube
+  include_role:
+    name: webapps/roundcube

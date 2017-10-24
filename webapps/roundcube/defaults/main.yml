@@ -1,0 +1,2 @@
+---
+roundcube_host: "roundcube.{{ ansible_fqdn }}"
