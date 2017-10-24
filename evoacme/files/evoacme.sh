@@ -261,7 +261,7 @@ main() {
     # search for files in hooks directory
     for hook in $(find ${HOOKS_DIR} -type f); do
         # keep only executables files, not containing a "."
-        if [ -x "${hook}" ] && $(basename "${hook}" | grep -vq .); then
+        if [ -x "${hook}" ] && (basename "${hook}" | grep -vqF "."); then
             debug "Executing ${hook}"
             ${hook}
         fi
