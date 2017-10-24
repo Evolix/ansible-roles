@@ -45,7 +45,7 @@ sed_cert_path_for_apache() {
     local vhost_full_path="/etc/apache2/ssl/${vhost}.conf"
     local cert_path=$2
 
-    [ ! -r "${vhost_full_path}" ] || return 0
+    [ ! -r "${vhost_full_path}" ] && return 0
 
     local search="^SSLCertificateFile.*$"
     local replace="SSLCertificateFile ${cert_path}"
@@ -63,7 +63,7 @@ sed_cert_path_for_nginx() {
     local vhost_full_path="/etc/nginx/ssl/${vhost}.conf"
     local cert_path=$2
 
-    [ ! -r "${vhost_full_path}" ] || return 0
+    [ ! -r "${vhost_full_path}" ] && return 0
 
     local search="^ssl_certificate[^_].*$"
     local replace="ssl_certificate ${cert_path};"
