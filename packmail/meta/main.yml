@@ -1,10 +1,10 @@
 ---
 dependencies:
   - { role: ldap, ldap_schema: 'cn4evolix.ldif' }
-  - { role: postfix, postfix_packmail: True, postfix_force_main_cf: True, postfix_slow_transport_include: True }
   - { role: amavis }
   - { role: spamassasin }
   - { role: clamav }
+  - { role: postfix, postfix_packmail: True, postfix_force_main_cf: True, postfix_slow_transport_include: True }
   - { role: dovecot }
   - { role: apache }
   - { role: php, php_apache_enable: True }

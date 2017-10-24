@@ -17,27 +17,3 @@
   notify: restart amavis
   tags:
   - amavis
-
-- name: copy spam.sh script
-  copy:
-    src: spam.sh
-    dest: /usr/share/scripts/spam.sh
-    mode: "0700"
-  tags:
-  - amavis
-
-- name: enable spam.sh cron
-  lineinfile:
-    dest: /etc/cron.d/spam
-    line: "42 * * * * /usr/share/scripts/spam.sh"
-    create: yes
-    state: present
-    mode: "0640"
-  tags:
-  - amavis
-
-- name: update antispam list
-  command: /usr/share/scripts/spam.sh
-  changed_when: false
-  tags:
-  - amavis

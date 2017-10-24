@@ -120,6 +120,33 @@
   tags:
   - postfix
 
+- name: copy spam.sh script
+  copy:
+    src: spam.sh
+    dest: /usr/share/scripts/spam.sh
+    mode: "0700"
+  when: postfix_packmail == True
+  tags:
+  - postfix
+
+- name: enable spam.sh cron
+  lineinfile:
+    dest: /etc/cron.d/spam
+    line: "42 * * * * /usr/share/scripts/spam.sh"
+    create: yes
+    state: present
+    mode: "0640"
+  when: postfix_packmail == True
+  tags:
+  - postfix
+
+- name: update antispam list
+  command: /usr/share/scripts/spam.sh
+  changed_when: false
+  when: postfix_packmail == True
+  tags:
+  - postfix
+
 - include: slow_transport.yml
   when: postfix_slow_transport_include
   tags:
