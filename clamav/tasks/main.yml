@@ -1,42 +1,4 @@
 ---
-- name: install ClamAV
-  apt:
-    name: "{{ item }}"
-    state: present
-  with_items:
-  - clamav-daemon
-  - clamav
-  - clamdscan
-  - clamav-freshclam
-  - arc
-  - arj
-  - zoo
-  - pax
-  - bzip2
-  - cabextract
-  - rpm
-  - lzop
-  - razor
-  tags:
-  - clamav
-
-- name: add clamav user to amavis group
-  user:
-    name: clamav
-    groups: amavis
-    append: True
-  tags:
-  - clamav
-
-- name: allow supplementary groups
-  replace:
-    dest: /etc/clamav/clamd.conf
-    regexp: 'AllowSupplementaryGroups false'
-    replace: 'AllowSupplementaryGroups true'
-  notify: restart clamav
-  tags:
-  - clamav 
-
 - name: configure clamav-daemon
   debconf:
     name: clamav-daemon
@@ -109,3 +71,41 @@
   - { key: 'clamav-freshclam/internet_interface', type: 'string', value: '' }
   tags:
   - clamav
+
+- name: install ClamAV
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - clamav-daemon
+  - clamav
+  - clamdscan
+  - clamav-freshclam
+  - arc
+  - arj
+  - zoo
+  - pax
+  - bzip2
+  - cabextract
+  - rpm
+  - lzop
+  - razor
+  tags:
+  - clamav
+
+- name: add clamav user to amavis group
+  user:
+    name: clamav
+    groups: amavis
+    append: True
+  tags:
+  - clamav
+
+- name: allow supplementary groups
+  replace:
+    dest: /etc/clamav/clamd.conf
+    regexp: 'AllowSupplementaryGroups false'
+    replace: 'AllowSupplementaryGroups true'
+  notify: restart clamav
+  tags:
+  - clamav 
