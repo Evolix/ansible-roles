@@ -21,6 +21,25 @@
   with_items:
   - roundcube
   - roundcube-sqlite3
+  - roundcube-plugins
+  - php-net-sieve
+  tags:
+  - roundcube
+
+- name: configure managesieve plugin
+  copy:
+    src: /usr/share/roundcube/plugins/managesieve/config.inc.php.dist
+    dest: /etc/roundcube/plugins/managesieve/config.inc.php
+    mode: "0644"
+    remote_src: True
+  tags:
+  - roundcube
+
+- name: enable default plugins
+  replace:
+    dest: /etc/roundcube/config.inc.php
+    regexp: "^\\$config\\['plugins'\\] array($"
+    replace: "$config['plugins'] = array('zipdownload','managesieve'"
   tags:
   - roundcube
 
