@@ -1,5 +1,5 @@
 ---
 postfix_hostname: "{{ ansible_fqdn }}"
-postfix_slow_transport_include: False
 postfix_force_main_cf: False
 postfix_packmail: False
+postfix_slow_transport_include: "{{ postfix_packmail }}"

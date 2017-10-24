@@ -4,7 +4,7 @@ dependencies:
   - { role: amavis }
   - { role: spamassasin }
   - { role: clamav }
-  - { role: postfix, postfix_packmail: True, postfix_force_main_cf: True, postfix_slow_transport_include: True }
+  - { role: postfix, postfix_packmail: True, postfix_force_main_cf: True }
   - { role: dovecot }
   - { role: apache }
   - { role: php, php_apache_enable: True }
