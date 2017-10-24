@@ -31,26 +31,26 @@
     state: directory
 
 - name: "Search for reload_apache hook"
-  command: "find {{ evoacme_hooks_dir }} -type f \( -name 'reload_apache' -o -name 'reload_apache.*' \)"
+  command: "find {{ evoacme_hooks_dir }} -type f \\( -name 'reload_apache' -o -name 'reload_apache.*' \\)"
   check_mode: no
   register: find_apache_hook
 
 - name: "Copy reload_apache hook if missing"
   copy:
     src: "hooks/reload_apache"
-    dest: "{{ evoacme_hooks_dir }}/hooks/reload_apache"
+    dest: "{{ evoacme_hooks_dir }}/reload_apache"
     mode: "0750"
   when: find_apache_hook.stdout == ""
 
 - name: "Search for reload_nginx hook"
-  command: "find {{ evoacme_hooks_dir }} -type f \( -name 'reload_nginx' -o -name 'reload_nginx.*' \)"
+  command: "find {{ evoacme_hooks_dir }} -type f \\( -name 'reload_nginx' -o -name 'reload_nginx.*' \\)"
   check_mode: no
   register: find_nginx_hook
 
 - name: "Copy reload_nginx hook if missing"
   copy:
     src: "hooks/reload_nginx"
-    dest: "{{ evoacme_hooks_dir }}/hooks/reload_nginx"
+    dest: "{{ evoacme_hooks_dir }}/reload_nginx"
     mode: "0750"
   when: find_nginx_hook.stdout == ""
 
