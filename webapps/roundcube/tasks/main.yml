@@ -39,7 +39,7 @@
 - name: enable default plugins
   replace:
     dest: /etc/roundcube/config.inc.php
-    regexp: "^\\$config\\['plugins'\\] array($"
+    regexp: "^\\$config\\['plugins'\\] = array\\($"
     replace: "$config['plugins'] = array('zipdownload','managesieve'"
   tags:
   - roundcube
