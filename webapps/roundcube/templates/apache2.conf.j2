@@ -11,6 +11,11 @@
     # Repertoire principal
     DocumentRoot /var/lib/roundcube/
 
+    # Return 503 if imapproxy doesn't run
+    <If "! -f '/run/imapproxy.pid'">
+            Redirect 503 /
+    </If>
+
     Include /etc/roundcube/apache.conf
 
     # LOG
