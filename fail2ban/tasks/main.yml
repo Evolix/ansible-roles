@@ -22,14 +22,6 @@
   tags:
   - fail2ban
 
-- name: package is installed
-  apt:
-    name: fail2ban
-    state: present
-  tags:
-    - fail2ban
-    - packages
-
 - name: custom filters are installed
   copy:
     src: "{{ item }}"
@@ -43,3 +35,12 @@
   notify: restart fail2ban
   tags:
     - fail2ban
+
+- name: package is installed
+  apt:
+    name: fail2ban
+    state: present
+  tags:
+    - fail2ban
+    - packages
+
