@@ -3,3 +3,4 @@ general_alert_email: "root@localhost"
 fail2ban_alert_email: Null
 fail2ban_ignore_ips: []
 fail2ban_wordpress: False
+fail2ban_roundcube: False

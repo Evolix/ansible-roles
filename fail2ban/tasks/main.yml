@@ -32,6 +32,7 @@
     - sasl-evolix.conf
     - wordpress-soft.conf
     - wordpress-hard.conf
+    - roundcube.conf
   notify: restart fail2ban
   tags:
     - fail2ban
