@@ -6,10 +6,6 @@
     value: "{{ item.value }}"
     vtype: "{{ item.type }}"
   with_items:
-  - { key: 'roundcube/dbconfig-reinstall', type: 'boolean', value: 'true' }
-  - { key: 'roundcube/language', type: 'select', value: 'fr_FR' }
-  - { key: 'roundcube/remote/port', type: 'string', value: '1143' }
-  - { key: 'roundcube/hosts', type: 'string', value: '127.0.0.1' }
   - { key: 'roundcube/database-type', type: 'select', value: 'sqlite3' }
   - { key: 'roundcube/db/basepath', type: 'string', value: '/var/lib/roundcube/' }
   tags:
@@ -24,6 +20,23 @@
   - roundcube-sqlite3
   - roundcube-plugins
   - php-net-sieve
+  tags:
+  - roundcube
+
+- name: configure roundcube imap host
+  lineinfile:
+     dest: /etc/roundcube/config.inc.php
+     regexp: "\\$config\\['default_host'\\]"
+     line: "$config['default_host'] = array('127.0.0.1');"
+  tags:
+  - roundcube
+
+- name: configure roudcube imap port
+  lineinfile:
+     dest: /etc/roundcube/config.inc.php
+     regexp: "\\$config\\['default_port'\\]"
+     insertafter: "\\$config\\['default_host'\\]"
+     line: "$config['default_port'] = 1143;"
   tags:
   - roundcube
 
