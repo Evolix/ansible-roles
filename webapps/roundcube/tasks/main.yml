@@ -20,6 +20,7 @@
   - roundcube-sqlite3
   - roundcube-plugins
   - php-net-sieve
+  - php-zip
   tags:
   - roundcube
 
