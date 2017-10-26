@@ -67,7 +67,7 @@ $DIALOG --hfile $HELPFILE --title "KVM Config" --form "Set the right config. "\
   "vmName" 5 1 "" 5 10 20 0 \
   2>$DIALOGOUT
 vCPU=$(sed 1'q;d' $DIALOGOUT)
-memory=$(sed 2'q;d' $DIALOGOUT)
+memory=$(sed 2'q;d' $DIALOGOUT|tr -d 'G')
 memory=$(($memory * 1024))
 volroot=$(sed 3'q;d' $DIALOGOUT)
 volhome=$(sed 4'q;d' $DIALOGOUT)
