@@ -126,7 +126,7 @@ cat << EOT > $tmpResFile
 resource "${vmName}" {
     net {
         cram-hmac-alg "sha1";
-        shared-secret "$(apg -m21 -n1)";
+        shared-secret "$(apg -n 1 -m 16 -M lcN)";
         # Si pas de lien dedié 10G, passer en protocol A
         # Et desactiver allow-two-primaries;
         protocol C;
