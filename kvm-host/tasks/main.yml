@@ -22,8 +22,8 @@
   when: usr_partition.rc == 0
 
 - name: Copy add-vm script
-  copy:
-    src: add-vm.sh
+  get_url:
+    url: https://forge.evolix.org/projects/kvm-tools/repository/revisions/master/raw/add-vm.sh
     dest: /usr/share/scripts/add-vm.sh
     mode: "0750"
 
