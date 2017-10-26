@@ -21,6 +21,12 @@
   changed_when: False
   when: usr_partition.rc == 0
 
+- name: Copy add-vm script
+  copy:
+    src: add-vm.sh
+    dest: /usr/share/scripts/add-vm.sh
+    mode: "0750"
+
 - include: munin.yml
 
 - include: images.yml
