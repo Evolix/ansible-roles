@@ -68,6 +68,7 @@ $DIALOG --hfile $HELPFILE --title "KVM Config" --form "Set the right config. "\
   2>$DIALOGOUT
 vCPU=$(sed 1'q;d' $DIALOGOUT)
 memory=$(sed 2'q;d' $DIALOGOUT)
+memory=$(($memory * 1024))
 volroot=$(sed 3'q;d' $DIALOGOUT)
 volhome=$(sed 4'q;d' $DIALOGOUT)
 vmName=$(sed 5'q;d' $DIALOGOUT)
@@ -193,7 +194,7 @@ virtHome=""
 dryRun virt-install --connect=qemu:///system \
   --name=${vmName} \
   --cpu mode=host-passthrough --vcpus=${vCPU} \
-  --ram=${memory%%G} \
+  --memory=${memory} \
   --disk path=/dev/drbd/by-disk/${volrootDisk}/${vmName}_root,bus=virtio,io=threads,cache=none,format=raw \
   $virtHome \
   --network=bridge:br0,model=virtio \
