@@ -203,4 +203,6 @@ dryRun virt-install --connect=qemu:///system \
   --os-variant=none \
   --pxe
 
+[ -x /usr/share/scripts/evomaintenance.sh ] && echo "Install VM ${vmName} (add-vm.sh)" | /usr/share/scripts/evomaintenance.sh
+
 echo -e "\e[32mDone! Now you can install your VM with virt-manager.\e[39m"
