@@ -1,5 +1,0 @@
----
-# defaults file for packmail
-general_alert_email: "root@localhost"
-
-packmail_enable_evoadmin_vhost: True
