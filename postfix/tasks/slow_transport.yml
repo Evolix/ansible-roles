@@ -5,6 +5,8 @@
     regexp: "^slow "
     line: "slow      unix     -       -       n       -       -    smtp"
   notify: restart postfix
+  tags:
+  - postfix
 
 - name: list of providers for slow transport
   lineinfile:
@@ -21,3 +23,5 @@
     - "hotmail.fr slow:"
     - "hotmail.com slow:"
   notify: postmap transport
+  tags:
+  - postfix
