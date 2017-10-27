@@ -339,6 +339,7 @@ smtpd_recipient_restrictions =
     permit_mynetworks,
     permit_sasl_authenticated,
     reject_unauth_destination,
+    check_policy_service unix:private/policyd-spf,
     check_client_access hash:$config_directory/client.access_local,
     check_client_access hash:$config_directory/client.access,
     check_sender_access hash:$config_directory/sender.access_local,
@@ -349,6 +350,8 @@ smtpd_recipient_restrictions =
     reject_unknown_sender_domain,
     reject_non_fqdn_sender,
     reject_unauth_pipelining,
+
+policyd-spf_time_limit = 3600
 
 header_checks =
     regexp:$config_directory/header_kill_local,

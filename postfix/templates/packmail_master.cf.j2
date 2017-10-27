@@ -116,6 +116,9 @@ mailman   unix  -       n       n       -       -       pipe
 
 slow      unix     -       -       n       -       -    smtp
 
+policyd-spf  unix  -       n       n       -       0       spawn
+  user=policyd-spf argv=/usr/bin/policyd-spf
+
 dovecot   unix  -       n       n       -       -       pipe
   flags=DRhu user=vmail:vmail argv=/usr/lib/dovecot/deliver -f ${sender} -d ${recipient}
 
