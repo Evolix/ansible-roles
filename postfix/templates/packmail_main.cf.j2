@@ -417,3 +417,8 @@ transport_maps = hash:$config_directory/transport
 {% if amavis_is_active is defined and amavis_is_active == True %}
 content_filter = smtp-amavis:[127.0.0.1]:10024
 {% endif %}
+
+{% if opendkim_is_active is defined and opendkim_is_active == True %}
+smtpd_milters = inet:127.0.0.1:54321
+non_smtpd_milters = inet:127.0.0.1:54321
+{% endif %}
