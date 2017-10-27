@@ -16,11 +16,38 @@
     name: "{{ item }}"
     state: present
   with_items:
+  - imapproxy
   - roundcube
   - roundcube-sqlite3
   - roundcube-plugins
   - php-net-sieve
   - php-zip
+  tags:
+  - roundcube
+
+- name: configure imapproxy imap host
+  lineinfile:
+    dest: /etc/imapproxy.conf
+    regexp: "^server_hostname"
+    line: "server_hostname {{ roundcube_imap_host }}"
+  notify: restart imapproxy
+  tags:
+  - roundcube
+
+- name: configure imapproxy imap port
+  lineinfile:
+    dest: /etc/imapproxy.conf
+    regexp: "^server_port"
+    line: "server_port {{ roundcube_imap_port }}"
+  notify: reload imapproxy
+  tags:
+  - roundcube
+
+- name: enable and start imapproxy
+  service:
+    name: imapproxy
+    state: started
+    enabled: True
   tags:
   - roundcube
 
