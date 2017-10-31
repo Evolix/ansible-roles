@@ -1,0 +1,104 @@
+---
+- name: configure roundcube-core
+  debconf:
+    name: roundcube-core
+    question: "{{ item.key }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.type }}"
+  with_items:
+  - { key: 'roundcube/database-type', type: 'select', value: 'sqlite3' }
+  - { key: 'roundcube/db/basepath', type: 'string', value: '/var/lib/roundcube/' }
+  tags:
+  - roundcube
+
+- name: install Roundcube
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - imapproxy
+  - roundcube
+  - roundcube-sqlite3
+  - roundcube-plugins
+  - php-net-sieve
+  - php-zip
+  tags:
+  - roundcube
+
+- name: configure imapproxy imap host
+  lineinfile:
+    dest: /etc/imapproxy.conf
+    regexp: "^server_hostname"
+    line: "server_hostname {{ roundcube_imap_host }}"
+  notify: restart imapproxy
+  tags:
+  - roundcube
+
+- name: configure imapproxy imap port
+  lineinfile:
+    dest: /etc/imapproxy.conf
+    regexp: "^server_port"
+    line: "server_port {{ roundcube_imap_port }}"
+  notify: reload imapproxy
+  tags:
+  - roundcube
+
+- name: enable and start imapproxy
+  service:
+    name: imapproxy
+    state: started
+    enabled: True
+  tags:
+  - roundcube
+
+- name: configure roundcube imap host
+  lineinfile:
+     dest: /etc/roundcube/config.inc.php
+     regexp: "\\$config\\['default_host'\\]"
+     line: "$config['default_host'] = array('127.0.0.1');"
+  tags:
+  - roundcube
+
+- name: configure roudcube imap port
+  lineinfile:
+     dest: /etc/roundcube/config.inc.php
+     regexp: "\\$config\\['default_port'\\]"
+     insertafter: "\\$config\\['default_host'\\]"
+     line: "$config['default_port'] = 1143;"
+  tags:
+  - roundcube
+
+- name: configure managesieve plugin
+  copy:
+    src: /usr/share/roundcube/plugins/managesieve/config.inc.php.dist
+    dest: /etc/roundcube/plugins/managesieve/config.inc.php
+    mode: "0644"
+    remote_src: True
+  tags:
+  - roundcube
+
+- name: enable default plugins
+  replace:
+    dest: /etc/roundcube/config.inc.php
+    regexp: "^\\$config\\['plugins'\\] = array\\($"
+    replace: "$config['plugins'] = array('zipdownload','managesieve'"
+  tags:
+  - roundcube
+
+- name: deploy roundcube vhost
+  template:
+    src: apache2.conf.j2
+    dest: /etc/apache2/sites-available/rouncube.conf
+    mode: "0640"
+  notify: reload apache2
+  tags:
+  - roundcube
+
+- name: enable roundcube vhost
+  file:
+    src: /etc/apache2/sites-available/rouncube.conf
+    dest: /etc/apache2/sites-enabled/rouncube.conf
+    state: link
+  notify: reload apache2
+  tags:
+  - roundcube

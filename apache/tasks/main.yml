@@ -38,6 +38,10 @@
   - expires
   - headers
   - cgi
+  - ssl
+  - include
+  - negotiation
+  - alias
   notify: reload apache
   tags:
   - apache

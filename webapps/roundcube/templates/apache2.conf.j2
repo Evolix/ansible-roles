@@ -1,0 +1,46 @@
+<VirtualHost *:80>
+    ServerName {{ roundcube_host }}
+    Redirect permanent / https://{{ roundcube_host }}
+</VirtualHost>
+
+<VirtualHost *:443>
+
+    # FQDN principal
+    ServerName {{ roundcube_host }}
+
+    # Repertoire principal
+    DocumentRoot /var/lib/roundcube/
+
+    # Return 503 if imapproxy doesn't run
+    <If "! -f '/run/imapproxy.pid'">
+            Redirect 503 /
+    </If>
+
+    Include /etc/roundcube/apache.conf
+
+    # LOG
+    CustomLog /var/log/apache2/access.log vhost_combined
+    CustomLog /var/lib/roundcube/logs/access.log combined
+    ErrorLog  /var/lib/roundcube/logs/error.log
+
+    # REWRITE
+    UseCanonicalName On
+    RewriteEngine On
+    RewriteCond %{HTTP_HOST} !^{{ roundcube_host }}$
+    RewriteRule ^/(.*) http://%{SERVER_NAME}/$1 [L,R]
+
+    # PHP
+    #php_admin_flag engine off
+    #AddType text/html .html
+    #php_admin_flag display_errors On
+    #php_flag short_open_tag On
+    #php_flag register_globals On
+    #php_admin_value memory_limit 256M
+    #php_admin_value max_execution_time 60
+    #php_admin_value upload_max_filesize 8M
+    #php_admin_flag allow_url_fopen Off
+    php_admin_value sendmail_path "/usr/sbin/sendmail -t -i -f www-roundcube"
+    php_admin_value error_log "/home/roundcube/log/php.log"
+    #php_admin_value open_basedir "/usr/share/php:/home/roundcube:/tmp"
+
+</VirtualHost>

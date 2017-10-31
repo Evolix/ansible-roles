@@ -1,0 +1,68 @@
+- name: ensure packages are installed
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - dovecot-ldap
+  - dovecot-imapd
+  - dovecot-pop3d
+  - dovecot-sieve
+  - dovecot-managesieved
+  tags:
+  - dovecot
+
+- name: disable pam auth
+  replace:
+    dest: /etc/dovecot/conf.d/10-auth.conf
+    regexp: "[^#]!include auth-system.conf.ext"
+    replace: "#!include auth-system.conf.ext"
+  tags:
+  - dovecot
+
+- name: update ldap auth
+  lineinfile:
+    dest: /etc/dovecot/dovecot-ldap.conf.ext
+    line: "{{ item.key }} = {{ item.value }}"
+    regexp: "^#*{{ item.key }}"
+    state: present
+  with_items:
+  - { key: 'hosts', value: '127.0.0.1' }
+  - { key: 'auth_bind', value: 'yes' }
+  - { key: 'ldap_version', value: 3 }
+  - { key: 'base', value: "{{ ldap_suffix }}" }
+  - { key: 'user_attrs', value: 'homeDirectory=home' }
+  - { key: 'user_filter', value: '(&(isActive=TRUE)(uid=%u))' }
+  - { key: 'pass_attrs', value: 'uid=user,userPassword=password' }
+  when: ldap_suffix is defined
+  notify: reload dovecot
+  tags:
+  - dovecot
+
+- name: create vmail group
+  group:
+    name: vmail
+    gid: 5000
+  tags:
+  - dovecot
+
+- name: create vmail user
+  user:
+    name: vmail
+    group: vmail
+    uid: 5000
+    shell: /bin/false
+  tags:
+  - dovecot
+
+- name: deploy evolix config
+  template:
+    src: z-evolinux-defaults.conf.j2
+    dest: /etc/dovecot/conf.d/z-evolinux-defaults.conf
+    mode: "0644"
+  notify: reload dovecot
+  tags:
+  - dovecot
+
+- include: munin.yml
+  tags:
+  - dovecot

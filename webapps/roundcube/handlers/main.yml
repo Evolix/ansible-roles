@@ -1,0 +1,5 @@
+---
+- name: restart imapproxy
+  systemd:
+    name: imapproxy
+    state: restarted

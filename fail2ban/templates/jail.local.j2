@@ -44,3 +44,12 @@ logpath = /var/log/auth.log
 maxretry = 5
 findtime = 300
 {% endif %}
+
+{% if fail2ban_roundcube %}
+[roundcube]
+enabled  = true
+port     = http,https
+filter   = roundcube
+logpath  = /var/lib/roundcube/logs/errors
+maxretry = 5
+{% endif %}

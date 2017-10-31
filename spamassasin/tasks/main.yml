@@ -1,0 +1,68 @@
+---
+- name: install SpamAssasin
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - spamassassin
+  - evomaintenance
+  tags:
+  - spamassassin
+
+- name: configure SpamAssasin
+  copy:
+    src: spamassassin.cf
+    dest: /etc/spamassassin/local_evolix.cf
+    mode: "0644"
+  notify: restart spamassassin
+  tags:
+  - spamassassin
+
+- name: enable SpamAssasin
+  replace:
+    dest: /etc/default/spamassassin
+    regexp: 'ENABLED=0'
+    replace: 'ENABLED=1'
+  notify: restart spamassassin
+  tags:
+  - spamassassin
+
+- name: update ansible_mounts facts
+  setup:
+    filter: ansible_mounts
+  tags:
+  - spamassassin
+
+- name: mount /usr in rw
+  command: mount -o remount,rw /usr
+  args:
+    warn: no
+  changed_when: false
+  when: item.mount == '/usr' and item.options | match(".*ro.*")
+  with_items: "{{ ansible_mounts }}"
+  tags:
+  - spamassassin
+
+- name: copy sa-update.sh script
+  copy:
+    src: sa-update.sh
+    dest: /usr/share/scripts/sa-update.sh
+    mode: "0750"
+  tags:
+  - spamassassin
+
+- name: enable sa-update.sh cron
+  lineinfile:
+    dest: /etc/cron.d/sa-update
+    line: "42 6 5 1,4,7,10 * /usr/share/scripts/sa-update.sh"
+    create: yes
+    state: present
+    mode: "0640"
+  tags:
+  - spamassassin
+
+- name: update SpamAssasin's rules
+  command: /usr/share/scripts/sa-update.sh
+  changed_when: false
+  tags:
+  - spamassassin

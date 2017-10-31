@@ -6,7 +6,7 @@
     section: PHP
     option: "disable_functions"
     value: "shell-exec,system,passthru,putenv,popen"
-  notify: reload apache
+  notify: reload apache2
   when: ansible_distribution_release == "jessie"
 
 - name: "Set custom values for PHP config (Debian 9 or later)"
@@ -15,7 +15,7 @@
     section: PHP
     option: "disable_functions"
     value: "shell-exec,system,passthru,putenv,popen"
-  notify: reload apache
+  notify: reload apache2
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: Install evoadmin VHost

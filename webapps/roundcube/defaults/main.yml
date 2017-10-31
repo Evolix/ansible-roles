@@ -1,0 +1,4 @@
+---
+roundcube_host: "roundcube.{{ ansible_fqdn }}"
+roundcube_imap_host: "localhost"
+roundcube_imap_port: 143

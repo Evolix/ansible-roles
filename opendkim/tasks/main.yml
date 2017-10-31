@@ -1,0 +1,95 @@
+---
+- name: install OpenDKIM
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - opendkim
+  - opendkim-tools
+  tags:
+  - opendkim
+
+- name: create keys directory
+  file:
+    name: "{{ item }}"
+    state: directory
+    owner: opendkim
+    group: opendkim
+    mode: "0750"
+  with_items:
+  - '/etc/opendkim'
+  - '/etc/opendkim/keys'
+  tags:
+  - opendkim
+
+- name: add 127.0.0.1 to TrustedHosts
+  lineinfile:
+    dest: '/etc/opendkim/TrustedHosts'
+    line: '127.0.0.1'
+    create: True
+    owner: opendkim
+    group: opendkim
+    mode: "0640"
+  notify: reload opendkim
+  tags:
+  - opendkim
+
+- name: create config files
+  file:
+    name: "/etc/opendkim/{{ item }}"
+    state: touch
+    owner: opendkim
+    group: opendkim
+    mode: "0640"
+  with_items:
+  - 'KeyTable'
+  - 'SigningTable'
+  changed_when: False
+  tags:
+  - opendkim
+
+- name: copy OpenDKIM config
+  copy:
+    src: opendkim.conf
+    dest: /etc/opendkim.conf
+    mode: "0644"
+    force: yes
+  notify: restart opendkim
+  tags:
+  - opendkim
+
+- name: ensure opendkim is started and enabled
+  systemd:
+    name: opendkim
+    state: started
+    enabled: True 
+  tags:
+  - opendkim
+
+- name: check if /usr is a partition
+  shell: "mount | grep 'on /usr type'"
+  args:
+    warn: no
+  changed_when: False
+  failed_when: False
+  register: usr_partition
+  check_mode: no
+  tags:
+  - opendkim
+
+- name: mount /usr in rw
+  command: mount -o remount,rw /usr
+  args:
+    warn: no
+  changed_when: False
+  when: usr_partition.rc == 0
+  tags:
+  - opendkim
+
+- name: deploy opendkim-add.sh script
+  copy:
+    src: opendkim-add.sh
+    dest: /usr/share/scripts/opendkim-add.sh
+    mode: "0750"
+  tags:
+  - opendkim

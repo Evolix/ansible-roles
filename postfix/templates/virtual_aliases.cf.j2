@@ -1,0 +1,5 @@
+search_base = {{ ldap_suffix }}
+query_filter = (&(mailacceptinggeneralid=%u@%d)(isActive=TRUE))
+result_attribute = maildrop
+version = 3
+aliases_scope = sub
