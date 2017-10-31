@@ -80,8 +80,8 @@
     src: "{{ ldap_schema }}"
     dest: "/root/{{ ldap_schema }}"
     mode: "0640"
-  when: ldap_schema is defined
+  when: not root_ldapvirc_path.stat.exists and ldap_schema is defined
 
 - name: inject custom schema
   command: "ldapadd -Y EXTERNAL -H ldapi:/// -f /root/{{ ldap_schema }}"
-  when: ldap_schema is defined
+  when: not root_ldapvirc_path.stat.exists and ldap_schema is defined
