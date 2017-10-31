@@ -4,8 +4,6 @@
     name: apt
     tasks_from: evolix_public.yml
 
-- meta: flush_handlers
-
 - name: Install PHP packages
   apt:
     name: '{{ item }}'
