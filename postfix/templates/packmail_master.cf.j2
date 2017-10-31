@@ -140,6 +140,7 @@ smtp-amavis unix -  -   y -   2  lmtp
 
 127.0.0.1:10025 inet n  -       y     -       -  smtpd
     -o content_filter=
+    -o smtpd_milters=
     -o local_recipient_maps=
     -o relay_recipient_maps=
     -o smtpd_restriction_classes=
