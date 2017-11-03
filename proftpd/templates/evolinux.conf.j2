@@ -15,6 +15,10 @@ PassivePorts  60000 61000
 UseReverseDNS off
 IdentLookups  off
 TimesGMT      off
+Port {{ proftpd_port }}
+{% if proftpd_default_address != [] %}
+DefaultAddress {{ proftpd_default_address | join(' ') }}
+{% endif %}
 
 # Local permissions
 DefaultRoot       ~
