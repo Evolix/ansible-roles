@@ -65,7 +65,7 @@ $smtp->close();
 
 print "$result\n";
 
-if ($result =~/2.7.0 Ok, discarded/) {
+if ($result =~/2.5.0 Ok, id=[^,]+, BOUNCE/) {
         print "OK - All fine\n";
         exit 0;
 } else {
