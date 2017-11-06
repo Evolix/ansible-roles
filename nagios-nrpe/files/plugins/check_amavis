@@ -3,12 +3,14 @@
 use Getopt::Long;
 use MIME::Entity;
 use Net::SMTP;
+use POSIX qw(strftime);
 
 my $server = '';
 my $port = 10024;
 my $from = '';
 my $to = '';
 my $debug = 0;
+my $date = strftime "%a, %d %b %g %X %z", localtime;
 
 $result = GetOptions (
         "server|s=s"    =>      \$server,
@@ -32,6 +34,7 @@ my $top = MIME::Entity->build(
         Type    =>"multipart/mixed",
         From    => $from,
         To      => $to,
+        Date    => $date,
         Subject => "EICAR test",
         Data    => "This is a test",
 );
