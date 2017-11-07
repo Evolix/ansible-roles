@@ -102,3 +102,13 @@
   notify: reload apache2
   tags:
   - roundcube
+
+- name: enable roundcube link in default site index
+  lineinfile:
+    dest: /var/www/index.html
+    state: present
+    regexp: "Webmail"
+    line: '            <li><a href="https://{{ roundcube_host }}">Webmail</a></li>'
+    insertbefore: "</ul>"
+  tags:
+  - roundcube
