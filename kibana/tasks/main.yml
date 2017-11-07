@@ -58,22 +58,14 @@
   when: not ansible_check_mode
 
 - block:
-  - name: Remount /usr as writable
-    command: "mount -o remount,rw /usr"
-    args:
-      warn: no
+  - include_role:
+      name: remount-usr
 
   - name: Move kibana optimize directory
     shell: "mv /usr/share/kibana/optimize /var/lib/kibana/optimize && ln -s /var/lib/kibana/optimize /usr/share/kibana/optimize"
     args:
       creates: /var/lib/kibana/optimize
     notify: restart kibana
-
-  - name: Remount /usr as read-only
-    command: "mount -o remount /usr"
-    args:
-      warn: no
-  when: mount.rc == 0 and not mount.stdout_lines.0 | search("rw")
 
 - include: proxy_nginx.yml
   when: kibana_proxy_nginx

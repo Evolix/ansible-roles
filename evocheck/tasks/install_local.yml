@@ -1,5 +1,6 @@
 ---
-- include: remount_usr_rw.yml
+- include_role:
+    name: remount-usr
   when: evocheck_bin_dir | search ("/usr")
 
 - name: Scripts dir is present

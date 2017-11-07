@@ -28,7 +28,8 @@
     state: directory
   notify: restart nagios-nrpe-server
 
-- include: remount_usr_rw.yml
+- include_role:
+    name: remount-usr
   when: nagios_plugins_directory | search ("/usr")
   tags:
   - nagios-plugins

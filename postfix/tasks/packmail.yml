@@ -87,19 +87,8 @@
   tags:
   - postfix
 
-- name: update ansible_mounts facts
-  setup:
-    filter: ansible_mounts
-  tags:
-  - postfix
-
-- name: mount /usr in rw
-  command: mount -o remount,rw /usr
-  args:
-    warn: no
-  changed_when: false
-  when: item.mount == '/usr' and item.options | match(".*ro.*")
-  with_items: "{{ ansible_mounts }}"
+- include_role:
+    name: remount-usr
   tags:
   - postfix
 

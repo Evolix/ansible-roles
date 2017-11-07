@@ -1,0 +1,6 @@
+---
+- name: remount usr
+  command: mount -o remount /usr
+  failed_when: false
+  args:
+    warn: no

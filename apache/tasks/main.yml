@@ -131,7 +131,10 @@
   tags:
   - apache
 
-- include: remount_usr_rw.yml
+- include_role:
+    name: remount-usr
+  tags:
+  - apache
 
 - name: "Install save_apache_status.sh"
   copy:

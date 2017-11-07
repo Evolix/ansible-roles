@@ -1,0 +1,16 @@
+---
+- name: check if /usr is a read-only partition
+  command: grep -E " /usr.*ro" /proc/mounts
+  args:
+    warn: no
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: usr_partition
+
+- name: mount /usr in rw
+  command: mount -o remount,rw /usr
+  args:
+    warn: no
+  when: usr_partition.rc == 0
+  notify: remount usr

@@ -48,7 +48,8 @@
 
 # mysqltuner
 
-- include: remount_usr_rw.yml
+- include_role:
+    name: remount-usr
   when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
 
 - name: Install mysqltuner
@@ -71,7 +72,8 @@
 
 # automatic optimizations
 
-- include: remount_usr_rw.yml
+- include_role:
+    name: remount-usr  
   when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
 
 - name: Optimize script for MySQL
@@ -133,7 +135,8 @@
 
 # my-add.sh
 
-- include: remount_usr_rw.yml
+- include_role:
+    name: remount-usr
   when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
 
 - name: Install my-add.sh
