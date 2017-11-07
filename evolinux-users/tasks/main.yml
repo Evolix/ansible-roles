@@ -9,11 +9,18 @@
     msg: "Warning: empty 'evolinux_users' variable, tasks will be skipped!"
   when: evolinux_users == {}
 
-- name: Create user accounts
-  include: user.yml
-  vars:
-    user: "{{ item.value }}"
-  with_dict: "{{ evolinux_users }}"
+- block:
+  - include: account.yml
+
+  - include: ssh.yml
+
+  - include: sudo_jessie.yml
+    when: ansible_distribution_release == "jessie"
+
+  - include: sudo_stretch.yml
+    when: ansible_distribution_major_version | version_compare('9', '>=')
+
+  - meta: flush_handlers
   when: evolinux_users != {}
 
 - include: root_disable_ssh.yml

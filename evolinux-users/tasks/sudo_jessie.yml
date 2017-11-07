@@ -1,5 +1,4 @@
 ---
-
 - name: "Verify Evolinux sudoers file presence (jessie)"
   template:
     src: sudoers_jessie.j2
@@ -9,10 +8,11 @@
     validate: '/usr/sbin/visudo -cf %s'
   register: copy_sudoers_evolinux
 
-- name: "Add user in sudoers file for '{{ user.name }}' (jessie)"
+- name: "Add user in sudoers file for '{{ item }}' (jessie)"
   replace:
     dest: /etc/sudoers.d/evolinux
-    regexp: '^(User_Alias\s+ADMINS\s+=((?!{{ user.name }}).)*)$'
-    replace: '\1,{{ user.name }}'
+    regexp: '^(User_Alias\s+ADMINS\s+=((?!{{ item }}).)*)$'
+    replace: '\1,{{ item }}'
     validate: '/usr/sbin/visudo -cf %s'
   when: not copy_sudoers_evolinux.changed
+  with_items: "{{ evolinux_users | list }}"
