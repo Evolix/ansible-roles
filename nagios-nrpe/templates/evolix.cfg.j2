@@ -49,6 +49,7 @@ command[check_clamav_db]=/usr/lib/nagios/plugins/check_file_age -w 86400 -c 1728
 command[check_ssl]=/usr/lib/nagios/plugins/check_http -f follow -I 127.0.0.1 -S -p 443 -H ssl.evolix.net -C 15,5
 command[check_elasticsearch]=/usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /_cat/health?h=st -p 9200 -r 'red' --invert-regex
 command[check_memcached]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 11211
+command[check_opendkim]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 54321
 
 # Local checks (not packaged)
 command[check_mem]={{ nagios_plugins_directory }}/check_mem -f -C -w 20 -c 10
