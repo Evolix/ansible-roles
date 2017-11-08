@@ -64,7 +64,7 @@ __EOT
 # Total memory size (in MB)
 tot_mem=$(( `/sbin/sysctl -n hw.physmem` / BYTES_IN_MB))
 # Free memory size (in MB)
-free_mem=$(( `/usr/bin/vmstat | /usr/bin/tail -1 | /usr/bin/awk '{ print $5 }'` / KB_IN_MB ))
+free_mem=$(/usr/bin/vmstat | /usr/bin/tail -1 | /usr/bin/awk '{ print $4 }' | tr -d 'M')
 # Free memory size (in percentage)
 free_mem_perc=$(( free_mem * 100 / tot_mem ))
 
