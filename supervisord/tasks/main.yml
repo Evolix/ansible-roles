@@ -1,13 +1,17 @@
 ---
-- name: Install supervisord
+- name: Install Supervisor
   apt:
     name: supervisor
+  tags:
+    - supervisord
 
-- name: Add http configuration for supvervisord
+- name: Add http configuration for Supervisor
   copy:
     src: http.conf
     dest: /etc/supervisor/conf.d/
     mode: "0644"
     force: no
-  notify: Restart supervisord
+  notify: restart supervisor
   when: supervisord_enable_http
+  tags:
+    - supervisord
