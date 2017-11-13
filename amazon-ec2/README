@@ -5,9 +5,9 @@ Manage Amazon EC2 instances.
 This role is intended to be called before any other role to setup and start EC2
 instances.
 
-## Dependancies
+## Dependencies
 
-You should first ensure that you have python-boto package installed on your
+You should first ensure that you have `python-boto` package installed on your
 machine and an Amazon security access key pair created for your account.
 
 ## Tasks
