@@ -1,0 +1,9 @@
+#!/bin/sh
+# {{ ansible_managed }}
+
+LOG_DIR=/var/log/logstash
+MAX_AGE={{ logstash_log_rotate_days | mandatory }}
+
+find ${LOG_DIR} -type f -user logstash -name "logstash.log.*.gz"    -mtime +${MAX_AGE} -delete
+find ${LOG_DIR} -type f -user root     -name "logstash.err.*.gz"    -mtime +${MAX_AGE} -delete
+find ${LOG_DIR} -type f -user root     -name "logstash.stdout.*.gz" -mtime +${MAX_AGE} -delete

@@ -70,3 +70,5 @@
 - debug:
     var: logstash_template
     verbosity: 1
+
+- include: logs.yml
