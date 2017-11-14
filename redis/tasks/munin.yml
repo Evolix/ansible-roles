@@ -53,6 +53,7 @@
   register: munin_redis_blocs_in_config
   failed_when: False
   changed_when: False
+  check_mode: no
 
 - name: Add redis password for munin (if no more than 1 config block)
   ini_file:

@@ -30,9 +30,10 @@
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: Read debian-sys-maint password
-  shell: cat /etc/mysql/debian.cnf | grep -m1 "password = .*" | cut -d" " -f3
+  shell: 'cat /etc/mysql/debian.cnf | grep -m1 "password = .*" | cut -d" " -f3'
   register: mysql_debian_password
   changed_when: False
+  check_mode: no
   tags:
     - mysql
 
