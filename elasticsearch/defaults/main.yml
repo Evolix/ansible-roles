@@ -8,6 +8,7 @@ elasticsearch_custom_tmpdir: Null
 elasticsearch_default_tmpdir: /var/lib/elasticsearch/tmp
 elasticsearch_jvm_xms: 2g
 elasticsearch_jvm_xmx: 2g
+elasticsearch_log_rotate_days: 365
 
 elasticsearch_curator: False
 

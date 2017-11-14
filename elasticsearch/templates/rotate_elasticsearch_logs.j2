@@ -1,0 +1,9 @@
+#!/bin/sh
+# {{ ansible_managed }}
+
+LOG_DIR=/var/log/elasticsearch
+USER=elasticsearch
+MAX_AGE={{ elasticsearch_log_rotate_days | mandatory }}
+
+find ${LOG_DIR} -type f -user ${USER} -name "*.log.????-??-??" -exec gzip --best {} \;
+find ${LOG_DIR} -type f -user ${USER} -name "*.log.????-??-??.gz" -mtime +${MAX_AGE} -delete

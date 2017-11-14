@@ -10,6 +10,8 @@
 
 - include: tmpdir.yml
 
+- include: logs.yml
+
 - include: plugin_head.yml
   when: elasticsearch_plugin_head
 
