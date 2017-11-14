@@ -34,6 +34,22 @@
   tags:
     - packages
 
+- name: kibana server host configuration
+  lineinfile:
+    src: /etc/kibana/kibana.yml
+    line: "server.host: \"{{ kibana_server_host }}\""
+    regexp: '^server.host:'
+    insertafter: '^#server.host:'
+  notify: restart kibana
+
+- name: kibana server basepath configuration
+  lineinfile:
+    src: /etc/kibana/kibana.yml
+    line: "server.basePath: \"{{ kibana_server_basepath }}\""
+    regexp: '^server.basePath:'
+    insertafter: '^#server.basePath:'
+  notify: restart kibana
+
 - name: Kibana service is enabled and started
   systemd:
     name: kibana
