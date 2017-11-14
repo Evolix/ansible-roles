@@ -78,10 +78,13 @@
       name: remount-usr
 
   - name: Move kibana optimize directory
-    shell: "mv /usr/share/kibana/optimize /var/lib/kibana/optimize && ln -s /var/lib/kibana/optimize /usr/share/kibana/optimize"
+    shell: "mv /usr/share/kibana/{{ item }} /var/lib/kibana/{{ item }} && ln -s /var/lib/kibana/{{ item }} /usr/share/kibana/{{ item }}"
     args:
-      creates: /var/lib/kibana/optimize
+      creates: "/var/lib/kibana/{{ item }}"
     notify: restart kibana
+    with_items:
+      - optimize
+      - data
 
 - include: proxy_nginx.yml
   when: kibana_proxy_nginx
