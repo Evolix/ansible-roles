@@ -10,6 +10,6 @@
 - name: Replace check_tcp by check_redis for NRPE
   replace:
     dest: /etc/nagios/nrpe.d/evolix.cfg
-    regexp: '^command\[check_redis\]=\/usr\/lib\/nagios\/plugins\/check_tcp -p 6379'
+    regexp: '^command\[check_redis\]=.+'
     replace: 'command[check_redis]=/usr/lib/nagios/plugins/check_redis -H 127.0.0.1'
   notify: restart nagios-nrpe-server
