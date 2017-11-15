@@ -2,13 +2,16 @@
 # We have to copy the local jail before installing the package
 # or we risk being jailed by fail2ban
 
-- name: Prepare /etc/fail2ban
+- name: Prepare fail2ban hierarchy
   file:
-    path: /etc/fail2ban
+    path: "{{ item }}"
     state: directory
     owner: root
     group: root
     mode: "0755"
+  with_items:
+    - "/etc/fail2ban"
+    - "/etc/fail2ban/filter.d"
   tags:
   - fail2ban
 
@@ -44,4 +47,3 @@
   tags:
     - fail2ban
     - packages
-
