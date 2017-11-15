@@ -15,6 +15,7 @@ machine and an Amazon security access key pair created for your account.
 By default, this role does nothing (no `main.yml` file).
 
 * `create-instance.yml`: create new EC2 instances
+* `post-install.yml`: remove admin user created on Debian instances
 
 ## Variables
 
