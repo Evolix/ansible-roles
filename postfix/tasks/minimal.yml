@@ -18,7 +18,7 @@
     force: yes
   notify: restart postfix
   when: postfix_force_main_cf == True or
-        default_main_cf.stdout == "5450c05d65878e99dad696c7c722e511  -" or
-        default_main_cf.stdout == "30022953f1f61f002bfb72e163ecb27e  -"
+        postfix_maincf_md5_jessie in default_main_cf.stdout or
+        postfix_maincf_md5_stretch in default_main_cf.stdout
   tags:
   - postfix
