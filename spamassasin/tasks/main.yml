@@ -51,7 +51,7 @@
   - spamassassin
 
 - name: update SpamAssasin's rules
-  command: /usr/share/scripts/sa-update.sh
+  command: "/usr/share/scripts/sa-update.sh"
   changed_when: false
   tags:
   - spamassassin
