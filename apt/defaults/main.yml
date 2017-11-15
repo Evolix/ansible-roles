@@ -3,7 +3,7 @@ apt_config: True
 apt_evolinux_config: True
 apt_hooks: True
 apt_remove_aptitude: True
-apt_upgrade: True
+apt_upgrade: False
 
 apt_install_basics: True
 apt_basics_components: "main"
