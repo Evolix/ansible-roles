@@ -1,0 +1,14 @@
+---
+
+- name: "Search for {{ hook_name }} hook"
+  command: "find {{ evoacme_hooks_dir }} -type f \\( -name '{{ hook_name }}' -o -name '{{ hook_name }}.*' \\)"
+  check_mode: no
+  changed_when: False
+  register: _find_hook
+
+- name: "Copy {{ hook_name }} hook if missing"
+  copy:
+    src: "hooks/{{ hook_name }}"
+    dest: "{{ evoacme_hooks_dir }}/{{ hook_name }}"
+    mode: "0750"
+  when: _find_hook.stdout == ""
