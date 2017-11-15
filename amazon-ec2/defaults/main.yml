@@ -42,6 +42,94 @@ ec2_evolinux_security_group:
       from_port: 5666
       to_port: 5666
       cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 53
+      to_port: 53
+      cidr_ip: 0.0.0.0/0
+    - proto: udp
+      from_port: 53
+      to_port: 53
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 389
+      to_port: 389
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 636
+      to_port: 636
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 143
+      to_port: 143
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 993
+      to_port: 993
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 110
+      to_port: 110
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 995
+      to_port: 995
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 25
+      to_port: 25
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 80
+      to_port: 80
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 443
+      to_port: 443
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 21
+      to_port: 21
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 20
+      to_port: 20
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 5001
+      to_port: 5001
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 465
+      to_port: 465
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 587
+      to_port: 587
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 8181
+      to_port: 8181
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 8282
+      to_port: 8282
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 9091
+      to_port: 9091
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 2222
+      to_port: 2222
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 2223
+      to_port: 2223
+      cidr_ip: 0.0.0.0/0
+    - proto: udp
+      from_port: 123
+      to_port: 123
+      cidr_ip: 0.0.0.0/0
   rules_egress:
     - proto: all
       cidr_ip: 0.0.0.0/0
