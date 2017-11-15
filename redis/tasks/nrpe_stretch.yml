@@ -13,3 +13,6 @@
     regexp: '^command\[check_redis\]=.+'
     replace: 'command[check_redis]=/usr/lib/nagios/plugins/check_redis -H 127.0.0.1'
   notify: restart nagios-nrpe-server
+  tags:
+    - redis
+    - nrpe
