@@ -1,0 +1,59 @@
+---
+- name: Prepare Amazon EC2 instance
+  hosts: localhost
+  gather_facts: False
+
+  vars:
+    aws_access_key: 
+    aws_secret_key: 
+    aws_region: ca-central-1
+
+  tasks:
+    - include_role:
+        name: amazon-ec2
+        tasks_from: create-instance.yml
+
+- name: Install Evolinux
+  hosts: launched-instances
+  become: yes
+
+  vars_files:
+  - 'vars/secrets.yml'
+
+  vars:
+    admin_users: "{{ admin_users }}"
+    minifirewall_trusted_ips: "{{ trusted_ips }}"
+    fail2ban_ignore_ips: "{{ trusted_ips }}"
+    evolinux_hostname:
+    evolinux_domain:
+    evolinux_fqdn:
+    evolinux_internal_hostname:
+    minifirewall_public_ports_tcp: [80, 443]
+    minifirewall_public_ports_udp: []
+    minifirewall_semipublic_ports_tcp: [22]
+    nagios_nrpe_allowed_hosts: "{{ trusted_ips }}"
+
+  roles:
+  - etc-git
+  - evolinux-base
+  - admin-users
+  - munin
+  - minifirewall
+  - fail2ban
+  - nagios-nrpe
+  - listupgrade
+  - evomaintenance
+  - evocheck
+  - packweb-apache
+  - mysql
+
+  post_tasks:
+  - include_role:
+      name: etc-git
+      tasks_from: commit.yml
+    vars:
+      commit_message: "Ansible post-run Evolinux playbook"
+
+  - include_role:
+      name: evocheck
+      tasks_from: exec.yml
