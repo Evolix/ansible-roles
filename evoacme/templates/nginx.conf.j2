@@ -1,5 +1,9 @@
 location ~ /.well-known/acme-challenge {
+{% if ansible_distribution_major_version > 8 %}
+    alias {{ evoacme_acme_dir }}/;
+{% else %}
     alias {{ evoacme_acme_dir }}/.well-known/acme-challenge;
+{% endif %}
     try_files $uri =404;
     allow all;
 }
