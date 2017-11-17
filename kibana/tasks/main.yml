@@ -36,7 +36,7 @@
 
 - name: kibana server host configuration
   lineinfile:
-    src: /etc/kibana/kibana.yml
+    dest: /etc/kibana/kibana.yml
     line: "server.host: \"{{ kibana_server_host }}\""
     regexp: '^server.host:'
     insertafter: '^#server.host:'
@@ -44,7 +44,7 @@
 
 - name: kibana server basepath configuration
   lineinfile:
-    src: /etc/kibana/kibana.yml
+    dest: /etc/kibana/kibana.yml
     line: "server.basePath: \"{{ kibana_server_basepath }}\""
     regexp: '^server.basePath:'
     insertafter: '^#server.basePath:'
