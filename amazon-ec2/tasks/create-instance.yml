@@ -1,23 +1,4 @@
 ---
-- name: Create default security group
-  ec2_group:
-    name: "{{ec2_security_group.name}}"
-    state: present
-    aws_access_key: "{{aws_access_key}}"
-    aws_secret_key: "{{aws_secret_key}}"
-    region: "{{aws_region}}"
-    description: "{{ec2_security_group.description}}"
-    rules: "{{ec2_security_group.rules}}"
-
-- name: Create key pair
-  ec2_key:
-    name: "{{ec2_keyname}}"
-    state: present
-    aws_access_key: "{{aws_access_key}}"
-    aws_secret_key: "{{aws_secret_key}}"
-    region: "{{aws_region}}"
-    key_material: "{{item}}"
-  with_file: "{{ssh_pubkey_file}}"
 
 - name: Launch new instance(s)
   ec2:

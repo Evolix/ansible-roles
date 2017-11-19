@@ -14,6 +14,7 @@ machine and an Amazon security access key pair created for your account.
 
 By default, this role does nothing (no `main.yml` file).
 
+* `setup.yml`: create a security group and ssh keys
 * `create-instance.yml`: create new EC2 instances
 * `post-install.yml`: remove admin user created on Debian instances
 
