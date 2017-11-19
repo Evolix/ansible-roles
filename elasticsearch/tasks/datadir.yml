@@ -7,16 +7,16 @@
     register: elasticsearch_custom_datadir_test
     check_mode: no
 
-
   - name: "read the real datadir"
     command: readlink -f /var/lib/elasticsearch
     changed_when: false
     register: elasticsearch_current_real_datadir_test
     check_mode: no
-
   tags:
     - elasticsearch
-  when: elasticsearch_custom_datadir
+  when:
+    - elasticsearch_custom_datadir != ''
+    - elasticsearch_custom_datadir != None
 
 - block:
   - name: elasticsearch is stopped
@@ -40,5 +40,9 @@
       name: elasticsearch
       state: started
   tags:
-  - elasticsearch
-  when: elasticsearch_custom_datadir and elasticsearch_custom_datadir != elasticsearch_current_real_datadir_test.stdout and not elasticsearch_custom_datadir_test.stat.exists
+    - elasticsearch
+  when:
+    - elasticsearch_custom_datadir != ''
+    - elasticsearch_custom_datadir != None
+    - elasticsearch_custom_datadir != elasticsearch_current_real_datadir_test.stdout
+    - not elasticsearch_custom_datadir_test.stat.exists

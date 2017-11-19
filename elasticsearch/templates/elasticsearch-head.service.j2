@@ -1,0 +1,14 @@
+[Service]
+Type=simple
+ExecStart=/usr/bin/npm run start
+User={{ elasticsearch_plugin_head_owner }}
+Group={{ elasticsearch_plugin_head_group }}
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=elasticsearch-head
+Restart=always
+WorkingDirectory={{ elasticsearch_plugin_head_clone_dir }}
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

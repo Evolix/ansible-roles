@@ -1,0 +1,30 @@
+dn: {{ ldap_suffix }}
+objectClass: top
+objectClass: dcObject
+objectClass: organization
+o: {{ ldap_domain }}
+dc: {{ ldap_hostname }}
+
+dn: cn=admin,{{ ldap_suffix }}
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+cn: admin
+description: LDAP administrator
+userPassword: {{ ldap_admin_password_ssha.stdout }}
+
+dn: ou=ldapusers,{{ ldap_suffix }}
+objectClass: top
+objectClass: organizationalUnit
+ou: ldapusers
+
+dn: cn=perl,ou=ldapusers,{{ ldap_suffix }}
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+cn: perl
+userPassword: {{ ldap_admin_password_ssha.stdout }}
+
+dn: cn=nagios,ou=ldapusers,{{ ldap_suffix }}
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+cn: nagios
+userPassword: {{ ldap_nagios_password_ssha.stdout }}

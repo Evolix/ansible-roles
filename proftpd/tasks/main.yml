@@ -20,6 +20,7 @@
     src: evolinux.conf.j2
     dest: /etc/proftpd/conf.d/z-evolinux.conf
     mode: "0644"
+    force: no
   notify: restart proftpd
   tags:
   - proftpd
@@ -29,6 +30,28 @@
     dest: /etc/proftpd/modules.conf
     regexp: '^LoadModule mod_tls_memcache.c'
     replace: '#LoadModule mod_tls_memcache.c'
+  notify: restart proftpd
+  tags:
+  - proftpd
+
+- name: Put empty vpasswd file if missing
+  copy:
+    src: vpasswd
+    dest: /etc/proftpd/vpasswd
+    force: no
+  notify: restart proftpd
+  tags:
+  - proftpd
+
+# Why 440? Because should be edited with ftpasswd.
+# So, readonly when opened with vim.
+# Then readable by group.
+- name: Enforce permissions on password file
+  file:
+    path: /etc/proftpd/vpasswd
+    mode: "0440"
+    owner: root
+    group: root
   notify: restart proftpd
   tags:
   - proftpd

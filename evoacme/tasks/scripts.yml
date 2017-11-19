@@ -9,15 +9,23 @@
 
 - name: Copy make-csr.sh script
   copy:
-    src: files/make-csr.sh
+    src: make-csr.sh
     dest: /usr/local/sbin/make-csr
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Copy vhost-domains.sh script
+  copy:
+    src: vhost-domains.sh
+    dest: /usr/local/sbin/vhost-domains
     owner: root
     group: root
     mode: "0755"
 
 - name: Copy evoacme script
   copy:
-    src: files/evoacme.sh
+    src: evoacme.sh
     dest: /usr/local/sbin/evoacme
     owner: root
     group: root

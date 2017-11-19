@@ -1,8 +1,0 @@
----
-
-- name: Install postgresql package
-  apt:
-    name: '{{item}}'
-  with_items:
-  - "postgresql-{{postgresql_version}}"
-  - ptop

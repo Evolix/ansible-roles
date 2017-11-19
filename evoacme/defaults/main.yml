@@ -5,6 +5,7 @@ evoacme_dhparam_size: 2048
 evoacme_acme_dir: /var/lib/letsencrypt
 evoacme_csr_dir: /etc/ssl/requests
 evoacme_crt_dir: /etc/letsencrypt
+evoacme_hooks_dir: "{{ evoacme_crt_dir }}/hooks"
 evoacme_log_dir: /var/log/evoacme
 evoacme_ssl_minday: 30
 evoacme_ssl_ct: 'FR'

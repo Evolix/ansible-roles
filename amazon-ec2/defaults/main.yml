@@ -1,0 +1,135 @@
+---
+aws_region: ca-central-1
+ec2_public_ip: False
+ec2_instance_count: 1
+ec2_security_group: "{{ ec2_evolinux_security_group }}"
+ec2_base_ami: "{{ ec2_debian_base_ami[aws_region] }}"
+ec2_instance_type: t2.micro
+# Note: Do not try to put your ED25519 key here, AWS does not support it...
+ssh_pubkey_file: ~/.ssh/id_rsa.pub
+ec2_keyname: "{{ lookup('env', 'USER') }}"
+
+# From https://wiki.debian.org/Cloud/AmazonEC2Image/Stretch
+ec2_debian_base_ami:
+  ap-northeast-1: ami-032dd665
+  ap-northeast-2: ami-e174ac8f
+  ap-south-1: ami-6e7a3e01
+  ap-southeast-1: ami-41365b22
+  ap-southeast-2: ami-51f61333
+  ca-central-1: ami-18239d7c
+  eu-central-1: ami-11bb0e7e
+  eu-west-1: ami-d037cda9
+  eu-west-2: ami-ece3f388
+  sa-east-1: ami-a24635ce
+  us-east-1: ami-ac5e55d7
+  us-east-2: ami-9fbb98fa
+  us-west-1: ami-560c3836
+  us-west-2: ami-fa18f282 
+
+ec2_evolinux_security_group:
+  name: evolinux-default
+  description: Evolinux default security group
+  rules:
+    - proto: icmp
+      cidr_ip: 0.0.0.0/0
+      from_port: -1
+      to_port: -1
+    - proto: tcp
+      from_port: 22
+      to_port: 22
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 5666
+      to_port: 5666
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 53
+      to_port: 53
+      cidr_ip: 0.0.0.0/0
+    - proto: udp
+      from_port: 53
+      to_port: 53
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 389
+      to_port: 389
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 636
+      to_port: 636
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 143
+      to_port: 143
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 993
+      to_port: 993
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 110
+      to_port: 110
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 995
+      to_port: 995
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 25
+      to_port: 25
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 80
+      to_port: 80
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 443
+      to_port: 443
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 21
+      to_port: 21
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 20
+      to_port: 20
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 5001
+      to_port: 5001
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 465
+      to_port: 465
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 587
+      to_port: 587
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 8181
+      to_port: 8181
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 8282
+      to_port: 8282
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 9091
+      to_port: 9091
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 2222
+      to_port: 2222
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 2223
+      to_port: 2223
+      cidr_ip: 0.0.0.0/0
+    - proto: udp
+      from_port: 123
+      to_port: 123
+      cidr_ip: 0.0.0.0/0
+  rules_egress:
+    - proto: all
+      cidr_ip: 0.0.0.0/0

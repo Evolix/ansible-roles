@@ -1,0 +1,8 @@
+modify: olcDatabase={1}mdb,cn=config
+olcSuffix: {{ ldap_suffix }}
+olcRootDN: cn=admin,{{ ldap_suffix }}
+olcRootPW: {{ ldap_admin_password_ssha.stdout }}
+olcAccess: {0}to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break
+olcAccess: {1}to attrs=userPassword by self write by anonymous auth by dn="cn=admin,{{ ldap_suffix }}" write by dn="cn=perl,ou=ldapusers,{{ ldap_suffix }}" write by * none
+olcAccess: {2}to attrs=shadowLastChange by self write by dn="cn=admin,{{ ldap_suffix }}" write by dn="cn=perl,ou=ldapusers,{{ ldap_suffix }}" write by * read
+olcAccess: {3}to * by self write by dn="cn=admin,{{ ldap_suffix }}" write by dn="cn=perl,ou=ldapusers,{{ ldap_suffix }}" write by * read

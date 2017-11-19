@@ -9,11 +9,30 @@
 
 - include: acme.yml
 
+- include: evoacme_hook.yml
+  vars:
+    hook_name: "{{ item }}"
+  with_items:
+    - reload_apache
+    - reload_nginx
+    - reload_dovecot
+    - reload_postfix
+
 - include: conf.yml
 
 - include: scripts.yml
 
-- include: webserver.yml
+- name: Determine Apache presence
+  stat:
+    path: /etc/apache2/apache2.conf
+  check_mode: no
+  register: sta
+
+- name: Determine Nginx presence
+  stat:
+    path: /etc/nginx/nginx.conf
+  check_mode: no
+  register: stn
 
 - include: apache.yml
   when: sta.stat.isreg is defined and sta.stat.isreg

@@ -13,7 +13,7 @@
     dest: /etc/apt/sources.list.d/backports.list
     force: yes
     mode: "0640"
-  notify: apt update
+  register: apt_backports_list
   tags:
   - apt
 
@@ -23,11 +23,13 @@
     dest: /etc/apt/preferences.d/0-backports-defaults
     force: yes
     mode: "0640"
-  notify: apt update
+  register: apt_backports_config
   tags:
   - apt
 
-- name: Intermediate flush of handlers
-  meta: flush_handlers
+- name: Apt update
+  apt:
+    update_cache: yes
+  when: apt_backports_list | changed or apt_backports_config | changed
   tags:
   - apt

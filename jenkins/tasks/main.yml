@@ -1,9 +1,5 @@
 ---
 
-- name: Include java8 role
-  include_role:
-    name: java8
-
 - name: Add jenkins GPG key
   apt_key:
     # url: https://jenkins-ci.org/debian/jenkins-ci.org.key

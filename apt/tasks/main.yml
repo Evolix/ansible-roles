@@ -7,6 +7,12 @@
   tags:
   - apt
 
+- name: Custom configuration
+  include: config.yml
+  when: apt_config
+  tags:
+  - apt
+
 - name: Install basics repositories
   include: basics.yml
   when: apt_install_basics
@@ -18,9 +24,6 @@
   when: apt_install_backports
   tags:
   - apt
-
-- debug:
-    var: apt_install_evolix_public
 
 - name: Install Evolix Public APT repository
   include: evolix_public.yml

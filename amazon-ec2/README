@@ -1,0 +1,60 @@
+# amazon-ec2
+
+Manage Amazon EC2 instances.
+
+This role is intended to be called before any other role to setup and start EC2
+instances.
+
+## Dependencies
+
+You should first ensure that you have `python-boto` package installed on your
+machine and an Amazon security access key pair created for your account.
+
+## Tasks
+
+By default, this role does nothing (no `main.yml` file).
+
+* `setup.yml`: create a security group and ssh keys
+* `create-instance.yml`: create new EC2 instances
+* `post-install.yml`: remove admin user created on Debian instances
+
+## Variables
+
+  - `aws_access_key` and `aws_secret_key`: your AWS credentials
+  - `aws_region`: where to create instances. Default: ca-central-1
+  - `ec2_public_ip`: assign public elastic IP address. Default: False
+  - `ec2_instance_count`: how many instance to launch. Default: 1
+  - `ec2_security_group: EC2 security group to use. See
+    ec2_evolinux_security_group in `defaults/main.yml` to define your own.
+    Default: ec2_evolinux_security_group
+  - `ec2_base_ami`: EC2 image to use. Default is to use Debian official ones,
+    depending on the region
+  - `ec2_instance_type`: EC2 instance type to use
+  - `ssh_pubkey_file`: SSH public key file to push to AWS. Do not try to put
+    your ED25519 key here, AWS does not support it. Default: ~/.ssh/id_rsa.pub
+  - `ec2_keyname: a name to give to your public key on AWS. Default is to use
+    $USER environment variable.
+
+## Examples
+
+In your main evolinux playbook put this play before Evolinux one:
+
+```
+---
+- name: Prepare Amazon EC2 instance
+  hosts: localhost
+  gather_facts: False
+
+  vars:
+    aws_access_key: 
+    aws_secret_key: 
+    # Any other variable you want to set.
+
+  tasks:
+    - include_role:
+        name: amazon-ec2
+        tasks_from: create-instance.yml
+```
+
+See amazon-ec2-evolinux.yml for an almost ready-to-use playbook to set up
+Amazon EC2 instances running Evolinux.

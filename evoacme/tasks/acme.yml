@@ -22,6 +22,14 @@
     group: acme
     state: directory
 
+- name: "Fix hooks directory permissions"
+  file:
+    path: "{{ evoacme_hooks_dir }}"
+    mode: "0700"
+    owner: acme
+    group: acme
+    state: directory
+
 - name: Fix log dir's right
   file:
     path: "{{ evoacme_log_dir }}"

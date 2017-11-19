@@ -1,0 +1,9 @@
+---
+
+- name: "log rotation script"
+  template:
+    src: rotate_logstash_logs.j2
+    dest: /etc/cron.daily/rotate_logstash_logs
+    owner: root
+    group: root
+    mode: "0750"

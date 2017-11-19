@@ -9,7 +9,7 @@
 - name: Check if Broadcom NetXtreme II device is present
   shell: "lspci | grep -q 'NetXtreme II'"
   check_mode: no
-  register: broadcom
+  register: broadcom_netextreme_search
   failed_when: False
   changed_when: False
 
@@ -22,7 +22,7 @@
     tasks_from: basics.yml
   vars:
     apt_basics_components: "main contrib non-free"
-  when: broadcom|success
+  when: broadcom_netextreme_search.rc == 0
 
 ## RAID
 
@@ -53,6 +53,18 @@
   when: "'Hewlett-Packard Company Smart Array' in raidmodel.stdout"
 
 - block:
+  - name: Add HW tool GPG key
+    apt_key:
+      # url: https://hwraid.le-vert.net/debian/hwraid.le-vert.net.gpg.key
+      data: "{{ lookup('file', 'hwraid.le-vert.net.gpg.key') }}"
+    when: ansible_distribution_release == "stretch"
+
+  - name: Add HW tool repository
+    apt_repository:
+      repo: 'deb http://hwraid.le-vert.net/debian stretch main'
+      state: present
+    when: ansible_distribution_release == "stretch"
+
   - name: Install packages for DELL/LSI hardware
     apt:
       name: "{{ item }}"

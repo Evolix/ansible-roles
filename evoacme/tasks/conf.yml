@@ -1,6 +1,6 @@
 ---
 - ini_file:
-    dest: /etc/letsencrypt/openssl.cnf
+    dest: "{{ evoacme_crt_dir }}/openssl.cnf"
     section: 'req'
     option: "{{ item.name }}"
     value: "{{ item.var }}"

@@ -1,3 +1,5 @@
 ---
 proftpd_hostname: "{{ ansible_hostname }}"
 proftpd_fqdn: "{{ ansible_fqdn }}"
+proftpd_default_address: []
+proftpd_port: "21"

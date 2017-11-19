@@ -7,8 +7,8 @@
 #
 
 [ -f /etc/default/evoacme ] && . /etc/default/evoacme
-[ -z "${CRT_DIR}" ] && CRT_DIR='/etc/letsencrypt'
+CRT_DIR="${CRT_DIR:-'/etc/letsencrypt'}"
 
-find "${CRT_DIR}" -maxdepth 1 -mindepth 1 -type d ! -path "*accounts" -exec basename {} \; | while read vhost; do
-	evoacme "$vhost"
-done
+export QUIET=1
+
+find "${CRT_DIR}" -maxdepth 1 -mindepth 1 -type d ! -path "*accounts" ! -path "*hooks" -printf "%f\n" | xargs -n1 evoacme

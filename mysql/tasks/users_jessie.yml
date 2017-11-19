@@ -13,6 +13,7 @@
   command: "apg -n 1 -m 16 -M lcN"
   register: mysql_admin_password
   changed_when: False
+  check_mode: no
   tags:
   - mysql
 

@@ -5,6 +5,19 @@
   when:
   - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
 
+- name: Apt configuration
+  include_role:
+    name: apt
+  vars:
+    apt_install_basics: "{{ evolinux_apt_replace_default_sources }}"
+    apt_install_evolix_public: "{{ evolinux_apt_public_sources }}"
+  when: evolinux_apt_include
+
+- name: /etc versioning with Git
+  include_role:
+    name: etc-git
+  when: evolinux_etcgit_include
+
 - name: Hostname
   include: hostname.yml
   when: evolinux_hostname_include
@@ -12,10 +25,6 @@
 - name: Kernel tuning
   include: kernel.yml
   when: evolinux_kernel_include
-
-- name: Apt configuration and packages install
-  include: apt.yml
-  when: evolinux_apt_include
 
 - name: Fstab configuration
   include: fstab.yml
@@ -29,13 +38,24 @@
   include: system.yml
   when: evolinux_system_include
 
-- name: Root user configuration
-  include: root.yml
-  when: evolinux_root_include
+- name: Evomaintenance
+  include_role:
+    name: evomaintenance
+  when: evolinux_evomaintenance_include
 
 - name: SSH configuration
   include: ssh.yml
   when: evolinux_ssh_include
+
+### disabled because of a memory leak
+# - name: Create evolinux users
+#   include_role:
+#     name: evolinux-users
+#   when: evolinux_users_include
+
+- name: Root user configuration
+  include: root.yml
+  when: evolinux_root_include
 
 - name: Postfix
   include: postfix.yml
@@ -63,4 +83,34 @@
 
 - name: Override Logmail service
   include: log2mail.yml
-  when: evolinux_packages_serveur_base
+  when: evolinux_log2mail_include
+
+- name: Minifirewall
+  include_role:
+    name: minifirewall
+  when: evolinux_minifirewall_include
+
+- name: Munin
+  include_role:
+    name: munin
+  when: evolinux_munin_include
+
+- name: Nagios/NRPE
+  include_role:
+    name: nagios-nrpe
+  when: evolinux_nagios_nrpe_include
+
+- name: fail2ban
+  include_role:
+    name: fail2ban
+  when: evolinux_fail2ban_include
+
+- name: Listupgrade
+  include_role:
+    name: listupgrade
+  when: evolinux_listupgrade_include
+
+- name: Generate ldif script
+  include_role:
+    name: generate-ldif
+  when: evolinux_generateldif_include

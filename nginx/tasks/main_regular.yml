@@ -38,13 +38,13 @@
   - nginx
 
 # TODO: verify that those permissions are correct :
-# not too strict for private_ipaddr_whitelist
+# not too strict for ipaddr_whitelist
 # and not too loose for private_htpasswd
 
-- name: Copy private_ipaddr_whitelist
+- name: Copy ipaddr_whitelist
   copy:
-    src: nginx/snippets/private_ipaddr_whitelist
-    dest: /etc/nginx/snippets/private_ipaddr_whitelist
+    src: nginx/snippets/ipaddr_whitelist
+    dest: /etc/nginx/snippets/ipaddr_whitelist
     owner: www-data
     group: www-data
     directory_mode: "0640"
@@ -56,20 +56,20 @@
 
 - name: add IP addresses to private IP whitelist
   lineinfile:
-    dest: /etc/nginx/snippets/private_ipaddr_whitelist
+    dest: /etc/nginx/snippets/ipaddr_whitelist
     line: "allow {{ item }};"
     state: present
-  with_items: "{{ nginx_private_ipaddr_whitelist_present }}"
+  with_items: "{{ nginx_ipaddr_whitelist_present }}"
   notify: reload nginx
   tags:
   - nginx
 
 - name: remove IP addresses from private IP whitelist
   lineinfile:
-    dest: /etc/nginx/snippets/private_ipaddr_whitelist
+    dest: /etc/nginx/snippets/ipaddr_whitelist
     line: "allow {{ item }};"
     state: absent
-  with_items: "{{ nginx_private_ipaddr_whitelist_absent }}"
+  with_items: "{{ nginx_ipaddr_whitelist_absent }}"
   notify: reload nginx
   tags:
   - nginx
@@ -112,6 +112,7 @@
     src: evolinux-default.conf.j2
     dest: /etc/nginx/sites-available/evolinux-default.conf
     mode: "0640"
+    force: no
   notify: reload nginx
   tags:
   - nginx

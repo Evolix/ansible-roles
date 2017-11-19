@@ -1,0 +1,5 @@
+---
+- name: Remove admin user
+  user:
+    name: admin
+    state: absent

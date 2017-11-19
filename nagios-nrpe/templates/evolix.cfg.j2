@@ -28,6 +28,7 @@ command[check_ldap]=/usr/lib/nagios/plugins/check_ldap -3 -H localhost -D cn=nag
 command[check_ldaps]=/usr/lib/nagios/plugins/check_ldaps -3 -H localhost -b {{ nagios_nrpe_ldap_dc }}
 command[check_imap]=/usr/lib/nagios/plugins/check_imap -H localhost
 command[check_imaps]=/usr/lib/nagios/plugins/check_imap -S -H localhost -p 993
+command[check_imapproxy]=/usr/lib/nagios/plugins/check_imap -H localhost -p 1143
 command[check_pop]=/usr/lib/nagios/plugins/check_pop -H localhost
 command[check_pops]=/usr/lib/nagios/plugins/check_pop -S -H localhost -p 995
 command[check_ftp]=/usr/lib/nagios/plugins/check_ftp -H localhost
@@ -48,6 +49,7 @@ command[check_clamav_db]=/usr/lib/nagios/plugins/check_file_age -w 86400 -c 1728
 command[check_ssl]=/usr/lib/nagios/plugins/check_http -f follow -I 127.0.0.1 -S -p 443 -H ssl.evolix.net -C 15,5
 command[check_elasticsearch]=/usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /_cat/health?h=st -p 9200 -r 'red' --invert-regex
 command[check_memcached]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 11211
+command[check_opendkim]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 54321
 
 # Local checks (not packaged)
 command[check_mem]={{ nagios_plugins_directory }}/check_mem -f -C -w 20 -c 10

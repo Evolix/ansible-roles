@@ -1,5 +1,12 @@
 ---
 
+- name: dependencies are satisfied
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - iptables
+
 - name: init script is copied
   copy:
     src: minifirewall

@@ -19,7 +19,7 @@ server {
   ssl_certificate_key {{ kibana_proxy_ssl_key }};
 
   # Auth.
-  include /etc/nginx/snippets/private_ipaddr_whitelist;
+  include /etc/nginx/snippets/ipaddr_whitelist;
   deny all;
   auth_basic "Reserved {{ kibana_proxy_domain }}";
   auth_basic_user_file /etc/nginx/snippets/private_htpasswd;

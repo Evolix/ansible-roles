@@ -1,0 +1,542 @@
+#!/bin/sh
+
+if [ $(id -u) != 0 ]; then
+  echo "You must be root" 2>&1
+  exit 1
+fi
+
+is_pkg_installed() {
+    dpkg -l "$1" 2>/dev/null | grep -q '^ii'
+}
+
+get_pkg_version() {
+    dpkg-query -W -f='${Version}\n' "$1" | \
+        sed 's/[~+-].\+//' | sed 's/.\+://' | sed 's/p.*//' | cut -d'.' -f1,2
+}
+
+clientNumber="{{ client_number | mandatory }}"
+monitoringMode="{{ monitoring_mode | mandatory }}"
+monitoringType="{{ monitoring_type | mandatory }}"
+monitoringTimeout="{{ monitoring_timeout | mandatory }}"
+isActive="TRUE"
+NagiosEnabled="TRUE"
+
+EvoComputerName=$(hostname -s)
+dnsPTRrecord=$(hostname -f)
+HardwareMark=$(dmidecode -s system-manufacturer | grep -v '^#')
+computerIP=$(hostname -i | cut -d' ' -f1)
+computerOS=$(lsb_release -s -d | sed 's#\..##')
+computerKernel=$(uname -r)
+HardwareSerial=$(dmidecode -s system-serial-number | grep -v '^#')
+
+type="baremetal"
+lscpu | grep -q KVM && type="kvm"
+lscpu | grep -q Oracle && type="virtualbox"
+
+if [ "$type" = "kvm" ]; then
+    HardwareMark="KVM"
+    HardwareModel="Virtual Machine"
+
+    cpuMark=$(lscpu | grep Vendor | tr -s '\t' ' ' | cut -d' ' -f3)
+    cpuModel="Virtual $(lscpu | grep "Model name" | tr -s '\t' ' ' | cut -d' ' -f3-), $(nproc) vCPU"
+    cpuFreq="$(lscpu | grep "CPU MHz" | tr -s '\t' ' ' | cut -d' ' -f3-)MHz"
+elif [ "$type" = "virtualbox" ]; then
+    HardwareMark="VirtualBox"
+    HardwareModel="Virtual Machine"
+
+    cpuMark=$(lscpu | grep Vendor | tr -s '\t' ' ' | cut -d' ' -f3)
+    cpuModel="Virtual $(lscpu | grep "Model name" | tr -s '\t' ' ' | cut -d' ' -f3-), $(nproc) vCPU"
+    cpuFreq="$(lscpu | grep "CPU MHz" | tr -s '\t' ' ' | cut -d' ' -f3-)MHz"
+else
+    HardwareModel=$(dmidecode -s system-product-name | grep -v '^#')
+
+    cpuMark=$(dmidecode -s processor-manufacturer | grep -v '^#' | head -1)
+    cpuModel=$(dmidecode -s processor-version | grep -v '^#' | head -1)
+    cpuFreq=$(dmidecode -s processor-frequency | grep -v '^#' | head -1)
+fi
+
+# lspci is not available on OpenVZ container.
+if ( test -d /proc/vz && ! test -d /proc/bc ); then
+    screen0Mark="No screen on OpenVZ container"
+    screen0Model="No screen on OpenVZ container"
+    sdaSize="Total SIMFS $(df -h -t simfs --total | tail -1 | tr -s '\t' ' ' | cut -d' ' -f2)"
+else
+    screen0Mark=$(lspci -q -vm | grep VGA -A3 | grep Vendor | tr -d '\t' | cut -d':' -f2 | head -1)
+    screen0Model=$(lspci -q -vm | grep VGA -A3 | grep Device | tr -d '\t' | cut -d':' -f2 | head -1)
+    sdaSize=$(lsblk -d -r -n -o TYPE,SIZE | grep disk | sed 's/^disk //'| xargs | sed 's/ / + /g')
+    raidModel=$(lspci -q -vm | grep RAID -A3 | grep Device | tr -d '\t' | cut -d':' -f2 | head -1)
+fi
+
+if (test -b /dev/vda); then
+    sdaModel="Virtual VirtIO Disk"
+elif [ -d /proc/vz ] && [ ! -d /proc/bc ]; then
+    sdaModel="OpenVZ SIMFS disk"
+else
+    hdparm -I /dev/sda 2>&1 | grep -q bad
+    if [ $? -eq 0 ]; then
+        if (test -n "${raidModel}"); then
+            sdaModel=${raidModel}
+        else
+            sdaModel="Model unknown, RAID HW?"
+        fi
+    else
+        sdaModel=$(hdparm -I /dev/sda | grep Model | tr -s '\t' ' ' | cut -d' ' -f4-)
+    fi
+fi
+
+ldif_file="/root/${EvoComputerName}.$(date +"%Y%m%d%H%M%S").ldif"
+
+computer_dn="EvoComputerName=${EvoComputerName},ou=computer,dc=evolix,dc=net"
+
+# Generic services.
+cat <<EOT > "${ldif_file}"
+## Generated on $(date --iso-8601=seconds)
+## Can be injected in LDAP with this command:
+# ldapvi --profile evolix --add --in ${EvoComputerName}.ldif
+
+dn: ${computer_dn}
+dnsArecord: ${EvoComputerName}
+EvoComputerName: ${EvoComputerName}
+HardwareMark: ${HardwareMark}
+HardwareModel: ${HardwareModel}
+dnsZone: evolix.net
+objectClass: EvoComputer
+objectClass: top
+computerIP: ${computerIP}
+dnsPTRrecord: ${dnsPTRrecord}
+computerOS: ${computerOS}
+computerKernel: Linux ${computerKernel}
+isActive: ${isActive}
+NagiosEnabled: ${NagiosEnabled}
+NagiosComments: ${monitoringType},${monitoringMode},${monitoringTimeout}
+HardwareSerial: ${HardwareSerial}
+clientNumber: ${clientNumber}
+EOT
+
+# CPU
+if [ -n "${cpuMark}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: HardwareName=cpu0,${computer_dn}
+HardwareMark: ${cpuMark}
+objectClass: EvoHardware
+HardwareName: cpu0
+HardwareSize: ${cpuFreq}
+HardwareType: CPU
+HardwareModel: ${cpuModel}
+EOT
+fi
+
+# Memory
+mem=$(free -h | grep Mem: | tr -s ' ' | cut -d ' ' -f2)
+if [ -n "${mem}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: HardwareName=ram0,${computer_dn}
+HardwareName: ram0
+objectClass: EvoHardware
+HardwareSize: ${mem}
+HardwareType: mem
+NagiosEnabled: TRUE
+EOT
+fi
+
+# Screen
+swap=$(free -h | grep Swap: | tr -s ' ' | cut -d ' ' -f2)
+if [ -n "${screen0Mark}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: HardwareName=screen0,${computer_dn}
+HardwareMark: ${screen0Mark}
+HardwareName: screen0
+objectClass: EvoHardware
+HardwareModel: ${screen0Model}
+HardwareType: video
+EOT
+fi
+
+# /dev/sda
+if [ -n "${sdaModel}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: HardwareName=sda,${computer_dn}
+objectClass: EvoHardware
+HardwareName: sda
+HardwareSize: ${sdaSize}
+HardwareType: disk
+HardwareModel: ${sdaModel}
+HardwarePartitioncount: 1
+NagiosEnabled: TRUE
+EOT
+fi
+
+# Swap
+swap=$(free -h | grep Swap: | tr -s ' ' | cut -d ' ' -f2)
+if [ -n "${swap}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: HardwareName=swap,${computer_dn}
+objectClass: EvoHardware
+HardwareName: swap
+HardwareSize: ${swap}
+HardwareType: mem
+NagiosEnabled: TRUE
+EOT
+fi
+
+# NRPE
+nrpe_version=$(get_pkg_version nagios-nrpe-server)
+if [ -n "${nrpe_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=nrpe,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: TCP
+ServiceVersion: NRPE ${nrpe_version}
+objectClass: EvoService
+ServiceName: nrpe
+ipServicePort: 5666
+ServiceType: monitoring
+EOT
+fi
+
+# Postfix
+postfix_version=$(get_pkg_version postfix)
+if [ -n "${postfix_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=postfix,${computer_dn}
+ipServiceProtocol: tcp
+NagiosEnabled: TRUE
+objectClass: EvoService
+ServiceName: postfix
+ipServicePort: 25
+ServiceType: smtp
+ServiceVersion: Postfix ${postfix_version}
+EOT
+fi
+
+# OpenSSH
+openssh_version=$(get_pkg_version openssh-server)
+if [ -n "${openssh_version}" ]; then
+    opensshFingerprintRSA=$(ssh-keyscan -t rsa localhost 2>/dev/null\
+      | sed -e 's/localhost //' -e 's/ssh-rsa /ssh-rsa,/')
+    opensshFingerprintED25519=$(ssh-keyscan -t ed25519 localhost 2>/dev/null\
+      | sed -e 's/localhost //' -e 's/ssh-ed25519 /ssh-ed25519,/')
+    opensshFingerprintECDSA=$(ssh-keyscan -t ecdsa-sha2-nistp256 localhost 2>/dev/null\
+      | sed -e 's/localhost //' -e 's/ecdsa-sha2-nistp256 /ecdsa-sha2-nistp256,/')
+    opensshFingerprint="${opensshFingerprintRSA}${opensshFingerprintRSA:+;}${opensshFingerprintED25519}${opensshFingerprintED25519:+;}${opensshFingerprintECDSA}"
+
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=openssh,${computer_dn}
+ipServiceProtocol: tcp
+NagiosEnabled: TRUE
+objectClass: EvoService
+ipServicePort: 22
+ServiceName: openssh
+ServiceType: ssh
+ServiceVersion: OpenSSH ${openssh_version}
+ServiceFingerprint: ${opensshFingerprint}
+EOT
+fi
+
+# NTP
+ntp_version=$(get_pkg_version ntp)
+if [ -n "${ntp_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=ntp,${computer_dn}
+NagiosEnabled: TRUE
+objectClass: EvoService
+ServiceName: ntp
+ServiceType: ntp
+ServiceVersion: NTP ${ntp_version}
+EOT
+fi
+
+for net in $(ls /sys/class/net); do
+    path=$(readlink -e /sys/class/net/${net})
+    echo $path | grep -q virtual
+    if [ $? -ne 0 ]; then
+        hw=$(cat ${path}/address)
+        vendor_id=$(cat ${path}/device/vendor)
+        dev_id=$(cat ${path}/device/device)
+        [ "${dev_id}" = "0x0001" ] && dev_id="0x1000"
+        dev=$(lspci -d "${vendor_id}:${dev_id}" -vm)
+        vendor=$(echo "${dev}" | grep -E "^Vendor" | cut -d':' -f2 | xargs)
+        model=$(echo "${dev}" | grep -E "^Vendor" -A1 | grep -E "^Device" | cut -d':' -f2 | xargs)
+        size=$(cat ${path}/tx_queue_len)
+        ips=$(ip -o addr show "${net}" | grep "global" | awk '{print $4 }' | xargs | cut -d'/' -f1)
+        cat <<EOT >> "${ldif_file}"
+
+dn: HardwareName=$net,EvoComputerName=$(hostname),ou=computer,dc=evolix,dc=net
+objectClass: EvoHardware
+HardwareAddress: ${hw}
+EOT
+        [ -n "$ips" ] && echo "HardwareIP: ${ips}" >> "${ldif_file}"
+        cat <<EOT >> "${ldif_file}"
+HardwareMark: ${vendor}
+HardwareModel: ${model}
+HardwareName: ${net}
+HardwareSize: ${size}
+HardwareType: netcard
+EOT
+    fi
+done
+
+# Apache
+if is_pkg_installed apache2-data; then
+    apache_version=$(get_pkg_version apache2-data)
+fi
+if [ -n "${apache_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=apache,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: apache
+ipServicePort: 80
+ServiceType: http
+ServiceVersion: Apache ${apache_version}
+
+dn: ServiceName=apache-ssl,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: apache-ssl
+ipServicePort: 443
+ServiceType: http
+ServiceVersion: Apache ${apache_version}
+EOT
+fi
+
+# Nginx
+if is_pkg_installed nginx-common; then
+    nginx_version=$(get_pkg_version nginx-common)
+fi
+if [ -n "${nginx_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=nginx,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: nginx
+ipServicePort: 80
+ServiceType: http
+ServiceVersion: Nginx ${nginx_version}
+
+dn: ServiceName=nginx-ssl,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ipServicePort: 443
+ServiceName: nginx-ssl
+ServiceType: https
+ServiceVersion: Nginx ${nginx_version}
+EOT
+fi
+
+# MySQL
+if is_pkg_installed mysql-server-5.5; then
+    mysql_version=$(get_pkg_version mysql-server-5.5)
+elif is_pkg_installed mysql-server-5.7; then
+    mysql_version=$(get_pkg_version mysql-server-5.7)
+fi
+if [ -n "${mysql_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=mysql,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: mysql
+ipServicePort: 3306
+ServiceType: sql
+ServiceVersion: MySQL ${mysql_version}
+EOT
+fi
+
+# MariaDB
+if is_pkg_installed mariadb-server-10.1; then
+    mariadb_version=$(get_pkg_version mariadb-server-10.1)
+elif is_pkg_installed mariadb-server-10.0; then
+    mariadb_version=$(get_pkg_version mariadb-server-10.0)
+fi
+if [ -n "${mariadb_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=mysql,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: mysql
+ipServicePort: 3306
+ServiceType: sql
+ServiceVersion: MariaDB ${mariadb_version}
+EOT
+fi
+
+# Squid
+if is_pkg_installed squid; then
+  # squid on Debian 9+
+  squid_version=$(get_pkg_version squid)
+elif is_pkg_installed squid3-common; then
+  # squid on Debian 8
+  squid_version=$(get_pkg_version squid3-common)
+fi
+if [ -n "${squid_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=squid,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: squid
+ipServicePort: 3128
+ServiceType: proxy
+ServiceVersion: Squid ${squid_version}
+EOT
+fi
+
+# ProFTPD
+if is_pkg_installed proftpd-basic; then
+    proftpd_version=$(get_pkg_version proftpd-basic)
+fi
+if [ -n "${proftpd_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=proftpd,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: proftpd
+ipServicePort: 3128
+ServiceType: ftp
+ServiceVersion: ProFTPD ${proftpd_version}
+EOT
+fi
+
+# OpenLDAP
+if is_pkg_installed slapd; then
+    ldap_version=$(get_pkg_version slapd)
+fi
+if [ -n "${ldap_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=openldap,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: openldap
+ipServicePort: 389
+ServiceType: ldap
+ServiceVersion: OpenLDAP ${ldap_version}
+EOT
+fi
+
+# Dovecot
+if is_pkg_installed dovecot-common; then
+    dovecot_version=$(get_pkg_version dovecot-common)
+fi
+if [ -n "${dovecot_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=dovecot-pop,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: dovecot-pop
+ipServicePort: 110
+ServiceType: pop
+ServiceVersion: Dovecot ${dovecot_version}
+
+dn: ServiceName=dovecot-pop-ssl,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: dovecot-pop-ssl
+ipServicePort: 995
+ServiceType: pop
+ServiceVersion: Dovecot ${dovecot_version}
+
+dn: ServiceName=dovecot-imap,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: dovecot-imap
+ipServicePort: 143
+ServiceType: imap
+ServiceVersion: Dovecot ${dovecot_version}
+
+dn: ServiceName=dovecot-imap-ssl,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: dovecot-imap-ssl
+ipServicePort: 993
+ServiceType: imap
+ServiceVersion: Dovecot ${dovecot_version}
+EOT
+fi
+
+# Amavis
+if is_pkg_installed amavisd-new; then
+    amavis_version=$(get_pkg_version amavisd-new)
+fi
+if [ -n "${amavis_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=amavisd-new,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: amavisd-new
+ipServicePort: 10024
+ServiceType: smtp
+ServiceVersion: amavisd-new ${amavis_version}
+EOT
+fi
+
+# ClamAV
+if is_pkg_installed clamav-daemon; then
+    clamav_version=$(get_pkg_version clamav-daemon)
+fi
+if [ -n "${clamav_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=clamav_db,${computer_dn}
+NagiosEnabled: TRUE
+objectClass: EvoService
+ServiceName: clamav_db
+ServiceType: antivirus
+ServiceVersion: ClamAV ${clamav_version}
+EOT
+fi
+
+# Elasticsearch
+if is_pkg_installed elasticsearch; then
+    elasticsearch_version=$(get_pkg_version elasticsearch)
+fi
+if [ -n "${elasticsearch_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=elasticsearch,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: elasticsearch
+ipServicePort: 9200
+ServiceType: http
+ServiceVersion: Elasticsearch ${elasticsearch_version}
+EOT
+fi
+
+# test if we have a stdout
+if [ -t 1 ]; then
+  echo "Output is in ${ldif_file}"
+fi
+
+exit 0

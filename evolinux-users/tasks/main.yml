@@ -1,0 +1,20 @@
+---
+
+- fail:
+    msg: only compatible with Debian >= 8
+  when:
+  - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
+
+- debug:
+    msg: "Warning: empty 'evolinux_users' variable, tasks will be skipped!"
+  when: evolinux_users == {}
+
+- name: Create user accounts
+  include: user.yml
+  vars:
+    user: "{{ item.value }}"
+  with_dict: "{{ evolinux_users }}"
+  when: evolinux_users != {}
+
+- include: root_disable_ssh.yml
+  when: evolinux_root_disable_ssh

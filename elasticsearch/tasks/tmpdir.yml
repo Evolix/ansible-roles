@@ -28,4 +28,4 @@
       - restart elasticsearch
     tags:
       - elasticsearch
-  when: elasticsearch_custom_tmpdir or fstab_tmp_noexec | success
+  when: (elasticsearch_custom_tmpdir != '' and elasticsearch_custom_tmpdir != None) or fstab_tmp_noexec | success

@@ -1,0 +1,44 @@
+---
+
+- name: Evolinux config for APT
+  lineinfile:
+    dest: /etc/apt/apt.conf.d/z-evolinux.conf
+    line: "{{ item.line }}"
+    regexp: "{{ item.regexp }}"
+    create: yes
+    state: present
+    mode: "0640"
+  with_items:
+  - { line: "APT::Install-Recommends \"false\";", regexp: 'APT::Install-Recommends' }
+  - { line: "APT::Install-Suggests \"false\";",   regexp: 'APT::Install-Suggests' }
+  when: apt_evolinux_config
+
+- name: DPkg invoke hooks
+  lineinfile:
+    dest: /etc/apt/apt.conf.d/z-evolinux.conf
+    line: "{{ item }}"
+    create: yes
+    state: present
+    mode: "0640"
+  with_items:
+  - "DPkg::Pre-Invoke { \"df /tmp | grep -q /tmp && mount -oremount,exec /tmp || true\"; };"
+  - "DPkg::Pre-Invoke { \"df /usr | grep -q /usr && mount -oremount,rw /usr || true\"; };"
+  - "DPkg::Post-Invoke { \"df /tmp | grep -q /tmp && mount -oremount /tmp || true\"; };"
+  - "DPkg::Post-Invoke { \"df /usr | grep -q /usr && mount -oremount /usr || true\"; };"
+  when: apt_hooks
+
+- name: Remove Aptitude
+  apt:
+    name: aptitude
+    state: absent
+  when: apt_remove_aptitude
+
+- name: Updating APT cache
+  apt:
+    update_cache: yes
+  changed_when: False
+
+- name: Upgrading system
+  apt:
+    upgrade: dist
+  when: apt_upgrade

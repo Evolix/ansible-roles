@@ -1,0 +1,19 @@
+---
+- name: install Amavis
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - postgrey
+  - amavisd-new
+  tags:
+  - amavis
+
+- name: configure Amavis
+  template:
+    src: amavis.conf.j2
+    dest: /etc/amavis/conf.d/49-evolinux-defaults.conf
+    mode: "0644"
+  notify: restart amavis
+  tags:
+  - amavis

@@ -4,7 +4,9 @@
     name: libxml-parser-perl
   tags: varnish
 
-- include: remount_usr_rw.yml
+- include_role:
+    name: remount-usr
+  tags: varnish
 
 - name: Create plugin directory
   file:

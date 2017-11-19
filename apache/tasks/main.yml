@@ -38,6 +38,10 @@
   - expires
   - headers
   - cgi
+  - ssl
+  - include
+  - negotiation
+  - alias
   notify: reload apache
   tags:
   - apache
@@ -127,30 +131,17 @@
   tags:
   - apache
 
-- name: Stat /default index
-  stat:
-    path: /var/www/index.html
-  register: _default_index
-  check_mode: no
+- include_role:
+    name: remount-usr
   tags:
   - apache
 
-# - block:
-#   - name: generate random string for serverstatus suffix
-#     command: "apg -a 1 -M N -n 1"
-#     changed_when: False
-#     register: _random_serverstatus_suffix
-#
-#   - name: overwrite apache_serverstatus_suffix
-#     set_fact:
-#       apache_serverstatus_suffix: "{{ _random_serverstatus_suffix.stdout }}"
-#   when: apache_serverstatus_suffix == ""
-#
-# - name: replace server-status suffix in default site index
-#   replace:
-#     dest: /var/www/index.html
-#     regexp: '__SERVERSTATUS_SUFFIX__'
-#     replace: "{{ apache_serverstatus_suffix }}"
+- name: "Install save_apache_status.sh"
+  copy:
+    src: save_apache_status.sh
+    dest: /usr/share/scripts/save_apache_status.sh
+    mode: "0755"
+    force: no
 
 - include: log2mail.yml
   when: apache_log2mail_include

@@ -11,7 +11,7 @@
 - block:
   - name: Head repository is checked-out
     git:
-      repo: "git://github.com/mobz/elasticsearch-head.git"
+      repo: "https://github.com/mobz/elasticsearch-head.git"
       dest: "{{ elasticsearch_plugin_head_clone_dir }}"
       clone: yes
     tags:
@@ -53,3 +53,21 @@
     - restart elasticsearch
   tags:
     - elasticsearch
+
+- name: Install systemd unit
+  template:
+    src: elasticsearch-head.service.j2
+    dest: /etc/systemd/system/elasticsearch-head.service
+  tags:
+    - elasticsearch
+    - systemd
+
+- name: Enable systemd unit
+  systemd:
+    name: elasticsearch-head
+    daemon_reload: yes
+    enabled: yes
+    state: started
+  tags:
+    - elasticsearch
+    - systemd

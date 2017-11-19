@@ -6,7 +6,7 @@
     dest: /etc/apt/sources.list
     mode: "0644"
     force: yes
-  notify: apt update
+  register: apt_basic_list
   tags:
   - apt
 
@@ -20,7 +20,9 @@
   - /etc/apt/sources.list.d/debian-update.list
   when: apt_clean_gandi_sourceslist
 
-- name: Intermediate flush of handlers
-  meta: flush_handlers
+- name: Apt update
+  apt:
+    update_cache: yes
+  when: apt_basic_list | changed
   tags:
   - apt

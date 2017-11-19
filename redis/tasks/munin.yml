@@ -6,23 +6,10 @@
   tags:
   - redis
 
-- name: Check if /usr is a partition
-  shell: "mount | grep 'on /usr type'"
-  args:
-    warn: no
-  changed_when: False
-  failed_when: False
-  check_mode: no
-  register: usr_partition
-  tags: redis
-
-- name: Mount /usr in rw
-  command: mount -o remount,rw /usr
-  args:
-    warn: no
-  changed_when: False
-  when: usr_partition.rc == 0
-  tags: redis
+- include_role:
+    name: remount-usr
+  tags:
+  - redis
 
 - name: Create plugin directory
   file:
@@ -60,3 +47,26 @@
     - used_memory
   notify: restart munin-node
   tags: redis
+
+- name: Count redis condif blocks in munin-node configuration
+  command: grep -c "\[redis_"  /etc/munin/plugin-conf.d/munin-node
+  register: munin_redis_blocs_in_config
+  failed_when: False
+  changed_when: False
+  check_mode: no
+
+- name: Add redis password for munin (if no more than 1 config block)
+  ini_file:
+    dest: /etc/munin/plugin-conf.d/munin-node
+    section: 'redis_*'
+    option: env.password
+    value: '{{ redis_password }}'
+  notify: restart munin-node
+  when: "redis_password != '' and redis_password != None and {{munin_redis_blocs_in_config.stdout | int}} <= 1"
+  tags: redis
+
+
+- name: Warn if multiple instance in munin-plugins configuration
+  debug:
+    msg: "WARNING - It seems you have multiple redis sections in your munin-node configuration - Munin config NOT changed"
+  when: "redis_password != '' and redis_password != None and {{munin_redis_blocs_in_config.stdout | int}} > 1 "

@@ -1,0 +1,57 @@
+---
+
+- name: "Test if '{{ user.name }}' exists"
+  command: 'getent passwd {{ user.name }}'
+  register: loginisbusy
+  failed_when: False
+  changed_when: False
+  check_mode: no
+
+- name: "Test if uid exists for '{{ user.name }}'"
+  command: 'getent passwd {{ user.uid }}'
+  register: uidisbusy
+  failed_when: False
+  changed_when: False
+  check_mode: no
+
+- name: "Add Unix account with classical uid for '{{ user.name }}'"
+  user:
+   state: present
+   uid: '{{ user.uid }}'
+   name: '{{ user.name }}'
+   comment: '{{ user.fullname }}'
+   shell: /bin/bash
+   password: '{{ user.password_hash }}'
+   update_password: on_create
+  when: loginisbusy.rc != 0 and uidisbusy.rc != 0
+
+- name: "Add Unix account with random uid for '{{ user.name }}'"
+  user:
+   state: present
+   name: '{{ user.name }}'
+   comment: '{{ user.fullname }}'
+   shell: /bin/bash
+   password: '{{ user.password_hash }}'
+   update_password: on_create
+  when: loginisbusy.rc != 0 and uidisbusy.rc == 0
+
+- name: "Create secondary groups"
+  group:
+    name: "{{ group }}"
+  with_items: "{{ user.groups }}"
+  loop_control:
+    loop_var: group
+  when: user.groups is defined
+
+- name: "Add user '{{ user.name }}' to secondary groups"
+  user:
+    name: '{{ user.name }}'
+    groups: "{{ user.groups }}"
+    append: yes
+  when: user.groups is defined
+
+- name: "Fix perms on home directory for '{{ user.name }}'"
+  file:
+   name: '/home/{{ user.name }}'
+   mode: "0700"
+   state: directory

@@ -11,6 +11,7 @@ Tasks are extracted in several files, included in `tasks/main.yml` :
 
 ## Available variables
 
+* `apt_config` : customize apt configuration (default: `True`) ;
 * `apt_install_basics` : change basic sources components (default: `True`) ;
 * `apt_basics_components` : basic sources components (default: `main`) ;
 * `apt_install_backports` : install backports sources (default: `False`) ;

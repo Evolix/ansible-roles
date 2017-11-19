@@ -1,0 +1,12 @@
+---
+- include_role:
+    name: remount-usr
+  when: general_scripts_dir | search("/usr")
+
+- name: "copy generateldif.sh"
+  template:
+    src: templates/generateldif.sh.j2
+    dest: '{{ general_scripts_dir }}/generateldif.sh'
+    owner: root
+    group: root
+    mode: "0750"

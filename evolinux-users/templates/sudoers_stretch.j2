@@ -1,0 +1,9 @@
+Defaults        umask=0077
+
+Cmnd_Alias      MAINT = /usr/share/scripts/evomaintenance.sh, /usr/share/scripts/listupgrade.sh, /usr/bin/apt, /bin/mount
+
+nagios          ALL = NOPASSWD: /usr/lib/nagios/plugins/check_procs
+nagios          ALL = (clamav) NOPASSWD: /usr/bin/clamscan /tmp/safe.txt
+
+%{{ evolinux_sudo_group }}  ALL=(ALL:ALL) ALL
+%{{ evolinux_sudo_group }}  ALL = NOPASSWD: MAINT

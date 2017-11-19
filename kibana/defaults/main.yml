@@ -1,4 +1,8 @@
 ---
+
+kibana_server_host: "127.0.0.1"
+kibana_server_basepath: ""
+
 kibana_proxy_nginx: False
 
 kibana_proxy_domain: "kibana.{{ ansible_fqdn }}"

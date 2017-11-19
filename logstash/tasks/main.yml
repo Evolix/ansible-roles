@@ -1,11 +1,5 @@
 ---
 
-- name: Install java8
-  include_role:
-    name: java8
-  tags:
-    - packages
-
 - name: APT https transport is enabled
   apt:
     name: apt-transport-https
@@ -26,7 +20,7 @@
 - name: Elastic sources list is available
   apt_repository:
     repo: "deb https://artifacts.elastic.co/packages/5.x/apt stable main"
-    filename: elastic.list
+    filename: elastic
     state: present
     update_cache: yes
   tags:
@@ -41,7 +35,7 @@
     - packages
 
 - name: Logstash service is enabled
-  service:
+  systemd:
     name: logstash
     enabled: yes
 
@@ -76,3 +70,5 @@
 - debug:
     var: logstash_template
     verbosity: 1
+
+- include: logs.yml

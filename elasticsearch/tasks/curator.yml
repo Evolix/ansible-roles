@@ -3,6 +3,7 @@
 - name: Curator sources list is available
   apt_repository:
     repo: "deb http://packages.elastic.co/curator/4/debian stable main"
+    filename: elastic
     update_cache: yes
     state: present
   tags:

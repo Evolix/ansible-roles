@@ -13,6 +13,7 @@ galaxy_info:
   - name: Debian
     versions:
     - jessie
+    - stretch
 
   galaxy_tags: []
     # List tags for your role here, one per line. A tag is
@@ -23,4 +24,5 @@ galaxy_info:
     # NOTE: A tag is limited to a single word comprised of
     # alphanumeric characters. Maximum 20 tags per role.
 
-dependencies: []
+dependencies:
+  - java8

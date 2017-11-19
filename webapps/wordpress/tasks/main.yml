@@ -1,0 +1,103 @@
+---
+- name: Create bin dir
+  file:
+    state: directory
+    dest: "{{ ansible_env.HOME }}/bin"
+    mode: "0750"
+
+- name: Download wp-cli
+  get_url:
+    url: "https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar"
+    dest: "{{ ansible_env.HOME }}/bin/wp-cli.phar"
+    mode: "0750"
+
+- name: Download Wordpress
+  shell: '{{ wordpress_wpcli }} core download --locale=fr_FR --version={{ wordpress_version }}'
+  args:
+    creates: "{{ ansible_env.HOME }}/www/index.php"
+
+- name: Retrieve .my.cnf
+  fetch:
+    src: "{{ ansible_env.HOME }}/.my.cnf"
+    dest: "/tmp/wordpress-{{ ansible_user }}.cnf"
+    flat: yes
+
+- name: Generate random password
+  command: apg -n1 -m 12 -M LCN
+  register: shell_password
+  changed_when: false
+
+- name: Read mysql config from .my.cnf
+  set_fact: 
+    db_host: "{{ lookup('ini', 'host section=client file=/tmp/wordpress-{{ ansible_user }}.cnf default=127.0.0.1') }}"
+    db_user: "{{ lookup('ini', 'user section=client file=/tmp/wordpress-{{ ansible_user }}.cnf default={{ ansible_user }}') }}"
+    db_pwd: "{{ lookup('ini', 'password section=client file=/tmp/wordpress-{{ ansible_user }}.cnf') }}"
+    db_name: "{{ lookup('ini', 'database section=mysql file=/tmp/wordpress-{{ ansible_user }}.cnf default={{ ansible_user }}') }}"
+    admin_pwd: "{{ shell_password.stdout }}"
+
+- name: Remove local .my.cnf
+  file:
+    path: "/tmp/wordpress-{{ ansible_user }}.cnf"
+    state: absent
+  delegate_to: localhost
+
+- name: Configure Wordpress (wp-config.php)
+  shell: '{{ wordpress_wpcli }} core config --dbhost={{ db_host }} --dbuser={{ db_user }} --dbpass={{ db_pwd }} --dbname={{ db_name }}'
+  args:
+    creates: "{{ ansible_env.HOME }}/www/wp-config.php"  
+
+- name: Configure site
+  shell: '{{ wordpress_wpcli }} core install --url={{ wordpress_host | quote }} --title={{ wordpress_title | quote }} --admin_user=admin --admin_password="{{ admin_pwd | quote }}" --admin_email={{ wordpress_email }} --skip-email'
+  changed_when: false
+
+- name: Check if Wordpress is up to date
+  shell: '{{ wordpress_wpcli }} core check-update | grep -q Success'
+  register: check_version
+  check_mode: no
+  failed_when: false
+  changed_when: check_version.rc
+
+- name: Update Wordpress
+  shell: '{{ wordpress_wpcli }} core update --version={{ wordpress_version }}'
+  args:
+    removes: "{{ ansible_env.HOME }}/www/index.php"
+  when: check_version.rc
+
+- name: Install default plugin
+  shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} || {{ wordpress_wpcli }} plugin install {{ item }}'
+  changed_when: false
+  with_items: "{{ wordpress_plugins }}"
+
+- name: Update default plugins
+  shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} && {{ wordpress_wpcli }} plugin update {{ item }}'
+  changed_when: false
+  with_items: "{{ wordpress_plugins }}"
+
+- name: Activate default plugins
+  shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} && {{ wordpress_wpcli }} plugin activate {{ item }}'
+  changed_when: false
+  with_items: "{{ wordpress_plugins }}"
+
+- name: Send a summary mail
+  mail:
+    host: 'localhost'
+    port: 25
+    to: "{{ wordpress_email }}"
+    from: "{{ ansible_user }}@{{ ansible_fqdn }}"
+    subject: "Nouveau site Wordpress {{ ansible_user }}"
+    charset: "utf-8"
+    body: |
+      Votre nouveau site WordPress a bien été installé à l’adresse :
+
+      http://{{ wordpress_host }}
+ 
+      Vous pouvez vous y connecter en tant qu’administrateur avec les informations suivantes :
+
+      Identifiant : admin
+      Mot de passe : {{ admin_pwd }}
+      Connectez-vous ici : http://{{ wordpress_host }}/wp-login.php
+
+      Nous espérons que vous aimerez votre nouveau site ! Merci à vous !
+      --
+      Équipe Evolix <equipe@evolix.fr>
+      Evolix - Hébergement et Infogérance Open Source http://www.evolix.fr/

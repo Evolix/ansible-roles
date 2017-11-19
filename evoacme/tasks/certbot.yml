@@ -20,27 +20,25 @@
     name: certbot
     state: latest
 
-- name: Check if /usr is a partition
-  shell: "mount | grep 'on /usr type'"
-  args:
-    warn: no
-  changed_when: False
-  failed_when: False
-  check_mode: no
-
-  register: usr_partition
-
-- name: Mount /usr in rw
-  command: mount -o remount,rw /usr
-  args:
-    warn: no
-  changed_when: False
-  when: usr_partition.rc == 0
+- include_role:
+    name: remount-usr
 
 - name: Remove certbot symlink for apt install
   file:
     path: /usr/local/bin/certbot
     state: absent
+
+- name: stat /etc/cron.d/certbot
+  stat:
+    path: /etc/cron.d/certbot
+  register: etc_cron_d_certbot
+
+- name: Rename certbot dpkg cron to .disabled
+  copy:
+    remote_src: True
+    src: /etc/cron.d/certbot
+    dest: /etc/cron.d/certbot.disabled
+  when: etc_cron_d_certbot.stat.exists
 
 - name: Remove certbot dpkg cron
   file:

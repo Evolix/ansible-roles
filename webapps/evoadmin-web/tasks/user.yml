@@ -24,7 +24,7 @@
     name: www-evoadmin
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
-- name: Install Git
+- name: Git is needed to clone the evoadmin repository
   apt:
     name: git
     state: present
@@ -35,8 +35,6 @@
     dest: "{{ evoadmin_document_root}}"
     version: jessie
     update: no
-  # Warning: Need sudo!
-  become_user: "{{ evoadmin_username }}"
   when: ansible_distribution_release == "jessie"
 
 - name: "Clone evoadmin repository (Debian 9 or later)"
@@ -45,11 +43,17 @@
     dest: "{{ evoadmin_document_root}}"
     version: master
     update: yes
-  # Warning: Need sudo!
-  become_user: "{{ evoadmin_username }}"
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
-- include: remount_usr_rw.yml
+- name: Change ownership on git repository
+  file:
+    dest: "{{ evoadmin_document_root}}"
+    owner: "{{ evoadmin_username }}"
+    group: "{{ evoadmin_username }}"
+    recurse: yes
+
+- include_role:
+    name: remount-usr
   when: evoadmin_scripts_dir | search ("/usr")
 
 - name: "Create {{ evoadmin_scripts_dir }}"
@@ -66,12 +70,12 @@
 
 # we use a shell command to have a "changed" thet really reflects the result.
 - name: Fix permissions
-  shell: "chmod -R --verbose u=rwX,g=rX,o= {{ item }}"
+  command: "chmod -R --verbose u=rwX,g=rX,o= {{ evoadmin_document_root }}"
   register: command_result
   changed_when: "'changed' in command_result.stdout"
   # failed_when: False
-  with_items:
-  - "{{ evoadmin_home_dir}}/www"
+  args:
+    warn: no
 
 - name: Add evoadmin sudoers file
   template:

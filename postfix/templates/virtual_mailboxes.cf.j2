@@ -1,0 +1,5 @@
+search_base = {{ ldap_suffix }}
+query_filter = (&(mailacceptinggeneralid=%s)(objectClass=mailAccount)(isActive=TRUE)(accountActive=TRUE))
+result_attribute = homeDirectory
+scope = sub
+version = 3

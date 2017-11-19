@@ -26,3 +26,30 @@ action_mwl = %(banaction)s[name=%(__name__)s, port="%(port)s", protocol="%(proto
                %(mta)s-whois-lines[name=%(__name__)s, dest="%(destemail)s", logpath=%(logpath)s, chain="%(chain)s"]
 
 action = %(action_mwl)s
+
+{% if fail2ban_wordpress %}
+[wordpress-hard]
+enabled = true
+port = http,https
+filter = wordpress-hard
+logpath = /var/log/auth.log
+maxretry = 1
+findtime = 300
+
+[wordpress-soft]
+enabled = true
+port = http,https
+filter = wordpress-soft
+logpath = /var/log/auth.log
+maxretry = 5
+findtime = 300
+{% endif %}
+
+{% if fail2ban_roundcube %}
+[roundcube]
+enabled  = true
+port     = http,https
+filter   = roundcube
+logpath  = /var/lib/roundcube/logs/errors
+maxretry = 5
+{% endif %}

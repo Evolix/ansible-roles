@@ -1,4 +1,4 @@
 ---
-ldap_domain: "{{ ansible_fqdn }}"
-ldap_organization: "{{ ansible_domain }}"
-#ldap_password=$(apg -n1 -m 12 -c cl_seed)
+ldap_hostname: "{{ ansible_hostname }}"
+ldap_domain: "{{ ansible_domain }}"
+ldap_suffix: "dc={{ ldap_hostname }},dc={{ ldap_domain.split('.')[-2] }},dc={{ ldap_domain.split('.')[-1] }}"

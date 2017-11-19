@@ -1,0 +1,36 @@
+# {{ ansible_managed }}
+
+# Autorise les mécanismes PLAIN/LOGIN même sans SSL/TLS
+disable_plaintext_auth = no
+auth_mechanisms = plain login
+
+# Authentification LDAP + intégration avec Postfix pour l'auth SMTP
+!include auth-ldap.conf.ext
+service auth {
+    unix_listener auth-userdb {
+        mode = 0600
+        user = vmail
+        group = vmail
+    }
+    unix_listener /var/spool/postfix/private/auth-client {
+        mode = 0666
+        user = postfix
+        group = postfix
+    }
+}
+
+# Stockage des emails dans /home/mail avec UID/GID 5000/5000
+mail_location = maildir:/home/vmail/%d/%n
+mail_uid = 5000
+mail_gid = 5000
+
+# Activation Sieve
+protocol lda {
+    mail_plugins = sieve
+}
+
+# Optimisations
+service login {
+    process_limit = 256
+}
+mail_max_userip_connections = 42

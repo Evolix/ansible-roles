@@ -19,11 +19,13 @@
         Require all denied
         Include /etc/apache2/ipaddr_whitelist.conf
     </Directory>
-    <Directory /usr/lib/munin/cgi/>
-        Options -Indexes
+    # munin-cgi-graph, used for zooming on graphs.
+    ScriptAlias /munin-cgi/munin-cgi-graph /usr/lib/munin/cgi/munin-cgi-graph
+    <Location /munin-cgi/munin-cgi-graph>
+        Options +ExecCGI
         Require all denied
         Include /etc/apache2/ipaddr_whitelist.conf
-    </Directory>
+    </Location>
 
     # For CGI Scripts. We need to set Directory directive as ScriptAlias take precedence.
     ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/

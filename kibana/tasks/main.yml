@@ -1,9 +1,5 @@
 ---
 
-- name: Install java8
-  include_role:
-    name: java8
-
 - name: APT https transport is enabled
   apt:
     name: apt-transport-https
@@ -24,7 +20,7 @@
 - name: Elastic sources list is available
   apt_repository:
     repo: "deb https://artifacts.elastic.co/packages/5.x/apt stable main"
-    filename: elastic.list
+    filename: elastic
     state: present
     update_cache: yes
   tags:
@@ -38,8 +34,24 @@
   tags:
     - packages
 
+- name: kibana server host configuration
+  lineinfile:
+    dest: /etc/kibana/kibana.yml
+    line: "server.host: \"{{ kibana_server_host }}\""
+    regexp: '^server.host:'
+    insertafter: '^#server.host:'
+  notify: restart kibana
+
+- name: kibana server basepath configuration
+  lineinfile:
+    dest: /etc/kibana/kibana.yml
+    line: "server.basePath: \"{{ kibana_server_basepath }}\""
+    regexp: '^server.basePath:'
+    insertafter: '^#server.basePath:'
+  notify: restart kibana
+
 - name: Kibana service is enabled and started
-  service:
+  systemd:
     name: kibana
     enabled: yes
     state: started
@@ -62,22 +74,17 @@
   when: not ansible_check_mode
 
 - block:
-  - name: Remount /usr as writable
-    command: "mount -o remount,rw /usr"
-    args:
-      warn: no
+  - include_role:
+      name: remount-usr
 
   - name: Move kibana optimize directory
-    shell: "mv /usr/share/kibana/optimize /var/lib/kibana/optimize && ln -s /var/lib/kibana/optimize /usr/share/kibana/optimize"
+    shell: "mv /usr/share/kibana/{{ item }} /var/lib/kibana/{{ item }} && ln -s /var/lib/kibana/{{ item }} /usr/share/kibana/{{ item }}"
     args:
-      creates: /var/lib/kibana/optimize
+      creates: "/var/lib/kibana/{{ item }}"
     notify: restart kibana
-
-  - name: Remount /usr as read-only
-    command: "mount -o remount /usr"
-    args:
-      warn: no
-  when: mount.rc == 0 and not mount.stdout_lines.0 | search("rw")
+    with_items:
+      - optimize
+      - data
 
 - include: proxy_nginx.yml
   when: kibana_proxy_nginx

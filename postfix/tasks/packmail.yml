@@ -1,0 +1,117 @@
+---
+- name: ensure packages are installed
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - postfix
+  - postfix-ldap
+  - postfix-policyd-spf-python
+  - mailgraph
+  tags:
+  - postfix
+
+- name: create packmail main.cf
+  template:
+    src: packmail_main.cf.j2
+    dest: /etc/postfix/main.cf
+    owner: root
+    group: root
+    mode: "0644"
+    force: yes
+  notify: restart postfix
+  when: postfix_force_main_cf == True or
+        postfix_maincf_md5_jessie in default_main_cf.stdout or
+        postfix_maincf_md5_stretch in default_main_cf.stdout
+  tags:
+  - postfix
+
+- name: deploy packmail master.cf
+  template:
+    src: packmail_master.cf.j2
+    dest: /etc/postfix/master.cf
+    mode: "0644"
+  notify: restart postfix
+  tags:
+  - postfix
+
+- name: copy default filter files
+  copy:
+    src: filter
+    dest: "/etc/postfix/{{ item }}"
+    force: no
+  with_items:
+  - virtual
+  - client.access
+  - client.access_local
+  - header_kill
+  - header_kill_local
+  - recipient.access
+  - recipient.access_local
+  - sa-blacklist.access
+  - sender.access
+  - sender.access_local
+  - spamd.cidr
+  register: postfix_copy_filter
+  tags:
+  - postfix
+
+- name: postmap filter files
+  command: "postmap /etc/postfix/{{ item }}"
+  with_items:
+  - virtual
+  - client.access
+  - client.access_local
+  - header_kill
+  - header_kill_local
+  - recipient.access
+  - recipient.access_local
+  - sa-blacklist.access
+  - sender.access
+  - sender.access_local
+  - spamd.cidr
+  when: postfix_copy_filter.changed
+  tags:
+  - postfix
+
+- name: deploy ldap postfix config
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/postfix/{{ item }}"
+    mode: "0644"
+  with_items:
+    - virtual_aliases.cf
+    - virtual_domains.cf
+    - virtual_mailboxes.cf
+  notify: restart postfix
+  tags:
+  - postfix
+
+- include_role:
+    name: remount-usr
+  tags:
+  - postfix
+
+- name: copy spam.sh script
+  copy:
+    src: spam.sh
+    dest: /usr/share/scripts/spam.sh
+    mode: "0700"
+  tags:
+  - postfix
+
+- name: enable spam.sh cron
+  lineinfile:
+    dest: /etc/cron.d/spam
+    line: "42 * * * * /usr/share/scripts/spam.sh"
+    create: yes
+    state: present
+    mode: "0640"
+  tags:
+  - postfix
+
+- name: update antispam list
+  command: /usr/share/scripts/spam.sh
+  changed_when: false
+  tags:
+  - postfix

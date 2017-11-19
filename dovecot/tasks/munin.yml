@@ -1,0 +1,20 @@
+---
+
+- name: is Munin present ?
+  stat:
+    path: /etc/munin/plugin-conf.d/munin-node
+  check_mode: no
+  register: munin_node_plugins_config
+
+- block:
+  - name: Install munin plugin
+    copy:
+      src: munin_plugin
+      dest: /etc/munin/plugins/dovecot
+      mode: "0755"
+
+# TODO : add in /etc/munin/plugin-conf.d/munin-node
+# [dovecot]
+# group adm
+
+  when: munin_node_plugins_config.stat.exists
