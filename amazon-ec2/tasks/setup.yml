@@ -1,20 +1,22 @@
 ---
+
 - name: Create default security group
   ec2_group:
-    name: "{{ec2_security_group.name}}"
+    name: "{{ ec2_security_group.name }}"
     state: present
-    aws_access_key: "{{aws_access_key}}"
-    aws_secret_key: "{{aws_secret_key}}"
-    region: "{{aws_region}}"
-    description: "{{ec2_security_group.description}}"
-    rules: "{{ec2_security_group.rules}}"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ aws_region }}"
+    description: "{{ ec2_security_group.description }}"
+    rules: "{{ ec2_security_group.rules }}"
+    rules_egress: "{{ ec2_security_group.rules_egress }}"
 
 - name: Create key pair
   ec2_key:
-    name: "{{ec2_keyname}}"
+    name: "{{ ec2_keyname }}"
     state: present
-    aws_access_key: "{{aws_access_key}}"
-    aws_secret_key: "{{aws_secret_key}}"
-    region: "{{aws_region}}"
-    key_material: "{{item}}"
-  with_file: "{{ssh_pubkey_file}}"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ aws_region }}"
+    key_material: "{{ item }}"
+  with_file: "{{ ssh_pubkey_file }}"
