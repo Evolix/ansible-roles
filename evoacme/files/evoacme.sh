@@ -53,7 +53,7 @@ sed_cert_path_for_apache() {
     if ! $(grep -qE "${search}" "${vhost_full_path}"); then
         [ -w "${vhost_full_path}" ] || error "File ${vhost_full_path} is not writable"
 
-        sed -i "s~^${search}~${replace}~" "${vhost_full_path}"
+        sed -i "s~${search}~${replace}~" "${vhost_full_path}"
         debug "Config in ${vhost_full_path} has been updated"
         $(command -v apache2ctl) -t
     fi
