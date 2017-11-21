@@ -50,7 +50,7 @@ sed_cert_path_for_apache() {
     local search="^SSLCertificateFile.*$"
     local replace="SSLCertificateFile ${cert_path}"
 
-    if ! $(grep -qE "${search}" "${vhost_full_path}"); then
+    if $(grep -qE "${search}" "${vhost_full_path}"); then
         [ -w "${vhost_full_path}" ] || error "File ${vhost_full_path} is not writable"
 
         sed -i "s~${search}~${replace}~" "${vhost_full_path}"
@@ -68,7 +68,7 @@ sed_cert_path_for_nginx() {
     local search="^ssl_certificate[^_].*$"
     local replace="ssl_certificate ${cert_path};"
 
-    if ! $(grep -qE "${search}" "${vhost_full_path}"); then
+    if $(grep -qE "${search}" "${vhost_full_path}"); then
         [ -w "${vhost_full_path}" ] || error "File ${vhost_full_path} is not writable"
 
         sed -i "s~${search}~${replace}~" "${vhost_full_path}"
