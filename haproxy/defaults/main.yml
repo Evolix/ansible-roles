@@ -1,3 +1,9 @@
 ---
 
 haproxy_jessie_backports: False
+
+haproxy_munin: False
+
+haproxy_status_url: "http://localhost/haproxy-status;csv;norefresh"
+haproxy_status_login: Null
+haproxy_status_passwd: Null

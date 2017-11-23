@@ -1,0 +1,8 @@
+[haproxy_*]
+env.url {{ haproxy_status_url }}
+{% if haproxy_status_login %}
+env.username {{ haproxy_status_login }}
+{% endif %}
+{% if haproxy_status_passwd %}
+env.password {{ haproxy_status_passwd }}
+{% endif %}

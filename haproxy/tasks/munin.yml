@@ -1,0 +1,23 @@
+---
+
+- include_role: munin
+
+- name: Enable haproxy_ng munin plugin
+  file:
+    src: "/usr/local/share/munin/plugins/haproxy_ng"
+    dest: "/etc/munin/plugins/haproxy_ng"
+    state: link
+  notify: restart munin-node
+  tags:
+    - haproxy
+    - munin
+
+- name: Copy Munin plugin conf
+  template:
+    src: munin/haproxy_ng.j2
+    dest: /etc/munin/plugin-conf.d/haproxy_ng
+    mode: "0644"
+  notify: restart munin-node
+  tags:
+    - haproxy
+    - munin

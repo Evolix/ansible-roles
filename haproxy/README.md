@@ -8,7 +8,8 @@ Everything is in the `tasks/main.yml` file.
 
 ## Available variables
 
-* `haproxy_jessie_backports` : on Debian Jessie, we can prefer v1.7 from backports (default: `False`)
+* `haproxy_jessie_backports` : on Debian Jessie, we can prefer v1.7 from backports (default: `False`) ;
+* `haproxy_munin` : install and configure Munin for HAProxy stats (default: `False`).
 
 ## Configuration templates
 
