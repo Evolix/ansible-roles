@@ -1,0 +1,29 @@
+---
+
+- name: Install packages
+  apt:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - mongodb
+    - mongo-tools
+
+- name: Custom configuration
+  template:
+    src: mongodb_stretch.conf.j2
+    dest: "/etc/mongodb.conf"
+    force: yes
+    backup: no
+  notify: restart mongodb
+
+- name: enable service
+  service:
+    name: mongodb
+    enabled: yes
+
+- name: Configure logrotate
+  template:
+    src: logrotate_stretch.j2
+    dest: /etc/logrotate.d/mongodb
+    force: yes
+    backup: no

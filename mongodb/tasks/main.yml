@@ -1,44 +1,12 @@
 ---
 
-- fail:
-    msg: only compatible with Debian 8
-  when:
-  - ansible_distribution != "Debian" or ansible_distribution_release != "jessie"
+# - fail:
+#     msg: only compatible with Debian 8
+#   when:
+#   - ansible_distribution != "Debian" or ansible_distribution_release != "jessie"
 
-# Attention à bien indiquer le protocole et le port, sinon le firewall ne laisse pas passer
-- name: MongoDB public GPG Key
-  apt_key:
-    # url: https://www.mongodb.org/static/pgp/server-3.4.asc
-    data: "{{ lookup('file', 'server-3.4.asc') }}"
+- include: main_jessie.yml
+  when: ansible_distribution_release == "jessie"
 
-- name: enable APT sources list
-  apt_repository:
-    repo: deb http://repo.mongodb.org/apt/debian jessie/mongodb-org/3.4 main
-    state: present
-    filename: mongodb
-    update_cache: yes
-
-- name: Install packages
-  apt:
-    name: mongodb-org
-    state: installed
-
-- name: Custom configuration
-  template:
-    src: mongod.conf.j2
-    dest: /etc/mongod.conf
-    force: yes
-    backup: no
-  notify: restart mongodb
-
-- name: Configure logrotate
-  template:
-    src: logrotate.j2
-    dest: /etc/logrotate.d/mongodb
-    force: yes
-    backup: no
-
-- name: enable mongod service
-  service:
-    name: mongod
-    enabled: yes
+- include: main_stretch.yml
+  when: ansible_distribution_major_version | version_compare('9', '>=')
