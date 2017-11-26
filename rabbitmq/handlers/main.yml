@@ -4,3 +4,8 @@
     name: rabbitmq-server
     state: restarted
 
+
+- name: restart nagios-nrpe-server
+  service:
+    name: nagios-nrpe-server
+    state: restarted

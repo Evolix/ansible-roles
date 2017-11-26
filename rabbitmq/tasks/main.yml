@@ -27,3 +27,14 @@
   lineinfile:
     dest: /etc/default/rabbitmq-server
     line: ulimit -n 2048
+
+- name: is NRPE present ?
+  stat:
+    path: /etc/nagios/nrpe.d/evolix.cfg
+  check_mode: no
+  register: nrpe_evolix_config
+  tags:
+    - nrpe
+
+- include: nrpe.yml
+  when: nrpe_evolix_config.stat.exists
