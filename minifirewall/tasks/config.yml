@@ -1,5 +1,12 @@
 ---
 
+- debug:
+    var: minifirewall_trusted_ips
+    verbosity: 1
+- debug:
+    var: minifirewall_privilegied_ips
+    verbosity: 1
+
 - name: Check if minifirewall is running
   shell: /sbin/iptables -L -n | grep -E "^(DROP\s+udp|ACCEPT\s+icmp)\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
   changed_when: False
