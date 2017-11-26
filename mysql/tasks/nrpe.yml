@@ -22,6 +22,7 @@
   - name: Create a password for NRPE
     command: "apg -n 1 -m 16 -M lcN"
     register: mysql_nrpe_password
+    check_mode: no
     changed_when: False
 
   - name: Create nrpe user
