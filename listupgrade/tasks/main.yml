@@ -1,4 +1,8 @@
 ---
+
+- include_role:
+    name: remount-usr
+
 - name: Scripts dir is present
   file:
     path: "/usr/share/scripts"
