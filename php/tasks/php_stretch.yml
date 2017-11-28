@@ -49,6 +49,7 @@
 - name: "Custom php.ini for CLI (Debian 9 or later)"
   copy:
     dest: "{{ phpini_cli_custom_file }}"
+    mode: "0644"
     content: |
       ; Put customized values here.
       ; default_charset = "ISO-8859-1"
