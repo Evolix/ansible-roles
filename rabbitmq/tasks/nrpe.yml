@@ -5,6 +5,9 @@
     name: python-requests
     state: installed
 
+- include_role:
+    name: remount-usr
+
 # https://raw.githubusercontent.com/CaptPhunkosis/check_rabbitmq/master/check_rabbitmq
 - name: check_rabbitmq is installed
   copy:
