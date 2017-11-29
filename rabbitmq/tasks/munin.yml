@@ -1,0 +1,45 @@
+---
+
+- include_role:
+    name: remount-usr
+  tags:
+    - rabbitmq
+    - munin
+
+- name: Create local munin directory
+  file:
+    name: /usr/local/share/munin/
+    state: directory
+    mode: "0755"
+  tags:
+    - rabbitmq
+    - munin
+
+- name: Create local plugins directory
+  file:
+    name: /usr/local/share/munin/plugins/
+    state: directory
+    mode: "0755"
+  tags:
+    - rabbitmq
+    - munin
+
+- name: Copy rabbitmq_connections munin plugin
+  copy:
+    src: rabbitmq_connections
+    dest: /usr/local/share/munin/plugins/rabbitmq_connections
+    mode: "0755"
+  notify: restart munin-node
+  tags:
+    - rabbitmq
+    - munin
+
+- name: Enable rabbitmq_connections munin plugin
+  file:
+    src: /usr/local/share/munin/plugins/rabbitmq_connections
+    dest: "/etc/munin/plugins/rabbitmq_connections"
+    state: link
+  notify: restart munin-node
+  tags:
+    - rabbitmq
+    - munin

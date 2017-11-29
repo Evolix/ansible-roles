@@ -38,3 +38,14 @@
 
 - include: nrpe.yml
   when: nrpe_evolix_config.stat.exists
+
+- name: is Munin present ?
+  stat:
+    path: /etc/munin
+  check_mode: no
+  register: etc_munin_directory
+  tags:
+    - nrpe
+
+- include: munin.yml
+  when: etc_munin_directory.stat.exists
