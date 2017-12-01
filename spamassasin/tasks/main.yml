@@ -43,7 +43,7 @@
 - name: enable sa-update.sh cron
   lineinfile:
     dest: /etc/cron.d/sa-update
-    line: "42 6 5 1,4,7,10 * /usr/share/scripts/sa-update.sh"
+    line: "42 6 5 1,4,7,10 * root /usr/share/scripts/sa-update.sh"
     create: yes
     state: present
     mode: "0640"
