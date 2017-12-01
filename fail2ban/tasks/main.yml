@@ -47,3 +47,34 @@
   tags:
     - fail2ban
     - packages
+
+- name: is Munin present ?
+  stat:
+    path: /etc/munin/plugins
+  check_mode: no
+  register: etc_munin_plugins
+  tags:
+    - fail2ban
+    - munin
+
+- name: is fail2ban Munin plugin available ?
+  stat:
+    path: /usr/share/munin/plugins/fail2ban
+  check_mode: no
+  register: fail2ban_munin_plugin
+  tags:
+    - fail2ban
+    - munin
+
+- name: Enable Munin plugins
+  file:
+    src: "/usr/share/munin/plugins/fail2ban"
+    dest: "/etc/munin/plugins/fail2ban"
+    state: link
+  notify: restart munin-node
+  when:
+    - etc_munin_plugins.stat.exists?
+    - fail2ban_munin_plugin.stat.exists?
+  tags:
+    - fail2ban
+    - munin
