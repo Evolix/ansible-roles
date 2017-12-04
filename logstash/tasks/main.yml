@@ -59,6 +59,9 @@
   template:
     src: "{{ item }}"
     dest: /etc/logstash/conf.d/logstash.conf
+    owner: logstash
+    group: logstash
+    mode: "0640"
     force: yes
   with_first_found:
   - "templates/logstash/logstash.{{ inventory_hostname }}.conf.j2"
