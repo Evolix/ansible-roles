@@ -5,6 +5,12 @@
     state: reloaded
     daemon_reload: yes
 
+- name: restart varnish
+  systemd:
+    name: varnish
+    state: restarted
+    daemon_reload: yes
+
 - name: reload systemd
   command: systemctl daemon-reload
 
