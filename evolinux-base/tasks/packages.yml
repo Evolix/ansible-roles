@@ -32,6 +32,7 @@
   - mtr-tiny
   - curl
   - telnet
+  - traceroute
   when: evolinux_packages_diagnostic
 
 - name: Install/Update hardware tools
