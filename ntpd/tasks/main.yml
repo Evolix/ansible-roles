@@ -1,4 +1,11 @@
 ---
+- name: Remove openntpd package
+  apt:
+    name: openntpd
+    state: absent
+  tags:
+  - ntp
+
 - name: Install ntp package
   apt:
     name: ntp
