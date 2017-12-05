@@ -16,13 +16,11 @@
     - spawn-fcgi
 
 - name: Adjust rights for munin-cgi
-  file:
-    path: '{{ item }}'
-    owner: www-data
-    group: munin
-    mode: "0660"
-  with_fileglob:
-    - /var/log/munin/munin-cgi-*
+  shell: "chown --verbose www-data:munin /var/log/munin/munin-cgi-*"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  args:
+    warn: no
 
 - name: Install Init script for Munin-fcgi
   copy:
