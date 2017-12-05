@@ -18,8 +18,9 @@
 - name: Adjust rights for munin-cgi
   file:
     path: '{{ item }}'
-    owner: munin
-    group: adm
+    owner: www-data
+    group: munin
+    mode: "0660"
   with_fileglob:
     - /var/log/munin/munin-cgi-*
 
