@@ -2,7 +2,6 @@
 ntpd_servers:
 - 'ntp.evolix.net'
 ntpd_acls:
+- 'default ignore'
 - '127.0.0.1'
 - '::1'
-- '-4 ignore'
-- '-6 ignore'
