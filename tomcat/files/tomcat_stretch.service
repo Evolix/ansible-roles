@@ -1,0 +1,15 @@
+[Unit]
+Description=Tomcat %u.
+After=network.target
+
+[Service]
+WorkingDirectory=%h
+Environment="CATALINA_BASE=%h"
+EnvironmentFile=%h/conf/env
+UMask=0002
+ExecStart=/usr/share/tomcat8/bin/startup.sh
+ExecStop=/usr/share/tomcat8/bin/shutdown.sh
+Type=forking
+
+[Install]
+WantedBy=default.target
