@@ -6,7 +6,7 @@
       name: apt
       tasks_from: backports.yml
 
-  - name: Add exceptions for certbot dependances
+  - name: Add exceptions for certbot dependencies
     copy:
       src: backports-certbot
       dest: /etc/apt/preferences.d/z-backports-certbot
