@@ -507,12 +507,12 @@ fi
 if [ -n "${clamav_version}" ]; then
     cat <<EOT >> "${ldif_file}"
 
-dn: ServiceName=clamav_db,${computer_dn}
+dn: ServiceName=clamd,${computer_dn}
 NagiosEnabled: TRUE
 objectClass: EvoService
-ServiceName: clamav_db
+ServiceName: clamd
 ServiceType: antivirus
-ServiceVersion: ClamAV ${clamav_version}
+ServiceVersion: Clamd ${clamav_version}
 EOT
 fi
 

@@ -1,51 +1,57 @@
-# Evoacme 1.5
+# Evoacme 2.0
 
 EvoAcme is an [Ansible](https://www.ansible.com/) role and a [Certbot](https://certbot.eff.org) wrapper for generate [Let's Encrypt](https://letsencrypt.org/) certificates.
 
 It is a project hosted at [Evolix's forge](https://forge.evolix.org/projects/ansible-roles/repository/)
 
-# How to install
+Evoacme is open source software licensed under the AGPLv3 License.
 
-1 - Create a playbook with evoacme role
+## Install
+
+### 1 - Create a playbook with evoacme role
 
 ~~~
 ---
-  - hosts: hostname
-    become: yes
-    roles:
-      - role: evoacme
+- hosts: hostname
+  become: yes
+  roles:
+    - evoacme
 ~~~
 
-2 - Install evoacme prerequisite with ansible
+### 2 - Install evoacme prerequisite with ansible
 
 ~~~
-ansible-playbook playbook.yml -Kl hostname
+# ansible-playbook playbook.yml -K --limit hostname
 ~~~
 
-3 - Include letsencrypt.conf in your webserver
+### 3 - Include letsencrypt.conf in your webserver
 
 For Apache, you just need to ensure that you don't overwrite "/.well-known/acme-challenge" Alias with a Redirect or Rewrite directive.
 
-For Nginx, you must include letsencrypt.conf in all wanted vhost :
+For Nginx, you must include `/etc/nginx/snippets/letsencrypt.conf` in all wanted vhosts :
 
 ~~~
-include /etc/nginx/letsencrypt.conf;
-nginx -t
-service nginx reload
+server {
+    […]
+    include /etc/nginx/snippets/letsencrypt.conf;
+    […]
+}
 ~~~
 
-4 - Create a CSR for a vhost with make-csr
+then reload the Nginx configuration :
 
 ~~~
-# make-csr look for this file :
-# /etc/nginx/sites-enabled/vhostname
-# /etc/nginx/sites-enabled/vhostname.conf
-# /etc/apache2/sites-enabled/vhostname
-# /etc/apache2/sites-enabled/vhostname.conf
-make-csr vhostname
+# nginx -t
+# service nginx reload
 ~~~
 
-5 - Generate the certificate with evoacme
+### 4 - Create a CSR for a vhost with make-csr
+
+~~~
+# make-csr vhostname domain...
+~~~
+
+### 5 - Generate the certificate with evoacme
 
 ~~~
 # evoacme look for /etc/ssl/requests/vhostname
@@ -53,7 +59,7 @@ make-csr vhostname
 evoacme vhostname
 ~~~
 
-6 - Include ssl configuration
+### 6 - Include ssl configuration
 
 Sll configuration has generated, you must include it in your vhost.
 
@@ -68,7 +74,3 @@ For Nginx :
 ~~~
 include /etc/nginx/ssl/vhost.conf;
 ~~~
-
-# License
-
-Evoacme is open source software licensed under the AGPLv3 License.

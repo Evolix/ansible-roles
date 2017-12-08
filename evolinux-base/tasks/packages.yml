@@ -32,6 +32,7 @@
   - mtr-tiny
   - curl
   - telnet
+  - traceroute
   when: evolinux_packages_diagnostic
 
 - name: Install/Update hardware tools
@@ -59,18 +60,18 @@
   - pinentry-curses
   when: evolinux_packages_common
 
-- name: Install/Update serveur-base meta-package
-  apt:
-    name: serveur-base
-    allow_unauthenticated: yes
-  when: evolinux_packages_serveur_base
-
 - name: Be sure that openntpd package is absent/purged
   apt:
     name: openntpd
     state: absent
     purge: yes
   when: evolinux_packages_purge_openntpd
+
+- name: Install/Update serveur-base meta-package
+  apt:
+    name: serveur-base
+    allow_unauthenticated: yes
+  when: evolinux_packages_serveur_base
 
 - name: Install/Update packages for Stretch and later
   apt:

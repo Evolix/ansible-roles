@@ -1,7 +1,15 @@
+---
+
+- name: move acme challenge conf if missplaced
+  command: mv /etc/nginx/letsencrypt.conf /etc/nginx/snippets/letsencrypt.conf
+  args:
+    removes: /etc/nginx/letsencrypt.conf
+    creates: /etc/nginx/snippets/letsencrypt.conf
+
 - name: Copy acme challenge conf
   template:
     src: templates/nginx.conf.j2
-    dest: /etc/nginx/letsencrypt.conf
+    dest: /etc/nginx/snippets/letsencrypt.conf
     owner: root
     group: root
     mode: "0644"

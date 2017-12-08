@@ -4,8 +4,8 @@
     name: proftpd-basic
     state: present
   tags:
-  - proftpd
-  - packages
+    - proftpd
+    - packages
 
 - name: ftpusers groupe exists
   group:
@@ -13,7 +13,7 @@
     state: present
   notify: restart proftpd
   tags:
-  - proftpd
+    - proftpd
 
 - name: local jail is installed
   template:
@@ -23,7 +23,7 @@
     force: no
   notify: restart proftpd
   tags:
-  - proftpd
+    - proftpd
 
 - name: mod_tls_memcache is disabled
   replace:
@@ -32,7 +32,7 @@
     replace: '#LoadModule mod_tls_memcache.c'
   notify: restart proftpd
   tags:
-  - proftpd
+    - proftpd
 
 - name: Put empty vpasswd file if missing
   copy:
@@ -41,7 +41,7 @@
     force: no
   notify: restart proftpd
   tags:
-  - proftpd
+    - proftpd
 
 # Why 440? Because should be edited with ftpasswd.
 # So, readonly when opened with vim.
@@ -54,4 +54,4 @@
     group: root
   notify: restart proftpd
   tags:
-  - proftpd
+    - proftpd

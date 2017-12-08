@@ -4,5 +4,6 @@ ntpd_servers:
 ntpd_acls:
 - '127.0.0.1'
 - '::1'
-- '-4 ignore'
-- '-6 ignore'
+- '-4 default ignore'
+- '-6 default ignore'
+

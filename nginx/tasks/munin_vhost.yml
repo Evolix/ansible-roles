@@ -12,29 +12,24 @@
     state: present
   with_items:
     - liblwp-useragent-determined-perl
+    - libcgi-fast-perl
     - spawn-fcgi
 
 - name: Adjust rights for munin-cgi
-  file:
-    path: '{{ item }}'
-    owner: munin
-    group: adm
-  with_fileglob:
-    - /var/log/munin/munin-cgi-*
+  shell: "chown --verbose www-data:munin /var/log/munin/munin-cgi-*"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  args:
+    warn: no
 
 - name: Install Init script for Munin-fcgi
   copy:
-    src: init.d/spawn-fcgi-munin-graph
-    dest: /etc/init.d/
-    mode: "0755"
-  register: install_spawn_fcgi_munin_graph
+    src: systemd/spawn-fcgi-munin-graph.service
+    dest: /etc/systemd/system/spawn-fcgi-munin-graph.service
 
-- name: Reload systemd
-  command: systemctl daemon-reload
-  when: install_spawn_fcgi_munin_graph | changed
-
-- name: Ensure that Munin-fcgi is started/stopped correctly
-  service:
+- name: Enable and start Munin-fcgi
+  systemd:
     name: spawn-fcgi-munin-graph
+    daemon_reload: yes
     enabled: yes
     state: started

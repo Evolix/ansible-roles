@@ -19,7 +19,7 @@
 
 - name: Elastic sources list is available
   apt_repository:
-    repo: "deb https://artifacts.elastic.co/packages/5.x/apt stable main"
+    repo: "deb https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
     filename: elastic
     state: present
     update_cache: yes
@@ -64,27 +64,27 @@
     owner: root
     group: root
 
-- name: Get mount options for /usr partition
-  shell: "mount | grep 'on /usr type'"
-  args:
-    warn: no
-  register: mount
-  changed_when: False
-  failed_when: False
-  when: not ansible_check_mode
-
-- block:
-  - include_role:
-      name: remount-usr
-
-  - name: Move kibana optimize directory
-    shell: "mv /usr/share/kibana/{{ item }} /var/lib/kibana/{{ item }} && ln -s /var/lib/kibana/{{ item }} /usr/share/kibana/{{ item }}"
-    args:
-      creates: "/var/lib/kibana/{{ item }}"
-    notify: restart kibana
-    with_items:
-      - optimize
-      - data
+# - name: Get mount options for /usr partition
+#   shell: "mount | grep 'on /usr type'"
+#   args:
+#     warn: no
+#   register: mount
+#   changed_when: False
+#   failed_when: False
+#   when: not ansible_check_mode
+#
+# - block:
+#   - include_role:
+#       name: remount-usr
+# 
+#   - name: Move kibana optimize directory
+#     shell: "mv /usr/share/kibana/{{ item }} /var/lib/kibana/{{ item }} && ln -s /var/lib/kibana/{{ item }} /usr/share/kibana/{{ item }}"
+#     args:
+#       creates: "/var/lib/kibana/{{ item }}"
+#     notify: restart kibana
+#     with_items:
+#       - optimize
+#       - data
 
 - include: proxy_nginx.yml
   when: kibana_proxy_nginx

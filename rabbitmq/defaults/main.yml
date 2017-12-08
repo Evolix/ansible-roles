@@ -1,0 +1,4 @@
+---
+
+rabbitmq_connections_critical: 200
+rabbitmq_connections_warning: 150

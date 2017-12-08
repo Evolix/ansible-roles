@@ -1,4 +1,4 @@
-# mongod.conf - {{ ansible_managed }}
+# mongodb.conf - {{ ansible_managed }}
 
 # for documentation of all options, see:
 #   http://docs.mongodb.org/manual/reference/configuration-options/
@@ -17,15 +17,12 @@ systemLog:
   destination: file
   logRotate: reopen
   logAppend: true
-  path: {{ mongodb_logfile_path }}
+  path: /var/log/mongodb/mongodb.log
 
 # network interfaces
 net:
   port: {{ mongodb_port }}
   bindIp: {{ mongodb_bind }}
-
-processManagement:
-  pidFilePath: {{ mongodb_pidfile_path }}
 
 #security:
 

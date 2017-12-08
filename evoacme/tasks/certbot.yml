@@ -6,7 +6,7 @@
       name: apt
       tasks_from: backports.yml
 
-  - name: Add exceptions for certbot dependances
+  - name: Add exceptions for certbot dependencies
     copy:
       src: backports-certbot
       dest: /etc/apt/preferences.d/z-backports-certbot
@@ -28,26 +28,14 @@
     path: /usr/local/bin/certbot
     state: absent
 
-- name: stat /etc/cron.d/certbot
-  stat:
-    path: /etc/cron.d/certbot
-  register: etc_cron_d_certbot
+- name: Disable /etc/cron.d/certbot
+  command: mv /etc/cron.d/certbot /etc/cron.d/certbot.disabled
+  args:
+    removes: /etc/cron.d/certbot
+    creates: /etc/cron.d/certbot.disabled
 
-- name: Rename certbot dpkg cron to .disabled
+- name: Install evoacme custom cron
   copy:
-    remote_src: True
-    src: /etc/cron.d/certbot
-    dest: /etc/cron.d/certbot.disabled
-  when: etc_cron_d_certbot.stat.exists
-
-- name: Remove certbot dpkg cron
-  file:
-    path: /etc/cron.d/certbot
-    state: absent
-
-- name: Install certbot custom cron
-  copy:
-    src: certbot.cron
-    dest: /etc/cron.daily/certbot
+    src: evoacme.cron
+    dest: /etc/cron.daily/evoacme
     mode: "0755"
-

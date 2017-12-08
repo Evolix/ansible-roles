@@ -1,0 +1,10 @@
+[Unit]
+Description=Munin zoom for nginx.
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/spawn-fcgi -s /var/run/munin/spawn-fcgi-munin-graph.sock -U www-data -u munin -g munin /usr/lib/munin/cgi/munin-cgi-graph
+Type=forking
+
+[Install]
+WantedBy=default.target

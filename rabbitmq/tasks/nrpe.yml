@@ -1,0 +1,34 @@
+---
+
+- name: check_rabbitmq dependencies
+  apt:
+    name: python-requests
+    state: installed
+
+- include_role:
+    name: remount-usr
+
+# https://raw.githubusercontent.com/CaptPhunkosis/check_rabbitmq/master/check_rabbitmq
+- name: check_rabbitmq is installed
+  copy:
+    src: check_rabbitmq
+    dest: /usr/local/lib/nagios/plugins/check_rabbitmq
+    owner: root
+    group: root
+    mode: "0755"
+    force: yes
+
+- name: check_rabbitmq is available for NRPE
+  lineinfile:
+    dest: /etc/nagios/nrpe.d/evolix.cfg
+    regexp: 'command\[check_rab_connection_count\]'
+    line: 'command[check_rab_connection_count]=sudo /usr/local/lib/nagios/plugins/check_rabbitmq -a connection_count -C {{ rabbitmq_connections_critical }} -W {{ rabbitmq_connections_warning }}'
+  notify: restart nagios-nrpe-server
+
+- name: sudo without password for nagios
+  lineinfile:
+    dest: /etc/sudoers.d/evolinux
+    regexp: 'check_rabbitmq'
+    line: 'nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_rabbitmq'
+    insertafter: '^nagios'
+    validate: "visudo -cf %s"

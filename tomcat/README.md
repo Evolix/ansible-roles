@@ -1,7 +1,7 @@
 # tomcat
 
-Install a Tomcat depndancies for multiple tomcat instance.
+Install Tomcat and its dependencies for multiple instances.
 
 ## Available variables
 
-**tomcat_instance_root:** Root dir for Tomcat instance (default: /srv/tomcat)
+**tomcat_instance_root**: Root dir for Tomcat instance (default: /srv/tomcat)

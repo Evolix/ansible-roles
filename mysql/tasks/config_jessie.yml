@@ -1,8 +1,12 @@
 ---
+
+- set_fact:
+    mysql_config_directory: /etc/mysql/conf.d
+
 - name: "Copy MySQL defaults config file (jessie)"
   copy:
     src: evolinux-defaults.cnf
-    dest: /etc/mysql/conf.d/z-evolinux-defaults.cnf
+    dest: "{{ mysql_config_directory }}/{{ mysql_evolinux_defaults_file }}"
     owner: root
     group: root
     mode: "0644"
@@ -13,7 +17,7 @@
 - name: "Copy MySQL custom config file (jessie)"
   template:
     src: evolinux-custom.cnf.j2
-    dest: /etc/mysql/conf.d/zzz-evolinux-custom.cnf
+    dest: "{{ mysql_config_directory }}/{{ mysql_evolinux_custom_file }}"
     owner: root
     group: root
     mode: "0644"

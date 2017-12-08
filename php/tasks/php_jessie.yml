@@ -48,6 +48,7 @@
 - name: Custom php.ini for CLI
   copy:
     dest: "{{ phpini_cli_custom_file }}"
+    mode: "0644"
     content: |
       ; Put customized values here.
     force: no
@@ -62,4 +63,3 @@
   with_items:
   - { option: "date.timezone", value: "Europe/Paris" }
   when: php_symfony_requirements
-

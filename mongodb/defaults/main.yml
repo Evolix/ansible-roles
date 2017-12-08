@@ -1,5 +1,4 @@
 ---
-mongodb_pidfile_path: /var/lib/mongodb/mongod.lock
-mongodb_logfile_path: /var/log/mongodb/mongod.log
+
 mongodb_port: 27017
 mongodb_bind: 127.0.0.1

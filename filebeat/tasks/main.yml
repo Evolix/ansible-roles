@@ -19,7 +19,7 @@
 
 - name: Elastic sources list is available
   apt_repository:
-    repo: "deb https://artifacts.elastic.co/packages/5.x/apt stable main"
+    repo: "deb https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
     filename: elastic
     state: present
     update_cache: yes

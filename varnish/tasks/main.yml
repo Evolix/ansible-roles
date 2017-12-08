@@ -14,6 +14,7 @@
     -  /etc/default/varnish
     -  /etc/default/varnishncsa
     -  /etc/default/varnishlog
+  notify: reload varnish
   tags:
   - varnish
 
@@ -24,6 +25,7 @@
     mode: "0700"
     owner: root
     group: root
+  notify: reload varnish
   tags:
   - varnish
 
@@ -39,7 +41,9 @@
     src: varnish.conf.j2
     dest: /etc/systemd/system/varnish.service.d/evolinux.conf
     force: yes
-  notify: reload systemd
+  notify:
+    - reload systemd
+    - restart varnish
   tags:
   - varnish
 

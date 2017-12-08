@@ -1,5 +1,10 @@
 ---
 
+## TODO: add those URLs or domains to the proxy whitelist
+# http://pkg.jenkins-ci.org/.*
+# http://mirrors.jenkins.io/.*
+# http://jenkins.mirror.isppower.de/.*
+
 - name: Add jenkins GPG key
   apt_key:
     # url: https://jenkins-ci.org/debian/jenkins-ci.org.key

@@ -103,7 +103,7 @@
 - name: enable spam.sh cron
   lineinfile:
     dest: /etc/cron.d/spam
-    line: "42 * * * * /usr/share/scripts/spam.sh"
+    line: "42 * * * * root /usr/share/scripts/spam.sh"
     create: yes
     state: present
     mode: "0640"

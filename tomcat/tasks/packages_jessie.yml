@@ -1,5 +1,5 @@
 ---
-- name: Install dependancy
+- name: Install packages
   apt:
     name: "{{ item }}"
     state: present
@@ -18,7 +18,7 @@
 
 - name: Copy systemd unit
   copy:
-    src: 'tomcat.service'
+    src: 'tomcat_jessie.service'
     dest: "/etc/systemd/user/tomcat.service"
     mode: "0755"
 
