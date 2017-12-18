@@ -8,6 +8,13 @@
     - ldapvi
     - shelldap
 
+- name: change sldap listen ip:port
+  lineinfile:
+    dest: /etc/default/slapd
+    regexp: 'SLAPD_SERVICES=.*'
+    line: "SLAPD_SERVICES=\"{{ ldap_listen }}\""
+  notify: restart slapd
+
 - name: "Is /root/.ldapvirc present ?"
   stat:
     path: /root/.ldapvirc
