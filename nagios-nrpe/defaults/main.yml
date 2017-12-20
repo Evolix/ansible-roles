@@ -1,8 +1,7 @@
 ---
-evolix_trusted_ips: []
-additional_trusted_ips: []
-# Let's merge evolix_trusted_ips with additional_trusted_ips
-nagios_nrpe_allowed_hosts: "{{ evolix_trusted_ips | union(additional_trusted_ips) | unique }}"
+nagios_nrpe_default_allowed_hosts: []
+nagios_nrpe_additional_allowed_hosts: []
+nagios_nrpe_allowed_hosts: "{{ nagios_nrpe_default_allowed_hosts | union(nagios_nrpe_additional_allowed_hosts) | unique }}"
 nagios_nrpe_ldap_dc: "dc=DOMAIN,dc=EXT"
 nagios_nrpe_ldap_passwd: LDAP_PASSWD
 nagios_nrpe_pgsql_passwd: PGSQL_PASSWD

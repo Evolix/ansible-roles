@@ -17,7 +17,6 @@ evomaintenance_urgency_tel: "06.00.00.00.00"
 
 evomaintenance_realm: "{{ ansible_domain }}"
 
-evolix_trusted_ips: []
-additional_trusted_ips: []
-# Let's merge evolix_trusted_ips with additional_trusted_ips
-evomaintenance_hosts: "{{ evolix_trusted_ips | union(additional_trusted_ips) | unique }}"
+evomaintenance_default_hosts: []
+evomaintenance_additional_hosts: []
+evomaintenance_hosts: "{{ evomaintenance_default_hosts | union(evomaintenance_additional_hosts) | unique }}"
