@@ -108,10 +108,9 @@ evolinux_evomaintenance_include: True
 
 evolinux_ssh_include: True
 
-evolix_trusted_ips: []
-additional_trusted_ips: []
-# Let's merge evolix_trusted_ips with additional_trusted_ips
-evolinux_ssh_password_auth_addresses: "{{ evolix_trusted_ips | union(additional_trusted_ips) | unique }}"
+evolinux_default_ssh_password_auth_addresses: []
+evolinux_additional_ssh_password_auth_addresses: []
+evolinux_ssh_password_auth_addresses: "{{ evolinux_default_ssh_password_auth_addresses | union(evolinux_additional_ssh_password_auth_addresses) | unique }}"
 evolinux_ssh_match_address: True
 evolinux_ssh_disable_acceptenv: True
 evolinux_ssh_allow_current_user: False

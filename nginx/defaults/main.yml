@@ -3,10 +3,10 @@
 nginx_minimal: False
 nginx_jessie_backports: False
 
-evolix_trusted_ips: []
-additional_trusted_ips: []
-# Let's merge evolix_trusted_ips with additional_trusted_ips
-nginx_ipaddr_whitelist_present: "{{ evolix_trusted_ips | union(additional_trusted_ips) | unique }}"
+nginx_default_ipaddr_whitelist_ips: []
+nginx_additional_ipaddr_whitelist_ips: []
+nginx_ipaddr_whitelist_present: "{{ nginx_default_ipaddr_whitelist_ips | union(nginx_additional_ipaddr_whitelist_ips) | unique }}"
+
 nginx_ipaddr_whitelist_absent: []
 
 nginx_private_htpasswd_present: []

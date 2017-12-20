@@ -7,11 +7,10 @@ minifirewall_int: "{{ ansible_default_ipv4.interface }}"
 minifirewall_ipv6: "on"
 minifirewall_intlan: "{{ ansible_default_ipv4.address }}/32"
 
-evolix_trusted_ips: []
-additional_trusted_ips: []
-# Let's merge evolix_trusted_ips with additional_trusted_ips
+minifirewall_default_trusted_ips: []
+minifirewall_additional_trusted_ips: []
 # and default to ['0.0.0.0/0'] if the result is still empty
-minifirewall_trusted_ips: "{{ evolix_trusted_ips | union(additional_trusted_ips) | unique | default(['0.0.0.0/0'], true) }}"
+minifirewall_trusted_ips: "{{ minifirewall_default_trusted_ips | union(minifirewall_additional_trusted_ips) | unique | default(['0.0.0.0/0'], true) }}"
 minifirewall_privilegied_ips: []
 
 minifirewall_protected_ports_tcp: [22]

@@ -10,7 +10,7 @@
   copy:
     src: default_www/img
     dest: /var/www/
-    mode: "0755"
+    mode: "0644"
     directory_mode: "0755"
     follow: yes
   when: evolinux_default_www_files
@@ -19,7 +19,7 @@
   template:
     src: default_www/index.html.j2
     dest: /var/www/index.html
-    mode: "0755"
+    mode: "0644"
     force: no
   when: evolinux_default_www_files
 

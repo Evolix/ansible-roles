@@ -1,8 +1,7 @@
 ---
-evolix_trusted_ips: []
-additional_trusted_ips: []
-# Let's merge evolix_trusted_ips with additional_trusted_ips
-apache_ipaddr_whitelist_present: "{{ evolix_trusted_ips | union(additional_trusted_ips) | unique }}"
+apache_default_ipaddr_whitelist_ips: []
+apache_additional_ipaddr_whitelist_ips: []
+apache_ipaddr_whitelist_present: "{{ apache_default_ipaddr_whitelist_ips | union(apache_additional_ipaddr_whitelist_ips) | unique }}"
 apache_ipaddr_whitelist_absent: []
 
 apache_private_htpasswd_present: []

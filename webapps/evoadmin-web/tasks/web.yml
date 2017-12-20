@@ -42,7 +42,7 @@
   template:
     src: config.local.php.j2
     dest: "{{ evoadmin_document_root}}/conf/config.local.php"
-    mode: "0644"
+    mode: "0640"
     owner: evoadmin
     group: evoadmin
     force: no
