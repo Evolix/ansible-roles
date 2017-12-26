@@ -21,7 +21,7 @@ Evoacme is open source software licensed under the AGPLv3 License.
 ### 2 - Install evoacme prerequisite with ansible
 
 ~~~
-# ansible-playbook playbook.yml -K --limit hostname
+# ansible-playbook playbook.yml -K --diff --check --limit hostname
 ~~~
 
 ### 3 - Include letsencrypt.conf in your webserver
