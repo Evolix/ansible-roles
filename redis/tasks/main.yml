@@ -4,11 +4,11 @@
     name: "{{ item }}"
     state: present
   with_items:
-  - redis-server
-  - redis-tools
+    - redis-server
+    - redis-tools
   tags:
-  - redis
-  - packages
+    - redis
+    - packages
 
 - name: Redis is configured.
   template:
@@ -17,7 +17,7 @@
     mode: "0644"
   notify: restart redis
   tags:
-  - redis
+    - redis
 
 - name: Redis is running and enabled on boot.
   service:
@@ -25,21 +25,33 @@
     enabled: yes
     state: started
   tags:
-  - redis
+    - redis
 
 - name: Is Munin installed
   stat:
     path: /etc/munin/plugins
   register: _munin_installed
+  tags:
+    - redis
+    - munin
 
 - include: munin.yml
   when: _munin_installed.stat.exists and _munin_installed.stat.isdir
+  tags:
+    - redis
+    - munin
 
 - name: is NRPE present ?
   stat:
     path: /etc/nagios/nrpe.d/evolix.cfg
   check_mode: no
   register: nrpe_evolix_config
+  tags:
+    - redis
+    - nrpe
 
 - include: nrpe_stretch.yml
   when: ansible_distribution_release == "stretch" and nrpe_evolix_config.stat.exists == true
+  tags:
+    - redis
+    - nrpe
