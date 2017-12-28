@@ -4,6 +4,9 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
+# Repository: https://gitlab.evolix.org/evolix/evocheck
+# Commit: c99324488553a745a201022d44f8f78f224631eb
+
 # Disable LANG*
 export LANG=C
 export LANGUAGE=C
