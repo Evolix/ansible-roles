@@ -31,6 +31,7 @@ redis_maxmemory_samples: 5
 redis_appendonly: "no"
 redis_appendfsync: "everysec"
 
+# Supported only in Redis 3.2+
 redis_protected_mode: "yes"
 
 # Add extra include files for local configuration/overrides.
