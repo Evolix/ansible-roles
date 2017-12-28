@@ -13,6 +13,9 @@
   template:
     src: evomaintenance.j2
     dest: /etc/evomaintenance.cf
+    owner: root
+    group: root
+    mode: "0600"
 
 # - name: list users with a shell
 #   shell: "cat /etc/passwd | grep -vE \"^root:\"  | grep -E \":/[^:]+sh$\" | cut -d: -f6"
