@@ -21,7 +21,7 @@
 
 - name: logrotate configuration
   template:
-    src: logrotate.j2
+    src: logrotate_jessie.j2
     dest: /etc/logrotate.d/{{ squid_daemon_name }}
     force: yes
   when: squid_logrotate_md5.rc == 0
