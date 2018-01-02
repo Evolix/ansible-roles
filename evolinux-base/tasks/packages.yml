@@ -67,6 +67,16 @@
     purge: yes
   when: evolinux_packages_purge_openntpd
 
+- name: Be sure locate/mlocate is absent/purged
+  apt:
+    name: "{{ item }}"
+    state: absent
+    purge: yes
+  with_items:
+  - locate
+  - mlocate
+  when: evolinux_packages_purge_locate
+
 - name: Install/Update serveur-base meta-package
   apt:
     name: serveur-base
