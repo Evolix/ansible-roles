@@ -16,7 +16,7 @@
     line: '    worker_connections 1024;'
     insertafter: 'events \{'
   tags:
-  - nginx
+    - nginx
 
 - name: use epoll
   lineinfile:
@@ -25,7 +25,7 @@
     line: '    use epoll;'
     insertafter: 'events \{'
   tags:
-  - nginx
+    - nginx
 
 - name: Install Nginx http configuration
   copy:
@@ -35,7 +35,7 @@
     # force: yes
   notify: reload nginx
   tags:
-  - nginx
+    - nginx
 
 # TODO: verify that those permissions are correct :
 # not too strict for ipaddr_whitelist
@@ -52,7 +52,7 @@
     force: no
   notify: reload nginx
   tags:
-  - nginx
+    - nginx
 
 - name: add IP addresses to private IP whitelist
   lineinfile:
@@ -62,7 +62,7 @@
   with_items: "{{ nginx_ipaddr_whitelist_present }}"
   notify: reload nginx
   tags:
-  - nginx
+    - nginx
 
 - name: remove IP addresses from private IP whitelist
   lineinfile:
@@ -72,7 +72,7 @@
   with_items: "{{ nginx_ipaddr_whitelist_absent }}"
   notify: reload nginx
   tags:
-  - nginx
+    - nginx
 
 - name: Copy private_htpasswd
   copy:
@@ -85,7 +85,7 @@
     force: no
   notify: reload nginx
   tags:
-  - nginx
+    - nginx
 
 - name: add user:pwd to private htpasswd
   lineinfile:
@@ -95,7 +95,7 @@
   with_items: "{{ nginx_private_htpasswd_present }}"
   notify: reload nginx
   tags:
-  - nginx
+    - nginx
 
 - name: remove user:pwd from private htpasswd
   lineinfile:
@@ -105,7 +105,7 @@
   with_items: "{{ nginx_private_htpasswd_absent }}"
   notify: reload nginx
   tags:
-  - nginx
+    - nginx
 
 - name: nginx vhost is installed
   template:
@@ -115,7 +115,7 @@
     force: no
   notify: reload nginx
   tags:
-  - nginx
+    - nginx
 
 - name: default vhost is enabled
   file:
@@ -126,7 +126,7 @@
   notify: reload nginx
   when: nginx_evolinux_default_enabled
   tags:
-  - nginx
+    - nginx
 
 # - block:
 #   - name: generate random string for phpmyadmin suffix
@@ -168,7 +168,7 @@
     enabled: yes
     state: started
   tags:
-  - nginx
+    - nginx
 
 - name: Check if Munin is installed
   stat:
@@ -176,19 +176,19 @@
   check_mode: no
   register: stat_munin_node
   tags:
-  - nginx
-  - munin
+    - nginx
+    - munin
 
 - include: munin_vhost.yml
   when: stat_munin_node.stat.exists
   tags:
-  - nginx
-  - munin
+    - nginx
+    - munin
 
 - include: munin_graphs.yml
   when: stat_munin_node.stat.exists
   tags:
-  - nginx
-  - munin
+    - nginx
+    - munin
 
 - include: logrotate.yml

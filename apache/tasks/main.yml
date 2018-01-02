@@ -5,14 +5,14 @@
     name: '{{ item }}'
     state: present
   with_items:
-  - apache2
-  - libapache2-mpm-itk
-  - libapache2-mod-evasive
-  - apachetop
-  - libwww-perl
+    - apache2
+    - libapache2-mpm-itk
+    - libapache2-mod-evasive
+    - apachetop
+    - libwww-perl
   tags:
-  - apache
-  - packages
+    - apache
+    - packages
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: packages are installed (jessie)
@@ -20,13 +20,13 @@
     name: '{{ item }}'
     state: present
   with_items:
-  - apache2-mpm-itk
-  - libapache2-mod-evasive
-  - apachetop
-  - libwww-perl
+    - apache2-mpm-itk
+    - libapache2-mod-evasive
+    - apachetop
+    - libwww-perl
   tags:
-  - apache
-  - packages
+    - apache
+    - packages
   when: ansible_distribution_release == "jessie"
 
 - name: basic modules are enabled
@@ -34,17 +34,17 @@
     name: '{{ item }}'
     state: present
   with_items:
-  - rewrite
-  - expires
-  - headers
-  - cgi
-  - ssl
-  - include
-  - negotiation
-  - alias
+    - rewrite
+    - expires
+    - headers
+    - cgi
+    - ssl
+    - include
+    - negotiation
+    - alias
   notify: reload apache
   tags:
-  - apache
+    - apache
 
 - name: Copy Apache defaults config file
   copy:
@@ -75,19 +75,23 @@
     dest: /etc/apache2/mods-enabled/status.conf
     state: absent
   notify: reload apache
+  tags:
+    - apache
 
 - name: Ensure Apache config files are enabled
   command: "a2enconf {{ item }}"
   register: command_result
   changed_when: "'Enabling' in command_result.stderr"
   with_items:
-  - z-evolinux-defaults.conf
-  - zzz-evolinux-custom.conf
+    - z-evolinux-defaults.conf
+    - zzz-evolinux-custom.conf
   notify: reload apache
   tags:
-  - apache
+    - apache
 
 - include: auth.yml
+  tags:
+  - apache
 
 - name: default vhost is installed
   template:
@@ -97,7 +101,7 @@
     force: no
   notify: reload apache
   tags:
-  - apache
+    - apache
 
 - name: default vhost is enabled
   file:
@@ -108,7 +112,7 @@
   notify: reload apache
   when: apache_evolinux_default_enabled
   tags:
-  - apache
+    - apache
 
 - name: is umask already present?
   command: "grep -E '^umask ' /etc/apache2/envvars"
@@ -117,7 +121,7 @@
   register: envvar_grep_umask
   check_mode: no
   tags:
-  - apache
+    - apache
 
 - name: Add a mark in envvars for umask
   blockinfile:
@@ -129,12 +133,12 @@
       umask 007
   when: envvar_grep_umask.rc != 0
   tags:
-  - apache
+    - apache
 
 - include_role:
     name: remount-usr
   tags:
-  - apache
+    - apache
 
 - name: "Install save_apache_status.sh"
   copy:
@@ -142,9 +146,15 @@
     dest: /usr/share/scripts/save_apache_status.sh
     mode: "0755"
     force: no
+  tags:
+    - apache
 
 - include: log2mail.yml
   when: apache_log2mail_include
+  tags:
+    - apache
 
 - include: munin.yml
   when: apache_munin_include
+  tags:
+    - apache

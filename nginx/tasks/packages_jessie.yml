@@ -7,5 +7,5 @@
     state: present
   notify: restart nginx
   tags:
-  - nginx
-  - packages
+    - nginx
+    - packages
