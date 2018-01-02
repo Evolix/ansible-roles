@@ -53,7 +53,7 @@
     </Location>
 
     <IfModule mod_status.c>
-        <Location /server-status>
+        <Location /server-status-{{ apache_serverstatus_suffix | mandatory }}>
             SetHandler server-status
             include /etc/apache2/ipaddr_whitelist.conf
             Require local
@@ -112,7 +112,7 @@
         LogLevel warn
 
         <IfModule mod_status.c>
-            <Location /server-status>
+            <Location /server-status-{{ apache_serverstatus_suffix | mandatory }}>
                 SetHandler server-status
                 include /etc/apache2/ipaddr_whitelist.conf
                 Require local

@@ -107,6 +107,10 @@
   tags:
     - nginx
 
+- include: server_status.yml
+  tags:
+    - nginx
+
 - name: nginx vhost is installed
   template:
     src: evolinux-default.conf.j2

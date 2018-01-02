@@ -46,6 +46,10 @@
   tags:
     - apache
 
+- include: server_status.yml
+  tags:
+    - apache
+
 - name: Copy Apache defaults config file
   copy:
     src: evolinux-defaults.conf
