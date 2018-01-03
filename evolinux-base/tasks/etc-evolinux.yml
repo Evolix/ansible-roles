@@ -1,0 +1,9 @@
+---
+
+- name: /etc/evolinux exists
+  file:
+    dest: /etc/evolinux
+    owner: root
+    group: root
+    mode: "0700"
+    state: directory

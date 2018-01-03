@@ -9,7 +9,7 @@
     mode: "0640"
     force: no
   tags:
-  - apache
+    - apache
 
 - name: add IP addresses to private IP whitelist
   lineinfile:
@@ -19,7 +19,7 @@
   with_items: "{{ apache_ipaddr_whitelist_present }}"
   notify: reload apache
   tags:
-  - apache
+    - apache
 
 - name: remove IP addresses from private IP whitelist
   lineinfile:
@@ -29,7 +29,7 @@
   with_items: "{{ apache_ipaddr_whitelist_absent }}"
   notify: reload apache
   tags:
-  - apache
+    - apache
 
 - name: include private IP whitelist for server-status
   lineinfile:
@@ -38,7 +38,7 @@
     insertafter: 'SetHandler server-status'
     state: present
   tags:
-  - apache
+    - apache
 
 - name: Copy private_htpasswd
   copy:
@@ -50,7 +50,7 @@
     force: no
   notify: reload apache
   tags:
-  - apache
+    - apache
 
 - name: add user:pwd to private htpasswd
   lineinfile:
@@ -60,7 +60,7 @@
   with_items: "{{ apache_private_htpasswd_present }}"
   notify: reload apache
   tags:
-  - apache
+    - apache
 
 - name: remove user:pwd from private htpasswd
   lineinfile:
@@ -70,4 +70,4 @@
   with_items: "{{ apache_private_htpasswd_absent }}"
   notify: reload apache
   tags:
-  - apache
+    - apache
