@@ -1,1 +1,2 @@
 gem "puma"
+gem "xpath", "< 3.0.0"

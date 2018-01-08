@@ -6,3 +6,5 @@ puma_max_thread: 4
 redmine_db_name: "{{ redmine_user }}"
 redmine_db_host: "localhost"
 redmine_db_username: "{{ redmine_user }}"
+redmine_plugins: []
+redmine_themes: []
