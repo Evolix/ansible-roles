@@ -1,5 +1,13 @@
 ---
 
+- name: server status dirname exists
+  file:
+    dest: "{{ apache_serverstatus_suffix_file | dirname }}"
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+
 - name: set apache serverstatus suffix if provided
   shell: "echo {{ apache_serverstatus_suffix }} > {{ apache_serverstatus_suffix_file }}"
   when: apache_serverstatus_suffix != ""

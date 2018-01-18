@@ -1,5 +1,13 @@
 ---
 
+- name: server status dirname exists
+  file:
+    dest: "{{ nginx_serverstatus_suffix | dirname }}"
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+
 - name: set nginx serverstatus suffix if provided
   shell: "echo {{ nginx_serverstatus_suffix }} > {{ nginx_serverstatus_suffix_file }}"
   when: nginx_serverstatus_suffix != ""
