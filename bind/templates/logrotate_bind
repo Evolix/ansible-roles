@@ -1,7 +1,7 @@
 /var/log/bind.log {
     weekly
     missingok
-    rotate 8
+    rotate 52
     create 640 bind bind
     sharedscripts
     postrotate

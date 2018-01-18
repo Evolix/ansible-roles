@@ -11,4 +11,5 @@ CRT_DIR="${CRT_DIR:-'/etc/letsencrypt'}"
 
 export QUIET=1
 
-find "${CRT_DIR}" -maxdepth 1 -mindepth 1 -type d ! -path "*accounts" ! -path "*hooks" -printf "%f\n" | xargs -n1 evoacme
+find "${CRT_DIR}" -maxdepth 1 -mindepth 1 -type d ! -path "*accounts" ! -path "*hooks" -printf "%f\n" \
+  | xargs --max-args=1 --no-run-if-empty evoacme

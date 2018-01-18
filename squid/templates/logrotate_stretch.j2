@@ -1,0 +1,18 @@
+#
+#	Logrotate fragment for squid.
+#
+/var/log/squid/*.log {
+    monthly
+    compress
+    delaycompress
+    rotate 12
+    missingok
+    create 640 proxy adm
+    sharedscripts
+    prerotate
+        test ! -x /usr/sbin/sarg-reports || /usr/sbin/sarg-reports monthly
+    endscript
+    postrotate
+        test ! -e /var/run/squid.pid || test ! -x /usr/sbin/squid || /usr/sbin/squid -k rotate
+    endscript
+}

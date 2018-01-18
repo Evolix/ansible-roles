@@ -1,0 +1,37 @@
+---
+
+- name: server status dirname exists
+  file:
+    dest: "{{ apache_serverstatus_suffix_file | dirname }}"
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+
+- name: set apache serverstatus suffix if provided
+  shell: "echo {{ apache_serverstatus_suffix }} > {{ apache_serverstatus_suffix_file }}"
+  when: apache_serverstatus_suffix != ""
+
+- name: generate random string for server-status suffix
+  shell: "apg -a 1 -M N -n 1 > {{ apache_serverstatus_suffix_file }}"
+  args:
+    creates: "{{ apache_serverstatus_suffix_file }}"
+
+- name: read apache server status suffix
+  command: "tail -n 1 {{ apache_serverstatus_suffix_file }}"
+  changed_when: False
+  check_mode: no
+  register: new_apache_serverstatus_suffix
+
+- name: overwrite apache_serverstatus_suffix
+  set_fact:
+    apache_serverstatus_suffix: "{{ new_apache_serverstatus_suffix.stdout }}"
+
+- debug:
+    var: apache_serverstatus_suffix
+
+- name: replace server-status suffix in default site index
+  replace:
+    dest: /var/www/index.html
+    regexp: '__SERVERSTATUS_SUFFIX__'
+    replace: "{{ apache_serverstatus_suffix }}"

@@ -1,0 +1,28 @@
+---
+- name: Copy/Update plugin from archive
+  unarchive:
+    src: "{{ item.zip }}"
+    dest: "/home/{{ redmine_user }}/www/plugins/" 
+    remote_src: yes
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0750"
+  register: redmine_plugin_install
+  when: item.zip is defined
+
+- name: Copy/Update plugin from git repository
+  git:
+    repo: "{{ item.git }}"
+    dest: "/home/{{ redmine_user }}/www/plugins/{{ item.git | basename | splitext | first }}"
+    version: "{{ item.tree | default('master') }}"
+  register: redmine_plugin_install
+  when: item.git is defined
+  
+- name: Fix rights on plugin dir
+  file:
+    path: "/home/{{ redmine_user }}/www/plugins/{{ item.git | basename | splitext | first }}" 
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "u=rwX,g=rX,o="
+    recurse: True
+  when: item.git is defined

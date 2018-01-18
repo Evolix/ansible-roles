@@ -12,6 +12,7 @@ apache_evolinux_default_ssl_cert: /etc/ssl/certs/ssl-cert-snakeoil.pem
 apache_evolinux_default_ssl_key: /etc/ssl/private/ssl-cert-snakeoil.key
 
 apache_serverstatus_suffix: ""
+apache_serverstatus_suffix_file: "/etc/evolinux/apache_serverstatus_suffix"
 
 apache_log2mail_include: True
 apache_munin_include: True

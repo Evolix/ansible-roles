@@ -16,4 +16,6 @@ nginx_default_redirect_url: "http://evolix.fr"
 nginx_evolinux_default_enabled: True
 
 # nginx_phpmyadmin_suffix: ""
-# nginx_serverstatus_suffix: ""
+
+nginx_serverstatus_suffix: ""
+nginx_serverstatus_suffix_file: "/etc/evolinux/nginx_serverstatus_suffix"

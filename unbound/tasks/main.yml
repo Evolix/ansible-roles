@@ -7,6 +7,16 @@
   tags:
   - unbound
 
+- name: Retrieve list of root DNS servers
+  get_url:
+    url: https://www.internic.net/domain/named.cache
+    dest: /etc/unbound/root.hints
+    force: yes
+    mode: "0644"
+  notify: reload unbound
+  tags:
+  - unbound
+
 - name: Copy Unbound config
   template:
     src: unbound.conf.j2

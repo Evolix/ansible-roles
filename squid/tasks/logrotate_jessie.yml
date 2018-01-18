@@ -1,0 +1,29 @@
+---
+
+# md5sum for squid logrotate file :
+#
+# --check reads stdin for a list of files and md5 sums
+# the list contains the checksum for the file provided by Jessie
+#
+# We don't use --status so we can debug if needed
+#
+# With that command we can check if the logrotate file for squid
+# is the one provided by the package.
+
+- name: check if logrotate file is default
+  shell: 'printf "43994674706b672ae5018f592beccf2e  /etc/logrotate.d/{{ squid_daemon_name }}" | md5sum --check'
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: squid_logrotate_md5
+  tags:
+    - squid
+
+- name: logrotate configuration
+  template:
+    src: logrotate_jessie.j2
+    dest: /etc/logrotate.d/{{ squid_daemon_name }}
+    force: yes
+  when: squid_logrotate_md5.rc == 0
+  tags:
+    - squid

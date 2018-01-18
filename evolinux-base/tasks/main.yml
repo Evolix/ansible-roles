@@ -19,6 +19,10 @@
     name: etc-git
   when: evolinux_etcgit_include
 
+- name: /etc/evolinux base
+  include: etc-evolinux.yml
+  when: evolinux_etcevolinux_include
+
 - name: Hostname
   include: hostname.yml
   when: evolinux_hostname_include

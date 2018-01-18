@@ -4,26 +4,28 @@
     name: libswitch-perl
     state: present
   tags:
-  - redis
+    - redis
 
 - include_role:
     name: remount-usr
   tags:
-  - redis
+    - redis
 
 - name: Create plugin directory
   file:
     name: /usr/local/share/munin/
     state: directory
     mode: "0755"
-  tags: redis
+  tags:
+    - redis
 
 - name: Create plugin directory
   file:
     name: /usr/local/share/munin/plugins/
     state: directory
     mode: "0755"
-  tags: redis
+  tags:
+    - redis
 
 - name: Copy redis munin plugin
   copy:
@@ -31,7 +33,8 @@
     dest: /usr/local/share/munin/plugins/redis_
     mode: "0755"
   notify: restart munin-node
-  tags: redis
+  tags:
+    - redis
 
 - name: Enable redis munin plugin
   file:
@@ -46,7 +49,8 @@
     - used_keys
     - used_memory
   notify: restart munin-node
-  tags: redis
+  tags:
+    - redis
 
 - name: Count redis condif blocks in munin-node configuration
   command: grep -c "\[redis_"  /etc/munin/plugin-conf.d/munin-node

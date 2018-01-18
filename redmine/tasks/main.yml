@@ -211,6 +211,18 @@
   tags:
   - redmine
 
+- name: Install Redmine plugins
+  include: plugins.yml
+  with_items: "{{ redmine_plugins }}"
+  tags:
+  - redmine
+
+- name: Install Redmine themes
+  include: themes.yml
+  with_items: "{{ redmine_themes }}"
+  tags:
+  - redmine
+
 - name: Update local gems with bundle
   bundler:
     state: present
@@ -218,7 +230,7 @@
     gem_path: "/home/{{ redmine_user }}/.gems"
     user_install: yes
   become_user: "{{ redmine_user }}"
-  when: redmine_git_task.changed or redmine_local_gemfile_task.changed
+  when: redmine_git_task.changed or redmine_local_gemfile_task.changed or redmine_plugin_install.changed
 
 - name: Migrate database with rake
   shell: bundle exec rake -qf ~/www/Rakefile db:migrate
@@ -234,6 +246,13 @@
   become_user: "{{ redmine_user }}"
   become_method: sudo
   become_flags: '-iu {{ redmine_user }}'
+
+- name: Migrate plugins
+  shell: bundle exec rake -qf ~/www/Rakefile redmine:plugins:migrate
+  become_user: "{{ redmine_user }}"
+  become_method: sudo
+  become_flags: '-iu {{ redmine_user }}'
+  when: redmine_plugin_install.changed
 
 - name: Generate secret token
   shell: bundle exec rake -qf ~/www/Rakefile generate_secret_token

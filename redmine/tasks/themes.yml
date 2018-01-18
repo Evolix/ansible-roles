@@ -1,0 +1,26 @@
+---
+- name: Copy/Update theme from archive
+  unarchive:
+    src: "{{ item.zip }}"
+    dest: "/home/{{ redmine_user }}/www/public/themes/" 
+    remote_src: yes
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0750"
+  when: item.zip is defined
+
+- name: Copy/Update theme from git repository
+  git:
+    repo: "{{ item.git }}"
+    dest: "/home/{{ redmine_user }}/www/public/themes/{{ item.git | basename | splitext | first }}"
+    version: "{{ item.tree | default('master') }}"
+  when: item.git is defined
+  
+- name: Fix rights on theme dir
+  file:
+    path: "/home/{{ redmine_user }}/www/public/themes/{{ item.git | basename | splitext | first }}" 
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0750"
+    recurse: True
+  when: item.git is defined

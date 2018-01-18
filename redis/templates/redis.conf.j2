@@ -32,6 +32,10 @@ rdbcompression {{ redis_rdbcompression }}
 dbfilename {{ redis_dbfilename }}
 dir {{ redis_dbdir }}
 
+{% if redis_installed_version | version_compare('3.2', '>=') %}
+protected-mode {{ redis_protected_mode }}
+{% endif %}
+
 # maxclients 128
 
 {% if redis_maxmemory %}

@@ -1,0 +1,37 @@
+---
+
+- name: server status dirname exists
+  file:
+    dest: "{{ nginx_serverstatus_suffix | dirname }}"
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+
+- name: set nginx serverstatus suffix if provided
+  shell: "echo {{ nginx_serverstatus_suffix }} > {{ nginx_serverstatus_suffix_file }}"
+  when: nginx_serverstatus_suffix != ""
+
+- name: generate random string for server-status suffix
+  shell: "apg -a 1 -M N -n 1 > {{ nginx_serverstatus_suffix_file }}"
+  args:
+    creates: "{{ nginx_serverstatus_suffix_file }}"
+
+- name: read nginx server status suffix
+  command: "tail -n 1 {{ nginx_serverstatus_suffix_file }}"
+  changed_when: False
+  check_mode: no
+  register: new_nginx_serverstatus_suffix
+
+- name: overwrite nginx_serverstatus_suffix
+  set_fact:
+    nginx_serverstatus_suffix: "{{ new_nginx_serverstatus_suffix.stdout }}"
+
+- debug:
+    var: nginx_serverstatus_suffix
+
+- name: replace server-status suffix in default site index
+  replace:
+    dest: /var/www/index.html
+    regexp: '__SERVERSTATUS_SUFFIX__'
+    replace: "{{ nginx_serverstatus_suffix }}"

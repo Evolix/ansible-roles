@@ -3,30 +3,45 @@
   include_role:
     name: apt
     tasks_from: evolix_public.yml
+  tags:
+    - evomaintenance
 
 - name: evomaintenance is installed
   apt:
     name: evomaintenance
     allow_unauthenticated: yes
+  tags:
+    - evomaintenance
 
 - name: configuration is applied
   template:
     src: evomaintenance.j2
     dest: /etc/evomaintenance.cf
+    owner: root
+    group: root
+    mode: "0600"
+  tags:
+    - evomaintenance
 
 # - name: list users with a shell
 #   shell: "cat /etc/passwd | grep -vE \"^root:\"  | grep -E \":/[^:]+sh$\" | cut -d: -f6"
 #   changed_when: False
 #   check_mode: no
 #   register: home_of_shell_users
+#   tags:
+#     - evomaintenance
 #
 # - include: trap.yml home={{ item }}
 #   with_items: "{{ home_of_shell_users.stdout_lines }}"
+#   tags:
+#     - evomaintenance
 
 - name: Is minifirewall installed?
   stat:
     path: /etc/default/minifirewall
   register: minifirewall_default_file
+  tags:
+    - evomaintenance
 
 - name: minifirewall section for evomaintenance
   lineinfile:
@@ -35,6 +50,8 @@
     insertafter: "^# EvoMaintenance"
   with_items: "{{ evomaintenance_hosts }}"
   when: minifirewall_default_file.stat.exists
+  tags:
+    - evomaintenance
 
 - name: remove minifirewall example rule for the proxy
   lineinfile:
@@ -42,3 +59,5 @@
     regexp: '^#.*(--sport 5432).*(-s X\.X\.X\.X)'
     state: absent
   when: minifirewall_default_file.stat.exists
+  tags:
+    - evomaintenance

@@ -134,7 +134,11 @@
   notify: "reload squid"
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
-- include: logrotate.yml
+- include: logrotate_jessie.yml
+  when: ansible_distribution_release == "jessie"
+
+- include: logrotate_stretch.yml
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - include: minifirewall.yml
 

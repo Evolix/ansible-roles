@@ -4,6 +4,8 @@
   apt:
     name: log2mail
     state: present
+  tags:
+    - apache
 
 - name: Add log2mail config for Apache segfaults
   template:
@@ -13,3 +15,5 @@
     group: adm
     mode: "0644"
     force: no
+  tags:
+    - apache
