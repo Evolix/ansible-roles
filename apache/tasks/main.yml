@@ -144,6 +144,16 @@
   tags:
     - apache
 
+- name: /usr/share/scripts exists
+  file:
+    dest: /usr/share/scripts
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+  tags:
+    - apache
+
 - name: "Install save_apache_status.sh"
   copy:
     src: save_apache_status.sh
