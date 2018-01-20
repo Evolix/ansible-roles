@@ -10,6 +10,9 @@ The patch part changes incrmentally at each release.
 
 ## [Unreleased]
 
+### Added
+* mongodb: install python-pymongo for monitoring
+
 ### Changed
 * Changelog: explain the versioning scheme
 * Changelog: add a release date for 9.1.5
