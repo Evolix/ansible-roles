@@ -17,6 +17,11 @@
     name: mongodb-org
     state: installed
 
+- name: install dependency for monitoring
+  apt:
+    name: python-pymongo
+    state: installed
+
 - name: Custom configuration
   template:
     src: mongod_jessie.conf.j2

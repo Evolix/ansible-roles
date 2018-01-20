@@ -8,6 +8,11 @@
     - mongodb
     - mongo-tools
 
+- name: install dependency for monitoring
+  apt:
+    name: python-pymongo
+    state: installed
+
 - name: Custom configuration
   template:
     src: mongodb_stretch.conf.j2
