@@ -53,7 +53,7 @@ The patch part changes incrmentally at each release.
 * split IP lists in 2 – default and additional – for easier customization.
 
 ### Fixed
-* minifirewall: allow outgoing SSH connections over IPv6 
+* minifirewall: allow outgoing SSH connections over IPv6
 * nodejs: rename source.list file
 
 ### Security
@@ -66,13 +66,105 @@ The patch part changes incrmentally at each release.
 * evolinux-base: install traceroute package
 * evolinux-base/ntpd: purge openntpd
 * tomcat: add Tomcat 8 cmpatibility
+* log2mail: add "The total blob data length" pattern for MySQL
+* nagios-nrpe: add bkctld check in evolix.cfg
+* varnish: reload or restart if needed
+* rabbitmq: add a munin plugin and an NRPE check
+* minifirewall: add debug for variables
+* elastic: option for stack main version
 
 ### Changed
 * nginx: rename Let's Encrypt snippet
+* nginx: simpler apt preferences for backports
+* generate-ldif: add clamd service instead of clamav_db
+* mysql: parameterize evolinux config files
+* rbenv: use Rbenv 1.1.1 and Ruby 2.4.2 by default
+* elasticsearch: update curator debian repository
+* evoacme: crontab management
+* evoacme: better documentation
+* mongodb: comatible with Stretch
 
 ### Removed
 * mongodb: logfile/pidfile are not configurable on Jessie
+* minifirewall: remove zidane.evolix.net from HTTPSITES
 
 ### Fixed
 * nginx: fix munin CGI graphs
 * ntpd: fix default configuration (localhost only)
+* logstash: fix permissions on pipeline configuration
+* postfix/spamassassin: add user in cron job
+* php: php.ini custom file are now readable
+* hostname customization needs the dbus package
+
+## [9.1.2] 2017-12-05
+
+### Fixed
+* listupgrade: remount /usr as rw
+
+## [9.1.1] 2017-11-21
+
+### Added
+* amazon-ec2: add egress rules
+
+### Fixed
+* evoacme: fix multiple bugs
+
+## [9.1.0] 2017-11-19
+
+_Warning: huge release, many entries are missing below._
+
+### Added
+* amazon-ec2: new role, for EC2 instances creation
+* Move /usr rw remount into remount-usr role
+* kibana: host and basepath configuration
+* kibana: move optimize and data to /var
+* logstash: daily job for log rotation
+* elasticsearch: daily job for log rotation
+* roundcube: add link in default site index
+* nagios-nrpe: add opendkim check
+
+### Changed
+* Combine evolix and additional trusted IP addresses
+* amazon-ec2: split tasks
+* apt: don't upgrade by default
+* postfix: extract main.cf md5sum into variables
+* evolinux-base: cache hwraid pgp key locally
+* evoacme: improve cron task
+* elasticsearch: use elastic.list APT source list for curator
+* ldap: better variables
+
+### Fixed
+* fail2ban: create config hierarchy beforehand
+* elasticsearch: fix datadir/tmpdir conditions
+* elastic: remove double ".list" suffix
+* nagios-nrpe: fix check_free_mem for OpenBSD 6.2
+* nagios-nrpe: fix check_amavis
+
+### Removed
+
+### Security
+
+
+## [9.0.1] 2017-10-02
+
+### Added
+* haproxy: add a Nagios check
+* php: add "sury" mode for PHP 7.1 on Stretch
+* minifirewall: explicit dependency on iptables
+* apt: remove Gandi source files
+* docker-host: new variable for docker home
+
+### Changed
+* php: install php5/php package after fpm/libapache2-mod-php
+
+### Fixed
+* mysql: add "REPLICATION CLIENT" privilege for nrpe
+* evoadmin-web: revert from variables to keywords in the templates
+* evoacme: many fixes
+* etc-git: detect user if root (without su or sudo)
+* docker-host: clean override of docker systemd unit
+* varnish: fix systemd unit override
+
+## [9.0.0] 2017-09-19
+
+First official release
