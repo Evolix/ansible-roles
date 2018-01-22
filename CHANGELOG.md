@@ -16,6 +16,7 @@ The **patch** part changes incrmentally at each release.
 ### Changed
 * Changelog: explain the versioning scheme
 * Changelog: add a release date for 9.1.5
+* evoacme: exclude typical certbot directories
 
 ## [9.1.5] - 2018-01-18
 
