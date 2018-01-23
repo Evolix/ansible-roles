@@ -10,6 +10,8 @@
     - nagios-plugins-common
     - nagios-plugins-contrib
     - nagios-plugins-standard
+  tags:
+    - nagios-nrpe
 
 - name: custom configuration is present
   template:
@@ -19,6 +21,19 @@
     mode: "0640"
     force: no
   notify: restart nagios-nrpe-server
+  tags:
+    - nagios-nrpe
+
+- name: update allowed_hosts lists
+  lineinfile:
+    dest: /etc/nagios/nrpe.d/evolix.cfg
+    line: "allowed_hosts={{ nagios_nrpe_allowed_hosts | join(',') }}"
+    regexp: '^allowed_hosts='
+    insertafter: '# Allowed IPs'
+  notify: restart nagios-nrpe-server
+  when: nagios_nrpe_force_update_allowed_hosts
+  tags:
+    - nagios-nrpe
 
 - name: Nagios config is secured
   file:
@@ -27,12 +42,15 @@
     group: nagios
     state: directory
   notify: restart nagios-nrpe-server
+  tags:
+    - nagios-nrpe
 
 - include_role:
     name: remount-usr
   when: nagios_plugins_directory | search ("/usr")
   tags:
-  - nagios-plugins
+    - nagios-nrpe
+    - nagios-plugins
 
 - name: Nagios plugins are installed
   copy:
@@ -41,6 +59,7 @@
     mode: "0755"
   notify: restart nagios-nrpe-server
   tags:
+  - nagios-nrpe
   - nagios-plugins
 
 - name: Nagios lib is secured
@@ -51,3 +70,5 @@
     recurse: yes
     state: directory
   notify: restart nagios-nrpe-server
+  tags:
+    - nagios-nrpe

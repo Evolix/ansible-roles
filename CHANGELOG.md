@@ -12,6 +12,7 @@ The **patch** part changes incrmentally at each release.
 
 ### Added
 * mongodb: install python-pymongo for monitoring
+* nagios-nrpe: allowed_hosts can be updated
 
 ### Changed
 * Changelog: explain the versioning scheme
