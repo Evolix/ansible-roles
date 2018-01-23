@@ -73,8 +73,8 @@
     state: link
   notify: restart munin-node
   when:
-    - etc_munin_plugins.stat.exists?
-    - fail2ban_munin_plugin.stat.exists?
+    - etc_munin_plugins.stat.exists
+    - fail2ban_munin_plugin.stat.exists
   tags:
     - fail2ban
     - munin

@@ -19,6 +19,9 @@ The **patch** part changes incrmentally at each release.
 * Changelog: add a release date for 9.1.5
 * evoacme: exclude typical certbot directories
 
+### Fixed
+* fail2ban: fix horrible typo, Python is not Ruby
+
 ## [9.1.5] - 2018-01-18
 
 ### Added
