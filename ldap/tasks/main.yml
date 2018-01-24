@@ -58,6 +58,21 @@
     mode: "0640"
   when: not root_ldapvirc_path.stat.exists
 
+- name: set params for NRPE check
+  ini_file:
+    dest: /etc/nagios/monitoring-plugins.ini
+    owner: root
+    group: nagios
+    section: check_ldap
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: 0640
+  with_items:
+  - { option: 'hostname', value: '127.0.0.1' }
+  - { option: 'base', value: "{{ ldap_suffix }}" }
+  - { option: 'bind', value: "cn=nagios,ou=ldapusers,{{ ldap_suffix }}" }
+  - { option: 'pass', value: "{{ ldap_nagios_password.stdout }}" }
+
 - name: upload ldap initial config
   template:
     src: config_ldapvi.j2
