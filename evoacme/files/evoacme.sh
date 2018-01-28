@@ -176,8 +176,9 @@ main() {
 
     [ -d "${NEW_DIR}" ] && error "${NEW_DIR} directory already exists, remove it manually."
     mkdir -p "${NEW_DIR}"
-    chmod -R 0700 "${CRT_DIR}"
     chown -R acme: "${CRT_DIR}"
+    chmod -R 0700 "${CRT_DIR}"
+    chmod -R g+rX "${CRT_DIR}"
     debug "New cert will be created in ${NEW_DIR}"
 
     readonly NEW_CERT="${NEW_DIR}/cert.crt"
