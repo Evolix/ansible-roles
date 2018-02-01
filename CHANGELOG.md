@@ -21,6 +21,7 @@ The **patch** part changes incrmentally at each release.
 
 ### Fixed
 * fail2ban: fix horrible typo, Python is not Ruby
+* nginx: fix servers status dirname
 
 ## [9.1.5] - 2018-01-18
 
