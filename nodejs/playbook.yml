@@ -1,5 +1,0 @@
----
-- hosts: bruno
-  become: yes
-  roles:
-    - nodejs
