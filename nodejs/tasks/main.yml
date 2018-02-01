@@ -1,6 +1,4 @@
 ---
-
-
 - name: APT https transport is enabled
   apt:
     name: apt-transport-https
@@ -36,3 +34,19 @@
   tags:
     - packages
     - nodejs
+
+- name: Define Nodejs in global configuration
+  shell: "npm install -g npm"
+
+- name: Ensure owner
+  file:
+    path: "/usr/lib/node_modules"
+    owner: root
+    group: 'root'
+    recurse: yes
+
+- name: Ensure access
+  file:
+    path: "/usr/lib/node_modules"
+    mode: 0755
+    recurse: yes

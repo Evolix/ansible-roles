@@ -1,2 +1,2 @@
 ---
-nodejs_apt_version: 'node_6.x'
+nodejs_apt_version: 'node_9.x'
