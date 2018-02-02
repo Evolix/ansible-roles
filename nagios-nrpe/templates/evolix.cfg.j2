@@ -25,8 +25,8 @@ command[check_mailq]=/usr/lib/nagios/plugins/check_mailq -M postfix -w 10 -c 20
 command[check_pgsql]=/usr/lib/nagios/plugins/check_pgsql -H localhost -l nrpe -p '{{ nagios_nrpe_pgsql_passwd }}'
 command[check_mysql]=/usr/lib/nagios/plugins/check_mysql -H localhost -f ~nagios/.my.cnf
 command[check_mysql_slave]=/usr/lib/nagios/plugins/check_mysql --check-slave -H localhost -f ~nagios/.my.cnf -w 1800 -c 3600
-command[check_ldap]=/usr/lib/nagios/plugins/check_ldap -3 -H localhost -D cn=nagios,ou=ldapusers,{{ nagios_nrpe_ldap_dc }} -P {{ nagios_nrpe_ldap_passwd }} -b {{ nagios_nrpe_ldap_dc }}
-command[check_ldaps]=/usr/lib/nagios/plugins/check_ldaps -3 -H localhost -b {{ nagios_nrpe_ldap_dc }}
+command[check_ldap]=/usr/lib/nagios/plugins/check_ldap -3 --extra-opts=@/etc/nagios/monitoring-plugins.ini
+command[check_ldaps]=/usr/lib/nagios/plugins/check_ldap -3 -T --extra-opts=@/etc/nagios/monitoring-plugins.ini
 command[check_imap]=/usr/lib/nagios/plugins/check_imap -H localhost
 command[check_imaps]=/usr/lib/nagios/plugins/check_imap -S -H localhost -p 993
 command[check_imapproxy]=/usr/lib/nagios/plugins/check_imap -H localhost -p 1143
@@ -34,7 +34,7 @@ command[check_pop]=/usr/lib/nagios/plugins/check_pop -H localhost
 command[check_pops]=/usr/lib/nagios/plugins/check_pop -S -H localhost -p 995
 command[check_ftp]=/usr/lib/nagios/plugins/check_ftp -H localhost
 command[check_http]=/usr/lib/nagios/plugins/check_http -e 200 -I 127.0.0.1 -H localhost
-command[check_https]=/usr/lib/nagios/plugins/check_http -e 200 -I 127.0.0.1 -S -p 443 -H ssl.evolix.net
+command[check_https]=/usr/lib/nagios/plugins/check_http -e 200 -I 127.0.0.1 -S -p 443 --sni -H ssl.evolix.net
 command[check_bind]=/usr/lib/nagios/plugins/check_dig -l evolix.net -H localhost
 command[check_unbound]=/usr/lib/nagios/plugins/check_dig -l evolix.net -H localhost
 command[check_smb]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 445

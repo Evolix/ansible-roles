@@ -1,8 +1,8 @@
 ---
 
-- name: server status dirname exists
+- name: "server status dirname exists '{{ nginx_serverstatus_suffix_file | dirname }}'"
   file:
-    dest: "{{ nginx_serverstatus_suffix | dirname }}"
+    dest: "{{ nginx_serverstatus_suffix_file | dirname }}"
     mode: "0700"
     owner: root
     group: root

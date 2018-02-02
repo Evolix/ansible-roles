@@ -3,3 +3,8 @@
   service:
     name: fail2ban
     state: restarted
+
+- name: restart munin-node
+  service:
+    name: munin-node
+    state: restarted
