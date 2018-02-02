@@ -10,6 +10,8 @@ The **patch** part changes incrmentally at each release.
 
 ## [Unreleased]
 
+## [9.1.6] - 2018-02-02
+
 ### Added
 * mongodb: install python-pymongo for monitoring
 * nagios-nrpe: allowed_hosts can be updated
