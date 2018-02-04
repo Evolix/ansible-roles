@@ -10,6 +10,9 @@ The **patch** part changes incrmentally at each release.
 
 ## [Unreleased]
 
+### Added
+* postfix: add lines in /etc/.gitignore
+
 ## [9.1.6] - 2018-02-02
 
 ### Added
