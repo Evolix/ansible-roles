@@ -18,10 +18,21 @@
     tags:
       - elasticsearch
 
+  - name: check if ES_TMPDIR is available
+    lineinfile:
+      dest: /etc/default/elasticsearch
+      line: "ES_TMPDIR={{ elasticsearch_custom_tmpdir or elasticsearch_default_tmpdir | mandatory }}"
+      regexp: "^ES_TMPDIR="
+      insertafter: "JAVA_HOME"
+    notify:
+      - restart elasticsearch
+    tags:
+      - elasticsearch
+
   - name: change JVM tmpdir
     lineinfile:
       dest: /etc/elasticsearch/jvm.options
-      line: "-Djava.io.tmpdir={{ elasticsearch_custom_tmpdir or elasticsearch_default_tmpdir | mandatory }}"
+      line: "-Djava.io.tmpdir=${ES_TMPDIR}"
       regexp: "^-Djava.io.tmpdir="
       insertafter: "## JVM configuration"
     notify:

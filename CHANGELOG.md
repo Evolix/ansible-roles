@@ -13,6 +13,9 @@ The **patch** part changes incrmentally at each release.
 ### Added
 * postfix: add lines in /etc/.gitignore
 
+### Changed
+* elasticsearch: use ES_TMPDIR variable for custom tmpdir, (from `/etc/default/elasticsearch` instead of changing `/etc/elesticsearch/jvm.options`).
+
 ## [9.1.6] - 2018-02-02
 
 ### Added
