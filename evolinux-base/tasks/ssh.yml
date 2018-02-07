@@ -13,7 +13,7 @@
 # We want to allow any user from a list of IP addresses to login with password,
 # but users of the "evolix" group can't login with password from other IP addresses
 
-- name: Security directives for Evolinux (Debian 10 or later)"
+- name: "Security directives for Evolinux (Debian 10 or later)"
   blockinfile:
     dest: /etc/ssh/sshd_config
     block: |
