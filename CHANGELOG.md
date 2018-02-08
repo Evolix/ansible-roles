@@ -16,6 +16,9 @@ The **patch** part changes incrmentally at each release.
 ### Changed
 * elasticsearch: use ES_TMPDIR variable for custom tmpdir, (from `/etc/default/elasticsearch` instead of changing `/etc/elesticsearch/jvm.options`).
 
+### Fixed
+* nginx: fix basic auth for default vhost
+
 ## [9.1.6] - 2018-02-02
 
 ### Added
