@@ -1,8 +1,16 @@
 ---
+- name: Install Munin plugin
+  apt:
+    name: munin-plugins-extra
+    state: present
+  tags:
+  - haproxy
+
 - name: Enable Munin Haproxy plugins
   file:
     src: /usr/share/munin/plugins/haproxy_ng
     dest: /etc/munin/plugins/haproxy_ng
+    force: yes
     state: link
   notify: restart munin-node
   tags:
