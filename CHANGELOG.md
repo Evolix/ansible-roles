@@ -12,10 +12,13 @@ The **patch** part changes incrmentally at each release.
 
 ### Added
 * postfix: add lines in /etc/.gitignore
+* nagios-nrpe: add "check_open_files" plugin
+* nagios-nrpe: mark plugins as executable
 
 ### Changed
 * elasticsearch: use ES_TMPDIR variable for custom tmpdir, (from `/etc/default/elasticsearch` instead of changing `/etc/elesticsearch/jvm.options`).
 * elasticsearch: RESTART_ON_UPGRADE is configurable (default: `true`)
+* nagios-nrpe: mark plugins as executable
 
 ### Fixed
 * nginx: fix basic auth for default vhost
