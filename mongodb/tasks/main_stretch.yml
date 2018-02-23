@@ -17,8 +17,7 @@
   template:
     src: mongodb_stretch.conf.j2
     dest: "/etc/mongodb.conf"
-    force: yes
-    backup: no
+    force: "{{ mongodb_force_config | bool | ternary('yes', 'no') }}"
   notify: restart mongodb
 
 - name: enable service

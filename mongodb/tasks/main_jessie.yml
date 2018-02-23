@@ -26,8 +26,7 @@
   template:
     src: mongod_jessie.conf.j2
     dest: "/etc/mongod.conf"
-    force: yes
-    backup: no
+    force: "{{ mongodb_force_config | bool | ternary('yes', 'no') }}"
   notify: restart mongod
 
 - name: Configure logrotate

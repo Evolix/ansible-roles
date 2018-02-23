@@ -2,3 +2,5 @@
 
 mongodb_port: 27017
 mongodb_bind: 127.0.0.1
+
+mongodb_force_config: True
