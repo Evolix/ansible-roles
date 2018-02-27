@@ -29,7 +29,7 @@
   lineinfile:
     dest: /etc/proftpd/conf.d/z-evolinux.conf
     state: present
-    line: " AllowUser {{ item.name }}"
+    line: "\tAllowUser {{ item.name }}"
     insertbefore: "DenyAll"
   with_items: "{{ proftpd_accounts_final }}"
   notify: restart proftpd
