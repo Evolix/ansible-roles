@@ -1,0 +1,37 @@
+---
+- include: accounts_password.yml
+  when: item.password is undefined
+  with_items: "{{ proftpd_accounts }}"
+  tags:
+    - proftpd
+
+- set_fact:
+    proftpd_accounts_final: "{{ proftpd_accounts_final + item }}"
+  when: item.password is defined
+  with_items: "{{ proftpd_accounts }}"
+  tags:
+    - proftpd
+
+- name: Create FTP account
+  lineinfile:
+    dest: /etc/proftpd/vpasswd
+    state: present
+    create: yes
+    mode: "0440"
+    line: "{{ item.name | mandatory }}:{{ item.password }}:{{ item.uid }}:{{ item.gid }}::{{ item.home | mandatory }}:/bin/false"
+    regexp: "^{{ item.name }}:.*"
+  with_items: "{{ proftpd_accounts_final }}"
+  notify: restart proftpd
+  tags:
+    - proftpd
+
+- name: Allow FTP account
+  lineinfile:
+    dest: /etc/proftpd/conf.d/z-evolinux.conf
+    state: present
+    line: " AllowUser {{ item.name }}"
+    insertbefore: "DenyAll"
+  with_items: "{{ proftpd_accounts_final }}"
+  notify: restart proftpd
+  tags:
+    - proftpd

@@ -55,3 +55,6 @@
   notify: restart proftpd
   tags:
     - proftpd
+
+- include: accounts.yml
+  when: proftpd_accounts != "[]"
