@@ -15,6 +15,7 @@ The **patch** part changes incrmentally at each release.
 * nagios-nrpe: add "check_open_files" plugin
 * nagios-nrpe: mark plugins as executable
 * mysql-oracle: new role to install MySQL 5.7 with Oracle packages
+* packweb-apache: choose mysql variant (default: `debian`)
 
 ### Changed
 * elasticsearch: use ES_TMPDIR variable for custom tmpdir, (from `/etc/default/elasticsearch` instead of changing `/etc/elesticsearch/jvm.options`).
