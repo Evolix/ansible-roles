@@ -6,7 +6,7 @@
     - proftpd
 
 - set_fact:
-    proftpd_accounts_final: "{{ proftpd_accounts_final + item }}"
+    proftpd_accounts_final: "{{ proftpd_accounts_final + [ item ] }}"
   when: item.password is defined
   with_items: "{{ proftpd_accounts }}"
   tags:
