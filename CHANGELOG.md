@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project does not follow semantic versioning.
 The **major** part of the version is aligned with the stable version of Debian.
 The **minor** part changes with big changes (probably incompatible).
-The **patch** part changes incrmentally at each release.
+The **patch** part changes incrementally at each release.
 
 ## [Unreleased]
 
@@ -16,6 +16,7 @@ The **patch** part changes incrmentally at each release.
 * nagios-nrpe: mark plugins as executable
 * mysql-oracle: new role to install MySQL 5.7 with Oracle packages
 * packweb-apache: choose mysql variant (default: `debian`)
+* haproxy: install Munin plugins
 
 ### Changed
 * elasticsearch: use ES_TMPDIR variable for custom tmpdir, (from `/etc/default/elasticsearch` instead of changing `/etc/elesticsearch/jvm.options`).
@@ -45,7 +46,7 @@ The **patch** part changes incrmentally at each release.
 ## [9.1.5] - 2018-01-18
 
 ### Added
-* There is changelog!
+* There is a changelog!
 * redis: configuration variable for protected mode (v3.2+)
 * evolinux-users: users are in "adm" group for Debian 9 or later
 * evolinx-base: purge locate/mlocate packages
