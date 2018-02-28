@@ -1,0 +1,29 @@
+file = /var/log/syslog
+pattern = "is marked as crashed and should be repaired"
+mailto = {{ (log2mail_alert_email or general_alert_email) | mandatory }}
+template = /etc/log2mail/mail
+
+file = /var/log/syslog
+pattern = "init function returned error"
+mailto = {{ (log2mail_alert_email or general_alert_email) | mandatory }}
+template = /etc/log2mail/mail
+
+file = /var/log/syslog
+pattern = "try to repair it"
+mailto = {{ (log2mail_alert_email or general_alert_email) | mandatory }}
+template = /etc/log2mail/mail
+
+file = /var/log/syslog
+pattern = "InnoDB: Fatal error"
+mailto = {{ (log2mail_alert_email or general_alert_email) | mandatory }}
+template = /etc/log2mail/mail
+
+file = /var/log/syslog
+pattern = "as a STORAGE ENGINE failed"
+mailto = {{ (log2mail_alert_email or general_alert_email) | mandatory }}
+template = /etc/log2mail/mail
+
+file = /var/log/syslog
+pattern = "The total blob data length"
+mailto = {{ (log2mail_alert_email or general_alert_email) | mandatory }}
+template = /etc/log2mail/mail

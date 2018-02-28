@@ -1,0 +1,74 @@
+---
+
+- name: MySQL APT config package is available
+  copy:
+    src: mysql-apt-config_0.8.9-1_all.deb
+    dest: /root/mysql-apt-config_0.8.9-1_all.deb
+
+- name: MySQL APT config package is installed
+  apt:
+    deb: /root/mysql-apt-config_0.8.9-1_all.deb
+    state: installed
+  register: mysql_apt_config_deb
+
+- name: APT cache is up-to-date
+  apt:
+    update_cache: yes
+  when: mysql_apt_config_deb | changed
+
+- name: Install MySQL packages
+  apt:
+    name: '{{ item }}'
+    update_cache: yes
+    state: present
+  with_items:
+    - mysql-server
+    - mysql-client
+    - libmysqlclient20
+  tags:
+    - mysql
+    - packages
+
+- include_role:
+    name: remount-usr
+
+- name: mysql-systemd-start scripts is installed
+  copy:
+    src: debian/mysql-systemd-start
+    dest: /usr/share/mysql/mysql-systemd-start
+    mode: "0755"
+    owner: root
+    group: root
+    force: yes
+
+- name: systemd unit is installed
+  copy:
+    src: debian/mysql-server-5.7.mysql.service
+    dest: /etc/systemd/system/mysql.service
+    mode: "0755"
+    owner: root
+    group: root
+    force: yes
+  register: mysql_systemd_unit
+
+# - name: systemd daemon is reloaded
+#   systemd:
+#     daemon_reload: yes
+#   when: mysql_systemd_unit | changed
+
+- name: MySQL is started
+  service:
+    name: mysql
+    daemon_reload: yes
+    state: started
+  tags:
+    - mysql
+    - services
+
+- name: apg package is installed
+  apt:
+    name: apg
+    state: present
+  tags:
+    - mysql
+    - packages
