@@ -1,0 +1,65 @@
+---
+
+- name: "Unix group '{{ evolinux_ssh_group }}' is present"
+  group:
+    name: "{{ evolinux_ssh_group }}"
+    state: present
+
+- name: "Unix user '{{ user.name }}' belongs to group '{{ evolinux_ssh_group }}'"
+  user:
+    name: '{{ user.name }}'
+    groups: "{{ evolinux_ssh_group }}"
+    append: yes
+
+- name: "Add AllowGroups sshd directive with '{{ evolinux_ssh_group }}'"
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    line: "\nAllowGroups {{ evolinux_ssh_group }}"
+    insertafter: 'Subsystem'
+    validate: '/usr/sbin/sshd -T -f %s'
+  notify: reload sshd
+  when: grep_allowgroups_ssh.rc != 0
+
+- name: "Append '{{ evolinux_ssh_group }}' to AllowGroups sshd directive"
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '^(AllowGroups ((?!\b{{ evolinux_ssh_group }}\b).)*)$'
+    replace: '\1 {{ user.name }}'
+    validate: '/usr/sbin/sshd -T -f %s'
+  notify: reload sshd
+  when: grep_allowgroups_ssh.rc == 0
+
+- name: disable AllowUsers directive if present
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '^(AllowUsers)'
+    replace: '# \1'
+    validate: '/usr/sbin/sshd -T -f %s'
+  notify: reload sshd
+  
+- name: "verify Match Group directive"
+  command: "grep 'Match Group' /etc/ssh/sshd_config"
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: grep_matchgroup_ssh
+
+- name: "Add Match Group sshd directive with '{{ evolinux_ssh_group }}'"
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    line: "\nMatch Group {{ evolinux_ssh_group }}\n    PasswordAuthentication no"
+    insertafter: "# END EVOLINUX PASSWORD RESTRICTIONS BY ADDRESS"
+    validate: '/usr/sbin/sshd -T -f %s'
+  notify: reload sshd
+  when:
+    - grep_matchgroup_ssh.rc != 0
+
+- name: "Append '{{ evolinux_ssh_group }}' to Match Group's sshd directive"
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '^(Match Group ((?!{{ evolinux_ssh_group }}).)*)$'
+    replace: '\1,{{ evolinux_ssh_group }}'
+    validate: '/usr/sbin/sshd -T -f %s'
+  notify: reload sshd
+  when:
+    - grep_matchgroup_ssh.rc == 0
