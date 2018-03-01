@@ -1,30 +1,5 @@
 ---
 
-- name: "Create .ssh directory for '{{ user.name }}'"
-  file:
-    dest: '/home/{{ user.name }}/.ssh/'
-    state: directory
-    mode: "0700"
-    owner: '{{ user.name }}'
-    group: '{{ user.name }}'
-
-- name: "Add user's SSH public key for '{{ user.name }}'"
-  authorized_key:
-    user: "{{ user.name }}"
-    key: "{{ user.ssh_key }}"
-    state: present
-  when: user.ssh_key is defined
-
-- name: "Add user's SSH public keys for '{{ user.name }}'"
-  authorized_key:
-    user: "{{ user.name }}"
-    key: "{{ ssk_key }}"
-    state: present
-  with_items: "{{ user.ssh_keys }}"
-  loop_control:
-    loop_var: ssk_key
-  when: user.ssh_keys is defined
-
 - name: verify AllowGroups directive
   command: "grep -E '^AllowGroups' /etc/ssh/sshd_config"
   changed_when: False
@@ -32,18 +7,55 @@
   check_mode: no
   register: grep_allowgroups_ssh
 
+- debug:
+    var: grep_allowgroups_ssh
+    verbosity: 1
+
 - name: verify AllowUsers directive
-  shell: "grep -E '^AllowUsers' /etc/ssh/sshd_config"
+  command: "grep -E '^AllowUsers' /etc/ssh/sshd_config"
   changed_when: False
   failed_when: False
   check_mode: no
   register: grep_allowusers_ssh
 
-# If AllowGroups is present or
-# if AllowUsers is absent and Debian 9+, use AllowGroups mode
-- include: ssh_allowgroups.yml
-  when: grep_allowgroups_ssh.rc == 0 or (grep_allowusers_ssh.rc != 0 and ansible_distribution_major_version | version_compare('9', '>='))
+- debug:
+    var: grep_allowusers_ssh
+    verbosity: 1
 
-# If AllowGroups is absent, use AllowUsers mode
+- set_fact:
+    # If "AllowGroups is present" or "AllowUsers is absent and Debian 9+",
+    ssh_allowgroups: "{{ grep_allowgroups_ssh.rc == 0 or (grep_allowusers_ssh.rc != 0 and (ansible_distribution_major_version | version_compare('9', '>='))) }}"
+    # If "AllowGroups is absent"
+    ssh_allowusers: "{{ grep_allowgroups_ssh.rc != 0 }}"
+
+- debug:
+    var: ssh_allowgroups
+    verbosity: 1
+
+- debug:
+    var: ssh_allowusers
+    verbosity: 1
+
+- include: ssh_allowgroups.yml
+  when:
+  - ssh_allowgroups
+  - not ssh_allowusers
+
 - include: ssh_allowusers.yml
-  when: grep_allowgroups_ssh.rc != 0
+  vars:
+    user: "{{ item.value }}"
+  with_dict: "{{ evolinux_users }}"
+  when:
+  - ssh_allowusers
+  - not ssh_allowgroups
+
+
+- name: disable root login
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin (yes|without-password|prohibit-password)'
+    replace: "PermitRootLogin no"
+  notify: reload sshd
+  when: evolinux_root_disable_ssh
+
+- meta: flush_handlers

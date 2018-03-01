@@ -63,13 +63,8 @@
     force: yes
   register: mysql_systemd_unit
 
-# - name: systemd daemon is reloaded
-#   systemd:
-#     daemon_reload: yes
-#   when: mysql_systemd_unit | changed
-
 - name: MySQL is started
-  service:
+  systemd:
     name: mysql
     daemon_reload: yes
     state: started
