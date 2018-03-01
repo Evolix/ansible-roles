@@ -32,9 +32,17 @@
   check_mode: no
   register: grep_allowgroups_ssh
 
-# If AllowGroups is present or Debian 9+, use AllowGroups mode
+- name: verify AllowUsers directive
+  shell: "grep -E '^AllowUsers' /etc/ssh/sshd_config"
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: grep_allowusers_ssh
+
+# If AllowGroups is present or
+# if AllowUsers is absent and Debian 9+, use AllowGroups mode
 - include: ssh_allowgroups.yml
-  when: grep_allowgroups_ssh.rc == 0 or ansible_distribution_major_version | version_compare('9', '>=')
+  when: grep_allowgroups_ssh.rc == 0 or (grep_allowusers_ssh.rc != 0 and ansible_distribution_major_version | version_compare('9', '>='))
 
 # If AllowGroups is absent, use AllowUsers mode
 - include: ssh_allowusers.yml

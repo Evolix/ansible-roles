@@ -29,13 +29,13 @@
   notify: reload sshd
   when: grep_allowgroups_ssh.rc == 0
 
-- name: disable AllowUsers directive if present
-  replace:
-    dest: /etc/ssh/sshd_config
-    regexp: '^(AllowUsers)'
-    replace: '# \1'
-    validate: '/usr/sbin/sshd -T -f %s'
-  notify: reload sshd
+# - name: disable AllowUsers directive if present
+#   replace:
+#     dest: /etc/ssh/sshd_config
+#     regexp: '^(AllowUsers)'
+#     replace: '# \1'
+#     validate: '/usr/sbin/sshd -T -f %s'
+#   notify: reload sshd
   
 - name: "verify Match Group directive"
   command: "grep 'Match Group' /etc/ssh/sshd_config"
