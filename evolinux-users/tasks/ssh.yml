@@ -33,9 +33,9 @@
   register: grep_allowgroups_ssh
 
 # If AllowGroups is present or Debian 9+, use AllowGroups mode
-- include: ssh_groups.yml
+- include: ssh_allowgroups.yml
   when: grep_allowgroups_ssh.rc == 0 or ansible_distribution_major_version | version_compare('9', '>=')
 
 # If AllowGroups is absent, use AllowUsers mode
-- include: ssh_users.yml
+- include: ssh_allowusers.yml
   when: grep_allowgroups_ssh.rc != 0
