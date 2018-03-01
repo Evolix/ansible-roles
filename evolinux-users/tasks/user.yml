@@ -1,15 +1,119 @@
 ---
 
-- include: account.yml
+# Unix account
 
-- include: profile.yml
+- name: "Test if '{{ user.name }}' exists"
+  command: 'getent passwd {{ user.name }}'
+  register: loginisbusy
+  failed_when: False
+  changed_when: False
+  check_mode: no
 
-- include: ssh.yml
+- name: "Test if uid exists for '{{ user.name }}'"
+  command: 'getent passwd {{ user.uid }}'
+  register: uidisbusy
+  failed_when: False
+  changed_when: False
+  check_mode: no
 
-- include: sudo_jessie.yml
-  when: ansible_distribution_release == "jessie"
+- name: "Add Unix account with classical uid for '{{ user.name }}'"
+  user:
+   state: present
+   uid: '{{ user.uid }}'
+   name: '{{ user.name }}'
+   comment: '{{ user.fullname }}'
+   shell: /bin/bash
+   password: '{{ user.password_hash }}'
+   update_password: on_create
+  when: loginisbusy.rc != 0 and uidisbusy.rc != 0
 
-- include: sudo_stretch.yml
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+- name: "Add Unix account with random uid for '{{ user.name }}'"
+  user:
+   state: present
+   name: '{{ user.name }}'
+   comment: '{{ user.fullname }}'
+   shell: /bin/bash
+   password: '{{ user.password_hash }}'
+   update_password: on_create
+  when: loginisbusy.rc != 0 and uidisbusy.rc == 0
+
+# Unix groups
+
+- name: "Unix group '{{ evolinux_ssh_group }}' is present"
+  group:
+    name: "{{ evolinux_ssh_group }}"
+    state: present
+
+- name: "Unix user '{{ user.name }}' belongs to group '{{ evolinux_ssh_group }}'"
+  user:
+    name: '{{ user.name }}'
+    groups: "{{ evolinux_ssh_group }}"
+    append: yes
+
+- name: "Create secondary groups"
+  group:
+    name: "{{ group }}"
+  with_items: "{{ user.groups }}"
+  loop_control:
+    loop_var: group
+  when: user.groups is defined
+
+- name: "Add user '{{ user.name }}' to secondary groups"
+  user:
+    name: '{{ user.name }}'
+    groups: "{{ user.groups }}"
+    append: yes
+  when: user.groups is defined
+
+- name: "Fix perms on home directory for '{{ user.name }}'"
+  file:
+   name: '/home/{{ user.name }}'
+   mode: "0700"
+   state: directory
+
+ # Evomaintenance
+
+- name: search profile for presence of evomaintenance
+  command: 'grep -q "trap.*sudo.*evomaintenance.sh"'
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: grep_profile_evomaintenance
+
+# Don't add the trap if it is present or commented
+- name: "Add evomaintenance trap for '{{ user.name }}'"
+  lineinfile:
+    state: present
+    dest: '/home/{{ user.name }}/.profile'
+    insertafter: EOF
+    line: 'trap "sudo /usr/share/scripts/evomaintenance.sh" 0'
+  when: grep_profile_evomaintenance.rc != 0
+
+# SSH keys
+
+- name: "Create .ssh directory for '{{ user.name }}'"
+  file:
+    dest: '/home/{{ user.name }}/.ssh/'
+    state: directory
+    mode: "0700"
+    owner: '{{ user.name }}'
+    group: '{{ user.name }}'
+
+- name: "Add user's SSH public key for '{{ user.name }}'"
+  authorized_key:
+    user: "{{ user.name }}"
+    key: "{{ user.ssh_key }}"
+    state: present
+  when: user.ssh_key is defined
+
+- name: "Add user's SSH public keys for '{{ user.name }}'"
+  authorized_key:
+    user: "{{ user.name }}"
+    key: "{{ ssk_key }}"
+    state: present
+  with_items: "{{ user.ssh_keys }}"
+  loop_control:
+    loop_var: ssk_key
+  when: user.ssh_keys is defined
 
 - meta: flush_handlers

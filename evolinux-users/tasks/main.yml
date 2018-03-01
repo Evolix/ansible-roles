@@ -16,5 +16,13 @@
   with_dict: "{{ evolinux_users }}"
   when: evolinux_users != {}
 
-- include: root_disable_ssh.yml
-  when: evolinux_root_disable_ssh
+- name: Configure sudo
+  include: sudo.yml
+  vars:
+    user: "{{ item.value }}"
+  with_dict: "{{ evolinux_users }}"
+  when: evolinux_users != {}
+
+- name: Configure SSH
+  include: ssh.yml
+  when: evolinux_users != {}
