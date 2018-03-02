@@ -14,6 +14,15 @@
     state: installed
   register: mysql_apt_config_deb
 
+- name: Open firewall for MySQL.com repository
+  replace:
+    name: /etc/default/minifirewall
+    regexp: "^(HTTPSITES='((?!(repo\\.mysql\\.com|0\\.0\\.0\\.0)).)*)'$"
+    replace: "\\1 repo.mysql.com'"
+  notify: Restart minifirewall
+
+- meta: flush_handlers
+
 - name: APT cache is up-to-date
   apt:
     update_cache: yes

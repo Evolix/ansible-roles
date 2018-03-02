@@ -17,3 +17,5 @@
 - name: reload systemd
   command: systemctl daemon-reload
 
+- name: Restart minifirewall
+  command: /etc/init.d/minifirewall restart
