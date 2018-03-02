@@ -5,6 +5,9 @@
     src: mysql-apt-config_0.8.9-1_all.deb
     dest: /root/mysql-apt-config_0.8.9-1_all.deb
 
+- include_role:
+    name: remount-usr
+
 - name: MySQL APT config package is installed
   apt:
     deb: /root/mysql-apt-config_0.8.9-1_all.deb
