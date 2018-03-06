@@ -223,7 +223,7 @@ main() {
             | grep -v "certbot.crypto_util"
 
     if [ "${PIPESTATUS[0]}" != "0" ]; then
-        error "Certbot has exited with a non-zero exit code"
+        error "Certbot has exited with a non-zero exit code when generating ${NEW_CERT}"
     fi
     set -e
 
