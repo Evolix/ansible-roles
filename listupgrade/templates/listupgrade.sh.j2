@@ -163,6 +163,9 @@ for pkg in $packagesParsable; do
     elif [ "$pkg" = "libc6" ]; then
         echo "Tous les services (mise à jour de libc6)." >$servicesToRestart
         break
+    elif [ "$pkg" = "libstdc++6" ]; then
+        echo "Tous les services (mise à jour de libstdc++6)." >$servicesToRestart
+        break
     elif echo "$pkg" |grep -q "^libssl"; then
         echo "Tous les services (mise à jour de libssl)." >$servicesToRestart
         break
