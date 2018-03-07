@@ -38,7 +38,7 @@
   git:
     repo: https://forge.evolix.org/evoadmin-mail.git
     dest: "{{ evoadminmail_document_root}}"
-    version: master
+    version: dev
     update: yes
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
@@ -49,20 +49,19 @@
     group: "{{ evoadminmail_username }}"
     recurse: yes
 
-- name: "Copy connect.php"
+- name: Copy config.ini in /etc/evolinux
   template:
-    src: connect.php.j2
-    dest: "{{ evoadminmail_document_root }}/htdocs/config/connect.php"
+    src: config.ini.j2
+    dest: /etc/evolinux/evoadmin-mail.ini
     owner: "www-{{ evoadminmail_username }}"
     group: "{{ evoadminmail_username }}"
   when: ldap_admin_password is defined 
 
-- name: "Copy conf.php"
-  template:
-    src: conf.php.j2
-    dest: "{{ evoadminmail_document_root }}/htdocs/config/conf.php"
-    owner: "www-{{ evoadminmail_username }}"
-    group: "{{ evoadminmail_username }}"
+- name: Link for evoadmin config.ini
+  file:
+    src: /etc/evolinux/evoadmin-mail.ini
+    dest: "{{ evoadminmail_document_root }}/config/config.ini"
+    state: link
 
 - name: create a password for evoadmin user
   command: "apg -n 1 -m 16 -M lcN"

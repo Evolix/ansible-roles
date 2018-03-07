@@ -1,0 +1,25 @@
+; The configuration for evoadmin-mail
+;
+; You need to copy and edit config-sample.ini to config.ini.
+; This INI file is loaded by evoadmin-mail and contains the
+; following configurations :
+;
+; * Global settings
+; * LDAP settings
+;
+
+[global]
+name = "Evoadmin Mail";
+mail = "{{ evoadminmail_contact_email or general_alert_email | mandatory }}"
+
+[ldap]
+host = "127.0.0.1"
+port = 389
+base = "{{ ldap_suffix }}"
+admin_dn = "cn=admin,{{ ldap_suffix }}"
+admin_pass = "{{ ldap_admin_password.stdout }}"
+superadmin[] = "evoadmin"
+
+[log]
+file = "../../log/evoadmin-mail.log"
+level = info
