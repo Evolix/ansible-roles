@@ -53,8 +53,9 @@
   template:
     src: config.ini.j2
     dest: /etc/evolinux/evoadmin-mail.ini
-    owner: "www-{{ evoadminmail_username }}"
+    owner: "{{ evoadminmail_username }}"
     group: "{{ evoadminmail_username }}"
+    mode: "0640"
   when: ldap_admin_password is defined 
 
 - name: Link for evoadmin config.ini
