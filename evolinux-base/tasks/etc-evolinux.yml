@@ -5,5 +5,5 @@
     dest: /etc/evolinux
     owner: root
     group: root
-    mode: "0700"
+    mode: "0711"
     state: directory
