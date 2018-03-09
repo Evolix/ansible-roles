@@ -120,7 +120,7 @@ policyd-spf  unix  -       n       n       -       0       spawn
   user=policyd-spf argv=/usr/bin/policyd-spf
 
 dovecot   unix  -       n       n       -       -       pipe
-  flags=DRhu user=vmail:vmail argv=/usr/lib/dovecot/deliver -f ${sender} -d ${recipient}
+  flags=DRhu user=vmail:vmail argv=/usr/lib/dovecot/deliver -f ${sender} -a ${recipient} -d ${user}@${nexthop}
 
 scan               unix    -        -        y        -        10        smtp
 localhost:10026    inet    n        -        y        -        10        smtpd
