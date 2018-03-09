@@ -12,3 +12,4 @@
   - php-pear
   - php-log
   - php-crypt-chap
+  - php-twig
