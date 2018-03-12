@@ -60,6 +60,10 @@
         </Location>
     </IfModule>
 
+    <IfModule security2_module>
+      SecRuleEngine Off
+    </IfModule>
+
 </VirtualHost>
 
 <IfModule mod_ssl.c>
@@ -117,6 +121,10 @@
                 include /etc/apache2/ipaddr_whitelist.conf
                 Require local
             </Location>
+        </IfModule>
+
+        <IfModule security2_module>
+          SecRuleEngine Off
         </IfModule>
 
     </VirtualHost>
