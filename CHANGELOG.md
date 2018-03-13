@@ -22,7 +22,7 @@ The **patch** part changes incrementally at each release.
 * elasticsearch: use ES_TMPDIR variable for custom tmpdir, (from `/etc/default/elasticsearch` instead of changing `/etc/elesticsearch/jvm.options`).
 * elasticsearch: RESTART_ON_UPGRADE is configurable (default: `true`)
 * nagios-nrpe: mark plugins as executable
-* mongodb: configuration is forced by default but it's configurable (default: `true`)
+* mongodb: configuration is forced by default but it's configurable (default: `false`)
 * nginx: package name can be specified (default: `nginx-full`)
 
 ### Fixed

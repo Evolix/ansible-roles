@@ -12,6 +12,6 @@ Everything is in the `tasks/main.yml` file.
 
 * `mongodb_port`: port to listen to (default: `27017`)
 * `mongodb_bind`: IP to bind to (default: `127.0.0.1`)
-* `mongodb_force_config`: force copy the configuration (default: `true`)
+* `mongodb_force_config`: force copy the configuration (default: `false`)
 
 The full list of variables (with default values) can be found in `defaults/main.yml`.
