@@ -14,4 +14,5 @@
     dest: '/home/{{ user.name }}/.profile'
     insertafter: EOF
     line: 'trap "sudo /usr/share/scripts/evomaintenance.sh" 0'
+    create: yes
   when: grep_profile_evomaintenance.rc != 0
