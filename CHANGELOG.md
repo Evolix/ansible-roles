@@ -29,6 +29,7 @@ The **patch** part changes incrementally at each release.
 
 ### Fixed
 * nginx: fix basic auth for default vhost
+* dovecot: fix support of plus sign
 
 ## [9.1.6] - 2018-02-02
 
