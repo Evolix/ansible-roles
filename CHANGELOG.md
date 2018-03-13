@@ -17,6 +17,8 @@ The **patch** part changes incrementally at each release.
 * mysql-oracle: new role to install MySQL 5.7 with Oracle packages
 * packweb-apache: choose mysql variant (default: `debian`)
 * haproxy: install Munin plugins
+* proftpd: use proftpd_accounts list for manage ftp accounts
+
 
 ### Changed
 * elasticsearch: use ES_TMPDIR variable for custom tmpdir, (from `/etc/default/elasticsearch` instead of changing `/etc/elesticsearch/jvm.options`).
