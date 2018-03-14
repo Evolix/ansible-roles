@@ -1,5 +1,9 @@
 ---
 
+- include_role:
+    name: remount-usr
+  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
+
 - name: Scripts directory exists
   file:
     dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}"
@@ -35,7 +39,7 @@
   - libdbd-mysql-perl
   - libdbi-perl
   - libterm-readkey-perl
-  - libtime-hires-perl 
+  - libtime-hires-perl
   tags:
     - packages
     - mytop

@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 * nagios-nrpe: add "check_open_files" plugin
 * nagios-nrpe: mark plugins as executable
 * mysql-oracle: new role to install MySQL 5.7 with Oracle packages
+* mysql: remount /usr before creating scripts directory
 * packweb-apache: choose mysql variant (default: `debian`)
 * haproxy: install Munin plugins
 * proftpd: use proftpd_accounts list for manage ftp accounts
