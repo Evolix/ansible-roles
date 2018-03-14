@@ -168,6 +168,7 @@
   copy:
     src: mysqltuner.cron.sh
     dest: /etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}/mysqltuner.sh
+    mode: "0700"
   when: mysql_cron_mysqltuner | bool
   tags:
     - mysql
