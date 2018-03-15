@@ -27,6 +27,7 @@ The **patch** part changes incrementally at each release.
 * nagios-nrpe: mark plugins as executable
 * mongodb: configuration is forced by default but it's configurable (default: `false`)
 * nginx: package name can be specified (default: `nginx-full`)
+* evolinux-base: Exec the firewall tasks sooner (to avoid dependency issues)
 
 ### Fixed
 * nginx: fix basic auth for default vhost

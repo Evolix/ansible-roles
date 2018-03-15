@@ -43,6 +43,11 @@
   include: system.yml
   when: evolinux_system_include
 
+- name: Minifirewall
+  include_role:
+    name: minifirewall
+  when: evolinux_minifirewall_include
+
 - name: Evomaintenance
   include_role:
     name: evomaintenance
@@ -89,11 +94,6 @@
 - name: Override Logmail service
   include: log2mail.yml
   when: evolinux_log2mail_include
-
-- name: Minifirewall
-  include_role:
-    name: minifirewall
-  when: evolinux_minifirewall_include
 
 - name: Munin
   include_role:
