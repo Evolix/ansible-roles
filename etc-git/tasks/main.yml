@@ -4,6 +4,8 @@
   apt:
     name: git
     state: present
+  tags:
+    - etc-git
 
 - name: /etc is versioned with git
   command: "git init ."
@@ -12,6 +14,8 @@
     creates: /etc/.git/
     warn: no
   register: git_init
+  tags:
+    - etc-git
 
 - name: Git user.email is configured
   git_config:
@@ -19,6 +23,8 @@
     repo: /etc
     scope: local
     value: "root@{{ ansible_fqdn | default('localhost') }}"
+  tags:
+    - etc-git
 
 - name: /etc/.git is secure
   file:
@@ -26,6 +32,8 @@
     owner: root
     mode: "0700"
     state: directory
+  tags:
+    - etc-git
 
 - name: /etc/.gitignore is present
   copy:
@@ -33,6 +41,8 @@
     dest: /etc/.gitignore
     owner: root
     mode: "0600"
+  tags:
+    - etc-git
 
 - name: does /etc/ have any commit?
   command: "git log"
@@ -43,6 +53,8 @@
   failed_when: False
   register: git_log
   check_mode: no
+  tags:
+    - etc-git
 
 - name: initial commit is present?
   shell: "git add -A . && git commit -m \"Initial commit via Ansible\""
@@ -51,3 +63,5 @@
     warn: no
   register: git_commit
   when: git_log.rc != 0 or (git_init is defined and git_init.changed)
+  tags:
+    - etc-git
