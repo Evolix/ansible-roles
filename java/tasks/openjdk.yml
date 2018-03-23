@@ -1,0 +1,31 @@
+---
+- name: Decide which Debian release to use
+  set_fact:
+    java_apt_release: '{% if ansible_distribution_release == "jessie" %}jessie-backports{% else %}{{ ansible_distribution_release }}{% endif %}'
+  tags:
+    - java
+
+- name: Install jessie-backports
+  include_role:
+    name: apt
+    tasks_from: backports.yml
+  when: ansible_distribution_release == "jessie"
+  tags:
+    - java
+
+- name: Install openjdk package
+  apt:
+    name: "openjdk-{{ java_version}}-jre-headless"
+    default_release: "{{ java_apt_release }}"
+    state: present
+  tags:
+    - java
+    - packages
+
+- name: This openjdk version is the default alternative
+  alternatives:
+    name: java
+    path: "/usr/lib/jvm/java-{{ java_version }}-openjdk-amd64/jre/bin/java"
+  when: java_default_alternative
+  tags:
+    - java

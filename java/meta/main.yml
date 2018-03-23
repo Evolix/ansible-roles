@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   author: Evolix
-  description: Installation of Java 8
+  description: Installation of Java
 
   issue_tracker_url: https://forge.evolix.org/projects/ansible-roles/issues
 
@@ -13,3 +13,4 @@ galaxy_info:
   - name: Debian
     versions:
     - jessie
+    - stretch

@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 * elasticsearch: add http.publish_host variable
 * kibana: log messages go to /var/log/kibana/kibana.log
 * mysql: add an option to install the client development  libraries (default: `False`)
+* java: support for Oracle JRE
 
 ### Changed
 * evolinux-users: add sudo permission for bkctld check
@@ -23,6 +24,7 @@ The **patch** part changes incrementally at each release.
 * rbenv: change default Ruby version (2.5.1)
 * rbenv: switch from copy to lineinfile for default gems
 * squid: add a few news sites to the whitelist
+* java8: renamed to java (java8 symlinked to java for backward compatibility)
 
 ### Fixed
 
