@@ -4,26 +4,26 @@
     name: "{{ item }}"
     state: present
   with_items:
-  - bzip2
-  - php-ctype
-  - php-gd
-  - php-json
-  - php-xml
-  - php-mbstring
-  - php-zip
-  - php-pdo-mysql
-  - php-curl
-  - php-bz2
-  - php-intl
-  - php-mcrypt
-  - php-ldap
-  - php-imap
-  - php-gmp
-  - php-apcu
-  - php-redis
-  - python-mysqldb
+    - bzip2
+    - php-ctype
+    - php-gd
+    - php-json
+    - php-xml
+    - php-mbstring
+    - php-zip
+    - php-pdo-mysql
+    - php-curl
+    - php-bz2
+    - php-intl
+    - php-mcrypt
+    - php-ldap
+    - php-imap
+    - php-gmp
+    - php-apcu
+    - php-redis
+    - python-mysqldb
   tags:
-  - nextcloud
+    - nextcloud
 
 - name: Create Nextcloud groups
   group:
@@ -31,7 +31,7 @@
     state: present
   with_items: "{{ nextcloud_instances | list }}"
   tags:
-  - nextcloud
+    - nextcloud
 
 - name: Create Nextcloud users
   user:
@@ -53,10 +53,10 @@
     owner: "{{ item[0] }}"
     group: "{{ item[0] }}"
   with_nested:
-  - "{{ nextcloud_instances | list }}"
-  - [ 'logs', 'config', 'data', 'tmp' ]
+    - "{{ nextcloud_instances | list }}"
+    - [ 'logs', 'config', 'data', 'tmp' ]
   tags:
-  - nextcloud
+    - nextcloud
 
 - name: Retrieve Nextcloud archive
   get_url:
@@ -64,7 +64,7 @@
     dest: "/home/nextcloud-{{ item.value.version | default(nextcloud_version) }}.tar.bz2"
   with_dict: "{{ nextcloud_instances }}"
   tags:
-  - nextcloud
+    - nextcloud
 
 - name: Extract Nextcloud archive
   unarchive:
@@ -76,7 +76,7 @@
     group: "{{ item.key }}"
   with_dict: "{{ nextcloud_instances }}"
   tags:
-  - nextcloud
+    - nextcloud
 
 - include: mysql.yml
 
@@ -90,7 +90,7 @@
     force: True
   with_items: "{{ nextcloud_instances | list }}"
   tags:
-  - nextcloud
+    - nextcloud
 
 - name: Install Nextcloud
   shell: "php ./occ maintenance:install --database mysql --database-name {{ item.key }} --database-user {{ item.key }} --database-pass {{ item.value.db_pass }} --admin-user admin --admin-pass toor --data-dir {{ nextcloud_root }}/{{ item.key }}/data"
@@ -99,7 +99,7 @@
     creates: "{{ nextcloud_root }}/{{ item.key }}/config/config.php"
   with_dict: "{{ nextcloud_instances }}"
   tags:
-  - nextcloud
+    - nextcloud
 
 - name: Configure Nextcloud cron
   cron:
@@ -109,7 +109,7 @@
     user: "{{ item }}"
   with_items: "{{ nextcloud_instances | list }}"
   tags:
-  - nextcloud
+    - nextcloud
 
 - name: Erase previously trusted domains config
   shell: "php ./occ config:system:set trusted_domains"
@@ -117,17 +117,17 @@
     chdir: "{{ nextcloud_root }}/{{ item }}/nextcloud/"
   with_items: "{{ nextcloud_instances | list }}"
   tags:
-  - nextcloud
+    - nextcloud
 
 - name: Configure trusted domains
   shell: "php ./occ config:system:set trusted_domains {{ item[1] }} --value {{ nextcloud_instances[item[0]].domains[item[1]] }}"
   args:
     chdir: "{{ nextcloud_root }}/{{ item[0] }}/nextcloud/"
-  with_nested: 
-  - "{{ nextcloud_instances | list }}"
-  - "{{ range(0, nextcloud_instances | list | length ) | list }}"
+  with_nested:
+    - "{{ nextcloud_instances | list }}"
+    - "{{ range(0, nextcloud_instances | list | length ) | list }}"
   tags:
-  - nextcloud
+    - nextcloud
 
 #- name: Configure memcache local to APCu
 #  shell: "php ./occ config:system:set memcache.local --value '\\OC\\Memcache\\APCu'"
@@ -135,7 +135,7 @@
 #    chdir: "{{ nextcloud_root }}/{{ item }}/nextcloud/"
 #  with_items: "{{ nextcloud_instances | list }}"
 #  tags:
-#  - nextcloud
+#    - nextcloud
 
 - name: Fix right on config.php
   file:
@@ -145,4 +145,4 @@
     mode: "0660"
   with_items: "{{ nextcloud_instances | list }}"
   tags:
-  - nextcloud
+    - nextcloud
