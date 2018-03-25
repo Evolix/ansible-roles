@@ -49,6 +49,7 @@
     - { option: "log_errors", value: "On" }
     - { option: "html_errors", value: "Off" }
     - { option: "allow_url_fopen", value: "Off" }
+  notify: restart php-fpm
 
 - name: Disable PHP functions for FPM
   ini_file:
@@ -56,6 +57,7 @@
     section: PHP
     option: disable_functions
     value: "exec,shell-exec,system,passthru,putenv,popen"
+  notify: restart php-fpm
 
 - name: Custom php.ini for FPM
   copy:
@@ -63,6 +65,7 @@
     content: |
       ; Put customized values here.
     force: no
+  notify: restart php-fpm
 
 - name: Set default PHP FPM values
   ini_file:
@@ -82,6 +85,7 @@
     - { option: "pm.status_path", value: "/fpm_status" }
     - { option: "request_terminate_timeout", value: "60s" }
     - { option: "chroot", value: "/var/www/html" }
+  notify: restart php-fpm
 
 - name: Custom PHP FPM values
   copy:
@@ -90,6 +94,7 @@
       ; Put customized values here.
       ; default_charset = "ISO-8859-1"
     force: no
+  notify: restart php-fpm
 
 - name: "Set custom values for PHP to enable Symfony"
   ini_file:
@@ -100,4 +105,5 @@
     mode: "0644"
   with_items:
     - { option: "date.timezone", value: "Europe/Paris" }
+  notify: restart php-fpm
   when: php_symfony_requirements
