@@ -93,6 +93,7 @@
     content: |
       ; Put customized values here.
       ; default_charset = "ISO-8859-1"
+    mode: "0644"
     force: no
   notify: restart php-fpm
 
