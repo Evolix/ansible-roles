@@ -20,6 +20,7 @@ The **patch** part changes incrementally at each release.
 * haproxy: install Munin plugins
 * proftpd: use proftpd_accounts list for manage ftp accounts
 * etc-git: add tags for Ansible
+* php: FPM default pool can be removed or not installed
 
 ### Changed
 * elasticsearch: use ES_TMPDIR variable for custom tmpdir, (from `/etc/default/elasticsearch` instead of changing `/etc/elesticsearch/jvm.options`).
@@ -33,6 +34,8 @@ The **patch** part changes incrementally at each release.
 * nginx: fix basic auth for default vhost
 * dovecot: fix support of plus sign
 * mysql/mysql-oracle: mysqltuner cron task is executable
+* php: fix FPM custom file permissions
+* php: more tasks notify FPM handler to restart if needed
 
 ## [9.1.6] - 2018-02-02
 
