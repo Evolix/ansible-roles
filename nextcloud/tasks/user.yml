@@ -28,6 +28,6 @@
     group: "{{ item[0] }}"
   with_nested:
     - "{{ nextcloud_instances | list }}"
-    - [ 'logs', 'config', 'data', 'tmp' ]
+    - [ 'log', 'config', 'data', 'tmp' ]
   tags:
     - nextcloud

@@ -3,7 +3,11 @@ server {
     listen [::]:80;
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
+
     server_name{% for domain in domains %} {{ domain }}{% endfor %};
+
+    access_log /home/{{ name }}/log/access.log;
+    error_log /home/{{ name }}/log/error.log;
 
     include /etc/nginx/ssl/{{ name }}.conf;
 
