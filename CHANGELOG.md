@@ -29,6 +29,8 @@ The **patch** part changes incrementally at each release.
 * nginx: package name can be specified (default: `nginx-full`)
 * evolinux-base: Exec the firewall tasks sooner (to avoid dependency issues)
 * webapps/evoadmin-web: Fail if variable evoadmin_contact_email isn't defined
+* php: fix FPM custom file permissions
+* php: more tasks notify FPM handler to restart if needed
 
 ### Fixed
 * nginx: fix basic auth for default vhost
