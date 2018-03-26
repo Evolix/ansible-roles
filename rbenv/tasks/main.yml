@@ -18,6 +18,20 @@
   - rbenv
   - packages
 
+- name: default gems are installed for {{ username }}
+  copy:
+    src: default-gems
+    dest: '{{ rbenv_root }}/default-gems'
+    owner: '{{ username }}'
+    group: '{{ username }}'
+
+- name: gemrc for {{ username }}
+  copy:
+    src: gemrc
+    dest: "~{{ username }}/.gemrc"
+    owner: '{{ username }}'
+    group: '{{ username }}'
+
 - block:
   - name: Rbenv repository is checked out for {{ username }}
     git:
@@ -50,15 +64,6 @@
         eval "$(rbenv init -)"
       marker: "# {mark} ANSIBLE MANAGED RBENV INIT"
 
-  - name: default gems are installed for {{ username }}
-    copy:
-      src: default-gems
-      dest: '{{ rbenv_root }}/default-gems'
-
-  - name: gemrc for {{ username }}
-    copy:
-      src: gemrc
-      dest: ~/.gemrc
 
   - name: is Ruby {{ rbenv_ruby_version }} available for {{ username }} ?
     shell: /bin/bash -lc "rbenv versions | grep {{ rbenv_ruby_version }}"

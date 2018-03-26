@@ -34,6 +34,7 @@ The **patch** part changes incrementally at each release.
 * nginx: fix basic auth for default vhost
 * dovecot: fix support of plus sign
 * mysql/mysql-oracle: mysqltuner cron task is executable
+* rbenv: fix become user issue with copy tasks
 
 ## [9.1.6] - 2018-02-02
 
