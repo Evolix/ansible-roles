@@ -1,4 +1,14 @@
 ---
+- name: Get actual Mysql password
+  shell: "grep password /home/{{ item }}/.my.cnf | awk '{ print $3 }'"
+  register: nextcloud_grep_password
+  check_mode: no
+  changed_when: False
+  failed_when: False
+  with_items: "{{ nextcloud_instances | list }}"
+  tags:
+    - nextcloud
+
 - name: Generate Mysql password
   shell: 'apg -n 1 -m 16 -M lcN'
   register: nextcloud_apg_password
@@ -10,9 +20,10 @@
 
 - name: Set Mysql password
   set_fact:
-    nextcloud_instances: "{{ nextcloud_instances | combine({ item[0]: nextcloud_instances[item[0]] | combine({ 'db_pass': item[1].stdout }) }, recursive=True) }}"
+    nextcloud_instances: "{{ nextcloud_instances | combine({ item[0]: nextcloud_instances[item[0]] | combine({ 'db_pass': (item[1].stdout | default(item[2].stdout, true)) }) }, recursive=True) }}"
   with_together:
     - "{{ nextcloud_instances | list }}"
+    - "{{ nextcloud_grep_password.results }}"
     - "{{ nextcloud_apg_password.results }}"
   tags:
     - nextcloud

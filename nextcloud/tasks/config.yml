@@ -20,6 +20,15 @@
   tags:
     - nextcloud
 
+- name: Configure Nextcloud Mysql password
+  replace:
+    dest: "{{ nextcloud_root }}/{{ item.key }}/config/config.php"
+    regexp: "'dbpassword' => '([^']*)',"
+    replace: "'dbpassword' => '{{ item.value.db_pass }}',"
+  with_dict: "{{ nextcloud_instances }}"
+  tags:
+    - nextcloud
+
 - name: Configure Nextcloud cron
   cron:
     name: 'Nextcloud'
