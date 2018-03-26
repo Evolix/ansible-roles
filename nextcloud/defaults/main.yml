@@ -1,4 +1,5 @@
 ---
+nextcloud_webserver: 'nginx'
 nextcloud_root: '/home'
 nextcloud_version: "13.0.1"
 nextcloud_instances: {}

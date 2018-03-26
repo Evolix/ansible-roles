@@ -1,0 +1,33 @@
+---
+- name: Create Nextcloud groups
+  group:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ nextcloud_instances | list }}"
+  tags:
+    - nextcloud
+
+- name: Create Nextcloud users
+  user:
+    name: "{{ item }}"
+    group: "{{ item }}"
+    home: "{{ nextcloud_root }}/{{ item }}"
+    shell: '/bin/bash'
+    createhome: True
+    state: present
+  with_items: "{{ nextcloud_instances | list }}"
+  tags:
+  - nextcloud
+
+- name: Create needed directories
+  file:
+    dest: "{{ nextcloud_root }}/{{ item[0] }}/{{ item[1] }}"
+    state: directory
+    mode: "0770"
+    owner: "{{ item[0] }}"
+    group: "{{ item[0] }}"
+  with_nested:
+    - "{{ nextcloud_instances | list }}"
+    - [ 'logs', 'config', 'data', 'tmp' ]
+  tags:
+    - nextcloud

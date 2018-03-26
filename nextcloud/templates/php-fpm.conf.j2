@@ -1,0 +1,18 @@
+[{{ name }}]
+user = {{ name }}
+group = {{ name }}
+listen = /run/php/php7.0-fpm-{{ name }}.sock
+listen.owner = {{ name }}
+listen.group = {{ name }}
+pm = ondemand
+pm.max_children = 100
+pm.process_idle_timeout = 10s
+pm.status_path = /fpm_status
+request_terminate_timeout = 60s
+chdir = /home/{{ name }}/nextcloud
+
+env[HOSTNAME] = $HOSTNAME
+env[PATH] = /usr/local/bin:/usr/bin:/bin
+env[TMP] = /home/{{ name }}/tmp
+env[TMPDIR] = /home/{{ name }}/tmp
+env[TEMP] = /home/{{ name }}/tmp

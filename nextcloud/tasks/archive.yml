@@ -1,0 +1,25 @@
+---
+- name: Retrieve Nextcloud archive
+  get_url:
+    url: "https://download.nextcloud.com/server/releases/nextcloud-{{ item.value.version | default(nextcloud_version) }}.tar.bz2"
+    dest: "/home/nextcloud-{{ item.value.version | default(nextcloud_version) }}.tar.bz2"
+  with_dict: "{{ nextcloud_instances }}"
+  tags:
+    - nextcloud
+
+- name: Retrieve Nextcloud sha256 checksum
+  get_url:
+    url: "https://download.nextcloud.com/server/releases/nextcloud-{{ item.value.version | default(nextcloud_version) }}.tar.bz2.sha256"
+    dest: "/home/nextcloud-{{ item.value.version | default(nextcloud_version) }}.tar.bz2.sha256"
+  with_dict: "{{ nextcloud_instances }}"
+  tags:
+    - nextcloud
+
+- name: Verify Nextcloud sha256 checksum
+  command: "sha256sum -c nextcloud-{{ item.value.version | default(nextcloud_version) }}.tar.bz2.sha256"
+  changed_when: False
+  args:
+    chdir: "/home/"
+  with_dict: "{{ nextcloud_instances }}"
+  tags:
+    - nextcloud
