@@ -31,6 +31,7 @@ The **patch** part changes incrementally at each release.
 * webapps/evoadmin-web: Fail if variable evoadmin_contact_email isn't defined
 * php: fix FPM custom file permissions
 * php: more tasks notify FPM handler to restart if needed
+* nginx: don't debug variables in verbosity 0
 
 ### Fixed
 * nginx: fix basic auth for default vhost
