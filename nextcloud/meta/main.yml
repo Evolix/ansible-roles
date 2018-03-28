@@ -1,4 +1,4 @@
 ---
 dependencies:
-  - { role: nginx, when: "{{ nextcloud_webserver == 'nginx' }}" }
+  - { role: nginx, when: nextcloud_webserver == 'nginx' }
   - { role: php, php_fpm_enable: True }
