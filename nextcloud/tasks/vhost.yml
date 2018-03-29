@@ -3,35 +3,27 @@
   - name: Copy Nginx vhost
     template:
       src: nginx.conf.j2
-      dest: "/etc/nginx/sites-available/{{ name }}.conf"
+      dest: "/etc/nginx/sites-available/{{ nextcloud_instance_name }}.conf"
       mode: "0640"
     notify: reload nginx
-    with_dict: "{{ nextcloud_instances }}"
-    vars:
-      - name: "{{ item.key }}"
-      - domains: "{{ item.value.domains }}"
     tags:
       - nextcloud
-  
+
   - name: Enable Nginx vhost
     file:
-      src: "/etc/nginx/sites-available/{{ item }}.conf"
-      dest: "/etc/nginx/sites-enabled/{{ item }}.conf"
+      src: "/etc/nginx/sites-available/{{ nextcloud_instance_name }}.conf"
+      dest: "/etc/nginx/sites-enabled/{{ nextcloud_instance_name }}.conf"
       state: link
     notify: reload nginx
-    with_items: "{{ nextcloud_instances | list }}"
     tags:
       - nextcloud
-  when: "{{ nextcloud_webserver == 'nginx' }}"
+  when: nextcloud_webserver == 'nginx'
 
 - name: Copy PHP-FPM pool
   template:
     src: php-fpm.conf.j2
-    dest: "/etc/php/7.0/fpm/pool.d/{{ name }}.conf"
+    dest: "/etc/php/7.0/fpm/pool.d/{{ nextcloud_instance_name }}.conf"
     mode: "0640"
   notify: restart php-fpm
-  with_items: "{{ nextcloud_instances | list }}"
-  vars:
-    - name: "{{ item }}"
   tags:
     - nextcloud

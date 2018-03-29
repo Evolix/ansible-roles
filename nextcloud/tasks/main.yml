@@ -26,7 +26,11 @@
     - nextcloud
 
 - include: user.yml
+
 - include: archive.yml
+
 - include: vhost.yml
+
 - include: mysql.yml
+
 - include: config.yml

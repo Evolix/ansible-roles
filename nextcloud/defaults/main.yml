@@ -1,5 +1,19 @@
 ---
 nextcloud_webserver: 'nginx'
-nextcloud_root: '/home'
 nextcloud_version: "13.0.1"
-nextcloud_instances: {}
+nextcloud_archive_name: "nextcloud-{{ nextcloud_version }}.tar.bz2"
+nextcloud_releases_baseurl: "https://download.nextcloud.com/server/releases/"
+
+nextcloud_instance_name: "nextcloud"
+nextcloud_user: "{{ nextcloud_instance_name }}"
+nextcloud_domains: []
+
+nextcloud_home: "/home/{{ nextcloud_user }}"
+nextcloud_webroot: "{{ nextcloud_home }}/nextcloud"
+nextcloud_data: "{{ nextcloud_webroot }}/data"
+
+nextcloud_db_user: "{{ nextcloud_user }}"
+nextcloud_db_name: "{{ nextcloud_instance_name }}"
+
+nextcloud_admin_login: "admin"
+nextcloud_admin_password: ""

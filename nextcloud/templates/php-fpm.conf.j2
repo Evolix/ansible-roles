@@ -1,18 +1,20 @@
-[{{ name }}]
-user = {{ name }}
-group = {{ name }}
-listen = /run/php/php7.0-fpm-{{ name }}.sock
-listen.owner = {{ name }}
-listen.group = {{ name }}
+[{{ nextcloud_instance_name }}]
+user = {{ nextcloud_user }}
+group = {{ nextcloud_user }}
+listen = /run/php/php7.0-fpm-{{ nextcloud_instance_name }}.sock
+listen.owner = {{ nextcloud_user }}
+listen.group = {{ nextcloud_user }}
+
 pm = ondemand
 pm.max_children = 100
 pm.process_idle_timeout = 10s
 pm.status_path = /fpm_status
+
 request_terminate_timeout = 60s
-chdir = /home/{{ name }}/nextcloud
+chdir = {{ nextcloud_webroot }}
 
 env[HOSTNAME] = $HOSTNAME
 env[PATH] = /usr/local/bin:/usr/bin:/bin
-env[TMP] = /home/{{ name }}/tmp
-env[TMPDIR] = /home/{{ name }}/tmp
-env[TEMP] = /home/{{ name }}/tmp
+env[TMP] = {{ nextcloud_home }}/tmp
+env[TMPDIR] = {{ nextcloud_home }}/tmp
+env[TEMP] = {{ nextcloud_home }}/tmp
