@@ -20,6 +20,7 @@ The **patch** part changes incrementally at each release.
 * haproxy: install Munin plugins
 * proftpd: use proftpd_accounts list for manage ftp accounts
 * etc-git: add tags for Ansible
+* evolinux-base: install ncurses-term package
 
 ### Changed
 * elasticsearch: use ES_TMPDIR variable for custom tmpdir, (from `/etc/default/elasticsearch` instead of changing `/etc/elesticsearch/jvm.options`).

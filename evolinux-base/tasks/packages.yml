@@ -58,6 +58,7 @@
   - rsync
   - bc
   - pinentry-curses
+  - ncurses-term
   when: evolinux_packages_common
 
 - name: Be sure that openntpd package is absent/purged
