@@ -13,3 +13,23 @@
     owner: root
     group: root
     mode: "0644"
+
+- name: look for old path
+  command: grep -r /etc/nginx/letsencrypt.conf /etc/nginx
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: grep_letsencrypt_old_path
+
+- name: Keep a symlink for vhosts with old path
+  file:
+    src: /etc/nginx/snippets/letsencrypt.conf
+    dest: /etc/nginx/letsencrypt.conf
+    state: link
+  when: grep_letsencrypt_old_path.rc == 0
+
+- name: Remove symlink if no vhost with old path
+  file:
+    dest: /etc/nginx/letsencrypt.conf
+    state: absent
+  when: grep_letsencrypt_old_path.rc == 1
