@@ -1,0 +1,16 @@
+#!/bin/sh
+
+is_started() {
+  /sbin/iptables -L -n \
+    | grep -E "^(DROP\s+udp|ACCEPT\s+icmp)\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
+}
+return_started() {
+  echo "started"
+  exit 0
+}
+return_stopped() {
+  echo "stopped"
+  exit 1
+}
+
+is_started && return_started || return_stopped
