@@ -21,6 +21,8 @@ The **patch** part changes incrementally at each release.
 * proftpd: use proftpd_accounts list for manage ftp accounts
 * etc-git: add tags for Ansible
 * evolinux-base: install ncurses-term package
+* added a few become attributes where missing
+* redmine: added missing tags
 
 ### Changed
 * elasticsearch: use ES_TMPDIR variable for custom tmpdir, (from `/etc/default/elasticsearch` instead of changing `/etc/elesticsearch/jvm.options`).
