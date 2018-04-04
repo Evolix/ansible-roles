@@ -4,26 +4,26 @@
     name: "{{ item }}"
     state: present
   with_items:
-  - libpam-systemd
-  - ruby
-  - ruby-dev
-  - bundler
-  - imagemagick
-  - git-core
-  - git-svn
-  - gcc
-  - build-essential
-  - libxml2-dev
-  - libxslt1-dev
-  - libssl-dev
-  - libmagickwand-dev
-  - libmagickcore-dev
-  - libmysqlclient-dev
-  - python-mysqldb
+    - libpam-systemd
+    - ruby
+    - ruby-dev
+    - bundler
+    - imagemagick
+    - git-core
+    - git-svn
+    - gcc
+    - build-essential
+    - libxml2-dev
+    - libxslt1-dev
+    - libssl-dev
+    - libmagickwand-dev
+    - libmagickcore-dev
+    - libmysqlclient-dev
+    - python-mysqldb
   tags:
-  - redmine
+    - redmine
 
-#- name: 
+#- name:
 #  lineinfile:
 #  with_items:
 #  - 'https://github.com/.*'
@@ -38,7 +38,7 @@
     dest: /etc/systemd/user/puma.service
     mode: "0644"
   tags:
-  - redmine
+    - redmine
 
 - name: Create puma config dir
   file:
@@ -47,14 +47,14 @@
     mode: "0755"
     owner: root
   tags:
-  - redmine
+    - redmine
 
 - name: Create redmine group
   group:
     name: "{{ redmine_user }}"
     state: present
   tags:
-  - redmine
+    - redmine
 
 - name: Add www-data to redmine group
   user:
@@ -62,7 +62,7 @@
     groups: "{{ redmine_user }}"
     append: yes
   tags:
-  - redmine
+    - redmine
 
 - name: Create redmine user
   user:
@@ -73,7 +73,7 @@
     home: "/home/{{ redmine_user }}"
     shell: /bin/bash
   tags:
-  - redmine
+    - redmine
 
 - name: Create required directory
   file:
@@ -83,11 +83,11 @@
     group: "{{ redmine_user }}"
     mode: "0750"
   with_items:
-  - "/home/{{ redmine_user }}"
-  - "/home/{{ redmine_user }}/files"
-  - "/home/{{ redmine_user }}/log"
+    - "/home/{{ redmine_user }}"
+    - "/home/{{ redmine_user }}/files"
+    - "/home/{{ redmine_user }}/log"
   tags:
-  - redmine
+    - redmine
 
 - name: Touch Nginx logs file
   file:
@@ -98,10 +98,10 @@
     mode: "0640"
   changed_when: false
   with_items:
-  - nginx_access.log
-  - nginx_error.log
+    - nginx_access.log
+    - nginx_error.log
   tags:
-  - redmine
+    - redmine
 
 - name: Enable systemd user mode
   command: "loginctl enable-linger {{ redmine_user }}"
@@ -115,7 +115,7 @@
     group: "{{ redmine_user }}"
     mode: "0640"
   tags:
-  - redmine
+    - redmine
 
 - name: Update or clone Redmine git
   git:
@@ -127,7 +127,7 @@
   become_user: "{{ redmine_user }}"
   register: redmine_git_task
   tags:
-  - redmine
+    - redmine
 
 - name: Deploy custom Gemfile
   copy:
@@ -145,7 +145,7 @@
   changed_when: False
   failed_when: false
   tags:
-  - redmine
+    - redmine
 
 - name: Generate Mysql password
   shell: perl -e 'print map{("a".."z","A".."Z",0..9)[int(rand(62))]}(1..16)'
@@ -160,7 +160,7 @@
   set_fact:
     redmine_db_pass: "{{ redmine_generate_mysql_password.stdout | default(redmine_get_mysql_password.stdout) }}"
   tags:
-  - redmine
+    - redmine
 
 - name: Create Mysql database
   mysql_db:
@@ -168,7 +168,7 @@
     config_file: "/root/.my.cnf"
     state: present
   tags:
-  - redmine
+    - redmine
 
 - name: Create Mysql user
   mysql_user:
@@ -179,7 +179,7 @@
     update_password: always
     state: present
   tags:
-  - redmine
+    - redmine
 
 - name: Store credentials in my.cnf
   ini_file:
@@ -195,7 +195,7 @@
     - { option: 'database', value: "{{ redmine_db_name }}" }
     - { option: 'password', value: '{{ redmine_db_pass }}' }
   tags:
-  - redmine
+    - redmine
 
 - name: Copy configurations file
   template:
@@ -205,23 +205,23 @@
     group: "{{ redmine_user }}"
     mode: "0640"
   with_items:
-  - 'configuration.yml'
-  - 'database.yml'
-  - 'additional_environment.rb'
+    - 'configuration.yml'
+    - 'database.yml'
+    - 'additional_environment.rb'
   tags:
-  - redmine
+    - redmine
 
 - name: Install Redmine plugins
   include: plugins.yml
   with_items: "{{ redmine_plugins }}"
   tags:
-  - redmine
+    - redmine
 
 - name: Install Redmine themes
   include: themes.yml
   with_items: "{{ redmine_themes }}"
   tags:
-  - redmine
+    - redmine
 
 - name: Update local gems with bundle
   bundler:
@@ -262,7 +262,7 @@
   become_method: sudo
   become_flags: '-iu {{ redmine_user }}'
   tags:
-  - redmine
+    - redmine
 
 - name: Copy puma config
   template:
@@ -286,7 +286,7 @@
   become_method: sudo
   become_flags: '-iu {{ redmine_user }}'
   tags:
-  - redmine
+    - redmine
 
 - name: Reload puma service
   systemd:

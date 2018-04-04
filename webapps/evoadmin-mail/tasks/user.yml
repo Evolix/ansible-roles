@@ -55,7 +55,7 @@
     dest: "{{ evoadminmail_document_root }}/htdocs/config/connect.php"
     owner: "www-{{ evoadminmail_username }}"
     group: "{{ evoadminmail_username }}"
-  when: ldap_admin_password is defined 
+  when: ldap_admin_password is defined
 
 - name: "Copy conf.php"
   template:
