@@ -125,6 +125,7 @@
     umask: "027"
     update: yes
   become_user: "{{ redmine_user }}"
+  become: yes
   register: redmine_git_task
   tags:
     - redmine
@@ -230,6 +231,7 @@
     gem_path: "/home/{{ redmine_user }}/.gems"
     user_install: yes
   become_user: "{{ redmine_user }}"
+  become: yes
   when: redmine_git_task.changed or redmine_local_gemfile_task.changed or redmine_plugin_install.changed
 
 - name: Migrate database with rake
@@ -237,6 +239,7 @@
   become_user: "{{ redmine_user }}"
   become_method: sudo
   become_flags: '-iu {{ redmine_user }}'
+  become: yes
   when: redmine_git_task.changed
 
 - name: Populate Mysql database
@@ -246,12 +249,14 @@
   become_user: "{{ redmine_user }}"
   become_method: sudo
   become_flags: '-iu {{ redmine_user }}'
+  become: yes
 
 - name: Migrate plugins
   shell: bundle exec rake -qf ~/www/Rakefile redmine:plugins:migrate
   become_user: "{{ redmine_user }}"
   become_method: sudo
   become_flags: '-iu {{ redmine_user }}'
+  become: yes
   when: redmine_plugin_install.changed
 
 - name: Generate secret token
@@ -261,6 +266,7 @@
   become_user: "{{ redmine_user }}"
   become_method: sudo
   become_flags: '-iu {{ redmine_user }}'
+  become: yes
   tags:
     - redmine
 
@@ -285,6 +291,7 @@
   become_user: "{{ redmine_user }}"
   become_method: sudo
   become_flags: '-iu {{ redmine_user }}'
+  become: yes
   tags:
     - redmine
 
@@ -297,4 +304,5 @@
   become_user: "{{ redmine_user }}"
   become_method: sudo
   become_flags: '-iu {{ redmine_user }}'
+  become: yes
   when: redmine_puma_config_task.changed
