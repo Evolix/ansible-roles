@@ -76,7 +76,6 @@
     mode: "0644"
     create: yes
   with_items:
-  when: ansible_distribution_major_version | version_compare('9', '>=')
     - { option: "pm", value: "ondemand" }
     - { option: "pm.max_children", value: "100" }
     - { option: "pm.process_idle_timeout", value: "10s" }
@@ -86,6 +85,7 @@
     - { option: "request_terminate_timeout", value: "60s" }
     - { option: "chroot", value: "/var/www/html" }
   notify: restart php-fpm
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: Custom PHP FPM values
   copy:
