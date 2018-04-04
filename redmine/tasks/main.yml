@@ -138,6 +138,8 @@
     group: "{{ redmine_user }}"
     mode: "0640"
   register: redmine_local_gemfile_task
+  tags:
+    - redmine
 
 - name: Get actual Mysql password
   shell: "grep password /home/{{ redmine_user }}/.my.cnf | awk '{ print $3 }'"
@@ -233,6 +235,8 @@
   become_user: "{{ redmine_user }}"
   become: yes
   when: redmine_git_task.changed or redmine_local_gemfile_task.changed or redmine_plugin_install.changed
+  tags:
+    - redmine
 
 - name: Migrate database with rake
   shell: bundle exec rake -qf ~/www/Rakefile db:migrate
@@ -241,6 +245,8 @@
   become_flags: '-iu {{ redmine_user }}'
   become: yes
   when: redmine_git_task.changed
+  tags:
+    - redmine
 
 - name: Populate Mysql database
   shell: bundle exec rake -qf ~/www/Rakefile redmine:load_default_data REDMINE_LANG=fr && touch ~/.populated
@@ -250,6 +256,8 @@
   become_method: sudo
   become_flags: '-iu {{ redmine_user }}'
   become: yes
+  tags:
+    - redmine
 
 - name: Migrate plugins
   shell: bundle exec rake -qf ~/www/Rakefile redmine:plugins:migrate
@@ -258,6 +266,8 @@
   become_flags: '-iu {{ redmine_user }}'
   become: yes
   when: redmine_plugin_install.changed
+  tags:
+    - redmine
 
 - name: Generate secret token
   shell: bundle exec rake -qf ~/www/Rakefile generate_secret_token
