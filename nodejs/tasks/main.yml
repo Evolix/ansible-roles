@@ -1,6 +1,5 @@
 ---
 
-
 - name: APT https transport is enabled
   apt:
     name: apt-transport-https
@@ -36,3 +35,36 @@
   tags:
     - packages
     - nodejs
+
+
+
+- name: yarn GPG key is installed
+  apt_key:
+    #url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+    data: "{{ lookup('file', 'yarnpkg.gpg.key') }}"
+  tags:
+    - system
+    - packages
+    - yarn
+  when: node_yarn
+
+- name: yarn sources list is available
+  apt_repository:
+    repo: "deb https://dl.yarnpkg.com/debian/ stable main"
+    filename: yarn
+    update_cache: yes
+    state: present
+  tags:
+    - system
+    - packages
+    - yarn
+  when: node_yarn
+
+- name: yarn is installed
+  apt:
+    name: yarn
+    state: present
+  tags:
+    - packages
+    - yarn
+  when: node_yarn
