@@ -15,6 +15,7 @@
 - name: Install packages
   apt:
     name: mongodb-org
+    allow_unauthenticated: yes
     state: installed
 
 - name: install dependency for monitoring

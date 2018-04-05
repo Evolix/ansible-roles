@@ -29,6 +29,7 @@ The **patch** part changes incrementally at each release.
 * elasticsearch: RESTART_ON_UPGRADE is configurable (default: `true`)
 * nagios-nrpe: mark plugins as executable
 * mongodb: configuration is forced by default but it's configurable (default: `false`)
+* mongodb: allow unauthenticated packages for Jessie
 * nginx: package name can be specified (default: `nginx-full`)
 * evolinux-base: Exec the firewall tasks sooner (to avoid dependency issues)
 * webapps/evoadmin-web: Fail if variable evoadmin_contact_email isn't defined
