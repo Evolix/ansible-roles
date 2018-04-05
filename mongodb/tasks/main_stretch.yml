@@ -28,6 +28,12 @@
 - name: Configure logrotate
   template:
     src: logrotate_stretch.j2
-    dest: /etc/logrotate.d/mongodb
+    dest: /etc/logrotate.d/mongodb-server
     force: yes
     backup: no
+
+- name: disable previous logrotate
+  command: mv /etc/logrotate.d/mongodb /etc/logrotate.d/mongodb.disabled
+  args:
+    removes: /etc/logrotate.d/mongodb
+    creates: /etc/logrotate.d/mongodb.disabled
