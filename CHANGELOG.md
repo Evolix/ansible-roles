@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 * etc-git: add tags for Ansible
 * evolinux-base: install ncurses-term package
 * haproxy: install Munin plugins
+* minifirewall: add "check_minifirewall" Nagios plugin (and `minifirewall_status` script)
 * mysql-oracle: new role to install MySQL 5.7 with Oracle packages
 * mysql: remount /usr before creating scripts directory
 * nagios-nrpe: add "check_open_files" plugin
