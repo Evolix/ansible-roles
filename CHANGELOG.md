@@ -11,38 +11,39 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
-* postfix: add lines in /etc/.gitignore
-* nagios-nrpe: add "check_open_files" plugin
-* nagios-nrpe: mark plugins as executable
-* mysql-oracle: new role to install MySQL 5.7 with Oracle packages
-* mysql: remount /usr before creating scripts directory
-* packweb-apache: choose mysql variant (default: `debian`)
-* haproxy: install Munin plugins
-* proftpd: use proftpd_accounts list for manage ftp accounts
+* added a few become attributes where missing
 * etc-git: add tags for Ansible
 * evolinux-base: install ncurses-term package
-* added a few become attributes where missing
-* redmine: added missing tags
+* haproxy: install Munin plugins
+* minifirewall: add "check_minifirewall" Nagios plugin (and `minifirewall_status` script)
+* mysql-oracle: new role to install MySQL 5.7 with Oracle packages
+* mysql: remount /usr before creating scripts directory
+* nagios-nrpe: add "check_open_files" plugin
+* nagios-nrpe: mark plugins as executable
 * nodejs: Yarn package manager can be installed (default: `false`)
+* packweb-apache: choose mysql variant (default: `debian`)
+* postfix: add lines in /etc/.gitignore
+* proftpd: use "proftpd_accounts" list to manage ftp accounts
+* redmine: added missing tags
 
 ### Changed
-* elasticsearch: use ES_TMPDIR variable for custom tmpdir, (from `/etc/default/elasticsearch` instead of changing `/etc/elesticsearch/jvm.options`).
 * elasticsearch: RESTART_ON_UPGRADE is configurable (default: `true`)
-* nagios-nrpe: mark plugins as executable
-* mongodb: configuration is forced by default but it's configurable (default: `false`)
-* mongodb: allow unauthenticated packages for Jessie
-* mongodb: rename logrotate script
-* nginx: package name can be specified (default: `nginx-full`)
+* elasticsearch: use ES_TMPDIR variable for custom tmpdir, (from `/etc/default/elasticsearch` instead of changing `/etc/elesticsearch/jvm.options`).
 * evolinux-base: Exec the firewall tasks sooner (to avoid dependency issues)
-* webapps/evoadmin-web: Fail if variable evoadmin_contact_email isn't defined
+* mongodb: allow unauthenticated packages for Jessie
+* mongodb: configuration is forced by default but it's configurable (default: `false`)
+* mongodb: rename logrotate script
+* nagios-nrpe: mark plugins as executable
+* nginx: don't debug variables in verbosity 0
+* nginx: package name can be specified (default: `nginx-full`)
 * php: fix FPM custom file permissions
 * php: more tasks notify FPM handler to restart if needed
-* nginx: don't debug variables in verbosity 0
+* webapps/evoadmin-web: Fail if variable evoadmin_contact_email isn't defined
 
 ### Fixed
-* nginx: fix basic auth for default vhost
 * dovecot: fix support of plus sign
 * mysql/mysql-oracle: mysqltuner cron task is executable
+* nginx: fix basic auth for default vhost
 * rbenv: fix become user issue with copy tasks
 
 ## [9.1.6] - 2018-02-02
