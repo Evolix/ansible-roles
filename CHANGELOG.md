@@ -23,6 +23,7 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: install ncurses-term package
 * added a few become attributes where missing
 * redmine: added missing tags
+* nodejs: Yarn package manager can be installed (default: `false`)
 
 ### Changed
 * elasticsearch: use ES_TMPDIR variable for custom tmpdir, (from `/etc/default/elasticsearch` instead of changing `/etc/elesticsearch/jvm.options`).
