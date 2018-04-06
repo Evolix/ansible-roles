@@ -22,19 +22,16 @@
 
 - name: /usr/local/lib/nagios/plugins/ exists
   file:
-    dest: "{{ item }}"
+    dest: "{{ nagios_plugins_directory }}"
     mode: "02755"
     owner: root
     group: staff
     state: directory
-  with_items:
-    - /usr/local/lib/nagios
-    - /usr/local/lib/nagios/plugins
 
 - name: check_minifirewall is installed
   copy:
     src: check_minifirewall
-    dest: /usr/local/lib/nagios/plugins/check_minifirewall
+    dest: "{{ nagios_plugins_directory }}/check_minifirewall"
     force: no
     mode: "0755"
     owner: root
@@ -44,13 +41,13 @@
   lineinfile:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: 'command\[check_minifirewall\]'
-    line: 'command[check_minifirewall]=sudo /usr/local/lib/nagios/plugins/check_minifirewall'
+    line: 'command[check_minifirewall]=sudo {{ nagios_plugins_directory }}/check_minifirewall'
   notify: restart nagios-nrpe-server
 
 - name: sudo without password for nagios
   lineinfile:
     dest: /etc/sudoers.d/evolinux
     regexp: 'check_minifirewall'
-    line: 'nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_minifirewall'
+    line: 'nagios          ALL = NOPASSWD: {{ nagios_plugins_directory }}/check_minifirewall'
     insertafter: '^nagios'
     validate: "visudo -cf %s"
