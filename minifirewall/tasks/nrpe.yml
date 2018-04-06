@@ -37,12 +37,23 @@
     owner: root
     group: staff
 
+- name: Is NRPE installed?
+  stat:
+    path: /etc/nagios/nrpe.d/evolix.cfg
+  register: nrpe_evolix_cfg
+    
 - name: check_minifirewall is available for NRPE
   lineinfile:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: 'command\[check_minifirewall\]'
     line: 'command[check_minifirewall]=sudo {{ nagios_plugins_directory }}/check_minifirewall'
   notify: restart nagios-nrpe-server
+  when: nrpe_evolix_cfg.stat.exists
+
+- name: Is evolinux sudoers installed?
+  stat:
+    path: /etc/sudoers.d/evolinux
+  register: sudoers_evolinux
 
 - name: sudo without password for nagios
   lineinfile:
@@ -51,3 +62,4 @@
     line: 'nagios          ALL = NOPASSWD: {{ nagios_plugins_directory }}/check_minifirewall'
     insertafter: '^nagios'
     validate: "visudo -cf %s"
+  when: sudoers_evolinux.stat.exists
