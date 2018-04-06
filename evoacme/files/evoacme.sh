@@ -204,6 +204,8 @@ main() {
     sudo -u acme test -w "${NEW_DIR}" || error "Directory ${NEW_DIR} is not writable by user 'acme'"
 
     # create a certificate with certbot
+    # we disable the set -e during the certbot call
+    set +e
     sudo -u acme \
         "${CERTBOT_BIN}" \
         certonly \
@@ -219,6 +221,11 @@ main() {
         --logs-dir "$LOG_DIR" \
         2>&1 \
             | grep -v "certbot.crypto_util"
+
+    if [ "${PIPESTATUS[0]}" != "0" ]; then
+        error "Certbot has exited with a non-zero exit code when generating ${NEW_CERT}"
+    fi
+    set -e
 
     if [ "${DRY_RUN}" = "1" ]; then
         debug "In dry-run mode, we stop here. Bye"

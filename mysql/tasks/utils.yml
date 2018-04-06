@@ -1,5 +1,9 @@
 ---
 
+- include_role:
+    name: remount-usr
+  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
+
 - name: Ensure scripts directory exists
   file:
     dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}"
@@ -74,7 +78,7 @@
 # automatic optimizations
 
 - include_role:
-    name: remount-usr  
+    name: remount-usr
   when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
 
 - name: Optimize script for MySQL
@@ -122,6 +126,7 @@
   copy:
     src: mysqltuner.cron.sh
     dest: /etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}/mysqltuner.sh
+    mode: "0700"
   when: mysql_cron_mysqltuner
   tags:
     - mysql

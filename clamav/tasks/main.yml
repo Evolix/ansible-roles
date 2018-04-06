@@ -108,4 +108,4 @@
     replace: 'AllowSupplementaryGroups true'
   notify: restart clamav
   tags:
-  - clamav 
+  - clamav

@@ -8,13 +8,15 @@
   when: not ansible_check_mode
   ignore_errors: yes
   tags:
-  - commit-etc
+    - etc-git
+    - commit-etc
 
 - debug:
     var: git_status
     verbosity: 3
   tags:
-  - commit-etc
+    - etc-git
+    - commit-etc
 
 - name: fetch current Git user.email
   git_config:
@@ -22,11 +24,17 @@
     repo: /etc
   register: git_config_user_email
   ignore_errors: yes
+  tags:
+    - etc-git
+    - commit-etc
 
 - name: "set commit author"
   set_fact:
     commit_author: '{% if ansible_env.SUDO_USER is not defined %}root{% else %}{{ ansible_env.SUDO_USER }}{% endif %}'
-    commit_email:  '{% if git_config_user_email.config_value == "" %}root@localhost{% else %}{{ git_config_user_email.config_value }}{% endif %}'
+    commit_email:  '{% if git_config_user_email.config_value is not defined or git_config_user_email.config_value == "" %}root@localhost{% else %}{{ git_config_user_email.config_value }}{% endif %}'
+  tags:
+    - etc-git
+    - commit-etc
 
 - name: "/etc modifications are committed"
   shell: "git add -A . && git commit -m \"{{ commit_message | mandatory }}\" --author \"{{ commit_author | mandatory }} <{{ commit_email | mandatory }}>\""
@@ -36,10 +44,12 @@
   when: not ansible_check_mode and git_status.stdout != ""
   ignore_errors: yes
   tags:
-  - commit-etc
+    - etc-git
+    - commit-etc
 
 - debug:
     var: etc_commit_end_run
     verbosity: 4
   tags:
-  - commit-etc
+    - etc-git
+    - commit-etc

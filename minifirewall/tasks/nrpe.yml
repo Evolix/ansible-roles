@@ -1,0 +1,65 @@
+---
+
+- include_role:
+    name: remount-usr
+
+- name: /usr/share/scripts exists
+  file:
+    dest: /usr/share/scripts
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+
+- name: minifirewall_status is installed
+  copy:
+    src: minifirewall_status
+    dest: /usr/share/scripts/minifirewall_status
+    force: no
+    mode: "0700"
+    owner: root
+    group: root
+
+- name: /usr/local/lib/nagios/plugins/ exists
+  file:
+    dest: "{{ nagios_plugins_directory }}"
+    mode: "02755"
+    owner: root
+    group: staff
+    state: directory
+
+- name: check_minifirewall is installed
+  copy:
+    src: check_minifirewall
+    dest: "{{ nagios_plugins_directory }}/check_minifirewall"
+    force: no
+    mode: "0755"
+    owner: root
+    group: staff
+
+- name: Is NRPE installed?
+  stat:
+    path: /etc/nagios/nrpe.d/evolix.cfg
+  register: nrpe_evolix_cfg
+    
+- name: check_minifirewall is available for NRPE
+  lineinfile:
+    dest: /etc/nagios/nrpe.d/evolix.cfg
+    regexp: 'command\[check_minifirewall\]'
+    line: 'command[check_minifirewall]=sudo {{ nagios_plugins_directory }}/check_minifirewall'
+  notify: restart nagios-nrpe-server
+  when: nrpe_evolix_cfg.stat.exists
+
+- name: Is evolinux sudoers installed?
+  stat:
+    path: /etc/sudoers.d/evolinux
+  register: sudoers_evolinux
+
+- name: sudo without password for nagios
+  lineinfile:
+    dest: /etc/sudoers.d/evolinux
+    regexp: 'check_minifirewall'
+    line: 'nagios          ALL = NOPASSWD: {{ nagios_plugins_directory }}/check_minifirewall'
+    insertafter: '^nagios'
+    validate: "visudo -cf %s"
+  when: sudoers_evolinux.stat.exists

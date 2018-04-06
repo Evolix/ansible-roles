@@ -1,0 +1,26 @@
+---
+- name: Is nrpe present ?
+  stat:
+    path: /etc/nagios/nrpe.d/evolix.cfg
+  register: nrpe_evolix_config
+
+- block:
+  - name: Install dependencies
+    apt:
+      name: libcache-memcached-perl
+
+  - name: Copy Nagios check for memcached
+    copy:
+      src: check_memcached.pl
+      dest: /usr/local/lib/nagios/plugins/
+      mode: "0755"
+
+  - name: Add NRPE check
+    lineinfile:
+      name: /etc/nagios/nrpe.d/evolix.cfg
+      regexp: '^command\[check_memcached\]='
+      line: 'command[check_memcached]=/usr/local/lib/nagios/plugins/check_memcached.pl -H 127.0.0.1'
+    notify: restart nagios-nrpe-server
+
+  when: nrpe_evolix_config.stat.exists
+

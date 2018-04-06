@@ -16,4 +16,5 @@ galaxy_info:
 
 dependencies:
   - { role: squid, squid_localproxy_enable: True }
-  - mysql
+  - { role: mysql,        when: packweb_mysql_variant == "debian" }
+  - { role: mysql-oracle, when: packweb_mysql_variant == "oracle" }

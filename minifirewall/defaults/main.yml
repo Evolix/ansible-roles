@@ -25,3 +25,5 @@ minifirewall_private_ports_udp: []
 minifirewall_autostart: "no"
 
 evomaintenance_hosts: []
+
+nagios_plugins_directory: "/usr/local/lib/nagios/plugins"

@@ -3,6 +3,8 @@
 nginx_minimal: False
 nginx_jessie_backports: False
 
+nginx_package_name: "nginx-full"
+
 nginx_default_ipaddr_whitelist_ips: []
 nginx_additional_ipaddr_whitelist_ips: []
 nginx_ipaddr_whitelist_present: "{{ nginx_default_ipaddr_whitelist_ips | union(nginx_additional_ipaddr_whitelist_ips) | unique }}"

@@ -62,7 +62,7 @@
   systemd:
     name: opendkim
     state: started
-    enabled: True 
+    enabled: True
   tags:
   - opendkim
 

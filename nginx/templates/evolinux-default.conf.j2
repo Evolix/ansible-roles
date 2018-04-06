@@ -1,12 +1,11 @@
 server {
-
     listen [::]:80;
     listen 80;
     server_name {{ ansible_fqdn }};
+
     return 301 https://{{ ansible_fqdn }}$request_uri;
 }
 server {
-
     listen 443 ssl;
     # listen [::]:80 default_server ipv6only=on; ## listen for ipv6
 
@@ -23,10 +22,12 @@ server {
     root /var/www;
 
     # Auth.
+    satisfy any;
     include /etc/nginx/snippets/ipaddr_whitelist;
+    deny all;
+
     auth_basic "Reserved {{ ansible_fqdn }}";
     auth_basic_user_file /etc/nginx/snippets/private_htpasswd;
-    satisfy any;
 
     location / {
         index  index.html index.htm;

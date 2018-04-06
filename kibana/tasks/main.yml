@@ -76,7 +76,7 @@
 # - block:
 #   - include_role:
 #       name: remount-usr
-# 
+#
 #   - name: Move kibana optimize directory
 #     shell: "mv /usr/share/kibana/{{ item }} /var/lib/kibana/{{ item }} && ln -s /var/lib/kibana/{{ item }} /usr/share/kibana/{{ item }}"
 #     args:

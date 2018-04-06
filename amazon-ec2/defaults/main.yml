@@ -24,7 +24,7 @@ ec2_debian_base_ami:
   us-east-1: ami-ac5e55d7
   us-east-2: ami-9fbb98fa
   us-west-1: ami-560c3836
-  us-west-2: ami-fa18f282 
+  us-west-2: ami-fa18f282
 
 ec2_evolinux_security_group:
   name: evolinux-default

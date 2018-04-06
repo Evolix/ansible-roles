@@ -4,6 +4,8 @@
 
 - include: config.yml
 
+- include: nrpe.yml
+
 - include: activate.yml
 
 - include: tail.yml

@@ -1,0 +1,56 @@
+#!/bin/bash
+#
+# Scripts to run by MySQL systemd service
+#
+# Needed argument: pre
+#
+# pre mode  :  try to perform sanity check for configuration, log, data
+
+# Read a config option from mysql. Note that this will only work if a config
+# file actually specifies the option, so it's important to specify a default
+# $1 is application (e.g. mysqld for server)
+# $2 is option
+# $3 is default value used if no config value is found
+get_mysql_option() {
+        result=$(my_print_defaults "$1" | sed -n "s/^--$2=//p" | tail -n 1)
+        if [ -z "$result" ];
+        then
+                result="$3"
+        fi
+        echo "$result"
+}
+sanity () {
+  if [ ! -r /etc/mysql/my.cnf ]; then
+    echo "MySQL configuration not found at /etc/mysql/my.cnf. Please create one."
+    exit 1
+  fi
+  datadir=$(get_mysql_option mysqld datadir "/var/lib/mysql")
+  if [ ! -d "${datadir}" ] && [ ! -L "${datadir}" ]; then
+    echo "MySQL data dir not found at ${datadir}. Please create one."
+    exit 1
+  fi
+
+  if [ ! -d "${datadir}/mysql" ] && [ ! -L "${datadir}/mysql" ]; then
+    echo "MySQL system database not found in ${datadir}. Please run mysqld --initialize."
+    exit 1
+  fi
+
+  # Do a test start to make sure there are no configuration issues or similar
+  # mysqld --verbose --help will output a full listing of settings and plugins.
+  # To do so it needs to initialize the database, so it can be used as a test
+  # for whether or not the server can start. We redirect stdout to /dev/null so
+  # only the error messages are left.
+  result=0
+  output=$(mysqld --verbose --help --innodb-read-only 2>&1 > /dev/null) || result=$?
+  if [ ! "$result" = "0" ]; then
+    echo "ERROR: Unable to start MySQL server:" >&2
+    echo "$output" >&2
+    echo "Please take a look at https://wiki.debian.org/Teams/MySQL/FAQ for tips on fixing common upgrade issues." >&2
+    echo "Once the problem is resolved, restart the service." >&2
+    exit 1
+  fi
+}
+
+case $1 in
+  "pre")  sanity ;;
+esac

@@ -57,6 +57,9 @@
     - meminfo
     - netstat_multi
     - tcp
+    - postfix_mailqueue
+    - postfix_mailstats
+    - postfix_mailvolume
   notify: restart munin-node
   tags:
     - munin

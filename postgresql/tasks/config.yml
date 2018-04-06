@@ -15,7 +15,7 @@
 
 - name: Copy PostgreSQL config file
   template:
-    src: postgresql.conf
+    src: postgresql.conf.j2
     dest: "/etc/postgresql/{{postgresql_version}}/main/conf.d/evolinux.conf"
     owner: postgres
     group: postgres

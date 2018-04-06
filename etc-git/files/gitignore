@@ -1,2 +1,5 @@
 aliases.db
 *.swp
+postfix/sa-blacklist.access
+postfix/*.db
+postfix/spamd.cidr

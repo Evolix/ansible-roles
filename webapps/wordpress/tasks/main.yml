@@ -28,7 +28,7 @@
   changed_when: false
 
 - name: Read mysql config from .my.cnf
-  set_fact: 
+  set_fact:
     db_host: "{{ lookup('ini', 'host section=client file=/tmp/wordpress-{{ ansible_user }}.cnf default=127.0.0.1') }}"
     db_user: "{{ lookup('ini', 'user section=client file=/tmp/wordpress-{{ ansible_user }}.cnf default={{ ansible_user }}') }}"
     db_pwd: "{{ lookup('ini', 'password section=client file=/tmp/wordpress-{{ ansible_user }}.cnf') }}"
@@ -44,7 +44,7 @@
 - name: Configure Wordpress (wp-config.php)
   shell: '{{ wordpress_wpcli }} core config --dbhost={{ db_host }} --dbuser={{ db_user }} --dbpass={{ db_pwd }} --dbname={{ db_name }}'
   args:
-    creates: "{{ ansible_env.HOME }}/www/wp-config.php"  
+    creates: "{{ ansible_env.HOME }}/www/wp-config.php"
 
 - name: Configure site
   shell: '{{ wordpress_wpcli }} core install --url={{ wordpress_host | quote }} --title={{ wordpress_title | quote }} --admin_user=admin --admin_password="{{ admin_pwd | quote }}" --admin_email={{ wordpress_email }} --skip-email'
@@ -90,7 +90,7 @@
       Votre nouveau site WordPress a bien été installé à l’adresse :
 
       http://{{ wordpress_host }}
- 
+
       Vous pouvez vous y connecter en tant qu’administrateur avec les informations suivantes :
 
       Identifiant : admin

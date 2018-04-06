@@ -65,7 +65,7 @@
     dest: /etc/proftpd/conf.d/z-evolinux.conf
     state: present
     line: "	AllowUser {{ proftpd_name }}"
-    insertbefore: "DenyAll"    
+    insertbefore: "DenyAll"
   notify: restart proftpd
   tags:
     - proftpd

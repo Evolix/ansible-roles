@@ -1,5 +1,9 @@
 ---
 
+- fail:
+    msg: Please configure var evoadmin_contact_email
+  when: evoadmin_contact_email is none
+
 - include: packages.yml
 
 - include: user.yml
@@ -18,4 +22,3 @@
     marker: "<!-- {mark} evoadmin-web section -->"
     block: |
       <li><a href="https://{{ evoadmin_host }}">Interface admin web (EvoAdmin-web)</a></li>
-

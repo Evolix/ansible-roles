@@ -6,9 +6,56 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project does not follow semantic versioning.
 The **major** part of the version is aligned with the stable version of Debian.
 The **minor** part changes with big changes (probably incompatible).
-The **patch** part changes incrmentally at each release.
+The **patch** part changes incrementally at each release.
 
 ## [Unreleased]
+
+### Added
+
+### Changed
+
+### Fixed
+
+### Security
+
+## [9.1.7] - 2018-04-06
+
+### Added
+* added a few become attributes where missing
+* etc-git: add tags for Ansible
+* evolinux-base: install ncurses-term package
+* haproxy: install Munin plugins
+* listupgrade: add service restart notification for Squid and libstdc++6
+* minifirewall: add "check_minifirewall" Nagios plugin (and `minifirewall_status` script)
+* mysql-oracle: new role to install MySQL 5.7 with Oracle packages
+* mysql: remount /usr before creating scripts directory
+* nagios-nrpe: add "check_open_files" plugin
+* nagios-nrpe: mark plugins as executable
+* nodejs: Yarn package manager can be installed (default: `false`)
+* packweb-apache: choose mysql variant (default: `debian`)
+* postfix: add lines in /etc/.gitignore
+* proftpd: use "proftpd_accounts" list to manage ftp accounts
+* redmine: added missing tags
+
+### Changed
+* elasticsearch: RESTART_ON_UPGRADE is configurable (default: `true`)
+* elasticsearch: use ES_TMPDIR variable for custom tmpdir, (from `/etc/default/elasticsearch` instead of changing `/etc/elesticsearch/jvm.options`).
+* evolinux-base: Exec the firewall tasks sooner (to avoid dependency issues)
+* mongodb: allow unauthenticated packages for Jessie
+* mongodb: configuration is forced by default but it's configurable (default: `false`)
+* mongodb: rename logrotate script
+* nagios-nrpe: mark plugins as executable
+* nginx: don't debug variables in verbosity 0
+* nginx: package name can be specified (default: `nginx-full`)
+* php: fix FPM custom file permissions
+* php: more tasks notify FPM handler to restart if needed
+* webapps/evoadmin-web: Fail if variable evoadmin_contact_email isn't defined
+
+### Fixed
+* dovecot: fix support of plus sign
+* mysql/mysql-oracle: mysqltuner cron task is executable
+* nginx: fix basic auth for default vhost
+* rbenv: fix become user issue with copy tasks
 
 ## [9.1.6] - 2018-02-02
 
@@ -28,7 +75,7 @@ The **patch** part changes incrmentally at each release.
 ## [9.1.5] - 2018-01-18
 
 ### Added
-* There is changelog!
+* There is a changelog!
 * redis: configuration variable for protected mode (v3.2+)
 * evolinux-users: users are in "adm" group for Debian 9 or later
 * evolinx-base: purge locate/mlocate packages

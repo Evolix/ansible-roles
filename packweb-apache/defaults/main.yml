@@ -8,3 +8,5 @@ packweb_apache_modphp: True
 packweb_apache_fpm: False
 
 packweb_phpmyadmin_suffix: ""
+
+packweb_mysql_variant: "debian"

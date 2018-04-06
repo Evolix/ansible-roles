@@ -39,12 +39,12 @@
   tags:
     - config
 
-- name: Restart on upgrade
+- name: Configure RESTART_ON_UPGRADE
   lineinfile:
     dest: /etc/default/elasticsearch
-    line: "RESTART_ON_UPGRADE=true"
+    line: "RESTART_ON_UPGRADE={{ elasticsearch_restart_on_upgrade | bool | ternary('true','false') }}"
     regexp: "^RESTART_ON_UPGRADE="
-    insertafter: "^# *RESTART_ON_UPGRADE=true"
+    insertafter: "^# *RESTART_ON_UPGRADE="
   tags:
     - config
 

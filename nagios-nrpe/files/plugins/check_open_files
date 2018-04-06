@@ -1,0 +1,25 @@
+#!/bin/bash
+
+exitCode=0
+
+for user in $(getent passwd | grep -ve root -e www-data | cut -d: -f1); do
+  openFiles=$(lsof -n -u "$user" | wc -l)
+  if [[ $openFiles -ge 3200 ]]; then
+    echo "CRITICAL: $user has more than 3200 files opened!"
+    exitCode=2
+  elif [[ $openFiles -ge 2000 ]]; then
+    echo "WARNING: $user has more than 2000 files opened!"
+    if [[ $exitCode -ne 2 ]]; then
+      exitCode=1
+    fi
+  fi
+done
+
+if [[ $exitCode -eq 1 || $exitCode -eq 2 ]]; then
+  exit $exitCode
+else
+  echo "OK"
+  exit 0
+fi
+
+

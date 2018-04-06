@@ -5,8 +5,8 @@
     name: '{{ item }}'
     state: present
   with_items:
-  - php5-fpm
-  - php5
+    - php5-fpm
+    - php5
   when: ansible_distribution_release == "jessie"
 
 - name: "Install PHP FPM packages (Debian 9 or later)"
@@ -14,8 +14,8 @@
     name: '{{ item }}'
     state: present
   with_items:
-  - php-fpm
-  - php
+    - php-fpm
+    - php
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: "Set config files for FPM (jessie)"
@@ -43,12 +43,13 @@
     mode: "0644"
     create: yes
   with_items:
-  - { option: "short_open_tag", value: "Off" }
-  - { option: "expose_php", value: "Off" }
-  - { option: "display_errors", value: "Off" }
-  - { option: "log_errors", value: "On" }
-  - { option: "html_errors", value: "Off" }
-  - { option: "allow_url_fopen", value: "Off" }
+    - { option: "short_open_tag", value: "Off" }
+    - { option: "expose_php", value: "Off" }
+    - { option: "display_errors", value: "Off" }
+    - { option: "log_errors", value: "On" }
+    - { option: "html_errors", value: "Off" }
+    - { option: "allow_url_fopen", value: "Off" }
+  notify: restart php-fpm
 
 - name: Disable PHP functions for FPM
   ini_file:
@@ -56,6 +57,7 @@
     section: PHP
     option: disable_functions
     value: "exec,shell-exec,system,passthru,putenv,popen"
+  notify: restart php-fpm
 
 - name: Custom php.ini for FPM
   copy:
@@ -63,6 +65,7 @@
     content: |
       ; Put customized values here.
     force: no
+  notify: restart php-fpm
 
 - name: Set default PHP FPM values
   ini_file:
@@ -73,14 +76,15 @@
     mode: "0644"
     create: yes
   with_items:
-  - { option: "pm", value: "ondemand" }
-  - { option: "pm.max_children", value: "100" }
-  - { option: "pm.process_idle_timeout", value: "10s" }
-  - { option: "slowlog", value: "log/$pool.log.slow" }
-  - { option: "request_slowlog_timeout", value: "5s" }
-  - { option: "pm.status_path", value: "/fpm_status" }
-  - { option: "request_terminate_timeout", value: "60s" }
-  - { option: "chroot", value: "/var/www/html" }
+    - { option: "pm", value: "ondemand" }
+    - { option: "pm.max_children", value: "100" }
+    - { option: "pm.process_idle_timeout", value: "10s" }
+    - { option: "slowlog", value: "log/$pool.log.slow" }
+    - { option: "request_slowlog_timeout", value: "5s" }
+    - { option: "pm.status_path", value: "/fpm_status" }
+    - { option: "request_terminate_timeout", value: "60s" }
+    - { option: "chroot", value: "/var/www/html" }
+  notify: restart php-fpm
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: Custom PHP FPM values
@@ -89,7 +93,9 @@
     content: |
       ; Put customized values here.
       ; default_charset = "ISO-8859-1"
+    mode: "0644"
     force: no
+  notify: restart php-fpm
 
 - name: "Set custom values for PHP to enable Symfony"
   ini_file:
@@ -99,6 +105,6 @@
     value: "{{ item.value }}"
     mode: "0644"
   with_items:
-  - { option: "date.timezone", value: "Europe/Paris" }
+    - { option: "date.timezone", value: "Europe/Paris" }
+  notify: restart php-fpm
   when: php_symfony_requirements
-

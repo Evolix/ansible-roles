@@ -20,6 +20,6 @@
 
 - name: Add APT preference file
   template:
-    src: postgresql.pref
+    src: postgresql.pref.j2
     dest: /etc/apt/preferences.d/
     mode: "0644"

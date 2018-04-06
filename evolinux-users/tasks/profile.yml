@@ -4,6 +4,7 @@
   command: 'grep -q "trap.*sudo.*evomaintenance.sh"'
   changed_when: False
   failed_when: False
+  check_mode: no
   register: grep_profile_evomaintenance
 
 # Don't add the trap if it is present or commented
@@ -13,4 +14,5 @@
     dest: '/home/{{ user.name }}/.profile'
     insertafter: EOF
     line: 'trap "sudo /usr/share/scripts/evomaintenance.sh" 0'
+    create: yes
   when: grep_profile_evomaintenance.rc != 0

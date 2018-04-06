@@ -1,5 +1,13 @@
 #!/bin/sh
 
+
+dpkg -l |grep -e 'opendkim-tools' -e 'opendkim' -q
+
+if [ "$?" -ne 0 ]; then 
+    echo "Require opendkim-tools and opendkim"
+    exit 1
+fi
+
 if [ "$#" -ne 1 ]; then
     echo "Usage : $0 example.com" >&2
     exit 1
