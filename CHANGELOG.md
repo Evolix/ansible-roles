@@ -11,6 +11,16 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Security
+
+## [9.1.7] - 2018-04-06
+
+### Added
 * added a few become attributes where missing
 * etc-git: add tags for Ansible
 * evolinux-base: install ncurses-term package
