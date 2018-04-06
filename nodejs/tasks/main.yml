@@ -8,16 +8,16 @@
     - system
     - packages
 
-- name: Node GPG key is installed
+- name: NodeJS GPG key is installed
   apt_key:
-    #url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+    # url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
     data: "{{ lookup('file', 'nodesource.gpg.key') }}"
   tags:
     - system
     - packages
     - nodejs
 
-- name: Node sources list ({{ nodejs_apt_version }}) is available
+- name: NodeJS sources list ({{ nodejs_apt_version }}) is available
   apt_repository:
     repo: "deb https://deb.nodesource.com/{{ nodejs_apt_version }} {{ ansible_distribution_release }} main"
     filename: nodesource
@@ -28,7 +28,7 @@
     - packages
     - nodejs
 
-- name: Node is installed
+- name: NodeJS is installed
   apt:
     name: nodejs
     state: present
@@ -36,35 +36,5 @@
     - packages
     - nodejs
 
-
-
-- name: yarn GPG key is installed
-  apt_key:
-    #url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
-    data: "{{ lookup('file', 'yarnpkg.gpg.key') }}"
-  tags:
-    - system
-    - packages
-    - yarn
-  when: node_yarn
-
-- name: yarn sources list is available
-  apt_repository:
-    repo: "deb https://dl.yarnpkg.com/debian/ stable main"
-    filename: yarn
-    update_cache: yes
-    state: present
-  tags:
-    - system
-    - packages
-    - yarn
-  when: node_yarn
-
-- name: yarn is installed
-  apt:
-    name: yarn
-    state: present
-  tags:
-    - packages
-    - yarn
-  when: node_yarn
+- include: yarn.yml
+  when: nodejs_install_yarn
