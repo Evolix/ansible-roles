@@ -5,24 +5,6 @@
   when:
   - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
 
-- name: Include apache role
-  include_role:
-    name: apache
-
-- name: Include PHP role
-  include_role:
-    name: php
-  vars:
-    php_apache_enable: True
-  when: packweb_apache_modphp
-
-- name: Include PHP role
-  include_role:
-    name: php
-  vars:
-    php_fpm_enable: True
-  when: packweb_apache_fpm
-
 - name: install info.php
   copy:
     src: info.php
