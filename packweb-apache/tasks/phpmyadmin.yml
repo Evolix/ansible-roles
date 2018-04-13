@@ -26,6 +26,7 @@
 - name: generate random string for phpmyadmin suffix
   command: "apg -a 1 -M N -n 1"
   changed_when: False
+  check_mode: False
   register: _random_phpmyadmin_suffix
 
 - name: overwrite packweb_phpmyadmin_suffix

@@ -17,6 +17,7 @@ The **patch** part changes incrementally at each release.
 
 ### Fixed
 * mysql: use check_mode for apg command (Fix --check)
+* packweb-apache: use check_mode for apg command (Fix --check)
 
 ### Security
 
