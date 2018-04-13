@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 ### Changed
+* packweb-apache: use dependencies instead of include_role for apache and php roles
 
 ### Fixed
 
@@ -50,7 +51,6 @@ The **patch** part changes incrementally at each release.
 * php: fix FPM custom file permissions
 * php: more tasks notify FPM handler to restart if needed
 * webapps/evoadmin-web: Fail if variable evoadmin_contact_email isn't defined
-* packweb-apache: use dependencies instead of include_role for apache and php roles
 
 ### Fixed
 * dovecot: fix support of plus sign
