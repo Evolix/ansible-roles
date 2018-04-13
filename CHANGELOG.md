@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 * packweb-apache: use dependencies instead of include_role for apache and php roles
 
 ### Fixed
+* mysql: use check_mode for apg command (Fix --check)
 
 ### Security
 
