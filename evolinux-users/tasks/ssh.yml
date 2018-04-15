@@ -38,17 +38,16 @@
 
 - include: ssh_allowgroups.yml
   when:
-  - ssh_allowgroups
-  - not ssh_allowusers
+    - ssh_allowgroups
+    - not ssh_allowusers
 
 - include: ssh_allowusers.yml
   vars:
     user: "{{ item.value }}"
   with_dict: "{{ evolinux_users }}"
   when:
-  - ssh_allowusers
-  - not ssh_allowgroups
-
+    - ssh_allowusers
+    - not ssh_allowgroups
 
 - name: disable root login
   replace:
