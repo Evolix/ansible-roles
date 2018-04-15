@@ -75,10 +75,10 @@
    mode: "0700"
    state: directory
 
- # Evomaintenance
+# Evomaintenance
 
 - name: Search profile for presence of evomaintenance
-  command: 'grep -q "trap.*sudo.*evomaintenance.sh"'
+  command: 'grep -q "trap.*sudo.*evomaintenance.sh" /home/{{ user.name }}/.profile'
   changed_when: False
   failed_when: False
   check_mode: no
