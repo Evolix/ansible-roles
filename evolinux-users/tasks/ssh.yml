@@ -24,9 +24,9 @@
 
 - set_fact:
     # If "AllowGroups is present" or "AllowUsers is absent and Debian 9+",
-    ssh_allowgroups: "{{ grep_allowgroups_ssh.rc == 0 or (grep_allowusers_ssh.rc != 0 and (ansible_distribution_major_version | version_compare('9', '>='))) }}"
-    # If "AllowGroups is absent"
-    ssh_allowusers: "{{ grep_allowgroups_ssh.rc != 0 }}"
+    ssh_allowgroups: "{{ (grep_allowgroups_ssh.rc == 0) or (grep_allowusers_ssh.rc != 0 and (ansible_distribution_major_version | version_compare('9', '>='))) }}"
+    # If "AllowGroups is absent" and "Debian <9"
+    ssh_allowusers:  "{{ (grep_allowgroups_ssh.rc != 0) and (ansible_distribution_major_version | version_compare('9', '<')) }}"
 
 - debug:
     var: ssh_allowgroups
