@@ -25,9 +25,11 @@
    shell: /bin/bash
    password: '{{ user.password_hash }}'
    update_password: on_create
-  when: loginisbusy.rc != 0 and uidisbusy.rc != 0
+  when:
+    - loginisbusy.rc != 0
+    - uidisbusy.rc   != 0
 
-- name: "Add Unix account with random uid for '{{ user.name }}'"
+- name: "Unix account for '{{ user.name }}' is present (with random uid)"
   user:
    state: present
    name: '{{ user.name }}'
@@ -35,7 +37,9 @@
    shell: /bin/bash
    password: '{{ user.password_hash }}'
    update_password: on_create
-  when: loginisbusy.rc != 0 and uidisbusy.rc == 0
+  when:
+    - loginisbusy.rc != 0
+    - uidisbusy.rc   == 0
 
 # Unix groups
 

@@ -41,8 +41,7 @@
     insertafter: "# END EVOLINUX PASSWORD RESTRICTIONS BY ADDRESS"
     validate: '/usr/sbin/sshd -T -f %s'
   notify: reload sshd
-  when:
-    - grep_matchuser_ssh.rc != 0
+  when: grep_matchuser_ssh.rc != 0
 
 - name: "Append '{{ user.name }}' to Match User's sshd directive"
   replace:
@@ -51,5 +50,4 @@
     replace: '\1,{{ user.name }}'
     validate: '/usr/sbin/sshd -T -f %s'
   notify: reload sshd
-  when:
-    - grep_matchuser_ssh.rc == 0
+  when: grep_matchuser_ssh.rc == 0
