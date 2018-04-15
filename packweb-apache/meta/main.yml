@@ -15,6 +15,9 @@ galaxy_info:
     - stretch
 
 dependencies:
+  - { role: apache }
+  - { role: php, php_apache_enable: True, when: packweb_apache_modphp }
+  - { role: php, php_fpm_enable: True, when: packweb_apache_fpm }
   - { role: squid, squid_localproxy_enable: True }
   - { role: mysql,        when: packweb_mysql_variant == "debian" }
   - { role: mysql-oracle, when: packweb_mysql_variant == "oracle" }

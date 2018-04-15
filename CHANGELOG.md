@@ -18,6 +18,16 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [9.1.8] - 2018-04-16
+
+### Changed
+* packweb-apache: use dependencies instead of include_role for apache and php roles
+
+### Fixed
+* mysql: use check_mode for apg command (Fix --check)
+* mysql/mysql-oracle: properly reload systemd
+* packweb-apache: use check_mode for apg command (Fix --check)
+
 ## [9.1.7] - 2018-04-06
 
 ### Added
