@@ -38,8 +38,8 @@
     value: '{{ item.value }}'
     create: yes
   with_items:
-    - { option: 'user', value: 'mysqladmin' }
-    - { option: password, value: '{{ mysql_admin_password.stdout }}' }
+    - { option: 'user',     value: 'mysqladmin' }
+    - { option: 'password', value: '{{ mysql_admin_password.stdout }}' }
   when: create_mysqladmin_user.changed
   tags:
   - mysql
