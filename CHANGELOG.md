@@ -14,6 +14,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 * evolinux-base: fail2ban is not enabled by default
+* evolinux-users: refactoring of the SSH configuration
 * mysql-oracle: copy evolinux config files in mysql.cond.d
 
 ### Fixed
