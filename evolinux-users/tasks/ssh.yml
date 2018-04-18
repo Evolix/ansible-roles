@@ -22,11 +22,15 @@
     var: grep_allowusers_ssh
     verbosity: 1
 
+- assert:
+    that: "not (grep_allowusers_ssh.rc == 0 and grep_allowgroups_ssh.rc == 0)"
+    msg: "We can't deal with AllowUsers and AllowGroups at the same time"
+
 - set_fact:
     # If "AllowGroups is present" or "AllowUsers is absent and Debian 9+",
     ssh_allowgroups: "{{ (grep_allowgroups_ssh.rc == 0) or (grep_allowusers_ssh.rc != 0 and (ansible_distribution_major_version | version_compare('9', '>='))) }}"
-    # If "AllowGroups is absent" and "Debian <9"
-    ssh_allowusers:  "{{ (grep_allowgroups_ssh.rc != 0) and (ansible_distribution_major_version | version_compare('9', '<')) }}"
+    # If "AllowGroups is absent" and "AllowUsers is absent or Debian <9"
+    ssh_allowusers:  "{{ (grep_allowusers_ssh.rc == 0) or (grep_allowgroups_ssh.rc != 0 and (ansible_distribution_major_version | version_compare('9', '<'))) }}"
 
 - debug:
     var: ssh_allowgroups
