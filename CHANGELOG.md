@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 ### Changed
+* mysql-oracle: copy evolinux config files in mysql.cond.d
 
 ### Fixed
 
