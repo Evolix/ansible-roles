@@ -14,6 +14,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 * evolinux-base: fail2ban is not enabled by default
+* evolinux-users: refactoring of the SSH configuration
 * mysql-oracle: copy evolinux config files in mysql.cond.d
 
 ### Fixed
@@ -53,6 +54,7 @@ The **patch** part changes incrementally at each release.
 * elasticsearch: RESTART_ON_UPGRADE is configurable (default: `true`)
 * elasticsearch: use ES_TMPDIR variable for custom tmpdir, (from `/etc/default/elasticsearch` instead of changing `/etc/elesticsearch/jvm.options`).
 * evolinux-base: Exec the firewall tasks sooner (to avoid dependency issues)
+* evolinux-users: split AllowGroups/AllowUsers modes for SSH directives
 * mongodb: allow unauthenticated packages for Jessie
 * mongodb: configuration is forced by default but it's configurable (default: `false`)
 * mongodb: rename logrotate script

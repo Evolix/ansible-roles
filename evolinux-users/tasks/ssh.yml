@@ -1,97 +1,64 @@
 ---
 
-
-- name: "Create .ssh directory for '{{ user.name }}'"
-  file:
-    dest: '/home/{{ user.name }}/.ssh/'
-    state: directory
-    mode: "0700"
-    owner: '{{ user.name }}'
-    group: '{{ user.name }}'
-
-- name: "Add user's SSH public key for '{{ user.name }}'"
-  authorized_key:
-    user: "{{ user.name }}"
-    key: "{{ user.ssh_key }}"
-    state: present
-  when: user.ssh_key is defined
-
-- name: "Add user's SSH public keys for '{{ user.name }}'"
-  authorized_key:
-    user: "{{ user.name }}"
-    key: "{{ ssk_key }}"
-    state: present
-  with_items: "{{ user.ssh_keys }}"
-  loop_control:
-    loop_var: ssk_key
-  when: user.ssh_keys is defined
-
 - name: verify AllowGroups directive
   command: "grep -E '^AllowGroups' /etc/ssh/sshd_config"
   changed_when: False
   failed_when: False
-  register: grep_allowgroups_ssh
   check_mode: no
+  register: grep_allowgroups_ssh
 
-  # If AllowGroups is present, we don't change
 - debug:
-    msg: "AllowGroups detected : You have to configure SSH manually"
-  when: grep_allowgroups_ssh.rc == 0
+    var: grep_allowgroups_ssh
+    verbosity: 1
 
-- block:
-  # If AllowGroups is not present, we proceed as usual
-  - name: verify AllowUsers directive
-    command: "grep -E '^AllowUsers' /etc/ssh/sshd_config"
-    changed_when: False
-    failed_when: False
-    register: grep_allowusers_ssh
-    check_mode: no
+- name: verify AllowUsers directive
+  command: "grep -E '^AllowUsers' /etc/ssh/sshd_config"
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: grep_allowusers_ssh
 
-  - name: "Add AllowUsers sshd directive for '{{ user.name }}'"
-    lineinfile:
-      dest: /etc/ssh/sshd_config
-      line: "\nAllowUsers {{ user.name }}"
-      insertafter: 'Subsystem'
-      validate: '/usr/sbin/sshd -T -f %s'
-    notify: reload sshd
-    when: grep_allowusers_ssh.rc != 0
+- debug:
+    var: grep_allowusers_ssh
+    verbosity: 1
 
-  - name: "Modify AllowUsers sshd directive for '{{ user.name }}'"
-    replace:
-      dest: /etc/ssh/sshd_config
-      regexp: '^(AllowUsers ((?!\b{{ user.name }}\b).)*)$'
-      replace: '\1 {{ user.name }}'
-      validate: '/usr/sbin/sshd -T -f %s'
-    notify: reload sshd
-    when: grep_allowusers_ssh.rc == 0
+- assert:
+    that: "not (grep_allowusers_ssh.rc == 0 and grep_allowgroups_ssh.rc == 0)"
+    msg: "We can't deal with AllowUsers and AllowGroups at the same time"
 
-  - name: "verify Match User directive"
-    command: "grep 'Match User' /etc/ssh/sshd_config"
-    changed_when: False
-    failed_when: False
-    register: grep_matchuser_ssh
-    check_mode: no
+- set_fact:
+    # If "AllowGroups is present" or "AllowUsers is absent and Debian 9+",
+    ssh_allowgroups: "{{ (grep_allowgroups_ssh.rc == 0) or (grep_allowusers_ssh.rc != 0 and (ansible_distribution_major_version | version_compare('9', '>='))) }}"
+    # If "AllowGroups is absent" and "AllowUsers is absent or Debian <9"
+    ssh_allowusers:  "{{ (grep_allowusers_ssh.rc == 0) or (grep_allowgroups_ssh.rc != 0 and (ansible_distribution_major_version | version_compare('9', '<'))) }}"
 
-  - name: "Add Match User sshd directive for '{{ user.name }}' (Jessie)"
-    lineinfile:
-      dest: /etc/ssh/sshd_config
-      line: "\nMatch User {{ user.name }}\n    PasswordAuthentication no"
-      insertafter: "# END EVOLINUX PASSWORD RESTRICTIONS BY ADDRESS"
-      validate: '/usr/sbin/sshd -T -f %s'
-    notify: reload sshd
-    when:
-      - ansible_distribution_release == "jessie"
-      - grep_matchuser_ssh.rc != 0
+- debug:
+    var: ssh_allowgroups
+    verbosity: 1
 
-  - name: "Modify Match User's sshd directive for '{{ user.name }}' (Jessie)"
-    replace:
-      dest: /etc/ssh/sshd_config
-      regexp: '^(Match User ((?!{{ user.name }}).)*)$'
-      replace: '\1,{{ user.name }}'
-      validate: '/usr/sbin/sshd -T -f %s'
-    notify: reload sshd
-    when:
-      - ansible_distribution_release == "jessie"
-      - grep_matchuser_ssh.rc == 0
+- debug:
+    var: ssh_allowusers
+    verbosity: 1
 
-  when: grep_allowgroups_ssh.rc != 0
+- include: ssh_allowgroups.yml
+  when:
+    - ssh_allowgroups
+    - not ssh_allowusers
+
+- include: ssh_allowusers.yml
+  vars:
+    user: "{{ item.value }}"
+  with_dict: "{{ evolinux_users }}"
+  when:
+    - ssh_allowusers
+    - not ssh_allowgroups
+
+- name: disable root login
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin (yes|without-password|prohibit-password)'
+    replace: "PermitRootLogin no"
+  notify: reload sshd
+  when: evolinux_root_disable_ssh
+
+- meta: flush_handlers
