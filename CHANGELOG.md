@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: fail2ban is not enabled by default
 * evolinux-users: refactoring of the SSH configuration
 * mysql-oracle: copy evolinux config files in mysql.cond.d
+* generate-ldif: add a minifirewall service when /etc/default/minifirewall exists
 
 ### Fixed
 

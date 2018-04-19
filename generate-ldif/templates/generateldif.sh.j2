@@ -200,6 +200,19 @@ ServiceType: monitoring
 EOT
 fi
 
+# minifirewall
+if [ -f "/etc/default/minifirewall" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=minifirewall,${computer_dn}
+NagiosEnabled: TRUE
+objectClass: EvoService
+ServiceName: minifirewall
+ServiceType: firewall
+ServiceVersion: minifirewall
+EOT
+fi
+
 # Postfix
 postfix_version=$(get_pkg_version postfix)
 if [ -n "${postfix_version}" ]; then
