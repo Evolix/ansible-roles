@@ -16,4 +16,5 @@
 
 - name: reload systemd
   systemd:
+    name: mysql
     daemon_reload: yes
