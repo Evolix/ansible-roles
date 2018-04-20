@@ -65,10 +65,3 @@
 
 - include: fhs_retrictions.yml
   when: packweb_fhs_retrictions
-
-- name: Install Evoadmin
-  include_role:
-    name: webapps/evoadmin-web
-  vars:
-    evoadmin_enable_vhost: "{{ packweb_enable_evoadmin_vhost }}"
-

@@ -52,6 +52,13 @@
     group: "{{ evoadmin_username }}"
     recurse: yes
 
+- name: Create evoadmin log directory
+  file:
+    name: "{{ evoadmin_log_dir }}"
+    owner: "{{ evoadmin_username }}"
+    group: "{{ evoadmin_username }}"
+    state: directory
+
 - include_role:
     name: remount-usr
   when: evoadmin_scripts_dir | search ("/usr")
