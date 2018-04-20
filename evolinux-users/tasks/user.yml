@@ -43,18 +43,18 @@
 
 # Unix groups
 
-- name: "Unix group '{{ evolinux_ssh_group }}' is present (Debian 9 or later)"
+- name: "Unix group '{{ evolinux_ssh_group }}' is present (Debian 10 or later)"
   group:
     name: "{{ evolinux_ssh_group }}"
     state: present
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version | version_compare('10', '>=')
 
-- name: "Unix user '{{ user.name }}' belongs to group '{{ evolinux_ssh_group }}' (Debian 9 or later)"
+- name: "Unix user '{{ user.name }}' belongs to group '{{ evolinux_ssh_group }}' (Debian 10 or later)"
   user:
     name: '{{ user.name }}'
     groups: "{{ evolinux_ssh_group }}"
     append: yes
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version | version_compare('10', '>=')
 
 - name: "Secondary Unix groups are present"
   group:

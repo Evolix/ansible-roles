@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 ### Changed
+* evolinux: groups for SSH configuration are used with Debian 10 and later
 * evolinux-base: fail2ban is not enabled by default
 * evolinux-users: refactoring of the SSH configuration
 * mysql-oracle: copy evolinux config files in mysql.cond.d
