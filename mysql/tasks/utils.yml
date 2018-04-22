@@ -126,7 +126,7 @@
   copy:
     src: mysqltuner.cron.sh
     dest: /etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}/mysqltuner.sh
-    mode: "0700"
+    mode: "0755"
   when: mysql_cron_mysqltuner
   tags:
     - mysql
