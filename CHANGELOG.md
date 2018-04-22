@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 ### Changed
+* apache: customize logrotate (52 weeks)
 * evolinux: groups for SSH configuration are used with Debian 10 and later
 * evolinux-base: fail2ban is not enabled by default
 * evolinux-users: refactoring of the SSH configuration
