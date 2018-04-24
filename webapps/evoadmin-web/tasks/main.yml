@@ -1,6 +1,7 @@
 ---
 
-- fail:
+- name: "Ensure that evoadmin_contact_email is defined"
+  fail:
     msg: Please configure var evoadmin_contact_email
   when: evoadmin_contact_email is none
 

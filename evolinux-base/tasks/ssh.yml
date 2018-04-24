@@ -13,7 +13,7 @@
 # We want to allow any user from a list of IP addresses to login with password,
 # but users of the "evolix" group can't login with password from other IP addresses
 
-- name: Security directives for Evolinux (Debian 9 or later)"
+- name: Security directives for Evolinux (Debian 10 or later)"
   blockinfile:
     dest: /etc/ssh/sshd_config
     block: |
@@ -27,9 +27,9 @@
   notify: reload sshd
   when:
     - evolinux_ssh_password_auth_addresses != []
-    - ansible_distribution_major_version | version_compare('9', '>=')
+    - ansible_distribution_major_version | version_compare('10', '>=')
 
-- name: Security directives for Evolinux (Jessie)
+- name: Security directives for Evolinux (Jessie/Stretch)
   blockinfile:
     dest: /etc/ssh/sshd_config
     block: |
@@ -41,7 +41,7 @@
   notify: reload sshd
   when:
     - evolinux_ssh_password_auth_addresses != []
-    - ansible_distribution_release == "jessie"
+    - ansible_distribution_major_version | version_compare('10', '<')
 
 # We disable AcceptEnv because it can be a security issue, but also because we
 # do not want clients to push their environment variables like LANG.
@@ -63,16 +63,16 @@
 
 - name: "Get current user"
   command: logname
+  changed_when: False
   register: logname
   check_mode: no
-  changed_when: False
   when: evolinux_ssh_allow_current_user
 
 # we must double-escape caracters, because python
 - name: verify AllowUsers directive
   command: "grep -E '^AllowUsers' /etc/ssh/sshd_config"
-  changed_when: False
   failed_when: False
+  changed_when: False
   register: grep_allowusers_ssh
   check_mode: no
   when: evolinux_ssh_allow_current_user

@@ -32,7 +32,7 @@
 - name: "Clone evoadmin repository (jessie)"
   git:
     repo: https://forge.evolix.org/evoadmin-web.git
-    dest: "{{ evoadmin_document_root}}"
+    dest: "{{ evoadmin_document_root }}"
     version: jessie
     update: no
   when: ansible_distribution_release == "jessie"
@@ -40,17 +40,24 @@
 - name: "Clone evoadmin repository (Debian 9 or later)"
   git:
     repo: https://forge.evolix.org/evoadmin-web.git
-    dest: "{{ evoadmin_document_root}}"
+    dest: "{{ evoadmin_document_root }}"
     version: master
     update: yes
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: Change ownership on git repository
   file:
-    dest: "{{ evoadmin_document_root}}"
+    dest: "{{ evoadmin_document_root }}"
     owner: "{{ evoadmin_username }}"
     group: "{{ evoadmin_username }}"
     recurse: yes
+
+- name: Create evoadmin log directory
+  file:
+    name: "{{ evoadmin_log_dir }}"
+    owner: "{{ evoadmin_username }}"
+    group: "{{ evoadmin_username }}"
+    state: directory
 
 - include_role:
     name: remount-usr
@@ -64,7 +71,7 @@
     state: directory
 
 - name: Install scripts like web-add.sh
-  shell: "cp {{ evoadmin_document_root}}/scripts/* {{ evoadmin_scripts_dir }}/"
+  shell: "cp {{ evoadmin_document_root }}/scripts/* {{ evoadmin_scripts_dir }}/"
   args:
     creates: "{{ evoadmin_scripts_dir }}/web-add.sh"
 

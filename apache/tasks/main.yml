@@ -163,6 +163,22 @@
   tags:
     - apache
 
+- name: "logrotate: rotate weekly"
+  replace:
+    dest: /etc/logrotate.d/apache2
+    regexp: "(daily|weekly|monthly)"
+    replace: "weekly"
+  tags:
+    - apache
+
+- name: "logrotate: keep 52 files"
+  replace:
+    dest: /etc/logrotate.d/apache2
+    regexp: "rotate .+"
+    replace: "rotate 52"
+  tags:
+    - apache
+
 - include: log2mail.yml
   when: apache_log2mail_include
   tags:

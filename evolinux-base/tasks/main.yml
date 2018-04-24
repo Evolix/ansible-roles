@@ -1,10 +1,11 @@
 ---
 
-- name: "Compatibility check"
-  fail:
+- name: "System compatibility checks"
+  assert:
+    that:
+      - ansible_distribution == "Debian"
+      - ansible_distribution_major_version | version_compare('8', '>=')
     msg: only compatible with Debian >= 8
-  when:
-  - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
 
 - name: Apt configuration
   include_role:

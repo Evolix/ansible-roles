@@ -27,15 +27,21 @@
   - { path: awstats, mode: "0750", state: directory }
   - { path: www, mode: "0750", state: directory }
 
-- name: Copy apache empty log files if missing
-  copy:
-    src: "log/{{ item }}"
+- name: Apache log file (templates) are present
+  command: "touch /etc/skel/log/{{ item }}"
+  args:
+    creates: "/etc/skel/log/{{ item }}"
+  with_items:
+    - access.log
+    - error.log
+
+- name: Apache log file (templates) have the proper permissions
+  file:
     dest: "/etc/skel/log/{{ item }}"
     mode: "0644"
-    force: no
   with_items:
-  - access.log
-  - error.log
+    - access.log
+    - error.log
 
 - name: "Install userlogrotate (jessie)"
   copy:
@@ -65,10 +71,3 @@
 
 - include: fhs_retrictions.yml
   when: packweb_fhs_retrictions
-
-- name: Install Evoadmin
-  include_role:
-    name: webapps/evoadmin-web
-  vars:
-    evoadmin_enable_vhost: "{{ packweb_enable_evoadmin_vhost }}"
-

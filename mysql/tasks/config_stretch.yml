@@ -39,5 +39,6 @@
 
 - name: reload systemd
   systemd:
+    name: mysql
     daemon_reload: yes
   when: mariadb_systemd_override.changed

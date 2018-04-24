@@ -1,15 +1,125 @@
 ---
 
-- include: account.yml
+# Unix account
 
-- include: profile.yml
+- name: "Test if '{{ user.name }}' exists"
+  command: 'getent passwd {{ user.name }}'
+  register: loginisbusy
+  failed_when: False
+  changed_when: False
+  check_mode: no
 
-- include: ssh.yml
+- name: "Test if uid exists for '{{ user.name }}'"
+  command: 'getent passwd {{ user.uid }}'
+  register: uidisbusy
+  failed_when: False
+  changed_when: False
+  check_mode: no
 
-- include: sudo_jessie.yml
-  when: ansible_distribution_release == "jessie"
+- name: "Unix account for '{{ user.name }}' is present (with uid '{{ user.uid }}')"
+  user:
+   state: present
+   uid: '{{ user.uid }}'
+   name: '{{ user.name }}'
+   comment: '{{ user.fullname }}'
+   shell: /bin/bash
+   password: '{{ user.password_hash }}'
+   update_password: on_create
+  when:
+    - loginisbusy.rc != 0
+    - uidisbusy.rc   != 0
 
-- include: sudo_stretch.yml
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+- name: "Unix account for '{{ user.name }}' is present (with random uid)"
+  user:
+   state: present
+   name: '{{ user.name }}'
+   comment: '{{ user.fullname }}'
+   shell: /bin/bash
+   password: '{{ user.password_hash }}'
+   update_password: on_create
+  when:
+    - loginisbusy.rc != 0
+    - uidisbusy.rc   == 0
+
+# Unix groups
+
+- name: "Unix group '{{ evolinux_ssh_group }}' is present (Debian 10 or later)"
+  group:
+    name: "{{ evolinux_ssh_group }}"
+    state: present
+  when: ansible_distribution_major_version | version_compare('10', '>=')
+
+- name: "Unix user '{{ user.name }}' belongs to group '{{ evolinux_ssh_group }}' (Debian 10 or later)"
+  user:
+    name: '{{ user.name }}'
+    groups: "{{ evolinux_ssh_group }}"
+    append: yes
+  when: ansible_distribution_major_version | version_compare('10', '>=')
+
+- name: "Secondary Unix groups are present"
+  group:
+    name: "{{ group }}"
+  with_items: "{{ user.groups }}"
+  loop_control:
+    loop_var: group
+  when: user.groups is defined
+
+- name: "Unix user '{{ user.name }}' belongs to secondary groups"
+  user:
+    name: '{{ user.name }}'
+    groups: "{{ user.groups }}"
+    append: yes
+  when: user.groups is defined
+
+- name: "Home directory for '{{ user.name }}' is not accessible by group and other users"
+  file:
+   name: '/home/{{ user.name }}'
+   mode: "0700"
+   state: directory
+
+# Evomaintenance
+
+- name: Search profile for presence of evomaintenance
+  command: 'grep -q "trap.*sudo.*evomaintenance.sh" /home/{{ user.name }}/.profile'
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: grep_profile_evomaintenance
+
+# Don't add the trap if it is present or commented
+- name: "User '{{ user.name }}' has its shell trap for evomaintenance"
+  lineinfile:
+    state: present
+    dest: '/home/{{ user.name }}/.profile'
+    insertafter: EOF
+    line: 'trap "sudo /usr/share/scripts/evomaintenance.sh" 0'
+  when: grep_profile_evomaintenance.rc != 0
+
+# SSH keys
+
+- name: "SSH directory for '{{ user.name }}' is present"
+  file:
+    dest: '/home/{{ user.name }}/.ssh/'
+    state: directory
+    mode: "0700"
+    owner: '{{ user.name }}'
+    group: '{{ user.name }}'
+
+- name: "SSH public key for '{{ user.name }}' is present"
+  authorized_key:
+    user: "{{ user.name }}"
+    key: "{{ user.ssh_key }}"
+    state: present
+  when: user.ssh_key is defined
+
+- name: "SSH public keys for '{{ user.name }}' are present"
+  authorized_key:
+    user: "{{ user.name }}"
+    key: "{{ ssk_key }}"
+    state: present
+  with_items: "{{ user.ssh_keys }}"
+  loop_control:
+    loop_var: ssk_key
+  when: user.ssh_keys is defined
 
 - meta: flush_handlers

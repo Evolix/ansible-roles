@@ -192,7 +192,7 @@ evolinux_nagios_nrpe_include: True
 
 # fail2ban
 
-evolinux_fail2ban_include: True
+evolinux_fail2ban_include: False
 
 # Listupgrade
 

@@ -21,3 +21,4 @@ dependencies:
   - { role: squid, squid_localproxy_enable: True }
   - { role: mysql,        when: packweb_mysql_variant == "debian" }
   - { role: mysql-oracle, when: packweb_mysql_variant == "oracle" }
+  - { role: webapps/evoadmin-web, evoadmin_enable_vhost: "{{ packweb_enable_evoadmin_vhost }}" }
