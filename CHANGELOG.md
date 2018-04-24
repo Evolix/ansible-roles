@@ -13,6 +13,16 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 ### Changed
+
+### Fixed
+
+### Security
+
+## [9.1.9] - 2018-04-24
+
+### Added
+
+### Changed
 * apache: customize logrotate (52 weeks)
 * evolinux: groups for SSH configuration are used with Debian 10 and later
 * evolinux-base: fail2ban is not enabled by default
@@ -20,10 +30,6 @@ The **patch** part changes incrementally at each release.
 * mysql-oracle: copy evolinux config files in mysql.cond.d
 * mysql/mysql-oracle: mysqltuner cron scripts is 0755
 * generate-ldif: add a minifirewall service when /etc/default/minifirewall exists
-
-### Fixed
-
-### Security
 
 ## [9.1.8] - 2018-04-16
 
