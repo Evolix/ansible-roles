@@ -11,6 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* packweb-apache: add preliminary support for containers with multiple PHP versions
 
 ### Changed
 

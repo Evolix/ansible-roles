@@ -71,3 +71,7 @@
 
 - include: fhs_retrictions.yml
   when: packweb_fhs_retrictions
+
+- include: containers.yml
+  when: packweb_apache_containers.0 is defined
+  tags: lxc

@@ -6,6 +6,11 @@ packweb_enable_evoadmin_vhost: True
 packweb_fhs_retrictions: True
 packweb_apache_modphp: True
 packweb_apache_fpm: False
+packweb_apache_lxc_release:
+  php54: 'wheezy'
+  php56: 'jessie'
+  php70: 'stretch'
+packweb_apache_containers: []
 
 packweb_phpmyadmin_suffix: ""
 

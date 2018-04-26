@@ -1,0 +1,71 @@
+---
+- name: Install lxc
+  apt:
+    name: "{{ item }}"
+  with_items:
+  - lxc
+  - python-lxc
+  - xz-utils
+
+- name: Copy default configuration for containers
+  copy:
+    src: lxc.conf
+    dest: /etc/lxc/default.conf
+
+- name: Check php version
+  fail:
+    msg: "PHP version '{{ item }}' is not supported"
+  when: packweb_apache_lxc_release[item] is undefined
+  with_items: "{{ packweb_apache_containers }}"
+
+- name: Create containers
+  command: "lxc-create -n {{ item }} -t download -- --dist debian --release {{ packweb_apache_lxc_release[item] }} --arch amd64"
+  args:
+    creates: "/var/lib/lxc/{{ item }}"
+  with_items: "{{ packweb_apache_containers }}"
+
+- name: Disable network configuration inside container
+  replace:
+    name: "/var/lib/lxc/{{ item }}/rootfs/etc/default/networking"
+    regexp: "^#CONFIGURE_INTERFACES=yes"
+    replace: CONFIGURE_INTERFACES=no
+  with_items: "{{ packweb_apache_containers }}"
+
+- name: Disable interface shut down on halt inside container
+  lineinfile:
+    name: "/var/lib/lxc/{{ item }}/rootfs/etc/default/halt"
+    line: "NETDOWN=no"
+    create: True
+  with_items: "{{ packweb_apache_containers }}"
+
+- name: Make the container poweroff on SIGPWR (sent by lxc-stop) on jessie
+  file:
+    src: /lib/systemd/system/poweroff.target
+    dest: "/var/lib/lxc/{{ item }}/rootfs/etc/systemd/system/sigpwr.target"
+    state: link
+  when: packweb_apache_lxc_release[item] == 'jessie'
+  with_items: "{{ packweb_apache_containers }}"
+
+- name: Add hostname in /etc/hosts
+  lineinfile:
+    name: "/var/lib/lxc/{{ item }}/rootfs/etc/hosts"
+    line: "127.0.0.1 {{ item }}"
+  with_items: "{{ packweb_apache_containers }}"
+
+- name: Fix permission on /dev
+  lineinfile:
+    name: "/var/lib/lxc/{{ item }}/rootfs/etc/rc.local"
+    line: "chmod 755 /dev"
+    insertbefore: "^exit 0$"
+    mode: "0755"
+    create: True
+  with_items: "{{ packweb_apache_containers }}"
+
+- name: Start containers
+  lxc_container:
+    name: "{{ item }}"
+    state: started
+  with_items: "{{ packweb_apache_containers }}"
+
+# TODO : PHP configuration in containers
+
