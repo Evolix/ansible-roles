@@ -24,6 +24,14 @@
     creates: "/var/lib/lxc/{{ item }}"
   with_items: "{{ packweb_apache_containers }}"
 
+- name: Copy resolv.conf in containers
+  copy:
+    src: /etc/resolv.conf
+    dest: "/var/lib/lxc/{{ item }}/rootfs/etc/resolv.conf"
+    remote_src: True
+    mode: "0644"
+  with_items: "{{ packweb_apache_containers }}"
+
 - name: Disable network configuration inside container
   replace:
     name: "/var/lib/lxc/{{ item }}/rootfs/etc/default/networking"
