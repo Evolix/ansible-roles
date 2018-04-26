@@ -34,4 +34,5 @@ evolinux_users:
 
 * `evolinux_sudo_group`: which group to use for sudo (default: `evolinux-sudo`)
 * `evolinux_ssh_group`: which group to use for ssh (default: `evolinux-ssh`)
+* `evolinux_internal_group`: which group to use for all created users (eg. the company name)
 * `evolinux_root_disable_ssh`: disable root's ssh access (default: `True`)
