@@ -31,3 +31,7 @@ evolinux_users:
       - 'ssh-rsa QWERTYUIOP'
       - 'ssh-ed25519 QWERTYUIOP'
 ```
+
+* `evolinux_sudo_group`: which group to use for sudo (default: `evolinux-sudo`)
+* `evolinux_ssh_group`: which group to use for ssh (default: `evolinux-ssh`)
+* `evolinux_root_disable_ssh`: disable root's ssh access (default: `True`)
