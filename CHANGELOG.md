@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 ### Changed
 
 ### Fixed
+* evolinux-users: secondary groups are comma-separated
 
 ### Security
 

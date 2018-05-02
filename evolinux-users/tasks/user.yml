@@ -87,14 +87,18 @@
   with_items: "{{ user.groups }}"
   loop_control:
     loop_var: group
-  when: user.groups is defined
+  when:
+    - user.groups is defined
+    - user.groups != []
 
 - name: "Unix user '{{ user.name }}' belongs to secondary groups"
   user:
     name: '{{ user.name }}'
-    groups: "{{ user.groups }}"
+    groups: "{{ user.groups | join(',') }}"
     append: yes
-  when: user.groups is defined
+  when:
+    - user.groups is defined
+    - user.groups != []
 
 # Permissions on home directory
 
