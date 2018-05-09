@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 ### Changed
+* filebeat: install version 6.x by default
 
 ### Fixed
 * evolinux-users: secondary groups are comma-separated

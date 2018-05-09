@@ -1,5 +1,5 @@
 ---
-elastic_stack_version: "5.x"
+elastic_stack_version: "6.x"
 
 filebeat_kibana_dashboards: False
 filebeat_logstash_plugin: False
