@@ -40,10 +40,6 @@
     name: filebeat
     enabled: yes
 
-# - name: Kibana dashboards are imported
-#   command: /usr/share/filebeat/scripts/import_dashboards
-#   when: filebeat_kibana_dashboards
-
 - name: is logstash-plugin available?
   stat:
     path: /usr/share/logstash/bin/logstash-plugin
