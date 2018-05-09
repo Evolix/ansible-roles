@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 ### Changed
 * filebeat: install version 6.x by default
 * filebeat: cleanup unused code
+* squid: add some domaine and fix broken restrictions
 
 ### Fixed
 * evolinux-users: secondary groups are comma-separated
