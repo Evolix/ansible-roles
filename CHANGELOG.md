@@ -20,6 +20,7 @@ The **patch** part changes incrementally at each release.
 ### Fixed
 * evolinux-users: secondary groups are comma-separated
 * ntpd: fix configuration (server and ACL)
+* varnish: don't fork the process on startup with systemd
 
 ### Security
 
