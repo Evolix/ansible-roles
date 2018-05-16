@@ -18,6 +18,19 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [9.2.0] - 2018-05-16
+
+### Changed
+* filebeat: install version 6.x by default
+* filebeat: cleanup unused code
+* squid: add some domaine and fix broken restrictions
+* elasticsearch: defaults to version 6.x
+
+### Fixed
+* evolinux-users: secondary groups are comma-separated
+* ntpd: fix configuration (server and ACL)
+* varnish: don't fork the process on startup with systemd
+
 ## [9.1.9] - 2018-04-24
 
 ### Added

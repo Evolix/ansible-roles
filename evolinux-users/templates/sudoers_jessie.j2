@@ -4,7 +4,7 @@ Cmnd_Alias      MAINT = /usr/share/scripts/evomaintenance.sh, /usr/share/scripts
 User_Alias      ADMINS = {{ user.name }}
 
 nagios          ALL = NOPASSWD: /usr/lib/nagios/plugins/check_procs
-nagios          ALL = NOPASSWD: /usr/lib/nagios/plugins/check_minifirewall
+nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_minifirewall
 nagios          ALL = (clamav) NOPASSWD: /usr/bin/clamscan /tmp/safe.txt
 
 ADMINS          ALL = (ALL:ALL) ALL

@@ -1,9 +1,8 @@
 ---
 ntpd_servers:
-- 'ntp.evolix.net'
+- 'ntp.evolix.net iburst'
 ntpd_acls:
+- '-4 default kod notrap nomodify nopeer noquery'
+- '-6 default kod notrap nomodify nopeer noquery'
 - '127.0.0.1'
 - '::1'
-- '-4 default ignore'
-- '-6 default ignore'
-
