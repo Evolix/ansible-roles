@@ -11,6 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* elasticsearch: tmpdir configuration compatible with 5.x also
 
 ### Changed
 
