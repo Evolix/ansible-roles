@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 * filebeat: install version 6.x by default
 * filebeat: cleanup unused code
 * squid: add some domaine and fix broken restrictions
+* elasticsearch: defaults to version 6.x
 
 ### Fixed
 * evolinux-users: secondary groups are comma-separated
