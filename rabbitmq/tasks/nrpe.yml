@@ -3,7 +3,7 @@
 - name: check_rabbitmq dependencies
   apt:
     name: python-requests
-    state: installed
+    state: present
 
 - include_role:
     name: remount-usr

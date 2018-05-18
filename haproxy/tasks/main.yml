@@ -2,7 +2,7 @@
 - name: ssl-cert package is installed
   apt:
     name: ssl-cert
-    state: installed
+    state: present
   tags:
   - haproxy
   - packages
@@ -13,7 +13,7 @@
 - name: Install HAProxy package
   apt:
     name: haproxy
-    state: installed
+    state: present
   tags:
   - haproxy
   - packages

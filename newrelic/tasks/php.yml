@@ -39,4 +39,4 @@
 - name: Install package for PHP
   apt:
     name: newrelic-php5
-    state: installed
+    state: present

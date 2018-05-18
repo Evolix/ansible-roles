@@ -2,7 +2,7 @@
 - name: dbus is installed
   apt:
     name: dbus
-    state: installed
+    state: present
 
 - name: Set hostname "{{ evolinux_hostname }}"
   hostname:

@@ -5,7 +5,7 @@
   - name: Install locales
     apt:
       name: locales
-      state: installed
+      state: present
     changed_when: false
 
   - name: Setting default locales

@@ -3,7 +3,7 @@
 - name: patch must be installed
   apt:
     name: patch
-    state: installed
+    state: present
 
 - name: Patch ProFTPd config file
   patch:
