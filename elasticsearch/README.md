@@ -17,7 +17,8 @@ Tasks are extracted in several files, included in `tasks/main.yml` :
 * `elasticsearch_cluster_name`: cluster name ;
 * `elasticsearch_node_name`: node name, defaults to hostname ;
 * `elasticsearch_network_host`: which interfaces to bind to ;
-* `elasticsearch_network_publish_host`: which interface to publish ;
+* `elasticsearch_network_publish_host`: which interface to publish for node-to-node communication (default: `Null`) ;
+* `elasticsearch_http_publish_host`: which interface to publish for clients (default: `Null`) ;
 * `elasticsearch_custom_datadir`: custom datadir ;
 * `elasticsearch_custom_tmpdir`: custom tmpdir ;
 * `elasticsearch_jvm_xms`: mininum heap size reserved for the JVM (default: `2g`).

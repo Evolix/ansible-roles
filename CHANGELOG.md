@@ -12,6 +12,7 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 * elasticsearch: tmpdir configuration compatible with 5.x also
+* elasticsearch: add http.publish_host variable
 
 ### Changed
 

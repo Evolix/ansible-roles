@@ -39,6 +39,16 @@
   tags:
     - config
 
+- name: Configure http publish_host
+  lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "http.publish_host: {{ elasticsearch_http_publish_host }}"
+    regexp: "^http.publish_host:"
+    insertafter: "^http.port:"
+  when: elasticsearch_http_publish_host|default("", True)
+  tags:
+    - config
+
 - name: Configure RESTART_ON_UPGRADE
   lineinfile:
     dest: /etc/default/elasticsearch
