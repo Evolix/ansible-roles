@@ -46,13 +46,19 @@
     option: disable_functions
     value: "exec,shell-exec,system,passthru,putenv,popen"
 
-- name: Custom php.ini for CLI
+- name: Custom php.ini for CLI (jessie)
   copy:
     dest: "{{ phpini_cli_custom_file }}"
-    mode: "0644"
     content: |
       ; Put customized values here.
     force: no
+
+# This task is not merged with the above copy
+# because "force: no" prevents any fix after the fact
+- name: "Permissions for custom php.ini for CLI (jessie)"
+  file:
+    dest: "{{ phpini_cli_custom_file }}"
+    mode: "0644"
 
 - name: "Set custom values for PHP to enable Symfony (jessie)"
   ini_file:
