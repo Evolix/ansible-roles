@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 * kibana: log messages go to /var/log/kibana/kibana.log
 
 ### Changed
+* rbenv: install Ruby 2.5.1 by default
 
 ### Fixed
 
