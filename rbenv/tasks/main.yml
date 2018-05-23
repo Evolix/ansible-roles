@@ -1,31 +1,33 @@
 ---
 
-- name: Rbenv dependencies are installed
+- name: "Rbenv dependencies are installed"
   apt:
     name: '{{ item }}'
     state: present
   with_items:
-  - build-essential
-  - git
-  - libcurl4-openssl-dev
-  - libffi-dev
-  - libreadline-dev
-  - libssl-dev
-  - libxml2-dev
-  - libxslt1-dev
-  - zlib1g-dev
+    - build-essential
+    - git
+    - libcurl4-openssl-dev
+    - libffi-dev
+    - libreadline-dev
+    - libssl-dev
+    - libxml2-dev
+    - libxslt1-dev
+    - zlib1g-dev
   tags:
-  - rbenv
-  - packages
+    - rbenv
+    - packages
 
-- name: gemrc for {{ username }}
+- name: "gemrc for {{ username }}"
   copy:
     src: gemrc
     dest: "~{{ username }}/.gemrc"
     owner: '{{ username }}'
     group: '{{ username }}'
+  tags:
+    - rbenv
 
-- name: Rbenv repository is checked out for {{ username }}
+- name: "Rbenv repository is checked out for {{ username }}"
   git:
     repo: '{{ rbenv_repo }}'
     dest: '{{ rbenv_root }}'
@@ -35,25 +37,27 @@
   become_user: "{{ username }}"
   become: yes
   tags:
-  - rbenv
+    - rbenv
 
-- name: default gems are installed for {{ username }}
   copy:
     src: default-gems
+- name: "default gems are installed for {{ username }}"
     dest: '{{ rbenv_root }}/default-gems'
     owner: '{{ username }}'
     group: '{{ username }}'
+  tags:
+    - rbenv
 
-- name: plugins directory for {{ username }}
+- name: "plugins directory for {{ username }}"
   file:
     path: '{{ rbenv_root }}/plugins'
     state: directory
   become_user: "{{ username }}"
   become: yes
   tags:
-  - rbenv
+    - rbenv
 
-- name: plugins are installed for {{ username }}
+- name: "plugins are installed for {{ username }}"
   git:
     repo: '{{ item.repo }}'
     dest: '{{ rbenv_root }}/plugins/{{ item.name }}'
@@ -65,9 +69,9 @@
   become_user: "{{ username }}"
   become: yes
   tags:
-  - rbenv
+    - rbenv
 
-- name: Rbenv is initialized in profile for {{ username }}
+- name: "Rbenv is initialized in profile for {{ username }}"
   blockinfile:
     dest: '~{{ username }}/.profile'
     block: |
@@ -77,9 +81,9 @@
   become_user: "{{ username }}"
   become: yes
   tags:
-  - rbenv
+    - rbenv
 
-- name: is Ruby {{ rbenv_ruby_version }} available for {{ username }} ?
+- name: "is Ruby {{ rbenv_ruby_version }} available for {{ username }} ?"
   shell: /bin/bash -lc "rbenv versions | grep {{ rbenv_ruby_version }}"
   args:
     warn: no
@@ -89,9 +93,9 @@
   become_user: "{{ username }}"
   become: yes
   tags:
-  - rbenv
+    - rbenv
 
-- name: Ruby {{ rbenv_ruby_version }} is available for {{ username }} (be patient... could be long)
+- name: "Ruby {{ rbenv_ruby_version }} is available for {{ username }} (be patient... could be long)"
   shell: /bin/bash -lc "TMPDIR=~/tmp rbenv install {{ rbenv_ruby_version }}"
   args:
     warn: no
@@ -99,9 +103,9 @@
   become_user: "{{ username }}"
   become: yes
   tags:
-  - rbenv
+    - rbenv
 
-- name: is Ruby {{ rbenv_ruby_version }} selected for {{ username }} ?
+- name: "is Ruby {{ rbenv_ruby_version }} selected for {{ username }} ?"
   shell: /bin/bash -lc "rbenv version | cut -d ' ' -f 1 | grep -Fx '{{ rbenv_ruby_version }}'"
   args:
     warn: no
@@ -111,9 +115,9 @@
   become_user: "{{ username }}"
   become: yes
   tags:
-  - rbenv
+    - rbenv
 
-- name: select Ruby {{ rbenv_ruby_version }} for {{ username }}
+- name: "select Ruby {{ rbenv_ruby_version }} for {{ username }}"
   shell: /bin/bash -lc "rbenv global {{ rbenv_ruby_version }} && rbenv rehash"
   args:
     warn: no
@@ -121,4 +125,4 @@
   become_user: "{{ username }}"
   become: yes
   tags:
-  - rbenv
+    - rbenv
