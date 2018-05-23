@@ -39,12 +39,16 @@
   tags:
     - rbenv
 
-  copy:
-    src: default-gems
 - name: "default gems are installed for {{ username }}"
+  lineinfile:
     dest: '{{ rbenv_root }}/default-gems'
+    line: "{{ item }}"
     owner: '{{ username }}'
     group: '{{ username }}'
+    create: yes
+  with_items: '{{ rbenv_default_gems }}'
+  become_user: "{{ username }}"
+  become: yes
   tags:
     - rbenv
 
