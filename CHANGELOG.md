@@ -16,11 +16,12 @@ The **patch** part changes incrementally at each release.
 * kibana: log messages go to /var/log/kibana/kibana.log
 
 ### Changed
+* evolinux-users: add sudo right for bkctld check
+* minifirewall: the tail file can be overwritten, or not (default: `True`)
+* nagios-nrpe: change nrpe check for bkctld command
 * rbenv: install Ruby 2.5.1 by default
 * rbenv: switch from copy to lineinfile for default gems
 * squid: whiteliste some news sites
-* nagios-nrpe: change nrpe check for bkctld command
-* evolinux-users: add sudo right for bkctld check
 
 ### Fixed
 

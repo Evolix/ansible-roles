@@ -3,7 +3,7 @@
   template:
     src: "{{ item }}"
     dest: /etc/default/minifirewall.tail
-    force: yes
+    force: "{{ minifirewall_tail_force | bool | ternary('yes', 'no') }}"
   with_first_found:
   - "templates/minifirewall-tail/minifirewall.{{ inventory_hostname }}.tail.j2"
   - "templates/minifirewall-tail/minifirewall.{{ host_group }}.tail.j2"
