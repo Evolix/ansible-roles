@@ -7,6 +7,8 @@ mysql_scripts_dir: Null
 
 mysql_variant: oracle
 
+mysql_install_libclient: False
+
 mysql_replace_root_with_mysqladmin: True
 
 mysql_custom_datadir: ''

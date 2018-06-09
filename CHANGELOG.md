@@ -14,6 +14,7 @@ The **patch** part changes incrementally at each release.
 * elasticsearch: tmpdir configuration compatible with 5.x also
 * elasticsearch: add http.publish_host variable
 * kibana: log messages go to /var/log/kibana/kibana.log
+* mysql: add an option to install the client development  libraries (default: `False`)
 
 ### Changed
 * evolinux-users: add sudo permission for bkctld check

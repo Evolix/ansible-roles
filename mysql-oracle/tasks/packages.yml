@@ -36,10 +36,21 @@
   with_items:
     - mysql-server
     - mysql-client
+  tags:
+    - mysql
+    - packages
+
+- name: Install MySQL dev packages
+  apt:
+    name: '{{ item }}'
+    update_cache: yes
+    state: present
+  with_items:
     - libmysqlclient20
   tags:
     - mysql
     - packages
+  when: mysql_install_libclient
 
 - include_role:
     name: remount-usr
