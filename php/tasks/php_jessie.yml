@@ -5,18 +5,18 @@
     name: '{{ item }}'
     state: present
   with_items:
-  - php5-cli
-  - php5-gd
-  - php5-imap
-  - php5-ldap
-  - php5-mcrypt
-  - php5-mysql
-  - php5-pgsql
-  - php-gettext
-  - php5-intl
-  - php5-curl
-  - php5-ssh2
-  - libphp-phpmailer
+    - php5-cli
+    - php5-gd
+    - php5-imap
+    - php5-ldap
+    - php5-mcrypt
+    - php5-mysql
+    - php5-pgsql
+    - php-gettext
+    - php5-intl
+    - php5-curl
+    - php5-ssh2
+    - libphp-phpmailer
 
 - name: "Set php.ini config for CLI (jessie)"
   set_fact:
@@ -32,12 +32,12 @@
     mode: "0644"
     create: yes
   with_items:
-  - { option: "short_open_tag", value: "Off" }
-  - { option: "expose_php", value: "Off" }
-  - { option: "display_errors", value: "Off" }
-  - { option: "log_errors", value: "On" }
-  - { option: "html_errors", value: "Off" }
-  - { option: "allow_url_fopen", value: "Off" }
+    - { option: "short_open_tag", value: "Off" }
+    - { option: "expose_php", value: "Off" }
+    - { option: "display_errors", value: "Off" }
+    - { option: "log_errors", value: "On" }
+    - { option: "html_errors", value: "Off" }
+    - { option: "allow_url_fopen", value: "Off" }
 
 - name: "Disable PHP functions for CLI (jessie)"
   ini_file:
@@ -68,5 +68,5 @@
     value: "{{ item.value }}"
     mode: "0644"
   with_items:
-  - { option: "date.timezone", value: "Europe/Paris" }
+    - { option: "date.timezone", value: "Europe/Paris" }
   when: php_symfony_requirements
