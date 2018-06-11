@@ -1,0 +1,35 @@
+---
+
+- name: Symlink Evolix CLI config files from 7.2 to 7.0
+  file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    force: yes
+    state: link
+  with_items:
+    - { src: "{{ php_cli_defaults_ini_file }}", dest: "/etc/php/7.2/cli/conf.d/z-evolinux-defaults.ini" }
+    - { src: "{{ php_cli_custom_ini_file }}", dest: "/etc/php/7.2/cli/conf.d/zzz-evolinux-custom.ini" }
+
+- name: Symlink Evolix Apache config files from 7.2 to 7.0
+  file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    force: yes
+    state: link
+  with_items:
+    - { src: "{{ php_apache_defaults_ini_file }}", dest: "/etc/php/7.2/apache2/conf.d/z-evolinux-defaults.ini" }
+    - { src: "{{ php_apache_custom_ini_file }}", dest: "/etc/php/7.2/apache2/conf.d/zzz-evolinux-custom.ini" }
+  when: php_apache_enable
+
+- name: Symlink Evolix FPM config files from 7.2 to 7.0
+  file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    force: yes
+    state: link
+  with_items:
+    - { src: "{{ php_fpm_defaults_ini_file }}", dest: "/etc/php/7.2/fpm/conf.d/z-evolinux-defaults.ini" }
+    - { src: "{{ php_fpm_custom_ini_file }}", dest: "/etc/php/7.2/fpm/conf.d/zzz-evolinux-custom.ini" }
+    - { src: "{{ php_fpm_defaults_conf_file }}", dest: "/etc/php/7.2/fpm/pool.d/z-evolinux-defaults.conf" }
+    - { src: "{{ php_fpm_custom_conf_file }}", dest: "/etc/php/7.2/fpm/pool.d/zzz-evolinux-custom.conf" }
+  when: php_fpm_enable

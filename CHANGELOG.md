@@ -21,6 +21,7 @@ The **patch** part changes incrementally at each release.
 * evolinux-users: add sudo permission for bkctld check
 * minifirewall: the tail file can be overwritten, or not (default: `True`)
 * nagios-nrpe: use bkctld internal check instead of nrpe plugin
+* php: reorganization of the role for Sury overrides and more clear configuration
 * rbenv: change default Ruby version (2.5.1)
 * rbenv: switch from copy to lineinfile for default gems
 * squid: add a few news sites to the whitelist

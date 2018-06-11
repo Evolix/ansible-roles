@@ -1,0 +1,60 @@
+---
+
+- name: "Set config files paths (jessie)"
+  set_fact:
+    php_cli_defaults_ini_file: /etc/php5/cli/conf.d/z-evolinux-defaults.ini
+    php_cli_custom_ini_file: /etc/php5/cli/conf.d/zzz-evolinux-custom.ini
+    php_apache_defaults_ini_file: /etc/php5/apache2/conf.d/z-evolinux-defaults.ini
+    php_apache_custom_ini_file: /etc/php5/apache2/conf.d/zzz-evolinux-custom.ini
+    php_fpm_defaults_ini_file: /etc/php5/fpm/conf.d/z-evolinux-defaults.ini
+    php_fpm_custom_ini_file: /etc/php5/fpm/conf.d/zzz-evolinux-custom.ini
+    php_fpm_defaults_conf_file: /etc/php5/fpm/pool.d/z-evolinux-defaults.conf
+    php_fpm_custom_conf_file: /etc/php5/fpm/pool.d/zzz-evolinux-custom.conf
+
+# Packages
+
+- name: "Install PHP packages (jessie)"
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - php5-cli
+    - php5-gd
+    - php5-imap
+    - php5-ldap
+    - php5-mcrypt
+    - php5-mysql
+    - php5-pgsql
+    - php-gettext
+    - php5-intl
+    - php5-curl
+    - php5-ssh2
+    - libphp-phpmailer
+
+- name: "Install mod_php packages (jessie)"
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - libapache2-mod-php5
+    - php5
+  when: php_apache_enable
+
+- name: "Install PHP FPM packages (jessie)"
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - php5-fpm
+    - php5
+  when: php_fpm_enable
+
+# Configuration
+
+- include: config_cli.yml
+
+- include: config_fpm.yml
+  when: php_fpm_enable
+
+- include: config_apache.yml
+  when: php_apache_enable

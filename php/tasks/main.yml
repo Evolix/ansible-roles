@@ -5,18 +5,8 @@
   when:
   - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
 
-- include: php_jessie.yml
+- include: main_jessie.yml
   when: ansible_distribution_release == "jessie"
 
-- include: php_stretch_sury.yml
-  when: ansible_distribution_major_version | version_compare('9', '>=') and php_sury_enable
-
-- include: php_stretch.yml
+- include: main_stretch.yml
   when: ansible_distribution_major_version | version_compare('9', '>=')
-
-- include: fpm.yml
-  when: php_fpm_enable
-
-- include: apache.yml
-  when: php_apache_enable
-

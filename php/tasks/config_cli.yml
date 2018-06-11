@@ -1,31 +1,7 @@
 ---
-
-- name: "Install PHP packages (jessie)"
-  apt:
-    name: '{{ item }}'
-    state: present
-  with_items:
-    - php5-cli
-    - php5-gd
-    - php5-imap
-    - php5-ldap
-    - php5-mcrypt
-    - php5-mysql
-    - php5-pgsql
-    - php-gettext
-    - php5-intl
-    - php5-curl
-    - php5-ssh2
-    - libphp-phpmailer
-
-- name: "Set php.ini config for CLI (jessie)"
-  set_fact:
-    phpini_cli_defaults_file: /etc/php5/cli/conf.d/z-evolinux-defaults.ini
-    phpini_cli_custom_file: /etc/php5/cli/conf.d/zzz-evolinux-custom.ini
-
 - name: "Set default php.ini values for CLI (jessie)"
   ini_file:
-    dest: "{{ phpini_cli_defaults_file }}"
+    dest: "{{ php_cli_defaults_ini_file }}"
     section: PHP
     option: "{{ item.option }}"
     value: "{{ item.value }}"
@@ -41,14 +17,14 @@
 
 - name: "Disable PHP functions for CLI (jessie)"
   ini_file:
-    dest: "{{ phpini_cli_defaults_file }}"
+    dest: "{{ php_cli_defaults_ini_file }}"
     section: PHP
     option: disable_functions
     value: "exec,shell-exec,system,passthru,putenv,popen"
 
 - name: Custom php.ini for CLI (jessie)
   copy:
-    dest: "{{ phpini_cli_custom_file }}"
+    dest: "{{ php_cli_custom_ini_file }}"
     content: |
       ; Put customized values here.
     force: no
@@ -57,12 +33,12 @@
 # because "force: no" prevents any fix after the fact
 - name: "Permissions for custom php.ini for CLI (jessie)"
   file:
-    dest: "{{ phpini_cli_custom_file }}"
+    dest: "{{ php_cli_custom_ini_file }}"
     mode: "0644"
 
 - name: "Set custom values for PHP to enable Symfony (jessie)"
   ini_file:
-    dest: "{{ phpini_cli_custom_file }}"
+    dest: "{{ php_cli_custom_ini_file }}"
     section: PHP
     option: "{{ item.option }}"
     value: "{{ item.value }}"

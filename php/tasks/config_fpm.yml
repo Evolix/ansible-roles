@@ -1,42 +1,8 @@
 ---
 
-- name: "Install PHP FPM packages (jessie)"
-  apt:
-    name: '{{ item }}'
-    state: present
-  with_items:
-    - php5-fpm
-    - php5
-  when: ansible_distribution_release == "jessie"
-
-- name: "Install PHP FPM packages (Debian 9 or later)"
-  apt:
-    name: '{{ item }}'
-    state: present
-  with_items:
-    - php-fpm
-    - php
-  when: ansible_distribution_major_version | version_compare('9', '>=')
-
-- name: "Set config files for FPM (jessie)"
-  set_fact:
-    phpini_fpm_defaults_file: /etc/php5/fpm/conf.d/z-evolinux-defaults.ini
-    phpini_fpm_custom_file: /etc/php5/fpm/conf.d/zzz-evolinux-custom.ini
-    php_fpm_defaults_file: /etc/php5/fpm/pool.d/z-evolinux-defaults.conf
-    php_fpm_custom_file: /etc/php5/fpm/pool.d/zzz-evolinux-custom.conf
-  when: ansible_distribution_release == "jessie"
-
-- name: "Set config files for FPM (Debian 9 or later)"
-  set_fact:
-    phpini_fpm_defaults_file: /etc/php/7.0/fpm/conf.d/z-evolinux-defaults.ini
-    phpini_fpm_custom_file: /etc/php/7.0/fpm/conf.d/zzz-evolinux-custom.ini
-    php_fpm_defaults_file: /etc/php/7.0/fpm/pool.d/z-evolinux-defaults.conf
-    php_fpm_custom_file: /etc/php/7.0/fpm/pool.d/zzz-evolinux-custom.conf
-  when: ansible_distribution_major_version | version_compare('9', '>=')
-
 - name: Set default php.ini values for FPM
   ini_file:
-    dest: "{{ phpini_fpm_defaults_file }}"
+    dest: "{{ php_fpm_defaults_ini_file }}"
     section: PHP
     option: "{{ item.option }}"
     value: "{{ item.value }}"
@@ -53,7 +19,7 @@
 
 - name: Disable PHP functions for FPM
   ini_file:
-    dest: "{{ phpini_fpm_defaults_file }}"
+    dest: "{{ php_fpm_defaults_ini_file }}"
     section: PHP
     option: disable_functions
     value: "exec,shell-exec,system,passthru,putenv,popen"
@@ -61,7 +27,7 @@
 
 - name: Custom php.ini for FPM
   copy:
-    dest: "{{ phpini_fpm_custom_file }}"
+    dest: "{{ php_fpm_custom_ini_file }}"
     content: |
       ; Put customized values here.
     force: no
@@ -69,7 +35,7 @@
 
 - name: Set default PHP FPM values
   ini_file:
-    dest: "{{ php_fpm_defaults_file }}"
+    dest: "{{ php_fpm_defaults_conf_file }}"
     section: www
     option: "{{ item.option }}"
     value: "{{ item.value }}"
@@ -89,7 +55,7 @@
 
 - name: Custom PHP FPM values
   copy:
-    dest: "{{ php_fpm_custom_file }}"
+    dest: "{{ php_fpm_custom_conf_file }}"
     content: |
       ; Put customized values here.
       ; default_charset = "ISO-8859-1"
@@ -99,7 +65,7 @@
 
 - name: "Set custom values for PHP to enable Symfony"
   ini_file:
-    dest: "{{ phpini_cli_custom_file }}"
+    dest: "{{ php_cli_custom_ini_file }}"
     section: PHP
     option: "{{ item.option }}"
     value: "{{ item.value }}"

@@ -21,3 +21,20 @@
     repo: "deb https://packages.sury.org/php/ stretch main"
     filename: sury
     state: present
+
+- name: "Override package list for Sury (Debian 9 or later)"
+  set_fact:
+    php_stretch_packages:
+      - php-cli
+      - php-gd
+      - php-intl
+      - php-imap
+      - php-ldap
+      - php-mysql
+      # php-mcrypt is no longer packaged for PHP 7.2
+      - php-pgsql
+      - php-gettext
+      - php-curl
+      - php-ssh2
+      - composer
+      - libphp-phpmailer
