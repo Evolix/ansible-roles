@@ -1,6 +1,6 @@
 ---
 
-- name: "Set config files paths (jessie)"
+- name: "Set variables (jessie)"
   set_fact:
     php_cli_defaults_ini_file: /etc/php5/cli/conf.d/z-evolinux-defaults.ini
     php_cli_custom_ini_file: /etc/php5/cli/conf.d/zzz-evolinux-custom.ini
@@ -10,6 +10,7 @@
     php_fpm_custom_ini_file: /etc/php5/fpm/conf.d/zzz-evolinux-custom.ini
     php_fpm_defaults_conf_file: /etc/php5/fpm/pool.d/z-evolinux-defaults.conf
     php_fpm_custom_conf_file: /etc/php5/fpm/pool.d/zzz-evolinux-custom.conf
+    php_fpm_service_name: php5-fpm
 
 # Packages
 
