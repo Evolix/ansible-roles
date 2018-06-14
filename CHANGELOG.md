@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 * kibana: log messages go to /var/log/kibana/kibana.log
 * mysql: add an option to install the client development  libraries (default: `False`)
 * java: support for Oracle JRE
+* nagios-nrpe: add check_postgrey
 
 ### Changed
 * evolinux-users: add sudo permission for bkctld check
