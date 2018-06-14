@@ -10,7 +10,7 @@
     php_fpm_custom_ini_file: /etc/php/7.0/fpm/conf.d/zzz-evolinux-custom.ini
     php_fpm_defaults_conf_file: /etc/php/7.0/fpm/pool.d/z-evolinux-defaults.conf
     php_fpm_custom_conf_file: /etc/php/7.0/fpm/pool.d/zzz-evolinux-custom.conf
-    php_fpm_service_name: php5-fpm
+    php_fpm_service_name: php-fpm
 
 # Packages
 
