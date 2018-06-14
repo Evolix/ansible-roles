@@ -1,4 +1,8 @@
 ---
+- name: Choose packages (Oracle)
+  set_fact:
+    multi: "multi_"
+  when: memcached_instance_name != False
 
 - name: is Munin present ?
   stat:
@@ -21,7 +25,7 @@
   - name: Enable core Munin plugins
     file:
       src: '/usr/share/munin/plugins/memcached_'
-      dest: /etc/munin/plugins/{{ item }}
+      dest: /etc/munin/plugins/{{ multi }}{{ item }}
       state: link
     with_items:
       - memcached_bytes
