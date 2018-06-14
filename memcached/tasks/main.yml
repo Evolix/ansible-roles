@@ -13,6 +13,7 @@
   notify: restart memcached
   tags:
   - memcached
+  when: memcached_instance_name == False
 
 - name: Memcached is running and enabled on boot.
   service:
@@ -21,6 +22,74 @@
     state: started
   tags:
   - memcached
+  when: memcached_instance_name == False
+
+- name: Add systemd template
+  copy:
+    src: memcached@.service
+    dest: /etc/systemd/system/memcached@.service
+  tags:
+  - memcached
+  when: memcached_instance_name != False
+
+- name: Delete default memcached systemd configuration file
+  file:
+    path: /etc/systemd/system/multi-user.target.wants/memcached.service
+    state: absent
+  tags:
+  - memcached
+  when: memcached_instance_name != False
+
+- name: Create a symbolic link to memcached@.service
+  file:
+    src: /etc/systemd/system/memcached@.service
+    dest: /etc/systemd/system/multi-user.target.wants/memcached@{{ memcached_instance_name }}.service
+    state: link
+  tags:
+  - memcached
+  when: memcached_instance_name != False
+
+- name: Make sure memcached.conf is absent
+  file:
+    path: /etc/memcached.conf
+    state: absent
+  tags:
+  - memcached
+  when: memcached_instance_name != False
+
+- name: Create a configuration file
+  template:
+    src: memcached.conf.j2
+    dest: /etc/memcached_{{ memcached_instance_name }}.conf
+    mode: "0644"
+  tags:
+  - memcached
+  when: memcached_instance_name != False
+
+- name: Reload systemd configuration
+  sudo: yes
+  command: "systemctl daemon-reload"
+  tags:
+  - memcached
+  when: memcached_instance_name != False
+
+# Ansible 2.4 and above
+#- name: Reload systemd configuration
+#  systemd:
+#    daemon_reload: yes
+#  tags:
+#  - memcached
+#  when: memcached_instance_name != False
+
+- name: Enable and start the memcached instance
+  systemd:
+    name: memcached@{{ memcached_instance_name }}
+    enabled: yes
+    state: started
+    masked: no
+  tags:
+  - memcached
+  when: memcached_instance_name != False
 
 - include: munin.yml
 - include: nrpe.yml
