@@ -52,10 +52,29 @@
 
 # Configuration
 
+- name: Enforce permissions on PHP directory
+  file:
+    dest: /etc/php5
+    mode: "0755"
+
 - include: config_cli.yml
+- name: Enforce permissions on PHP cli directory
+  file:
+    dest: /etc/php5/cli
+    mode: "0755"
 
 - include: config_fpm.yml
   when: php_fpm_enable
+- name: Enforce permissions on PHP fpm directory
+  file:
+    dest: /etc/php5/fpm
+    mode: "0755"
+  when: php_fpm_enable
 
 - include: config_apache.yml
+  when: php_apache_enable
+- name: Enforce permissions on PHP apache2 directory
+  file:
+    dest: /etc/php5/apache2
+    mode: "0755"
   when: php_apache_enable
