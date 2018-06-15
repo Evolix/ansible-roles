@@ -29,6 +29,7 @@ The **patch** part changes incrementally at each release.
 * java8: renamed to java (java8 symlinked to java for backward compatibility)
 
 ### Fixed
+* mysql-oracle: fix configuration directory variable
 
 ### Security
 
