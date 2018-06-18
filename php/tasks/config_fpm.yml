@@ -45,7 +45,7 @@
     - { option: "pm", value: "ondemand" }
     - { option: "pm.max_children", value: "100" }
     - { option: "pm.process_idle_timeout", value: "10s" }
-    - { option: "slowlog", value: "log/$pool.log.slow" }
+    - { option: "slowlog", value: "/var/log/$pool.log.slow" }
     - { option: "request_slowlog_timeout", value: "5s" }
     - { option: "pm.status_path", value: "/fpm_status" }
     - { option: "request_terminate_timeout", value: "60s" }
