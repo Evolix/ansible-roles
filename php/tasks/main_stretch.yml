@@ -62,7 +62,7 @@
 
 - name: Enforce permissions on PHP directory
   file:
-    dest: "{{ item ss}}"
+    dest: "{{ item }}"
     mode: "0755"
   with_items:
     - /etc/php
