@@ -31,6 +31,7 @@ The **patch** part changes incrementally at each release.
 ### Fixed
 * mysql-oracle: fix configuration directory variable
 * php: fpm slowlog needs an absolute path
+* evoacme: fix module detection in apache config
 
 ### Security
 
