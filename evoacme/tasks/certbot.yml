@@ -34,6 +34,12 @@
     removes: /etc/cron.d/certbot
     creates: /etc/cron.d/certbot.disabled
 
+- name: Disable /etc/cron.daily/certbot
+  command: mv /etc/cron.daily/certbot /etc/cron.daily/certbot.disabled
+  args:
+    removes: /etc/cron.daily/certbot
+    creates: /etc/cron.daily/certbot.disabled
+
 - name: Install evoacme custom cron
   copy:
     src: evoacme.cron

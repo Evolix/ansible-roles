@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 * elasticsearch: tmpdir configuration compatible with 5.x also
 * elasticsearch: add http.publish_host variable
+* evoacme: disable old certbot cron also in cron.daily
 * kibana: log messages go to /var/log/kibana/kibana.log
 * mysql: add an option to install the client development  libraries (default: `False`)
 * java: support for Oracle JRE
