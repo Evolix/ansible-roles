@@ -28,6 +28,7 @@ The **patch** part changes incrementally at each release.
 * rbenv: switch from copy to lineinfile for default gems
 * squid: add a few news sites to the whitelist
 * java8: renamed to java (java8 symlinked to java for backward compatibility)
+* redmine: use .my.cnf for mysql password
 
 ### Fixed
 * mysql-oracle: fix configuration directory variable
