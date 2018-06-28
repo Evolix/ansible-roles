@@ -1,0 +1,41 @@
+---
+
+- name: APT https transport is enabled
+  apt:
+    name: apt-transport-https
+    state: present
+  tags:
+  - metricbeat
+  - packages
+
+- name: Elastic GPG key is installed
+  apt_key:
+    # url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    data: "{{ lookup('file', 'elasticsearch.key') }}"
+    state: present
+  tags:
+  - metricbeat
+  - packages
+
+- name: Elastic sources list is available
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
+    filename: elastic
+    state: present
+    update_cache: yes
+  tags:
+  - metricbeat
+  - packages
+
+- name: Metricbeat is installed
+  apt:
+    name: metricbeat
+    state: present
+  tags:
+  - metricbeat
+  - packages
+
+- name: Metricbeat service is enabled
+  systemd:
+    name: metricbeat
+    enabled: yes

@@ -19,6 +19,7 @@ The **patch** part changes incrementally at each release.
 * java: support for Oracle JRE
 * nagios-nrpe: add check_postgrey
 * evolinux-base: add mail related aliases
+* metricbeat: add a role (copied from filebeat)
 
 ### Changed
 * evolinux-users: add sudo permission for bkctld check
