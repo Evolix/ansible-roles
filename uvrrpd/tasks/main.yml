@@ -1,0 +1,32 @@
+---
+- include_role:
+    name: remount-usr
+  tags:
+  - uvrrpd
+
+- name: Get uvrrpd sources
+  unarchive:
+    src: 'https://github.com/Evolix/uvrrpd/archive/master.zip'
+    dest: /root/
+    remote_src: True
+    mode: "0755"
+  tags:
+  - uvrrpd
+
+- name: Pre-build configure
+  shell: 'cd /root/uvrrpd-master/;autoreconf -i;./configure'
+  tags:
+  - uvrrpd
+
+- name: Make 
+  make:
+    chdir: /root/uvrrpd-master/
+  tags:
+  - uvrrpd
+
+- name: Make install
+  make:
+    chdir: /root/uvrrpd-master/
+    target: install
+  tags:
+  - uvrrpd
