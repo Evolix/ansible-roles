@@ -1,18 +1,50 @@
-#!/bin/bash
+#!/bin/sh
+
+set -u
 
 TOMCAT_ROOT='{{ tomcat_instance_root }}'
-alert=0
 
-for instance in $(ls $TOMCAT_ROOT); do
-        port=$(id -u $instance)
-        if [ -h ${TOMCAT_ROOT}/${instance}/.config/systemd/user/default.target.wants/tomcat.service ]; then
-                echo -n "$instance ($port) : "
-                /usr/lib/nagios/plugins/check_tcp -p $port
-                ret=$?
-                if [ $ret != 0 ]; then
-                        alert=$ret
-                fi
+return=0
+nb_crit=0
+nb_warn=0
+nb_ok=0
+nb_unchk=0
+output=""
+
+instances=$(ls "${TOMCAT_ROOT}")
+for instance in ${instances}; do
+    port=$(id -u "${instance}")
+    if [ -h "${TOMCAT_ROOT}/${instance}/.config/systemd/user/default.target.wants/tomcat.service" ]; then
+        /usr/lib/nagios/plugins/check_tcp -p "${port}" >/dev/null 2>&1
+        ret="${?}"
+        if [ "${ret}" -ge 2 ]; then
+            nb_crit=$((nb_crit + 1))
+            output="${output}CRITICAL - ${instance} (${port})\n"
+            [ "${return}" -le 2 ] && return=2
+        elif [ "${ret}" -ge 1 ]; then
+            nb_warn=$((nb_warn + 1))
+            output="${output}WARNING - ${instance} (${port})\n"
+            [ "${return}" -le 1 ] && return=1
+        else
+            nb_ok=$((nb_ok + 1))
+            output="${output}OK - ${instance} (${port})\n"
+            [ "${return}" -le 0 ] && return=0
         fi
+    else
+        nb_unchk=$((nb_unchk + 1))
+        output="${output}UNCHK - ${instance} (${port})\n"
+    fi
 done
 
-exit $alert
+[ "${return}" -ge 0 ] && header="OK"
+[ "${return}" -ge 1 ] && header="WARNING"
+[ "${return}" -ge 2 ] && header="CRITICAL"
+
+printf "%s - %s UNCHK / %s CRIT / %s WARN / %s OK\n\n" "${header}" "${nb_unchk}" "${nb_crit}" "${nb_warn}" "${nb_ok}"
+
+printf "${output}" | grep -E "^CRITICAL"
+printf "${output}" | grep -E "^WARNING"
+printf "${output}" | grep -E "^OK"
+printf "${output}" | grep -E "^UNCHK"
+
+exit "${return}"

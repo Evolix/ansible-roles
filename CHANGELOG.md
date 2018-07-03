@@ -30,6 +30,7 @@ The **patch** part changes incrementally at each release.
 * squid: add a few news sites to the whitelist
 * java8: renamed to java (java8 symlinked to java for backward compatibility)
 * redmine: use .my.cnf for mysql password
+* tomcat: better nrpe check output
 
 ### Fixed
 * mysql-oracle: fix configuration directory variable
