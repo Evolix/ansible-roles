@@ -1,9 +1,16 @@
 ---
+- name: "Is uvrrpd already installed ?"
+  stat:
+    path: /usr/local/sbin/uvrrpd
+  check_mode: no
+  register: uvrrpd_test
+
 - name: Make sure unzip is present
   command: 'dpkg -l unzip'
   check_mode: no
   ignore_errors: yes
   register: unzip_is_installed
+  when: not uvrrpd_test.stat.exists
   tags:
   - uvrrpd
 
@@ -12,6 +19,7 @@
   check_mode: no
   ignore_errors: yes
   register: autoreconf_is_installed
+  when: not uvrrpd_test.stat.exists
   tags:
   - uvrrpd
 
@@ -21,6 +29,7 @@
   with_items:
     - unzip
     - dh-autoreconf
+  when: not uvrrpd_test.stat.exists
   tags:
   - uvrrpd
 
@@ -30,22 +39,26 @@
     dest: /root/
     remote_src: True
     mode: "0755"
+  when: not uvrrpd_test.stat.exists
   tags:
   - uvrrpd
 
 - name: Pre-build configure
   shell: 'cd /root/uvrrpd-master/;autoreconf -i;./configure'
+  when: not uvrrpd_test.stat.exists
   tags:
   - uvrrpd
 
 - name: Make 
   make:
     chdir: /root/uvrrpd-master/
+  when: not uvrrpd_test.stat.exists
   tags:
   - uvrrpd
 
 - include_role:
     name: remount-usr
+  when: not uvrrpd_test.stat.exists
   tags:
   - uvrrpd
 
@@ -53,6 +66,7 @@
   make:
     chdir: /root/uvrrpd-master/
     target: install
+  when: not uvrrpd_test.stat.exists
   tags:
   - uvrrpd
 
@@ -60,7 +74,9 @@
   apt:
     name: unzip
     state: absent
-  when: unzip_is_installed.rc == 0 
+  when:
+    - not uvrrpd_test.stat.exists
+    - unzip_is_installed.rc == 0 
   tags:
   - uvrrpd
 
@@ -68,6 +84,8 @@
   apt:
     name: dh-autoreconf
     state: absent
-  when: autoreconf_is_installed.rc == 0 
+  when:
+    - not uvrrpd_test.stat.exists
+    - autoreconf_is_installed.rc == 0 
   tags:
   - uvrrpd
