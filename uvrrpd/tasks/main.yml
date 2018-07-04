@@ -1,6 +1,26 @@
 ---
-- include_role:
-    name: remount-usr
+- name: Make sure unzip is present
+  command: 'dpkg -l unzip'
+  check_mode: no
+  ignore_errors: yes
+  register: unzip_is_installed
+  tags:
+  - uvrrpd
+
+- name: Make sure dh-autoreconf is present
+  command: 'dpkg -l dh-autoreconf'
+  check_mode: no
+  ignore_errors: yes
+  register: autoreconf_is_installed
+  tags:
+  - uvrrpd
+
+- name: Make sure unzip and dh-autoreconf are installed
+  apt:
+    name: "{{item}}"
+  with_items:
+    - unzip
+    - dh-autoreconf
   tags:
   - uvrrpd
 
@@ -24,9 +44,30 @@
   tags:
   - uvrrpd
 
+- include_role:
+    name: remount-usr
+  tags:
+  - uvrrpd
+
 - name: Make install
   make:
     chdir: /root/uvrrpd-master/
     target: install
+  tags:
+  - uvrrpd
+
+- name: Remove unzip if initially not present
+  apt:
+    name: unzip
+    state: absent
+  when: unzip_is_installed.rc == 0 
+  tags:
+  - uvrrpd
+
+- name: Remove dh-autoreconf if initially not present
+  apt:
+    name: dh-autoreconf
+    state: absent
+  when: autoreconf_is_installed.rc == 0 
   tags:
   - uvrrpd
