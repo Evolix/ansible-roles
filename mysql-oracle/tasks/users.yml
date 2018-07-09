@@ -37,7 +37,7 @@
     create: yes
   with_items:
     - { option: 'user', value: 'mysqladmin' }
-    - { option: password, value: '{{ mysql_admin_password.stdout }}' }
+    - { option: 'password', value: '{{ mysql_admin_password.stdout }}' }
   when: create_mysqladmin_user | changed
   tags:
     - mysql
@@ -73,7 +73,7 @@
   with_nested:
     - [ "client", "mysql_upgrade" ]
     - [ { option: 'user', value: 'debian-sys-maint' },
-        { option: password, value: '{{ mysql_debian_password.stdout }}' }
+        { option: 'password', value: '{{ mysql_debian_password.stdout }}' }
       ]
   when: create_debian_user | changed
   tags:
