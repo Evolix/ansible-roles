@@ -16,7 +16,7 @@ check_state() {
         cat $result >> ${result}.err
         :> $result
     fi
-    if [[ $1 -eq 2 ]]; then
+    if [[ $1 -ge 2 ]]; then
         critical=true
         cat $result >> ${result}.err
         :> $result
