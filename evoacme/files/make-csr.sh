@@ -227,6 +227,7 @@ main() {
 
     command -v apache2ctl >/dev/null && sed_selfsigned_cert_path_for_apache "/etc/apache2/ssl/${VHOST}.conf"
     command -v nginx >/dev/null && sed_selfsigned_cert_path_for_nginx "/etc/nginx/ssl/${VHOST}.conf"
+    exit 0
 }
 
 readonly PROGNAME=$(basename "$0")
