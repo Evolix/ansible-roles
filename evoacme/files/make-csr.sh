@@ -80,13 +80,17 @@ openssl_selfsigned() {
     local csr="$1"
     local key="$2"
     local crt="$3"
+    local cfg="$4"
     local crt_dir=$(dirname ${crt})
 
     [ -r "${csr}" ] || error "File ${csr} is not readable"
     [ -r "${key}" ] || error "File ${key} is not readable"
     [ -w "${crt_dir}" ] || error "Directory ${crt_dir} is not writable"
-
-    "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -signkey "${key}" -out "${crt}" 2> /dev/null
+    if grep -q SAN "${cfg}"; then
+        "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -extensions SAN -extfile "${cfg}" -signkey "${key}" -out "${crt}" 2> /dev/null
+    else
+        "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -signkey "${key}" -out "${crt}" 2> /dev/null
+    fi
 
     [ -r "${crt}" ] || error "Something went wrong, ${crt} has not been generated"
 }
@@ -160,7 +164,7 @@ EOF
         chmod 644 "${CSR_FILE}"
         mkdir -p -m 0755 "${SELF_SIGNED_DIR}"
 
-        openssl_selfsigned "${CSR_FILE}" "${SSL_KEY_FILE}" "${SELF_SIGNED_FILE}"
+        openssl_selfsigned "${CSR_FILE}" "${SSL_KEY_FILE}" "${SELF_SIGNED_FILE}" "${config_file}"
 
         [ -r "${SELF_SIGNED_FILE}" ] && chmod 644 "${SELF_SIGNED_FILE}"
         debug "Self-signed certificate stored at ${SELF_SIGNED_FILE}"
