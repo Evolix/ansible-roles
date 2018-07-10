@@ -22,7 +22,7 @@
     notify: restart munin-node
 
   - name: Rename the localdomain data dir
-    command: mv /var/lib/munin/localdomain /var/lib/munin/{{ ansible_domain }}
+    shell: mv /var/lib/munin/localdomain /var/lib/munin/{{ ansible_domain }} && rename "s/localhost.localdomain/{{ ansible_fqdn }}/" /var/lib/munin/{{ ansible_domain }}/*
     args:
       creates: /var/lib/munin/{{ ansible_domain }}
       removes: /var/lib/munin/localdomain

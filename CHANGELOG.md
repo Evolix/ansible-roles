@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 * elasticsearch: add http.publish_host variable
 * evoacme: disable old certbot cron also in cron.daily
 * kibana: log messages go to /var/log/kibana/kibana.log
+* munin: properly rename Munin cache directory
 * mysql: add an option to install the client development  libraries (default: `False`)
 * java: support for Oracle JRE
 * nagios-nrpe: add check_postgrey
