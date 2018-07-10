@@ -14,30 +14,30 @@ The **patch** part changes incrementally at each release.
 * elasticsearch: tmpdir configuration compatible with 5.x also
 * elasticsearch: add http.publish_host variable
 * evoacme: disable old certbot cron also in cron.daily
+* evolinux-base: add mail related aliases
+* java: support for Oracle JRE
 * kibana: log messages go to /var/log/kibana/kibana.log
+* metricbeat: add a role (copied from filebeat)
 * munin: properly rename Munin cache directory
 * mysql: add an option to install the client development  libraries (default: `False`)
-* java: support for Oracle JRE
 * nagios-nrpe: add check_postgrey
-* evolinux-base: add mail related aliases
-* metricbeat: add a role (copied from filebeat)
 
 ### Changed
 * evolinux-users: add sudo permission for bkctld check
+* java8: renamed to java (java8 symlinked to java for backward compatibility)
 * minifirewall: the tail file can be overwritten, or not (default: `True`)
 * nagios-nrpe: use bkctld internal check instead of nrpe plugin
 * php: reorganization of the role for Sury overrides and more clear configuration
+* redmine: use .my.cnf for mysql password
 * rbenv: change default Ruby version (2.5.1)
 * rbenv: switch from copy to lineinfile for default gems
 * squid: add a few news sites to the whitelist
-* java8: renamed to java (java8 symlinked to java for backward compatibility)
-* redmine: use .my.cnf for mysql password
 * tomcat: better nrpe check output
 
 ### Fixed
+* evoacme: fix module detection in apache config
 * mysql-oracle: fix configuration directory variable
 * php: fpm slowlog needs an absolute path
-* evoacme: fix module detection in apache config
 * roundcube: add missing slash to https redirection
 
 ### Security
