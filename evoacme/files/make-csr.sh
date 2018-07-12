@@ -153,6 +153,7 @@ EOF
         done
         san=$(echo "${san}" | sed 's/^,//')
         cat "${SSL_CONFIG_FILE}" - > "${config_file}" <<EOF
+CN=${domains%% *}
 [SAN]
 subjectAltName=${san}
 EOF
