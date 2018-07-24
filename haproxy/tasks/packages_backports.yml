@@ -7,7 +7,7 @@
   - haproxy
   - packages
 
-- name: Prefer HAProxy package from jessie-backports
+- name: Prefer HAProxy package from backports
   copy:
     src: haproxy_apt_preferences
     dest: /etc/apt/preferences.d/999-haproxy
