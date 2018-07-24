@@ -8,8 +8,8 @@
   - packages
 
 - name: Prefer HAProxy package from backports
-  copy:
-    src: haproxy_apt_preferences
+  template:
+    src: haproxy_apt_preferences.j2
     dest: /etc/apt/preferences.d/999-haproxy
     force: yes
     mode: "0640"
