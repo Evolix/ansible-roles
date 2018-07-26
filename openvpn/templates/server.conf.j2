@@ -21,7 +21,9 @@ log-append  /var/log/openvpn/openvpn.log
 ca   /etc/shellpki/cacert.pem
 cert /etc/shellpki/certs/{{ ansible_fqdn }}.crt
 key  /etc/shellpki/private/{{ ansible_fqdn }}.key
-dh   /etc/shellpkca/dh2048.pem
+dh   /etc/shellpki/dh2048.pem
 
 server {{ openvpn_lan }} {{ openvpn_netmask }}
 
+# Management interface (used by check_openvpn for Nagios)
+management 127.0.0.1 1195 /etc/openvpn/management-pwd

@@ -14,24 +14,16 @@
   tags:
   - openvpn
 
-- set_fact:
-    minifirewall_tail_included: True
-    minifirewall_tail_file: /etc/default/minifirewall.tail
-
-- include_role:
-    name: minifirewall
-  tags:
-  - openvpn
-
 - name: Allow OpenVPN input
-  blockinfile:
-    dest: "{{ minifirewall_tail_file }}"
-    marker: "# {mark} INPUT OPENVPN" 
-    block: |                   
-       /sbin/iptables -A INPUT -p udp --dport 1194 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
-  notify: restart minifirewall
+  lineinfile: 
+    dest: /etc/default/minifirewall
+    line: "/sbin/iptables -A INPUT -p udp --dport 1194 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT #OPENVPN"
+    regexp: '#OPENVPN$'
+    state: present
+  failed_when: False
   tags:
   - openvpn
+  - openvpn-minifirewall
 
 - name: Create /etc/shellpki directory
   file:
@@ -53,6 +45,11 @@
   tags:
   - openvpn
 
+- include_role:
+    name: remount-usr
+  tags:
+  - openvpn
+
 - name: Copy some shellpki files
   copy: 
     src: "{{ item.src }}"      
@@ -66,6 +63,12 @@
           - { src: 'files/shellpki/shellpki.sh', dest: '/usr/local/sbin/shellpki', mode: '0755' }
   tags:
     - openvpn
+
+- name: Deploy DH PARAMETERS
+  template:                    
+    src: "dh2048.pem.j2" 
+    dest: "/etc/shellpki/dh2048.pem"
+    mode: "0600"               
 
 - name: Verify shellpki sudoers file presence
   copy:
