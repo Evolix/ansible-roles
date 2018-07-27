@@ -33,6 +33,7 @@ The **patch** part changes incrementally at each release.
 * rbenv: switch from copy to lineinfile for default gems
 * squid: add a few news sites to the whitelist
 * tomcat: better nrpe check output
+* kvm-host: install kvm-tools package instead of copying add-vm.sh
 
 ### Fixed
 * evoacme: fix module detection in apache config
