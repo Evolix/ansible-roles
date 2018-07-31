@@ -17,7 +17,7 @@ The regular mode is for full fledged web services with optimized defaults.
 Main variables are :
 
 * `nginx_minimal` : very basic install and config (default: `False`) ;
-* `nginx_jessie_backports` : on Debian Jessie, we can prefer v1.10 from backports (default: `False`) ;
+* `nginx_backports` : we can prefer higher version from backports (default: `False`) ;
 * `nginx_ipaddr_whitelist_present` : list of IP addresses to have in the private whitelist ;
 * `nginx_ipaddr_whitelist_absent` : list of IP addresses **not** to have in the whitelist ;
 * `nginx_private_htpasswd_present` : list of users to have in the private htpasswd ;

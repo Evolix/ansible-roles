@@ -7,8 +7,8 @@
     - nginx
     - packages
 
-- name: Prefer Nginx packages from jessie-backports
-  copy:
+- name: Prefer Nginx packages from backports
+  template:
     src: apt/nginx_preferences
     dest: /etc/apt/preferences.d/999-nginx
     force: yes

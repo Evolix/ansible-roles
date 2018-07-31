@@ -1,7 +1,7 @@
 ---
 
 nginx_minimal: False
-nginx_jessie_backports: False
+nginx_backports: False
 
 nginx_package_name: "nginx-full"
 
