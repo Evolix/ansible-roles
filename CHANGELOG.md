@@ -31,6 +31,7 @@ The **patch** part changes incrementally at each release.
 * redmine: use .my.cnf for mysql password
 * rbenv: change default Ruby version (2.5.1)
 * rbenv: switch from copy to lineinfile for default gems
+* remount-usr: mount doesn't report a change
 * squid: add a few news sites to the whitelist
 * tomcat: better nrpe check output
 * kvm-host: install kvm-tools package instead of copying add-vm.sh
