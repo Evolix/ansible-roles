@@ -18,6 +18,8 @@
       dest: /usr/local/lib/nagios/plugins/
       mode: "0755"
 
+  # TODO: install a "multi-instances" check if the memcached_instance_name variable is not null
+
   - name: Add NRPE check
     lineinfile:
       name: /etc/nagios/nrpe.d/evolix.cfg
@@ -26,4 +28,3 @@
     notify: restart nagios-nrpe-server
 
   when: nrpe_evolix_config.stat.exists
-
