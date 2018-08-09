@@ -1,7 +1,8 @@
 ---
 
 nginx_minimal: False
-nginx_backports: False
+# backward compatibility with a previously used variable
+nginx_backports: "{{ nginx_jessie_backports | default(false, true) }}"
 
 nginx_package_name: "nginx-full"
 
