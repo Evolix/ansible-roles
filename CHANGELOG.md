@@ -14,15 +14,18 @@ The **patch** part changes incrementally at each release.
 * elasticsearch: tmpdir configuration compatible with 5.x also
 * elasticsearch: add http.publish_host variable
 * evoacme: disable old certbot cron also in cron.daily
+* evoacme: support for SAN in self-signed certificates
 * evolinux-base: add mail related aliases
 * java: support for Oracle JRE
 * kibana: log messages go to /var/log/kibana/kibana.log
 * metricbeat: add a role (copied from filebeat)
+* memcached: add support for multiple instances
 * munin: properly rename Munin cache directory
 * mysql: add an option to install the client development  libraries (default: `False`)
 * nagios-nrpe: add check_postgrey
 
 ### Changed
+* evolinux-base: wider body for default page
 * evolinux-users: add sudo permission for bkctld check
 * java8: renamed to java (java8 symlinked to java for backward compatibility)
 * minifirewall: the tail file can be overwritten, or not (default: `True`)
