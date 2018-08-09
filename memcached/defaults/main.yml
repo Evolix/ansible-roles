@@ -1,5 +1,5 @@
 ---
-memcached_instance_name: False
+memcached_instance_name: ""
 memcached_logfile: '/var/log/memcached.log'
 memcached_mem: 64
 memcached_user: 'nobody'

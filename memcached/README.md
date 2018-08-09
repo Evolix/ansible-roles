@@ -25,5 +25,4 @@ When using memcached_instance_name variable, you can set up multiple memcached i
 
   roles:
    - { role: memcached, memcached_instance_name: "instance1" }
-   - { role: memcached, memcached_instance_name: "instance2" }
-
+   - { role: memcached, memcached_instance_name: "instance2", memcached_port: 11212 }
