@@ -73,3 +73,25 @@
     line: "-Xmx{{ elasticsearch_jvm_xmx }}"
   tags:
     - config
+
+- name: Configure cluster members
+  lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "discovery.zen.ping.unicast.hosts:{{ elasticsearch_cluster_members }}"
+    regexp: "^discovery.zen.ping.unicast.hosts:"
+    insertafter: "^#discovery.zen.ping.unicast.hosts"
+  when: elasticsearch_cluster_members|default("", True)
+  tags:
+    - config
+
+- name: Configure minimum master nodes
+  lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "discovery.zen.minimum_master_nodes:{{ elasticsearch_minimum_master_nodes }}"
+    regexp: "^discovery.zen.ping.unicast.hosts:"
+    insertafter: "^#discovery.zen.minimum_master_nodes"
+  when: elasticsearch_minimum_master_nodes|default("", True)
+  tags:
+    - config
+
+

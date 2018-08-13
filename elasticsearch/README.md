@@ -15,6 +15,8 @@ Tasks are extracted in several files, included in `tasks/main.yml` :
 ## Available variables
 
 * `elasticsearch_cluster_name`: cluster name ;
+* `elasticsearch_cluster_members:` members of a cluster (ex: ["10.0.0.1", "10.0.0.2", "10.0.0.3"]) (default: `Null`) ; 
+* `elasticsearch_minimum_master_nodes:` minimum of master nodes (the best practice is to have "number of elasticsearch_cluster_members / 2 + 1" as value) (default: `Null`) ; 
 * `elasticsearch_node_name`: node name, defaults to hostname ;
 * `elasticsearch_network_host`: which interfaces to bind to ;
 * `elasticsearch_network_publish_host`: which interface to publish for node-to-node communication (default: `Null`) ;
