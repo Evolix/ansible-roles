@@ -88,7 +88,7 @@
   lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
     line: "discovery.zen.minimum_master_nodes:{{ elasticsearch_minimum_master_nodes }}"
-    regexp: "^discovery.zen.ping.unicast.hosts:"
+    regexp: "^discovery.zen.minimum_master_nodes:"
     insertafter: "^#discovery.zen.minimum_master_nodes"
   when: elasticsearch_minimum_master_nodes|default("", True)
   tags:
