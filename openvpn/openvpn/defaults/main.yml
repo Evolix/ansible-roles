@@ -1,0 +1,3 @@
+---
+openvpn_lan: "192.168.42.0"
+openvpn_netmask: "255.255.255.0"
