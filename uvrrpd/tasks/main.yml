@@ -1,0 +1,91 @@
+---
+- name: "Is uvrrpd already installed ?"
+  stat:
+    path: /usr/local/sbin/uvrrpd
+  check_mode: no
+  register: uvrrpd_test
+
+- name: Make sure unzip is present
+  command: 'dpkg -l unzip'
+  check_mode: no
+  ignore_errors: yes
+  register: unzip_is_installed
+  when: not uvrrpd_test.stat.exists
+  tags:
+  - uvrrpd
+
+- name: Make sure dh-autoreconf is present
+  command: 'dpkg -l dh-autoreconf'
+  check_mode: no
+  ignore_errors: yes
+  register: autoreconf_is_installed
+  when: not uvrrpd_test.stat.exists
+  tags:
+  - uvrrpd
+
+- name: Make sure unzip and dh-autoreconf are installed
+  apt:
+    name: "{{item}}"
+  with_items:
+    - unzip
+    - dh-autoreconf
+  when: not uvrrpd_test.stat.exists
+  tags:
+  - uvrrpd
+
+- name: Get uvrrpd sources
+  unarchive:
+    src: 'https://github.com/Evolix/uvrrpd/archive/master.zip'
+    dest: /root/
+    remote_src: True
+    mode: "0755"
+  when: not uvrrpd_test.stat.exists
+  tags:
+  - uvrrpd
+
+- name: Pre-build configure
+  shell: 'cd /root/uvrrpd-master/;autoreconf -i;./configure'
+  when: not uvrrpd_test.stat.exists
+  tags:
+  - uvrrpd
+
+- name: Make 
+  make:
+    chdir: /root/uvrrpd-master/
+  when: not uvrrpd_test.stat.exists
+  tags:
+  - uvrrpd
+
+- include_role:
+    name: remount-usr
+  when: not uvrrpd_test.stat.exists
+  tags:
+  - uvrrpd
+
+- name: Make install
+  make:
+    chdir: /root/uvrrpd-master/
+    target: install
+  when: not uvrrpd_test.stat.exists
+  tags:
+  - uvrrpd
+
+- name: Remove unzip if initially not present
+  apt:
+    name: unzip
+    state: absent
+  when:
+    - not uvrrpd_test.stat.exists
+    - unzip_is_installed.rc == 0 
+  tags:
+  - uvrrpd
+
+- name: Remove dh-autoreconf if initially not present
+  apt:
+    name: dh-autoreconf
+    state: absent
+  when:
+    - not uvrrpd_test.stat.exists
+    - autoreconf_is_installed.rc == 0 
+  tags:
+  - uvrrpd
