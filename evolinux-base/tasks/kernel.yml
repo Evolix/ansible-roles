@@ -50,4 +50,36 @@
     reload: yes
   when: evolinux_kernel_cve20165696
 
+- name: Patch for TCP stack vulnerabiliy CVE-2018-5391 (FragmentSmack)
+  sysctl:
+    name: net.ipv4.ipfrag_low_thresh
+    value: 196608
+    sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
+    state: present
+    reload: yes
+
+- name: Patch for TCP stack vulnerabiliy CVE-2018-5391 (FragmentSmack)
+  sysctl:
+    name: net.ipv6.ip6frag_low_thresh
+    value: 196608
+    sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
+    state: present
+    reload: yes
+
+- name: Patch for TCP stack vulnerabiliy CVE-2018-5391 (FragmentSmack)
+  sysctl:
+    name: net.ipv4.ipfrag_high_thresh
+    value: 262144
+    sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
+    state: present
+    reload: yes
+
+- name: Patch for TCP stack vulnerabiliy CVE-2018-5391 (FragmentSmack)
+  sysctl:
+    name: net.ipv6.ip6frag_high_thresh
+    value: 262144
+    sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
+    state: present
+    reload: yes
+
 - meta: flush_handlers
