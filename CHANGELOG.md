@@ -23,6 +23,7 @@ The **patch** part changes incrementally at each release.
 * nagios-nrpe: add check_postgrey
 
 ### Changed
+* evocheck: update upstream script
 * evolinux-base: improve hostname configuration (real vs. internal)
 * evolinux-users: add sudo permission for bkctld check
 * java8: renamed to java (java8 symlinked to java for backward compatibility)
