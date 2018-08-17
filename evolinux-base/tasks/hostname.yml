@@ -20,7 +20,7 @@
   lineinfile:
     dest: /etc/hosts
     regexp: '^{{ ansible_default_ipv4.address }}\s+'
-    line: "{{ ansible_default_ipv4.address }}    {{ evolinux_fqdn }} {{ evolinux_hostname }}"
+    line: "{{ ansible_default_ipv4.address }}    {{ [evolinux_fqdn, evolinux_internal_fqdn] | unique | join(' ') }} {{ [evolinux_hostname, evolinux_internal_hostname] | unique | join(' ') }}"
     insertafter: '127.0.0.1\s+localhost.localdomain'
   when: evolinux_hostname_hosts
 
