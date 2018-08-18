@@ -1,25 +1,10 @@
 ---
 
-- name: evocheck runs normally on first day of month
-  cron:
-    cron_file: evocheck
-    month: "*"
-    weekday: "*"
-    day: "1"
-    hour: "1"
-    minute: "33"
-    user: "root"
-    job: "/usr/share/scripts/evocheck.sh"
-    state: present
-
-- name: evocheck runs with --cron on all other days of month
-  cron:
-    cron_file: evocheck
-    month: "*"
-    weekday: "*"
-    day: "2-31"
-    hour: "1"
-    minute: "33"
-    user: "root"
-    job: "/usr/share/scripts/evocheck.sh --cron"
-    state: present
+- name: evocheck crontab is updated
+  template:
+    src: crontab.j2
+    dest: /etc/cron.d/evocheck
+    mode: "0644"
+    owner: root
+    group: root
+    force: yes
