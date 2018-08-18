@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 * elasticsearch: add http.publish_host variable
 * evoacme: disable old certbot cron also in cron.daily
 * evocheck: detect installed packages even if "held" by APT (manual fix)
+* evocheck: the crontab is updated by the role (default: `True`)
 * evolinux-base: add mail related aliases
 * generate-ldif: detect installed packages even if "held" by APT
 * java: support for Oracle JRE
