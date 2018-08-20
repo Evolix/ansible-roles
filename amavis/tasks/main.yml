@@ -12,7 +12,7 @@
 - name: configure Amavis
   template:
     src: amavis.conf.j2
-    dest: /etc/amavis/conf.d/49-evolinux-defaults.conf
+    dest: /etc/amavis/conf.d/49-evolinux-defaults
     mode: "0644"
   notify: restart amavis
   tags:
