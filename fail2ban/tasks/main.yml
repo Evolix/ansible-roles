@@ -15,6 +15,9 @@
   tags:
   - fail2ban
 
+- set_fact:
+    fail2ban_ignore_ips: "{{ fail2ban_default_ignore_ips | union(fail2ban_additional_ignore_ips) | unique }}"
+
 - name: local jail is installed
   template:
     src: jail.local.j2

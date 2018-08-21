@@ -4,7 +4,6 @@ fail2ban_alert_email: Null
 
 fail2ban_default_ignore_ips: []
 fail2ban_additional_ignore_ips: []
-fail2ban_ignore_ips: "{{ fail2ban_default_ignore_ips | union(fail2ban_additional_ignore_ips) | unique }}"
 
 fail2ban_wordpress: False
 fail2ban_roundcube: False

@@ -44,6 +44,7 @@ The **patch** part changes incrementally at each release.
 ### Fixed
 * bind: chroot-bind.sh must not be executed in check mode
 * evoacme: fix module detection in apache config
+* fail2ban: fix fail2ban_ignore_ips definition
 * mysql-oracle: fix configuration directory variable
 * php: fpm slowlog needs an absolute path
 * roundcube: add missing slash to https redirection
