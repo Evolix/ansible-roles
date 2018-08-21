@@ -42,6 +42,7 @@ The **patch** part changes incrementally at each release.
 * kvm-host: install kvm-tools package instead of copying add-vm.sh
 
 ### Fixed
+* bind: chroot-bind.sh must not be executed in check mode
 * evoacme: fix module detection in apache config
 * mysql-oracle: fix configuration directory variable
 * php: fpm slowlog needs an absolute path
