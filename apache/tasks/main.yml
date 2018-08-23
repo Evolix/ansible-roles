@@ -174,8 +174,8 @@
 - name: "logrotate: keep 52 files"
   replace:
     dest: /etc/logrotate.d/apache2
-    regexp: "rotate .+"
-    replace: "rotate 52"
+    regexp: '^(\s+rotate) \d+$'
+    replace: '\1 52'
   tags:
     - apache
 

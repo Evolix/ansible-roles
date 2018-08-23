@@ -44,6 +44,7 @@ The **patch** part changes incrementally at each release.
 * kvm-host: install kvm-tools package instead of copying add-vm.sh
 
 ### Fixed
+* apache: logrotate replacement is more subtle/precise. It replaces only the proper directive and not every occurence of the word.
 * bind: chroot-bind.sh must not be executed in check mode
 * evoacme: fix module detection in apache config
 * fail2ban: fix fail2ban_ignore_ips definition
