@@ -28,6 +28,17 @@
   tags:
   - fail2ban
 
+- name: Disable SSH filter
+  ini_file:
+    dest: /etc/fail2ban/jail.local
+    section: sshd
+    option: enabled
+    value: false
+  notify: restart fail2ban
+  when: fail2ban_disable_ssh
+  tags:
+    - fail2ban
+
 - name: custom filters are installed
   copy:
     src: "{{ item }}"

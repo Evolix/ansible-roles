@@ -7,3 +7,5 @@ fail2ban_additional_ignore_ips: []
 
 fail2ban_wordpress: False
 fail2ban_roundcube: False
+
+fail2ban_disable_ssh: False

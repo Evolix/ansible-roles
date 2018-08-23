@@ -17,6 +17,7 @@ The **patch** part changes incrementally at each release.
 * evocheck: detect installed packages even if "held" by APT (manual fix)
 * evocheck: the crontab is updated by the role (default: `True`)
 * evolinux-base: add mail related aliases
+* fail2ban: add a variable to disable the ssh filter (default: `False`)
 * generate-ldif: detect installed packages even if "held" by APT
 * java: support for Oracle JRE
 * kibana: log messages go to /var/log/kibana/kibana.log
