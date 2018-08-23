@@ -14,8 +14,17 @@ mysql_replace_root_with_mysqladmin: True
 mysql_custom_datadir: ''
 mysql_custom_tmpdir: ''
 
+mysql_bind_address: '127.0.0.1'
 mysql_thread_cache_size: '{{ ansible_processor_cores }}'
 mysql_innodb_buffer_pool_size: '{{ (ansible_memtotal_mb * 0.3) | int }}M'
+mysql_max_connections: '250'
+mysql_max_connect_errors: '10'
+mysql_table_cache: '64'
+mysql_tmp_table_size: '128M'
+mysql_max_heap_table_size: '128M'
+mysql_query_cache_limit: '8M'
+mysql_query_cache_size: '256M'
+
 
 mysql_cron_optimize: True
 mysql_cron_optimize_frequency: weekly
