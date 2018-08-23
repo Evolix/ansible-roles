@@ -1,12 +1,31 @@
 [mysqld]
+{% if mysql_bind_address %}
 bind-address = {{ mysql_bind_address }}
+{% endif %}
+{% if mysql_thread_cache_size %}
 thread_cache_size = {{ mysql_thread_cache_size }}
+{% endif %}
+{% if mysql_innodb_buffer_pool_size %}
 innodb_buffer_pool_size = {{ mysql_innodb_buffer_pool_size }}
+{% endif %}
+{% if mysql_max_connections %}
 max_connections = {{ mysql_max_connections }}
+{% endif %}
+{% if mysql_max_connect_errors %}
 max_connect_errors = {{ mysql_max_connect_errors }}
+{% endif %}
+{% if mysql_table_cache %}
 table_cache = {{ mysql_table_cache }}
+{% endif %}
+{% if mysql_tmp_table_size %}
 tmp_table_size = {{ mysql_tmp_table_size }}
+{% endif %}
+{% if mysql_max_heap_table_size %}
 max_heap_table_size = {{ mysql_max_heap_table_size }}
+{% endif %}
+{% if mysql_query_cache_limit %}
 query_cache_limit = {{ mysql_query_cache_limit }}
+{% endif %}
+{% if mysql_query_cache_limit %}
 query_cache_size = {{ mysql_query_cache_size }}
-
+{% endif %}

@@ -20,16 +20,16 @@ Tasks are extracted in several files, included in `tasks/main.yml` :
 
 * `mysql_variant` : install Oracle's MySQL or MariaDB (default: `oracle`) [Debian 8 only];
 * `mysql_replace_root_with_mysqladmin`: switch from `root` to `mysqladmin` user or not ;
-* `mysql_bind_address` : (default: `127.0.0.1`) ;
 * `mysql_thread_cache_size`: number of threads for the cache ;
 * `mysql_innodb_buffer_pool_size`: amount of RAM dedicated to InnoDB ;
-* `mysql_max_connections`: maximum number of simultaneous connections (default: `250`) ;
-* `mysql_max_connect_errors`: number of permitted successive interrupted connection requests before a host gets blocked (default: `10`) ;
-* `mysql_table_cache`: (default: `64`) ;
-* `mysql_tmp_table_size`: (default: `128M`) ;
-* `mysql_max_heap_table_size`: (default: `128M`) ;
-* `mysql_query_cache_limit`: (default: `8M`) ;
-* `mysql_query_cache_size`: (default: `256M`) ;
+* `mysql_bind_address` : (default: `Null`, default evolinux config is then used) ;
+* `mysql_max_connections`: maximum number of simultaneous connections (default: `Null`, default evolinux config is then used) ;
+* `mysql_max_connect_errors`: number of permitted successive interrupted connection requests before a host gets blocked (default: `Null`, default evolinux config is then used) ;
+* `mysql_table_cache`: (default: `Null`, default evolinux config is then used) ;
+* `mysql_tmp_table_size`: (default: `Null`, default evolinux config is then used) ;
+* `mysql_max_heap_table_size`: (default: `Null`, default evolinux config is then used) ;
+* `mysql_query_cache_limit`: (default: `Null`, default evolinux config is then used) ;
+* `mysql_query_cache_size`: (default: `Null`, default evolinux config is then used) ;
 * `mysql_custom_datadir`: custom datadir.
 * `mysql_custom_tmpdir`: custom tmpdir.
 * `general_alert_email`: email address to send various alert messages (default: `root@localhost`).
