@@ -65,3 +65,12 @@
   when: git_log.rc != 0 or (git_init is defined and git_init.changed)
   tags:
     - etc-git
+
+- name: Optimize script is installed in monthly crontab
+  copy:
+    src: optimize-etc-git
+    dest: /etc/cron.monthly/optimize-etc-git
+    mode: "0750"
+    force: no
+  tags:
+    - etc-git
