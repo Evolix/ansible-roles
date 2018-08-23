@@ -2,8 +2,12 @@
 general_alert_email: "root@localhost"
 fail2ban_alert_email: Null
 
+# Note: there are 2 variable to allow various overrides, but they are merged.
+# "127.0.0.1/8" is always added to the list, even if the following lists are empty.
 fail2ban_default_ignore_ips: []
 fail2ban_additional_ignore_ips: []
+# WARN: setting this to True will overwrite the list of ignored IP
+fail2ban_force_update_ignore_ips: False
 
 fail2ban_wordpress: False
 fail2ban_roundcube: False
