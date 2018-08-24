@@ -26,7 +26,7 @@
   tags:
     - etc-git
 
-- name: /etc/.git is secure
+- name: /etc/.git is restricted to root
   file:
     path: /etc/.git
     owner: root
@@ -41,6 +41,20 @@
     dest: /etc/.gitignore
     owner: root
     mode: "0600"
+    force: no
+  tags:
+    - etc-git
+
+- name: Some entries MUST be in the /etc/.gitignore file
+  lineinfile:
+    dest: /etc/.gitignore
+    line: "{{ item }}"
+  with_items:
+    - "aliases.db"
+    - "*.swp"
+    - "postfix/sa-blacklist.access"
+    - "postfix/*.db"
+    - "postfix/spamd.cidr"
   tags:
     - etc-git
 

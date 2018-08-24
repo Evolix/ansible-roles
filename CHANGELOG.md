@@ -30,6 +30,7 @@ The **patch** part changes incrementally at each release.
 * nagios-nrpe: add check_postgrey
 
 ### Changed
+* etc-git: some entries of .gitignore are mandatory
 * evocheck: update upstream script
 * evolinux-base: improve hostname configuration (real vs. internal)
 * evolinux-base: use the "evolinux-todo" role
