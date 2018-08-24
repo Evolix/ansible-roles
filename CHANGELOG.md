@@ -11,6 +11,16 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Security
+
+## [9.3.0] - 2018-08-24
+
+### Added
 * elasticsearch: tmpdir configuration compatible with 5.x also
 * elasticsearch: add http.publish_host variable
 * evoacme: disable old certbot cron also in cron.daily
@@ -55,8 +65,6 @@ The **patch** part changes incrementally at each release.
 * mysql-oracle: fix configuration directory variable
 * php: fpm slowlog needs an absolute path
 * roundcube: add missing slash to https redirection
-
-### Security
 
 ## [9.2.0] - 2018-05-16
 
