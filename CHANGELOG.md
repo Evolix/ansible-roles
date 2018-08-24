@@ -17,6 +17,7 @@ The **patch** part changes incrementally at each release.
 * evocheck: detect installed packages even if "held" by APT (manual fix)
 * evocheck: the crontab is updated by the role (default: `True`)
 * evolinux-base: add mail related aliases
+* evolinux-todo: new role, to help maintain a file of todo tasks
 * fail2ban: add a variable to disable the ssh filter (default: `False`)
 * etc-git: install a script to optimize the repository each month
 * fail2ban: add a variable to update the list of ignored IP addresses/blocs (default: `False`)
@@ -31,6 +32,7 @@ The **patch** part changes incrementally at each release.
 ### Changed
 * evocheck: update upstream script
 * evolinux-base: improve hostname configuration (real vs. internal)
+* evolinux-base: use the "evolinux-todo" role
 * evolinux-users: add sudo permission for bkctld check
 * java8: renamed to java (java8 symlinked to java for backward compatibility)
 * minifirewall: the tail file can be overwritten, or not (default: `True`)
