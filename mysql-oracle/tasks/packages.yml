@@ -11,7 +11,7 @@
 - name: MySQL APT config package is installed
   apt:
     deb: /root/mysql-apt-config_0.8.9-1_all.deb
-    state: installed
+    state: present
   register: mysql_apt_config_deb
 
 - name: Open firewall for MySQL.com repository
@@ -36,10 +36,21 @@
   with_items:
     - mysql-server
     - mysql-client
+  tags:
+    - mysql
+    - packages
+
+- name: Install MySQL dev packages
+  apt:
+    name: '{{ item }}'
+    update_cache: yes
+    state: present
+  with_items:
     - libmysqlclient20
   tags:
     - mysql
     - packages
+  when: mysql_install_libclient
 
 - include_role:
     name: remount-usr

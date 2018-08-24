@@ -26,6 +26,18 @@
   - mysql
   - packages
 
+- name: Install MySQL dev packages
+  apt:
+    name: '{{ item }}'
+    update_cache: yes
+    state: present
+  with_items:
+  - libmysqlclient-dev
+  tags:
+  - mysql
+  - packages
+  when: mysql_install_libclient
+
 - name: MySQL is started
   service:
     name: mysql

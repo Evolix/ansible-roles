@@ -12,5 +12,6 @@
   command: 'mount -o remount,rw /usr'
   args:
     warn: no
+  changed_when: False
   when: usr_partition.rc == 0
   notify: remount usr

@@ -1,0 +1,3 @@
+#!/bin/sh
+
+git --git-dir /etc/.git gc --quiet

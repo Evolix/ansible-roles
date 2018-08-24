@@ -50,6 +50,22 @@
     insertafter: '^#server.basePath:'
   notify: restart kibana
 
+- name: kibana log destination is present
+  file:
+    dest: /var/log/kibana
+    owner: kibana
+    group: kibana
+    mode: "0750"
+    state: directory
+
+- name: kibana log messages go to custom file
+  lineinfile:
+    dest: /etc/kibana/kibana.yml
+    line: "logging.dest: \"/var/log/kibana/kibana.log\""
+    regexp: '^logging.dest:'
+    insertafter: '^#logging.dest:'
+  notify: restart kibana
+
 - name: Kibana service is enabled and started
   systemd:
     name: kibana

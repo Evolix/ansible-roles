@@ -1,0 +1,13 @@
+---
+
+- name: cat /etc/evolinux/todo.txt
+  command: "cat /etc/evolinux/todo.txt"
+  register: evolinux_todo
+  changed_when: False
+  failed_when: False
+  check_mode: no
+
+- name: "Content of /etc/evolinux/todo.txt"
+  debug:
+    var: evolinux_todo.stdout_lines
+  when: evolinux_todo.stdout != ""

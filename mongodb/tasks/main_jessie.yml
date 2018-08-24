@@ -16,12 +16,12 @@
   apt:
     name: mongodb-org
     allow_unauthenticated: yes
-    state: installed
+    state: present
 
 - name: install dependency for monitoring
   apt:
     name: python-pymongo
-    state: installed
+    state: present
 
 - name: Custom configuration
   template:

@@ -1,0 +1,10 @@
+---
+- fail:
+    msg: "This role support only java 8 for now !"
+  when: java_version != 8
+
+- include: openjdk.yml
+  when: "{{ java_alternative == 'openjdk' }}"
+
+- include: oracle.yml
+  when: "{{ java_alternative == 'oracle' }}"

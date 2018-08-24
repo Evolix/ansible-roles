@@ -1,0 +1,58 @@
+---
+- name: Install dependencies for build java package
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - java-package
+    - build-essential
+  tags:
+  - java
+
+- name: Create jvm dir
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0777"
+  with_items:
+  - /srv/java-package
+  - /srv/java-package/src
+  - /srv/java-package/tmp
+  tags:
+  - java
+
+- name: Get Oracle jre archive
+  get_url:
+    url: 'http://download.oracle.com/otn-pub/java/jdk/8u172-b11/a58eab1ec242421181065cdc37240b08/jre-8u172-linux-x64.tar.gz'
+    dest: '/srv/java-package/src/'
+    checksum: 'sha256:f08f25aec2bdc86138ccba8fd5b904451e3afa1d24a88c85f28c2d84bfd45bad'
+    headers: 'Cookie: oraclelicense=accept-securebackup-cookie'
+    mode: "0644"
+  tags:
+  - java
+
+- name: Make Debian package from Oracle JDK archive
+  shell: "yes | TMPDIR=/srv/java-package/tmp make-jpkg /srv/java-package/src/jre-8u172-linux-x64.tar.gz"
+  args:
+    chdir: /srv/java-package
+    creates: /srv/java-package/oracle-java8-jre_8u172_amd64.deb
+  become: False
+  tags:
+  - java
+
+- include_role:
+    name: remount-usr
+
+- name: Install java package
+  apt:
+    deb: /srv/java-package/oracle-java8-jre_8u172_amd64.deb
+  tags:
+   - java
+
+- name: This openjdk version is the default alternative
+  alternatives:
+    name: java
+    path: "/usr/lib/jvm/jre-{{ java_version }}-oracle-x64/bin/java"
+  when: java_default_alternative
+  tags:
+    - java

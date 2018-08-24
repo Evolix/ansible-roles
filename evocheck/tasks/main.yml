@@ -5,3 +5,6 @@
 
 - include: install_package.yml
   when: evocheck_force_install == "package"
+
+- include: cron.yml
+  when: evocheck_update_crontab

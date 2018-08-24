@@ -14,4 +14,4 @@ galaxy_info:
     - jessie
 
 dependencies:
-  - java8
+  - { role: java, java_alternative: 'openjdk', java_version: 8 }

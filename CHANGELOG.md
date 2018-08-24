@@ -18,6 +18,54 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [9.3.0] - 2018-08-24
+
+### Added
+* elasticsearch: tmpdir configuration compatible with 5.x also
+* elasticsearch: add http.publish_host variable
+* evoacme: disable old certbot cron also in cron.daily
+* evocheck: detect installed packages even if "held" by APT (manual fix)
+* evocheck: the crontab is updated by the role (default: `True`)
+* evolinux-base: add mail related aliases
+* evolinux-todo: new role, to help maintain a file of todo tasks
+* fail2ban: add a variable to disable the ssh filter (default: `False`)
+* etc-git: install a script to optimize the repository each month
+* fail2ban: add a variable to update the list of ignored IP addresses/blocs (default: `False`)
+* generate-ldif: detect installed packages even if "held" by APT
+* java: support for Oracle JRE
+* kibana: log messages go to /var/log/kibana/kibana.log
+* metricbeat: add a role (copied from filebeat)
+* munin: properly rename Munin cache directory
+* mysql: add an option to install the client development  libraries (default: `False`)
+* nagios-nrpe: add check_postgrey
+
+### Changed
+* etc-git: some entries of .gitignore are mandatory
+* evocheck: update upstream script
+* evolinux-base: improve hostname configuration (real vs. internal)
+* evolinux-base: use the "evolinux-todo" role
+* evolinux-users: add sudo permission for bkctld check
+* java8: renamed to java (java8 symlinked to java for backward compatibility)
+* minifirewall: the tail file can be overwritten, or not (default: `True`)
+* nagios-nrpe: use bkctld internal check instead of nrpe plugin
+* php: reorganization of the role for Sury overrides and more clear configuration
+* redmine: use .my.cnf for mysql password
+* rbenv: change default Ruby version (2.5.1)
+* rbenv: switch from copy to lineinfile for default gems
+* remount-usr: mount doesn't report a change
+* squid: add a few news sites to the whitelist
+* tomcat: better nrpe check output
+* kvm-host: install kvm-tools package instead of copying add-vm.sh
+
+### Fixed
+* apache: logrotate replacement is more subtle/precise. It replaces only the proper directive and not every occurence of the word.
+* bind: chroot-bind.sh must not be executed in check mode
+* evoacme: fix module detection in apache config
+* fail2ban: fix fail2ban_ignore_ips definition
+* mysql-oracle: fix configuration directory variable
+* php: fpm slowlog needs an absolute path
+* roundcube: add missing slash to https redirection
+
 ## [9.2.0] - 2018-05-16
 
 ### Changed

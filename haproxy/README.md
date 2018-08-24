@@ -8,7 +8,7 @@ Everything is in the `tasks/main.yml` file.
 
 ## Available variables
 
-* `haproxy_jessie_backports` : on Debian Jessie, we can prefer v1.7 from backports (default: `False`)
+* `haproxy_backports` : We can either prefer v1.7 from backports for Debian Jessie or v1.8 for Debian Stretch (default: `False`)
 
 ## Configuration templates
 

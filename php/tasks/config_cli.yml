@@ -1,0 +1,48 @@
+---
+- name: "Set default php.ini values for CLI (jessie)"
+  ini_file:
+    dest: "{{ php_cli_defaults_ini_file }}"
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+    create: yes
+  with_items:
+    - { option: "short_open_tag", value: "Off" }
+    - { option: "expose_php", value: "Off" }
+    - { option: "display_errors", value: "Off" }
+    - { option: "log_errors", value: "On" }
+    - { option: "html_errors", value: "Off" }
+    - { option: "allow_url_fopen", value: "Off" }
+
+- name: "Disable PHP functions for CLI (jessie)"
+  ini_file:
+    dest: "{{ php_cli_defaults_ini_file }}"
+    section: PHP
+    option: disable_functions
+    value: "exec,shell-exec,system,passthru,putenv,popen"
+
+- name: Custom php.ini for CLI (jessie)
+  copy:
+    dest: "{{ php_cli_custom_ini_file }}"
+    content: |
+      ; Put customized values here.
+    force: no
+
+# This task is not merged with the above copy
+# because "force: no" prevents any fix after the fact
+- name: "Permissions for custom php.ini for CLI (jessie)"
+  file:
+    dest: "{{ php_cli_custom_ini_file }}"
+    mode: "0644"
+
+- name: "Set custom values for PHP to enable Symfony (jessie)"
+  ini_file:
+    dest: "{{ php_cli_custom_ini_file }}"
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  with_items:
+    - { option: "date.timezone", value: "Europe/Paris" }
+  when: php_symfony_requirements

@@ -1,0 +1,10 @@
+---
+
+- name: evocheck crontab is updated
+  template:
+    src: crontab.j2
+    dest: /etc/cron.d/evocheck
+    mode: "0644"
+    owner: root
+    group: root
+    force: yes

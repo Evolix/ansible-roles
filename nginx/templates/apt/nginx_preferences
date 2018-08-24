@@ -1,0 +1,3 @@
+Package: nginx nginx-* libnginx-* libssl*
+Pin: release a={{ ansible_distribution_release }}-backports
+Pin-Priority: 999

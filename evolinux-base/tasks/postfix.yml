@@ -26,7 +26,7 @@
   lineinfile:
     dest: /etc/postfix/main.cf
     state: present
-    line: "mydestination = {{ evolinux_fqdn }} localhost.localdomain localhost"
+    line: "mydestination = {{ [evolinux_fqdn, evolinux_internal_fqdn] | unique | join(' ') }} localhost.localdomain localhost"
     regexp: '^mydestination'
   notify: reload postfix
   tags:
@@ -61,6 +61,9 @@
     - postmaster
     - abuse
     - mailer-daemon
+    - delay
+    - error
+    - bounce
   notify: newaliases
   when: evolinux_postfix_mailer_alias_root
   tags:

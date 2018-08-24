@@ -1,0 +1,45 @@
+---
+
+- name: Set default values for PHP
+  ini_file:
+    dest: "{{ php_apache_defaults_ini_file }}"
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+    create: yes
+  with_items:
+    - { option: "short_open_tag", value: "Off" }
+    - { option: "expose_php", value: "Off" }
+    - { option: "display_errors", value: "Off" }
+    - { option: "log_errors", value: "On" }
+    - { option: "html_errors", value: "Off" }
+    - { option: "allow_url_fopen", value: "Off" }
+
+- name: Disable PHP functions
+  ini_file:
+    dest: "{{ php_apache_defaults_ini_file }}"
+    section: PHP
+    option: disable_functions
+    value: "exec,shell-exec,system,passthru,putenv,popen"
+    mode: "0644"
+
+- name: Custom php.ini
+  copy:
+    dest: "{{ php_apache_custom_ini_file }}"
+    content: |
+      ; Put customized values here.
+      ; default_charset = "ISO-8859-1"
+    mode: "0644"
+    force: no
+
+- name: "Set custom values for PHP to enable Symfony"
+  ini_file:
+    dest: "{{ php_apache_custom_ini_file }}"
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  with_items:
+    - { option: "date.timezone", value: "Europe/Paris" }
+  when: php_symfony_requirements

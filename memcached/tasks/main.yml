@@ -3,7 +3,7 @@
     name: memcached
     state: present
   tags:
-  - memcached
+    - memcached
 
 - name: Memcached is configured.
   template:
@@ -12,7 +12,8 @@
     mode: "0644"
   notify: restart memcached
   tags:
-  - memcached
+    - memcached
+  when: memcached_instance_name == ""
 
 - name: Memcached is running and enabled on boot.
   service:
@@ -20,7 +21,54 @@
     enabled: yes
     state: started
   tags:
-  - memcached
+    - memcached
+  when: memcached_instance_name == ""
+
+- name: Add systemd template
+  copy:
+    src: memcached@.service
+    dest: /etc/systemd/system/memcached@.service
+  tags:
+    - memcached
+  when: memcached_instance_name != ""
+
+- name: Delete default memcached systemd configuration file
+  systemd:
+    name: memcached
+    enabled: false
+    state: stopped
+  tags:
+    - memcached
+  when: memcached_instance_name != ""
+
+- name: Make sure memcached.conf is absent
+  file:
+    path: /etc/memcached.conf
+    state: absent
+  tags:
+    - memcached
+  when: memcached_instance_name != ""
+
+- name: Create a configuration file
+  template:
+    src: memcached.conf.j2
+    dest: /etc/memcached_{{ memcached_instance_name }}.conf
+    mode: "0644"
+  tags:
+    - memcached
+  when: memcached_instance_name != ""
+
+- name: Enable and start the memcached instance
+  systemd:
+    name: memcached@{{ memcached_instance_name }}
+    enabled: yes
+    state: started
+    daemon_reload: yes
+    masked: no
+  tags:
+    - memcached
+  when: memcached_instance_name != ""
 
 - include: munin.yml
+
 - include: nrpe.yml

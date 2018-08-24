@@ -9,7 +9,7 @@ allowed_hosts={{ nagios_nrpe_allowed_hosts | join(',') }}
 # System checks
 command[check_load]=/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20
 command[check_swap]=/usr/lib/nagios/plugins/check_swap -a -w 30% -c 20%
-command[check_disk1]=/usr/lib/nagios/plugins/check_disk -x /lib/init/rw -x /dev -x /dev/shm -w 10% -c 3% -W 10% -K 3% -C -w 5% -c 2% -W 5% -K 2% -p /home
+command[check_disk1]=/usr/lib/nagios/plugins/check_disk -x /lib/init/rw -x /dev -x /dev/shm -x /sys/kernel/debug/tracing -w 10% -c 3% -W 10% -K 3% -C -w 5% -c 2% -W 5% -K 2% -p /home
 command[check_zombie_procs]=sudo /usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z
 command[check_total_procs]=sudo /usr/lib/nagios/plugins/check_procs -w 400 -c 600
 command[check_users]=/usr/lib/nagios/plugins/check_users -w 5 -c 10
@@ -51,7 +51,8 @@ command[check_ssl]=/usr/lib/nagios/plugins/check_http -f follow -I 127.0.0.1 -S 
 command[check_elasticsearch]=/usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /_cat/health?h=st -p 9200 -r 'red' --invert-regex
 command[check_memcached]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 11211
 command[check_opendkim]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 54321
-command[check_bkctld]=/usr/lib/nagios/plugins/check_bkctld
+command[check_bkctld]=sudo /usr/sbin/bkctld check
+command[check_postgrey]=/usr/lib/nagios/plugins/check_tcp -p10023
 
 # Local checks (not packaged)
 command[check_mem]={{ nagios_plugins_directory }}/check_mem -f -C -w 20 -c 10

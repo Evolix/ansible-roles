@@ -1,4 +1,6 @@
 ---
+- include_role:
+    name: remount-usr
 
 - name: "Install check_haproxy_stats script"
   copy:

@@ -1,0 +1,76 @@
+---
+
+- name: Set default php.ini values for FPM
+  ini_file:
+    dest: "{{ php_fpm_defaults_ini_file }}"
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+    create: yes
+  with_items:
+    - { option: "short_open_tag", value: "Off" }
+    - { option: "expose_php", value: "Off" }
+    - { option: "display_errors", value: "Off" }
+    - { option: "log_errors", value: "On" }
+    - { option: "html_errors", value: "Off" }
+    - { option: "allow_url_fopen", value: "Off" }
+  notify: "restart {{ php_fpm_service_name }}"
+
+- name: Disable PHP functions for FPM
+  ini_file:
+    dest: "{{ php_fpm_defaults_ini_file }}"
+    section: PHP
+    option: disable_functions
+    value: "exec,shell-exec,system,passthru,putenv,popen"
+  notify: "restart {{ php_fpm_service_name }}"
+
+- name: Custom php.ini for FPM
+  copy:
+    dest: "{{ php_fpm_custom_ini_file }}"
+    content: |
+      ; Put customized values here.
+    force: no
+  notify: "restart {{ php_fpm_service_name }}"
+
+- name: Set default PHP FPM values
+  ini_file:
+    dest: "{{ php_fpm_defaults_conf_file }}"
+    section: www
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+    create: yes
+  with_items:
+    - { option: "pm", value: "ondemand" }
+    - { option: "pm.max_children", value: "100" }
+    - { option: "pm.process_idle_timeout", value: "10s" }
+    - { option: "slowlog", value: "/var/log/$pool.log.slow" }
+    - { option: "request_slowlog_timeout", value: "5s" }
+    - { option: "pm.status_path", value: "/fpm_status" }
+    - { option: "request_terminate_timeout", value: "60s" }
+    - { option: "chroot", value: "/var/www/html" }
+  notify: "restart {{ php_fpm_service_name }}"
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: Custom PHP FPM values
+  copy:
+    dest: "{{ php_fpm_custom_conf_file }}"
+    content: |
+      ; Put customized values here.
+      ; default_charset = "ISO-8859-1"
+    mode: "0644"
+    force: no
+  notify: "restart {{ php_fpm_service_name }}"
+
+- name: "Set custom values for PHP to enable Symfony"
+  ini_file:
+    dest: "{{ php_cli_custom_ini_file }}"
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  with_items:
+    - { option: "date.timezone", value: "Europe/Paris" }
+  notify: "restart {{ php_fpm_service_name }}"
+  when: php_symfony_requirements

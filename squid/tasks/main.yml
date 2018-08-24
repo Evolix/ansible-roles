@@ -44,7 +44,7 @@
   notify: "reload squid3"
   when: ansible_distribution_release == "jessie"
 
-- name: "evolinux custom squid file (Debian 9 or later)"
+- name: "evolinux defaults squid file (Debian 9 or later)"
   copy:
     src: evolinux-defaults.conf
     dest: /etc/squid/evolinux-defaults.conf

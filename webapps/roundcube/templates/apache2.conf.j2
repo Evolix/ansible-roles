@@ -1,6 +1,6 @@
 <VirtualHost *:80>
     ServerName {{ roundcube_host }}
-    Redirect permanent / https://{{ roundcube_host }}
+    Redirect permanent / https://{{ roundcube_host }}/
 </VirtualHost>
 
 <VirtualHost *:443>

@@ -76,7 +76,7 @@
   with_nested:
   - [ "client", "mysql_upgrade" ]
   - [ { option: 'user', value: 'debian-sys-maint' },
-      { option: password, value: '{{ mysql_debian_password.stdout }}' }
+      { option: 'password', value: '{{ mysql_debian_password.stdout }}' }
     ]
   when: create_debian_user.changed
   tags:

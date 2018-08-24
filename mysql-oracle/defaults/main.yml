@@ -5,6 +5,8 @@ log2mail_alert_email: Null
 general_scripts_dir: "/usr/share/scripts"
 mysql_scripts_dir: Null
 
+mysql_install_libclient: False
+
 mysql_replace_root_with_mysqladmin: True
 
 mysql_custom_datadir: ''

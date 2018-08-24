@@ -1,3 +1,0 @@
-Package: nginx nginx-* libnginx-* libssl*
-Pin: release a=jessie-backports
-Pin-Priority: 999

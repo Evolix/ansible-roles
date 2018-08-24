@@ -81,7 +81,6 @@
   command: "/root/chroot-bind.sh"
   register: chrootbind_run
   changed_when: False
-  check_mode: no
   when: bind_chroot_set
 
 - debug:
@@ -117,5 +116,3 @@
     force: yes
   notify: restart bind
   when: bind_chroot_set
-
-

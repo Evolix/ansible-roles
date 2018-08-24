@@ -5,15 +5,6 @@
 
 - include: packages.yml
 
-- include_role:
-    name: remount-usr
-
-- name: Copy add-vm script
-  get_url:
-    url: https://forge.evolix.org/projects/kvm-tools/repository/revisions/master/raw/add-vm.sh
-    dest: /usr/share/scripts/add-vm.sh
-    mode: "0750"
-
 - include: munin.yml
 
 - include: images.yml

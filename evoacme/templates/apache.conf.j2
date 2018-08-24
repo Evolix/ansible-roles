@@ -1,7 +1,7 @@
-<IfModule jk>
+<IfModule jk_module>
 	SetEnvIf Request_URI "/.well-known/acme-challenge/*" no-jk
 </IfModule>
-<IfModule proxy>
+<IfModule proxy_module>
 	ProxyPass /.well-known/acme-challenge/ !
 </IfModule>
 Alias /.well-known/acme-challenge {{ evoacme_acme_dir }}/.well-known/acme-challenge

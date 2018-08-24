@@ -3,7 +3,7 @@
 - name: Install packages
   apt:
     name: "{{ item }}"
-    state: installed
+    state: present
   with_items:
     - mongodb
     - mongo-tools
@@ -11,7 +11,7 @@
 - name: install dependency for monitoring
   apt:
     name: python-pymongo
-    state: installed
+    state: present
 
 - name: Custom configuration
   template:

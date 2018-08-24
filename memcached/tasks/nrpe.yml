@@ -1,4 +1,7 @@
 ---
+- include_role:
+    name: remount-usr
+
 - name: Is nrpe present ?
   stat:
     path: /etc/nagios/nrpe.d/evolix.cfg
@@ -15,12 +18,13 @@
       dest: /usr/local/lib/nagios/plugins/
       mode: "0755"
 
+  # TODO: install a "multi-instances" check if the memcached_instance_name variable is not null
+
   - name: Add NRPE check
     lineinfile:
       name: /etc/nagios/nrpe.d/evolix.cfg
       regexp: '^command\[check_memcached\]='
-      line: 'command[check_memcached]=/usr/local/lib/nagios/plugins/check_memcached.pl -H 127.0.0.1'
+      line: 'command[check_memcached]=/usr/local/lib/nagios/plugins/check_memcached.pl -H 127.0.0.1 -p {{ memcached_port }}'
     notify: restart nagios-nrpe-server
 
   when: nrpe_evolix_config.stat.exists
-

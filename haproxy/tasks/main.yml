@@ -2,18 +2,18 @@
 - name: ssl-cert package is installed
   apt:
     name: ssl-cert
-    state: installed
+    state: present
   tags:
   - haproxy
   - packages
 
-- include: packages_jessie_backports.yml
-  when: ansible_distribution_release == "jessie" and haproxy_jessie_backports
+- include: packages_backports.yml
+  when: haproxy_backports
 
 - name: Install HAProxy package
   apt:
     name: haproxy
-    state: installed
+    state: present
   tags:
   - haproxy
   - packages

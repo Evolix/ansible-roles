@@ -66,11 +66,17 @@
     option: env.password
     value: '{{ redis_password }}'
   notify: restart munin-node
-  when: "redis_password != '' and redis_password != None and {{munin_redis_blocs_in_config.stdout | int}} <= 1"
+  when:
+    - redis_password != ''
+    - redis_password != None
+    - (munin_redis_blocs_in_config.stdout | int) <= 1
   tags: redis
 
 
 - name: Warn if multiple instance in munin-plugins configuration
   debug:
     msg: "WARNING - It seems you have multiple redis sections in your munin-node configuration - Munin config NOT changed"
-  when: "redis_password != '' and redis_password != None and {{munin_redis_blocs_in_config.stdout | int}} > 1 "
+  when:
+    - redis_password != ''
+    - redis_password != None
+    - (munin_redis_blocs_in_config.stdout | int) > 1
