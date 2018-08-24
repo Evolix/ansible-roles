@@ -37,6 +37,7 @@ The **patch** part changes incrementally at each release.
 * metricbeat: add a role (copied from filebeat)
 * munin: properly rename Munin cache directory
 * mysql: add an option to install the client development  libraries (default: `False`)
+* mysql: add a few variables to customize the configuration
 * nagios-nrpe: add check_postgrey
 
 ### Changed
