@@ -7,10 +7,7 @@
   failed_when: False
   check_mode: no
 
-- debug:
+- name: "Content of /etc/evolinux/todo.txt"
+  debug:
     var: evolinux_todo.stdout_lines
   when: evolinux_todo.stdout != ""
-
-- debug:
-    msg: "There is nothing to do !"
-  when: evolinux_todo.stdout == ""
