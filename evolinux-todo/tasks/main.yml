@@ -1,0 +1,14 @@
+---
+
+- name: /etc/evolinux is present
+  file:
+    dest: /etc/evolinux
+    mode: "0700"
+    state: directory
+
+- name: /etc/evolinux/todo.txt is present
+  copy:
+    src: todo.defaults.txt
+    dest: /etc/evolinux/todo.txt
+    mode: "0640"
+    force: no
