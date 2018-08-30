@@ -24,6 +24,7 @@ minifirewall_private_ports_tcp: [5666]
 minifirewall_private_ports_udp: []
 
 minifirewall_autostart: "no"
+minifirewall_restart_if_needed: True
 
 evomaintenance_hosts: []
 

@@ -11,6 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* minifirewall: add a variable to disable the restart handler
 
 ### Changed
 
