@@ -1,2 +1,7 @@
 ---
 elastic_stack_version: "6.x"
+
+metricbeat_elasticsearch_hosts:
+  - "localhost:9200"
+metricbeat_elasticsearch_auth_username: ""
+metricbeat_elasticsearch_auth_password: ""

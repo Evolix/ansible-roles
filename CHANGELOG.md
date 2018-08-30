@@ -18,6 +18,11 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [9.3.1] - 2018-08-30
+
+### Added
+* metricbeat: new variables to configure elasticsearch hosts and auth
+
 ## [9.3.0] - 2018-08-24
 
 ### Added
