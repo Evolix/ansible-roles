@@ -11,6 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* metricbeat: new variables to configure elasticsearch hosts and auth
 
 ### Changed
 

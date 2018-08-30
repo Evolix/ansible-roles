@@ -39,3 +39,27 @@
   systemd:
     name: metricbeat
     enabled: yes
+
+- name: Metricbeat knows where to find Elasticsearch
+  lineinfile:
+    dest: /etc/metricbeat/metricbeat.yml
+    regexp: '^  hosts: .*'
+    line: "  hosts: [\"{{ metricbeat_elasticsearch_hosts | join('\", \"') }}\"]"
+    insertafter: "output.elasticsearch:"
+  notify: restart metricbeat
+  when:
+    - metricbeat_elasticsearch_hosts
+
+- name: Metricbeat auth/username for Elasticsearch are configured
+  lineinfile:
+    dest: /etc/metricbeat/metricbeat.yml
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    insertafter: "output.elasticsearch:"
+  with_items:
+    - { regexp: '^  #username: .*', line: '  username: "{{ metricbeat_elasticsearch_auth_username }}"' }
+    - { regexp: '^  #password: .*', line: '  password: "{{ metricbeat_elasticsearch_auth_password }}"' }
+  notify: restart metricbeat
+  when:
+    - metricbeat_elasticsearch_auth_username != ""
+    - metricbeat_elasticsearch_auth_password != ""
