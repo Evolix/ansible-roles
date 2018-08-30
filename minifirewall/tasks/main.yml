@@ -13,3 +13,8 @@
 
 - include: tail.yml
   when: minifirewall_tail_included
+
+-  name: Force restart minifirewall
+   command: /bin/true
+   notify: restart minifirewall
+   when: minifirewall_restart_force

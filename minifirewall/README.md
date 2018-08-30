@@ -17,6 +17,7 @@ Everything is in the `tasks/main.yml` file.
 * `minifirewall_privilegied_ips`: with IP/hosts should be trusted for restricted access (default: none)
 * `minifirewall_tail_included` : source a "tail" file at the end of the main config file. (default: `False`)
 * `minifirewall_restart_if_needed` : should the restart handler be executed (default: `True`)
+* `minifirewall_restart_force` : force restart minifirewall at the end of the role execution (default: `False`)
 The full list of variables (with default values) can be found in `defaults/main.yml`.
 
 **Some IP/hosts must be configured or the server will be inaccessible via network.**
