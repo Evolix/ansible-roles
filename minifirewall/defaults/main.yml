@@ -1,6 +1,8 @@
 ---
+
+minifirewall_tail_file: /etc/default/minifirewall.tail
 minifirewall_tail_included: False
-minifirewall_tail_force: yes
+minifirewall_tail_force: True
 
 minifirewall_git_url: "https://forge.evolix.org/minifirewall.git"
 minifirewall_checkout_path: "/tmp/minifirewall"
@@ -23,7 +25,7 @@ minifirewall_semipublic_ports_udp: []
 minifirewall_private_ports_tcp: [5666]
 minifirewall_private_ports_udp: []
 
-minifirewall_autostart: "no"
+minifirewall_autostart: False
 minifirewall_restart_if_needed: True
 minifirewall_restart_force: False
 

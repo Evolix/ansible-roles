@@ -2,8 +2,8 @@
 - name: Add some rules at the end of minifirewall file
   template:
     src: "{{ item }}"
-    dest: /etc/default/minifirewall.tail
-    force: "{{ minifirewall_tail_force | bool | ternary('yes', 'no') }}"
+    dest: "{{ minifirewall_tail_file }}"
+    force: "{{ minifirewall_tail_force | bool }}"
   with_first_found:
   - "templates/minifirewall-tail/minifirewall.{{ inventory_hostname }}.tail.j2"
   - "templates/minifirewall-tail/minifirewall.{{ host_group }}.tail.j2"
@@ -19,7 +19,7 @@
   blockinfile:
     dest: /etc/default/minifirewall
     marker: "# {mark} ANSIBLE MANAGED EXTERNAL RULES"
-    block: . /etc/default/minifirewall.tail
+    block: ". {{ minifirewall_tail_file }}"
     insertbefore: EOF
   register: minifirewall_tail_source
 
