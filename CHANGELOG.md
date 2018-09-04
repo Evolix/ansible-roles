@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 * minifirewall: improve variables values and documentation
 
 ### Changed
+* dovecot: enable SSL/TLS by default with snakeoil certificate
 
 ### Fixed
 
