@@ -12,6 +12,7 @@ galaxy_info:
   platforms:
   - name: Debian
     versions:
+    - stretch
     - jessie
     - squeeze
 
