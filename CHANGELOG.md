@@ -11,6 +11,16 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Security
+
+## [9.3.2] - 2018-09-06
+
+### Added
 * minifirewall: add a variable to disable the restart handler
 * minifirewall: add a variable to force a restart of the firewall (even with no change)
 * minifirewall: improve variables values and documentation
