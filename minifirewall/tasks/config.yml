@@ -123,7 +123,17 @@
   register: minifirewall_init_restart
   failed_when: "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
   changed_when: "'starting IPTables rules is now finish : OK' in minifirewall_init_restart.stdout"
-  when: minifirewall_is_running.rc == 0 and (minifirewall_config_ips | changed or minifirewall_config_ports | changed)
+  when:
+    - minifirewall_restart_if_needed
+    - minifirewall_is_running.rc == 0
+    - (minifirewall_config_ips | changed or minifirewall_config_ports | changed)
+
+- name: restart minifirewall (noop)
+  meta: noop
+  register: minifirewall_init_restart
+  failed_when: False
+  changed_when: False
+  when: not minifirewall_restart_if_needed
 
 - debug:
     var: minifirewall_init_restart

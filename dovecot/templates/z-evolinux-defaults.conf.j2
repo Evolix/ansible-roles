@@ -34,3 +34,8 @@ service login {
     process_limit = 256
 }
 mail_max_userip_connections = 42
+
+# SSL/TLS
+ssl = yes
+ssl_cert = </etc/ssl/certs/ssl-cert-snakeoil.pem
+ssl_key = </etc/ssl/private/ssl-cert-snakeoil.key
