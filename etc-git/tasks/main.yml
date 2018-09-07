@@ -88,3 +88,24 @@
     force: no
   tags:
     - etc-git
+
+- name: regularly check for uncommited changes (if no one is connected)
+  cron:
+    name: git-status-except-connected
+    special_time: "hourly"
+    user: root
+    job: "who > /dev/null || git --git-dir=/etc/.git --work-tree=/etc status --short"
+    state: present
+  tags:
+    - etc-git
+
+- name: daily check for uncommited changes
+  cron:
+    name: git-status
+    user: root
+    hour: 21
+    minute: 21
+    job: "git --git-dir=/etc/.git --work-tree=/etc status --short"
+    state: present
+  tags:
+    - etc-git
