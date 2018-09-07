@@ -89,23 +89,11 @@
   tags:
     - etc-git
 
-- name: regularly check for uncommited changes (if no one is connected)
-  cron:
-    name: git-status-except-connected
-    special_time: "hourly"
-    user: root
-    job: "who > /dev/null || git --git-dir=/etc/.git --work-tree=/etc status --short"
-    state: "{{ etc_git_monitor_status | bool | ternary('present','absent') }}"
-  tags:
-    - etc-git
-
-- name: daily check for uncommited changes
-  cron:
-    name: git-status
-    user: root
-    hour: 21
-    minute: 21
-    job: "git --git-dir=/etc/.git --work-tree=/etc status --short"
+- name: Cron job for /etc/.git status
+  template:
+    src: etc-git-status.j2
+    dest: /etc/cron.d/etc-git-status
+    mode: "0644"
     state: "{{ etc_git_monitor_status | bool | ternary('present','absent') }}"
   tags:
     - etc-git
