@@ -29,3 +29,7 @@ There is also an independant task that can be executed to commit changes made in
     vars:
       commit_message: "Ansible post-run my splendid playbook"
 ```
+
+## Available variables
+
+* `etc_git_monitor_status`: monitor uncommited changes in /etc/.git (default: `True`) ;

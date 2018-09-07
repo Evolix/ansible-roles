@@ -11,6 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* etc-git: manage a cron job to monitor uncommited changes in /etc/.git (default: `True`)
 
 ### Changed
 

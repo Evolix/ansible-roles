@@ -1,2 +1,4 @@
 ---
 commit_message: Ansible run
+
+etc_git_monitor_status: True
