@@ -95,7 +95,7 @@
     special_time: "hourly"
     user: root
     job: "who > /dev/null || git --git-dir=/etc/.git --work-tree=/etc status --short"
-    state: "{{ etc_git_monitor_status | bool | ternary("present","absent") }}"
+    state: "{{ etc_git_monitor_status | bool | ternary('present','absent') }}"
   tags:
     - etc-git
 
@@ -106,6 +106,6 @@
     hour: 21
     minute: 21
     job: "git --git-dir=/etc/.git --work-tree=/etc status --short"
-    state: "{{ etc_git_monitor_status | bool | ternary("present","absent") }}"
+    state: "{{ etc_git_monitor_status | bool | ternary('present','absent') }}"
   tags:
     - etc-git
