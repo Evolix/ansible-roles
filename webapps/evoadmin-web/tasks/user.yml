@@ -75,7 +75,7 @@
   args:
     creates: "{{ evoadmin_scripts_dir }}/web-add.sh"
 
-# we use a shell command to have a "changed" thet really reflects the result.
+# we use a shell command to have a "changed" that really reflects the result.
 - name: Fix permissions
   command: "chmod -R --verbose u=rwX,g=rX,o= {{ evoadmin_document_root }}"
   register: command_result
