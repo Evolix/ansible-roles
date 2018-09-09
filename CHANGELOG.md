@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 ### Changed
 
 ### Fixed
+* packweb-apache: don't regenerate phpMyAdmin suffix each time
 
 ### Security
 
