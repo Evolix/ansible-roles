@@ -24,6 +24,23 @@
     name: www-evoadmin
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
+- name: Is /etc/aliases present?
+  stat:
+    path: /etc/aliases
+  register: etc_aliases
+
+- name: Set evoadmin aliases
+  lineinfile:
+    dest: /etc/aliases
+    line: "{{ item.line }}"
+    regexp: "{{ item.regexp }}"
+    state: present
+  with_items:
+    - { line: 'evoadmin: root',     regexp: '^evoadmin:'}
+    - { line: 'www-evoadmin: root', regexp: '^www-evoadmin:'}
+  notify: "newaliases"
+  when: etc_aliases.stat.exists
+
 - name: Git is needed to clone the evoadmin repository
   apt:
     name: git

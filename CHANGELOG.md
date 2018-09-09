@@ -12,6 +12,7 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 * etc-git: manage a cron job to monitor uncommited changes in /etc/.git (default: `True`)
+* webapps/evoadmin-web: add users to /etc/aliases
 
 ### Changed
 

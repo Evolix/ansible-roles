@@ -4,3 +4,6 @@
   service:
     name: apache2
     state: reloaded
+
+- name: newaliases
+  command: newaliases
