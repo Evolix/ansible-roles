@@ -41,6 +41,20 @@
     - loginisbusy.rc != 0
     - uidisbusy.rc   == 0
 
+- name: Is /etc/aliases present?
+  stat:
+    path: /etc/aliases
+  register: etc_aliases
+
+- name: Set mail alias
+  lineinfile:
+    state: present
+    dest: /etc/aliases
+    line: '{{ user.name }}: root'
+    regexp: '^{{ user.name }}:'
+  when: etc_aliases.stat.exists
+  notify: "newaliases"
+
 # Unix groups
 
 ## Group for SSH authorizations
