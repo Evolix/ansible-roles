@@ -14,9 +14,11 @@
     create: yes
     state: present
   with_items:
-    - "export HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoreboth"
+    - "export HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoreboth,erasedups"
     - "export HISTSIZE=65535"
     - "export HISTTIMEFORMAT=\"%c : \""
+    - "shopt -s histappend"
+    - "PROMPT_COMMAND=\"history -a;history -n;${PROMPT_COMMAND}\""
   when: evolinux_root_bashrc
 
 ## .bash_history should be append-only
