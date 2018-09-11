@@ -17,6 +17,8 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 
+* dovecot: stronger TLS configuration
+
 ### Fixed
 * apache: cleaner way to overwrite the server status suffix
 * packweb-apache: don't regenerate phpMyAdmin suffix each time
