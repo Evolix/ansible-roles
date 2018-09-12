@@ -3,3 +3,13 @@
   service:
     name: apache2
     state: reloaded
+
+- name: reload nginx
+  service:
+    name: nginx
+    state: reloaded
+
+- name: reload php-fpm
+  service:
+    name: php7.0-fpm 
+    state: reload 

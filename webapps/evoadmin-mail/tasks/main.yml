@@ -8,7 +8,11 @@
 
 - include: ssl.yml
 
-- include: web.yml
+- include: apache.yml
+  when: evoadminmail_webserver == "apache"
+
+- include: nginx.yml
+  when: evoadminmail_webserver == "nginx"
 
 - name: enable evoadmin-mail link in default site index
   lineinfile:
