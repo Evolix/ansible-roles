@@ -85,23 +85,40 @@
   tags:
   - roundcube
 
-- name: deploy roundcube vhost
+- name: deploy apache roundcube vhost
   template:
     src: apache2.conf.j2
     dest: /etc/apache2/sites-available/rouncube.conf
     mode: "0640"
   notify: reload apache2
+  when: roundcube_webserver == "apache"
   tags:
   - roundcube
 
-- name: enable roundcube vhost
+- name: enable apache roundcube vhost
   file:
     src: /etc/apache2/sites-available/rouncube.conf
     dest: /etc/apache2/sites-enabled/rouncube.conf
     state: link
   notify: reload apache2
+  when: roundcube_webserver == "apache"
   tags:
   - roundcube
+
+- name: deploy Nginx roundcube vhost
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/rouncube.conf
+  when: roundcube_webserver == "nginx"
+  notify: reload nginx
+
+- name: enable Nginx roundcube vhost
+  file:
+    src: "/etc/nginx/sites-available/rouncube.conf"
+    dest: "/etc/nginx/sites-enabled/rouncube.conf"
+    state: link
+  when: roundcube_webserver == "nginx" 
+  notify: reload nginx
 
 - name: enable roundcube link in default site index
   lineinfile:
