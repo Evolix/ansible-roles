@@ -40,3 +40,5 @@ mysql_force_new_nrpe_password: False
 
 mysql_evolinux_defaults_file: z-evolinux-defaults.cnf
 mysql_evolinux_custom_file: zzz-evolinux-custom.cnf
+
+mysql_restart_if_needed: True

@@ -14,6 +14,7 @@ The **patch** part changes incrementally at each release.
 * etc-git: manage a cron job to monitor uncommited changes in /etc/.git (default: `True`)
 * evolinux-base: better shell history
 * evolinux-users: add user to /etc/aliases
+* mysql: add a variable to prevent mysql from restarting
 * webapps/evoadmin-web: add users to /etc/aliases
 
 ### Changed
