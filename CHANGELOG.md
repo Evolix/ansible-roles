@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: better shell history
 * evolinux-users: add user to /etc/aliases
 * mysql: add a variable to prevent mysql from restarting
+* networkd-to-ifconfig: add a role to switch from networkd to ifconfig
 * webapps/evoadmin-web: add users to /etc/aliases
 
 ### Changed

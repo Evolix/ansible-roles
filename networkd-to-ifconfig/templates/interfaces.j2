@@ -1,0 +1,17 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# The loopback network interface
+iface lo inet loopback
+
+# The primary network interface
+auto {{ eni_interface_name }}
+iface {{ eni_interface_name }} inet static
+  address {{ eni_ipv4_address }}
+  gateway {{ eni_ipv4_gateway }}
+
+iface {{ eni_interface_name }} inet6 static
+  address {{ eni_ipv6_address }}
+  gateway {{ eni_ipv6_gateway }}
+  post-up /sbin/ip -6 route add {{ eni_ipv6_gateway }} dev {{ eni_interface_name }}
+  post-up /sbin/ip -6 route add default via IPV6
