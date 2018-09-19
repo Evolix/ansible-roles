@@ -1,6 +1,6 @@
 ---
 - name: restart redis
-  service:
+  systemd:
     name: "{{ redis_daemon }}"
     state: restarted
 

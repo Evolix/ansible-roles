@@ -1,0 +1,74 @@
+---
+- name: Deploy systemd templates for redis instances
+  copy:
+    src: 'redis-server@.service'
+    dest: '/etc/systemd/system/'
+    mode: "0644"
+  tags:
+    - redis
+
+- name: Disable standard redis service
+  service:
+    name: "redis-server"
+    enabled: no
+    state: stopped
+  tags:
+    - redis
+
+- set_fact:
+    redis_daemon: "redis-server@{{ redis_instance_name }}"
+    redis_conf_path: "/etc/redis/redis-{{ redis_instance_name }}.conf"
+    redis_unixsocket: "/var/run/redis/{{ redis_instance_name }}/redis.sock"
+    redis_pidfile: "/var/run/redis/{{ redis_instance_name }}/{{ redis_daemon }}.pid"
+    redis_logfile: "/var/log/redis/{{ redis_instance_name }}/redis-server.log"
+    redis_dbdir: "/var/lib/redis/{{ redis_instance_name }}"
+  tags:
+    - redis
+
+- name: Configure redis instance.
+  template:
+    src: redis.conf.j2
+    dest: "{{ redis_conf_path }}"
+    mode: "0644"
+  tags:
+    - redis
+
+- name: Create redis instance group
+  group:
+    name: "redis-{{ redis_instance_name }}"
+    state: present
+    system: True 
+  tags:
+    - redis
+
+- name: Create redis instance user
+  user:
+    name: "redis-{{ redis_instance_name }}"
+    group: "redis-{{ redis_instance_name }}"
+    state: present
+    system: True 
+    shell: '/bin/falase'
+  tags:
+    - redis
+
+- name: Create needed dir
+  file:
+    dest: "{{ item }}"
+    state: directory
+    mode: "0755"
+    owner: "redis-{{ redis_instance_name }}"
+    group: "redis-{{ redis_instance_name }}"
+  with_items:
+    - "{{ redis_dbdir }}"
+    - "{{ redis_logfile | dirname }}"
+  tags:
+    - redis
+
+- name: Redis instance is running and enabled on boot.
+  systemd:
+    name: "{{ redis_daemon }}"
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  tags:
+    - redis
