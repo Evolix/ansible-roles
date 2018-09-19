@@ -15,10 +15,14 @@
   changed_when: false
   check_mode: no
   register: _redis_installed_version
+  tags:
+    - redis
 
 - set_fact:
     redis_installed_version: "{{ _redis_installed_version.stdout }}"
   check_mode: no
+  tags:
+    - redis
 
 - name: Redis is configured.
   template:

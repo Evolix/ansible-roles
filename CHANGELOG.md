@@ -25,6 +25,7 @@ The **patch** part changes incrementally at each release.
 * apache: cleaner way to overwrite the server status suffix
 * packweb-apache: don't regenerate phpMyAdmin suffix each time
 * nginx: cleaner way to overwrite the server status suffix
+* redis: add missing tags
 
 ### Security
 
