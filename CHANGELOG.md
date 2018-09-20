@@ -11,6 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* redis: set masterauth when redis_password is defined
 
 ### Changed
 
