@@ -53,4 +53,4 @@
     tags:
       - elasticsearch
     when: elastic_stack_version | version_compare('6', '>=')
-  when: (elasticsearch_custom_tmpdir != '' and elasticsearch_custom_tmpdir != None) or fstab_tmp_noexec | success
+  when: (elasticsearch_custom_tmpdir != '' and elasticsearch_custom_tmpdir != None) or fstab_tmp_noexec.rc == 0
