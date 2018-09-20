@@ -1,5 +1,8 @@
 ---
 
+- set_fact:
+    mysql_restart_handler_name: "{{ mysql_restart_if_needed | bool | ternary('restart mysql', 'restart mysql (noop)') }}"
+
 - include: packages.yml
 
 - include: users.yml

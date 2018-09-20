@@ -2,29 +2,34 @@
 
 - name: "Set custom values for PHP config (Debian 9 or later)"
   ini_file:
-    dest: /etc/php/7.0/apache2/conf.d/zzz-evolinux-custom.ini
+    dest: /etc/php/7.0/fpm/conf.d/zzz-evolinux-custom.ini
     section: PHP
     option: "disable_functions"
     value: "shell-exec,system,passthru,putenv,popen,pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority"
-  notify: reload apache2
+  notify: reload nginx
   when: ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: Copy php-fpm evoadmin-mail pool
+  copy:
+    src: pool.evoadmin-mail.conf
+    dest: /etc/php/7.0/fpm/pool.d/evoadmin-mail.conf
+  notify: reload php-fpm
 
 - name: Install evoadminmail VHost
   template:
-    src: evoadminmail.conf.j2
-    dest: /etc/apache2/sites-available/evoadminmail.conf
-  notify: reload apache2
+    src: nginx_evoadminmail.conf.j2
+    dest: /etc/nginx/sites-available/evoadminmail.conf
+  notify: reload nginx
 
-- name: Enable evoadminmail vhost
-  command: "a2ensite evoadminmail.conf"
-  register: cmd_a2ensite
-  changed_when: "'Enabling site' in cmd_a2ensite.stdout"
-  notify: reload apache2
+- name: Active evoadminmail VHost     
+  file:
+    src: "/etc/nginx/sites-available/evoadminmail.conf"
+    dest: "/etc/nginx/sites-enabled/evoadminmail.conf"
+    state: link
+  notify: reload nginx
   when: evoadminmail_enable_vhost
 
 - name: Disable evoadminmail vhost
-  command: "a2dissite evoadminmail.conf"
-  register: cmd_a2dissite
-  changed_when: "'Disabling site' in cmd_a2dissite.stdout"
-  notify: reload apache2
+  command: "unlink /etc/nginx/sites-enabled/evoadminmail.conf"
+  notify: reload nginx
   when: not evoadminmail_enable_vhost

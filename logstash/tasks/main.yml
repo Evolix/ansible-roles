@@ -75,3 +75,5 @@
     verbosity: 1
 
 - include: logs.yml
+
+- include: tmpdir.yml

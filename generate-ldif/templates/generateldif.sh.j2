@@ -547,6 +547,24 @@ ServiceVersion: Elasticsearch ${elasticsearch_version}
 EOT
 fi
 
+# PostgreSQL
+if is_pkg_installed postgresql; then
+    postgresql_version=$(get_pkg_version postgresql)
+fi
+if [ -n "${postgresql_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=postgresql,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: postgresql
+ipServicePort: 5432
+ServiceType: database
+ServiceVersion: PostgreSQL ${elasticsearch_version}
+EOT
+fi
+
 # test if we have a stdout
 if [ -t 1 ]; then
   echo "Output is in ${ldif_file}"

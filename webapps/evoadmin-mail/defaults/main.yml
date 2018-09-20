@@ -11,6 +11,7 @@ evoadminmail_scripts_dir: /usr/share/scripts/
 evoadminmail_host: "evoadminmail.{{ ansible_fqdn }}"
 
 evoadminmail_enable_vhost: True
+evoadminmail_webserver: apache
 
 evoadminmail_tpl_servername: "{{ ansible_fqdn }}"
 evoadminmail_tpl_address:  "{{ ansible_default_ipv4.address }}"

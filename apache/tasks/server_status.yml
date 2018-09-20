@@ -9,7 +9,11 @@
     state: directory
 
 - name: set apache serverstatus suffix if provided
-  shell: "echo {{ apache_serverstatus_suffix }} > {{ apache_serverstatus_suffix_file }}"
+  copy:
+    dest: "{{ apache_serverstatus_suffix_file }}"
+    # The last character "\u000A" is a line feed (LF), it's better to keep it
+    content: "{{ apache_serverstatus_suffix }}\u000A"
+    force: yes
   when: apache_serverstatus_suffix != ""
 
 - name: generate random string for server-status suffix

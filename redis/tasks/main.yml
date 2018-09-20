@@ -15,10 +15,17 @@
   changed_when: false
   check_mode: no
   register: _redis_installed_version
+  tags:
+    - redis
 
 - set_fact:
     redis_installed_version: "{{ _redis_installed_version.stdout }}"
   check_mode: no
+  tags:
+    - redis
+
+- include: instances.yml
+  when: redis_instance_name is defined
 
 - name: Redis is configured.
   template:
@@ -26,14 +33,16 @@
     dest: "{{ redis_conf_path }}"
     mode: "0644"
   notify: restart redis
+  when: redis_instance_name is not defined
   tags:
     - redis
 
 - name: Redis is running and enabled on boot.
-  service:
+  systemd:
     name: "{{ redis_daemon }}"
     enabled: yes
     state: started
+  when: redis_instance_name is not defined
   tags:
     - redis
 

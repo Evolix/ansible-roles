@@ -22,3 +22,5 @@ mysql_cron_mysqltuner: True
 mysql_cron_mysqltuner_frequency: monthly
 
 mysql_force_new_nrpe_password: False
+
+mysql_restart_if_needed: True

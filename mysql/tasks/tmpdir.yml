@@ -17,7 +17,7 @@
       section: mysqld
       option: tmpdir
       value: "{{ mysql_custom_tmpdir }}"
-    notify: restart mysql
+    notify: "{{ mysql_restart_handler_name }}"
     tags:
       - mysql
   when: mysql_custom_tmpdir != ''

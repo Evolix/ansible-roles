@@ -88,3 +88,20 @@
     force: no
   tags:
     - etc-git
+
+- name: Cron job for /etc/.git status is installed
+  template:
+    src: etc-git-status.j2
+    dest: /etc/cron.d/etc-git-status
+    mode: "0644"
+  when: etc_git_monitor_status
+  tags:
+    - etc-git
+
+- name: Cron job for /etc/.git status is removed
+  file:
+    dest: /etc/cron.d/etc-git-status
+    state: absent
+  when: not etc_git_monitor_status
+  tags:
+    - etc-git

@@ -1,0 +1,31 @@
+---
+
+- name: Check if /tmp is noexec
+  shell: "cat /etc/fstab | grep -E \" +/tmp\" | grep noexec"
+  register: fstab_tmp_noexec
+  failed_when: False
+  changed_when: False
+  check_mode: no
+
+- block:
+  - name: "Create {{ logstash_custom_tmpdir or logstash_default_tmpdir | mandatory }}"
+    file:
+      path: "{{ logstash_custom_tmpdir or logstash_default_tmpdir | mandatory }}"
+      owner: logstash
+      group: logstash
+      mode: "0755"
+      state: directory
+    tags:
+      - logstash
+
+  - name: change JVM tmpdir
+    lineinfile:
+      dest: /etc/logstash/jvm.options
+      line: "-Djava.io.tmpdir={{ logstash_custom_tmpdir or logstash_default_tmpdir | mandatory }}"
+      regexp: "^-Djava.io.tmpdir="
+      insertafter: "## JVM configuration"
+    notify:
+      - restart logstash
+    tags:
+      - logstash
+  when: (logstash_custom_tmpdir != '' and logstash_custom_tmpdir != None) or fstab_tmp_noexec.rc == 0

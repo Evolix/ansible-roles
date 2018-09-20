@@ -38,5 +38,6 @@ Tasks are extracted in several files, included in `tasks/main.yml` :
 * `mysql_scripts_dir`: email address to send Log2mail messages to (default: `general_scripts_dir`).
 * `mysql_force_new_nrpe_password` : change the password for NRPE even if it exists already (default: `False`).
 * `mysql_install_libclient`: install mysql client libraries (default: `False`).
+* `mysql_restart_if_needed` : should the restart handler be executed (default: `True`)
 
 NB : changing the _datadir_ location can be done multiple times, as long as it is not restored to the default initial location, (because a symlink is created and can't be switched back, yet).

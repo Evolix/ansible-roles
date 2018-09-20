@@ -29,6 +29,13 @@
     createhome: no
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
+- name: Add www-data to app's group
+  user:
+    name: 'www-data'           
+    groups: "{{ evoadminmail_username }}"
+    append: yes                
+  when: evoadminmail_webserver == "nginx"
+
 - name: Install Git
   apt:
     name: git

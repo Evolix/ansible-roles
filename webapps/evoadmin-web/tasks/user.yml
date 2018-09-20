@@ -24,6 +24,23 @@
     name: www-evoadmin
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
+- name: Is /etc/aliases present?
+  stat:
+    path: /etc/aliases
+  register: etc_aliases
+
+- name: Set evoadmin aliases
+  lineinfile:
+    dest: /etc/aliases
+    line: "{{ item.line }}"
+    regexp: "{{ item.regexp }}"
+    state: present
+  with_items:
+    - { line: 'evoadmin: root',     regexp: '^evoadmin:'}
+    - { line: 'www-evoadmin: root', regexp: '^www-evoadmin:'}
+  notify: "newaliases"
+  when: etc_aliases.stat.exists
+
 - name: Git is needed to clone the evoadmin repository
   apt:
     name: git
@@ -75,7 +92,7 @@
   args:
     creates: "{{ evoadmin_scripts_dir }}/web-add.sh"
 
-# we use a shell command to have a "changed" thet really reflects the result.
+# we use a shell command to have a "changed" that really reflects the result.
 - name: Fix permissions
   command: "chmod -R --verbose u=rwX,g=rX,o= {{ evoadmin_document_root }}"
   register: command_result
