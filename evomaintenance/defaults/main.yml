@@ -2,20 +2,32 @@
 general_alert_email: "root@localhost"
 evomaintenance_alert_email: Null
 
-evomaintenance_hostname: "{{ ansible_fqdn }}"
+### copied from evolinux-base ###
+evolinux_hostname: "{{ ansible_hostname }}"
+evolinux_domain:   "{{ ansible_domain }}"
+evolinux_fqdn:     "{{ evolinux_hostname }}.{{ evolinux_domain }}"
+
+evolinux_internal_hostname: "{{ evolinux_hostname }}"
+evolinux_internal_domain:   "{{ evolinux_domain }}"
+evolinux_internal_fqdn:     "{{ evolinux_internal_hostname }}.{{ evolinux_internal_domain }}"
+#################################
+
+evomaintenance_install_vendor: False
+
+evomaintenance_hostname: "{{ evolinux_internal_fqdn }}"
 
 evomaintenance_pg_host: Null
 evomaintenance_pg_passwd: Null
 evomaintenance_pg_db: Null
 evomaintenance_pg_table: Null
 
-evomaintenance_from: "evomaintenance@{{ ansible_fqdn }}"
+evomaintenance_from: "evomaintenance@{{ evolinux_internal_fqdn }}"
 evomaintenance_full_from: "Evomaintenance <{{ evomaintenance_from }}>"
 
 evomaintenance_urgency_from: mama.doe@example.com
 evomaintenance_urgency_tel: "06.00.00.00.00"
 
-evomaintenance_realm: "{{ ansible_domain }}"
+evomaintenance_realm: "{{ evolinux_internal_domain }}"
 
 evomaintenance_default_hosts: []
 evomaintenance_additional_hosts: []

@@ -1,17 +1,10 @@
 ---
-- name: Install Evolix public repositry
-  include_role:
-    name: apt
-    tasks_from: evolix_public.yml
-  tags:
-    - evomaintenance
 
-- name: evomaintenance is installed
-  apt:
-    name: evomaintenance
-    allow_unauthenticated: yes
-  tags:
-    - evomaintenance
+- include: install_package.yml
+  when: not evomaintenance_install_vendor
+
+- include: install_vendor.yml
+  when: evomaintenance_install_vendor
 
 - name: configuration is applied
   template:
@@ -22,19 +15,6 @@
     mode: "0600"
   tags:
     - evomaintenance
-
-# - name: list users with a shell
-#   shell: "cat /etc/passwd | grep -vE \"^root:\"  | grep -E \":/[^:]+sh$\" | cut -d: -f6"
-#   changed_when: False
-#   check_mode: no
-#   register: home_of_shell_users
-#   tags:
-#     - evomaintenance
-#
-# - include: trap.yml home={{ item }}
-#   with_items: "{{ home_of_shell_users.stdout_lines }}"
-#   tags:
-#     - evomaintenance
 
 - name: Is minifirewall installed?
   stat:

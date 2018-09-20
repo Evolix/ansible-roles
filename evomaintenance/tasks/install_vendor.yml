@@ -1,0 +1,40 @@
+---
+
+- include_role:
+    name: remount-usr
+  tags:
+    - evomaintenance
+
+- name: /usr/share/scripts exists
+  file:
+    dest: /usr/share/scripts
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+  tags:
+    - evomaintenance
+
+- name: Script is installed
+  copy:
+    src: evomaintenance.sh
+    dest: /usr/share/scripts/evomaintenance.sh
+    mode: "0700"
+    owner: root
+    group: root
+    force: yes
+    backup: yes
+  tags:
+    - evomaintenance
+
+- name: Template is installed
+  copy:
+    src: evomaintenance.tpl
+    dest: /usr/share/scripts/evomaintenance.tpl
+    mode: "0600"
+    owner: root
+    group: root
+    force: yes
+    backup: yes
+  tags:
+    - evomaintenance

@@ -1,0 +1,15 @@
+---
+
+- name: Install Evolix public repositry
+  include_role:
+    name: apt
+    tasks_from: evolix_public.yml
+  tags:
+    - evomaintenance
+
+- name: evomaintenance is installed
+  apt:
+    name: evomaintenance
+    allow_unauthenticated: yes
+  tags:
+    - evomaintenance
