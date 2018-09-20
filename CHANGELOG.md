@@ -14,6 +14,7 @@ The **patch** part changes incrementally at each release.
 * etc-git: manage a cron job to monitor uncommited changes in /etc/.git (default: `True`)
 * evolinux-base: better shell history
 * evolinux-users: add user to /etc/aliases
+* generate-ldif: add a section for postgresql
 * logstash: tmp directory can be customized
 * logstash: max memory is set to 512M by default
 * logstash: version 6.x is installed by default
