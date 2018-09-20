@@ -1,5 +1,5 @@
 ---
-- name: Deploy systemd templates for redis instances
+- name: Systemd template for redis instances is installed
   copy:
     src: 'redis-server@.service'
     dest: '/etc/systemd/system/'
@@ -7,7 +7,7 @@
   tags:
     - redis
 
-- name: Disable standard redis service
+- name: Redis SysVinit script is stopped and disabled
   service:
     name: "redis-server"
     enabled: no
@@ -15,7 +15,8 @@
   tags:
     - redis
 
-- set_fact:
+- name: Set variables for the instance
+  set_fact:
     redis_daemon: "redis-server@{{ redis_instance_name }}"
     redis_conf_path: "/etc/redis/redis-{{ redis_instance_name }}.conf"
     redis_unixsocket: "/var/run/redis/{{ redis_instance_name }}/redis.sock"
@@ -25,7 +26,7 @@
   tags:
     - redis
 
-- name: Configure redis instance.
+- name: Redis instance configuration file is present.
   template:
     src: redis.conf.j2
     dest: "{{ redis_conf_path }}"
@@ -33,7 +34,7 @@
   tags:
     - redis
 
-- name: Create redis instance group
+- name: Redis instance group is present
   group:
     name: "redis-{{ redis_instance_name }}"
     state: present
@@ -41,7 +42,7 @@
   tags:
     - redis
 
-- name: Create redis instance user
+- name: Redis instance user is present
   user:
     name: "redis-{{ redis_instance_name }}"
     group: "redis-{{ redis_instance_name }}"
@@ -51,7 +52,7 @@
   tags:
     - redis
 
-- name: Create needed dir
+- name: Instances directories are present
   file:
     dest: "{{ item }}"
     state: directory
@@ -64,7 +65,7 @@
   tags:
     - redis
 
-- name: Redis instance is running and enabled on boot.
+- name: Redis systemd unit is enabled and started
   systemd:
     name: "{{ redis_daemon }}"
     enabled: yes
