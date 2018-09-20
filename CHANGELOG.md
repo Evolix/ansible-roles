@@ -11,6 +11,16 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Security
+
+## [9.4.0] - 2018-09-20
+
+### Added
 * etc-git: manage a cron job to monitor uncommited changes in /etc/.git (default: `True`)
 * evolinux-base: better shell history
 * evolinux-users: add user to /etc/aliases
@@ -32,8 +42,6 @@ The **patch** part changes incrementally at each release.
 * packweb-apache: don't regenerate phpMyAdmin suffix each time
 * nginx: cleaner way to overwrite the server status suffix
 * redis: add missing tags
-
-### Security
 
 ## [9.3.2] - 2018-09-06
 
