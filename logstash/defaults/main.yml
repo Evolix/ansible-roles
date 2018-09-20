@@ -4,3 +4,5 @@ elastic_stack_version: "5.x"
 logstash_jvm_xms: 256m
 logstash_jvm_xmx: 1g
 logstash_log_rotate_days: 365
+logstash_custom_tmpdir: Null
+logstash_default_tmpdir: /var/lib/logstash/tmp
