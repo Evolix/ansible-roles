@@ -7,9 +7,65 @@
 # version 0.3
 # Copyright 2007-2018 Gregory Colpart <reg@evolix.fr>, Jérémy Lecour <jlecour@evolix.fr>, Evolix <info@evolix.fr>
 
+get_system() {
+  uname -s
+}
+
+get_fqdn() {
+  if [ "$(get_system)" = "Linux" ]; then
+    hostname --fqdn
+  elif [ "$(get_system)" = "OpenBSD" ]; then
+    hostname
+  else
+    echo "OS not detected!"
+    exit 1
+  fi
+}
+
+get_tty() {
+  if [ "$(get_system)" = "Linux" ]; then
+    ps -o tty= | tail -1
+  elif [ "$(get_system)" = "OpenBSD" ]; then
+    env | grep SSH_TTY | cut -d"/" -f3
+  else
+    echo "OS not detected!"
+    exit 1
+  fi
+}
+
+get_who() {
+  who=$(LC_ALL=C who -m)
+
+  if [ -n "${who}" ]; then
+    echo "${who}"
+  else
+    LC_ALL=C who | grep $(get_tty) | tr -s ' '
+  fi
+}
+
+get_begin_date() {
+  echo "$(date "+%Y") $(echo $(get_who) | cut -d" " -f3,4,5)"
+}
+
+get_ip() {
+  ip=$(echo $(get_who) | cut -d" " -f6 | sed -e "s/^(// ; s/)$//")
+  [ -z "${ip}" ] && ip="unknown (no tty)"
+  [ "${ip}" = ":0" ] && ip="localhost"
+
+  echo "${ip}"
+}
+
+get_end_date() {
+  date +"%Y %b %d %H:%M"
+}
+
+get_now() {
+  date +"%Y-%m-%dT%H:%M:%S%z"
+}
+
 test -f /etc/evomaintenance.cf && . /etc/evomaintenance.cf
 
-[ -n "${HOSTNAME}" ]     || HOSTNAME=$(hostname --fqdn)
+[ -n "${HOSTNAME}" ]     || HOSTNAME=$(get_fqdn)
 [ -n "${EVOMAINTMAIL}" ] || EVOMAINTMAIL=evomaintenance-$(echo "${HOSTNAME}" | cut -d- -f1)@${REALM}
 [ -n "${LOGFILE}" ]      || LOGFILE=/var/log/evomaintenance.log
 
@@ -17,12 +73,19 @@ test -f /etc/evomaintenance.cf && . /etc/evomaintenance.cf
 # Only after this line, because some config variables might be missing.
 set -u
 
-REAL_HOSTNAME=$(hostname --fqdn)
+REAL_HOSTNAME=$(get_fqdn)
 if [ "${HOSTNAME}" = "${REAL_HOSTNAME}" ]; then
     HOSTNAME_TEXT="${HOSTNAME}"
 else
     HOSTNAME_TEXT="${HOSTNAME} (${REAL_HOSTNAME})"
 fi
+
+# TTY=$(get_tty)
+# WHO=$(get_who)
+IP=$(get_ip)
+BEGIN_DATE=$(get_begin_date)
+END_DATE=$(get_end_date)
+USER=$(logname)
 
 PATH=${PATH}:/usr/sbin
 
@@ -30,14 +93,6 @@ SENDMAIL_BIN=$(command -v sendmail)
 GIT_BIN=$(command -v git)
 
 GIT_REPOSITORIES="/etc /etc/bind"
-
-WHO=$(LC_ALL=C who -m)
-USER=$(echo ${WHO} | cut -d" " -f1)
-IP=$(echo ${WHO} | cut -d" " -f6  | sed -e "s/^(// ; s/)$//")
-BEGIN_DATE="$(date "+%Y") $(echo ${WHO} | cut -d" " -f3,4,5)"
-END_DATE=$(date +"%Y %b %d %H:%M")
-# we can't use "date --iso8601" because this options is not available everywhere
-NOW_ISO=$(date +"%Y-%m-%dT%H:%M:%S%z")
 
 # git statuses
 GIT_STATUSES=""
@@ -49,7 +104,7 @@ if test -x "${GIT_BIN}"; then
         export GIT_DIR="${dir}/.git" GIT_WORK_TREE="${dir}"
         # If the repository and the work tree exist, try to commit changes
         if test -d "${GIT_DIR}" && test -d "${GIT_WORK_TREE}"; then
-            CHANGED_LINES=$(${GIT_BIN} status --porcelain | wc -l)
+            CHANGED_LINES=$(${GIT_BIN} status --porcelain | wc -l | tr -d ' ')
             if [ "${CHANGED_LINES}" != "0" ]; then
               STATUS=$(${GIT_BIN} status --short | tail -n 10)
               # append diff data, without empty lines
@@ -93,7 +148,7 @@ echo "> Press <Enter> to submit, or <Ctrl+c> to cancel."
 read enter
 
 # write log
-echo "----------- ${NOW_ISO} ---------------" >> "${LOGFILE}"
+echo "----------- $(get_now) ---------------" >> "${LOGFILE}"
 echo "${BLOB}" >> "${LOGFILE}"
 
 # git commit
@@ -106,7 +161,7 @@ if test -x "${GIT_BIN}"; then
         export GIT_DIR="${dir}/.git" GIT_WORK_TREE="${dir}"
         # If the repository and the work tree exist, try to commit changes
         if test -d "${GIT_DIR}" && test -d "${GIT_WORK_TREE}"; then
-            CHANGED_LINES=$(${GIT_BIN} status --porcelain | wc -l)
+            CHANGED_LINES=$(${GIT_BIN} status --porcelain | wc -l | tr -d ' ')
             if [ "${CHANGED_LINES}" != "0" ]; then
               ${GIT_BIN} add --all
               ${GIT_BIN} commit --message "${TEXTE}" --author="${USER} <${USER}@evolix.net>" --quiet
