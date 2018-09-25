@@ -12,6 +12,8 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 * redis: set masterauth when redis_password is defined
+* evomaintenance: variable to install a vendored version
+* evomaintenance: tasks/variables to handle minifirewall restarts
 
 ### Changed
 
