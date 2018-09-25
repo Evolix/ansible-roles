@@ -4,7 +4,7 @@
 # Dependencies (all OS): git postgresql-client
 # Dependencies (Debian): sudo
 
-# version 0.4.0
+# version 0.4.1
 # Copyright 2007-2018 Gregory Colpart <reg@evolix.fr>, Jérémy Lecour <jlecour@evolix.fr>, Evolix <info@evolix.fr>
 
 get_system() {
@@ -108,7 +108,7 @@ if test -x "${GIT_BIN}"; then
             if [ "${CHANGED_LINES}" != "0" ]; then
               STATUS=$(${GIT_BIN} status --short | tail -n 10)
               # append diff data, without empty lines
-              GIT_STATUSES=$(echo "${GIT_STATUSES}\n${GIT_DIR} (last 10 lines)\n${STATUS}\n" | sed -e '/^$/d')
+              GIT_STATUSES=$(printf "%s\n%s\n%s\n" "${GIT_STATUSES}" "${GIT_DIR} (last 10 lines)" "${STATUS}" | sed -e '/^$/d')
             fi
         fi
         # unset environment variables to prevent accidental influence on other git commands
@@ -169,7 +169,7 @@ if test -x "${GIT_BIN}"; then
               SHA=$(${GIT_BIN} rev-parse --short HEAD)
               STATS=$(${GIT_BIN} show --stat | tail -1)
               # append commit data, without empty lines
-              GIT_COMMITS=$(echo "${GIT_COMMITS}\n${GIT_DIR} : ${SHA} –${STATS}" | sed -e '/^$/d')
+              GIT_COMMITS=$(printf "%s\n%s : %s –%s" "${GIT_COMMITS}" "${GIT_DIR}" "${SHA}" "${STATS}" | sed -e '/^$/d')
             fi
         fi
         # unset environment variables to prevent accidental influence on other git commands
