@@ -13,6 +13,7 @@ evolinux_internal_fqdn:     "{{ evolinux_internal_hostname }}.{{ evolinux_intern
 #################################
 
 evomaintenance_install_vendor: False
+evomaintenance_force_config: True
 
 evomaintenance_hostname: "{{ evolinux_internal_fqdn }}"
 
