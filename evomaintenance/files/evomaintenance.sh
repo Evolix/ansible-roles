@@ -4,7 +4,7 @@
 # Dependencies (all OS): git postgresql-client
 # Dependencies (Debian): sudo
 
-# version 0.3
+# version 0.4.0
 # Copyright 2007-2018 Gregory Colpart <reg@evolix.fr>, Jérémy Lecour <jlecour@evolix.fr>, Evolix <info@evolix.fr>
 
 get_system() {
