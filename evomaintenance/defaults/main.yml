@@ -33,3 +33,6 @@ evomaintenance_realm: "{{ evolinux_internal_domain }}"
 evomaintenance_default_hosts: []
 evomaintenance_additional_hosts: []
 evomaintenance_hosts: "{{ evomaintenance_default_hosts | union(evomaintenance_additional_hosts) | unique }}"
+
+minifirewall_restart_if_needed: True
+minifirewall_restart_force: False

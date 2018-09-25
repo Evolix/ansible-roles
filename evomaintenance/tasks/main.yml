@@ -1,5 +1,8 @@
 ---
 
+- set_fact:
+    minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
+
 - include: install_package.yml
   when: not evomaintenance_install_vendor
 
@@ -30,6 +33,7 @@
     line: "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s {{ item }} -m state --state ESTABLISHED,RELATED -j ACCEPT"
     insertafter: "^# EvoMaintenance"
   with_items: "{{ evomaintenance_hosts }}"
+  notify: "{{ minifirewall_restart_handler_name }}"
   when: minifirewall_default_file.stat.exists
   tags:
     - evomaintenance
@@ -39,6 +43,14 @@
     dest: /etc/default/minifirewall
     regexp: '^#.*(--sport 5432).*(-s X\.X\.X\.X)'
     state: absent
+  notify: "{{ minifirewall_restart_handler_name }}"
   when: minifirewall_default_file.stat.exists
   tags:
     - evomaintenance
+
+-  name: Force restart minifirewall
+   command: /bin/true
+   notify: restart minifirewall
+   when: minifirewall_restart_force
+   tags:
+     - evomaintenance
