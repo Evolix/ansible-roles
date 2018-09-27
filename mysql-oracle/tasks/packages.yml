@@ -1,16 +1,19 @@
 ---
 
+- set_fact:
+    mysql_apt_config_package: mysql-apt-config_0.8.10-1_all.deb
+
 - name: MySQL APT config package is available
   copy:
-    src: mysql-apt-config_0.8.9-1_all.deb
-    dest: /root/mysql-apt-config_0.8.9-1_all.deb
+    src: "{{ mysql_apt_config_package }}"
+    dest: "/root/{{ mysql_apt_config_package }}"
 
 - include_role:
     name: remount-usr
 
 - name: MySQL APT config package is installed
   apt:
-    deb: /root/mysql-apt-config_0.8.9-1_all.deb
+    deb: "/root/{{ mysql_apt_config_package }}"
     state: present
   register: mysql_apt_config_deb
 
