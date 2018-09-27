@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 * evomaintenance: tasks/variables to handle minifirewall restarts
 
 ### Changed
+* mysql-oracle: better handle packages and users
 
 ### Fixed
 
