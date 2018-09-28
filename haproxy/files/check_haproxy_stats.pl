@@ -15,7 +15,7 @@
 # warranty of merchantability or fitness for a particular purpose.
 #
 
-our $VERSION = "1.1.1";
+our $VERSION = "1.2.0";
 
 open(STDERR, ">&STDOUT");
 
@@ -28,6 +28,7 @@ open(STDERR, ">&STDOUT");
 #   1.0.5   - fix thresholds
 #   1.1.0   - support for HTTP interface
 #   1.1.1   - drop perl 5.10 requirement
+#   1.2.0   - add an option for ignore NOLB
 
 use strict;
 use warnings;
@@ -61,6 +62,8 @@ DESCRIPTION
         Print this message.
     -m, --ignore-maint
         Assume servers in MAINT state to be ok.
+    -n, --ignore-nolb
+        Assume servers in NOLB state to be ok.
     -p, --proxy
         Check only named proxies, not every one. Use comma to separate proxies
         in list.
@@ -128,6 +131,7 @@ my $user = '';
 my $pass = '';
 my $dump;
 my $ignore_maint;
+my $ignore_nolb;
 my $proxy;
 my $no_proxy;
 my $help;
@@ -139,6 +143,7 @@ GetOptions (
     "d|dump"            => \$dump,
     "h|help"            => \$help,
     "m|ignore-maint"    => \$ignore_maint,
+    "n|ignore-nolb"	=> \$ignore_nolb,
     "p|proxy=s"         => \$proxy,
     "P|no-proxy=s"      => \$no_proxy,
     "s|sock|socket=s"   => \$sock,
@@ -263,6 +268,7 @@ foreach (@hastats) {
     } else {
         if ($data[$status] ne 'UP') {
             next if ($ignore_maint && $data[$status] eq 'MAINT');
+            next if ($ignore_nolb && $data[$status] eq 'NOLB');
             next if $data[$status] eq 'no check';   # Ignore server if no check is configured to be run
             next if $data[$svname] eq 'sock-1';
             $exitcode = 2;
