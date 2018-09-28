@@ -24,9 +24,11 @@ The **patch** part changes incrementally at each release.
 * redis: set masterauth when redis_password is defined
 * evomaintenance: variable to install a vendored version
 * evomaintenance: tasks/variables to handle minifirewall restarts
+* nagios-nrpe: add an option for ignore NOLB status in Haproxy
 
 ### Changed
 * mysql-oracle: better handle packages and users
+* haproxy: move haproxy check in nagios-rnpe
 
 ## [9.4.0] - 2018-09-20
 
