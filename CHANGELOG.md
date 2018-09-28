@@ -18,6 +18,16 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [9.4.1] - 2018-09-28
+
+### Added
+* redis: set masterauth when redis_password is defined
+* evomaintenance: variable to install a vendored version
+* evomaintenance: tasks/variables to handle minifirewall restarts
+
+### Changed
+* mysql-oracle: better handle packages and users
+
 ## [9.4.0] - 2018-09-20
 
 ### Added

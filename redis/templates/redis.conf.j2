@@ -9,6 +9,7 @@ unixsocket {{ redis_unixsocket }}
 
 {% if redis_password %}
 requirepass {{ redis_password }}
+masterauth {{ redis_password }}
 {% endif %}
 
 timeout {{ redis_timeout }}

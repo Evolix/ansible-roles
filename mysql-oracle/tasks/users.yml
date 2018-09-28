@@ -23,6 +23,7 @@
     update_password: on_create
     state: present
     config_file: "/etc/mysql/debian.cnf"
+    check_implicit_admin: True
   register: create_mysqladmin_user
   tags:
     - mysql
