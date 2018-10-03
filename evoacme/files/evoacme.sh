@@ -55,7 +55,10 @@ sed_cert_path_for_apache() {
 
         sed -i "s~${search}~${replace}~" "${vhost_full_path}"
         debug "Config in ${vhost_full_path} has been updated"
-        $(command -v apache2ctl) -t
+        $(command -v apache2ctl) -t 2>&1 | grep -v "Syntax OK"
+        if [ "${PIPESTATUS[0]}" != "0" ]; then
+            error "Apache config test has exited with a non-zero exit code"
+        fi
     fi
 }
 sed_cert_path_for_nginx() {
