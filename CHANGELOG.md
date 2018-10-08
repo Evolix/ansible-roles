@@ -11,6 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* evomaintenance: install dependencies when installing vendored version
 
 ### Changed
 
