@@ -11,11 +11,14 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
-* evomaintenance: install dependencies when installing vendored version
+* evomaintenance: install dependencies manually when installing vendored version
+* nagios-nrpe: add an option to ignore servers in NOLB status
 
 ### Changed
+* haproxy: move check_haproxy_stats to nagios-nrpe role
 
 ### Fixed
+* evoacme: better error when apache2ctl fails
 * spamassassin: add missing right for amavis
 
 ### Security
@@ -26,11 +29,9 @@ The **patch** part changes incrementally at each release.
 * redis: set masterauth when redis_password is defined
 * evomaintenance: variable to install a vendored version
 * evomaintenance: tasks/variables to handle minifirewall restarts
-* nagios-nrpe: add an option for ignore NOLB status in Haproxy
 
 ### Changed
 * mysql-oracle: better handle packages and users
-* haproxy: move haproxy check in nagios-rnpe
 
 ## [9.4.0] - 2018-09-20
 
