@@ -3,54 +3,18 @@
 - set_fact:
     minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
 
-- include: install_package.yml
-  when: not evomaintenance_install_vendor
+- include: install_package_debian.yml
+  when:
+    - not evomaintenance_install_vendor
+    - ansible_distribution == "Debian"
 
-- include: install_vendor.yml
-  when: evomaintenance_install_vendor
+- include: install_vendor_debian.yml
+  when:
+    - evomaintenance_install_vendor
+    - ansible_distribution == "Debian"
 
-- name: configuration is applied
-  template:
-    src: evomaintenance.j2
-    dest: /etc/evomaintenance.cf
-    owner: root
-    group: root
-    mode: "0600"
-    force: "{{ evomaintenance_force_config | bool }}"
-  tags:
-    - evomaintenance
+- include: install_vendor_openbsd.yml
+  when:
+    - ansible_distribution == "OpenBSD"
 
-- name: Is minifirewall installed?
-  stat:
-    path: /etc/default/minifirewall
-  register: minifirewall_default_file
-  tags:
-    - evomaintenance
-
-- name: minifirewall section for evomaintenance
-  lineinfile:
-    dest: /etc/default/minifirewall
-    line: "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s {{ item }} -m state --state ESTABLISHED,RELATED -j ACCEPT"
-    insertafter: "^# EvoMaintenance"
-  with_items: "{{ evomaintenance_hosts }}"
-  notify: "{{ minifirewall_restart_handler_name }}"
-  when: minifirewall_default_file.stat.exists
-  tags:
-    - evomaintenance
-
-- name: remove minifirewall example rule for the proxy
-  lineinfile:
-    dest: /etc/default/minifirewall
-    regexp: '^#.*(--sport 5432).*(-s X\.X\.X\.X)'
-    state: absent
-  notify: "{{ minifirewall_restart_handler_name }}"
-  when: minifirewall_default_file.stat.exists
-  tags:
-    - evomaintenance
-
--  name: Force restart minifirewall
-   command: /bin/true
-   notify: restart minifirewall
-   when: minifirewall_restart_force
-   tags:
-     - evomaintenance
+- include: minifirewall.yml

@@ -19,6 +19,7 @@ The **patch** part changes incrementally at each release.
 
 ### Fixed
 * evoacme: better error when apache2ctl fails
+* evomaintenance: fix role compatibility with OpenBSD
 * spamassassin: add missing right for amavis
 * amavis: fix output result checking
 
