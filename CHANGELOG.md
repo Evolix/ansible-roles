@@ -11,6 +11,16 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Security
+
+## [9.4.2] - 2018-10-12
+
+### Added
 * evomaintenance: install dependencies manually when installing vendored version
 * nagios-nrpe: add an option to ignore servers in NOLB status
 
@@ -22,8 +32,6 @@ The **patch** part changes incrementally at each release.
 * evomaintenance: fix role compatibility with OpenBSD
 * spamassassin: add missing right for amavis
 * amavis: fix output result checking
-
-### Security
 
 ## [9.4.1] - 2018-09-28
 
