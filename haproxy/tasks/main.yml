@@ -33,5 +33,4 @@
   - haproxy
   - config
 
-- include: nagios.yml
 - include: munin.yml

@@ -5,6 +5,7 @@ User_Alias      ADMINS = {{ user.name }}
 
 nagios          ALL = NOPASSWD: /usr/lib/nagios/plugins/check_procs
 nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_minifirewall
+nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_haproxy_stats
 nagios          ALL = NOPASSWD: /usr/sbin/bkctld check
 nagios          ALL = (clamav) NOPASSWD: /usr/bin/clamscan /tmp/safe.txt
 

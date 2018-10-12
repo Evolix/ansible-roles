@@ -27,6 +27,22 @@
   tags:
   - spamassassin
 
+- name: add amavis user to debian-spamd group
+  user:
+    name: amavis
+    groups: debian-spamd
+    append: yes
+  tags:
+  - spamassassin
+
+- name: fix right on /var/lib/spamassassin
+  file:
+    dest: /var/lib/spamassassin
+    state: directory
+    mode: "0750"
+  tags:
+  - spamassassin
+
 - include_role:
     name: remount-usr
   tags:

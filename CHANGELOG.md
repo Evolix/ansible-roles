@@ -18,6 +18,21 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [9.4.2] - 2018-10-12
+
+### Added
+* evomaintenance: install dependencies manually when installing vendored version
+* nagios-nrpe: add an option to ignore servers in NOLB status
+
+### Changed
+* haproxy: move check_haproxy_stats to nagios-nrpe role
+
+### Fixed
+* evoacme: better error when apache2ctl fails
+* evomaintenance: fix role compatibility with OpenBSD
+* spamassassin: add missing right for amavis
+* amavis: fix output result checking
+
 ## [9.4.1] - 2018-09-28
 
 ### Added

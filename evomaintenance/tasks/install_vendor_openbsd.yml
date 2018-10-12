@@ -1,16 +1,11 @@
 ---
 
-- include_role:
-    name: remount-usr
-  tags:
-    - evomaintenance
-
 - name: /usr/share/scripts exists
   file:
     dest: /usr/share/scripts
     mode: "0700"
     owner: root
-    group: root
+    group: wheel
     state: directory
   tags:
     - evomaintenance
@@ -21,7 +16,7 @@
     dest: /usr/share/scripts/evomaintenance.sh
     mode: "0700"
     owner: root
-    group: root
+    group: wheel
     force: yes
     backup: yes
   tags:
@@ -33,8 +28,19 @@
     dest: /usr/share/scripts/evomaintenance.tpl
     mode: "0600"
     owner: root
-    group: root
+    group: wheel
     force: yes
     backup: yes
+  tags:
+    - evomaintenance
+
+- name: Configuration is installed
+  template:
+    src: evomaintenance.j2
+    dest: /etc/evomaintenance.cf
+    owner: root
+    group: wheel
+    mode: "0600"
+    force: "{{ evomaintenance_force_config | bool }}"
   tags:
     - evomaintenance
