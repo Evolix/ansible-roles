@@ -49,6 +49,7 @@
   notify: reload nginx
   tags:
     - nginx
+    - ips
 
 - name: add IP addresses to private IP whitelist
   lineinfile:
@@ -59,6 +60,7 @@
   notify: reload nginx
   tags:
     - nginx
+    - ips
 
 - name: remove IP addresses from private IP whitelist
   lineinfile:
@@ -69,6 +71,7 @@
   notify: reload nginx
   tags:
     - nginx
+    - ips
 
 - name: Copy private_htpasswd
   copy:
