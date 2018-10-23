@@ -12,6 +12,7 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 nginx: add tag for ips management
+evolinux-base: install man package
 
 ### Changed
 
