@@ -1,0 +1,10 @@
+---
+- name: add IP addresses to private IP whitelist
+  lineinfile:
+    dest: /etc/nginx/snippets/ipaddr_whitelist
+    line: "allow {{ item }};"
+    state: present
+  with_items: "{{ nginx_ipaddr_whitelist_present }}"
+  notify: reload nginx
+  tags
+    - nginx

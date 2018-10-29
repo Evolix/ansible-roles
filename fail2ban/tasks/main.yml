@@ -28,13 +28,8 @@
   tags:
   - fail2ban
 
-- name: update ignoreips lists
-  ini_file:
-    dest: /etc/fail2ban/jail.local
-    section: "[DEFAULT]"
-    option: "ignoreips"
-    value: "{{ fail2ban_ignore_ips | join(' ') }}"
-  notify: restart fail2ban
+- name: Include ignoredips update task 
+  include: ip_whitelist.yml
   when: fail2ban_force_update_ignore_ips
   tags:
     - fail2ban
