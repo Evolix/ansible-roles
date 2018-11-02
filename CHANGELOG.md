@@ -11,8 +11,11 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+apache: separate task to update IP whitelist
 evolinux-base: install man package
+fail2ban: separate task to update IP whitelist
 nginx: add tag for ips management
+nginx: separate task to update IP whitelist
 postfix: enable SSL/TLS client
 
 ### Changed
