@@ -11,8 +11,9 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
-nginx: add tag for ips management
 evolinux-base: install man package
+nginx: add tag for ips management
+postfix: enable SSL/TLS client
 
 ### Changed
 evomaintenance: update script from upstream
