@@ -1,4 +1,5 @@
 ---
+
 - name: add IP addresses to private IP whitelist
   lineinfile:
     dest: /etc/apache2/ipaddr_whitelist.conf
@@ -8,3 +9,15 @@
   notify: reload apache
   tags:
     - apache
+    - ips
+
+- name: remove IP addresses from private IP whitelist
+  lineinfile:
+    dest: /etc/apache2/ipaddr_whitelist.conf
+    line: "Require ip {{ item }}"
+    state: absent
+  with_items: "{{ apache_ipaddr_whitelist_absent }}"
+  notify: reload apache
+  tags:
+    - apache
+    - ips
