@@ -15,6 +15,7 @@ nginx: add tag for ips management
 evolinux-base: install man package
 
 ### Changed
+evomaintenance: update script from upstream
 
 ### Fixed
 
