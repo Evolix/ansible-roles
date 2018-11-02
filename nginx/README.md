@@ -12,6 +12,8 @@ The minimal mode is for servers without real web apps, and only access to munin 
 
 The regular mode is for full fledged web services with optimized defaults.
 
+An `ip_whitelist.yml` standalone task file is available to update IP adresses whitelist without rolling the whole role.
+
 ## Available variables
 
 Main variables are :
