@@ -22,7 +22,8 @@ evomaintenance_pg_passwd: Null
 evomaintenance_pg_db: Null
 evomaintenance_pg_table: Null
 
-evomaintenance_from: "evomaintenance@{{ evolinux_internal_fqdn }}"
+evomaintenance_from_domain: "{{ evolinux_internal_fqdn }}"
+evomaintenance_from: "evomaintenance@{{ evomaintenance_from_domain }}"
 evomaintenance_full_from: "Evomaintenance <{{ evomaintenance_from }}>"
 
 evomaintenance_urgency_from: mama.doe@example.com
