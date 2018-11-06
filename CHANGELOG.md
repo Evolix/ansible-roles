@@ -18,6 +18,7 @@ fail2ban: separate task to update IP whitelist
 nginx: add tag for ips management
 nginx: separate task to update IP whitelist
 postfix: enable SSL/TLS client
+ssl: add an SSL role for certificates deployment
 
 ### Changed
 evomaintenance: update script from upstream

@@ -1,0 +1,32 @@
+---
+- name: Concatenate SSL certificate, key and dhparam
+  set_fact:
+    ssl_cat: "{{ ssl_cat | default() }}{{ lookup('file', item) }}\n"
+  with_fileglob:
+    - "ssl/{{ ssl_cert }}.pem"
+    - "ssl/{{ ssl_cert }}.key"
+    - "ssl/{{ ssl_cert }}.dhp"
+  tags:
+    - ssl
+
+- name: Create haproxy ssl directory
+  file:
+    dest: /etc/haproxy/ssl
+    mode: "0700"
+  tags:
+    - ssl
+
+- name: Copy concatenated certificate and key
+  copy:
+    content: "{{ ssl_cat }}"
+    dest: "/etc/haproxy/ssl/{{ ssl_cert }}.pem"
+    mode: "0600"
+  notify: reload haproxy
+  tags:
+    - ssl
+
+- name: Reset ssl_cat variable
+  set_fact:
+    ssl_cat: ""
+  tags:
+    - ssl
