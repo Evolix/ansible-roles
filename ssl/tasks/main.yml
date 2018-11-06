@@ -31,6 +31,7 @@
   register: haproxy_check
   check_mode: False
   changed_when: False
+  failed_when: False
   tags:
     - ssl
 
