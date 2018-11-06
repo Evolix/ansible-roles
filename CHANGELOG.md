@@ -21,6 +21,7 @@ postfix: enable SSL/TLS client
 ssl: add an SSL role for certificates deployment
 
 ### Changed
+evocheck: update script from upstream
 evomaintenance: update script from upstream
 
 ### Fixed

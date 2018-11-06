@@ -5,7 +5,7 @@
 # powered by Evolix
 
 # Repository: https://gitlab.evolix.org/evolix/evocheck
-# Commit: d5a02b343f2e8e9a0b6fcd10b6b5a5d1e8c9af03
+# Commit: 956877442a3f43243fed89c491d9bdddd1ac77cd
 
 # Disable LANG*
 export LANG=C
@@ -105,6 +105,10 @@ IS_EVOBACKUP=1
 IS_DUPLICATE_FS_LABEL=1
 IS_EVOMAINTENANCE_FW=1
 IS_EVOLIX_USER=1
+IS_EVOACME_CRON=1
+IS_EVOACME_LIVELINKS=1
+IS_APACHE_CONFENABLED=1
+IS_MELTDOWN_SPECTRE=1
 
 #Proper to OpenBSD
 IS_SOFTDEP=1
@@ -143,7 +147,7 @@ is_pack_samba(){
 
 is_installed(){
     for pkg in $*; do
-            dpkg -l $pkg 2>/dev/null |grep -q -E '^(i|h)i' || return 1
+            dpkg -l $pkg 2>/dev/null | grep -q -E '^(i|h)i' || return 1
     done
 }
 
@@ -359,7 +363,7 @@ if [ -e /etc/debian_version ]; then
     if [ "$IS_EVOMAINTENANCE_FW" = 1 ]; then
         if [ -f "$MINIFW_FILE" ]; then
             rulesNumber=$(grep -c "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s .* -m state --state ESTABLISHED,RELATED -j ACCEPT" "$MINIFW_FILE")
-            if [ "$rulesNumber" -lt 4 ]; then
+            if [ "$rulesNumber" -lt 2 ]; then
                 echo 'IS_EVOMAINTENANCE_FW FAILED!'
             fi
         fi
@@ -521,7 +525,9 @@ if [ -e /etc/debian_version ]; then
 
     # Check if no package has been upgraded since $limit.
     if [ "$IS_NOTUPGRADED" = 1 ]; then
-        last_upgrade=$(date +%s -d $(zgrep -h upgrade /var/log/dpkg.log* |sort -n |tail -1 |cut -f1 -d ' '))
+        if zgrep -hq upgrade /var/log/dpkg.log*; then
+            last_upgrade=$(date +%s -d $(zgrep -h upgrade /var/log/dpkg.log* |sort -n |tail -1 |cut -f1 -d ' '))
+        fi
         if grep -q '^mailto="listupgrade-todo@' /etc/evolinux/listupgrade.cnf \
         || grep -q -E '^[[:digit:]]+[[:space:]]+[[:digit:]]+[[:space:]]+[^\*]' /etc/cron.d/listupgrade; then
             # Manual upgrade process
@@ -530,8 +536,8 @@ if [ -e /etc/debian_version ]; then
             # Regular process
             limit=$(date +%s -d "now - 90 days")
         fi
-        if [ -f /var/log/evolinux/00_prepare_system.log ]; then
-            install_date=$(stat -c %Z /var/log/evolinux/00_prepare_system.log)
+        if [ -d /var/log/installer ]; then
+            install_date=$(stat -c %Z /var/log/installer)
         else
             install_date=0
         fi
@@ -768,6 +774,71 @@ if [ -e /etc/debian_version ]; then
 
     if [ "$IS_EVOLIX_USER" = 1 ]; then
         getent passwd evolix >/dev/null && echo 'IS_EVOLIX_USER FAILED!'
+    fi
+
+    if [ "$IS_EVOACME_CRON" = 1 ]; then
+        if [ -f "/usr/local/sbin/evoacme" ]; then
+            # Old cron file, should be deleted
+            test -f /etc/cron.daily/certbot && echo 'IS_EVOACME_CRON FAILED!'
+            # evoacme cron file should be present
+            test -f /etc/cron.daily/evoacme || echo 'IS_EVOACME_CRON FAILED!'
+        fi
+    fi
+
+    if [ "$IS_EVOACME_LIVELINKS" = 1 ]; then
+        if [ -x "$(which evoacme)" ]; then
+            # Sometimes evoacme is installed but no certificates has been generated
+            numberOfLinks=$(find /etc/letsencrypt/ -type l | wc -l)
+            if [ $numberOfLinks -gt 0 ]; then
+                for live in /etc/letsencrypt/*/live; do
+                    actualLink=$(ls -lhad $live | tr -s ' ' | cut -d' ' -f 11)
+                    actualCertDate=$(cut -d'/' -f5 <<< $actualLink)
+                    liveDir=$(ls -lhad $live | tr -s ' ' | cut -d' ' -f 9)
+                    certDir=${liveDir%%/live}
+                    lastCertDir=$(stat -c %n ${certDir}/[0-9]* | tail -1)
+                    lastCertDate=$(cut -d'/' -f5 <<< $lastCertDir)
+                    if [[ "$actualCertDate" != "$lastCertDate" ]]; then
+                        echo 'IS_EVOACME_LIVELINKS FAILED!'
+                        break
+                    fi
+                done
+            fi
+        fi
+    fi
+
+    if [ "$IS_APACHE_CONFENABLED" = 1 ]; then
+        # Starting from Jessie and Apache 2.4, /etc/apache2/conf.d/
+        # must be replaced by conf-available/ and config files symlinked
+        # to conf-enabled/
+        if is_debianversion jessie || is_debianversion stretch; then
+            if [ -f /etc/apache2/apache2.conf ]; then
+                test -d /etc/apache2/conf.d/ && echo 'IS_APACHE_CONFENABLED FAILED!'
+                grep -q 'Include conf.d' /etc/apache2/apache2.conf && \
+                  echo 'IS_APACHE_CONFENABLED FAILED!'
+            fi
+        fi
+    fi
+
+    if [ "$IS_MELTDOWN_SPECTRE" = 1 ]; then
+        # For Stretch, detection is easy as the kernel use
+        # /sys/devices/system/cpu/vulnerabilities/
+        if is_debianversion stretch; then
+            for vuln in meltdown spectre_v1 spectre_v2; do
+                test -f /sys/devices/system/cpu/vulnerabilities/$vuln || echo 'IS_MELTDOWN_SPECTRE FAILED!'
+            done
+        # For Jessie this is quite complicated to verify and we need to use kernel config file
+        elif is_debianversion jessie; then
+            if grep -q BOOT_IMAGE= /proc/cmdline; then
+                kernelPath=$(grep -Eo 'BOOT_IMAGE=[^ ]+' /proc/cmdline | cut -d= -f2)
+                kernelVer=${kernelPath##*/vmlinuz-}
+                kernelConfig="config-${kernelVer}"
+                # Sometimes autodetection of kernel config file fail, so we test if the file really exists.
+                if [ -f /boot/$kernelConfig ]; then
+                    grep -Eq '^CONFIG_PAGE_TABLE_ISOLATION=y' /boot/$kernelConfig || echo 'IS_MELTDOWN_SPECTRE FAILED!'
+                    grep -Eq '^CONFIG_RETPOLINE=y' /boot/$kernelConfig || echo 'IS_MELTDOWN_SPECTRE FAILED!'
+                fi
+            fi
+        fi
     fi
 fi
 
