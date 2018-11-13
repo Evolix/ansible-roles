@@ -1,6 +1,6 @@
 ---
 
-### This is taken care of by the evolinux-todo role 
+### This is taken care of by the evolinux-todo role
 # - name: /etc/evolinux exists
 #   file:
 #     dest: /etc/evolinux

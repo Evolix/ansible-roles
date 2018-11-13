@@ -38,7 +38,7 @@
   group:
     name: "redis-{{ redis_instance_name }}"
     state: present
-    system: True 
+    system: True
   tags:
     - redis
 
@@ -47,7 +47,7 @@
     name: "redis-{{ redis_instance_name }}"
     group: "redis-{{ redis_instance_name }}"
     state: present
-    system: True 
+    system: True
     shell: '/bin/falase'
   tags:
     - redis
