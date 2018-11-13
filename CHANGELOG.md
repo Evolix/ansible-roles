@@ -19,6 +19,7 @@ nginx: add tag for ips management
 nginx: separate task to update IP whitelist
 postfix: enable SSL/TLS client
 ssl: add an SSL role for certificates deployment
+haproxy: add vars for tls configuration
 
 ### Changed
 evocheck: update script from upstream
