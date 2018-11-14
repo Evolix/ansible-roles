@@ -1,0 +1,45 @@
+---
+
+- block:
+  - name: "Is {{ mysql_custom_logdir }} present ?"
+    stat:
+      path: "{{ mysql_custom_logdir }}"
+    check_mode: no
+    register: mysql_custom_logdir_test
+
+  - name: "read the real logdir"
+    command: readlink -f /var/log/mysql
+    changed_when: False
+    check_mode: no
+    register: mysql_current_real_logdir_test
+  tags:
+    - mysql
+  when: mysql_custom_logdir != ''
+
+- block:
+  - name: MySQL is stopped
+    service:
+      name: mysql
+      state: stopped
+
+  - name: Move MySQL logdir to {{ mysql_custom_logdir }}
+    command: mv {{ mysql_current_real_logdir_test.stdout }} {{ mysql_custom_logdir }}
+    args:
+      creates: "{{ mysql_custom_logdir }}"
+
+  - name: Symlink {{ mysql_custom_logdir }} to /var/log/mysql
+    file:
+      src: "{{ mysql_custom_logdir }}"
+      dest: '/var/log/mysql'
+      state: link
+
+  - name: MySQL is started
+    service:
+      name: mysql
+      state: started
+  tags:
+    - mysql
+  when:
+    - mysql_custom_logdir != ''
+    - mysql_custom_logdir != mysql_current_real_logdir_test.stdout
+    - not mysql_custom_logdir_test.stat.exists

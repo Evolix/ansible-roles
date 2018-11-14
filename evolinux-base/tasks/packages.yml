@@ -33,6 +33,7 @@
   - curl
   - telnet
   - traceroute
+  - man
   when: evolinux_packages_diagnostic
 
 - name: Install/Update hardware tools

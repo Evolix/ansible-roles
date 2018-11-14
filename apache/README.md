@@ -6,6 +6,8 @@ Install Apache
 
 Everything is in the `tasks/main.yml` file for now.
 
+An `ip_whitelist.yml` standalone task file is available to update IP adresses whitelist without rolling the whole role.
+
 ## Available variables
 
 Main variables are :

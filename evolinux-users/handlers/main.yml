@@ -3,3 +3,7 @@
   service:
     name: sshd
     state: reloaded
+
+- name: newaliases
+  command: newaliases
+  changed_when: False

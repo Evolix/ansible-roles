@@ -18,6 +18,31 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [9.5.0] - 2018-11-14
+
+### Added
+* apache: separate task to update IP whitelist
+* evolinux-base: install man package
+* evolinux-users: add newaliases handler
+* evomaintenance: FROM domain is configurable
+* fail2ban: separate task to update IP whitelist
+* nginx: add tag for ips management
+* nginx: separate task to update IP whitelist
+* postfix: enable SSL/TLS client
+* ssl: add an SSL role for certificates deployment
+* haproxy: add vars for tls configuration
+* mysql: logdir can be customized
+
+### Changed
+* evocheck: update script from upstream
+* evomaintenance: update script from upstream
+* mysql: restart service if systemd unit has been patched
+
+### Fixed
+* packweb-apache: mod-security config is already included elsewhere
+* redis: for permissions on log and lib directories
+* redis: fix shell for instance users
+
 ## [9.4.2] - 2018-10-12
 
 ### Added

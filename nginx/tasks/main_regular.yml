@@ -49,26 +49,10 @@
   notify: reload nginx
   tags:
     - nginx
+    - ips
 
-- name: add IP addresses to private IP whitelist
-  lineinfile:
-    dest: /etc/nginx/snippets/ipaddr_whitelist
-    line: "allow {{ item }};"
-    state: present
-  with_items: "{{ nginx_ipaddr_whitelist_present }}"
-  notify: reload nginx
-  tags:
-    - nginx
-
-- name: remove IP addresses from private IP whitelist
-  lineinfile:
-    dest: /etc/nginx/snippets/ipaddr_whitelist
-    line: "allow {{ item }};"
-    state: absent
-  with_items: "{{ nginx_ipaddr_whitelist_absent }}"
-  notify: reload nginx
-  tags:
-    - nginx
+- name: Include IP address whitelist task
+  include: ip_whitelist.yml
 
 - name: Copy private_htpasswd
   copy:

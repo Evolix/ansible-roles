@@ -10,26 +10,9 @@
     force: no
   tags:
     - apache
-
-- name: add IP addresses to private IP whitelist
-  lineinfile:
-    dest: /etc/apache2/ipaddr_whitelist.conf
-    line: "Require ip {{ item }}"
-    state: present
-  with_items: "{{ apache_ipaddr_whitelist_present }}"
-  notify: reload apache
-  tags:
-    - apache
-
-- name: remove IP addresses from private IP whitelist
-  lineinfile:
-    dest: /etc/apache2/ipaddr_whitelist.conf
-    line: "Require ip {{ item }}"
-    state: absent
-  with_items: "{{ apache_ipaddr_whitelist_absent }}"
-  notify: reload apache
-  tags:
-    - apache
+    
+- name: Load IP whitelist task
+  include: ip_whitelist.yml
 
 - name: include private IP whitelist for server-status
   lineinfile:

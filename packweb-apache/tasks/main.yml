@@ -71,3 +71,9 @@
 
 - include: fhs_retrictions.yml
   when: packweb_fhs_retrictions
+
+- name: Periodically cache ftp directory sizes for ftpadmin.sh
+  cron:
+    name: "ProFTPd directory size caching"
+    special_time: daily
+    job: "/usr/share/scripts/evoadmin/stats.sh"

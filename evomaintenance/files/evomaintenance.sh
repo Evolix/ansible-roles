@@ -185,7 +185,7 @@ fi
 SQL_TEXTE=`echo "${TEXTE}" | sed "s/'/''/g"`
 
 PG_QUERY="INSERT INTO evomaint(hostname,userid,ipaddress,begin_date,end_date,details) VALUES ('${HOSTNAME}','${USER}','${IP}','${BEGIN_DATE}',now(),'${SQL_TEXTE}')"
-echo "${PG_QUERY}" | psql ${PGDB} ${PGTABLE} -h ${PGHOST} --quiet
+echo "${PG_QUERY}" | psql ${PGDB} ${PGTABLE} -h ${PGHOST}
 
 # send mail
 MAIL_TEXTE=$(echo "${TEXTE}" | sed -e "s@/@\\\\\/@g ; s@&@\\\\&@")

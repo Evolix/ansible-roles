@@ -41,7 +41,7 @@
   stat:
     path: /etc/nagios/nrpe.d/evolix.cfg
   register: nrpe_evolix_cfg
-    
+
 - name: check_minifirewall is available for NRPE
   lineinfile:
     dest: /etc/nagios/nrpe.d/evolix.cfg

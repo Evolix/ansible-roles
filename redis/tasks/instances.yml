@@ -38,7 +38,7 @@
   group:
     name: "redis-{{ redis_instance_name }}"
     state: present
-    system: True 
+    system: True
   tags:
     - redis
 
@@ -47,8 +47,8 @@
     name: "redis-{{ redis_instance_name }}"
     group: "redis-{{ redis_instance_name }}"
     state: present
-    system: True 
-    shell: '/bin/falase'
+    system: True
+    shell: '/bin/false'
   tags:
     - redis
 
@@ -60,7 +60,9 @@
     owner: "redis-{{ redis_instance_name }}"
     group: "redis-{{ redis_instance_name }}"
   with_items:
+    - "/var/lib/redis"
     - "{{ redis_dbdir }}"
+    - "/var/log/redis"
     - "{{ redis_logfile | dirname }}"
   tags:
     - redis
