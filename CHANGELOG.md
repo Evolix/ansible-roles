@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 * apache: separate task to update IP whitelist
 * evolinux-base: install man package
+* evolinux-users: add newaliases handler
 * evomaintenance: FROM domain is configurable
 * fail2ban: separate task to update IP whitelist
 * nginx: add tag for ips management
