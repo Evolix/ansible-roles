@@ -37,8 +37,9 @@
     force: yes
   register: mariadb_systemd_override
 
-- name: reload systemd
+- name: reload systemd and restart MariaDB
   systemd:
     name: mysql
     daemon_reload: yes
+  notify: "{{ mysql_restart_handler_name }}"
   when: mariadb_systemd_override.changed
