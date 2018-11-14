@@ -11,19 +11,20 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
-apache: separate task to update IP whitelist
-evolinux-base: install man package
-evomaintenance: FROM domain is configurable
-fail2ban: separate task to update IP whitelist
-nginx: add tag for ips management
-nginx: separate task to update IP whitelist
-postfix: enable SSL/TLS client
-ssl: add an SSL role for certificates deployment
-haproxy: add vars for tls configuration
+* apache: separate task to update IP whitelist
+* evolinux-base: install man package
+* evomaintenance: FROM domain is configurable
+* fail2ban: separate task to update IP whitelist
+* nginx: add tag for ips management
+* nginx: separate task to update IP whitelist
+* postfix: enable SSL/TLS client
+* ssl: add an SSL role for certificates deployment
+* haproxy: add vars for tls configuration
 
 ### Changed
-evocheck: update script from upstream
-evomaintenance: update script from upstream
+* evocheck: update script from upstream
+* evomaintenance: update script from upstream
+* mysql: restart service if systemd unit has been patched
 
 ### Fixed
 * redis: for permissions on log and lib directories
