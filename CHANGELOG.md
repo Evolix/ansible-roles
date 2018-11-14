@@ -11,6 +11,16 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Security
+
+## [9.5.0] - 2018-11-14
+
+### Added
 * apache: separate task to update IP whitelist
 * evolinux-base: install man package
 * evolinux-users: add newaliases handler
@@ -32,8 +42,6 @@ The **patch** part changes incrementally at each release.
 * packweb-apache: mod-security config is already included elsewhere
 * redis: for permissions on log and lib directories
 * redis: fix shell for instance users
-
-### Security
 
 ## [9.4.2] - 2018-10-12
 
