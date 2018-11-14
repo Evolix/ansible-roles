@@ -23,6 +23,8 @@
 
 - include: datadir.yml
 
+- include: logdir.yml
+
 - include: tmpdir.yml
 
 - include: nrpe.yml

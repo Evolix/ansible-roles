@@ -20,6 +20,7 @@ The **patch** part changes incrementally at each release.
 * postfix: enable SSL/TLS client
 * ssl: add an SSL role for certificates deployment
 * haproxy: add vars for tls configuration
+* mysql: logdir can be customized
 
 ### Changed
 * evocheck: update script from upstream
