@@ -28,6 +28,7 @@ The **patch** part changes incrementally at each release.
 * mysql: restart service if systemd unit has been patched
 
 ### Fixed
+* packweb-apache: mod-security config is already included elsewhere
 * redis: for permissions on log and lib directories
 * redis: fix shell for instance users
 
