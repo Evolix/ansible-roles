@@ -26,6 +26,8 @@ evocheck: update script from upstream
 evomaintenance: update script from upstream
 
 ### Fixed
+* redis: for permissions on log and lib directories
+* redis: fix shell for instance users
 
 ### Security
 
