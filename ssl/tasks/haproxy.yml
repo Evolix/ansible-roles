@@ -12,6 +12,7 @@
 - name: Create haproxy ssl directory
   file:
     dest: /etc/haproxy/ssl
+    state: directory
     mode: "0700"
   tags:
     - ssl
