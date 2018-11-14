@@ -60,7 +60,9 @@
     owner: "redis-{{ redis_instance_name }}"
     group: "redis-{{ redis_instance_name }}"
   with_items:
+    - "/var/lib/redis"
     - "{{ redis_dbdir }}"
+    - "/var/log/redis"
     - "{{ redis_logfile | dirname }}"
   tags:
     - redis
