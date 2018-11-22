@@ -42,6 +42,7 @@ The **patch** part changes incrementally at each release.
 * packweb-apache: mod-security config is already included elsewhere
 * redis: for permissions on log and lib directories
 * redis: fix shell for instance users
+* evoacme: fix error handling in sed_cert_path_for_(apache|nginx)
 
 ## [9.4.2] - 2018-10-12
 
