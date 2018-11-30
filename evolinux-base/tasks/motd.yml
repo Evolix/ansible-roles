@@ -1,0 +1,17 @@
+---
+- name: Deploy custom motd
+  template:
+    src: "{{ item }}"
+    dest: /etc/motd
+    force: True
+    owner: root
+    group: root
+    mode: "0644"
+  with_first_found:
+    - files:
+      - "motd/motd.{{ inventory_hostname }}.j2"
+      - "motd/motd.{{ host_group }}.j2"
+      - "motd/motd.default.j2"
+      skip: True
+  tags:
+    - motd

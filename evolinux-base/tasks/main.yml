@@ -96,6 +96,8 @@
   include: log2mail.yml
   when: evolinux_log2mail_include
 
+- include: motd.yml
+
 - name: Munin
   include_role:
     name: munin

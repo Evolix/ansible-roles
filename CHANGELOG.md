@@ -11,6 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* evolinux-base: deploy custom motd if template are present
 
 ### Changed
 
