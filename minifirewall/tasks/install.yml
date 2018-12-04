@@ -8,8 +8,8 @@
   - iptables
 
 - name: init script is copied
-  copy:
-    src: minifirewall
+  template:
+    src: minifirewall.j2
     dest: /etc/init.d/minifirewall
     force: no
     mode: "0700"
@@ -19,7 +19,7 @@
 - name: configuration is copied
   copy:
     src: minifirewall.conf
-    dest: /etc/default/minifirewall
+    dest: "{{ minifirewall_main_file }}"
     force: no
     mode: "0600"
     owner: root

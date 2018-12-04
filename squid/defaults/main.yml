@@ -6,3 +6,5 @@ squid_address: "{{ ansible_default_ipv4.address }}"
 squid_whitelist_items: []
 
 squid_localproxy_enable: False
+
+minifirewall_main_file: /etc/default/minifirewall

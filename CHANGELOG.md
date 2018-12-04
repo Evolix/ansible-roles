@@ -18,6 +18,18 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [9.6.0] - 2018-12-04
+
+### Added
+* evolinux-base: deploy custom motd if template are present
+* minifirewall: all variables are configurable (untouched by default)
+* minifirewall: main file is configurable
+* squid: minifirewall main file is configurable
+
+### Changed
+* minifirewall: compare config before/after (for restart condition)
+* squid: better replacement in minifirewall config
+
 ## [9.5.0] - 2018-11-14
 
 ### Added
@@ -42,6 +54,7 @@ The **patch** part changes incrementally at each release.
 * packweb-apache: mod-security config is already included elsewhere
 * redis: for permissions on log and lib directories
 * redis: fix shell for instance users
+* evoacme: fix error handling in sed_cert_path_for_(apache|nginx)
 
 ## [9.4.2] - 2018-10-12
 

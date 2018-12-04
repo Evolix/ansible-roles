@@ -7,6 +7,11 @@
     var: minifirewall_privilegied_ips
     verbosity: 1
 
+- name: Stat minifirewall config file (before)
+  stat:
+    path: "{{ minifirewall_main_file }}"
+  register: minifirewall_before
+
 - name: Check if minifirewall is running
   shell: /sbin/iptables -L -n | grep -E "^(DROP\s+udp|ACCEPT\s+icmp)\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
   changed_when: False
@@ -20,14 +25,14 @@
 
 - name: Begin marker for IP addresses
   lineinfile:
-    dest: /etc/default/minifirewall
+    dest: "{{ minifirewall_main_file }}"
     create: no
     line: "# BEGIN ANSIBLE MANAGED BLOCK FOR IPS"
     insertbefore: '^# Main interface'
 
 - name: End marker for IP addresses
   lineinfile:
-    dest: /etc/default/minifirewall
+    dest: "{{ minifirewall_main_file }}"
     create: no
     line: "# END ANSIBLE MANAGED BLOCK FOR IPS"
     insertafter: '^PRIVILEGIEDIPS='
@@ -41,7 +46,7 @@
 
 - name: Configure IP addresses
   blockinfile:
-    dest: /etc/default/minifirewall
+    dest: "{{ minifirewall_main_file }}"
     create: no
     marker: "# {mark} ANSIBLE MANAGED BLOCK FOR IPS"
     content: |
@@ -65,21 +70,21 @@
 
 - name: Begin marker for ports
   lineinfile:
-    dest: /etc/default/minifirewall
+    dest: "{{ minifirewall_main_file }}"
     create: no
     line: "# BEGIN ANSIBLE MANAGED BLOCK FOR PORTS"
     insertbefore: '^# Protected services'
 
 - name: End marker for ports
   lineinfile:
-    dest: /etc/default/minifirewall
+    dest: "{{ minifirewall_main_file }}"
     create: no
     line: "# END ANSIBLE MANAGED BLOCK FOR PORTS"
     insertafter: '^SERVICESUDP3='
 
 - name: Configure ports
   blockinfile:
-    dest: /etc/default/minifirewall
+    dest: "{{ minifirewall_main_file }}"
     create: no
     marker: "# {mark} ANSIBLE MANAGED BLOCK FOR PORTS"
     content: |
@@ -101,19 +106,88 @@
       SERVICESUDP3='{{ minifirewall_private_ports_udp | join(' ') }}'
   register: minifirewall_config_ports
 
+- name: Configure DNSSERVEURS
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    create: no
+    line: "DNSSERVEURS='{{ minifirewall_dns_servers | join(' ') }}'"
+    regexp: "DNSSERVEURS='.*'"
+  when: minifirewall_dns_servers is not none
+
+- name: Configure HTTPSITES
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    create: no
+    line: "HTTPSITES='{{ minifirewall_http_sites | join(' ') }}'"
+    regexp: "HTTPSITES='.*'"
+  when: minifirewall_http_sites is not none
+
+- name: Configure HTTPSSITES
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    create: no
+    line: "HTTPSSITES='{{ minifirewall_https_sites | join(' ') }}'"
+    regexp: "HTTPSSITES='.*'"
+  when: minifirewall_https_sites is not none
+
+- name: Configure FTPSITES
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    create: no
+    line: "FTPSITES='{{ minifirewall_ftp_sites | join(' ') }}'"
+    regexp: "FTPSITES='.*'"
+  when: minifirewall_ftp_sites is not none
+
+- name: Configure SSHOK
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    create: no
+    line: "SSHOK='{{ minifirewall_ssh_ok | join(' ') }}'"
+    regexp: "SSHOK='.*'"
+  when: minifirewall_ssh_ok is not none
+
+- name: Configure SMTPOK
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    create: no
+    line: "SMTPOK='{{ minifirewall_smtp_ok | join(' ') }}'"
+    regexp: "SMTPOK='.*'"
+  when: minifirewall_smtp_ok is not none
+
+- name: Configure SMTPSECUREOK
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    create: no
+    line: "SMTPSECUREOK='{{ minifirewall_smtp_secure_ok | join(' ') }}'"
+    regexp: "SMTPSECUREOK='.*'"
+  when: minifirewall_smtp_secure_ok is not none
+
+- name: Configure NTPOK
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    create: no
+    line: "NTPOK='{{ minifirewall_ntp_ok | join(' ') }}'"
+    regexp: "NTPOK='.*'"
+  when: minifirewall_ntp_ok is not none
+
 - name: evomaintenance
   lineinfile:
-    dest: /etc/default/minifirewall
+    dest: "{{ minifirewall_main_file }}"
     line: "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s {{ item }} -m state --state ESTABLISHED,RELATED -j ACCEPT"
     insertafter: "^# EvoMaintenance"
   with_items: "{{ evomaintenance_hosts }}"
 
 - name: remove minifirewall example rule for the evomaintenance
   lineinfile:
-    dest: /etc/default/minifirewall
+    dest: "{{ minifirewall_main_file }}"
     regexp: '^#.*(--sport 5432).*(-s X\.X\.X\.X)'
     state: absent
   when: evomaintenance_hosts != []
+
+- name: Stat minifirewall config file (after)
+  stat:
+    path: "{{ minifirewall_main_file }}"
+  register: minifirewall_after
 
 - name: restart minifirewall
   # service:
@@ -126,7 +200,7 @@
   when:
     - minifirewall_restart_if_needed
     - minifirewall_is_running.rc == 0
-    - (minifirewall_config_ips | changed or minifirewall_config_ports | changed)
+    - minifirewall_before.stat.checksum != minifirewall_after.stat.checksum
 
 - name: restart minifirewall (noop)
   meta: noop

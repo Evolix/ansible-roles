@@ -1,28 +1,29 @@
 ---
 - name: Check if Minifirewall is present
   stat:
-    path: /etc/default/minifirewall
+    path: "{{ minifirewall_main_file }}"
   check_mode: no
   register: minifirewall_test
 
 - block:
   - name: HTTPSITES list is commented in minifirewall
     replace:
-      dest: /etc/default/minifirewall
+      dest: "{{ minifirewall_main_file }}"
       regexp: "^(HTTPSITES='[^0-9])"
       replace: '#\1'
     notify: restart minifirewall
 
   - name: all HTTPSITES are authorized in minifirewall
     lineinfile:
-      dest: /etc/default/minifirewall
+      dest: "{{ minifirewall_main_file }}"
       line: "HTTPSITES='0.0.0.0/0'"
+      regexp: "HTTPSITES='.*'"
       insertafter: "^#HTTPSITES="
     notify: restart minifirewall
 
   - name: add iptables rules for the proxy
     lineinfile:
-      dest: /etc/default/minifirewall
+      dest: "{{ minifirewall_main_file }}"
       regexp: "^#? *{{ item }}"
       line: "{{ item }}"
       insertafter: "^# Proxy"
@@ -35,7 +36,7 @@
 
   - name: remove minifirewall example rule for the proxy
     lineinfile:
-      dest: /etc/default/minifirewall
+      dest: "{{ minifirewall_main_file }}"
       regexp: '^#.*(-t nat).*(-d X\.X\.X\.X)'
       state: absent
     notify: restart minifirewall
