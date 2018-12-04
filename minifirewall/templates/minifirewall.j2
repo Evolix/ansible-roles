@@ -111,7 +111,7 @@ $IPT -A LOG_ACCEPT -j ACCEPT
 
 # Configuration
 oldconfigfile="/etc/firewall.rc"
-configfile="/etc/default/minifirewall"
+configfile="{{ minifirewall_main_file }}"
 
 if test -f $oldconfigfile; then
     echo "$oldconfigfile is deprecated, rename to $configfile" >&2
@@ -382,4 +382,3 @@ trap - INT TERM EXIT
 esac
 
 exit 0
-

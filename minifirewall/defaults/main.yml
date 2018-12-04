@@ -1,5 +1,6 @@
 ---
 
+minifirewall_main_file: /etc/default/minifirewall
 minifirewall_tail_file: /etc/default/minifirewall.tail
 minifirewall_tail_included: False
 minifirewall_tail_force: True

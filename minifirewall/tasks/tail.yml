@@ -17,7 +17,7 @@
 
 - name: source minifirewall.tail at the end of the main file
   blockinfile:
-    dest: /etc/default/minifirewall
+    dest: "{{ minifirewall_main_file }}"
     marker: "# {mark} ANSIBLE MANAGED EXTERNAL RULES"
     block: ". {{ minifirewall_tail_file }}"
     insertbefore: EOF
