@@ -7,6 +7,11 @@
     var: minifirewall_privilegied_ips
     verbosity: 1
 
+- name: Stat minifirewall config file (before)
+  stat:
+    path: "{{ minifirewall_main_file }}"
+  register: minifirewall_before
+
 - name: Check if minifirewall is running
   shell: /sbin/iptables -L -n | grep -E "^(DROP\s+udp|ACCEPT\s+icmp)\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
   changed_when: False
@@ -115,6 +120,11 @@
     state: absent
   when: evomaintenance_hosts != []
 
+- name: Stat minifirewall config file (after)
+  stat:
+    path: "{{ minifirewall_main_file }}"
+  register: minifirewall_after
+
 - name: restart minifirewall
   # service:
   #   name: minifirewall
@@ -126,7 +136,7 @@
   when:
     - minifirewall_restart_if_needed
     - minifirewall_is_running.rc == 0
-    - (minifirewall_config_ips | changed or minifirewall_config_ports | changed)
+    - minifirewall_before.stat.checksum != minifirewall_after.stat.checksum
 
 - name: restart minifirewall (noop)
   meta: noop
