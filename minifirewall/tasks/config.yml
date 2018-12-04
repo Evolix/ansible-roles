@@ -106,6 +106,70 @@
       SERVICESUDP3='{{ minifirewall_private_ports_udp | join(' ') }}'
   register: minifirewall_config_ports
 
+- name: Configure DNSSERVEURS
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    create: no
+    line: "DNSSERVEURS='{{ minifirewall_dns_servers | join(' ') }}'"
+    regexp: "DNSSERVEURS='.*'"
+  when: minifirewall_dns_servers is not none
+
+- name: Configure HTTPSITES
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    create: no
+    line: "HTTPSITES='{{ minifirewall_http_sites | join(' ') }}'"
+    regexp: "HTTPSITES='.*'"
+  when: minifirewall_http_sites is not none
+
+- name: Configure HTTPSSITES
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    create: no
+    line: "HTTPSSITES='{{ minifirewall_https_sites | join(' ') }}'"
+    regexp: "HTTPSSITES='.*'"
+  when: minifirewall_https_sites is not none
+
+- name: Configure FTPSITES
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    create: no
+    line: "FTPSITES='{{ minifirewall_ftp_sites | join(' ') }}'"
+    regexp: "FTPSITES='.*'"
+  when: minifirewall_ftp_sites is not none
+
+- name: Configure SSHOK
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    create: no
+    line: "SSHOK='{{ minifirewall_ssh_ok | join(' ') }}'"
+    regexp: "SSHOK='.*'"
+  when: minifirewall_ssh_ok is not none
+
+- name: Configure SMTPOK
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    create: no
+    line: "SMTPOK='{{ minifirewall_smtp_ok | join(' ') }}'"
+    regexp: "SMTPOK='.*'"
+  when: minifirewall_smtp_ok is not none
+
+- name: Configure SMTPSECUREOK
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    create: no
+    line: "SMTPSECUREOK='{{ minifirewall_smtp_secure_ok | join(' ') }}'"
+    regexp: "SMTPSECUREOK='.*'"
+  when: minifirewall_smtp_secure_ok is not none
+
+- name: Configure NTPOK
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    create: no
+    line: "NTPOK='{{ minifirewall_ntp_ok | join(' ') }}'"
+    regexp: "NTPOK='.*'"
+  when: minifirewall_ntp_ok is not none
+
 - name: evomaintenance
   lineinfile:
     dest: "{{ minifirewall_main_file }}"

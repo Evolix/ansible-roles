@@ -12,6 +12,7 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 * evolinux-base: deploy custom motd if template are present
+* minifirewall: all variables are configurable (untouched by default)
 * minifirewall: main file is configurable
 * squid: minifirewall main file is configurable
 

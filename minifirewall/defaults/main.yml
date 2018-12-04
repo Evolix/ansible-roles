@@ -26,6 +26,17 @@ minifirewall_semipublic_ports_udp: []
 minifirewall_private_ports_tcp: [5666]
 minifirewall_private_ports_udp: []
 
+# Keep a null value to leave the setting as is
+# otherwise use an Array, eg. "minifirewall_ssh_ok: ['0.0.0.0/0']"
+minifirewall_dns_servers: Null
+minifirewall_http_sites: Null
+minifirewall_https_sites: Null
+minifirewall_ftp_sites: Null
+minifirewall_ssh_ok: Null
+minifirewall_smtp_ok: Null
+minifirewall_smtp_secure_ok: Null
+minifirewall_ntp_ok: Null
+
 minifirewall_autostart: False
 minifirewall_restart_if_needed: True
 minifirewall_restart_force: False
