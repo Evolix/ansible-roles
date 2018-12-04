@@ -17,6 +17,7 @@
     lineinfile:
       dest: "{{ minifirewall_main_file }}"
       line: "HTTPSITES='0.0.0.0/0'"
+      regexp: "HTTPSITES='.*'"
       insertafter: "^#HTTPSITES="
     notify: restart minifirewall
 

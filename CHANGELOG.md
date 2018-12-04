@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 * squid: minifirewall main file is configurable
 
 ### Changed
+* squid: better replacement in minifirewall config
 
 ### Fixed
 
