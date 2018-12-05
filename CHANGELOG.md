@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 ### Changed
 
 ### Fixed
+* nginx: Munin url config is now a template to insert the server-status prefix
 
 ### Security
 

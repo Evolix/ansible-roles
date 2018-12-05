@@ -1,2 +1,0 @@
-[nginx_*]
-env.url http://munin/nginx_status

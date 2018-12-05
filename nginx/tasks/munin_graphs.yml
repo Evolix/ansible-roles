@@ -1,7 +1,7 @@
 ---
 
 - name: Copy Munin config for Nginx
-  copy:
+  template:
     src: munin/evolinux.nginx
     dest: /etc/munin/plugin-conf.d/
     mode: "0644"
