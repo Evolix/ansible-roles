@@ -31,6 +31,7 @@ The **patch** part changes incrementally at each release.
 ### Changed
 * minifirewall: compare config before/after (for restart condition)
 * squid: better replacement in minifirewall config
+* evoadmin-mail: complete refactoring, use Debian Package
 
 ## [9.5.0] - 2018-11-14
 

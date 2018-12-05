@@ -1,10 +1,19 @@
 ---
+- name: Install evoadmin-mail package
+  apt:
+    name: evoadmin-mail
+    state: present
+  tags:
+    - evoadmin-mail
 
-- include: packages.yml
-
-- include: user.yml
-
-- include: config.yml
+- name: Configure contact mail
+  ini_file:
+    dest: /etc/evoadmin-mail/config.ini
+    section: global
+    option: mail
+    value: "\"{{ evoadminmail_contact_email or general_alert_email | mandatory }}\""
+  tags:
+    - evoadmin-mail
 
 - include: ssl.yml
 
@@ -21,3 +30,5 @@
     regexp: "EvoAdmin-mail"
     line: '            <li><a href="https://{{ evoadminmail_host }}">Interface admin mail (EvoAdmin-mail)</a></li>'
     insertbefore: "</ul>"
+  tags:
+    - evoadmin-mail

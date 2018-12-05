@@ -10,7 +10,7 @@
     #ServerAlias {{ evoadminmail_host }}
 
     # Repertoire principal
-    DocumentRoot {{ evoadminmail_document_root }}/htdocs/
+    DocumentRoot /usr/share/evoadmin-mail/
 
     # SSL
     SSLEngine on
@@ -19,7 +19,7 @@
     SSLProtocol all -SSLv2 -SSLv3
 
     # Propriete du repertoire
-    <Directory {{ evoadminmail_document_root }}/htdocs/>
+    <Directory /usr/share/evoadmin-mail/>
         #Options Indexes SymLinksIfOwnerMatch
         Options SymLinksIfOwnerMatch
         AllowOverride AuthConfig Limit FileInfo Indexes
@@ -27,15 +27,15 @@
     </Directory>
 
     # user - group (thanks to sesse@debian.org)
-    AssignUserID www-{{ evoadminmail_username }} {{ evoadminmail_username }}
+    AssignUserID evoadmin-mail evoadmin-mail
 
     # LOG
     CustomLog /var/log/apache2/access.log combined
-    CustomLog {{ evoadminmail_log_dir }}/access.log combined
-    ErrorLog  {{ evoadminmail_log_dir }}/error.log
+    ErrorLog  /var/log/apache2/error.log
 
     # AWSTATS
-    SetEnv AWSTATS_FORCE_CONFIG {{ evoadminmail_username }}
+    SetEnv AWSTATS_FORCE_CONFIG evoadmin-mail
+    SetEnv EVOADMINMAIL_CONFIG_FILE /etc/evoadmin-mail/config.ini
 
     # REWRITE
     UseCanonicalName On
@@ -53,6 +53,5 @@
     #php_admin_value max_execution_time 60
     #php_admin_value upload_max_filesize 8M
     #php_admin_flag allow_url_fopen Off
-    php_admin_value sendmail_path "/usr/sbin/sendmail -t -i -f www-{{ evoadminmail_username }}"
     php_admin_value open_basedir "none"
 </VirtualHost>
