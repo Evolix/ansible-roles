@@ -11,6 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* evomaintenance: database variables must be set or the task fails
 
 ### Changed
 
