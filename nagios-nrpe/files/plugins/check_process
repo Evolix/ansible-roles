@@ -5,3 +5,5 @@ for proc in cron rsyslogd ntpd munin-node; do
     sudo /usr/lib/nagios//plugins/check_procs -C $proc -c 1:
     rc=$(($rc|$?))
 done
+
+exit $rc
