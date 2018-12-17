@@ -55,7 +55,19 @@
     - munin
 
 - include: munin.yml
-  when: _munin_installed.stat.exists and _munin_installed.stat.isdir
+  when:
+    - _munin_installed.stat.exists
+    - _munin_installed.stat.isdir
+    - redis_instance_name is not defined
+  tags:
+    - redis
+    - munin
+
+- include: munin-instances.yml
+  when:
+    - _munin_installed.stat.exists
+    - _munin_installed.stat.isdir
+    - redis_instance_name is defined
   tags:
     - redis
     - munin

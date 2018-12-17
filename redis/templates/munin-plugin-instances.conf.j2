@@ -1,0 +1,8 @@
+# Ansible managed
+
+[{{ redis_instance_name }}_redis_*]
+env.title_prefix Instance {{ redis_instance_name }}
+env.port {{ redis_port }}
+{% if redis_password %}
+env.password {{ redis_password }}
+{% endif %}

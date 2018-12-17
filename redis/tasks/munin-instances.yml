@@ -1,0 +1,61 @@
+---
+- name: Install munin check dependencies
+  apt:
+    name: libswitch-perl
+    state: present
+  tags:
+    - redis
+
+- include_role:
+    name: remount-usr
+  tags:
+    - redis
+
+- name: Create plugin directory
+  file:
+    name: /usr/local/share/munin/
+    state: directory
+    mode: "0755"
+  tags:
+    - redis
+
+- name: Create plugin directory
+  file:
+    name: /usr/local/share/munin/plugins/
+    state: directory
+    mode: "0755"
+  tags:
+    - redis
+
+- name: Copy redis munin plugin
+  copy:
+    src: munin_redis
+    dest: /usr/local/share/munin/plugins/redis_
+    mode: "0755"
+  notify: restart munin-node
+  tags:
+    - redis
+
+- name: Enable redis munin plugin
+  file:
+    src: /usr/local/share/munin/plugins/redis_
+    dest: "/etc/munin/plugins/{{ redis_instance_name }}_redis_{{item}}"
+    state: link
+  with_items:
+    - connected_clients
+    - key_ratio
+    - keys_per_sec
+    - per_sec
+    - used_keys
+    - used_memory
+  notify: restart munin-node
+  tags:
+    - redis
+
+- name: Configure redis plugin for munin
+  template:
+    src: templates/munin-plugin-instances.conf.j2
+    dest: '/etc/munin/plugin-conf.d/evolinux.redis_{{ redis_instance_name }}'
+    mode: 0740
+  notify: restart munin-node
+  tags: redis

@@ -12,6 +12,7 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 * evomaintenance: database variables must be set or the task fails
+* redis: Configure munin when working in instance mode
 
 ### Changed
 
