@@ -18,6 +18,7 @@ The **patch** part changes incrementally at each release.
 ### Fixed
 * nginx: Munin url config is now a template to insert the server-status prefix
 * redis: In instance mode, ensure to replace the nrpe check_redis with the instance check script
+* redis: Don't set the owner of /var/{lib,log}/redis to a redis instance account 
 * nagios-nrpe: check_process now return the error code (making the check more usefull than /bin/true)
 
 ### Security

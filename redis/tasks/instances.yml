@@ -52,6 +52,17 @@
   tags:
     - redis
 
+- name: Ensure redis base folders will be accessible for all instances
+  file:
+    dest: "{{ item }}"
+    state: directory
+    mode: "0755"
+    owner: "redis"
+    group: "redis"
+  with_items:
+    - "/var/lib/redis"
+    - "/var/log/redis"
+
 - name: Instances directories are present
   file:
     dest: "{{ item }}"
@@ -60,9 +71,7 @@
     owner: "redis-{{ redis_instance_name }}"
     group: "redis-{{ redis_instance_name }}"
   with_items:
-    - "/var/lib/redis"
     - "{{ redis_dbdir }}"
-    - "/var/log/redis"
     - "{{ redis_logfile | dirname }}"
   tags:
     - redis
