@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 * redis: Configure munin when working in instance mode
 
 ### Changed
+* redis: distinction between main and master password
 
 ### Fixed
 * nginx: Munin url config is now a template to insert the server-status prefix

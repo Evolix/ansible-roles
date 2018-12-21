@@ -8,7 +8,10 @@ redis_unixsocket: '/var/run/redis/redis.sock'
 redis_pidfile: "/var/run/redis/{{ redis_daemon }}.pid"
 redis_timeout: 300
 
+# for client authorization
 redis_password: NULL
+# for slave authorization on master
+redis_password_master: "{{ redis_password }}"
 
 redis_loglevel: "notice"
 redis_logfile: /var/log/redis/redis-server.log
