@@ -40,3 +40,6 @@ redis_protected_mode: "yes"
 
 # Add extra include files for local configuration/overrides.
 redis_includes: []
+
+redis_restart_if_needed: True
+redis_restart_force: False

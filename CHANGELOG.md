@@ -13,6 +13,8 @@ The **patch** part changes incrementally at each release.
 ### Added
 * evomaintenance: database variables must be set or the task fails
 * redis: Configure munin when working in instance mode
+* redis: add a variable to disable the restart handler
+* redis: add a variable to force a restart (even with no change)
 
 ### Changed
 * redis: distinction between main and master password
