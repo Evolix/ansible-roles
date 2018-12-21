@@ -92,6 +92,6 @@
     - nrpe
 
 - name: Force restart redis
-    command: /bin/true
-    notify: restart redis
-    when: redis_restart_force
+  command: /bin/true
+  notify: restart redis
+  when: redis_restart_force
