@@ -26,9 +26,9 @@
 - name: Begin marker for IP addresses
   lineinfile:
     dest: "{{ minifirewall_main_file }}"
-    create: no
     line: "# BEGIN ANSIBLE MANAGED BLOCK FOR IPS"
     insertbefore: '^# Main interface'
+    create: no
 
 - name: End marker for IP addresses
   lineinfile:
@@ -47,7 +47,6 @@
 - name: Configure IP addresses
   blockinfile:
     dest: "{{ minifirewall_main_file }}"
-    create: no
     marker: "# {mark} ANSIBLE MANAGED BLOCK FOR IPS"
     content: |
       # Main interface
@@ -66,26 +65,26 @@
       # Privilegied IPv4 addresses for semi-public services
       # (no need to add again TRUSTEDIPS)
       PRIVILEGIEDIPS='{{ minifirewall_privilegied_ips | join(' ') }}'
+    create: no
   register: minifirewall_config_ips
 
 - name: Begin marker for ports
   lineinfile:
     dest: "{{ minifirewall_main_file }}"
-    create: no
     line: "# BEGIN ANSIBLE MANAGED BLOCK FOR PORTS"
     insertbefore: '^# Protected services'
+    create: no
 
 - name: End marker for ports
   lineinfile:
     dest: "{{ minifirewall_main_file }}"
-    create: no
     line: "# END ANSIBLE MANAGED BLOCK FOR PORTS"
     insertafter: '^SERVICESUDP3='
+    create: no
 
 - name: Configure ports
   blockinfile:
     dest: "{{ minifirewall_main_file }}"
-    create: no
     marker: "# {mark} ANSIBLE MANAGED BLOCK FOR PORTS"
     content: |
       # Protected services
@@ -104,70 +103,71 @@
       # Private services (IPv4)
       SERVICESTCP3='{{ minifirewall_private_ports_tcp | join(' ') }}'
       SERVICESUDP3='{{ minifirewall_private_ports_udp | join(' ') }}'
+    create: no
   register: minifirewall_config_ports
 
 - name: Configure DNSSERVEURS
   lineinfile:
     dest: "{{ minifirewall_main_file }}"
-    create: no
     line: "DNSSERVEURS='{{ minifirewall_dns_servers | join(' ') }}'"
     regexp: "DNSSERVEURS='.*'"
+    create: no
   when: minifirewall_dns_servers is not none
 
 - name: Configure HTTPSITES
   lineinfile:
     dest: "{{ minifirewall_main_file }}"
-    create: no
     line: "HTTPSITES='{{ minifirewall_http_sites | join(' ') }}'"
     regexp: "HTTPSITES='.*'"
+    create: no
   when: minifirewall_http_sites is not none
 
 - name: Configure HTTPSSITES
   lineinfile:
     dest: "{{ minifirewall_main_file }}"
-    create: no
     line: "HTTPSSITES='{{ minifirewall_https_sites | join(' ') }}'"
     regexp: "HTTPSSITES='.*'"
+    create: no
   when: minifirewall_https_sites is not none
 
 - name: Configure FTPSITES
   lineinfile:
     dest: "{{ minifirewall_main_file }}"
-    create: no
     line: "FTPSITES='{{ minifirewall_ftp_sites | join(' ') }}'"
     regexp: "FTPSITES='.*'"
+    create: no
   when: minifirewall_ftp_sites is not none
 
 - name: Configure SSHOK
   lineinfile:
     dest: "{{ minifirewall_main_file }}"
-    create: no
     line: "SSHOK='{{ minifirewall_ssh_ok | join(' ') }}'"
     regexp: "SSHOK='.*'"
+    create: no
   when: minifirewall_ssh_ok is not none
 
 - name: Configure SMTPOK
   lineinfile:
     dest: "{{ minifirewall_main_file }}"
-    create: no
     line: "SMTPOK='{{ minifirewall_smtp_ok | join(' ') }}'"
     regexp: "SMTPOK='.*'"
+    create: no
   when: minifirewall_smtp_ok is not none
 
 - name: Configure SMTPSECUREOK
   lineinfile:
     dest: "{{ minifirewall_main_file }}"
-    create: no
     line: "SMTPSECUREOK='{{ minifirewall_smtp_secure_ok | join(' ') }}'"
     regexp: "SMTPSECUREOK='.*'"
+    create: no
   when: minifirewall_smtp_secure_ok is not none
 
 - name: Configure NTPOK
   lineinfile:
     dest: "{{ minifirewall_main_file }}"
-    create: no
     line: "NTPOK='{{ minifirewall_ntp_ok | join(' ') }}'"
     regexp: "NTPOK='.*'"
+    create: no
   when: minifirewall_ntp_ok is not none
 
 - name: evomaintenance

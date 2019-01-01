@@ -16,12 +16,12 @@
 - name: "Security directives for Evolinux (Debian 10 or later)"
   blockinfile:
     dest: /etc/ssh/sshd_config
+    marker: "# {mark} EVOLINUX PASSWORD RESTRICTIONS"
     block: |
       Match Address {{ evolinux_ssh_password_auth_addresses | join(',') }}
           PasswordAuthentication yes
       Match Group evolix
           PasswordAuthentication no
-    marker: "# {mark} EVOLINUX PASSWORD RESTRICTIONS"
     insertafter: EOF
     validate: '/usr/sbin/sshd -T -f %s'
   notify: reload sshd
@@ -32,10 +32,10 @@
 - name: Security directives for Evolinux (Jessie/Stretch)
   blockinfile:
     dest: /etc/ssh/sshd_config
+    marker: "# {mark} EVOLINUX PASSWORD RESTRICTIONS BY ADDRESS"
     block: |
       Match Address {{ evolinux_ssh_password_auth_addresses | join(',') }}
           PasswordAuthentication yes
-    marker: "# {mark} EVOLINUX PASSWORD RESTRICTIONS BY ADDRESS"
     insertafter: EOF
     validate: '/usr/sbin/sshd -T -f %s'
   notify: reload sshd

@@ -77,6 +77,7 @@
 - name: adjustments for grsec kernel
   blockinfile:
     dest: /etc/munin/plugin-conf.d/munin-node
+    marker: "# {mark} GRSECURITY CUSTOMIZATIONS"
     block: |
 
       [processes]
