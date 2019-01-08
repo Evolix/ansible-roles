@@ -50,6 +50,15 @@
   when:
     - metricbeat_elasticsearch_hosts
 
+- name: Metricbeat protocol for Elasticsearch
+  lineinfile:
+    dest: /etc/metricbeat/metricbeat.yml
+    regexp: '^  #?protocol: .*'
+    line: "  protocol: \"{{ metricbeat_elasticsearch_protocol }}\""
+    insertafter: "output.elasticsearch:"
+  notify: restart metricbeat
+  when: metricbeat_elasticsearch_protocol == "http" or metricbeat_elasticsearch_protocol == "https"
+
 - name: Metricbeat auth/username for Elasticsearch are configured
   lineinfile:
     dest: /etc/metricbeat/metricbeat.yml
