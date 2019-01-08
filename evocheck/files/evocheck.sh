@@ -4,8 +4,8 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
-# Repository: https://gitlab.evolix.org/evolix/evocheck
-# Commit: 956877442a3f43243fed89c491d9bdddd1ac77cd
+# Repository: https://gitea.evolix.org/evolix/evocheck
+# Commit: e6e0b8c216ed28a2ee2229e5e122ff1d49701ffc
 
 # Disable LANG*
 export LANG=C
@@ -525,19 +525,17 @@ if [ -e /etc/debian_version ]; then
 
     # Check if no package has been upgraded since $limit.
     if [ "$IS_NOTUPGRADED" = 1 ]; then
-        if zgrep -hq upgrade /var/log/dpkg.log*; then
-            last_upgrade=$(date +%s -d $(zgrep -h upgrade /var/log/dpkg.log* |sort -n |tail -1 |cut -f1 -d ' '))
-        fi
-        if grep -q '^mailto="listupgrade-todo@' /etc/evolinux/listupgrade.cnf \
-        || grep -q -E '^[[:digit:]]+[[:space:]]+[[:digit:]]+[[:space:]]+[^\*]' /etc/cron.d/listupgrade; then
+        last_upgrade=$(date +%s -d $(zgrep -h upgrade /var/log/dpkg.log* |sort -n |tail -1 |cut -f1 -d ' '))
+        if grep -sq '^mailto="listupgrade-todo@' /etc/evolinux/listupgrade.cnf \
+        || grep -sq -E '^[[:digit:]]+[[:space:]]+[[:digit:]]+[[:space:]]+[^\*]' /etc/cron.d/listupgrade; then
             # Manual upgrade process
             limit=$(date +%s -d "now - 180 days")
         else
             # Regular process
             limit=$(date +%s -d "now - 90 days")
         fi
-        if [ -d /var/log/installer ]; then
-            install_date=$(stat -c %Z /var/log/installer)
+        if [ -f /var/log/evolinux/00_prepare_system.log ]; then
+            install_date=$(stat -c %Z /var/log/evolinux/00_prepare_system.log)
         else
             install_date=0
         fi
@@ -591,8 +589,8 @@ if [ -e /etc/debian_version ]; then
 
     if [ "$IS_BACKPORTSCONF" = 1 ]; then
         if is_debianversion stretch; then
-            grep -q backports /etc/apt/sources.list && echo 'IS_BACKPORTSCONF FAILED!'
-            grep -q backports /etc/apt/sources.list.d/*.list 2>/dev/null && (grep -q backports /etc/apt/preferences.d/* || echo 'IS_BACKPORTSCONF FAILED!')
+            grep -qE "^[^#].*backports" /etc/apt/sources.list && echo 'IS_BACKPORTSCONF FAILED!'
+            grep -qE "^[^#].*backports" /etc/apt/sources.list.d/*.list 2>/dev/null && (grep -qE "^[^#].*backports" /etc/apt/preferences.d/* || echo 'IS_BACKPORTSCONF FAILED!')
         fi
     fi
 
@@ -988,9 +986,10 @@ fi
 
 if [ "$IS_PRIVKEYWOLRDREADABLE" = 1 ]; then
     for f in /etc/ssl/private/*; do
-        perms=$(stat -c "%a" $f)
+        perms=$(stat -L -c "%a" $f)
         if [ ${perms: -1} != "0" ]; then
             echo 'IS_PRIVKEYWOLRDREADABLE FAILED!'
+            break
         fi
     done
 fi

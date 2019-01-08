@@ -21,6 +21,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 * redis: distinction between main and master password
+* evocheck: update evocheck.sh for source install
 
 ### Fixed
 * metricbeat: fix username/password replacement
