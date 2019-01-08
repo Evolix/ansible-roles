@@ -43,3 +43,5 @@ redis_includes: []
 
 redis_restart_if_needed: True
 redis_restart_force: False
+
+redis_disabled_commands: []

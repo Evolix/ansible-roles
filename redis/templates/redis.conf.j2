@@ -51,6 +51,10 @@ appendonly {{ redis_appendonly }}
 appendfsync {{ redis_appendfsync }}
 no-appendfsync-on-rewrite no
 
+{% for disabled_command in redis_disabled_commands %}
+rename-command {{ disabled_command }} ""
+{% endfor %}
+
 {% for include in redis_includes %}
 include {{ include }}
 {% endfor %}
