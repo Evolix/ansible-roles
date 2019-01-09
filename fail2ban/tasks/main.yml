@@ -13,7 +13,7 @@
     - "/etc/fail2ban"
     - "/etc/fail2ban/filter.d"
   tags:
-  - fail2ban
+    - fail2ban
 
 - set_fact:
     fail2ban_ignore_ips: "{{ fail2ban_default_ignore_ips | union(fail2ban_additional_ignore_ips) | unique }}"
@@ -26,7 +26,7 @@
     force: no
   notify: restart fail2ban
   tags:
-  - fail2ban
+    - fail2ban
 
 - name: Include ignoredips update task 
   include: ip_whitelist.yml
