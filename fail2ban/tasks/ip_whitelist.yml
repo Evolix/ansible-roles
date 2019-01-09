@@ -1,9 +1,13 @@
 ---
+
+- set_fact:
+    fail2ban_ignore_ips: "{{ ['127.0.0.1/8'] | union(fail2ban_default_ignore_ips) | union(fail2ban_additional_ignore_ips) | unique }}"
+
 - name: Update ignoreips lists
   ini_file:
     dest: /etc/fail2ban/jail.local
-    section: "[DEFAULT]"
-    option: "ignoreips"
+    section: "DEFAULT"
+    option: "ignoreip"
     value: "{{ fail2ban_ignore_ips | join(' ') }}"
   notify: restart fail2ban
   tags:

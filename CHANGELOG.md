@@ -25,6 +25,7 @@ The **patch** part changes incrementally at each release.
 * evocheck: update evocheck.sh for source install
 
 ### Fixed
+* fail2ban: fix "ignoreip" update
 * metricbeat: fix username/password replacement
 * nagios-nrpe: check_process now return the error code (making the check more usefull than /bin/true)
 * nginx: Munin url config is now a template to insert the server-status prefix

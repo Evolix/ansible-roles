@@ -16,7 +16,9 @@
     - fail2ban
 
 - set_fact:
-    fail2ban_ignore_ips: "{{ fail2ban_default_ignore_ips | union(fail2ban_additional_ignore_ips) | unique }}"
+    fail2ban_ignore_ips: "{{ ['127.0.0.1/8'] | union(fail2ban_default_ignore_ips) | union(fail2ban_additional_ignore_ips) | unique }}"
+  tags:
+    - fail2ban
 
 - name: local jail is installed
   template:
