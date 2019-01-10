@@ -23,6 +23,7 @@ The **patch** part changes incrementally at each release.
 ### Changed
 * redis: distinction between main and master password
 * evocheck: update evocheck.sh for source install
+* java: update Oracle java package to 8u192
 
 ### Fixed
 * fail2ban: fix "ignoreip" update
