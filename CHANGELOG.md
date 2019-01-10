@@ -23,6 +23,7 @@ The **patch** part changes incrementally at each release.
 ### Changed
 * redis: distinction between main and master password
 * evocheck: update evocheck.sh for source install
+* php: added php-zip in the installed package list for debian 9 (and later)
 * squid: added packagist.org in the whitelist
 * java: update Oracle java package to 8u192
 

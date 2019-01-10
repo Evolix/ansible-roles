@@ -28,6 +28,7 @@
       - php-gettext
       - php-curl
       - php-ssh2
+      - php-zip
       - composer
       - libphp-phpmailer
 
