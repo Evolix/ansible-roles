@@ -12,3 +12,4 @@
   notify: restart fail2ban
   tags:
     - fail2ban
+    - ips

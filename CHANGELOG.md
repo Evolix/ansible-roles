@@ -19,6 +19,7 @@ The **patch** part changes incrementally at each release.
 * redis: add a variable for renamed/disabled commands
 * redis: add a variable to disable the restart handler
 * redis: add a variable to force a restart (even with no change)
+* "ips" tag added to fail2ban/tasks/ip_whitelist.yml
 
 ### Changed
 * redis: distinction between main and master password
