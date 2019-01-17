@@ -13,13 +13,13 @@ The **patch** part changes incrementally at each release.
 ### Added
 * apache: add Munin configuration for Apache server-status URL
 * evomaintenance: database variables must be set or the task fails
+* fail2ban: add "ips" tag added to fail2ban/tasks/ip_whitelist.yml
 * metricbeat: add a variable for the protocol to use with Elasticsearch
 * rbenv: add pkg-config to the list of packages to install
 * redis: Configure munin when working in instance mode
 * redis: add a variable for renamed/disabled commands
 * redis: add a variable to disable the restart handler
 * redis: add a variable to force a restart (even with no change)
-* "ips" tag added to fail2ban/tasks/ip_whitelist.yml
 
 ### Changed
 * redis: distinction between main and master password
