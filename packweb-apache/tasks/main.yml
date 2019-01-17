@@ -3,7 +3,7 @@
 - fail:
     msg: only compatible with Debian >= 8
   when:
-  - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
+    - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
 
 - name: install info.php
   copy:
@@ -23,9 +23,9 @@
     state: "{{ item.state }}"
     mode: "{{ item.mode }}"
   with_items:
-  - { path: log, mode: "0750", state: directory }
-  - { path: awstats, mode: "0750", state: directory }
-  - { path: www, mode: "0750", state: directory }
+    - { path: log, mode: "0750", state: directory }
+    - { path: awstats, mode: "0750", state: directory }
+    - { path: www, mode: "0750", state: directory }
 
 - name: Apache log file (templates) are present
   command: "touch /etc/skel/log/{{ item }}"

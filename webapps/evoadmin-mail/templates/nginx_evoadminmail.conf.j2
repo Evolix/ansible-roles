@@ -18,10 +18,10 @@ server {
     access_log  /var/log/nginx/access.log;
     error_log  /var/log/nginx/error.log;
     
-    root {{ evoadminmail_document_root }}/htdocs/;
+    root /usr/share/evoadmin-mail/;
     
     location / {
-        index  index.html index.htm;    
+        try_files $uri $uri/ /index.php?$args;
     }   
         
     location ~ \.php$ {        

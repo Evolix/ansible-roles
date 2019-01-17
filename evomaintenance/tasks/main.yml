@@ -3,6 +3,14 @@
 - set_fact:
     minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
 
+- assert:
+    that:
+      - evomaintenance_pg_passwd is not none
+      - evomaintenance_pg_db is not none
+      - evomaintenance_pg_table is not none
+      - evomaintenance_pg_host is not none
+    msg: evomaintenance database variables must be set
+
 - include: install_package_debian.yml
   when:
     - not evomaintenance_install_vendor

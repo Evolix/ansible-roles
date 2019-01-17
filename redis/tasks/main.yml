@@ -1,4 +1,8 @@
 ---
+
+- set_fact:
+    redis_restart_handler_name: "{{ redis_restart_if_needed | ternary('restart redis', 'restart redis (noop)') }}"
+
 - name: Redis is installed.
   apt:
     name: "{{ item }}"
@@ -32,7 +36,7 @@
     src: redis.conf.j2
     dest: "{{ redis_conf_path }}"
     mode: "0644"
-  notify: restart redis
+  notify: "{{ redis_restart_handler_name }}"
   when: redis_instance_name is not defined
   tags:
     - redis
@@ -55,7 +59,19 @@
     - munin
 
 - include: munin.yml
-  when: _munin_installed.stat.exists and _munin_installed.stat.isdir
+  when:
+    - _munin_installed.stat.exists
+    - _munin_installed.stat.isdir
+    - redis_instance_name is not defined
+  tags:
+    - redis
+    - munin
+
+- include: munin-instances.yml
+  when:
+    - _munin_installed.stat.exists
+    - _munin_installed.stat.isdir
+    - redis_instance_name is defined
   tags:
     - redis
     - munin
@@ -74,3 +90,8 @@
   tags:
     - redis
     - nrpe
+
+- name: Force restart redis
+  command: /bin/true
+  notify: restart redis
+  when: redis_restart_force

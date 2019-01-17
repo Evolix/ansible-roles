@@ -3,22 +3,7 @@ general_alert_email: "root@localhost"
 evoadminmail_contact_email: Null
 evoadminmail_bounce_email: "{{ evoadminmail_contact_email }}"
 
-evoadminmail_username: evoadmin-mail
-evoadminmail_home_dir: "/home/{{ evoadminmail_username }}"
-evoadminmail_document_root: "{{ evoadminmail_home_dir }}/www"
-evoadminmail_log_dir: "{{ evoadminmail_home_dir }}/log"
-evoadminmail_scripts_dir: /usr/share/scripts/
 evoadminmail_host: "evoadminmail.{{ ansible_fqdn }}"
 
 evoadminmail_enable_vhost: True
 evoadminmail_webserver: apache
-
-evoadminmail_tpl_servername: "{{ ansible_fqdn }}"
-evoadminmail_tpl_address:  "{{ ansible_default_ipv4.address }}"
-evoadminmail_tpl_phpmyadmin_url: Null
-evoadminmail_tpl_cgi_suffix: Null
-evoadminmail_tpl_signature: evoadmin
-evoadminmail_tpl_mail_from: root@localhost
-evoadminmail_tpl_mail_bcc: Null
-evoadminmail_tpl_mail_standard: "{{ general_alert_email }}"
-evoadminmail_tpl_mail_urgent: "{{ general_alert_email }}"

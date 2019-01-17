@@ -1,24 +1,30 @@
 ---
-
-
 - name: ssl-cert package is installed
   apt:
     name: ssl-cert
     state: present
+  tags:
+    - evoadmin-mail
 
 - name: Create private key and csr for default site ({{ ansible_fqdn }})
   command: openssl req -newkey rsa:2048 -sha256 -nodes -keyout /etc/ssl/private/{{ evoadminmail_host }}.key -out /etc/ssl/{{ evoadminmail_host }}.csr -batch -subj "/CN={{ evoadminmail_host }}"
   args:
     creates: "/etc/ssl/private/{{ evoadminmail_host }}.key"
+  tags:
+    - evoadmin-mail
 
 - name: Adjust rights on private key
   file:
-    path: /etc/ssl/private/{{ evoadminmail_host }}.key
+    dest: /etc/ssl/private/{{ evoadminmail_host }}.key
     owner: root
     group: ssl-cert
     mode: "0640"
+  tags:
+    - evoadmin-mail
 
 - name: Create certificate for default site
   command: openssl x509 -req -days 3650 -sha256 -in /etc/ssl/{{ evoadminmail_host }}.csr -signkey /etc/ssl/private/{{ evoadminmail_host }}.key -out /etc/ssl/certs/{{ evoadminmail_host }}.crt
   args:
     creates: "/etc/ssl/certs/{{ evoadminmail_host }}.crt"
+  tags:
+    - evoadmin-mail

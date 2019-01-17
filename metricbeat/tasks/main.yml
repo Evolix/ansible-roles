@@ -50,6 +50,15 @@
   when:
     - metricbeat_elasticsearch_hosts
 
+- name: Metricbeat protocol for Elasticsearch
+  lineinfile:
+    dest: /etc/metricbeat/metricbeat.yml
+    regexp: '^  #?protocol: .*'
+    line: "  protocol: \"{{ metricbeat_elasticsearch_protocol }}\""
+    insertafter: "output.elasticsearch:"
+  notify: restart metricbeat
+  when: metricbeat_elasticsearch_protocol == "http" or metricbeat_elasticsearch_protocol == "https"
+
 - name: Metricbeat auth/username for Elasticsearch are configured
   lineinfile:
     dest: /etc/metricbeat/metricbeat.yml
@@ -57,8 +66,8 @@
     line: '{{ item.line }}'
     insertafter: "output.elasticsearch:"
   with_items:
-    - { regexp: '^  #username: .*', line: '  username: "{{ metricbeat_elasticsearch_auth_username }}"' }
-    - { regexp: '^  #password: .*', line: '  password: "{{ metricbeat_elasticsearch_auth_password }}"' }
+    - { regexp: '^  #?username: .*', line: '  username: "{{ metricbeat_elasticsearch_auth_username }}"' }
+    - { regexp: '^  #?password: .*', line: '  password: "{{ metricbeat_elasticsearch_auth_password }}"' }
   notify: restart metricbeat
   when:
     - metricbeat_elasticsearch_auth_username != ""

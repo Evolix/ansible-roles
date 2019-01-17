@@ -4,6 +4,11 @@
     name: "{{ redis_daemon }}"
     state: restarted
 
+- name: restart redis (noop)
+  meta: noop
+  failed_when: False
+  changed_when: False
+
 - name: restart munin-node
   service:
     name: munin-node

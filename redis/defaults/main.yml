@@ -8,7 +8,10 @@ redis_unixsocket: '/var/run/redis/redis.sock'
 redis_pidfile: "/var/run/redis/{{ redis_daemon }}.pid"
 redis_timeout: 300
 
+# for client authorization
 redis_password: NULL
+# for slave authorization on master
+redis_password_master: "{{ redis_password }}"
 
 redis_loglevel: "notice"
 redis_logfile: /var/log/redis/redis-server.log
@@ -37,3 +40,8 @@ redis_protected_mode: "yes"
 
 # Add extra include files for local configuration/overrides.
 redis_includes: []
+
+redis_restart_if_needed: True
+redis_restart_force: False
+
+redis_disabled_commands: []

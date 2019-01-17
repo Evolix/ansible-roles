@@ -14,6 +14,7 @@
     - libxml2-dev
     - libxslt1-dev
     - zlib1g-dev
+    - pkg-config
   tags:
     - rbenv
     - packages
@@ -78,10 +79,10 @@
 - name: "Rbenv is initialized in profile for {{ username }}"
   blockinfile:
     dest: '~{{ username }}/.profile'
+    marker: "# {mark} ANSIBLE MANAGED RBENV INIT"
     block: |
       export PATH="{{ rbenv_root }}/bin:$PATH"
       eval "$(rbenv init -)"
-    marker: "# {mark} ANSIBLE MANAGED RBENV INIT"
   become_user: "{{ username }}"
   become: yes
   tags:

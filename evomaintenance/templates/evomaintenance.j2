@@ -1,11 +1,11 @@
 HOSTNAME={{ evomaintenance_hostname }}
 EVOMAINTMAIL={{ evomaintenance_alert_email or general_alert_email | mandatory }}
 
-export PGPASSWORD={{ evomaintenance_pg_passwd | mandatory }}
+export PGPASSWORD={{ evomaintenance_pg_passwd }}
 
-PGDB={{ evomaintenance_pg_db | mandatory }}
-PGTABLE={{ evomaintenance_pg_table | mandatory }}
-PGHOST={{ evomaintenance_pg_host | mandatory }}
+PGDB={{ evomaintenance_pg_db }}
+PGTABLE={{ evomaintenance_pg_table }}
+PGHOST={{ evomaintenance_pg_host }}
 FROM={{ evomaintenance_from }}
 FULLFROM="{{ evomaintenance_full_from }}"
 URGENCYFROM={{ evomaintenance_urgency_from }}

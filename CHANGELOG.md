@@ -18,6 +18,36 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [9.7.0] - 2019-01-17
+
+### Added
+* apache: add Munin configuration for Apache server-status URL
+* evomaintenance: database variables must be set or the task fails
+* fail2ban: add "ips" tag added to fail2ban/tasks/ip_whitelist.yml
+* metricbeat: add a variable for the protocol to use with Elasticsearch
+* rbenv: add pkg-config to the list of packages to install
+* redis: Configure munin when working in instance mode
+* redis: add a variable for renamed/disabled commands
+* redis: add a variable to disable the restart handler
+* redis: add a variable to force a restart (even with no change)
+
+### Changed
+* redis: distinction between main and master password
+* evocheck: update evocheck.sh for source install
+* php: added php-zip in the installed package list for debian 9 (and later)
+* squid: added packagist.org in the whitelist
+* java: update Oracle java package to 8u192
+
+### Fixed
+* fail2ban: fix "ignoreip" update
+* metricbeat: fix username/password replacement
+* nagios-nrpe: check_process now return the error code (making the check more usefull than /bin/true)
+* nginx: Munin url config is now a template to insert the server-status prefix
+* nodejs: Update yarn repo GPG key (current key expired)
+* redis: In instance mode, ensure to replace the nrpe check_redis with the instance check script
+* redis: Don't set the owner of /var/{lib,log}/redis to a redis instance account
+
+
 ## [9.6.0] - 2018-12-04
 
 ### Added
@@ -29,6 +59,7 @@ The **patch** part changes incrementally at each release.
 ### Changed
 * minifirewall: compare config before/after (for restart condition)
 * squid: better replacement in minifirewall config
+* evoadmin-mail: complete refactoring, use Debian Package
 
 ## [9.5.0] - 2018-11-14
 

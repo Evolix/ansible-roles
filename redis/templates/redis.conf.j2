@@ -9,7 +9,9 @@ unixsocket {{ redis_unixsocket }}
 
 {% if redis_password %}
 requirepass {{ redis_password }}
-masterauth {{ redis_password }}
+{% endif %}
+{% if redis_password_master %}
+masterauth {{ redis_password_master }}
 {% endif %}
 
 timeout {{ redis_timeout }}
@@ -48,6 +50,10 @@ maxmemory-samples {{ redis_maxmemory_samples }}
 appendonly {{ redis_appendonly }}
 appendfsync {{ redis_appendfsync }}
 no-appendfsync-on-rewrite no
+
+{% for disabled_command in redis_disabled_commands %}
+rename-command {{ disabled_command }} ""
+{% endfor %}
 
 {% for include in redis_includes %}
 include {{ include }}
