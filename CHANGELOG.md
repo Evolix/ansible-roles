@@ -11,6 +11,16 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Security
+
+## [9.7.0] - 2019-01-17
+
+### Added
 * apache: add Munin configuration for Apache server-status URL
 * evomaintenance: database variables must be set or the task fails
 * fail2ban: add "ips" tag added to fail2ban/tasks/ip_whitelist.yml
@@ -37,7 +47,6 @@ The **patch** part changes incrementally at each release.
 * redis: In instance mode, ensure to replace the nrpe check_redis with the instance check script
 * redis: Don't set the owner of /var/{lib,log}/redis to a redis instance account
 
-### Security
 
 ## [9.6.0] - 2018-12-04
 
