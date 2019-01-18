@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 ### Changed
 
 ### Fixed
+* ntpd: Update the restrictions to follow wiki.evolix.org/HowtoNTP client config
 
 ### Security
 

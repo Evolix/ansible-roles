@@ -2,7 +2,9 @@
 ntpd_servers:
 - 'ntp.evolix.net iburst'
 ntpd_acls:
-- '-4 default kod notrap nomodify nopeer noquery'
-- '-6 default kod notrap nomodify nopeer noquery'
+- '-4 default ignore'
+- '-6 default ignore'
+- 'source nomodify noquery notrap'         # Debian 9 and later
+- 'ntp.evolix.net nomodify noquery notrap' # Debian 8
 - '127.0.0.1'
 - '::1'
