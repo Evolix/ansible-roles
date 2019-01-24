@@ -2,6 +2,13 @@
 proftpd_hostname: "{{ ansible_hostname }}"
 proftpd_fqdn: "{{ ansible_fqdn }}"
 proftpd_default_address: []
-proftpd_port: "21"
+proftpd_ftp_enable: True
+proftpd_port: 21
+proftpd_ftps_enable: False
+proftpd_ftps_port: 990
+proftpd_ftps_cert: "/etc/ssl/certs/ssl-cert-snakeoil.pem"
+proftpd_ftps_key: "/etc/ssl/private/ssl-cert-snakeoil.key"
+proftpd_sftp_enable: False
+proftpd_sftp_port: 2222
 proftpd_accounts: []
 proftpd_accounts_final: []

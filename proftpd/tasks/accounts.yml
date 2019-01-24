@@ -25,7 +25,7 @@
   tags:
     - proftpd
 
-- name: Allow FTP account
+- name: Allow FTP account (FTP)
   lineinfile:
     dest: /etc/proftpd/conf.d/z-evolinux.conf
     state: present
@@ -33,5 +33,30 @@
     insertbefore: "DenyAll"
   with_items: "{{ proftpd_accounts_final }}"
   notify: restart proftpd
+  when: proftpd_ftp_enable
+  tags:
+    - proftpd
+
+- name: Allow FTP account (FTPS)
+  lineinfile:
+    dest: /etc/proftpd/conf.d/ftps.conf
+    state: present
+    line: "\tAllowUser {{ item.name }}"
+    insertbefore: "DenyAll"
+  with_items: "{{ proftpd_accounts_final }}"
+  notify: restart proftpd
+  when: proftpd_ftps_enable
+  tags:
+    - proftpd
+
+- name: Allow FTP account (SFTP)
+  lineinfile:
+    dest: /etc/proftpd/conf.d/sftp.conf
+    state: present
+    line: "\tAllowUser {{ item.name }}"
+    insertbefore: "DenyAll"
+  with_items: "{{ proftpd_accounts_final }}"
+  notify: restart proftpd
+  when: proftpd_sftp_enable
   tags:
     - proftpd

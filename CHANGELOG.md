@@ -31,6 +31,7 @@ The **patch** part changes incrementally at each release.
 * redis: add a variable for renamed/disabled commands
 * redis: add a variable to disable the restart handler
 * redis: add a variable to force a restart (even with no change)
+* proftpd: add FTPS and SFTP support
 
 ### Changed
 * redis: distinction between main and master password
