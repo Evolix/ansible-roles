@@ -5,6 +5,7 @@ bind {{ redis_bind_interface }}
 
 {% if redis_unixsocket %}
 unixsocket {{ redis_unixsocket }}
+unixsocketperm {{ redis_unixsocketperm }}
 {% endif %}
 
 {% if redis_password %}

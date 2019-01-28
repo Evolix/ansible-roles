@@ -5,6 +5,7 @@ redis_conf_path: /etc/redis/redis.conf
 redis_port: 6379
 redis_bind_interface: 127.0.0.1
 redis_unixsocket: '/var/run/redis/redis.sock'
+redis_unixsocketperm: 770
 redis_pidfile: "/var/run/redis/{{ redis_daemon }}.pid"
 redis_timeout: 300
 
