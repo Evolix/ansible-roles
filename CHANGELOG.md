@@ -14,6 +14,7 @@ The **patch** part changes incrementally at each release.
 * redis: add variable for configure unixsocketperm
 
 ### Changed
+* redmine: refactoring of redmine role with use of rbenv
 
 ### Fixed
 * ntpd: Update the restrictions to follow wiki.evolix.org/HowtoNTP client config

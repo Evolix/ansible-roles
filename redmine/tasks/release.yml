@@ -1,0 +1,123 @@
+---
+- name: Get id of user
+  command: "id -u {{ redmine_user }}"
+  register: redmine_command_user_id
+  changed_when: False
+  check_mode: False
+  tags:
+    - redmine
+
+- name: Define user environment
+  set_fact:
+    user_env:
+      XDG_RUNTIME_DIR: "/run/user/{{ redmine_command_user_id.stdout }}"
+      RAILS_ENV: production
+  tags:
+    - redmine
+
+- name: Stop puma service
+  systemd:
+    name: puma
+    daemon_reload: yes
+    state: stopped
+    user: yes
+  become_user: "{{ redmine_user }}"
+  environment: "{{ user_env }}"
+  tags:
+    - redmine
+
+- name: Create mysqldump directory
+  file:
+    path: "/home/{{ redmine_user }}/mysqldump"
+    state: directory
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0750"
+  tags:
+    - redmine
+
+- name: Dump mysql database
+  mysql_db:
+    state: dump
+    config_file: "/home/{{ redmine_user }}/.my.cnf"
+    name: "{{ redmine_db_name }}"
+    target: "/home/{{ redmine_user }}/mysqldump/{{ ansible_date_time.iso8601_basic_short }}.sql.gz"
+  tags:
+    - redmine
+
+- name: Change www link
+  file:
+    state: link
+    src: "/home/{{ redmine_user }}/releases/{{ redmine_version }}"
+    dest: "/home/{{ redmine_user }}/www"
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+  tags:
+    - redmine
+
+- name: Update Gemfile.lock
+  command: "~/.rbenv/bin/rbenv exec bundle lock"
+  args:
+    chdir: "/home/{{ redmine_user }}/www"
+  become_user: "{{ redmine_user }}"
+  become: yes
+  tags:
+    - redmine
+
+- name: Update local gems with bundle
+  command: "~/.rbenv/bin/rbenv exec bundle install --deployment"
+  args:
+    chdir: "/home/{{ redmine_user }}/www"
+  become_user: "{{ redmine_user }}"
+  become: yes
+  tags:
+    - redmine
+
+- name: Generate secret token
+  command: "~/.rbenv/bin/rbenv exec bundle exec rake -q generate_secret_token"
+  args:
+    chdir: "/home/{{ redmine_user }}/www"
+    creates: "/home/{{ redmine_user }}/www/config/initializers/secret_token.rb"
+  become_user: "{{ redmine_user }}"
+  environment: "{{ user_env }}"
+  tags:
+    - redmine
+
+- name: Migrate database with rake
+  command: "~/.rbenv/bin/rbenv exec bundle exec rake -q db:migrate"
+  args:
+    chdir: "/home/{{ redmine_user }}/www/"
+  become_user: "{{ redmine_user }}"
+  environment: "{{ user_env }}"
+  tags:
+    - redmine
+
+- name: Populate Mysql database
+  command: "~/.rbenv/bin/rbenv exec bundle exec rake -q redmine:load_default_data REDMINE_LANG=fr"
+  args:
+    chdir: "/home/{{ redmine_user }}/www/"
+  become_user: "{{ redmine_user }}"
+  environment: "{{ user_env }}"
+  when: redmine_mysql_create.changed
+  tags:
+    - redmine
+
+- name: Migrate plugins
+  command: "~/.rbenv/bin/rbenv exec bundle exec rake -q redmine:plugins:migrate"
+  args:
+    chdir: "/home/{{ redmine_user }}/www/"
+  become_user: "{{ redmine_user }}"
+  environment: "{{ user_env }}"
+  tags:
+    - redmine
+
+- name: Start puma service
+  systemd:
+    name: puma
+    daemon_reload: yes
+    state: started
+    user: yes
+  become_user: "{{ redmine_user }}"
+  environment: "{{ user_env }}"
+  tags:
+    - redmine

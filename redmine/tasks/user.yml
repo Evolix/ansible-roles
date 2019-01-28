@@ -1,0 +1,44 @@
+---
+- name: Create redmine group
+  group:
+    name: "{{ redmine_user }}"
+    state: present
+  tags:
+    - redmine
+
+- name: Create redmine user
+  user:
+    name: "{{ redmine_user }}"
+    state: present
+    group: "{{ redmine_user }}"
+    createhome: yes
+    home: "/home/{{ redmine_user }}"
+    shell: /bin/bash
+  tags:
+    - redmine
+
+- name: Add redmine user to Redis group
+  user:
+    name: "{{ redmine_user }}"
+    groups: "redis-{{ redmine_user }}"
+    append: True
+  when: redmine_redis_path is defined
+  tags:
+    - redmine
+
+- name: Create required directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0750"
+  with_items:
+    - "/home/{{ redmine_user }}"
+    - "/home/{{ redmine_user }}/files"
+  tags:
+    - redmine
+
+- name: Enable systemd user mode
+  command: "loginctl enable-linger {{ redmine_user }}"
+  changed_when: false

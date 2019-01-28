@@ -3,6 +3,7 @@ puma_env: 'production'
 puma_worker: 2
 puma_min_thread: 0
 puma_max_thread: 4
+redmine_version: "4.0.1"
 redmine_db_name: "{{ redmine_user }}"
 redmine_db_host: "localhost"
 redmine_db_username: "{{ redmine_user }}"

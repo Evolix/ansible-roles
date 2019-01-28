@@ -1,0 +1,5 @@
+gem "syslogger"
+{% if redmine_redis_path is defined %}
+gem "redis-rails"
+gem "redis-rack-cache"
+{% endif %}

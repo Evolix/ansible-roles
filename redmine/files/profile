@@ -12,7 +12,7 @@ fi
 
 # set PATH so it includes gems bin
 if [ -d "$HOME/bin" ] ; then
-    export PATH="$HOME/.gems/ruby/2.1.0/bin:$PATH"
+    export PATH="$HOME/www/.gem/ruby/2.3.0/bin:$PATH"
 fi
 
 # For systemctl --user
@@ -20,4 +20,3 @@ export XDG_RUNTIME_DIR=/run/user/$UID
 
 # Ruby vars
 export RAILS_ENV=production
-export BUNDLE_GEMFILE="$HOME/www/Gemfile"

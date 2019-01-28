@@ -1,0 +1,98 @@
+---
+- name: Create releases directory
+  file:
+    path: "/home/{{ redmine_user }}/{{ item }}"
+    state: directory
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0750"
+  with_items:
+  - "releases"
+  - "releases/{{ redmine_version }}"
+  tags:
+    - redmine
+
+- name: Download Redmine archive
+  unarchive:
+    src: "https://redmine.org/releases/redmine-{{ redmine_version }}.tar.gz"
+    dest: "/home/{{ redmine_user }}/releases/{{ redmine_version }}"
+    remote_src: True
+    extra_opts: --strip-components=1
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+  tags:
+    - redmine
+
+- name: Link config files
+  file:
+    state: link
+    src: "/home/{{ redmine_user }}/config/{{ item }}"
+    dest: "/home/{{ redmine_user }}/releases/{{ redmine_version }}/config/{{ item }}"
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+  with_items:
+    - 'configuration.yml'
+    - 'database.yml'
+    - 'additional_environment.rb'
+  tags:
+    - redmine
+
+- name: Copy/Update plugin from archive
+  unarchive:
+    src: "{{ item.zip }}"
+    dest: "/home/{{ redmine_user }}/releases/{{ redmine_version }}/plugins/"
+    remote_src: yes
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0750"
+  when: item.zip is defined
+  with_items: "{{ redmine_plugins }}"
+  tags:
+    - redmine
+
+- name: Copy/Update plugin from git repository
+  git:
+    repo: "{{ item.git }}"
+    dest: "/home/{{ redmine_user }}/releases/{{ redmine_version }}/plugins/{{ item.git | basename | splitext | first }}"
+    version: "{{ item.tree | default('master') }}"
+    umask: "027"
+  become_user: "{{ redmine_user }}"
+  when: item.git is defined
+  with_items: "{{ redmine_plugins }}"
+  tags:
+    - redmine
+
+- name: Copy/Update theme from archive
+  unarchive:
+    src: "{{ item.zip }}"
+    dest: "/home/{{ redmine_user }}/releases/{{ redmine_version }}/public/themes"
+    remote_src: yes
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0750"
+  when: item.zip is defined
+  with_items: "{{ redmine_themes }}"
+  tags:
+    - redmine
+
+- name: Copy/Update theme from git repository
+  git:
+    repo: "{{ item.git }}"
+    dest: "/home/{{ redmine_user }}/releases/{{ redmine_version }}/public/themes/{{ item.git | basename | splitext | first }}"
+    version: "{{ item.tree | default('master') }}"
+    umask: "027"
+  become_user: "{{ redmine_user }}"
+  when: item.git is defined
+  with_items: "{{ redmine_themes }}"
+  tags:
+    - redmine
+
+- name: Deploy custom Gemfile
+  template:
+    src: Gemfile.local.j2
+    dest: "/home/{{ redmine_user }}/releases/{{ redmine_version }}/Gemfile.local"
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0640"
+  tags:
+    - redmine

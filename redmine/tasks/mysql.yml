@@ -1,0 +1,62 @@
+---
+- name: Get actual Mysql password
+  shell: "grep password /home/{{ redmine_user }}/.my.cnf | awk '{ print $3 }'"
+  register: redmine_get_mysql_password
+  check_mode: no
+  changed_when: False
+  failed_when: false
+  tags:
+    - redmine
+
+- name: Generate Mysql password
+  shell: perl -e 'print map{("a".."z","A".."Z",0..9)[int(rand(62))]}(1..16)'
+  register: redmine_generate_mysql_password
+  check_mode: no
+  changed_when: False
+  when: redmine_get_mysql_password.stdout == ""
+  tags:
+  - redmine
+
+- name: Set Mysql password
+  set_fact:
+    redmine_db_pass: "{{ redmine_generate_mysql_password.stdout | default(redmine_get_mysql_password.stdout) }}"
+  tags:
+    - redmine
+
+- name: Create Mysql database
+  mysql_db:
+    name: "{{ redmine_db_name }}"
+    config_file: "/root/.my.cnf"
+    state: present
+    collation: "utf8_general_ci"
+  register: redmine_mysql_create
+  tags:
+    - redmine
+
+- name: Store credentials in my.cnf
+  ini_file:
+    dest: "/home/{{ redmine_user }}/.my.cnf"
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0600"
+    section: client
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+  with_items:
+    - { option: 'host', value: "{{ redmine_db_host }}" }
+    - { option: 'user', value: "{{ redmine_db_username }}" }
+    - { option: 'database', value: "{{ redmine_db_name }}" }
+    - { option: 'password', value: '{{ redmine_db_pass }}' }
+  tags:
+    - redmine
+
+- name: Create Mysql user
+  mysql_user:
+    name: "{{ redmine_db_username }}"
+    password: '{{ redmine_db_pass }}'
+    priv: "{{ redmine_user }}.*:ALL"
+    config_file: "/root/.my.cnf"
+    update_password: always
+    state: present
+  tags:
+    - redmine

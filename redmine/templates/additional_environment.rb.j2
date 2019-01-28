@@ -1,2 +1,13 @@
-config.paths['log'] = "/home/{{ redmine_user }}/log/redmine.log"
-config.log_level = :warn
+config.log_level = :info
+config.logger = Syslogger.new("redmine_{{ redmine_user }}")
+{% if redmine_redis_path is defined %}
+config.session_store :redis_store,
+  servers: { path: '{{ redmine_redis_path }}', db: 0, namespace: "session" }
+config.cache_store = :redis_store,
+  "redis://{{ redmine_redis_path }}/cache_rails",
+  { expires_in: 90.minutes }
+config.action_dispatch.rack_cache = {
+  metastore: "redis://{{ redmine_redis_path }}/cache_metastore",
+  entitystore: "redis://{{ redmine_redis_path }}/cache_entitystore"
+}
+{% endif %}
