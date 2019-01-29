@@ -11,6 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* filebeat: disable cloud_metadata processor by default
 * redis: add variable for configure unixsocketperm
 
 ### Changed

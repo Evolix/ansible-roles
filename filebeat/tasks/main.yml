@@ -64,3 +64,19 @@
   - filebeat_logstash_plugin
   - logstash_plugin.stat.exists
   - not logstash_plugin_installed | success
+
+- name: cloud_metadata processor is disabled
+  replace:
+    dest: /etc/filebeat/filebeat.yml
+    regexp: '^(\s+)(- add_cloud_metadata:)'
+    replace: '\1# \2'
+  notify: restart filebeat
+  when: not filebeat_processors_cloud_metadata
+
+- name: cloud_metadata processor is disabled
+  lineinfile:
+    dest: /etc/filebeat/filebeat.yml
+    line: "  - add_cloud_metadata: ~"
+    insert_after: '^processors:'
+  notify: restart filebeat
+  when: filebeat_processors_cloud_metadata
