@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 * filebeat: disable cloud_metadata processor by default
 * metricbeat: disable cloud_metadata processor by default
+* percona : new role to install Percona repositories and tools
 * redis: add variable for configure unixsocketperm
 
 ### Changed
