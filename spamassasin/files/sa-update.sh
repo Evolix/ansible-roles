@@ -12,7 +12,7 @@ test -x /etc/init.d/spamassassin || exit 0
 # of spamassassin --lint (which will typically get emailed to root)
 # and abort.
 die_with_lint() {
-    su debian-spamd -c "spamassassin --lint -D 2>&1"
+    su - debian-spamd -c "spamassassin --lint -D 2>&1"
     exit 1
 }
 
@@ -20,7 +20,7 @@ do_compile() {
 # Compile, if rules have previously been compiled, and it's possible
     if [ -x /usr/bin/re2c -a -x /usr/bin/sa-compile \
         -a -d /var/lib/spamassassin/compiled ]; then
-        su debian-spamd -c "sa-compile --quiet"
+        su - debian-spamd -c "sa-compile --quiet"
         # Fixup perms -- group and other should be able to
         # read and execute, but never write.  Works around
         # sa-compile's failure to obey umask.
@@ -43,12 +43,12 @@ reload() {
 
 # Update
 umask 022
-su debian-spamd -c "sa-update --gpghomedir /var/lib/spamassassin/sa-update-keys"
+su - debian-spamd -c "sa-update --gpghomedir /var/lib/spamassassin/sa-update-keys"
 
 case $? in
     0)
         # got updates!
-        su debian-spamd -c "spamassassin --lint" || die_with_lint
+        su - debian-spamd -c "spamassassin --lint" || die_with_lint
         do_compile
         reload
         echo -e "Les règles SpamAsassin ont été mises à jour. Merci de reporter toute anomalie." | \
