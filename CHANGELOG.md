@@ -11,6 +11,16 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Security
+
+## [9.8.0] - 2019-01-31
+
+### Added
 * filebeat: disable cloud_metadata processor by default
 * metricbeat: disable cloud_metadata processor by default
 * percona : new role to install Percona repositories and tools
@@ -21,8 +31,6 @@ The **patch** part changes incrementally at each release.
 
 ### Fixed
 * ntpd: Update the restrictions to follow wiki.evolix.org/HowtoNTP client config
-
-### Security
 
 ## [9.7.0] - 2019-01-17
 
