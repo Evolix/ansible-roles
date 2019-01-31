@@ -72,3 +72,19 @@
   when:
     - metricbeat_elasticsearch_auth_username != ""
     - metricbeat_elasticsearch_auth_password != ""
+
+- name: disable cloud_metadata
+  replace:
+    dest: /etc/metricbeat/metricbeat.yml
+    regexp: '^(\s+)(- add_cloud_metadata:)'
+    replace: '\1# \2'
+  notify: restart metricbeat
+  when: not metricbeat_processors_cloud_metadata
+
+- name: cloud_metadata processor is disabled
+  lineinfile:
+    dest: /etc/metricbeat/metricbeat.yml
+    line: "  - add_cloud_metadata: ~"
+    insert_after: '^processors:'
+  notify: restart metricbeat
+  when: metricbeat_processors_cloud_metadata

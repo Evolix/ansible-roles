@@ -18,6 +18,20 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [9.8.0] - 2019-01-31
+
+### Added
+* filebeat: disable cloud_metadata processor by default
+* metricbeat: disable cloud_metadata processor by default
+* percona : new role to install Percona repositories and tools
+* redis: add variable for configure unixsocketperm
+
+### Changed
+* redmine: refactoring of redmine role with use of rbenv
+
+### Fixed
+* ntpd: Update the restrictions to follow wiki.evolix.org/HowtoNTP client config
+
 ## [9.7.0] - 2019-01-17
 
 ### Added
@@ -30,6 +44,7 @@ The **patch** part changes incrementally at each release.
 * redis: add a variable for renamed/disabled commands
 * redis: add a variable to disable the restart handler
 * redis: add a variable to force a restart (even with no change)
+* proftpd: add FTPS and SFTP support
 
 ### Changed
 * redis: distinction between main and master password

@@ -1,0 +1,59 @@
+---
+- name: Create systemd config dir
+  file:
+    state: directory
+    dest: "/home/{{ redmine_user }}/{{ item }}"
+    mode: "0750"
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+  with_items:
+  - ".config"
+  - ".config/systemd"
+  - ".config/systemd/user"
+  tags:
+    - redmine
+
+- name: Deploy systemd unit
+  copy:
+    src: puma.service
+    dest: "/home/{{ redmine_user }}/.config/systemd/user/puma.service"
+    mode: "0644"
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+  tags:
+    - redmine
+
+- name: Set user .profile
+  copy:
+    src: profile
+    dest: "/home/{{ redmine_user }}/.profile"
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0640"
+  tags:
+    - redmine
+
+- name: Create config directory
+  file:
+    path: "/home/{{ redmine_user }}/config"
+    state: directory
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0750"
+  tags:
+    - redmine
+
+- name: Copy configurations file
+  template:
+    src: "{{ item }}.j2"
+    dest: "/home/{{ redmine_user }}/config/{{ item }}"
+    owner: "{{ redmine_user }}"
+    group: "{{ redmine_user }}"
+    mode: "0640"
+  with_items:
+    - 'configuration.yml'
+    - 'database.yml'
+    - 'additional_environment.rb'
+    - 'puma.rb'
+  tags:
+    - redmine

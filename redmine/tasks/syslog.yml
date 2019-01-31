@@ -1,0 +1,27 @@
+---
+- name: Create log directory
+  file:
+    state: directory
+    dest: /var/log/redmine
+    owner: root
+    group: adm
+    mode: "0750"
+  tags:
+    - redmine
+
+- name: Copy syslog configuration
+  copy:
+    src: syslog.conf
+    dest: /etc/rsyslog.d/redmine.conf
+    mode: "0644"
+  notify: restart rsyslog
+  tags:
+    - redmine
+
+- name: Copy logrotate configuration
+  copy:
+    src: logrotate
+    dest: /etc/logrotate.d/redmine
+    mode: "0644"
+  tags:
+    - redmine

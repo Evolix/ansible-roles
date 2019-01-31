@@ -6,3 +6,5 @@ metricbeat_elasticsearch_hosts:
   - "localhost:9200"
 metricbeat_elasticsearch_auth_username: ""
 metricbeat_elasticsearch_auth_password: ""
+
+metricbeat_processors_cloud_metadata: False

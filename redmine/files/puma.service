@@ -7,7 +7,7 @@ WorkingDirectory=%h/www
 UMask=0027
 PIDFile=%h/ruby.pid
 ExecStartPre=/bin/mkdir -m 0750 -p %h/run
-ExecStart=/usr/bin/bundle exec puma --bind unix://%h/run/puma.sock?umask=0007 --pidfile %h/run/puma.pid --dir %h/www --config /etc/puma/%u.rb
+ExecStart=%h/.rbenv/bin/rbenv exec bundle exec puma --bind unix://%h/run/puma.sock?umask=0007 --pidfile %h/run/puma.pid --dir %h/www --config %h/config/puma.rb
 ExecReload=/bin/kill -USR2 $MAINPID
 KillMode=process
 #Restart=on-failure

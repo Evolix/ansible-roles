@@ -1,0 +1,4 @@
+---
+
+percona__install_xtrabackup: True
+percona__xtrabackup_package_name: percona-xtrabackup-24

@@ -1,0 +1,10 @@
+---
+- name: restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+
+- name: reload nginc
+  service:
+    name: nginx
+    state: reloaded

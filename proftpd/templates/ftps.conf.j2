@@ -1,0 +1,33 @@
+<IfModule !mod_tls.c>
+    LoadModule mod_tls.c
+</IfModule>
+
+<VirtualHost 0.0.0.0>
+    TLSEngine                               on
+    TLSLog                                  /var/log/proftpd/ftps.log
+    TLSProtocol                             TLSv1
+    
+    TLSRSACertificateFile                   {{ proftpd_ftps_cert }}
+    TLSRSACertificateKeyFile                {{ proftpd_ftps_key }}
+    
+    #TLSOptions                             AllowClientRenegotiations
+    
+    TLSOptions                              AllowPerUser
+    TLSVerifyClient                         off
+    TLSRequired                             off
+    
+    TLSRenegotiate                          required off
+    TLSOptions                              NoSessionReuseRequired
+    
+    RequireValidShell                       off
+    Port                                    {{ proftpd_ftps_port }}
+    AuthUserFile                            /etc/proftpd/vpasswd
+    DefaultRoot                             ~
+    
+    PassivePorts                            60000 61000
+    
+    <Limit LOGIN>
+        AllowGroup ftpusers
+        DenyAll
+    </Limit>
+</VirtualHost>

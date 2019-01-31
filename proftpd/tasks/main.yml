@@ -15,13 +15,36 @@
   tags:
     - proftpd
 
-- name: local jail is installed
+- name: FTP jail is installed
   template:
     src: evolinux.conf.j2
     dest: /etc/proftpd/conf.d/z-evolinux.conf
     mode: "0644"
     force: no
   notify: restart proftpd
+  when: proftpd_ftp_enable
+  tags:
+    - proftpd
+
+- name: FTPS jail is installed
+  template:
+    src: ftps.conf.j2
+    dest: /etc/proftpd/conf.d/ftps.conf
+    mode: "0644"
+    force: no
+  notify: restart proftpd
+  when: proftpd_ftps_enable
+  tags:
+    - proftpd
+
+- name: SFTP jail is installed
+  template:
+    src: sftp.conf.j2
+    dest: /etc/proftpd/conf.d/sftp.conf
+    mode: "0644"
+    force: no
+  notify: restart proftpd
+  when: proftpd_sftp_enable
   tags:
     - proftpd
 
