@@ -12,6 +12,8 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+* etc-git: ignore evobackup/.keep-* files
+
 ### Changed
 * tomcat: better tomcat version management
 
