@@ -4,9 +4,9 @@
     name: "{{ item }}"
     state: present
   with_items:
-    - 'tomcat7'
-    - 'tomcat7-user'
-    - 'libpam-systemd'
+    - "tomcat{{ tomcat_version }}"
+    - "tomcat{{ tomcat_version }}-user"
+    - "libpam-systemd"
 
 - name: Create tomcat root dir
   file:
@@ -17,13 +17,13 @@
     mode: "0755"
 
 - name: Copy systemd unit
-  copy:
-    src: 'tomcat_jessie.service'
+  template:
+    src: 'tomcat.service.j2'
     dest: "/etc/systemd/user/tomcat.service"
     mode: "0755"
 
-- name: Disable default tomcat7 service
+- name: Disable default tomcat service
   service:
-    name: tomcat7
+    name: "tomcat{{ tomcat_version }}"
     state: stopped
     enabled: false

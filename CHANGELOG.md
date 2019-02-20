@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 ### Changed
+* tomcat: better tomcat version management
 
 ### Fixed
 * spamassasin: fix sa-update.sh and ensure service is started and enabled
