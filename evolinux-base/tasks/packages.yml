@@ -113,16 +113,25 @@
 
 # TODO: use ini_file when Ansible > 2.1 (no_extra_spaces: yes)
 
-- name: Configure Listchanges
+- name: Configure Listchanges on Jessie
   lineinfile:
     dest: /etc/apt/listchanges.conf
     regexp: '^{{ item.option }}\s*='
     line: "{{ item.option }}={{ item.value }}"
   with_items:
-  - { option: "confirm", value: "1" }
-  - { option: "which",   value: "both" }
+    - { option: "confirm", value: "1" }
+    - { option: "which",   value: "both" }
   when:
-  - evolinux_packages_listchanges
-  - ansible_distribution_release == "jessie"
+    - evolinux_packages_listchanges
+    - ansible_distribution == "Debian"
+    - ansible_distribution_release == "jessie"
+  
+- name: apt-listchanges is absent on Stretch and later 
+  apt:
+    name: apt-listchanges
+    state: absent
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version | version_compare('9', '>=')
 
 - meta: flush_handlers

@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 * etc-git: ignore evobackup/.keep-* files
 
 ### Changed
+* evolinux-base: remove apt-listchanges on Stretch and later
 * tomcat: better tomcat version management
 
 ### Fixed
