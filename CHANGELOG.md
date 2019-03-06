@@ -21,6 +21,7 @@ The **patch** part changes incrementally at each release.
 ### Fixed
 * spamassasin: fix sa-update.sh and ensure service is started and enabled
 * tomcat-instance: deploy correct version of server.xml
+* tomcat-instance: deploy correct version of config files
 
 ### Security
 

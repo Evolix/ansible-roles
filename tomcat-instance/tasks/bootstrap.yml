@@ -35,14 +35,10 @@
 - name: Copy config file
   copy:
     src: "{{ item }}"
-    dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/{{ item }}"
+    dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/{{ item | basename }}"
     mode: "0660"
     owner: "{{ tomcat_instance_name }}"
     group: "{{ tomcat_instance_name }}"
     force: no
-  with_items:
-  - catalina.properties
-  - logging.properties
-  - context.xml
-  - tomcat-users.xml
-  - web.xml
+  with_fileglob:
+    - "tomcat{{ tomcat_version }}/*"
