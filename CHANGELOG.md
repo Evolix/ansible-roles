@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 * evolinux-base: remove apt-listchanges on Stretch and later
+* redis: set variables on nclusion, not with set_facts
 * tomcat: better tomcat version management
 
 ### Fixed
