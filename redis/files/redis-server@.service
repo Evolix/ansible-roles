@@ -13,6 +13,7 @@ ExecStop=/usr/bin/redis-cli -s /run/redis/%i/redis.sock shutdown
 Restart=always
 User=redis-%i
 Group=redis-%i
+LimitNOFILE=65535
 
 [Install]
 WantedBy=multi-user.target
