@@ -13,4 +13,4 @@
 ### END INIT INFO
 
 date | mail -s'boot/reboot' {{ reboot_alert_email or general_alert_email | mandatory }}
-#/etc/init.d/minifirewall start
+#/etc/init.d/minifirewall restart
