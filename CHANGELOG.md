@@ -19,6 +19,7 @@ The **patch** part changes incrementally at each release.
 * redis: set variables on nclusion, not with set_facts
 * redis: higher limit of open files
 * tomcat: better tomcat version management
+* webapps/evoadmin-web: add dbadmin.sh to sudoers file
 
 ### Fixed
 * spamassasin: fix sa-update.sh and ensure service is started and enabled
