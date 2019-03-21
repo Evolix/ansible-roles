@@ -15,11 +15,13 @@ The **patch** part changes incrementally at each release.
 * etc-git: ignore evobackup/.keep-* files
 
 ### Changed
+* changed remote repository to https://gitea.evolix.org/evolix/ansible-roles
 * evolinux-base: remove apt-listchanges on Stretch and later
 * redis: set variables on nclusion, not with set_facts
 * redis: higher limit of open files
 * tomcat: better tomcat version management
 * webapps/evoadmin-web: add dbadmin.sh to sudoers file
+
 
 ### Fixed
 * spamassasin: fix sa-update.sh and ensure service is started and enabled
