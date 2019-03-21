@@ -2,7 +2,7 @@
 
 EvoAcme is an [Ansible](https://www.ansible.com/) role and a [Certbot](https://certbot.eff.org) wrapper for generate [Let's Encrypt](https://letsencrypt.org/) certificates.
 
-It is a project hosted at [Evolix's forge](https://forge.evolix.org/projects/ansible-roles/repository/)
+It is a project hosted at [Evolix's forge](https://gitea.evolix.org/evolix/ansible-roles/)
 
 Evoacme is open source software licensed under the AGPLv3 License.
 

@@ -3,7 +3,7 @@ galaxy_info:
   description: Install evomaintenance
   company: Evolix
 
-  issue_tracker_url: https://forge.evolix.org/projects/evomaintenance/issues
+  issue_tracker_url: https://gitea.evolix.org/evolix/evomaintenance/issues
 
   license: GPLv2
 
