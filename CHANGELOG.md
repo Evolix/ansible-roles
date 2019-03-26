@@ -21,6 +21,7 @@ The **patch** part changes incrementally at each release.
 * redis: higher limit of open files
 * tomcat: better tomcat version management
 * webapps/evoadmin-web: add dbadmin.sh to sudoers file
+* evomaintenance: embed version 0.5.0
 
 
 ### Fixed
