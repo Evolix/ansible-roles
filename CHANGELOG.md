@@ -22,6 +22,7 @@ The **patch** part changes incrementally at each release.
 * tomcat: better tomcat version management
 * webapps/evoadmin-web: add dbadmin.sh to sudoers file
 * evomaintenance: embed version 0.5.0
+* opendkim : aligning roles with our conventions, major changes in opendkim-add.sh
 
 
 ### Fixed

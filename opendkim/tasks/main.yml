@@ -6,19 +6,16 @@
   with_items:
   - opendkim
   - opendkim-tools
+  - ssl-cert
   tags:
   - opendkim
 
-- name: create keys directory
-  file:
-    name: "{{ item }}"
-    state: directory
-    owner: opendkim
-    group: opendkim
-    mode: "0750"
-  with_items:
-  - '/etc/opendkim'
-  - '/etc/opendkim/keys'
+- name: Add user opendkim in ssl-cert group
+  user:
+    name: opendkim
+    groups: ssl-cert
+    state: present
+    append: yes
   tags:
   - opendkim
 
