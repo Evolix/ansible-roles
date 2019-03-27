@@ -7,6 +7,7 @@
   - opendkim
   - opendkim-tools
   - ssl-cert
+  - dns-root-data
   tags:
   - opendkim
 
@@ -52,6 +53,15 @@
     mode: "0644"
     force: yes
   notify: restart opendkim
+  tags:
+  - opendkim
+
+
+- name: Set folder permissions to 0750
+  file:
+    path: "/etc/opendkim/" 
+    mode: "0750"
+    force: yes
   tags:
   - opendkim
 
