@@ -23,6 +23,7 @@ The **patch** part changes incrementally at each release.
 * webapps/evoadmin-web: add dbadmin.sh to sudoers file
 * evomaintenance: embed version 0.5.0
 * opendkim : aligning roles with our conventions, major changes in opendkim-add.sh
+* apt :  Replace mirror.evolix.org by archives.debian.org for jessie-backport
 
 
 ### Fixed
