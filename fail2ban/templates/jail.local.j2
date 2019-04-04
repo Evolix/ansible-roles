@@ -28,7 +28,7 @@ action_mwl = %(banaction)s[name=%(__name__)s, port="%(port)s", protocol="%(proto
 action = %(action_mwl)s
 
 [sshd]
-port    = ssh
+port    = ssh,2222
 logpath = %(sshd_log)s
 backend = %(sshd_backend)s
 maxretry = 10
