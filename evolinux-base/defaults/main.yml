@@ -51,6 +51,7 @@ evolinux_kernel_include: True
 evolinux_kernel_reboot_after_panic: True
 evolinux_kernel_disable_tcp_timestamps: True
 evolinux_kernel_reduce_swapiness: True
+evolinux_kernel_swapiness_level: 20
 evolinux_kernel_cve20165696: True
 
 # fstab

@@ -32,10 +32,18 @@
     reload: yes
   when: evolinux_kernel_disable_tcp_timestamps
 
+- name: "Check for swapiness value"
+  assert:
+    that:
+      - evolinux_kernel_swapiness_level >= 0
+      - evolinux_kernel_swapiness_level < 100
+    msg: swapiness level should be >= 0 and < 100
+    
+
 - name: Reduce the swapiness
   sysctl:
     name: vm.swappiness
-    value: 20
+    value: "{{ evolinux_kernel_swapiness_level }}"
     sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
     state: present
     reload: yes
