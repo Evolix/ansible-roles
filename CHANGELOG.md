@@ -24,6 +24,7 @@ The **patch** part changes incrementally at each release.
 * evomaintenance: embed version 0.5.0
 * opendkim: aligning roles with our conventions, major changes in opendkim-add.sh
 * apt: Replace mirror.evolix.org by archives.debian.org for jessie-backport
+* apt: Ensure jessie-backport from archives.debian.org is accepted
 * apt: Remove jessie-update suite as it's no longer exists
 
 
