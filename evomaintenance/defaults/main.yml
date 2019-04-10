@@ -31,6 +31,9 @@ evomaintenance_urgency_tel: "06.00.00.00.00"
 
 evomaintenance_realm: "{{ evolinux_internal_domain }}"
 
+evomaintenance_api_endpoint: "https://example.com/api/"
+evomaintenance_api_key: "secretkey"
+
 evomaintenance_default_hosts: []
 evomaintenance_additional_hosts: []
 evomaintenance_hosts: "{{ evomaintenance_default_hosts | union(evomaintenance_additional_hosts) | unique }}"
