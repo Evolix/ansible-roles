@@ -1,4 +1,4 @@
-Package: php* libapache2-mod-php*
+Package: php* libapache2-mod-php* libpcre2* libzip4*
 Pin: origin packages.sury.org
 Pin-Priority: 999
 
