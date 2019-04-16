@@ -215,7 +215,6 @@ main() {
     [ -w "${SELF_SIGNED_DIR}" ] || error "Directory ${SELF_SIGNED_DIR} is not writable"
 
     mkdir -p "${SSL_KEY_DIR}"
-    chown root: "${SSL_KEY_DIR}"
     [ -w "${SSL_KEY_DIR}" ]     || error "Directory ${SSL_KEY_DIR} is not writable"
 
     [ -r "${SSL_CONFIG_FILE}" ] || error "File ${SSL_CONFIG_FILE} is not readable"

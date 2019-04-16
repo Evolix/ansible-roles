@@ -27,6 +27,12 @@ action_mwl = %(banaction)s[name=%(__name__)s, port="%(port)s", protocol="%(proto
 
 action = %(action_mwl)s
 
+[sshd]
+port    = ssh,2222
+logpath = %(sshd_log)s
+backend = %(sshd_backend)s
+maxretry = 10
+
 {% if fail2ban_wordpress %}
 [wordpress-hard]
 enabled = true

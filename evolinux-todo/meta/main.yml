@@ -3,7 +3,7 @@ galaxy_info:
   description: Install evolinux-todo
   company: Evolix
 
-  issue_tracker_url: https://forge.evolix.org/projects/evocheck/issues
+  issue_tracker_url: https://gitea.evolix.org/evolix/evocheck/issues
 
   license: GPLv2
 

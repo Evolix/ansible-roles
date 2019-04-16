@@ -6,19 +6,17 @@
   with_items:
   - opendkim
   - opendkim-tools
+  - ssl-cert
+  - dns-root-data
   tags:
   - opendkim
 
-- name: create keys directory
-  file:
-    name: "{{ item }}"
-    state: directory
-    owner: opendkim
-    group: opendkim
-    mode: "0750"
-  with_items:
-  - '/etc/opendkim'
-  - '/etc/opendkim/keys'
+- name: Add user opendkim in ssl-cert group
+  user:
+    name: opendkim
+    groups: ssl-cert
+    state: present
+    append: yes
   tags:
   - opendkim
 
@@ -55,6 +53,15 @@
     mode: "0644"
     force: yes
   notify: restart opendkim
+  tags:
+  - opendkim
+
+
+- name: Set folder permissions to 0750
+  file:
+    path: "/etc/opendkim/" 
+    mode: "0750"
+    force: yes
   tags:
   - opendkim
 

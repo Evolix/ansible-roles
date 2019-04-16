@@ -71,3 +71,11 @@
   changed_when: false
   tags:
   - spamassassin
+
+- name: ensure SpamAssasin is started and enabled
+  systemd:
+    name: spamassassin
+    state: started
+    enabled: True
+  tags:
+  - spamassassin

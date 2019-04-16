@@ -4,7 +4,7 @@ A repository for Ansible roles used by Evolix on Debian GNU/Linux 9 (stretch) se
 Few roles are also be compatible with Debian GNU/Linux 8 (jessie) servers.
 
 It contains only roles, everything else is available at
-https://forge.evolix.org/projects/ansible-public
+https://gitea.evolix.org/evolix/ansible-public
 
 ## Branches
 
@@ -20,7 +20,7 @@ First, check-out the repository :
 
 ```
 $ cd ~/GIT/
-$ git clone https://forge.evolix.org/projects/ansible-roles
+$ git clone https://gitea.evolix.org/evolix/ansible-roles
 ```
 
 Then, add its path to your ansible load path :
@@ -48,7 +48,7 @@ Contributions are welcome, especially bug fixes and "ansible good practices". Th
 
 Before starting anything of importance, we suggest contacting us to discuss what you'd like to add or change.
 
-Our conventions are available in the "ansible-public":https://forge.evolix.org/projects/ansible-public repository, in the CONVENTIONS.md file.
+Our conventions are available in the "ansible-public":https://gitea.evolix.org/evolix/ansible-public repository, in the CONVENTIONS.md file.
 
 ## Workflow
 

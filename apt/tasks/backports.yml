@@ -27,6 +27,14 @@
   tags:
   - apt
 
+- name: Archived backport are accepted (jessie)
+  lineinfile:
+    dest: '/etc/apt/apt.conf.d/99no-check-valid-until'
+    line: 'Acquire::Check-Valid-Until no;'
+    create: yes
+    state: present
+  when: ansible_distribution_release == "jessie"
+
 - name: Apt update
   apt:
     update_cache: yes

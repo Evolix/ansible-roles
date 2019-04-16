@@ -18,6 +18,33 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [9.9.0] - 2019-04-16
+
+### Added
+* evocheck : add "x-frame-options: sameorigin" for Munin
+* etc-git: ignore evobackup/.keep-* files
+* lxc: /home is mounted in the container by default
+
+### Changed
+* changed remote repository to https://gitea.evolix.org/evolix/ansible-roles
+* apt: Ensure jessie-backport from archives.debian.org is accepted
+* apt: Remove jessie-update suite as it's no longer exists
+* apt: Replace mirror.evolix.org by archives.debian.org for jessie-backport
+* evocheck : update script from upstream
+* evolinux-base: remove apt-listchanges on Stretch and later
+* evomaintenance: embed version 0.5.0
+* opendkim: aligning roles with our conventions, major changes in opendkim-add.sh
+* redis: higher limit of open files
+* redis: set variables on inclusion, not with set_facts
+* tomcat: better tomcat version management
+* webapps/evoadmin-web: add dbadmin.sh to sudoers file
+
+
+### Fixed
+* spamassasin: fix sa-update.sh and ensure service is started and enabled
+* tomcat-instance: deploy correct version of config files
+* tomcat-instance: deploy correct version of server.xml
+
 ## [9.8.0] - 2019-01-31
 
 ### Added

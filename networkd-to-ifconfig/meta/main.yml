@@ -2,7 +2,7 @@ galaxy_info:
   author: Evolix
   description: Switch back from systemd "networkd" to plain old /etc/network/interfaces.
 
-  issue_tracker_url: https://forge.evolix.org/projects/ansible-roles/issues
+  issue_tracker_url: https://gitea.evolix.org/evolix/ansible-roles/issues
 
   license: GPLv2
 

@@ -2,7 +2,7 @@ galaxy_info:
   author: Evolix
   description: Installation and basic configuration of Kibana.
 
-  issue_tracker_url: https://forge.evolix.org/projects/ansible-roles/issues
+  issue_tracker_url: https://gitea.evolix.org/evolix/ansible-roles/issues
 
   license: GPLv2
 

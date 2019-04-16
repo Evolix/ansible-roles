@@ -1,52 +1,37 @@
 #!/bin/sh
 
-
-dpkg -l |grep -e 'opendkim-tools' -e 'opendkim' -q
-
-if [ "$?" -ne 0 ]; then 
-    echo "Require opendkim-tools and opendkim"
-    exit 1
-fi
-
 if [ "$#" -ne 1 ]; then
     echo "Usage : $0 example.com" >&2
     exit 1
 fi
 
+servername="$(cat /etc/hostname)"
 domain="$(echo "$1"|xargs)"
 
-mkdir -pm 0750 "/etc/opendkim/keys/${domain}"
-chown opendkim:opendkim "/etc/opendkim/keys/${domain}"
-
-if [ ! -f "/etc/opendkim/keys/${domain}/default.private" ]; then
-    cd "/etc/opendkim/keys/${domain}"
+if [ ! -f "/etc/ssl/private/dkim-${servername}.private" ]; then
     echo "Generate DKIM keys ..."
-    sudo -u opendkim opendkim-genkey -r -d "${domain}"
-    chmod 640 /etc/opendkim/keys/${domain}/*
-fi
-
-grep -q "${domain}" /etc/opendkim/TrustedHosts
-if [ "$?" -ne 0 ]; then
-    echo "Add ${domain} to TrustedHosts ..."
-    echo "${domain}" >> /etc/opendkim/TrustedHosts
+    opendkim-genkey -D /etc/ssl/private/ -r -d "${domain}" -s "dkim-${servername}"
+    chown opendkim:opendkim "/etc/ssl/private/dkim-${servername}.private"
+    chmod 640 "/etc/ssl/private/dkim-${servername}.private"
+    mv "/etc/ssl/private/dkim-${servername}.txt" "/etc/ssl/certs/"
 fi
 
 grep -q "${domain}" /etc/opendkim/KeyTable
 if [ "$?" -ne 0 ]; then
     echo "Add ${domain} to KeyTable ..."
-    echo "default._domainkey.${domain} ${domain}:default:/etc/opendkim/keys/${domain}/default.private" >> /etc/opendkim/KeyTable
+    echo "dkim-${servername}._domainkey.${domain} ${domain}:dkim-${servername}:/etc/ssl/private/dkim-${servername}.private" >> /etc/opendkim/KeyTable
 fi
 
 grep -q "${domain}" /etc/opendkim/SigningTable
 if [ "$?" -ne 0 ]; then
     echo "Add ${domain} to SigningTable ..."
-    echo "*@${domain} default._domainkey.${domain}" >> /etc/opendkim/SigningTable
+    echo "*@${domain} dkim-${servername}._domainkey.${domain}" >> /etc/opendkim/SigningTable
 fi
 
 systemctl reload opendkim
 if [ "$?" -eq 0 ]; then
     echo "OpenDKIM successfully reloaded"
-    echo "Public key is in : /etc/opendkim/keys/${domain}/default.txt"
+    echo "Public key is in : /etc/ssl/certs/dkim-${servername}.txt"
     exit 0
 else
     echo "An error has occurred while opendkim reload, please FIX configuration !" >&2

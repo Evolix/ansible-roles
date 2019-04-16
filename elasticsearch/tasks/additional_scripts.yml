@@ -1,0 +1,22 @@
+---
+
+- include_role:
+    name: remount-usr
+  when: elasticsearch_additional_scripts_dir | search ("/usr")
+
+- name: "{{ elasticsearch_additional_scripts_dir }} exists"
+  file:
+    dest: "{{ elasticsearch_additional_scripts_dir }}"
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+
+- name: Plugins upgrade script is installed
+  copy:
+    src: upgrade_elasticsearch_plugins.sh
+    dest: "{{ elasticsearch_additional_scripts_dir }}/upgrade_elasticsearch_plugins.sh"
+    mode: "0755"
+    owner: "root"
+    group: "root"
+    force: yes

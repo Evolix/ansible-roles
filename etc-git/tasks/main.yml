@@ -55,6 +55,7 @@
     - "postfix/sa-blacklist.access"
     - "postfix/*.db"
     - "postfix/spamd.cidr"
+    - "evobackup/.keep-*"
   tags:
     - etc-git
 

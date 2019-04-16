@@ -1,4 +1,16 @@
 ---
+
+# - name: "Set variables for the instance '{{ redis_instance_name }}'"
+#   set_fact:
+#     redis_daemon: "redis-server@{{ redis_instance_name }}"
+#     redis_conf_path: "/etc/redis/redis-{{ redis_instance_name }}.conf"
+#     redis_unixsocket: "/var/run/redis/{{ redis_instance_name }}/redis.sock"
+#     redis_pidfile: "/var/run/redis/{{ redis_instance_name }}/{{ redis_daemon }}.pid"
+#     redis_logfile: "/var/log/redis/{{ redis_instance_name }}/redis-server.log"
+#     redis_dbdir: "/var/lib/redis/{{ redis_instance_name }}"
+#   tags:
+#     - redis
+
 - name: Systemd template for redis instances is installed
   copy:
     src: 'redis-server@.service'
@@ -15,18 +27,7 @@
   tags:
     - redis
 
-- name: Set variables for the instance
-  set_fact:
-    redis_daemon: "redis-server@{{ redis_instance_name }}"
-    redis_conf_path: "/etc/redis/redis-{{ redis_instance_name }}.conf"
-    redis_unixsocket: "/var/run/redis/{{ redis_instance_name }}/redis.sock"
-    redis_pidfile: "/var/run/redis/{{ redis_instance_name }}/{{ redis_daemon }}.pid"
-    redis_logfile: "/var/log/redis/{{ redis_instance_name }}/redis-server.log"
-    redis_dbdir: "/var/lib/redis/{{ redis_instance_name }}"
-  tags:
-    - redis
-
-- name: Redis instance configuration file is present.
+- name: "Redis instance '{{ redis_instance_name }}' configuration file is present"
   template:
     src: redis.conf.j2
     dest: "{{ redis_conf_path }}"
@@ -34,7 +35,7 @@
   tags:
     - redis
 
-- name: Redis instance group is present
+- name: "Redis instance '{{ redis_instance_name }}' group is present"
   group:
     name: "redis-{{ redis_instance_name }}"
     state: present
@@ -42,7 +43,7 @@
   tags:
     - redis
 
-- name: Redis instance user is present
+- name: "Redis instance '{{ redis_instance_name }}' user is present"
   user:
     name: "redis-{{ redis_instance_name }}"
     group: "redis-{{ redis_instance_name }}"
@@ -52,7 +53,7 @@
   tags:
     - redis
 
-- name: Ensure redis base folders will be accessible for all instances
+- name: "Ensure redis base folders will be accessible for all instances"
   file:
     dest: "{{ item }}"
     state: directory
@@ -63,7 +64,7 @@
     - "/var/lib/redis"
     - "/var/log/redis"
 
-- name: Instances directories are present
+- name: "Instances '{{ redis_instance_name }}' directories are present"
   file:
     dest: "{{ item }}"
     state: directory
@@ -76,7 +77,7 @@
   tags:
     - redis
 
-- name: Redis systemd unit is enabled and started
+- name: "Redis '{{ redis_instance_name }}' systemd unit is enabled and started"
   systemd:
     name: "{{ redis_daemon }}"
     enabled: yes

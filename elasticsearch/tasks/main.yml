@@ -12,6 +12,8 @@
 
 - include: logs.yml
 
+- include: additional_scripts.yml
+
 - include: plugin_head.yml
   when: elasticsearch_plugin_head
 

@@ -17,6 +17,7 @@
     - reload_nginx
     - reload_dovecot
     - reload_postfix
+    - commit
 
 - include: conf.yml
 

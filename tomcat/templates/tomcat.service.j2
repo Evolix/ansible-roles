@@ -7,8 +7,8 @@ WorkingDirectory=%h
 Environment="CATALINA_BASE=%h"
 EnvironmentFile=%h/conf/env
 UMask=0002
-ExecStart=/usr/share/tomcat7/bin/startup.sh
-ExecStop=/usr/share/tomcat7/bin/shutdown.sh
+ExecStart=/usr/share/tomcat{{ tomcat_version }}/bin/startup.sh
+ExecStop=/usr/share/tomcat{{ tomcat_version }}/bin/shutdown.sh
 Type=forking
 
 [Install]
