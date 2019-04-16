@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 * changed remote repository to https://gitea.evolix.org/evolix/ansible-roles
+* evocheck : update script from upstream
 * evolinux-base: remove apt-listchanges on Stretch and later
 * redis: set variables on nclusion, not with set_facts
 * redis: higher limit of open files
