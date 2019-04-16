@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 * evocheck : add "x-frame-options: sameorigin" for Munin
 * etc-git: ignore evobackup/.keep-* files
+* lxc: /home is mounted in the container by default
 
 ### Changed
 * changed remote repository to https://gitea.evolix.org/evolix/ansible-roles
