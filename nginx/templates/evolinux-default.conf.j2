@@ -35,6 +35,7 @@ server {
 
     location /munin/ {
         alias   /var/cache/munin/www/;
+        add_header X-Frame-Options "SAMEORIGIN";
     }
 
     location ^~ /munin-cgi/munin-cgi-graph/ {

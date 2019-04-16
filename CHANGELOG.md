@@ -11,7 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
-
+* evocheck : add "x-frame-options: sameorigin" for Munin
 * etc-git: ignore evobackup/.keep-* files
 
 ### Changed
