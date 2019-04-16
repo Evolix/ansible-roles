@@ -27,7 +27,7 @@
   tags:
   - apt
 
-- name: Accept archived backuport (jessie)
+- name: Archived backport are accepted (jessie)
   lineinfile:
     dest: '/etc/apt/apt.conf.d/99no-check-valid-until'
     line: 'Acquire::Check-Valid-Until no;'
