@@ -11,6 +11,16 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Security
+
+## [9.9.0] - 2019-04-16
+
+### Added
 * evocheck : add "x-frame-options: sameorigin" for Munin
 * etc-git: ignore evobackup/.keep-* files
 * lxc: /home is mounted in the container by default
@@ -34,8 +44,6 @@ The **patch** part changes incrementally at each release.
 * spamassasin: fix sa-update.sh and ensure service is started and enabled
 * tomcat-instance: deploy correct version of config files
 * tomcat-instance: deploy correct version of server.xml
-
-### Security
 
 ## [9.8.0] - 2019-01-31
 
