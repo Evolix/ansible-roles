@@ -1,0 +1,52 @@
+---
+
+- name: Fluentd GPG key is installed
+  apt_key:
+    url: https://packages.treasuredata.com/GPG-KEY-td-agent
+  tags:
+    - packages
+    - fluentd
+
+- name: Fluentd sources list is available
+  apt_repository:
+    repo: "deb http://packages.treasuredata.com/3/debian/{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} contrib"
+    filename: treasuredata
+    update_cache: yes
+    state: present
+  tags:
+    - packages
+    - fluentd
+
+- name: Fluentd is installed.
+  apt:
+    name: td-agent
+    state: present
+  tags:
+    - fluentd
+    - packages
+
+- name: Fluentd is configured.
+  template:
+    src: td-agent.conf.j2
+    dest: "{{ fluentd_conf_path }}"
+    mode: "0644"
+  notify: "restart fluentd"
+  tags:
+    - fluentd
+
+- name: Fluentd is running and enabled on boot.
+  systemd:
+    name: td-agent
+    enabled: yes
+    state: started
+  tags:
+    - fluentd
+
+- name: NRPE check is configured
+  lineinfile:
+    path: /etc/nagios/nrpe.d/evolix.cfg
+    line: 'command[check_fluentd]=/usr/lib/nagios/plugins/check_tcp -p {{ fluentd_port }}'
+  notify: "restart nagios-nrpe-server"
+  tags:
+    - fluentd
+    - nrpe

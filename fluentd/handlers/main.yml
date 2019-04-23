@@ -1,0 +1,10 @@
+---
+- name: restart fluentd
+  systemd:
+    name: td-agent
+    state: restarted
+
+- name: restart nagios-nrpe-server
+  service:
+    name: nagios-nrpe-server
+    state: restarted
