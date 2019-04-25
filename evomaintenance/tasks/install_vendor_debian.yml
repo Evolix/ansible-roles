@@ -7,6 +7,7 @@
   with_items:
     - postgresql-client
     - sudo
+    - curl
   tags:
     - evomaintenance
 
