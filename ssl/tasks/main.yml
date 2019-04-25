@@ -12,7 +12,9 @@
   copy:
     src: "ssl/{{ ssl_cert }}.key"
     dest: "/etc/ssl/private/{{ ssl_cert }}.key"
-    mode: "0600"
+    mode: "0640"
+    owner: root
+    group: ssl-cert
   register: ssl_copy_key
   tags:
     - ssl
