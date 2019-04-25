@@ -5,11 +5,9 @@
 
 - assert:
     that:
-      - evomaintenance_pg_passwd is not none
-      - evomaintenance_pg_db is not none
-      - evomaintenance_pg_table is not none
-      - evomaintenance_pg_host is not none
-    msg: evomaintenance database variables must be set
+      - evomaintenance_api_endpoint != "https://example.com/api/"
+      - evomaintenance_api_key != "secretkey"
+    msg: evomaintenance api variables must be set
 
 - include: install_package_debian.yml
   when:
