@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 ### Changed
+* evocheck : version 19.04 from upstream
 
 ### Fixed
 
@@ -21,9 +22,9 @@ The **patch** part changes incrementally at each release.
 ## [9.9.0] - 2019-04-16
 
 ### Added
-* evocheck : add "x-frame-options: sameorigin" for Munin
 * etc-git: ignore evobackup/.keep-* files
 * lxc: /home is mounted in the container by default
+* nginx : add "x-frame-options: sameorigin" for Munin
 
 ### Changed
 * changed remote repository to https://gitea.evolix.org/evolix/ansible-roles
