@@ -21,9 +21,9 @@
 
 - name: Copy SSL dhparam
   copy:
-     src: "ssl/{{ ssl_cert }}.dhp"
-     dest: "/etc/ssl/certs/{{ ssl_cert }}.dhp"
-     mode: "0644"
+    src: "ssl/{{ ssl_cert }}.dhp"
+    dest: "/etc/ssl/certs/{{ ssl_cert }}.dhp"
+    mode: "0644"
   register: ssl_copy_dhp
   tags:
     - ssl
