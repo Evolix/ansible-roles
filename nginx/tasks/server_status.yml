@@ -40,3 +40,10 @@
     dest: /var/www/index.html
     regexp: '__SERVERSTATUS_SUFFIX__'
     replace: "{{ nginx_serverstatus_suffix }}"
+
+- name: add server-status suffix in default VHost
+  replace:
+    dest: /etc/nginx/sites-available/evolinux-default.conf
+    regexp: 'location /nginx_status {'
+    replace: 'location /nginx_status-{{ nginx_serverstatus_suffix }} {'
+  notify: reload nginx

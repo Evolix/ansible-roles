@@ -40,6 +40,13 @@
     regexp: '__SERVERSTATUS_SUFFIX__'
     replace: "{{ apache_serverstatus_suffix }}"
 
+- name: add server-status suffix in default VHost
+  replace:
+    dest: /etc/apache2/sites-available/000-evolinux-default.conf
+    regexp: '<Location /server-status>'
+    replace: '<Location /server-status-{{ apache_serverstatus_suffix }}>'
+  notify: reload apache
+
 - name: Munin configuration has a section for apache
   lineinfile:
     dest: /etc/munin/plugin-conf.d/munin-node

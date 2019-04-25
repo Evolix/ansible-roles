@@ -11,6 +11,8 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* apache: add server status suffix in VHost if missing
+* nginx: add server status suffix in VHost if missing
 
 ### Changed
 * evocheck : version 19.04 from upstream
