@@ -40,6 +40,12 @@
     regexp: '__SERVERSTATUS_SUFFIX__'
     replace: "{{ apache_serverstatus_suffix }}"
 
+- name: add server-status suffix in default site index if missing
+  replace:
+    dest: /var/www/index.html
+    regexp: '"/server-status"'
+    replace: '"/server-status-{{ apache_serverstatus_suffix }}"'
+
 - name: add server-status suffix in default VHost
   replace:
     dest: /etc/apache2/sites-available/000-evolinux-default.conf
