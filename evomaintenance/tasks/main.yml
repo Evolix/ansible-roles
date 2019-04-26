@@ -5,8 +5,8 @@
 
 - assert:
     that:
-      - evomaintenance_api_endpoint != "https://example.com/api/"
-      - evomaintenance_api_key != "secretkey"
+      - evomaintenance_api_endpoint is not none
+      - evomaintenance_api_key is not none
     msg: evomaintenance api variables must be set
 
 - include: install_package_debian.yml
