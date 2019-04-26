@@ -29,15 +29,17 @@ evomaintenance is a program that helps reporting what you've done on a server
 
 Usage: evomaintenance
   or   evomaintenance --message="add new host"
-  or   evomaintenance --no-db --no-mail --no-commit
+  or   evomaintenance --no-api --no-mail --no-commit
   or   echo "add new vhost" | evomaintenance
 
 Options
  -m, --message=MESSAGE       set the message from the command line
      --mail                  enable the mail hook (default)
      --no-mail               disable the mail hook
-     --db                    enable the database hook (default)
-     --no-db                 disable the database hook
+     --db                    enable the database hook
+     --no-db                 disable the database hook (default)
+     --api                   enable the API hook (default)
+     --no-api                disable the API hook
      --commit                enable the commit hook (default)
      --no-commit             disable the commit hook
      --evocheck              enable evocheck execution (default)
@@ -149,8 +151,8 @@ get_evocheck() {
 print_log() {
     printf "*********** %s ***************\n" "$(get_now)"
     print_session_data
-    printf "Hooks     : commit=%s db=%s mail=%s\n"\
-           "${HOOK_COMMIT}" "${HOOK_DB}" "${HOOK_MAIL}"
+    printf "Hooks     : commit=%s db=%s api=%s mail=%s\n"\
+           "${HOOK_COMMIT}" "${HOOK_DB}" "${HOOK_API}" "${HOOK_MAIL}"
     if [ "${HOOK_MAIL}" = "1" ]; then
         printf "Mailto    : %s\n" "${EVOMAINTMAIL}"
     fi
@@ -217,6 +219,35 @@ hook_db() {
     fi
     if [ "${DRY_RUN}" != "1" ] && [ -x "${PSQL_BIN}" ]; then
         echo "${PG_QUERY}" | ${PSQL_BIN} "${PGDB}" "${PGTABLE}" -h "${PGHOST}"
+    fi
+}
+
+hook_api() {
+    if [ "${VERBOSE}" = "1" ]; then
+        printf "\n********** API call **************\n"
+        printf "curl -f -s -S -X POST [REDACTED] -k -F api_key=[REDACTED] -F action=insertEvoMaintenance -F hostname=%s -F userid=%s -F ipaddress=%s -F begin_date=%s -F end_date='now()' -F details=%s" \
+                    "${HOSTNAME}" "${USER}" "${IP}" "${BEGIN_DATE}" "${MESSAGE}"
+        printf "\n***********************************\n"
+    fi
+
+    if [ "${DRY_RUN}" != "1" ] && [ -x "${CURL_BIN}" ]; then
+        API_RETURN_STATUS=$(curl -f -s -S -X POST \
+        "${API_ENDPOINT}" -k \
+        -F api_key="${API_KEY}" \
+        -F action=insertEvoMaintenance \
+        -F hostname="${HOSTNAME}" \
+        -F userid="${USER}" \
+        -F ipaddress="${IP}" \
+        -F begin_date="${BEGIN_DATE}" \
+        -F end_date='now()' \
+        -F details="${MESSAGE}")
+
+        # either cURL or the API backend can throw an error, otherwise it returns this JSON response
+        if [ "$API_RETURN_STATUS" = '{"status":"Ok"}' ]; then
+            echo "API call OK."
+        else
+            echo "API call FAILED."
+        fi
     fi
 }
 
@@ -293,13 +324,15 @@ HOSTNAME=${HOSTNAME:-$(get_fqdn)}
 EVOMAINTMAIL=${EVOMAINTMAIL:-"evomaintenance-$(echo "${HOSTNAME}" | cut -d- -f1)@${REALM}"}
 LOGFILE=${LOGFILE:-"/var/log/evomaintenance.log"}
 HOOK_COMMIT=${HOOK_COMMIT:-"1"}
-HOOK_DB=${HOOK_DB:-"1"}
+HOOK_DB=${HOOK_DB:-"0"}
+HOOK_API=${HOOK_API:-"1"}
 HOOK_MAIL=${HOOK_MAIL:-"1"}
 DRY_RUN=${DRY_RUN:-"0"}
 VERBOSE=${VERBOSE:-"0"}
 AUTO=${AUTO:-"0"}
 EVOCHECK=${EVOCHECK:-"0"}
 GIT_STATUS_MAX_LINES=${GIT_STATUS_MAX_LINES:-20}
+API_ENDPOINT=${API_ENDPOINT:-""}
 
 # initialize variables
 MESSAGE=""
@@ -352,6 +385,14 @@ while :; do
         --db)
             # enable DB hook
             HOOK_DB=1
+            ;;
+        --no-api)
+            # disable API hook
+            HOOK_API=0
+            ;;
+        --api)
+            # enable API hook
+            HOOK_API=1
             ;;
         --no-mail)
             # disable mail hook
@@ -429,6 +470,16 @@ if [ -z "${PSQL_BIN}" ]; then
     echo "No \`psql' command has been found, can't save to the database." 2>&1
 fi
 
+CURL_BIN=$(command -v curl)
+readonly CURL_BIN
+if [ -z "${CURL_BIN}" ]; then
+    echo "No \`curl' command has been found, can't call the API." 2>&1
+fi
+
+if [ -z "${API_ENDPOINT}" ]; then
+    echo "No API endpoint specified, can't call the API." 2>&1
+fi
+
 EVOCHECK_BIN="/usr/share/scripts/evocheck.sh"
 
 GIT_REPOSITORIES="/etc /etc/bind"
@@ -489,6 +540,9 @@ if [ "${INTERACTIVE}" = "1" ] && [ "${AUTO}" = "0" ]; then
         if [ "${HOOK_DB}" = "1" ]; then
             printf "* save metadata to the database\n"
         fi
+        if [ "${HOOK_API}" = "1" ]; then
+            printf "* send metadata to the API\n"
+        fi
         echo ""
 
         answer=""
@@ -506,6 +560,7 @@ if [ "${INTERACTIVE}" = "1" ] && [ "${AUTO}" = "0" ]; then
                     HOOK_COMMIT=0
                     HOOK_MAIL=0
                     HOOK_DB=0
+                    HOOK_API=0
                     AUTO=1
                     break
                     ;;
@@ -622,6 +677,36 @@ if [ "${INTERACTIVE}" = "1" ] && [ "${AUTO}" = "0" ]; then
                 ;;
         esac
     done
+
+    # API hook
+    if [ "${HOOK_API}" = "1" ]; then
+        y="Y"; n="n"
+    else
+        y="y"; n="N"
+    fi
+    answer=""
+    while :; do
+        printf "> Do you want to send the metadata to the API? [%s] " "${y},${n}"
+        read -r answer
+        case $answer in
+            [Yy] )
+                hook_api;
+                break
+                ;;
+            [Nn] )
+                break
+                ;;
+            "" )
+                if [ "${HOOK_API}" = "1" ]; then
+                    hook_api
+                fi
+                break
+                ;;
+            * )
+                echo "answer with a valid choice"
+                ;;
+        esac
+    done
 fi
 
 # Log hook
@@ -636,6 +721,9 @@ if [ "${INTERACTIVE}" = "0" ] || [ "${AUTO}" = "1" ]; then
     fi
     if [ "${HOOK_DB}" = "1" ]; then
         hook_db
+    fi
+    if [ "${HOOK_API}" = "1" ]; then
+        hook_api
     fi
 fi
 

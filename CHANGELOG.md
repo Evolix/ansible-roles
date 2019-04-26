@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 * evocheck : version 19.04 from upstream
+* evomaintenance : use the web API instead of PG Insert
 
 ### Fixed
 
