@@ -24,3 +24,5 @@
     - ansible_distribution == "OpenBSD"
 
 - include: minifirewall.yml
+  when:
+    - ansible_distribution == "Debian"
