@@ -46,10 +46,6 @@
   tags:
     - apache
 
-- include: server_status.yml
-  tags:
-    - apache
-
 - name: Copy Apache defaults config file
   copy:
     src: evolinux-defaults.conf
@@ -115,6 +111,10 @@
     force: yes
   notify: reload apache
   when: apache_evolinux_default_enabled
+  tags:
+    - apache
+
+- include: server_status.yml
   tags:
     - apache
 
