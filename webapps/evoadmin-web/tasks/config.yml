@@ -8,10 +8,24 @@
 
 - name: Configure web-add config file
   template:
-    src: web-add.conf.j2
+    src: "{{ item }}"
     dest: /etc/evolinux/web-add.conf
+    force: "{{ web_add_conf_force | bool }}"
+  with_first_found:
+  - "templates/evoadmin-web/web-add.{{ inventory_hostname }}.conf.j2"
+  - "templates/evoadmin-web/web-add.{{ host_group }}.conf.j2"
+  - "templates/evoadmin-web/web-add.conf.j2"
+  - "web-add.conf.j2"
+  register: web_add_conf_template
 
 - name: Configure web-add template file for mail
   template:
-    src: web-mail.tpl.j2
+    src: "{{ item }}"
     dest: "{{ evoadmin_scripts_dir }}/web-mail.tpl"
+    force: "{{ web_mail_tpl_force | bool }}"
+  with_first_found:
+  - "templates/evoadmin-web/web-mail.{{ inventory_hostname }}.tpl.j2"
+  - "templates/evoadmin-web/web-mail.{{ host_group }}.tpl.j2"
+  - "templates/evoadmin-web/web-mail.tpl.j2"
+  - "web-mail.default.tpl.j2"
+  register: web_mail_tpl_template

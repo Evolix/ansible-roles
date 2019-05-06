@@ -11,6 +11,11 @@ evoadmin_host: "evoadmin.{{ ansible_fqdn }}"
 evoadmin_username: evoadmin
 
 evoadmin_enable_vhost: True
+evoadmin_force_vhost: False
+evoadmin_web_config_local_php_force: False
+evoadmin_web_sudoers_conf_force: False
+web_add_conf_force: False
+web_mail_tpl_force: False
 
 evoadmin_tpl_servername: "{{ ansible_fqdn }}"
 evoadmin_tpl_address:  "{{ ansible_default_ipv4.address }}"

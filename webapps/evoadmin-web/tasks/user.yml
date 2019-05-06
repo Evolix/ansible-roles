@@ -103,7 +103,14 @@
 
 - name: Add evoadmin sudoers file
   template:
-    src: sudoers.j2
+    src: "{{ item }}"
     dest: /etc/sudoers.d/evoadmin
     mode: "0600"
+    force: "{{ evoadmin_web_sudoers_conf_force | bool }}"
     validate: "visudo -cf %s"
+  with_first_found:
+  - "templates/evoadmin-web/sudoers.{{ inventory_hostname }}.j2"
+  - "templates/evoadmin-web/sudoers.{{ host_group }}.j2"
+  - "templates/evoadmin-web/sudoers.j2"
+  - "sudoers.j2"
+  register: evoadmin_web_sudoers_conf

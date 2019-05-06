@@ -20,8 +20,15 @@
 
 - name: Install evoadmin VHost
   template:
-    src: evoadmin.conf.j2
+    src: "{{ item }}"
     dest: /etc/apache2/sites-available/evoadmin.conf
+    force: "{{ evoadmin_force_vhost | bool }}"
+  with_first_found:
+  - "templates/evoadmin-web/evoadmin.{{ inventory_hostname }}.conf.j2"
+  - "templates/evoadmin-web/evoadmin.{{ host_group }}.conf.j2"
+  - "templates/evoadmin-web/evoadmin.conf.j2"
+  - "evoadmin.conf.j2"
+  register: evoadmin_vhost_template
   notify: reload apache2
 
 - name: Enable evoadmin vhost
@@ -40,9 +47,15 @@
 
 - name: Copy config file for evoadmin
   template:
-    src: config.local.php.j2
+    src: "{{ item }}"
     dest: "{{ evoadmin_document_root}}/conf/config.local.php"
     mode: "0640"
     owner: evoadmin
     group: evoadmin
-    force: no
+    force: "{{ evoadmin_web_config_local_php_force | bool }}"
+  with_first_found:
+  - "templates/evoadmin-web/config.local.{{ inventory_hostname }}.conf.j2"
+  - "templates/evoadmin-web/config.local.{{ host_group }}.conf.j2"
+  - "templates/evoadmin-web/config.local.conf.j2"
+  - "config.local.conf.j2"
+  register: evoadmin_web_config_local_php_template
