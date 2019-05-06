@@ -27,5 +27,5 @@
   - "templates/evoadmin-web/web-mail.{{ inventory_hostname }}.tpl.j2"
   - "templates/evoadmin-web/web-mail.{{ host_group }}.tpl.j2"
   - "templates/evoadmin-web/web-mail.tpl.j2"
-  - "web-mail.default.tpl.j2"
+  - "web-mail.tpl.j2"
   register: web_mail_tpl_template

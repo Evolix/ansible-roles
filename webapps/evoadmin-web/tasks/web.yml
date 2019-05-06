@@ -54,8 +54,8 @@
     group: evoadmin
     force: "{{ evoadmin_web_config_local_php_force | bool }}"
   with_first_found:
-  - "templates/evoadmin-web/config.local.{{ inventory_hostname }}.conf.j2"
-  - "templates/evoadmin-web/config.local.{{ host_group }}.conf.j2"
-  - "templates/evoadmin-web/config.local.conf.j2"
+  - "templates/evoadmin-web/config.local.{{ inventory_hostname }}.php.j2"
+  - "templates/evoadmin-web/config.local.{{ host_group }}.php.j2"
+  - "templates/evoadmin-web/config.local.php.j2"
   - "config.local.conf.j2"
   register: evoadmin_web_config_local_php_template

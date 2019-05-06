@@ -17,12 +17,12 @@ And force it to update:
 - "templates/evoadmin-web/evoadmin.{{ host_group }}.conf.j2"
 - "templates/evoadmin-web/evoadmin.conf.j2"
 And force it to update:
-	evoadmin_web_conf_force: True
+	evoadmin_force_vhost: True
 
 # Set custom config.local.php
-- "templates/evoadmin-web/config.local.{{ inventory_hostname }}.conf.j2"
-- "templates/evoadmin-web/config.local.{{ host_group }}.conf.j2"
-- "templates/evoadmin-web/config.local.conf.j2"
+- "templates/evoadmin-web/config.local.{{ inventory_hostname }}.php.j2"
+- "templates/evoadmin-web/config.local.{{ host_group }}.php.j2"
+- "templates/evoadmin-web/config.local.php.j2"
 And force it to update:
 	evoadmin_web_config_local_php_force: True
 
