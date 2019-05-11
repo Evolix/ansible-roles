@@ -1,0 +1,28 @@
+#!/bin/sh
+
+set -eu
+
+cd /etc && _STATUS=$(/usr/local/bin/git status --porcelain)
+[ -n "${_STATUS}" ] || exit 0
+
+if [ -e /etc/realname ]; then
+    _HOSTNAME=$(/bin/cat /etc/realname)
+else
+    _HOSTNAME=$(/bin/hostname)
+fi
+
+
+TMPFILE=$(/usr/bin/mktemp) || exit 1
+echo "Dear NOC,\n\nSome changes in /etc/ were not committed." >> $TMPFILE
+
+echo "" >> $TMPFILE
+echo "${_STATUS}" >> $TMPFILE
+
+echo "" >> $TMPFILE
+/usr/bin/last | head -n 10 >> $TMPFILE
+echo "" >> $TMPFILE
+echo "Please answer this mail to notify people when you've corrected the problem." >> $TMPFILE
+
+/bin/cat $TMPFILE | mail -s "Verif etc-git ${_HOSTNAME}" noc@{{ evomaintenance_realm }}
+
+/bin/rm $TMPFILE

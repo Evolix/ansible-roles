@@ -45,3 +45,23 @@
     force: "{{ evomaintenance_force_config | bool }}"
   tags:
     - evomaintenance
+
+- name: Copy mailevomaintenance
+  template:
+    src: mailevomaintenance.sh.j2
+    dest: /usr/share/scripts/mailevomaintenance.sh
+    owner: root
+    group: wheel               
+    mode: "0700"
+  tags:
+    - evomaintenance
+
+- name: Add mailevomaintenance cron
+  cron:
+    name: "mailevomaintenance"
+    job: "/usr/share/scripts/mailevomaintenance.sh"
+    minute: "50"
+    hour: "22"
+    disabled: yes
+  tags:
+    - mailevomaintenance
