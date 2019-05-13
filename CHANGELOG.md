@@ -17,6 +17,7 @@ The **patch** part changes incrementally at each release.
 ### Changed
 * evocheck : version 19.04 from upstream
 * evomaintenance : use the web API instead of PG Insert
+* rbenv: update defaults rbenv version to 1.1.2 and ruby version to 2.5.5
 
 ### Fixed
 * rbenv: add check_mode for check rbenv and ruby versions
