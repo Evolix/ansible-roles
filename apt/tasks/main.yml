@@ -31,3 +31,9 @@
   when: apt_install_evolix_public
   tags:
   - apt
+
+- name: Install check for packages marked hold
+  include: hold_packages.yml
+  when: apt_install_hold_packages
+  tags:
+  - apt
