@@ -94,6 +94,7 @@
     warn: no
   failed_when: False
   changed_when: False
+  check_mode: False
   register: ruby_installed
   become_user: "{{ username }}"
   become: yes
@@ -117,6 +118,7 @@
   register: ruby_selected
   changed_when: False
   failed_when: False
+  check_mode: False
   become_user: "{{ username }}"
   become: yes
   tags:

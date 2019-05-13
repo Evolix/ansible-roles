@@ -19,6 +19,7 @@ The **patch** part changes incrementally at each release.
 * evomaintenance : use the web API instead of PG Insert
 
 ### Fixed
+* rbenv: add check_mode for check rbenv and ruby versions
 
 ### Security
 
