@@ -1,8 +1,8 @@
 ---
 - name: Create group instance
   group:
-   name: "{{ tomcat_instance_name }}"
-   gid: "{{ tomcat_instance_port }}"
+    name: "{{ tomcat_instance_name }}"
+    gid: "{{ tomcat_instance_port }}"
 
 - name: Create user instance
   user:

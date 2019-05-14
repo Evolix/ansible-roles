@@ -1,5 +1,5 @@
 ---
 - name: reload unbound
   service:
-   name: unbound
-   state: reloaded
+    name: unbound
+    state: reloaded

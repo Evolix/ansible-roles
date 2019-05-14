@@ -28,9 +28,9 @@
   tags:
     - evomaintenance
 
--  name: Force restart minifirewall
-   command: /bin/true
-   notify: restart minifirewall
-   when: minifirewall_restart_force
-   tags:
-     - evomaintenance
+- name: Force restart minifirewall
+  command: /bin/true
+  notify: restart minifirewall
+  when: minifirewall_restart_force
+  tags:
+    - evomaintenance

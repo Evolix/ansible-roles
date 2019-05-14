@@ -18,25 +18,25 @@
 
 - name: "Unix account for '{{ user.name }}' is present (with uid '{{ user.uid }}')"
   user:
-   state: present
-   uid: '{{ user.uid }}'
-   name: '{{ user.name }}'
-   comment: '{{ user.fullname }}'
-   shell: /bin/bash
-   password: '{{ user.password_hash }}'
-   update_password: on_create
+    state: present
+    uid: '{{ user.uid }}'
+    name: '{{ user.name }}'
+    comment: '{{ user.fullname }}'
+    shell: /bin/bash
+    password: '{{ user.password_hash }}'
+    update_password: on_create
   when:
     - loginisbusy.rc != 0
     - uidisbusy.rc   != 0
 
 - name: "Unix account for '{{ user.name }}' is present (with random uid)"
   user:
-   state: present
-   name: '{{ user.name }}'
-   comment: '{{ user.fullname }}'
-   shell: /bin/bash
-   password: '{{ user.password_hash }}'
-   update_password: on_create
+    state: present
+    name: '{{ user.name }}'
+    comment: '{{ user.fullname }}'
+    shell: /bin/bash
+    password: '{{ user.password_hash }}'
+    update_password: on_create
   when:
     - loginisbusy.rc != 0
     - uidisbusy.rc   == 0
@@ -118,9 +118,9 @@
 
 - name: "Home directory for '{{ user.name }}' is not accessible by group and other users"
   file:
-   name: '/home/{{ user.name }}'
-   mode: "0700"
-   state: directory
+    name: '/home/{{ user.name }}'
+    mode: "0700"
+    state: directory
 
 # Evomaintenance
 

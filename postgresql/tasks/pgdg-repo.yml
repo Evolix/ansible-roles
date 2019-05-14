@@ -16,7 +16,7 @@
 - name: Add GPG key for PGDG repository
   apt_key:
     #url: http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc
-     data: "{{ lookup('file', 'ACCC4CF8.asc') }}"
+    data: "{{ lookup('file', 'ACCC4CF8.asc') }}"
 
 - name: Add APT preference file
   template:
