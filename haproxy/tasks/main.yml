@@ -28,7 +28,7 @@
   - "templates/haproxy/haproxy.{{ host_group }}.cfg.j2"
   - "templates/haproxy/haproxy.default.cfg.j2"
   - "haproxy.default.cfg.j2"
-  verify: "haproxy -c -f %s"
+  validate: "haproxy -c -f %s"
   notify: reload haproxy
   tags:
   - haproxy
