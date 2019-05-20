@@ -13,9 +13,15 @@ instances=$(ls /etc/redis/redis-*.conf)
 for instance in ${instances}; do
     name=$(basename "${instance}"| sed '{s/redis-//;s/.conf//}')
     port=$(grep "port" "${instance}"|grep -oE "[0-9]*")
+    socket=$(grep "unixsocket " "${instance}"|awk '{ print $2 }')
     if [ -h "/etc/systemd/system/multi-user.target.wants/redis-server@${name}.service" ]; then
-        /usr/lib/nagios/plugins/check_tcp -p "${port}" >/dev/null 2>&1
-        ret="${?}"
+        if [ "${port}" -ne 0 ]; then
+            /usr/lib/nagios/plugins/check_tcp -p "${port}" >/dev/null 2>&1
+            ret="${?}"
+        else
+            /usr/lib/nagios/plugins/check_tcp -H "${socket}" >/dev/null 2>&1
+            ret="${?}"
+        fi
         if [ "${ret}" -ge 2 ]; then
             nb_crit=$((nb_crit + 1))
             output="${output}CRITICAL - ${name} (${port})\n"
