@@ -17,10 +17,10 @@ server {
         root            /home/{{ redmine_user }}/www/public;
         access_log      /var/log/nginx/{{ redmine_user }}_access.log;
         error_log       /var/log/nginx/{{ redmine_user }}_error.log;
-        error_page      503 @maintenance;
         client_max_body_size 50M;
 
         include /etc/nginx/snippets/letsencrypt[.]conf;
+        include /etc/nginx/snippets/errors-pages[.]conf;
 
         gzip on;
         gzip_disable "msie6";
@@ -31,14 +31,13 @@ server {
         gzip_types text/plain text/css application/json application/x-javascript application/javascript text/xml application/xml application/xml+rss text/javascript;
 
         location / {
-                if (!-f /home/{{ redmine_user }}/run/puma.pid) {
+                if (-f /home/{{ redmine_user }}/maintenance.lock) {
                         return 503;
                 }
+                if (!-f /home/{{ redmine_user }}/run/puma.pid) {
+                        return 502;
+                }
                 try_files $uri @puma;
-        }
-
-        location @maintenance {
-                rewrite ^(.*)$    /500.html break;
         }
 
         location @puma {

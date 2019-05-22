@@ -22,6 +22,7 @@ The **patch** part changes incrementally at each release.
 * rbenv: update defaults rbenv version to 1.1.2 and ruby version to 2.5.5
 * redmine: update default version to 4.0.3
 * nagios-nrpe: change required status code for http and https check
+* redmine: use custom errors-pages in Nginx vhost
 
 ### Fixed
 * rbenv: add check_mode for check rbenv and ruby versions
