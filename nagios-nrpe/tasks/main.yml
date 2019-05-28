@@ -72,3 +72,13 @@
   notify: restart nagios-nrpe-server
   tags:
     - nagios-nrpe
+
+- name: Nagios user has proper sudo privileges
+  copy:
+    src: nagios_sudoers
+    dest: /etc/sudoers.d/nagios
+    mode: "0440"
+    validate: '/usr/sbin/visudo -cf %s'
+  tags:
+  - nagios-nrpe
+  - nagios-plugins
