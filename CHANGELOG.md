@@ -27,6 +27,7 @@ The **patch** part changes incrementally at each release.
 ### Fixed
 * rbenv: add check_mode for check rbenv and ruby versions
 * nagios-nrpe: fix redis_instances check when Redis port equal 0
+* redmine: fix 500 error on logging
 
 ### Security
 
