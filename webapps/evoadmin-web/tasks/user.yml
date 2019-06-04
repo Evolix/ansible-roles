@@ -107,3 +107,9 @@
     dest: /etc/sudoers.d/evoadmin
     mode: "0600"
     validate: "visudo -cf %s"
+
+- name: Modify bashrc skel file
+  lineinfile:
+    dest: /etc/skel/.bashrc
+    line: "alias php='sudo /usr/local/bin/phpContainer'"
+  when: evoadmin_multi_php == True
