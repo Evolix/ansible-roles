@@ -23,6 +23,7 @@ The **patch** part changes incrementally at each release.
 * redmine: update default version to 4.0.3
 * nagios-nrpe: change required status code for http and https check
 * redmine: use custom errors-pages in Nginx vhost
+* nagios-nrpe: check_load is now based on ansible_processor_vcpus
 
 ### Fixed
 * rbenv: add check_mode for check rbenv and ruby versions
