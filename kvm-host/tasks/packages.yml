@@ -11,3 +11,4 @@
     - libvirt-daemon-system
     - libvirt-clients
     - kvm-tools
+    - vlan
