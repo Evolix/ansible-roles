@@ -24,6 +24,7 @@ The **patch** part changes incrementally at each release.
 * nagios-nrpe: change required status code for http and https check
 * redmine: use custom errors-pages in Nginx vhost
 * nagios-nrpe: check_load is now based on ansible_processor_vcpus
+* php: Stop enforcing /var/www/html as chroot while we use /var/www
 
 ### Fixed
 * rbenv: add check_mode for check rbenv and ruby versions
