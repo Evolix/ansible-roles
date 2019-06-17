@@ -1,0 +1,9 @@
+---
+- name: Reload php56-fpm
+  command: "lxc-attach -n php56 -- systemctl reload php5-fpm"
+
+- name: Reload php70-fpm
+  command: "lxc-attach -n php70 -- systemctl reload php7.0-fpm"
+
+- name: Reload php73-fpm
+  command: "lxc-attach -n php73 -- systemctl reload php7.3-fpm"

@@ -1,0 +1,130 @@
+#
+# This playbook configures PHP (php-fpm and specific extensions) inside
+# container {{name}}.
+#
+
+---
+- name: Update APT cache
+  command: "lxc-attach -n {{name}} -- apt-get update"
+
+- name: Install PHP packages
+  command: "lxc-attach -n {{name}} -- apt-get install -y php5-fpm php5-cli php5-gd php5-imap php5-ldap php5-mcrypt php5-mysql php5-pgsql php-gettext php5-intl php5-curl php5-ssh2 libphp-phpmailer ssmtp git zip unzip"
+  when: name == 'php56'
+
+- name: Update APT cache
+  command: "lxc-attach -n {{name}} -- apt-get update"
+  when: name == 'php70'
+
+- name: Install PHP packages
+  command: "lxc-attach -n {{name}} -- apt-get install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mcrypt php-mysql php-pgsql php-gettext php-curl php-ssh2 composer libphp-phpmailer ssmtp git zip unzip php-zip"
+  when: name == 'php70'
+
+- name: Update APT cache
+  command: "lxc-attach -n {{name}} -- apt-get update"
+  when: name == 'php73'
+
+- name: Install requirements for sury repository
+  command: "lxc-attach -n {{name}} -- apt-get install -y --no-install-recommends wget apt-transport-https ca-certificates gnupg"
+  when: name == 'php73'
+
+- name: Add sury APT repository
+  copy:
+    content: "deb https://packages.sury.org/php/ stretch main"
+    dest: "/var/lib/lxc/{{name}}/rootfs/etc/apt/sources.list.d/sury.list"
+    mode: "0644"
+  when: name == 'php73'
+
+- name: Add sury GPG key
+  shell: "wget -O- https://packages.sury.org/php/apt.gpg |lxc-attach -n {{name}} -- apt-key add -"
+  when: name == 'php73'
+
+- name: Update APT cache
+  command: "lxc-attach -n {{name}} -- apt-get update"
+  when: name == 'php73'
+
+- name: Install PHP packages
+  command: "lxc-attach -n {{name}} -- apt-get install -y php7.3 php7.3-fpm php7.3-cli php7.3-curl php7.3-mysql php7.3-pgsql php7.3-ldap php7.3-imap php7.3-gd php-ssh2 php-gettext composer libphp-phpmailer ssmtp git zip unzip php7.3-zip"
+  when: name == 'php73'
+
+- name: Remove default FPM 5.6 pool
+  file:
+    name: "/var/lib/lxc/{{name}}/rootfs/etc/php5/fpm/pool.d/www.conf"
+    state: absent
+  notify: "Reload {{name}}-fpm"
+  when: name == 'php56'
+
+- name: Remove default FPM 7.0 pool
+  file:
+    name: "/var/lib/lxc/{{name}}/rootfs/etc/php/7.0/fpm/pool.d/www.conf"
+    state: absent
+  notify: "Reload {{name}}-fpm"
+  when: name == 'php70'
+
+- name: Remove default FPM 7.3 pool
+  file:
+    name: "/var/lib/lxc/{{name}}/rootfs/etc/php/7.3/fpm/pool.d/www.conf"
+    state: absent
+  notify: "Reload {{name}}-fpm"
+  when: name == 'php73'
+
+- name: Copy evolinux PHP 5.6 configuration
+  template:
+    src: z-evolinux-defaults.ini.j2
+    dest: "{{ line_item }}"
+    mode: "0644"
+  notify: "Reload {{name}}-fpm"
+  when: name == 'php56'
+  with_items:
+    - "/var/lib/lxc/{{name}}/rootfs/etc/php5/fpm/conf.d/z-evolinux-defaults.ini"
+    - "/var/lib/lxc/{{name}}/rootfs/etc/php5/cli/conf.d/z-evolinux-defaults.ini"
+  loop_control:
+    loop_var: line_item
+
+- name: Copy evolinux PHP 7.0 configuration
+  template:
+    src: z-evolinux-defaults.ini.j2
+    dest: "{{ line_item }}"
+    mode: "0644"
+  notify: "Reload {{name}}-fpm"
+  when: name == 'php70'
+  with_items:
+    - "/var/lib/lxc/{{name}}/rootfs/etc/php/7.0/fpm/conf.d/z-evolinux-defaults.ini"
+    - "/var/lib/lxc/{{name}}/rootfs/etc/php/7.0/cli/conf.d/z-evolinux-defaults.ini"
+  loop_control:
+    loop_var: line_item
+
+- name: Copy evolinux PHP 7.3 configuration
+  template:
+    src: z-evolinux-defaults.ini.j2
+    dest: "{{ line_item }}"
+    mode: "0644"
+  notify: "Reload {{name}}-fpm"
+  when: name == 'php73'
+  with_items:
+    - "/var/lib/lxc/{{name}}/rootfs/etc/php/7.3/fpm/conf.d/z-evolinux-defaults.ini"
+    - "/var/lib/lxc/{{name}}/rootfs/etc/php/7.3/cli/conf.d/z-evolinux-defaults.ini"
+  loop_control:
+    loop_var: line_item
+
+- name: Configure ssmtp
+  replace:
+    name: "/var/lib/lxc/{{name}}/rootfs/etc/ssmtp/ssmtp.conf"
+    regexp: "^mailhub=.*$"
+    replace: "mailhub=127.0.0.1"
+
+- name: Configure ssmtp
+  replace:
+    name: "/var/lib/lxc/{{name}}/rootfs/etc/ssmtp/ssmtp.conf"
+    regexp: "^#FromLineOverride=.*$"
+    replace: "FromLineOverride=YES"
+
+- name: Configure ssmtp
+  replace:
+    name: "/var/lib/lxc/{{name}}/rootfs/etc/ssmtp/ssmtp.conf"
+    regexp: "^hostname=.*"
+    replace: "hostname={{ansible_fqdn}}"
+
+- name: Configure timezone
+  copy:
+    dest: "/var/lib/lxc/{{name}}/rootfs/etc/timezone"
+    content: "Europe/Paris\n"
