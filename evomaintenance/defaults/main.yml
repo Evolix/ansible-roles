@@ -34,6 +34,11 @@ evomaintenance_realm: "{{ evolinux_internal_domain }}"
 evomaintenance_api_endpoint: Null
 evomaintenance_api_key: Null
 
+evomaintenance_hook_api: False
+evomaintenance_hook_db: True
+evomaintenance_hook_commit: True
+evomaintenance_hook_mail: True
+
 evomaintenance_default_hosts: []
 evomaintenance_additional_hosts: []
 evomaintenance_hosts: "{{ evomaintenance_default_hosts | union(evomaintenance_additional_hosts) | unique }}"

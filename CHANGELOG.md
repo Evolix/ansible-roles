@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 * apache: add server status suffix in VHost (and default site) if missing
 * apt: add a script to manage packages with "hold" mark
+* evomaintenance: make hooks configurable
 * nginx: add server status suffix in VHost (and default site) if missing
 * redmine: enable gzip compression in nginx vhost
 

@@ -13,3 +13,8 @@ URGENCYTEL="{{ evomaintenance_urgency_tel }}"
 REALM="{{ evomaintenance_realm }}"
 API_ENDPOINT={{ evomaintenance_api_endpoint }}
 API_KEY={{ evomaintenance_api_key }}
+
+HOOK_API={{ evomaintenance_hook_api | bool | ternary('1','0') }}
+HOOK_DB={{ evomaintenance_hook_db | bool | ternary('1','0') }}
+HOOK_COMMIT={{ evomaintenance_hook_commit | bool | ternary('1','0') }}
+HOOK_MAIL={{ evomaintenance_hook_mail | bool | ternary('1','0') }}
