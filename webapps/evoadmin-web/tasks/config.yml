@@ -17,7 +17,7 @@
     dest: "{{ evoadmin_scripts_dir }}/web-mail.tpl"
 
 - name: Copy multi php-cli script
-  file:
+  copy:
     src: phpContainer
     dest: /usr/local/bin/phpContainer
     mode: 0700
