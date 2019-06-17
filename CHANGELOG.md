@@ -33,6 +33,7 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: Validate sshd config with "-t" instead of "-T"
 * evolinux-base: Ensure rename is present
 * evolinux-users: Validate sshd config with "-t" instead of "-T"
+* nagios-nrpe: Replace the dummy packages nagios-plugins-* with monitoring-plugins-*
 
 ### Security
 

@@ -5,11 +5,11 @@
     state: present
   with_items:
     - nagios-nrpe-server
-    - nagios-plugins
-    - nagios-plugins-basic
-    - nagios-plugins-common
+    - monitoring-plugins
+    - monitoring-plugins-basic
+    - monitoring-plugins-common
+    - monitoring-plugins-standard
     - nagios-plugins-contrib
-    - nagios-plugins-standard
   tags:
     - nagios-nrpe
 
