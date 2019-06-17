@@ -16,6 +16,7 @@
   - bash-completion
   - ssl-cert
   - ca-certificates
+  - rename
   when: evolinux_packages_system
 
 - name: Install/Update diagnostic tools
@@ -125,8 +126,8 @@
     - evolinux_packages_listchanges
     - ansible_distribution == "Debian"
     - ansible_distribution_release == "jessie"
-  
-- name: apt-listchanges is absent on Stretch and later 
+
+- name: apt-listchanges is absent on Stretch and later
   apt:
     name: apt-listchanges
     state: absent
