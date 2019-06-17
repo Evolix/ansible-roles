@@ -28,6 +28,14 @@
     state: absent
   with_items: "{{ apt_unhold_packages }}"
 
+- name: /usr/share/scripts exists
+  file:
+    dest: /usr/share/scripts
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+
 - name: Check scripts is installed
   copy:
     src: check_held_packages.sh
