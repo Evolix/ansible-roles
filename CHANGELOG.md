@@ -32,6 +32,7 @@ The **patch** part changes incrementally at each release.
 * redmine: fix 500 error on logging
 * evolinux-base: Validate sshd config with "-t" instead of "-T"
 * evolinux-base: Ensure rename is present
+* evolinux-users: Validate sshd config with "-t" instead of "-T"
 
 ### Security
 
