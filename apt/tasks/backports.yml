@@ -33,7 +33,7 @@
     line: 'Acquire::Check-Valid-Until no;'
     create: yes
     state: present
-  when: ansible_distribution_release == "jessie"
+  when: ansible_lsb.codename == "jessie"
   tags:
     - apt
 
