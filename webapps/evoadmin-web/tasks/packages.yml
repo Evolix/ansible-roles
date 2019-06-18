@@ -19,4 +19,4 @@
     allow_unauthenticated: yes
   with_items:
   - php5-pam
-  when: ansible_distribution_release == "jessie"
+  when: ansible_lsb.codename == "jessie"

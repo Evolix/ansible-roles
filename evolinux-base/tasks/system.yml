@@ -125,7 +125,7 @@
     mode: "0755"
   when:
     - evolinux_system_alert5_init
-    - ansible_distribution_release == "jessie" or ansible_distribution_release == "stretch"
+    - ansible_lsb.codename == "jessie" or ansible_lsb.codename == "stretch"
 
 - name: Enable alert5 init script (jessie/stretch)
   service:
@@ -134,7 +134,7 @@
   when:
     - evolinux_system_alert5_init
     - evolinux_system_alert5_enable
-    - ansible_distribution_release == "jessie" or ansible_distribution_release == "stretch"
+    - ansible_lsb.codename == "jessie" or ansible_lsb.codename == "stretch"
 
 
 

@@ -27,7 +27,7 @@
   tags:
     - apache
     - packages
-  when: ansible_distribution_release == "jessie"
+  when: ansible_lsb.codename == "jessie"
 
 - name: basic modules are enabled
   apache2_module:

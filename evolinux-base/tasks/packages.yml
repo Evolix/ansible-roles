@@ -126,7 +126,7 @@
   when:
     - evolinux_packages_listchanges
     - ansible_distribution == "Debian"
-    - ansible_distribution_release == "jessie"
+    - ansible_lsb.codename == "jessie"
 
 - name: apt-listchanges is absent on Stretch and later
   apt:

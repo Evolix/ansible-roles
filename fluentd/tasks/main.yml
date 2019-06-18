@@ -9,7 +9,7 @@
 
 - name: Fluentd sources list is available
   apt_repository:
-    repo: "deb http://packages.treasuredata.com/3/debian/{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} contrib"
+    repo: "deb http://packages.treasuredata.com/3/debian/{{ ansible_lsb.codename }}/ {{ ansible_lsb.codename }} contrib"
     filename: treasuredata
     update_cache: yes
     state: present

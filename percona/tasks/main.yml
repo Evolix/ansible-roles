@@ -1,7 +1,7 @@
 ---
 
 - set_fact:
-    percona__apt_config_package_file: "percona-release_latest.{{ ansible_distribution_release }}_all.deb"
+    percona__apt_config_package_file: "percona-release_latest.{{ ansible_lsb.codename }}_all.deb"
 
 - name: Add Percona's official GPG key
   apt_key:

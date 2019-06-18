@@ -8,7 +8,7 @@
 - name: "Set squid name (jessie)"
   set_fact:
     squid_daemon_name: squid3
-  when: ansible_distribution_release == "jessie"
+  when: ansible_lsb.codename == "jessie"
 
 - name: "Set squid name (Debian 9 or later)"
   set_fact:
@@ -34,7 +34,7 @@
     src: squid.conf.j2
     dest: /etc/squid3/squid.conf
   notify: "restart squid3"
-  when: ansible_distribution_release == "jessie"
+  when: ansible_lsb.codename == "jessie"
 
 - name: "evolix whitelist is present (jessie)"
   copy:
@@ -42,7 +42,7 @@
     dest: /etc/squid3/whitelist.conf
     force: no
   notify: "reload squid3"
-  when: ansible_distribution_release == "jessie"
+  when: ansible_lsb.codename == "jessie"
 
 - name: "evolinux defaults squid file (Debian 9 or later)"
   copy:
@@ -135,7 +135,7 @@
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - include: logrotate_jessie.yml
-  when: ansible_distribution_release == "jessie"
+  when: ansible_lsb.codename == "jessie"
 
 - include: logrotate_stretch.yml
   when: ansible_distribution_major_version | version_compare('9', '>=')

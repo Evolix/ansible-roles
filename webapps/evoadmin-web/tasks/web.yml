@@ -7,7 +7,7 @@
     option: "disable_functions"
     value: "shell-exec,system,passthru,putenv,popen"
   notify: reload apache2
-  when: ansible_distribution_release == "jessie"
+  when: ansible_lsb.codename == "jessie"
 
 - name: "Set custom values for PHP config (Debian 9 or later)"
   ini_file:

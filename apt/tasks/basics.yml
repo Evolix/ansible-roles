@@ -2,7 +2,7 @@
 
 - name: Change basics repositories
   template:
-    src: "{{ ansible_distribution_release }}_basics.list.j2"
+    src: "{{ ansible_lsb.codename }}_basics.list.j2"
     dest: /etc/apt/sources.list
     mode: "0644"
     force: yes

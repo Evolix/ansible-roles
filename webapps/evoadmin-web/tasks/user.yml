@@ -17,7 +17,7 @@
     name: www-evoadmin
     groups: shadow
     append: yes
-  when: ansible_distribution_release == "jessie"
+  when: ansible_lsb.codename == "jessie"
 
 - name: "Create www-evoadmin (Debian 9 or later)"
   user:
@@ -52,7 +52,7 @@
     dest: "{{ evoadmin_document_root }}"
     version: jessie
     update: no
-  when: ansible_distribution_release == "jessie"
+  when: ansible_lsb.codename == "jessie"
 
 - name: "Clone evoadmin repository (Debian 9 or later)"
   git:

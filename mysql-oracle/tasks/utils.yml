@@ -22,7 +22,7 @@
     - packages
     - mytop
     - mysql
-  when: ansible_distribution_release == "jessie"
+  when: ansible_lsb.codename == "jessie"
 
 # - name: "mysql-utilities are installed (Debian 9 or later)"
 #   apt:

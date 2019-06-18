@@ -13,7 +13,7 @@
     notify: apt update
 
   - meta: flush_handlers
-  when: ansible_distribution_release == "jessie"
+  when: ansible_lsb.codename == "jessie"
 
 - name: Install certbot with apt
   apt:

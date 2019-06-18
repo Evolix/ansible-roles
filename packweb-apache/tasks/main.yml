@@ -48,7 +48,7 @@
     src: userlogrotate_jessie
     dest: /etc/cron.weekly/userlogrotate
     mode: "0755"
-  when: ansible_distribution_release == "jessie"
+  when: ansible_lsb.codename == "jessie"
 
 - name: "Install userlogrotate (Debian 9 or later)"
   copy:
