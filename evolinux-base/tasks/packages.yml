@@ -91,10 +91,18 @@
     name: "{{ item }}"
   with_items:
   - net-tools
-  - spectre-meltdown-checker
   when:
   - evolinux_packages_stretch
   - ansible_distribution_major_version | version_compare('9', '>=')
+
+- name: Install/Update packages for Buster and later
+  apt:
+    name: "{{ item }}"
+  with_items:
+  - spectre-meltdown-checker
+  when:
+  - evolinux_packages_buster
+  - ansible_distribution_major_version | version_compare('10', '>=')
 
 - name: Customize logcheck recipient
   lineinfile:
