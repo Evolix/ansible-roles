@@ -14,7 +14,6 @@ The **patch** part changes incrementally at each release.
 * apache: add server status suffix in VHost (and default site) if missing
 * apt: add a script to manage packages with "hold" mark
 * etc-git: gitignore /etc/letsencrypt/.certbot.lock
-* evolinux-base: install "spectre-meltdown-checker" (Debian 10 and later)
 * evomaintenance: make hooks configurable
 * nginx: add server status suffix in VHost (and default site) if missing
 * redmine: enable gzip compression in nginx vhost
