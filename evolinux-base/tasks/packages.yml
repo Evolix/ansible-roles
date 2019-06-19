@@ -91,7 +91,6 @@
     name: "{{ item }}"
   with_items:
   - net-tools
-  - spectre-meltdown-checker
   when:
   - evolinux_packages_stretch
   - ansible_distribution_major_version | version_compare('9', '>=')
