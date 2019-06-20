@@ -12,6 +12,7 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 * apache: add server status suffix in VHost (and default site) if missing
+* apache: add a variable to customize the server-status host
 * apt: add a script to manage packages with "hold" mark
 * etc-git: gitignore /etc/letsencrypt/.certbot.lock
 * evomaintenance: make hooks configurable
