@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+
+deb http://archive.ubuntu.com/ubuntu/ bionic {{ apt_basics_components | mandatory }}
+deb http://archive.ubuntu.com/ubuntu/ bionic-updates {{ apt_basics_components | mandatory }}
+deb http://security.ubuntu.com/ubuntu bionic-security {{ apt_basics_components | mandatory }}
