@@ -13,7 +13,7 @@
     #url: http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x44975278B8612B5D
     data: "{{ lookup('file', 'reg.gpg') }}"
 
-- name: Evolix public list is installed
+- name: Evolix public list is installed (only for Debian)
   template:
     src: evolix_public.list.j2
     dest: /etc/apt/sources.list.d/evolix_public.list
@@ -22,6 +22,7 @@
   register: apt_evolix_public
   tags:
   - apt
+  when: ansible_distribution == "Debian"
 
 - name: Apt update
   apt:
