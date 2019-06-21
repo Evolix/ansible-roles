@@ -14,3 +14,14 @@ apt_backports_components: "main"
 apt_install_evolix_public: True
 
 apt_clean_gandi_sourceslist: False
+
+apt_install_hold_packages: True
+
+apt_hold_packages: []
+apt_unhold_packages: []
+
+apt_check_hold_cron_minute: "45"
+apt_check_hold_cron_hour: "*/4"
+apt_check_hold_cron_weekday: "*"
+apt_check_hold_cron_day: "*"
+apt_check_hold_cron_month: "*"

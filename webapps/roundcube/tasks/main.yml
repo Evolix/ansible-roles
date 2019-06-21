@@ -6,24 +6,24 @@
     value: "{{ item.value }}"
     vtype: "{{ item.type }}"
   with_items:
-  - { key: 'roundcube/database-type', type: 'select', value: 'sqlite3' }
-  - { key: 'roundcube/db/basepath', type: 'string', value: '/var/lib/roundcube/' }
+    - { key: 'roundcube/database-type', type: 'select', value: 'sqlite3' }
+    - { key: 'roundcube/db/basepath', type: 'string', value: '/var/lib/roundcube/' }
   tags:
-  - roundcube
+    - roundcube
 
 - name: install Roundcube
   apt:
     name: "{{ item }}"
     state: present
   with_items:
-  - imapproxy
-  - roundcube
-  - roundcube-sqlite3
-  - roundcube-plugins
-  - php-net-sieve
-  - php-zip
+    - imapproxy
+    - roundcube
+    - roundcube-sqlite3
+    - roundcube-plugins
+    - php-net-sieve
+    - php-zip
   tags:
-  - roundcube
+    - roundcube
 
 - name: configure imapproxy imap host
   lineinfile:
@@ -32,7 +32,7 @@
     line: "server_hostname {{ roundcube_imap_host }}"
   notify: restart imapproxy
   tags:
-  - roundcube
+    - roundcube
 
 - name: configure imapproxy imap port
   lineinfile:
@@ -41,7 +41,7 @@
     line: "server_port {{ roundcube_imap_port }}"
   notify: reload imapproxy
   tags:
-  - roundcube
+    - roundcube
 
 - name: enable and start imapproxy
   service:
@@ -49,24 +49,24 @@
     state: started
     enabled: True
   tags:
-  - roundcube
+    - roundcube
 
 - name: configure roundcube imap host
   lineinfile:
-     dest: /etc/roundcube/config.inc.php
-     regexp: "\\$config\\['default_host'\\]"
-     line: "$config['default_host'] = array('127.0.0.1');"
+    dest: /etc/roundcube/config.inc.php
+    regexp: "\\$config\\['default_host'\\]"
+    line: "$config['default_host'] = array('127.0.0.1');"
   tags:
-  - roundcube
+    - roundcube
 
 - name: configure roudcube imap port
   lineinfile:
-     dest: /etc/roundcube/config.inc.php
-     regexp: "\\$config\\['default_port'\\]"
-     insertafter: "\\$config\\['default_host'\\]"
-     line: "$config['default_port'] = 1143;"
+    dest: /etc/roundcube/config.inc.php
+    regexp: "\\$config\\['default_port'\\]"
+    insertafter: "\\$config\\['default_host'\\]"
+    line: "$config['default_port'] = 1143;"
   tags:
-  - roundcube
+    - roundcube
 
 - name: configure managesieve plugin
   copy:
@@ -75,7 +75,7 @@
     mode: "0644"
     remote_src: True
   tags:
-  - roundcube
+    - roundcube
 
 - name: enable default plugins
   replace:
@@ -83,7 +83,7 @@
     regexp: "^\\$config\\['plugins'\\] = array\\($"
     replace: "$config['plugins'] = array('zipdownload','managesieve'"
   tags:
-  - roundcube
+    - roundcube
 
 - name: deploy apache roundcube vhost
   template:
@@ -93,7 +93,7 @@
   notify: reload apache2
   when: roundcube_webserver == "apache"
   tags:
-  - roundcube
+    - roundcube
 
 - name: enable apache roundcube vhost
   file:
@@ -103,7 +103,7 @@
   notify: reload apache2
   when: roundcube_webserver == "apache"
   tags:
-  - roundcube
+    - roundcube
 
 - name: deploy Nginx roundcube vhost
   template:
@@ -128,4 +128,4 @@
     line: '            <li><a href="https://{{ roundcube_host }}">Webmail</a></li>'
     insertbefore: "</ul>"
   tags:
-  - roundcube
+    - roundcube

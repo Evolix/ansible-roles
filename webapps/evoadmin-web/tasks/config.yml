@@ -15,3 +15,10 @@
   template:
     src: web-mail.tpl.j2
     dest: "{{ evoadmin_scripts_dir }}/web-mail.tpl"
+
+- name: Copy multi php-cli script
+  copy:
+    src: phpContainer
+    dest: /usr/local/bin/phpContainer
+    mode: 0700
+  when: evoadmin_multi_php == True

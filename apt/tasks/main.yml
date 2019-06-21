@@ -4,30 +4,36 @@
   fail:
     msg: only compatible with Debian >= 8
   when:
-  - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
+    - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
   tags:
-  - apt
+    - apt
 
 - name: Custom configuration
   include: config.yml
   when: apt_config
   tags:
-  - apt
+    - apt
 
 - name: Install basics repositories
   include: basics.yml
   when: apt_install_basics
   tags:
-  - apt
+    - apt
 
 - name: Install APT Backports repository
   include: backports.yml
   when: apt_install_backports
   tags:
-  - apt
+    - apt
 
 - name: Install Evolix Public APT repository
   include: evolix_public.yml
   when: apt_install_evolix_public
   tags:
-  - apt
+    - apt
+
+- name: Install check for packages marked hold
+  include: hold_packages.yml
+  when: apt_install_hold_packages
+  tags:
+    - apt

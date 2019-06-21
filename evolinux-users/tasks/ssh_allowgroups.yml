@@ -14,7 +14,7 @@
     dest: /etc/ssh/sshd_config
     line: "\nAllowGroups {{ evolinux_ssh_group }}"
     insertafter: 'Subsystem'
-    validate: '/usr/sbin/sshd -T -f %s'
+    validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
   when: grep_allowgroups_ssh.rc != 0
 
@@ -23,6 +23,6 @@
     dest: /etc/ssh/sshd_config
     regexp: '^(AllowGroups ((?!\b{{ evolinux_ssh_group }}\b).)*)$'
     replace: '\1 {{ evolinux_ssh_group }}'
-    validate: '/usr/sbin/sshd -T -f %s'
+    validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
   when: grep_allowgroups_ssh.rc == 0

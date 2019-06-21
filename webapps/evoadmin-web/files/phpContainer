@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+evolixContainerVersion=$(grep SetHandler /etc/apache2/sites-enabled/$LOGNAME.conf 2>/dev/null | grep -m 1 -o 'fpm[0-9][0-9]' | head -n 1 | sed 's/php//g' | sed 's/fpm//g')                                                                                                                                                  
+if [ "$evolixContainerVersion" != "" ]; then
+    lxc-attach -n php$evolixContainerVersion -- su - $LOGNAME -c "cd \"${PWD@E}\" && php ${*@Q}"
+else
+    # TODO: fallback?
+    # command php $*
+    echo "could not determine \$evolixContainerVersion"
+    exit 1
+fi

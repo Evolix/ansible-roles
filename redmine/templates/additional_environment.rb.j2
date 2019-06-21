@@ -1,5 +1,5 @@
 config.log_level = :info
-config.logger = Syslogger.new("redmine_{{ redmine_user }}")
+config.logger = ActiveSupport::TaggedLogging.new(Syslogger.new("redmine_{{ redmine_user }}"))
 {% if redmine_redis_path is defined %}
 config.session_store :redis_store,
   servers: { path: '{{ redmine_redis_path }}', db: 0, namespace: "session" }

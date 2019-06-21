@@ -5,11 +5,9 @@
 
 - assert:
     that:
-      - evomaintenance_pg_passwd is not none
-      - evomaintenance_pg_db is not none
-      - evomaintenance_pg_table is not none
-      - evomaintenance_pg_host is not none
-    msg: evomaintenance database variables must be set
+      - evomaintenance_api_endpoint is not none
+      - evomaintenance_api_key is not none
+    msg: evomaintenance api variables must be set
 
 - include: install_package_debian.yml
   when:
@@ -26,3 +24,5 @@
     - ansible_distribution == "OpenBSD"
 
 - include: minifirewall.yml
+  when:
+    - ansible_distribution == "Debian"

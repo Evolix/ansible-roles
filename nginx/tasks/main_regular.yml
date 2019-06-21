@@ -87,10 +87,6 @@
   tags:
     - nginx
 
-- include: server_status.yml
-  tags:
-    - nginx
-
 - name: nginx vhost is installed
   template:
     src: evolinux-default.conf.j2
@@ -109,6 +105,10 @@
     force: yes
   notify: reload nginx
   when: nginx_evolinux_default_enabled
+  tags:
+    - nginx
+
+- include: server_status.yml
   tags:
     - nginx
 

@@ -7,6 +7,7 @@
   with_items:
     - postgresql-client
     - sudo
+    - curl
   tags:
     - evomaintenance
 
@@ -25,28 +26,19 @@
   tags:
     - evomaintenance
 
-- name: Script is installed
+- name: Evomaintenance script and template are installed
   copy:
-    src: evomaintenance.sh
-    dest: /usr/share/scripts/evomaintenance.sh
-    mode: "0700"
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
     owner: root
     group: root
+    mode: "{{ item.mode }}"
     force: yes
     backup: yes
-  tags:
-    - evomaintenance
-
-- name: Template is installed
-  copy:
-    src: evomaintenance.tpl
-    dest: /usr/share/scripts/evomaintenance.tpl
-    mode: "0600"
-    owner: root
-    group: root
-    force: yes
-    backup: yes
-  tags:
+  with_items:
+    - { src: 'evomaintenance.sh', dest: '/usr/share/scripts/', mode: '0700' }
+    - { src: 'evomaintenance.tpl', dest: '/usr/share/scripts/', mode: '0600' }
+  tags: 
     - evomaintenance
 
 - name: Configuration is installed

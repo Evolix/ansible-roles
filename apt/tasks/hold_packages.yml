@@ -1,0 +1,71 @@
+---
+
+- name: "hold packages (apt)"
+  shell: "(apt-mark showhold | grep --quiet {{ item }}) || apt-mark hold {{ item }}"
+  register: apt_mark
+  changed_when: "'{{ item }} set on hold.' in apt_mark.stdout"
+  with_items: "{{ apt_hold_packages }}"
+  tags:
+    - apt
+
+- name: "hold packages (config)"
+  lineinfile:
+    dest: /etc/evolinux/apt_hold_packages.cf
+    line: "{{ item }}"
+    create: True
+    state: present
+  with_items: "{{ apt_hold_packages }}"
+  tags:
+    - apt
+
+- name: "unhold packages (apt)"
+  shell: "(apt-mark showhold | grep --quiet {{ item }}) && apt-mark unhold {{ item }}"
+  register: apt_mark
+  changed_when: "'Canceled hold on {{ item }}.' in apt_mark.stdout"
+  with_items: "{{ apt_unhold_packages }}"
+  tags:
+    - apt
+
+- name: "unhold packages (config)"
+  lineinfile:
+    dest: /etc/evolinux/apt_hold_packages.cf
+    line: "{{ item }}"
+    create: True
+    state: absent
+  with_items: "{{ apt_unhold_packages }}"
+  tags:
+    - apt
+
+- name: /usr/share/scripts exists
+  file:
+    dest: /usr/share/scripts
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+  tags:
+    - apt
+
+- name: Check scripts is installed
+  copy:
+    src: check_held_packages.sh
+    dest: /usr/share/scripts/check_held_packages.sh
+    force: yes
+    mode: "0755"
+  tags:
+    - apt
+
+- name: Check for held packages (script)
+  cron:
+    cron_file: apt-hold-packages
+    name: check_held_packages
+    job: "/usr/share/scripts/check_held_packages.sh"
+    user: root
+    minute: "{{ apt_check_hold_cron_minute }}"
+    hour: "{{ apt_check_hold_cron_hour }}"
+    weekday: "{{ apt_check_hold_cron_weekday }}"
+    day: "{{ apt_check_hold_cron_day }}"
+    month: "{{ apt_check_hold_cron_month }}"
+    state: "present"
+  tags:
+    - apt

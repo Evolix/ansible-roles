@@ -5,8 +5,16 @@
   register: container_exists
 
 - name: Create container
-  command: "lxc-create -n {{name}} -t download -- --dist debian --release {{release}} --arch amd64"
+  command: "lxc-create --name {{name}} --template debian --bdev dir --logfile /var/log/lxc/lxc-{{name}}.log --logpriority INFO -- --arch amd64 --release {{release}}"
   when: container_exists.stdout_lines == []
+
+#- name: Create container
+#  lxc_container:
+#    name: "{{name}}"
+#    container_log: true
+#    template: download
+#    state: stopped
+#    template_options: "--release {{release}}"
 
 - name: Disable network configuration inside container
   replace:

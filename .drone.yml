@@ -1,0 +1,36 @@
+kind: pipeline
+name: default
+
+steps:
+- name: build tagged docker image
+  image: plugins/docker
+  settings:
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    dockerfile: Dockerfile
+    repo: evolix/ansible-roles
+    auto_tag: true
+  environment:
+    ROLES_VERSION: $DRONE_COMMIT_SHA
+  when:
+    event:
+    - tag
+
+- name: build latest docker image
+  image: plugins/docker
+  settings:
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    dockerfile: Dockerfile
+    repo: evolix/ansible-roles
+    tags: latest
+  environment:
+    ROLES_VERSION: $DRONE_COMMIT_SHA
+  when:
+    branch:
+    - unstable
+

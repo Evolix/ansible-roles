@@ -18,12 +18,45 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [9.10.0] - 2019-06-21
+
+### Added
+* apache: add server status suffix in VHost (and default site) if missing
+* apache: add a variable to customize the server-status host
+* apt: add a script to manage packages with "hold" mark
+* etc-git: gitignore /etc/letsencrypt/.certbot.lock
+* evolinux-base: install "spectre-meltdown-checker" (Debian 10 and later)
+* evomaintenance: make hooks configurable
+* nginx: add server status suffix in VHost (and default site) if missing
+* redmine: enable gzip compression in nginx vhost
+
+### Changed
+* evocheck : update (unreleased) from upstream
+* evomaintenance : use the web API instead of PG Insert
+* fluentd: store gpg key locally
+* rbenv: update defaults rbenv version to 1.1.2 and ruby version to 2.6.3
+* redmine: update default version to 4.0.3
+* nagios-nrpe: change required status code for http and https check
+* redmine: use custom errors-pages in Nginx vhost
+* nagios-nrpe: check_load is now based on ansible_processor_vcpus
+* php: Stop enforcing /var/www/html as chroot while we use /var/www
+* apt: Add Debian Buster repositories
+
+### Fixed
+* rbenv: add check_mode for check rbenv and ruby versions
+* nagios-nrpe: fix redis_instances check when Redis port equal 0
+* redmine: fix 500 error on logging
+* evolinux-base: Validate sshd config with "-t" instead of "-T"
+* evolinux-base: Ensure rename is present
+* evolinux-users: Validate sshd config with "-t" instead of "-T"
+* nagios-nrpe: Replace the dummy packages nagios-plugins-* with monitoring-plugins-*
+
 ## [9.9.0] - 2019-04-16
 
 ### Added
-* evocheck : add "x-frame-options: sameorigin" for Munin
 * etc-git: ignore evobackup/.keep-* files
 * lxc: /home is mounted in the container by default
+* nginx : add "x-frame-options: sameorigin" for Munin
 
 ### Changed
 * changed remote repository to https://gitea.evolix.org/evolix/ansible-roles

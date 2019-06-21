@@ -6,6 +6,7 @@
     append: True
   tags:
     - redmine
+    - nginx
 
 - name: Copy nginx vhost
   template:
@@ -15,6 +16,7 @@
   notify: reload nginx
   tags:
     - redmine
+    - nginx
 
 - name: Enable nginx vhost
   file:
@@ -24,3 +26,4 @@
   notify: reload nginx
   tags:
     - redmine
+    - nginx

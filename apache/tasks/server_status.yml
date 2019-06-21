@@ -40,6 +40,19 @@
     regexp: '__SERVERSTATUS_SUFFIX__'
     replace: "{{ apache_serverstatus_suffix }}"
 
+- name: add server-status suffix in default site index if missing
+  replace:
+    dest: /var/www/index.html
+    regexp: '"/server-status-?"'
+    replace: '"/server-status-{{ apache_serverstatus_suffix }}"'
+
+- name: add server-status suffix in default VHost
+  replace:
+    dest: /etc/apache2/sites-available/000-evolinux-default.conf
+    regexp: '<Location /server-status-?>'
+    replace: '<Location /server-status-{{ apache_serverstatus_suffix }}>'
+  notify: reload apache
+
 - name: Munin configuration has a section for apache
   lineinfile:
     dest: /etc/munin/plugin-conf.d/munin-node
@@ -49,7 +62,8 @@
 - name: apache-status URL is configured for Munin
   lineinfile:
     dest: /etc/munin/plugin-conf.d/munin-node
-    line: "env.url http://127.0.0.1/server-status-{{ apache_serverstatus_suffix }}?auto"
-    regexp: "env.url http://127.0.0.1/server-status"
+    line: "env.url http://{{ apache_serverstatus_host }}/server-status-{{ apache_serverstatus_suffix }}?auto"
+    regexp: 'env.url http://[^\\/]+/server-status'
     insertafter: "[apache_*]"
     create: no
+  notify: restart munin-node

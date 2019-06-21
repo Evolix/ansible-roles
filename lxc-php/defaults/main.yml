@@ -1,0 +1,8 @@
+---
+php_conf_short_open_tag: "Off"
+php_conf_expose_php: "Off"
+php_conf_display_errors: "Off"
+php_conf_log_errors: "On"
+php_conf_html_errors: "Off"
+php_conf_allow_url_fopen: "Off"
+php_conf_disable_functions: "exec,shell-exec,system,passthru,putenv,popen"

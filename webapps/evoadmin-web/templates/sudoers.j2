@@ -1,3 +1,7 @@
 User_Alias EVOADMIN = www-evoadmin
 Cmnd_Alias EVOADMIN_WEB = {{ evoadmin_scripts_dir | mandatory }}/web-*.sh, {{ evoadmin_scripts_dir | mandatory }}/ftpadmin.sh, {{ evoadmin_scripts_dir | mandatory }}/dbadmin.sh
 EVOADMIN ALL=NOPASSWD: EVOADMIN_WEB
+{% if evoadmin_multi_php == True %}
+Defaults        env_keep += "LOGNAME PWD"
+ALL ALL = NOPASSWD: /usr/local/bin/phpContainer
+{% endif %}
