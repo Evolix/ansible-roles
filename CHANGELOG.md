@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 ### Changed
+* evocheck : update (version 19.06) from upstream
 
 ### Fixed
 
