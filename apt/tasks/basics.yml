@@ -8,21 +8,23 @@
     force: yes
   register: apt_basic_list
   tags:
-  - apt
+    - apt
 
 - name: Clean GANDI sources.list.d/debian-security.list
   file:
     path: '{{ item }}'
     state: absent
   with_items:
-  - /etc/apt/sources.list.d/debian-security.list
-  - /etc/apt/sources.list.d/debian-stretch.list
-  - /etc/apt/sources.list.d/debian-update.list
+    - /etc/apt/sources.list.d/debian-security.list
+    - /etc/apt/sources.list.d/debian-stretch.list
+    - /etc/apt/sources.list.d/debian-update.list
   when: apt_clean_gandi_sourceslist
+  tags:
+    - apt
 
 - name: Apt update
   apt:
     update_cache: yes
   when: apt_basic_list | changed
   tags:
-  - apt
+    - apt

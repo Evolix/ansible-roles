@@ -5,7 +5,7 @@
     regexp: "backports"
     state: absent
   tags:
-  - apt
+    - apt
 
 - name: Backports sources list is installed
   template:
@@ -15,7 +15,7 @@
     mode: "0640"
   register: apt_backports_list
   tags:
-  - apt
+    - apt
 
 - name: Backports configuration
   copy:
@@ -25,7 +25,7 @@
     mode: "0640"
   register: apt_backports_config
   tags:
-  - apt
+    - apt
 
 - name: Archived backport are accepted (jessie)
   lineinfile:
@@ -33,11 +33,13 @@
     line: 'Acquire::Check-Valid-Until no;'
     create: yes
     state: present
-  when: ansible_lsb.codename == "jessie"
+  when: ansible_distribution_release == "jessie"
+  tags:
+    - apt
 
 - name: Apt update
   apt:
     update_cache: yes
   when: apt_backports_list | changed or apt_backports_config | changed
   tags:
-  - apt
+    - apt
