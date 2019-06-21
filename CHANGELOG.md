@@ -24,7 +24,7 @@ The **patch** part changes incrementally at each release.
 * evocheck : update (unreleased) from upstream
 * evomaintenance : use the web API instead of PG Insert
 * fluentd: store gpg key locally
-* rbenv: update defaults rbenv version to 1.1.2 and ruby version to 2.5.5
+* rbenv: update defaults rbenv version to 1.1.2 and ruby version to 2.6.3
 * redmine: update default version to 4.0.3
 * nagios-nrpe: change required status code for http and https check
 * redmine: use custom errors-pages in Nginx vhost
