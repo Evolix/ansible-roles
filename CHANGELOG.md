@@ -15,12 +15,13 @@ The **patch** part changes incrementally at each release.
 * apache: add a variable to customize the server-status host
 * apt: add a script to manage packages with "hold" mark
 * etc-git: gitignore /etc/letsencrypt/.certbot.lock
+* evolinux-base: install "spectre-meltdown-checker" (Debian 10 and later)
 * evomaintenance: make hooks configurable
 * nginx: add server status suffix in VHost (and default site) if missing
 * redmine: enable gzip compression in nginx vhost
 
 ### Changed
-* evocheck : version 19.04 from upstream
+* evocheck : update (unreleased) from upstream
 * evomaintenance : use the web API instead of PG Insert
 * rbenv: update defaults rbenv version to 1.1.2 and ruby version to 2.5.5
 * redmine: update default version to 4.0.3
