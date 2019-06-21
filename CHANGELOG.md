@@ -11,6 +11,16 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Security
+
+## [9.10.0] - 2019-06-21
+
+### Added
 * apache: add server status suffix in VHost (and default site) if missing
 * apache: add a variable to customize the server-status host
 * apt: add a script to manage packages with "hold" mark
@@ -40,8 +50,6 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: Ensure rename is present
 * evolinux-users: Validate sshd config with "-t" instead of "-T"
 * nagios-nrpe: Replace the dummy packages nagios-plugins-* with monitoring-plugins-*
-
-### Security
 
 ## [9.9.0] - 2019-04-16
 
