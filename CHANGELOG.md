@@ -18,6 +18,11 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [9.10.1] - 2019-06-21
+
+### Changed
+* evocheck : update (version 19.06) from upstream
+
 ## [9.10.0] - 2019-06-21
 
 ### Added
