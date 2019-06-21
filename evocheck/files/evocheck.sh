@@ -891,17 +891,15 @@ check_mysqlmunin() {
 }
 check_mysqlnrpe() {
     if is_debian_stretch && is_installed mariadb-server; then
-        nagios_home=$(getent passwd "nagios" | cut -d: -f6)
-        nagios_file_abs="${nagios_home}/.my.cnf"
-        nagios_file_sym="~nagios/.my.cnf"
+        nagios_file=~nagios/.my.cnf
 
-        if ! test -f $nagios_file_abs; then
-            failed "IS_MYSQLNRPE" "$nagios_file_abs is missing"
-        elif [ "$(stat -c %U $nagios_file_abs)" != "nagios" ] \
-             || [ "$(stat -c %a $nagios_file_abs)" != "600" ]; then
-            failed "IS_MYSQLNRPE" "$nagios_file_abs has wrong permissions"
+        if ! test -f ${nagios_file}; then
+            failed "IS_MYSQLNRPE" "${nagios_file} is missing"
+        elif [ "$(stat -c %U ${nagios_file})" != "nagios" ] \
+             || [ "$(stat -c %a ${nagios_file})" != "600" ]; then
+            failed "IS_MYSQLNRPE" "${nagios_file} has wrong permissions"
         else
-            grep -q -F "command[check_mysql]=/usr/lib/nagios/plugins/check_mysql -H localhost -f $nagios_file_sym" /etc/nagios/nrpe.d/evolix.cfg \
+            grep -q -F "command[check_mysql]=/usr/lib/nagios/plugins/check_mysql" /etc/nagios/nrpe.d/evolix.cfg \
             || failed "IS_MYSQLNRPE" "check_mysql is missing"
         fi
     fi
@@ -1095,9 +1093,7 @@ check_evomaintenanceconf() {
             && grep "^FULLFROM" $f | grep -qv "John Doe <jdoe@example.com>" \
             && grep "^URGENCYFROM" $f | grep -qv "mama.doe@example.com" \
             && grep "^URGENCYTEL" $f | grep -qv "06.00.00.00.00" \
-            && grep "^REALM" $f | grep -qv "example.com" \
-            && grep "^API_ENDPOINT" $f | grep -qv "https://example.com/api/" \
-            && grep "^API_KEY" $f | grep -qv "secretkey";
+            && grep "^REALM" $f | grep -qv "example.com"
         } || failed "IS_EVOMAINTENANCECONF" "evomaintenance is not correctly configured"
     else
         failed "IS_EVOMAINTENANCECONF" "Configuration file \`$f' is missing"
@@ -1125,6 +1121,12 @@ check_evobackup_incs() {
         else
             failed "IS_EVOBACKUP_INCS" "Crontab \`${bkctld_cron_file}' is missing"
         fi
+    fi
+}
+
+check_osprober() {
+    if is_installed os-prober qemu-kvm; then
+        failed "IS_OSPROBER" "Removal of os-prober package is recommended as it can cause serious issue on KVM server"
     fi
 }
 
@@ -1248,6 +1250,7 @@ main() {
         test "${IS_MELTDOWN_SPECTRE:=1}" = 1 && check_meltdown_spectre
         test "${IS_OLD_HOME_DIR:=1}" = 1 && check_old_home_dir
         test "${IS_EVOBACKUP_INCS:=1}" = 1 && check_evobackup_incs
+        test "${IS_OSPROBER:=1}" = 1 && check_osprober
     fi
 
     #-----------------------------------------------------------
@@ -1360,7 +1363,7 @@ readonly PROGDIR=$(realpath -m "$(dirname "$0")")
 # shellcheck disable=2124
 readonly ARGS=$@
 
-readonly VERSION="19.04"
+readonly VERSION="19.06"
 
 # Disable LANG*
 export LANG=C
