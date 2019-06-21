@@ -315,7 +315,7 @@ check_nrpeperms() {
 }
 check_minifwperms() {
     if [ -f "$MINIFW_FILE" ]; then
-        actual=$(stat --format "%a" $MINIFW_FILE)
+        actual=$(stat --format "%a" "$MINIFW_FILE")
         expected="600"
         test "$expected" = "$actual" || failed "IS_MINIFWPERMS"
     fi
@@ -386,7 +386,7 @@ check_raidsoft() {
 }
 # Verification du LogFormat de AWStats
 check_awstatslogformat() {
-    if is_installed apache2.2-common awstats; then
+    if is_installed apache2 awstats; then
         grep -qE '^LogFormat=1' /etc/awstats/awstats.conf.local \
             || failed "IS_AWSTATSLOGFORMAT"
     fi
@@ -531,20 +531,30 @@ check_userlogrotate() {
 }
 # Verification de la syntaxe de la conf d'Apache
 check_apachectl() {
-    if is_installed apache2.2-common; then
+    if is_installed apache2; then
         /usr/sbin/apache2ctl configtest 2>&1 | grep -q "^Syntax OK$" || failed "IS_APACHECTL"
     fi
 }
 # Check if there is regular files in Apache sites-enabled.
 check_apachesymlink() {
-    if is_installed apache2.2-common; then
-        stat -c %F /etc/apache2/sites-enabled/* | grep -q regular && failed "IS_APACHESYMLINK"
+    if is_installed apache2; then
+        apacheFind=$(find /etc/apache2/sites-enabled ! -type l -type f -print)
+        nbApacheFind=$(wc -m <<< "$apacheFind")
+        if [[ $nbApacheFind -gt 1 ]]; then
+            if [[ $VERBOSE == 1 ]]; then
+                while read -r line; do
+                    failed "IS_APACHESYMLINK" "Not a symlink: $line"
+                done <<< "$apacheFind"
+            else
+                failed "IS_APACHESYMLINK"
+            fi
+        fi
     fi
 }
 # Check if there is real IP addresses in Allow/Deny directives (no trailing space, inline comments or so).
 check_apacheipinallow() {
     # Note: Replace "exit 1" by "print" in Perl code to debug it.
-    if is_installed apache2.2-common; then
+    if is_installed apache2; then
         grep -IrE "^[^#] *(Allow|Deny) from" /etc/apache2/ \
             | grep -iv "from all" \
             | grep -iv "env=" \
@@ -559,7 +569,7 @@ check_muninapacheconf() {
     else
         muninconf="/etc/apache2/conf-available/munin.conf"
     fi
-    if is_installed apache2.2-common; then
+    if is_installed apache2; then
         test -e $muninconf && grep -vEq "^( |\t)*#" "$muninconf" && failed "IS_MUNINAPACHECONF"
     fi
 }
@@ -881,12 +891,19 @@ check_mysqlmunin() {
 }
 check_mysqlnrpe() {
     if is_debian_stretch && is_installed mariadb-server; then
-        nagios_file="~nagios/.my.cnf"
-        { test -f $nagios_file \
-            && [ "$(stat -c %U $nagios_file)" = "nagios" ] \
-            && [ "$(stat -c %a $nagios_file)" = "600" ] \
-            && grep -q -F "command[check_mysql]=/usr/lib/nagios/plugins/check_mysql -H localhost  -f $nagios_file";
-        } || failed "IS_MYSQLNRPE"
+        nagios_home=$(getent passwd "nagios" | cut -d: -f6)
+        nagios_file_abs="${nagios_home}/.my.cnf"
+        nagios_file_sym="~nagios/.my.cnf"
+
+        if ! test -f $nagios_file_abs; then
+            failed "IS_MYSQLNRPE" "$nagios_file_abs is missing"
+        elif [ "$(stat -c %U $nagios_file_abs)" != "nagios" ] \
+             || [ "$(stat -c %a $nagios_file_abs)" != "600" ]; then
+            failed "IS_MYSQLNRPE" "$nagios_file_abs has wrong permissions"
+        else
+            grep -q -F "command[check_mysql]=/usr/lib/nagios/plugins/check_mysql -H localhost -f $nagios_file_sym" /etc/nagios/nrpe.d/evolix.cfg \
+            || failed "IS_MYSQLNRPE" "check_mysql is missing"
+        fi
     fi
 }
 check_phpevolinuxconf() {
@@ -1102,7 +1119,7 @@ check_evobackup_incs() {
     if is_installed bkctld; then
         bkctld_cron_file=${bkctld_cron_file:-/etc/cron.d/bkctld}
         if [ -f "${bkctld_cron_file}" ]; then
-            root_crontab=$(grep -v "^#" ${bkctld_cron_file})
+            root_crontab=$(grep -v "^#" "${bkctld_cron_file}")
             echo "${root_crontab}" | grep -q "bkctld inc" || failed "IS_EVOBACKUP_INCS" "\`bkctld inc' is missing in ${bkctld_cron_file}"
             echo "${root_crontab}" | grep -q "check-incs.sh" || failed "IS_EVOBACKUP_INCS" "\`check-incs.sh' is missing in ${bkctld_cron_file}"
         else
@@ -1158,7 +1175,7 @@ main() {
         test "${IS_LISTCHANGESCONF:=1}" = 1 && check_listchangesconf
         test "${IS_CUSTOMCRONTAB:=1}" = 1 && check_customcrontab
         test "${IS_SSHALLOWUSERS:=1}" = 1 && check_sshallowusers
-        test "${IS_DISKPERF:=1}" = 1 && check_diskperf
+        test "${IS_DISKPERF:=0}" = 1 && check_diskperf
         test "${IS_TMOUTPROFILE:=1}" = 1 && check_tmoutprofile
         test "${IS_ALERT5BOOT:=1}" = 1 && check_alert5boot
         test "${IS_ALERT5MINIFW:=1}" = 1 && check_alert5minifw
@@ -1396,4 +1413,5 @@ while :; do
     shift
 done
 
+# shellcheck disable=SC2086
 main ${ARGS}
