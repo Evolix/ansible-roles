@@ -2,7 +2,8 @@
 
 - name: Fluentd GPG key is installed
   apt_key:
-    url: https://packages.treasuredata.com/GPG-KEY-td-agent
+    # url: https://packages.treasuredata.com/GPG-KEY-td-agent
+    data: "{{ lookup('file', 'fluentd.gpg') }}"
   tags:
     - packages
     - fluentd

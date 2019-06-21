@@ -12,6 +12,8 @@
   apt_key:
     #url: http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x44975278B8612B5D
     data: "{{ lookup('file', 'reg.gpg') }}"
+  tags:
+    - apt
 
 - name: Evolix public list is installed
   template:
@@ -21,11 +23,11 @@
     mode: "0640"
   register: apt_evolix_public
   tags:
-  - apt
+    - apt
 
 - name: Apt update
   apt:
     update_cache: yes
   when: apt_evolix_public | changed
   tags:
-  - apt
+    - apt

@@ -11,7 +11,23 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Security
+
+## [9.10.1] - 2019-06-21
+
+### Changed
+* evocheck : update (version 19.06) from upstream
+
+## [9.10.0] - 2019-06-21
+
+### Added
 * apache: add server status suffix in VHost (and default site) if missing
+* apache: add a variable to customize the server-status host
 * apt: add a script to manage packages with "hold" mark
 * etc-git: gitignore /etc/letsencrypt/.certbot.lock
 * evolinux-base: install "spectre-meltdown-checker" (Debian 10 and later)
@@ -20,9 +36,10 @@ The **patch** part changes incrementally at each release.
 * redmine: enable gzip compression in nginx vhost
 
 ### Changed
-* evocheck : version 19.04 from upstream
+* evocheck : update (unreleased) from upstream
 * evomaintenance : use the web API instead of PG Insert
-* rbenv: update defaults rbenv version to 1.1.2 and ruby version to 2.5.5
+* fluentd: store gpg key locally
+* rbenv: update defaults rbenv version to 1.1.2 and ruby version to 2.6.3
 * redmine: update default version to 4.0.3
 * nagios-nrpe: change required status code for http and https check
 * redmine: use custom errors-pages in Nginx vhost
@@ -38,8 +55,6 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: Ensure rename is present
 * evolinux-users: Validate sshd config with "-t" instead of "-T"
 * nagios-nrpe: Replace the dummy packages nagios-plugins-* with monitoring-plugins-*
-
-### Security
 
 ## [9.9.0] - 2019-04-16
 
