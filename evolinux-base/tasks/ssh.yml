@@ -11,7 +11,7 @@
 # only the first instance of the keyword is applied. »
 #
 # We want to allow any user from a list of IP addresses to login with password,
-# but users of the "evolix" group can't login with password from other IP addresses
+# but users of the "{{ evolinux_ssh_group }}" group can't login with password from other IP addresses
 
 - name: "Security directives for Evolinux (Debian 10 or later)"
   blockinfile:
@@ -20,7 +20,7 @@
     block: |
       Match Address {{ evolinux_ssh_password_auth_addresses | join(',') }}
           PasswordAuthentication yes
-      Match Group evolix
+      Match Group {{ evolinux_ssh_group }}
           PasswordAuthentication no
     insertafter: EOF
     validate: '/usr/sbin/sshd -t -f %s'
