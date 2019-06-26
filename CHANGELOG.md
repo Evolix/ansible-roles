@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 ### Changed
 
 ### Fixed
+* lxc-php: Don't remove the default pool
 
 ### Security
 
