@@ -4,19 +4,28 @@
     name: apt
     tasks_from: evolix_public.yml
 
-- name: Install PHP packages
+- name: Install PHP packages (Debian 10 and later)
   apt:
     name: '{{ item }}'
     state: present
   with_items:
-  - php-pear
-  - php-log
+    - php-pear
+  when: ansible_distribution_major_version | version_compare('10', '>=')
 
-- name: Install PHP5 packages
+- name: Install PHP packages (stretch)
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - php-pear
+    - php-log
+  when: ansible_lsb.codename == "stretch"
+
+- name: Install PHP5 packages (jessie)
   apt:
     name: '{{ item }}'
     state: present
     allow_unauthenticated: yes
   with_items:
-  - php5-pam
+    - php5-pam
   when: ansible_lsb.codename == "jessie"

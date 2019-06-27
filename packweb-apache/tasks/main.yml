@@ -65,7 +65,7 @@
 
 - include: apache.yml
 
-- include: phpmyadmin.yml
+# - include: phpmyadmin.yml
 
 - include: awstats.yml
 
