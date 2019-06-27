@@ -4,10 +4,10 @@
     name: "{{ item }}"
     state: present
   with_items:
-  - spamassassin
-  - evomaintenance
+    - spamassassin
+    - evomaintenance
   tags:
-  - spamassassin
+    - spamassassin
 
 - name: configure SpamAssasin
   copy:
@@ -16,7 +16,7 @@
     mode: "0644"
   notify: restart spamassassin
   tags:
-  - spamassassin
+    - spamassassin
 
 - name: enable SpamAssasin
   replace:
@@ -25,7 +25,7 @@
     replace: 'ENABLED=1'
   notify: restart spamassassin
   tags:
-  - spamassassin
+    - spamassassin
 
 - name: add amavis user to debian-spamd group
   user:
@@ -33,7 +33,7 @@
     groups: debian-spamd
     append: yes
   tags:
-  - spamassassin
+    - spamassassin
 
 - name: fix right on /var/lib/spamassassin
   file:
@@ -41,12 +41,12 @@
     state: directory
     mode: "0750"
   tags:
-  - spamassassin
+    - spamassassin
 
 - include_role:
     name: remount-usr
   tags:
-  - spamassassin
+    - spamassassin
 
 - name: copy sa-update.sh script
   copy:
@@ -54,7 +54,7 @@
     dest: /usr/share/scripts/sa-update.sh
     mode: "0750"
   tags:
-  - spamassassin
+    - spamassassin
 
 - name: enable sa-update.sh cron
   lineinfile:
@@ -64,13 +64,13 @@
     state: present
     mode: "0640"
   tags:
-  - spamassassin
+    - spamassassin
 
 - name: update SpamAssasin's rules
   command: "/usr/share/scripts/sa-update.sh"
   changed_when: false
   tags:
-  - spamassassin
+    - spamassassin
 
 - name: ensure SpamAssasin is started and enabled
   systemd:
@@ -78,4 +78,4 @@
     state: started
     enabled: True
   tags:
-  - spamassassin
+    - spamassassin
