@@ -44,6 +44,7 @@
   file:
     dest: /etc/phpmyadmin/
     group: www-data
+    state: directory
 
 - name: Set u-s permission on some binaries (/bin/ping, /usr/bin/mtr, ...)
   shell: "test -f {{ item }} && chmod --verbose u-s {{ item }}"
