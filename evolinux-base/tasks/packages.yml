@@ -80,11 +80,20 @@
   - mlocate
   when: evolinux_packages_purge_locate
 
-- name: Install/Update serveur-base meta-package
+- name: Install/Update serveur-base meta-package on debian
   apt:
     name: serveur-base
     allow_unauthenticated: yes
-  when: evolinux_packages_serveur_base
+  when: evolinux_packages_serveur_base and (ansible_distribution == "Debian")
+
+- name: Install/Update serveur-base meta-package on ubuntu
+  apt:
+    deb: "{{ item }}"
+  with_items:
+  - 'http://pub.evolix.net/stretch/log2mail_0.3.0-2_amd64.deb'
+  - 'http://pub.evolix.net/stretch/evocheck_0.10-1_all.deb'
+  - 'http://pub.evolix.net/stretch/serveur-base_0.4.0_all.deb'
+  when: evolinux_packages_serveur_base and (ansible_distribution == "Ubuntu")
 
 - name: Install/Update packages for Stretch and later
   apt:
