@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 ### Changed
+* elasticsearch: listen on local interface only by default
 
 ### Fixed
 * lxc-php: Don't remove the default pool
