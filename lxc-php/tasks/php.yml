@@ -46,27 +46,6 @@
   command: "lxc-attach -n {{name}} -- apt-get install -y php7.3 php7.3-fpm php7.3-cli php7.3-curl php7.3-mysql php7.3-pgsql php7.3-ldap php7.3-imap php7.3-gd php-ssh2 php-gettext composer libphp-phpmailer ssmtp git zip unzip php7.3-zip"
   when: name == 'php73'
 
-- name: Remove default FPM 5.6 pool
-  file:
-    name: "/var/lib/lxc/{{name}}/rootfs/etc/php5/fpm/pool.d/www.conf"
-    state: absent
-  notify: "Reload {{name}}-fpm"
-  when: name == 'php56'
-
-- name: Remove default FPM 7.0 pool
-  file:
-    name: "/var/lib/lxc/{{name}}/rootfs/etc/php/7.0/fpm/pool.d/www.conf"
-    state: absent
-  notify: "Reload {{name}}-fpm"
-  when: name == 'php70'
-
-- name: Remove default FPM 7.3 pool
-  file:
-    name: "/var/lib/lxc/{{name}}/rootfs/etc/php/7.3/fpm/pool.d/www.conf"
-    state: absent
-  notify: "Reload {{name}}-fpm"
-  when: name == 'php73'
-
 - name: Copy evolinux PHP 5.6 configuration
   template:
     src: z-evolinux-defaults.ini.j2

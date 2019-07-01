@@ -84,6 +84,18 @@
   tags:
     - mysql
 
+# Percona Toolkit
+
+- name: "Install percona-toolkit (Debian 9 or later)"
+  apt:
+    name: percona-toolkit
+    state: present
+  tags:
+    - packages
+    - percona-toolkit
+    - mysql
+  when: ansible_distribution_major_version | version_compare('9', '>=')
+
 # automatic optimizations
 
 - include_role:
