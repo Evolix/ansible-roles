@@ -114,6 +114,22 @@
     create: no
   when: minifirewall_dns_servers is not none
 
+- name: Configure HTTPSITES for debian
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    line: "HTTPSITES='{{ minifirewall_default_debian_http_sites | join(' ') }}'"
+    regexp: "HTTPSITES='.*'"
+    create: no
+  when: ansible_distribution == "Debian"
+
+- name: Configure HTTPSITES for ubuntu
+  lineinfile:
+    dest: "{{ minifirewall_main_file }}"
+    line: "HTTPSITES='{{ minifirewall_default_ubuntu_http_sites | join(' ') }}'"
+    regexp: "HTTPSITES='.*'"
+    create: no
+  when: ansible_distribution == "Ubuntu"
+
 - name: Configure HTTPSITES
   lineinfile:
     dest: "{{ minifirewall_main_file }}"

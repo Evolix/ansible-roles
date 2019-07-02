@@ -37,6 +37,16 @@ minifirewall_smtp_ok: Null
 minifirewall_smtp_secure_ok: Null
 minifirewall_ntp_ok: Null
 
+minifirewall_default_debian_http_sites: 
+  - security.debian.org
+  - security-cdn.debian.org 
+  - volatile.debian.org
+  - backports.debian.org
+
+minifirewall_default_ubuntu_http_sites: 
+  - archive.ubuntu.com
+  - security.ubuntu.com
+
 minifirewall_autostart: False
 minifirewall_restart_if_needed: True
 minifirewall_restart_force: False
