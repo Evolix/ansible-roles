@@ -1,0 +1,8 @@
+---
+- name: LXC configuration
+  include_role:
+    name: lxc
+
+- include: "solr.yml name={{item.name}} solr_version={{item.solr_version}} solr_port={{item.solr_port}}"
+  with_items:
+    - "{{ lxc_containers }}"
