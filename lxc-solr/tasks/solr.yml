@@ -1,0 +1,39 @@
+---
+- name: "Change default ulimit for container {{ name }}"
+  blockinfile:
+    dest: "/var/lib/lxc/{{ name }}/rootfs/root/.bashrc"
+    marker: "# {mark} set ulimit for Solr"
+    block: |
+      ulimit -n 65000
+      ulimit -u 65000
+
+- name: Install openjdk-8-jre-headless package
+  command: "lxc-attach -n {{name}} -- apt-get install -y openjdk-8-jre-headless"
+
+- name: "Download Solr {{ solr_version }}"
+  get_url:
+    url: "https://archive.apache.org/dist/lucene/solr/{{ solr_version }}/solr-{{ solr_version }}.tgz"
+    dest: "/var/lib/lxc/{{ name }}/rootfs/root/solr-{{ solr_version }}.tgz"
+    mode: '0644'
+
+- name: "Extract solr-{{ solr_version }}.tgz"
+  unarchive:
+    src: /var/lib/lxc/{{ name }}/rootfs/root/solr-{{ solr_version }}.tgz
+    dest: /var/lib/lxc/{{ name }}/rootfs/opt/
+    remote_src: yes
+
+- name: Set Solr autostart
+  template:
+    src: rc.local.j2
+    dest: "/var/lib/lxc/{{ name }}//rootfs/etc/rc.local"
+    mode: "0755"
+
+- name: Check if Solr is running
+  command: "lxc-attach -n {{name}} -- /opt/solr-{{ solr_version }}/bin/solr status"
+  ignore_errors: yes
+  changed_when: false
+  register: service_solr_status
+
+- name: "Start Solr {{ solr_version }}"
+  command: "lxc-attach -n {{name}} -- /opt/solr-{{ solr_version }}/bin/solr start -p {{ solr_port }} -force"
+  when: service_solr_status | failed
