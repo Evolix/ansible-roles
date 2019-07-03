@@ -19,7 +19,7 @@
   with_items:
     - php-pear
     - php-log
-  when: ansible_lsb.codename == "stretch"
+  when: ansible_distribution_release == "stretch"
 
 - name: Install PHP5 packages (jessie)
   apt:
@@ -28,4 +28,4 @@
     allow_unauthenticated: yes
   with_items:
     - php5-pam
-  when: ansible_lsb.codename == "jessie"
+  when: ansible_distribution_release == "jessie"

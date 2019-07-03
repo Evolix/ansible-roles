@@ -47,7 +47,7 @@
   notify:
   - reload systemd
   - restart bind
-  when: ansible_lsb.codename == "jessie"
+  when: ansible_distribution_release == "jessie"
 
 - name: touch /var/log/bind.log if non chroot
   file:

@@ -22,7 +22,7 @@
     - packages
     - mytop
     - mysql
-  when: ansible_lsb.codename == "jessie"
+  when: ansible_distribution_release == "jessie"
 
 - name: "Install depends for mytop (stretch)"
   apt:
@@ -31,7 +31,7 @@
   - mariadb-client-10.1
   - libconfig-inifiles-perl
   - libterm-readkey-perl
-  when: ansible_lsb.codename == "stretch"
+  when: ansible_distribution_release == "stretch"
 
 - name: "Install depends for mytop (Debian 10 or later)"
   apt:

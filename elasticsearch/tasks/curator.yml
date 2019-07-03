@@ -2,7 +2,7 @@
 
 - name: Use the correct debian repository
   set_fact:
-    curator_debian_repository: '{% if ansible_lsb.codename == "jessie" %}debian{% else %}debian9{% endif %}'
+    curator_debian_repository: '{% if ansible_distribution_release == "jessie" %}debian{% else %}debian9{% endif %}'
 
 - name: Curator sources list is available
   apt_repository:

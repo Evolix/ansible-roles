@@ -3,7 +3,7 @@
 # - name: Fail if distribution is not supported
 #   fail:
 #     msg: "Error: Evolix public repository is not compatble with 'Debian Stretch' yet."
-#   when: ansible_lsb.codename == "stretch"
+#   when: ansible_distribution_release == "stretch"
 #   tags:
 #   - apt
 

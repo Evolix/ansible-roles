@@ -1,7 +1,7 @@
 ---
 - name: Decide which Debian release to use
   set_fact:
-    java_apt_release: '{% if ansible_lsb.codename == "jessie" %}jessie-backports{% else %}{{ ansible_lsb.codename }}{% endif %}'
+    java_apt_release: '{% if ansible_distribution_release == "jessie" %}jessie-backports{% else %}{{ ansible_distribution_release }}{% endif %}'
   tags:
     - java
 
@@ -9,7 +9,7 @@
   include_role:
     name: apt
     tasks_from: backports.yml
-  when: ansible_lsb.codename == "jessie"
+  when: ansible_distribution_release == "jessie"
   tags:
     - java
 

@@ -21,13 +21,13 @@
 
 - name: Add Docker repository
   apt_repository:
-    repo: 'deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_lsb.codename }} stable'
+    repo: 'deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable'
     state: present
     update_cache: no
     filename: docker.list
 
 - include: jessie_backports.yml
-  when: ansible_lsb.codename == 'jessie'
+  when: ansible_distribution_release == 'jessie'
 
 - name: Add Docker's official GPG key
   apt_key:
