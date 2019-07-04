@@ -25,4 +25,6 @@
   ignore_errors: yes
   changed_when: false
   register: service_solr_status
+- name: "Install Solr {{ solr_version }}"
+  command: "lxc-attach -n {{name}} -- /root/solr-{{ solr_version }}/bin/install_solr_service.sh /root/solr-{{ solr_version }}.tgz"
 
