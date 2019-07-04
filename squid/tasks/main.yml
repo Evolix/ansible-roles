@@ -32,7 +32,7 @@
 - name: "Set custom systemd unit service (Debian 10 or later)"
   copy:
     src: squid.service
-    dst: /etc/systemd/system/squid.service
+    dest: /etc/systemd/system/squid.service
   when: ansible_distribution_major_version | version_compare('10', '>=')
 
 - name: "squid.conf is present (jessie)"
