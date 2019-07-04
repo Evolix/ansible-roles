@@ -11,7 +11,7 @@
 - name: "Extract solr-{{ solr_version }}.tgz"
   unarchive:
     src: /var/lib/lxc/{{ name }}/rootfs/root/solr-{{ solr_version }}.tgz
-    dest: /var/lib/lxc/{{ name }}/rootfs/opt/
+    dest: /var/lib/lxc/{{ name }}/rootfs/root/
     remote_src: yes
 
 - name: Set Solr autostart
