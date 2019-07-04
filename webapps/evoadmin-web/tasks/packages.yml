@@ -12,6 +12,19 @@
     - php-pear
   when: ansible_distribution_major_version | version_compare('10', '>=')
 
+# /!\ Warning, this is a temporary hack
+- include_role:
+    name: remount-usr
+
+# /!\ Warning, this is a temporary hack
+- name: Install PHP packages from sid (Debian 10 and later)
+  apt:
+    deb: '{{ item }}'
+    state: present
+  with_items:
+    - 'http://mirror.evolix.org/debian/pool/main/p/php-log/php-log_1.12.9-2_all.deb'
+  when: ansible_distribution_major_version | version_compare('10', '>=')
+
 - name: Install PHP packages (stretch)
   apt:
     name: '{{ item }}'
