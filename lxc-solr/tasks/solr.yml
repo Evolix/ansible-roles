@@ -33,5 +33,10 @@
 - name: "Create a symbolic link to /home/solr/{{name}}"
   command: "lxc-attach -n {{name}} -- ln -s /home/solr/{{name}} /var/solr"
 
+- name: "Set Solr port to {{ solr_port }}"
+  lineinfile:
+    dest: /var/lib/lxc/{{ name }}/rootfs/etc/default/solr.in.sh
+    line: "SOLR_PORT={{ solr_port }}"
+
 - name: "Start Solr"
   command: "lxc-attach -n {{name}} -- /etc/init.d/solr start"
