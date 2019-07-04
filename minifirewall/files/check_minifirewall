@@ -10,7 +10,7 @@ is_alert5_enabled() {
   if test -f /etc/init.d/alert5; then
     test -f /etc/rc2.d/S*alert5
   else
-    systemctl is-active alert5 | grep -q "^active$"
+    systemctl is-enabled alert5 -q
   fi
 }
 
