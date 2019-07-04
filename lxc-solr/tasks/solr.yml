@@ -14,17 +14,6 @@
     dest: /var/lib/lxc/{{ name }}/rootfs/root/
     remote_src: yes
 
-- name: Set Solr autostart
-  template:
-    src: rc.local.j2
-    dest: "/var/lib/lxc/{{ name }}//rootfs/etc/rc.local"
-    mode: "0755"
-
-- name: Check if Solr is running
-  command: "lxc-attach -n {{name}} -- /opt/solr-{{ solr_version }}/bin/solr status"
-  ignore_errors: yes
-  changed_when: false
-  register: service_solr_status
 - name: "Install Solr {{ solr_version }}"
   command: "lxc-attach -n {{name}} -- /root/solr-{{ solr_version }}/bin/install_solr_service.sh /root/solr-{{ solr_version }}.tgz"
 
