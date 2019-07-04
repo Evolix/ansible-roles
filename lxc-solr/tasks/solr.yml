@@ -1,6 +1,6 @@
 ---
-- name: Install openjdk-8-jre-headless package
-  command: "lxc-attach -n {{name}} -- apt-get install -y openjdk-8-jre-headless"
+- name: Install openjdk-8-jre-headless and lsof packages
+  command: "lxc-attach -n {{name}} -- apt-get install -y openjdk-8-jre-headless lsof"
 
 - name: "Download Solr {{ solr_version }}"
   get_url:
