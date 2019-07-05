@@ -9,15 +9,20 @@
       - evomaintenance_api_key is not none
     msg: evomaintenance api variables must be set
 
+- include: install_package_ubuntu.yml
+  when:
+    - not evomaintenance_install_vendor
+    - ansible_distribution == "Ubuntu"
+
 - include: install_package_debian.yml
   when:
     - not evomaintenance_install_vendor
-    - ansible_distribution == "Debian"
+    - ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
 
 - include: install_vendor_debian.yml
   when:
     - evomaintenance_install_vendor
-    - ansible_distribution == "Debian"
+    - ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
 
 - include: install_vendor_openbsd.yml
   when:
@@ -25,4 +30,4 @@
 
 - include: minifirewall.yml
   when:
-    - ansible_distribution == "Debian"
+    - ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
