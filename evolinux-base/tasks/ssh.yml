@@ -13,7 +13,7 @@
 # We want to allow any user from a list of IP addresses to login with password,
 # but users of the "evolix" group can't login with password from other IP addresses
 
-- name: "Security directives for Evolinux (Debian 10 or later)"
+- name: "Security directives for Evolinux (Debian 10 and Ubuntu 18.04 or later)"
   blockinfile:
     dest: /etc/ssh/sshd_config
     marker: "# {mark} EVOLINUX PASSWORD RESTRICTIONS"
@@ -27,7 +27,7 @@
   notify: reload sshd
   when:
     - evolinux_ssh_password_auth_addresses != []
-    - ansible_distribution_major_version | version_compare('10', '>=')
+    - (ansible_distribution == "Debian" and ansible_distribution_major_version | version_compare('10', '>=')) or (ansible_distribution == "Ubuntu" and ansible_distribution_major_version | version_compare('18', '>='))
 
 - name: Security directives for Evolinux (Jessie/Stretch)
   blockinfile:

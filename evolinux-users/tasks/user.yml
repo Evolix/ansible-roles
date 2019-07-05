@@ -59,31 +59,32 @@
 
 ## Group for SSH authorizations
 
-- name: "Unix group '{{ evolinux_ssh_group }}' is present (Debian 10 or later)"
+- name: "Unix group '{{ evolinux_ssh_group }}' is present (Debian 10 and Ubuntu 18 or later)"
   group:
     name: "{{ evolinux_ssh_group }}"
     state: present
-  when: ansible_distribution_major_version | version_compare('10', '>=')
+  when: (ansible_distribution == "Debian" and ansible_distribution_major_version | version_compare('10', '>=')) or (ansible_distribution == "Ubuntu" and ansible_distribution_major_version | version_compare('18', '>='))
 
-- name: "Unix user '{{ user.name }}' belongs to group '{{ evolinux_ssh_group }}' (Debian 10 or later)"
+- name: "Unix user '{{ user.name }}' belongs to group '{{ evolinux_ssh_group }}' (Debian 10 and Ubuntu 18 or later)"
   user:
     name: '{{ user.name }}'
     groups: "{{ evolinux_ssh_group }}"
     append: yes
-  when: ansible_distribution_major_version | version_compare('10', '>=')
+  when: (ansible_distribution == "Debian" and ansible_distribution_major_version | version_compare('10', '>=')) or (ansible_distribution == "Ubuntu" and ansible_distribution_major_version | version_compare('18', '>='))
 
 ## Optional group for all evolinux users
 
-- name: "Unix group '{{ evolinux_internal_group }}' is present (Debian 9 or later)"
+- name: "Unix group '{{ evolinux_internal_group }}' is present (Debian 9 and Ubuntu 18 or later)"
   group:
     name: "{{ evolinux_internal_group }}"
     state: present
   when:
     - evolinux_internal_group is defined
     - evolinux_internal_group != ""
-    - ansible_distribution_major_version | version_compare('9', '>=')
+    - (ansible_distribution == "Debian" and ansible_distribution_major_version | version_compare('9', '>=')) or (ansible_distribution == "Ubuntu" and ansible_distribution_major_version | version_compare('18', '>='))
 
-- name: "Unix user '{{ user.name }}' belongs to group '{{ evolinux_internal_group }}' (Debian 9 or later)"
+
+- name: "Unix user '{{ user.name }}' belongs to group '{{ evolinux_internal_group }}' (Debian 9 and Ubuntu 18 or later)"
   user:
     name: '{{ user.name }}'
     groups: "{{ evolinux_internal_group }}"
@@ -91,7 +92,8 @@
   when:
     - evolinux_internal_group is defined
     - evolinux_internal_group != ""
-    - ansible_distribution_major_version | version_compare('9', '>=')
+    - (ansible_distribution == "Debian" and ansible_distribution_major_version | version_compare('9', '>=')) or (ansible_distribution == "Ubuntu" and ansible_distribution_major_version | version_compare('18', '>='))
+
 
 ## Optional secondary groups, defined per user
 

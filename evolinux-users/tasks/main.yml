@@ -3,9 +3,9 @@
 - name: "System compatibility checks"
   assert:
     that:
-      - ansible_distribution == "Debian"
-      - ansible_distribution_major_version | version_compare('8', '>=')
-    msg: only compatible with Debian >= 8
+      - (ansible_distribution == "Debian") or (ansible_distribution == "Ubuntu")
+      - (ansible_distribution_major_version | version_compare('8', '>=')) or (ansible_distribution_major_version | version_compare('18', '>='))
+    msg: only compatible with Debian >= 8 AND Ubuntu >= 18.04
 
 - debug:
     msg: "Warning: empty 'evolinux_users' variable, tasks will be skipped!"
