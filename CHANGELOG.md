@@ -18,6 +18,7 @@ The **patch** part changes incrementally at each release.
 ### Fixed
 * lxc-php: Don't remove the default pool
 * roundcube: fix typo for roundcube vhost
+* tomcat: fix typo for default tomcat_version
 
 ### Security
 
