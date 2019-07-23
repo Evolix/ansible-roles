@@ -11,6 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* evolinux-base: On debian 10 and later, add noexec on /dev/shm
 
 ### Changed
 * elasticsearch: listen on local interface only by default

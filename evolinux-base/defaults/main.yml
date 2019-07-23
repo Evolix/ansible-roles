@@ -67,6 +67,8 @@ evolinux_fstab_home: True
 evolinux_fstab_home_options: defaults,noexec,nosuid,nodev
 evolinux_fstab_var_tmp: True
 evolinux_fstab_var_tmp_options: defaults,noexec,nosuid,nodev,size=1024m
+evolinux_fstab_dev_shm: True
+evolinux_fstab_dev_shm_options: defaults,nodev,nosuid,noexec
 
 # packages
 
