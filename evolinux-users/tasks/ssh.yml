@@ -41,13 +41,27 @@
     verbosity: 1
 
 - include: ssh_allowgroups.yml
+  vars:
+    - allow_groups_present: "{{ grep_allowgroups_ssh.rc == 0 }}"
   when:
     - ssh_allowgroups
     - not ssh_allowusers
 
+- name: "verify Match User directive"
+  command: "grep -E '^Match User' /etc/ssh/sshd_config"
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: grep_matchuser_ssh
+  when:
+    - ssh_allowusers
+    - not ssh_allowgroups
+
 - include: ssh_allowusers.yml
   vars:
     user: "{{ item.value }}"
+    - allow_users_present: "{{ grep_allowusers_ssh.rc == 0 }}"
+    - match_users_present: "{{ grep_matchuser_ssh.rc == 0 }}"
   with_dict: "{{ evolinux_users }}"
   when:
     - ssh_allowusers
