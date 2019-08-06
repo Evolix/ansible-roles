@@ -1,9 +1,34 @@
 ---
+- name: "Verify 'evolinux' sudoers file presence for debian jessie"
+  template:
+    src: "sudoers_jessie.j2"
+    dest: /etc/sudoers.d/evolinux
+    force: no
+    mode: "0440"
+    validate: '/usr/sbin/visudo -cf %s'
+  register: copy_sudoers_evolinux
+  when: ansible_distribution_release == "jessie"
+
+- name: "Verify 'evolinux' sudoers file presence for debian 9 or bigger"
+  template:
+    src: "sudoers_stretch.j2"
+    dest: /etc/sudoers.d/evolinux
+    force: no
+    mode: "0440"
+    validate: '/usr/sbin/visudo -cf %s'
+  register: copy_sudoers_evolinux
+  when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - include: sudo_jessie.yml
+  vars:
+    user: "{{ item.value }}"
+  with_dict: "{{ evolinux_users }}"
   when: ansible_distribution_release == "jessie"
 
 - include: sudo_stretch.yml
+  vars:
+    user: "{{ item.value }}"
+  with_dict: "{{ evolinux_users }}"
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - meta: flush_handlers

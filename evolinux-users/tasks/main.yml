@@ -20,9 +20,6 @@
 
 - name: Configure sudo
   include: sudo.yml
-  vars:
-    user: "{{ item.value }}"
-  with_dict: "{{ evolinux_users }}"
   when: evolinux_users != {}
 
 - name: Configure SSH

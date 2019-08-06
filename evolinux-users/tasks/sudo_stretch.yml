@@ -1,14 +1,5 @@
 ---
 
-- name: "Verify 'evolinux' sudoers file presence (Debian 9 or later)"
-  template:
-    src: sudoers_stretch.j2
-    dest: /etc/sudoers.d/evolinux
-    force: no
-    mode: "0440"
-    validate: '/usr/sbin/visudo -cf %s'
-  register: copy_sudoers_evolinux
-
 - name: "Create '{{ evolinux_sudo_group }}' group (Debian 9 or later)"
   group:
     name: "{{ evolinux_sudo_group }}"
