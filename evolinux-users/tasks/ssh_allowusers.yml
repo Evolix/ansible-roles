@@ -7,7 +7,8 @@
     insertafter: 'Subsystem'
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
-  when: not allow_users_present
+  when: not allow_users_present or not added_allow_user.changed
+  register: added_allow_user
 
 - name: "Append '{{ user.name }}' to AllowUsers sshd directive"
   replace:
@@ -16,7 +17,7 @@
     replace: '\1 {{ user.name }}'
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
-  when: allow_users_present
+  when: allow_users_present or added_allow_user.changed
 
 - name: "Add Match User sshd directive with '{{ user.name }}'"
   lineinfile:
@@ -25,7 +26,8 @@
     insertafter: "# END EVOLINUX PASSWORD RESTRICTIONS BY ADDRESS"
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
-  when: not allow_users_present
+  when: not match_users_present or not added_match_user.changed
+  register: added_match_user
 
 - name: "Append '{{ user.name }}' to Match User's sshd directive"
   replace:
@@ -34,4 +36,4 @@
     replace: '\1,{{ user.name }}'
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
-  when: match_users_present
+  when: match_users_present or added_match_user.changed
