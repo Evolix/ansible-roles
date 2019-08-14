@@ -18,7 +18,7 @@ trap "rm $lastLogOutput $template $body $gitOutput" EXIT
 # Get last admins connected
 lastlog -t $lastTime -u $uidRange > $lastLogOutput
 
-# Add these admins to an array if there are
+# Add these admins to lastAdmins variable if any
 lastLogOutputCount=$(wc -l $lastLogOutput | awk '{ print $1 }')
 if [ $lastLogOutputCount -gt 1 ]; then
     while read line; do
@@ -28,10 +28,11 @@ if [ $lastLogOutputCount -gt 1 ]; then
         fi
     done < $lastLogOutput
 else
-    lastAdmins="$lastAdmins"
+    # No admin connected in the last 7 days, send to root
+    lastAdmins="root"
 fi
 
-# Send the mail
+# Send the mail if git status not empty
 git --git-dir=/etc/.git --work-tree=/etc status --short > $gitOutput
 if [ $gitOuput -n ]; then
     cat << EOT > $template
