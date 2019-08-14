@@ -1,4 +1,4 @@
 # {{ ansible_managed }}
 
-@hourly root who > /dev/null || git --git-dir=/etc/.git --work-tree=/etc status --short
-21 21 * * * root git --git-dir=/etc/.git --work-tree=/etc status --short
+@hourly root who > /dev/null || /usr/share/scripts/etc-git-status.sh
+21 21 * * * root /usr/share/scripts/etc-git-status.sh
