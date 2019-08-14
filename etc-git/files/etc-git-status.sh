@@ -13,7 +13,7 @@ lastTime=7
 uidRange="2000-2099"
 
 # Remove temporary files on exit
-trap "rm $lastLogOutput" EXIT
+trap "rm $lastLogOutput $template $body $gitOutput" EXIT
 
 # Get last admins connected
 lastlog -t $lastTime -u $uidRange > $lastLogOutput
