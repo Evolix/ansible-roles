@@ -34,7 +34,8 @@ fi
 
 # Send the mail if git status not empty
 git --git-dir=/etc/.git --work-tree=/etc status --short > $gitOutput
-if [ $gitOuput -n ]; then
+gitOutputNumber=$(wc -l $gitOutput | awk '{ print $1 }')
+if [ $gitOutputNumber -gt 0 ]; then
     cat << EOT > $template
 Content-Type: text/plain; charset="utf-8"
 Reply-To: Équipe Evolix <equipe@evolix.fr>
