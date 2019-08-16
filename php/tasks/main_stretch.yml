@@ -22,9 +22,9 @@
       - php-intl
       - php-imap
       - php-ldap
-      - php-mysql
-      # php-mcrypt is no longer packaged for PHP 7.2
+      - "{{ php_modules_mysqlnd | bool | ternary('php-mysqlnd','php-mysql') }}"
       - php-pgsql
+      # php-mcrypt is no longer packaged for PHP 7.2
       - php-gettext
       - php-curl
       - php-ssh2

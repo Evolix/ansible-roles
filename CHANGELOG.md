@@ -12,6 +12,7 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 * evolinux-base: On debian 10 and later, add noexec on /dev/shm
+* php: variable to install the mysqlnd module instead of the default mysql module
 
 ### Changed
 * elasticsearch: listen on local interface only by default
