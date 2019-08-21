@@ -19,6 +19,7 @@ The **patch** part changes incrementally at each release.
 * elasticsearch: listen on local interface only by default
 * squid: Remove wait time when we turn off squid
 * evomaintenance: Turn on API by default (instead of DB)
+* evomaintenance: upstream version 0.5.1
 
 ### Fixed
 * lxc-php: Don't remove the default pool

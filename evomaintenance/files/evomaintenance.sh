@@ -4,11 +4,11 @@
 # Dependencies (all OS): git postgresql-client
 # Dependencies (Debian): sudo
 
-# version 0.5.0
+# version 0.5.1
 # Copyright 2007-2019 Evolix <info@evolix.fr>, Gregory Colpart <reg@evolix.fr>,
 #                     Jérémy Lecour <jlecour@evolix.fr> and others.
 
-VERSION="0.5.0"
+VERSION="0.5.1"
 
 show_version() {
     cat <<END
@@ -454,29 +454,29 @@ PATH=${PATH}:/usr/sbin
 
 SENDMAIL_BIN=$(command -v sendmail)
 readonly SENDMAIL_BIN
-if [ -z "${SENDMAIL_BIN}" ]; then
+if [ "${HOOK_MAIL}" = "1" ] && [ -z "${SENDMAIL_BIN}" ]; then
     echo "No \`sendmail' command has been found, can't send mail." 2>&1
 fi
 
 GIT_BIN=$(command -v git)
 readonly GIT_BIN
-if [ -z "${GIT_BIN}" ]; then
+if [ "${HOOK_COMMIT}" = "1" ] && [ -z "${GIT_BIN}" ]; then
     echo "No \`git' command has been found, can't commit changes" 2>&1
 fi
 
 PSQL_BIN=$(command -v psql)
 readonly PSQL_BIN
-if [ -z "${PSQL_BIN}" ]; then
+if [ "${HOOK_DB}" = "1" ] && [ -z "${PSQL_BIN}" ]; then
     echo "No \`psql' command has been found, can't save to the database." 2>&1
 fi
 
 CURL_BIN=$(command -v curl)
 readonly CURL_BIN
-if [ -z "${CURL_BIN}" ]; then
+if [ "${HOOK_API}" = "1" ] && [ -z "${CURL_BIN}" ]; then
     echo "No \`curl' command has been found, can't call the API." 2>&1
 fi
 
-if [ -z "${API_ENDPOINT}" ]; then
+if [ "${HOOK_API}" = "1" ] && [ -z "${API_ENDPOINT}" ]; then
     echo "No API endpoint specified, can't call the API." 2>&1
 fi
 
