@@ -20,6 +20,7 @@ The **patch** part changes incrementally at each release.
 * squid: Remove wait time when we turn off squid
 * evomaintenance: Turn on API by default (instead of DB)
 * evomaintenance: upstream version 0.5.1
+* php: By default, allow 128M for OpCache (instead of 64M)
 
 ### Fixed
 * lxc-php: Don't remove the default pool
