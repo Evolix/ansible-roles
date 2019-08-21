@@ -17,6 +17,18 @@
     line: '            <li><a href="/info.php">Infos PHP</a></li>'
     regexp: "Infos PHP"
 
+- name: install opcache.php
+  copy:
+    src: opcache.php
+    dest: /var/www/opcache.php
+    mode: "0644"
+
+- name: enable opcache.php link in default site index
+  lineinfile:
+    dest: /var/www/index.html
+    line: '            <li><a href="/opcache.php">Infos OpCache PHP</a></li>'
+    regexp: "Infos OpCache PHP"
+
 - name: Add elements to user account template
   file:
     path: "/etc/skel/{{ item.path }}"
