@@ -1,6 +1,8 @@
 # listupgrade
 
-Install and configure a script not help manage Debian package updates.
+Installs and configures a script to help manage Debian packages updates.
+This script will send a mail when new packages are available to plan the
+upgrade.
 
 ## Tasks
 
