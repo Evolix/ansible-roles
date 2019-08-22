@@ -7,7 +7,9 @@ configFile="/etc/evolinux/newkernel.cnf"
 template=$(mktemp --tmpdir=/tmp evoupdate.XXX)
 clientmail=$(grep EVOMAINTMAIL /etc/evomaintenance.cf | cut -d'=' -f2)
 mailto=$clientmail
-date="Ce jeudi entre 18h00 et 23h00."
+# By default, plan the reboot in 3 weeks a thursday
+date="$(date --date="next thursday + 3 weeks")"
+hour="entre 18h00 et 23h00"
 hostname=$(grep HOSTNAME /etc/evomaintenance.cf | cut -d'=' -f2)
 hostname=${hostname%%.evolix.net}
 # If hostname is composed with -, remove the first part.
@@ -32,7 +34,7 @@ cat << EOT > $template
 Content-Type: text/plain; charset="utf-8"
 Reply-To: equipe@evolix.fr
 From: equipe@evolix.net
-To: bserie@evolix.fr
+To: $clientmail
 Subject: Prochain creneau pour mise a jour de votre serveur $hostname
 X-Date: $date
 
@@ -42,9 +44,9 @@ Le noyau de votre serveur doit être mis à jour. Pour cela nous devons
 redémarrer votre machine ${hostname}.
 
 Sauf indication contraire de votre part,
-le prochain créneau prévu pour
-intervenir manuellement pour réaliser ces mises-à-jour est :
-${date}
+le prochain créneau prévu pour intervenir manuellement pour réaliser ces
+mises-à-jour est :
+${date}, ${hour}.
 
 Si nous intervenons, un redémarrage complet du serveur sera réalisé, entraînant
 plusieurs minutes de coupures. Nous nous assurerons de vérifier le bon
