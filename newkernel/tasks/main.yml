@@ -11,10 +11,10 @@
     group: root
     mode: "0700"
 
-- name: Copy listupgrade script
+- name: Copy newkernel script
   template:
-    src: listupgrade.sh.j2
-    dest: "/usr/share/scripts/listupgrade.sh"
+    src: newkernel.sh.j2
+    dest: "/usr/share/scripts/newkernel.sh"
     mode: "0700"
     owner: root
     group: root
@@ -28,10 +28,10 @@
     group: root
     mode: "0700"
 
-- name: Copy listupgrade config
+- name: Copy newkernel config
   template:
-    src: listupgrade.cnf.j2
-    dest: /etc/evolinux/listupgrade.cnf
+    src: newkernel.cnf.j2
+    dest: /etc/evolinux/newkernel.cnf
     mode: "0600"
     owner: root
     group: root
@@ -45,10 +45,10 @@
     owner: root
     group: root
 
-- name: Enable listupgrade cron
+- name: Enable newkernel cron
   template:
-    src: listupgrade_cron.j2
-    dest: /etc/cron.d/listupgrade
+    src: newkernel_cron.j2
+    dest: /etc/cron.d/newkernel
     mode: "0600"
     owner: root
     group: root
