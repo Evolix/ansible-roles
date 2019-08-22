@@ -15,14 +15,21 @@
     - libcgi-fast-perl
     - spawn-fcgi
 
-- name: Adjust rights for munin-cgi
+- name: Adjust owner for munin-cgi
   shell: "chown --verbose www-data:munin /var/log/munin/munin-cgi-*"
   register: command_result
   changed_when: "'changed' in command_result.stdout"
   args:
     warn: no
 
-- name: Install Init script for Munin-fcgi
+- name: Adjust rights for munin-cgi
+  shell: "chmod --verbose 640 /var/log/munin/munin-cgi-*"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  args:
+    warn: no
+
+- name: Systemd unit for Munin-fcgi
   copy:
     src: systemd/spawn-fcgi-munin-graph.service
     dest: /etc/systemd/system/spawn-fcgi-munin-graph.service

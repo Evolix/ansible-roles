@@ -26,6 +26,7 @@ The **patch** part changes incrementally at each release.
 * lxc-php: Don't remove the default pool
 * roundcube: fix typo for roundcube vhost
 * tomcat: fix typo for default tomcat_version
+* nginx: fix munin fcgi not working (missing chmod 660 on logs)
 
 ### Security
 
