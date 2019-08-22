@@ -23,7 +23,7 @@
     warn: no
 
 - name: Adjust rights for munin-cgi
-  shell: "chmod --verbose 640 /var/log/munin/munin-cgi-*"
+  shell: "chmod --verbose 660 /var/log/munin/munin-cgi-*"
   register: command_result
   changed_when: "'changed' in command_result.stdout"
   args:
