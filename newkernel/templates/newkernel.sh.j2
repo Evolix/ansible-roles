@@ -7,7 +7,7 @@ configFile="/etc/evolinux/newkernel.cnf"
 template=$(mktemp --tmpdir=/tmp evoupdate.XXX)
 clientmail=$(grep EVOMAINTMAIL /etc/evomaintenance.cf | cut -d'=' -f2)
 mailto=$clientmail
-# By default, plan the reboot in 3 weeks a thursday
+# By default, plan the reboot next month thursday
 date="$(date --date="next thursday + 3 weeks")"
 hour="entre 18h00 et 23h00"
 hostname=$(grep HOSTNAME /etc/evomaintenance.cf | cut -d'=' -f2)
