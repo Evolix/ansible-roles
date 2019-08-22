@@ -1,6 +1,7 @@
-# listupgrade
+# newkernel
 
-Install and configure a script not help manage Debian package updates.
+Installs and configures a script to help manages to reboot on a new kernel.
+This script will send an mail when a new kernel is available to plan a reboot.
 
 ## Tasks
 
