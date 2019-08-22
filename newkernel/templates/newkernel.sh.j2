@@ -8,7 +8,7 @@ template=$(mktemp --tmpdir=/tmp evoupdate.XXX)
 clientmail=$(grep EVOMAINTMAIL /etc/evomaintenance.cf | cut -d'=' -f2)
 mailto=$clientmail
 # By default, plan the reboot next month thursday
-date="$(date --date="next thursday + 3 weeks")"
+date="$(date --date="next thursday + 3 weeks" +%A\ %d\ %B)"
 hour="entre 18h00 et 23h00"
 hostname=$(grep HOSTNAME /etc/evomaintenance.cf | cut -d'=' -f2)
 hostname=${hostname%%.evolix.net}
@@ -35,7 +35,7 @@ Content-Type: text/plain; charset="utf-8"
 Reply-To: equipe@evolix.fr
 From: equipe@evolix.net
 To: $clientmail
-Subject: Prochain creneau pour mise a jour de votre serveur $hostname
+Subject: Prochain creneau pour redémarrage de votre serveur $hostname
 X-Date: $date
 
 Bonjour,
