@@ -2,6 +2,7 @@
 - name: Install OpenVPN package
   apt:
     name: "openvpn"
+    name: "libnet-telnet-perl"
   tags:
   - openvpn
 

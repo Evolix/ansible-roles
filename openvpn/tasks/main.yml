@@ -79,3 +79,16 @@
     validate: '/usr/sbin/visudo -cf %s'
   tags:
   - openvpn
+
+- name: Copy check_openvpn
+  copy: 
+    src: "{{ item.src }}"      
+    dest: "{{ item.dest }}"    
+    owner: root                
+    group: root
+    mode: "{{ item.mode }}"
+    force: yes                 
+  with_items:
+          - { src: 'files/check_openvpn.pl', dest: '/usr/lib/nagios/plugins/check_openvpn.pl', mode: '0755' }
+  tags:
+    - openvpn
