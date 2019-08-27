@@ -7,6 +7,6 @@
 
 - name: Patch ProFTPd config file
   patch:
-    remote_src: no
+    remote_src: false
     src: ftp/evolinux.conf.diff
     dest: /etc/proftpd/conf.d/z-evolinux.conf

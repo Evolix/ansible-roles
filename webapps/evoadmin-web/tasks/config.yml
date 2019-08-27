@@ -3,29 +3,29 @@
 - name: "Create /etc/evolinux"
   file:
     dest: "/etc/evolinux"
-    recurse: yes
+    recurse: true
     state: directory
 
 - name: Configure web-add config file
   template:
     src: "{{ item }}"
     dest: /etc/evolinux/web-add.conf
-    force: "{{ evoadmin_add_conf_force | bool }}"
+    force: "{{ evoadmin_add_conf_force }}"
   with_first_found:
-  - "templates/evoadmin-web/web-add.{{ inventory_hostname }}.conf.j2"
-  - "templates/evoadmin-web/web-add.{{ host_group }}.conf.j2"
-  - "templates/evoadmin-web/web-add.conf.j2"
-  - "web-add.conf.j2"
+    - "templates/evoadmin-web/web-add.{{ inventory_hostname }}.conf.j2"
+    - "templates/evoadmin-web/web-add.{{ host_group }}.conf.j2"
+    - "templates/evoadmin-web/web-add.conf.j2"
+    - "web-add.conf.j2"
   register: evoadmin__add_conf_template
 
 - name: Configure web-add template file for mail
   template:
     src: "{{ item }}"
     dest: "{{ evoadmin_scripts_dir }}/web-mail.tpl"
-    force: "{{ evoadmin_mail_tpl_force | bool }}"
+    force: "{{ evoadmin_mail_tpl_force }}"
   with_first_found:
-  - "templates/evoadmin-web/web-mail.{{ inventory_hostname }}.tpl.j2"
-  - "templates/evoadmin-web/web-mail.{{ host_group }}.tpl.j2"
-  - "templates/evoadmin-web/web-mail.tpl.j2"
-  - "web-mail.tpl.j2"
+    - "templates/evoadmin-web/web-mail.{{ inventory_hostname }}.tpl.j2"
+    - "templates/evoadmin-web/web-mail.{{ host_group }}.tpl.j2"
+    - "templates/evoadmin-web/web-mail.tpl.j2"
+    - "web-mail.tpl.j2"
   register: evoadmin__mail_tpl_template

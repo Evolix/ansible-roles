@@ -22,12 +22,12 @@
   template:
     src: "{{ item }}"
     dest: /etc/apache2/sites-available/evoadmin.conf
-    force: "{{ evoadmin_force_vhost | bool }}"
+    force: "{{ evoadmin_force_vhost }}"
   with_first_found:
-  - "templates/evoadmin-web/evoadmin.{{ inventory_hostname }}.conf.j2"
-  - "templates/evoadmin-web/evoadmin.{{ host_group }}.conf.j2"
-  - "templates/evoadmin-web/evoadmin.conf.j2"
-  - "evoadmin.conf.j2"
+    - "templates/evoadmin-web/evoadmin.{{ inventory_hostname }}.conf.j2"
+    - "templates/evoadmin-web/evoadmin.{{ host_group }}.conf.j2"
+    - "templates/evoadmin-web/evoadmin.conf.j2"
+    - "evoadmin.conf.j2"
   register: evoadmin_vhost_template
   notify: reload apache2
 
@@ -48,14 +48,14 @@
 - name: Copy config file for evoadmin
   template:
     src: "{{ item }}"
-    dest: "{{ evoadmin_document_root}}/conf/config.local.php"
+    dest: "{{ evoadmin_document_root }}/conf/config.local.php"
     mode: "0640"
     owner: evoadmin
     group: evoadmin
-    force: "{{ evoadmin_config_local_php_force | bool }}"
+    force: "{{ evoadmin_config_local_php_force }}"
   with_first_found:
-  - "templates/evoadmin-web/config.local.{{ inventory_hostname }}.php.j2"
-  - "templates/evoadmin-web/config.local.{{ host_group }}.php.j2"
-  - "templates/evoadmin-web/config.local.php.j2"
-  - "config.local.conf.j2"
+    - "templates/evoadmin-web/config.local.{{ inventory_hostname }}.php.j2"
+    - "templates/evoadmin-web/config.local.{{ host_group }}.php.j2"
+    - "templates/evoadmin-web/config.local.php.j2"
+    - "config.local.conf.j2"
   register: evoadmin_config_local_php_template

@@ -4,7 +4,7 @@
   user:
     name: evoadmin
     comment: "Evoadmin Web Account"
-    home: "{{ evoadmin_home_dir}}"
+    home: "{{ evoadmin_home_dir }}"
     password: "!"
 
 - name: Create www-evoadmin group
@@ -16,7 +16,7 @@
   user:
     name: www-evoadmin
     groups: shadow
-    append: yes
+    append: true
   when: ansible_distribution_release == "jessie"
 
 - name: "Create www-evoadmin (Debian 9 or later)"
@@ -36,8 +36,10 @@
     regexp: "{{ item.regexp }}"
     state: present
   with_items:
-    - { line: 'evoadmin: root',     regexp: '^evoadmin:'}
-    - { line: 'www-evoadmin: root', regexp: '^www-evoadmin:'}
+    - line: 'evoadmin: root'
+      regexp: '^evoadmin:'
+    - line: 'www-evoadmin: root'
+      regexp: '^www-evoadmin:'
   notify: "newaliases"
   when: etc_aliases.stat.exists
 
@@ -51,7 +53,7 @@
     repo: https://forge.evolix.org/evoadmin-web.git
     dest: "{{ evoadmin_document_root }}"
     version: jessie
-    update: no
+    update: false
   when: ansible_distribution_release == "jessie"
 
 - name: "Clone evoadmin repository (Debian 9 or later)"
@@ -59,7 +61,7 @@
     repo: https://forge.evolix.org/evoadmin-web.git
     dest: "{{ evoadmin_document_root }}"
     version: master
-    update: yes
+    update: false
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: Change ownership on git repository
@@ -67,7 +69,7 @@
     dest: "{{ evoadmin_document_root }}"
     owner: "{{ evoadmin_username }}"
     group: "{{ evoadmin_username }}"
-    recurse: yes
+    recurse: true
 
 - name: Create evoadmin log directory
   file:
@@ -97,20 +99,20 @@
   command: "chmod -R --verbose u=rwX,g=rX,o= {{ evoadmin_document_root }}"
   register: command_result
   changed_when: "'changed' in command_result.stdout"
-  # failed_when: False
+  # failed_when: false
   args:
-    warn: no
+    warn: false
 
 - name: Add evoadmin sudoers file
   template:
     src: "{{ item }}"
     dest: /etc/sudoers.d/evoadmin
     mode: "0600"
-    force: "{{ evoadmin_sudoers_conf_force | bool }}"
+    force: "{{ evoadmin_sudoers_conf_force }}"
     validate: "visudo -cf %s"
   with_first_found:
-  - "templates/evoadmin-web/sudoers.{{ inventory_hostname }}.j2"
-  - "templates/evoadmin-web/sudoers.{{ host_group }}.j2"
-  - "templates/evoadmin-web/sudoers.j2"
-  - "sudoers.j2"
+    - "templates/evoadmin-web/sudoers.{{ inventory_hostname }}.j2"
+    - "templates/evoadmin-web/sudoers.{{ host_group }}.j2"
+    - "templates/evoadmin-web/sudoers.j2"
+    - "sudoers.j2"
   register: evoadmin_sudoers_conf
