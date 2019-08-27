@@ -3,14 +3,14 @@
 - "templates/evoadmin-web/web-add.{{ host_group }}.conf.j2"
 - "templates/evoadmin-web/web-add.conf.j2"
 And force it to update:
-	web_add_conf_force: True
+	evoadmin_add_conf_force: True
 
 # Set custom web-mail.tpl
 - "templates/evoadmin-web/web-mail.{{ inventory_hostname }}.tpl.j2"
 - "templates/evoadmin-web/web-mail.{{ host_group }}.tpl.j2"
 - "templates/evoadmin-web/web-mail.tpl.j2"
 And force it to update:
-	web_mail_tpl_force: True
+	evoadmin_mail_tpl_force: True
 
 # Set custom evoadmin.conf VHost
 - "templates/evoadmin-web/evoadmin.{{ inventory_hostname }}.conf.j2"
@@ -24,7 +24,7 @@ And force it to update:
 - "templates/evoadmin-web/config.local.{{ host_group }}.php.j2"
 - "templates/evoadmin-web/config.local.php.j2"
 And force it to update:
-	evoadmin_web_config_local_php_force: True
+	evoadmin_config_local_php_force: True
 
 # Set evoadmin-web sudoers file
 - "templates/evoadmin-web/sudoers.{{ inventory_hostname }}.j2"
@@ -32,4 +32,4 @@ And force it to update:
 - "templates/evoadmin-web/sudoers.j2"
 - "sudoers.j2"
 And force it to update:
-	evoadmin_web_sudoers_conf_force: True
+	evoadmin_sudoers_conf_force: True
