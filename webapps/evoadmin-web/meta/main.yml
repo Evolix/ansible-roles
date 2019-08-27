@@ -1,3 +1,4 @@
+---
 galaxy_info:
   author: Evolix
   description: Installation of evoadmin-web
@@ -9,10 +10,10 @@ galaxy_info:
   min_ansible_version: 2.2
 
   platforms:
-  - name: Debian
-    versions:
-    - jessie
-    - stretch
+    - name: Debian
+      versions:
+        - jessie
+        - stretch
 
 dependencies:
   - proftpd
