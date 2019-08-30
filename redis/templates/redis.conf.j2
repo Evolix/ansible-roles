@@ -40,7 +40,9 @@ dir {{ redis_dbdir }}
 protected-mode {{ redis_protected_mode }}
 {% endif %}
 
-# maxclients 128
+{% if redis_maxclients %}
+maxclients {{ redis_maxclients }}
+{% endif %}
 
 {% if redis_maxmemory %}
 maxmemory {{ redis_maxmemory }}
