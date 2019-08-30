@@ -23,7 +23,20 @@
         #Options Indexes SymLinksIfOwnerMatch
         Options SymLinksIfOwnerMatch
         AllowOverride AuthConfig Limit FileInfo
+{% if evoadmin_htpasswd %}
+        Require all denied
+        Include /etc/apache2/ipaddr_whitelist.conf
+        AuthType Basic
+        AuthName "Restricted"
+        AuthUserFile "/var/www/.ansible_evoadmin_htpasswd"
+        Require valid-user
+        <IfModule security2_module>
+            SecRuleEngine Off
+        </IfModule>
+{% else %}
         Require all granted
+{% endif %}
+
     </Directory>
 
     # user - group (thanks to sesse@debian.org)
