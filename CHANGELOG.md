@@ -20,6 +20,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 * elasticsearch: listen on local interface only by default
+* evocheck: upstream version 19.08
 * squid: Remove wait time when we turn off squid
 * evomaintenance: Turn on API by default (instead of DB)
 * evomaintenance: upstream version 0.5.1
