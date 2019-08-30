@@ -17,6 +17,7 @@ The **patch** part changes incrementally at each release.
 * packweb-apache: Deploy opcache.php to give some insights on PHP's opcache status
 * webapps/evoadmin-web Overload templates if needed
 * redis: max clients is configurable
+* evobackup-client role to configure a machine for backups with bkctld(8)
 
 ### Changed
 * elasticsearch: listen on local interface only by default

@@ -1,0 +1,31 @@
+---
+
+- name: Is there a Minifirewall ?
+  stat:
+    path: /etc/default/minifirewall
+  register: evobackup-client__minifirewall
+  tags:
+    - evobackup-client
+    - evobackup-client-backup-firewall
+
+- name: backup ssh port
+  blockinfile:
+    dest: /etc/default/minifirewall
+    marker: "# evobackup ssh port"
+    block: "evobackup_port={{ evobackup-client___ssh_port }}"
+  when: evobackup-client__minifirewall.stat.exists
+  tags:
+    - evobackup-client
+    - evobackup-client-backup-firewall
+
+- name: Add backup SSH port in /etc/default/minifirewall
+  blockinfile:
+    dest: /etc/default/minifirewall
+    marker: "# {{ item.name }}"
+    block: |
+      /sbin/iptables -A INPUT -p tcp --sport {{ evobackup-client___ssh_port }} --dport 1024:65535 -s {{ item.ip }} -m state --state ESTABLISHED,RELATED -j ACCEPT
+  with_items: "{{ evobackup-client___hosts }}"
+  when: evobackup-client__minifirewall.stat.exists
+  tags:
+    - evobackup-client
+    - evobackup-client-backup-firewall

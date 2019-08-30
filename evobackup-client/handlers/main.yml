@@ -1,0 +1,5 @@
+---
+- name: restart minifirewall
+  service:
+    name: minifirewall
+    state: restarted

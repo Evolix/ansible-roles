@@ -1,0 +1,13 @@
+---
+evobackup-client__root_key_path: "/root/.ssh/evobackup_id"
+evobackup-client___cron_path: "/etc/cron.daily/zzz_evobackup"
+evobackup-client___cron_template_name: "zzz_evobackup"
+evobackup-client___mail: null
+evobackup-client__pid_path: "/var/run/evobackup.pid"
+evobackup-client___log_path: "/var/log/evobackup.log"
+evobackup-client__backup_path: "/home/backup"
+evobackup-client___ssh_port: null
+evobackup-client___hosts: null
+#  - name: "backups.example.org"
+#    ip: "xxx.xxx.xxx.xxx"
+#    fingerprint: "ecdsa-sha2-nistp256 ..."

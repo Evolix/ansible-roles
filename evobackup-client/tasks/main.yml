@@ -1,0 +1,21 @@
+---
+
+- include: "ssh_key.yml"
+  tags:
+    - evobackup-client
+    - evobackup-client-backup-ssh_key
+
+- include: "upload_scripts.yml"
+  tags:
+    - evobackup-client
+    - evobackup-client-backup-scripts
+
+- include: "open_ssh_ports.yml"
+  tags:
+    - evobackup-client
+    - evobackup-client-backup-firewall
+
+- include: "verify_ssh.yml"
+  tags:
+    - evobackup-client
+    - evobackup-client-backup-hosts
