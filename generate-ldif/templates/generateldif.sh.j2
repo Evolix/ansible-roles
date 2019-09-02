@@ -373,7 +373,9 @@ EOT
 fi
 
 # MariaDB
-if is_pkg_installed mariadb-server-10.1; then
+if is_pkg_installed mariadb-server-10.3; then
+    mariadb_version=$(get_pkg_version mariadb-server-10.3)
+elif is_pkg_installed mariadb-server-10.1; then
     mariadb_version=$(get_pkg_version mariadb-server-10.1)
 elif is_pkg_installed mariadb-server-10.0; then
     mariadb_version=$(get_pkg_version mariadb-server-10.0)
