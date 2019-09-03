@@ -57,7 +57,7 @@
     - "templates/evoadmin-web/config.local.{{ inventory_hostname }}.php.j2"
     - "templates/evoadmin-web/config.local.{{ host_group }}.php.j2"
     - "templates/evoadmin-web/config.local.php.j2"
-    - "config.local.conf.j2"
+    - "config.local.php.j2"
   register: evoadmin_config_local_php_template
 
 - name: Enable proxy_fcgi
