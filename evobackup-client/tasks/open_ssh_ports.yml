@@ -12,7 +12,7 @@
   blockinfile:
     dest: /etc/default/minifirewall
     marker: "# evobackup ssh port"
-    block: "evobackup_port={{ evobackup-client___ssh_port }}"
+    block: "evobackup_port={{ evobackup-client__ssh_port }}"
   when: evobackup-client__minifirewall.stat.exists
   tags:
     - evobackup-client
@@ -23,8 +23,8 @@
     dest: /etc/default/minifirewall
     marker: "# {{ item.name }}"
     block: |
-      /sbin/iptables -A INPUT -p tcp --sport {{ evobackup-client___ssh_port }} --dport 1024:65535 -s {{ item.ip }} -m state --state ESTABLISHED,RELATED -j ACCEPT
-  with_items: "{{ evobackup-client___hosts }}"
+      /sbin/iptables -A INPUT -p tcp --sport {{ evobackup-client__ssh_port }} --dport 1024:65535 -s {{ item.ip }} -m state --state ESTABLISHED,RELATED -j ACCEPT
+  with_items: "{{ evobackup-client__hosts }}"
   when: evobackup-client__minifirewall.stat.exists
   tags:
     - evobackup-client
