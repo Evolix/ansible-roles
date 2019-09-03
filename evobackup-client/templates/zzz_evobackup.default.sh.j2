@@ -19,9 +19,9 @@
 
 # email adress for notifications
 MAIL={{ evobackup-client__mail }}
-
+{{ evobackup-client__hosts | map
 # list of hosts (hostname or IP) and SSH port for Rsync
-SERVERS="{% for host in evobackup-client__hosts %}{{ host.name }}:{{ host.port }} {% endfor %}"
+SERVERS="{% for host in evobackup-client__hosts %}{{ host.name }}:{{ host.port }}{% if loop.index != loop.length %} {% endif %}{% endfor %}"
 
 # timeout (in seconds) for SSH connections
 SSH_CONNECT_TIMEOUT=30
