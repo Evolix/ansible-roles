@@ -2,11 +2,10 @@
 
 Allows the configuration of backups to one or more remote filesystems.
 
-The backup hosts in use need to be defined in evobackup-client__hosts
-and the bkctld jail ssh port has to be defined in
-evobackup-client__ssh_port before running it.
+The backup hosts and the ports in use need to be defined in
+evobackup-client__hosts before running it.
 
-The default zzz_evobackup.sh configures a system backup, but the
+The default zzz_evobackup.sh configures a system only backup, but the
 template can be overriden to configure a full backup instead. If
 you change the variables in defaults/main.yml you can easily run
 this again and configure backups to a second set of hosts.

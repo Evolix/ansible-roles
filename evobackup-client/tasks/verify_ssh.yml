@@ -3,8 +3,8 @@
 - name: Verify evolix backup servers
   known_hosts:
     path: /root/.ssh/known_hosts
-    name: "[{{ item.name }}]:{{ evobackup-client__ssh_port }}"
-    key: "[{{ item.name }}]:{{ evobackup-client__ssh_port }} {{ item.fingerprint }}"
+    name: "[{{ item.name }}]:{{ item.port }}"
+    key: "[{{ item.name }}]:{{ item.port }} {{ item.fingerprint }}"
   with_list: "{{ evobackup-client__hosts }}"
   tags:
     - evobackup-client
