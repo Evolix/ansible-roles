@@ -1,6 +1,6 @@
 ---
 
-- name: "Redis instance '{{ redis_instance_name }}' group is present"
+- name: "Instance '{{ redis_instance_name }}' group is present"
   group:
     name: "redis-{{ redis_instance_name }}"
     state: present
@@ -8,7 +8,7 @@
   tags:
     - redis
 
-- name: "Redis instance '{{ redis_instance_name }}' user is present"
+- name: "Instance '{{ redis_instance_name }}' user is present"
   user:
     name: "redis-{{ redis_instance_name }}"
     group: "redis-{{ redis_instance_name }}"
@@ -18,7 +18,7 @@
   tags:
     - redis
 
-- name: "Instances '{{ redis_instance_name }}' config directories are present"
+- name: "Instance '{{ redis_instance_name }}' config directories are present"
   file:
     dest: "{{ item }}"
     mode: "0755"
@@ -61,7 +61,7 @@
   tags:
     - redis
 
-- name: "Redis instance '{{ redis_instance_name }}' configuration file is present"
+- name: "Instance '{{ redis_instance_name }}' configuration file is present"
   template:
     src: redis.conf.j2
     dest: "{{ redis_conf_dir }}/redis.conf"
@@ -81,7 +81,7 @@
   tags:
     - redis
 
-- name: "Redis '{{ redis_instance_name }}' systemd unit is enabled and started"
+- name: "Instance '{{ redis_instance_name }}' systemd unit is enabled and started"
   systemd:
     name: "{{ redis_systemd_name }}"
     enabled: yes
