@@ -18,16 +18,32 @@
   tags:
     - redis
 
-- name: "Instances '{{ redis_instance_name }}' directories are present"
+- name: "Instances '{{ redis_instance_name }}' config directories are present"
   file:
     dest: "{{ item }}"
     mode: "0755"
+    owner: "root"
+    group: "root"
+    follow: yes
+    state: directory
+  with_items:
+    - "{{ redis_conf_dir }}"
+    - "{{ redis_conf_dir }}/redis-server.pre-up.d"
+    - "{{ redis_conf_dir }}/redis-server.post-up.d"
+    - "{{ redis_conf_dir }}/redis-server.pre-down.d"
+    - "{{ redis_conf_dir }}/redis-server.post-down.d"
+  tags:
+    - redis
+
+- name: "Instances '{{ redis_instance_name }}' other directories are present"
+  file:
+    dest: "{{ item }}"
+    mode: "0750"
     owner: "redis-{{ redis_instance_name }}"
     group: "redis-{{ redis_instance_name }}"
     follow: yes
     state: directory
   with_items:
-    - "{{ redis_conf_dir }}"
     - "{{ redis_pid_dir }}"
     - "{{ redis_socket_dir }}"
     - "{{ redis_data_dir }}"
@@ -39,7 +55,9 @@
   template:
     src: redis.conf.j2
     dest: "{{ redis_conf_dir }}/redis.conf"
-    mode: "0644"
+    mode: "0640"
+    owner: redis-{{ redis_instance_name }}
+    group: redis-{{ redis_instance_name }}
   tags:
     - redis
 
@@ -48,6 +66,8 @@
     src: 'redis-server@.service'
     dest: '/etc/systemd/system/'
     mode: "0644"
+    owner: "root"
+    group: "root"
   tags:
     - redis
 

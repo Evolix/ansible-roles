@@ -5,9 +5,13 @@ redis_conf_dir: /etc/redis
 
 redis_port: 6379
 redis_bind_interface: 127.0.0.1
+
+redis_socket_enabled: True
 redis_socket_dir: '/var/run/redis'
 redis_socket_perms: 770
+
 redis_pid_dir: "/var/run/redis"
+
 redis_timeout: 300
 
 # for client authorization
@@ -52,4 +56,4 @@ redis_disabled_commands: []
 
 redis_sentinel_install: False
 
-redis_default_server_disabled: True
+redis_default_server_disabled: False

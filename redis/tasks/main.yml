@@ -62,7 +62,7 @@
   when:
     - _munin_installed.stat.exists
     - _munin_installed.stat.isdir
-    - redis_instance_name is not defined
+    - redis_instance_name is undefined
   tags:
     - redis
     - munin
@@ -87,7 +87,8 @@
 
 - include: nrpe_stretch.yml
   when:
-    - ansible_distribution_release == "stretch"
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version | version_compare('9', '>=')
     - nrpe_evolix_config.stat.exists == true
   tags:
     - redis
