@@ -32,12 +32,12 @@ databases {{ redis_databases }}
 save {{ save }}
 {% endfor %}
 
-rdbcompression {{ redis_rdbcompression }}
+rdbcompression {{ redis_rdbcompression | bool | ternary('yes','no') }}
 dbfilename {{ redis_data_file }}
 dir {{ redis_data_dir }}
 
 {% if redis_installed_version | version_compare('3.2', '>=') %}
-protected-mode {{ redis_protected_mode }}
+protected-mode {{ redis_protected_mode | bool | ternary('yes','no') }}
 {% endif %}
 
 {% if redis_maxclients %}
@@ -50,7 +50,7 @@ maxmemory-policy {{ redis_maxmemory_policy }}
 maxmemory-samples {{ redis_maxmemory_samples }}
 {% endif %}
 
-appendonly {{ redis_appendonly }}
+appendonly {{ redis_appendonly | bool | ternary('yes','no') }}
 appendfsync {{ redis_appendfsync }}
 no-appendfsync-on-rewrite no
 
