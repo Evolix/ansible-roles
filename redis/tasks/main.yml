@@ -14,6 +14,15 @@
     - redis
     - packages
 
+- name: Redis Sentinel is installed.
+  apt:
+    name: "redis-sentinel"
+    state: present
+  tags:
+    - redis
+    - packages
+  when: redis_sentinel_install
+
 - name: Get Redis version
   shell: "redis-server -v | grep -Eo '(v=\\S+)' | cut -d'=' -f 2 | grep -E '^([0-9]|\\.)+$'"
   changed_when: false
