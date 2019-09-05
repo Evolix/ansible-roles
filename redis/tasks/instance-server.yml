@@ -35,7 +35,17 @@
   tags:
     - redis
 
-- name: "Instances '{{ redis_instance_name }}' other directories are present"
+- name: "Instance '{{ redis_instance_name }}' hooks examples are present"
+  command: "cp -a /etc/redis/{{ item }}/00_example {{ redis_conf_dir }}/{{ item }}"
+  args:
+    creates: "{{ redis_conf_dir }}/{{ item }}/00_example"
+  with_items:
+    - "redis-server.pre-up.d"
+    - "redis-server.post-up.d"
+    - "redis-server.pre-down.d"
+    - "redis-server.post-down.d"
+
+- name: "Instance '{{ redis_instance_name }}' other directories are present"
   file:
     dest: "{{ item }}"
     mode: "0750"
