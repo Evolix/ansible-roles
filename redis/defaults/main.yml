@@ -19,8 +19,8 @@ redis_password: NULL
 # for slave authorization on master
 redis_password_master: "{{ redis_password }}"
 
-redis_loglevel: "notice"
 redis_log_dir: /var/log/redis
+redis_log_level: "notice"
 
 redis_databases: 16
 

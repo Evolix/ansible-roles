@@ -18,7 +18,7 @@ Main variables are :
 * `redis_bind_interface`: listening IP address ;
 * `redis_password`: password for redis. Empty means no password ;
 * `redis_socket_dir`: Unix socket directory ;
-* `redis_loglevel`: log verbosity ;
+* `redis_log_level`: log verbosity ;
 * `redis_log_dir`: log file directory.
 
 The full list of variables (with default values) can be found in `defaults/main.yml`.

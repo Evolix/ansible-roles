@@ -17,8 +17,8 @@ masterauth {{ redis_password_master }}
 
 timeout {{ redis_timeout }}
 
-loglevel {{ redis_loglevel }}
-logfile {{ redis_log_dir }}/redis-server.pid
+loglevel {{ redis_log_level }}
+logfile {{ redis_log_dir }}/redis-server.log
 
 # To enable logging to the system logger, just set 'syslog-enabled' to yes,
 # and optionally update the other syslog parameters to suit your needs.
