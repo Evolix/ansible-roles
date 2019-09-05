@@ -37,34 +37,18 @@
   tags:
     - redis
 
-- include: instances.yml
+- include: instance-server.yml
   vars:
-    redis_daemon: "redis-server@{{ redis_instance_name }}"
-    redis_conf_path: "/etc/redis/redis-{{ redis_instance_name }}.conf"
-    redis_unixsocket: "/var/run/redis/{{ redis_instance_name }}/redis.sock"
-    redis_pidfile: "/var/run/redis/{{ redis_instance_name }}/{{ redis_daemon }}.pid"
-    redis_logfile: "/var/log/redis/{{ redis_instance_name }}/redis-server.log"
-    redis_dbdir: "/var/lib/redis/{{ redis_instance_name }}"
+    redis_systemd_name: "redis-server@{{ redis_instance_name }}"
+    redis_conf_dir: "/etc/redis-{{ redis_instance_name }}"
+    redis_socket_dir: "/var/run/redis-{{ redis_instance_name }}"
+    redis_pid_dir: "/var/run/redis-{{ redis_instance_name }}"
+    redis_log_dir: "/var/log/redis-{{ redis_instance_name }}"
+    redis_data_dir: "/var/lib/redis-{{ redis_instance_name }}"
   when: redis_instance_name is defined
 
-- name: Redis is configured.
-  template:
-    src: redis.conf.j2
-    dest: "{{ redis_conf_path }}"
-    mode: "0644"
-  notify: "{{ redis_restart_handler_name }}"
+- include: default-server.yml
   when: redis_instance_name is not defined
-  tags:
-    - redis
-
-- name: Redis is running and enabled on boot.
-  systemd:
-    name: "{{ redis_daemon }}"
-    enabled: yes
-    state: started
-  when: redis_instance_name is not defined
-  tags:
-    - redis
 
 - name: Is Munin installed
   stat:
@@ -74,7 +58,7 @@
     - redis
     - munin
 
-- include: munin.yml
+- include: default-munin.yml
   when:
     - _munin_installed.stat.exists
     - _munin_installed.stat.isdir
@@ -83,7 +67,7 @@
     - redis
     - munin
 
-- include: munin-instances.yml
+- include: instance-munin.yml
   when:
     - _munin_installed.stat.exists
     - _munin_installed.stat.isdir
@@ -102,7 +86,9 @@
     - nrpe
 
 - include: nrpe_stretch.yml
-  when: ansible_distribution_release == "stretch" and nrpe_evolix_config.stat.exists == true
+  when:
+    - ansible_distribution_release == "stretch"
+    - nrpe_evolix_config.stat.exists == true
   tags:
     - redis
     - nrpe

@@ -13,12 +13,12 @@ Everything is in the `tasks/main.yml` file.
 Main variables are :
 
 * `redis_daemon`: name of the process ;
-* `redis_conf_path`: config file location ;
+* `redis_conf_dir`: config directory ;
 * `redis_port`: listening TCP port ;
 * `redis_bind_interface`: listening IP address ;
 * `redis_password`: password for redis. Empty means no password ;
-* `redis_unixsocket`: Unix socket ;
+* `redis_socket_dir`: Unix socket directory ;
 * `redis_loglevel`: log verbosity ;
-* `redis_logfile`: log file location.
+* `redis_log_dir`: log file directory.
 
 The full list of variables (with default values) can be found in `defaults/main.yml`.

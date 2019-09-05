@@ -1,0 +1,70 @@
+---
+
+- name: "Redis instance '{{ redis_instance_name }}' group is present"
+  group:
+    name: "redis-{{ redis_instance_name }}"
+    state: present
+    system: True
+  tags:
+    - redis
+
+- name: "Redis instance '{{ redis_instance_name }}' user is present"
+  user:
+    name: "redis-{{ redis_instance_name }}"
+    group: "redis-{{ redis_instance_name }}"
+    state: present
+    system: True
+    shell: '/bin/false'
+  tags:
+    - redis
+
+- name: "Instances '{{ redis_instance_name }}' directories are present"
+  file:
+    dest: "{{ item }}"
+    mode: "0755"
+    owner: "redis-{{ redis_instance_name }}"
+    group: "redis-{{ redis_instance_name }}"
+    follow: yes
+    state: directory
+  with_items:
+    - "{{ redis_conf_dir }}"
+    - "{{ redis_pid_dir }}"
+    - "{{ redis_socket_dir }}"
+    - "{{ redis_data_dir }}"
+    - "{{ redis_log_dir }}"
+  tags:
+    - redis
+
+- name: "Redis instance '{{ redis_instance_name }}' configuration file is present"
+  template:
+    src: redis.conf.j2
+    dest: "{{ redis_conf_dir }}/redis.conf"
+    mode: "0644"
+  tags:
+    - redis
+
+- name: Systemd template for redis instances is installed
+  copy:
+    src: 'redis-server@.service'
+    dest: '/etc/systemd/system/'
+    mode: "0644"
+  tags:
+    - redis
+
+- name: "Redis '{{ redis_instance_name }}' systemd unit is enabled and started"
+  systemd:
+    name: "{{ redis_systemd_name }}"
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  tags:
+    - redis
+
+- name: Redis SysVinit script is stopped and disabled
+  service:
+    name: "redis-server"
+    enabled: no
+    state: stopped
+  when: redis_default_server_disabled
+  tags:
+    - redis

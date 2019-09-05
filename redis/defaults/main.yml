@@ -1,12 +1,13 @@
 ---
-redis_daemon: redis-server
-redis_conf_path: /etc/redis/redis.conf
+redis_systemd_name: redis-server
+
+redis_conf_dir: /etc/redis
 
 redis_port: 6379
 redis_bind_interface: 127.0.0.1
-redis_unixsocket: '/var/run/redis/redis.sock'
-redis_unixsocketperm: 770
-redis_pidfile: "/var/run/redis/{{ redis_daemon }}.pid"
+redis_socket_dir: '/var/run/redis'
+redis_socket_perms: 770
+redis_pid_dir: "/var/run/redis"
 redis_timeout: 300
 
 # for client authorization
@@ -15,7 +16,7 @@ redis_password: NULL
 redis_password_master: "{{ redis_password }}"
 
 redis_loglevel: "notice"
-redis_logfile: /var/log/redis/redis-server.log
+redis_log_dir: /var/log/redis
 
 redis_databases: 16
 
@@ -26,8 +27,8 @@ redis_save:
   - 60 10000
 
 redis_rdbcompression: "yes"
-redis_dbfilename: dump.rdb
-redis_dbdir: /var/lib/redis
+redis_data_dir: /var/lib/redis
+redis_data_file: dump.rdb
 
 redis_maxclients: 128
 
@@ -50,3 +51,5 @@ redis_restart_force: False
 redis_disabled_commands: []
 
 redis_sentinel_install: False
+
+redis_default_server_disabled: True

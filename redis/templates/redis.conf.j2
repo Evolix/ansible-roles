@@ -1,11 +1,11 @@
 daemonize yes
-pidfile {{ redis_pidfile }}
+pidfile {{ redis_pid_dir }}/redis-server.pid
 port {{ redis_port }}
 bind {{ redis_bind_interface }}
 
 {% if redis_unixsocket %}
-unixsocket {{ redis_unixsocket }}
-unixsocketperm {{ redis_unixsocketperm }}
+unixsocket {{ redis_socket_dir }}/redis.sock
+unixsocketperm {{ redis_socket_perms }}
 {% endif %}
 
 {% if redis_password %}
@@ -18,7 +18,7 @@ masterauth {{ redis_password_master }}
 timeout {{ redis_timeout }}
 
 loglevel {{ redis_loglevel }}
-logfile {{ redis_logfile }}
+logfile {{ redis_log_dir }}/redis-server.pid
 
 # To enable logging to the system logger, just set 'syslog-enabled' to yes,
 # and optionally update the other syslog parameters to suit your needs.
@@ -33,8 +33,8 @@ save {{ save }}
 {% endfor %}
 
 rdbcompression {{ redis_rdbcompression }}
-dbfilename {{ redis_dbfilename }}
-dir {{ redis_dbdir }}
+dbfilename {{ redis_data_file }}
+dir {{ redis_data_dir }}
 
 {% if redis_installed_version | version_compare('3.2', '>=') %}
 protected-mode {{ redis_protected_mode }}
