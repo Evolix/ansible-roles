@@ -18,7 +18,18 @@
   tags:
     - redis
 
-- name: "Instance '{{ redis_instance_name }}' config directories are present"
+- name: "Instance '{{ redis_instance_name }}' config directory is present"
+  file:
+    dest: "{{ redis_conf_dir }}"
+    mode: "0755"
+    owner: "root"
+    group: "root"
+    follow: yes
+    state: directory
+  tags:
+    - redis
+
+- name: "Instance '{{ redis_instance_name }}' config hooks directories are present"
   file:
     dest: "{{ item }}"
     mode: "0755"
@@ -27,11 +38,13 @@
     follow: yes
     state: directory
   with_items:
-    - "{{ redis_conf_dir }}"
     - "{{ redis_conf_dir }}/redis-server.pre-up.d"
     - "{{ redis_conf_dir }}/redis-server.post-up.d"
     - "{{ redis_conf_dir }}/redis-server.pre-down.d"
     - "{{ redis_conf_dir }}/redis-server.post-down.d"
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version | version_compare('9', '>=')
   tags:
     - redis
 
@@ -44,6 +57,11 @@
     - "redis-server.post-up.d"
     - "redis-server.pre-down.d"
     - "redis-server.post-down.d"
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version | version_compare('9', '>=')
+  tags:
+    - redis
 
 - name: "Instance '{{ redis_instance_name }}' other directories are present"
   file:
@@ -71,13 +89,29 @@
   tags:
     - redis
 
-- name: Systemd template for redis instances is installed
+- name: Systemd template for redis instances is installed (Debian 8)
   copy:
-    src: 'redis-server@.service'
-    dest: '/etc/systemd/system/'
+    src: 'redis-server@jessie.service'
+    dest: '/etc/systemd/system/redis-server@.service'
     mode: "0644"
     owner: "root"
     group: "root"
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version | version_compare('9', '<')
+  tags:
+    - redis
+
+- name: Systemd template for redis instances is installed (Debian 9 or later)
+  copy:
+    src: 'redis-server@stretch.service'
+    dest: '/etc/systemd/system/redis-server@.service'
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version | version_compare('9', '>=')
   tags:
     - redis
 
