@@ -16,7 +16,7 @@ The **patch** part changes incrementally at each release.
 * php: variable to install the mysqlnd module instead of the default mysql module
 * packweb-apache: Deploy opcache.php to give some insights on PHP's opcache status
 * webapps/evoadmin-web Overload templates if needed
-* redis: max clients is configurable
+* redis: rewrite of the role (separate instances, better systemd units…)
 * generate-ldif: support MariaDB 10.3
 
 ### Changed
