@@ -4,17 +4,17 @@
   user:
     name: root
     generate_ssh_key: true
-    ssh_key_file: "{{ evobackup-client__root_key_path }}"
+    ssh_key_file: "{{ evobackup_client__root_key_path }}"
     ssh_key_type: rsa
-  register: evobackup-client__root_key
+  register: evobackup_client__root_key
   tags:
-    - evobackup-client
-    - evobackup-client-backup-ssh_key
+    - evobackup_client
+    - evobackup_client_backup_ssh_key
 
 - name: Print SSH key
   debug:
-    var: evobackup-client__root_key.ssh_public_key
-  when: evobackup-client__root_key.ssh_public_key is defined
+    var: evobackup_client__root_key.ssh_public_key
+  when: evobackup_client__root_key.ssh_public_key is defined
   tags:
-    - evobackup-client
-    - evobackup-client-backup-ssh_key
+    - evobackup_client
+    - evobackup_client_backup_ssh_key

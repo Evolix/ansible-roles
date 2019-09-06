@@ -18,23 +18,23 @@
 ##### Configuration ###################################################
 
 # email adress for notifications
-MAIL={{ evobackup-client__mail }}
+MAIL={{ evobackup_client__mail }}
 
 # list of hosts (hostname or IP) and SSH port for Rsync
-SERVERS="{% for host in evobackup-client__hosts %}{{ host.name }}:{{ host.port }}{% if loop.index != loop.length %} {% endif %}{% endfor %}"
+SERVERS="{% for host in evobackup_client__hosts %}{{ host.name }}:{{ host.port }}{% if loop.index != loop.length %} {% endif %}{% endfor %}"
 
 # timeout (in seconds) for SSH connections
 SSH_CONNECT_TIMEOUT=30
 
 ## We use /home/backup : feel free to use your own dir
-LOCAL_BACKUP_DIR="{{ evobackup-client__backup_path }}"
+LOCAL_BACKUP_DIR="{{ evobackup_client__backup_path }}"
 
 # You can set "linux" or "bsd" manually or let it choose automatically
 SYSTEM=$(uname | tr '[:upper:]' '[:lower:]')
 
 # Change these 2 variables if you have more than one backup cron
-PIDFILE="{{ evobackup-client__pid_path }}"
-LOGFILE="{{ evobackup-client__log_path }}"
+PIDFILE="{{ evobackup_client__pid_path }}"
+LOGFILE="{{ evobackup_client__log_path }}"
 
 ## Enable/Disable tasks
 LOCAL_TASKS=${LOCAL_TASKS:-1}
