@@ -13,6 +13,9 @@
     src: check_redis.pl
     dest: /usr/local/lib/nagios/plugins/check_redis
     force: yes
+    mode: "0755"
+    owner: root
+    group: root
   when:
     - ansible_distribution == "Debian"
     - ansible_distribution_major_version | version_compare('9', '<')
@@ -56,6 +59,9 @@
     src: check_redis_instances.sh
     dest: /usr/local/lib/nagios/plugins/check_redis_instances
     force: yes
+    mode: "0755"
+    owner: root
+    group: root
   when: redis_instance_name is defined
   tags:
     - redis
