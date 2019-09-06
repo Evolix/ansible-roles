@@ -47,7 +47,7 @@
   replace:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: '^command\[check_redis\]=.+'
-    replace: 'command[check_redis]=sudo {{ redis_check_redis_path }} -H {{ redis_bind_interface }} -p {{ redis_port }}'
+    replace: 'command[check_redis]={{ redis_check_redis_path }} -H {{ redis_bind_interface }} -p {{ redis_port }}'
   when: redis_instance_name is undefined
   notify: restart nagios-nrpe-server
   tags:
@@ -71,7 +71,7 @@
   replace:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: '^command\[check_redis\]=.+'
-    replace: 'command[check_redis]=sudo /usr/local/lib/nagios/plugins/check_redis_instances'
+    replace: 'command[check_redis]=/usr/local/lib/nagios/plugins/check_redis_instances'
   when: redis_instance_name is defined
   notify: restart nagios-nrpe-server
   tags:
