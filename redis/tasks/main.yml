@@ -85,10 +85,8 @@
     - redis
     - nrpe
 
-- include: nrpe_stretch.yml
+- include: nrpe.yml
   when:
-    - ansible_distribution == "Debian"
-    - ansible_distribution_major_version | version_compare('9', '>=')
     - nrpe_evolix_config.stat.exists == true
   tags:
     - redis
