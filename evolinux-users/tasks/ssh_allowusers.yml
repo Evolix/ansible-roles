@@ -1,15 +1,5 @@
 ---
 
-- name: "Add AllowUsers sshd directive with '{{ user.name }}'"
-  lineinfile:
-    dest: /etc/ssh/sshd_config
-    line: "\nAllowUsers {{ user.name }}"
-    insertafter: 'Subsystem'
-    validate: '/usr/sbin/sshd -t -f %s'
-  notify: reload sshd
-  when: not allow_users_present or not added_allow_user.changed
-  register: added_allow_user
-
 - name: "Append '{{ user.name }}' to AllowUsers sshd directive"
   replace:
     dest: /etc/ssh/sshd_config
@@ -17,17 +7,6 @@
     replace: '\1 {{ user.name }}'
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
-  when: allow_users_present or added_allow_user.changed
-
-- name: "Add Match User sshd directive with '{{ user.name }}'"
-  lineinfile:
-    dest: /etc/ssh/sshd_config
-    line: "\nMatch User {{ user.name }}\n    PasswordAuthentication no"
-    insertafter: "# END EVOLINUX PASSWORD RESTRICTIONS BY ADDRESS"
-    validate: '/usr/sbin/sshd -t -f %s'
-  notify: reload sshd
-  when: not match_users_present or not added_match_user.changed
-  register: added_match_user
 
 - name: "Append '{{ user.name }}' to Match User's sshd directive"
   replace:
@@ -36,4 +15,3 @@
     replace: '\1,{{ user.name }}'
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
-  when: match_users_present or added_match_user.changed

@@ -57,15 +57,29 @@
     - ssh_allowusers
     - not ssh_allowgroups
 
+- name: "Add AllowUsers sshd directive with all users"
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    line: "\nAllowUsers {{ evolinux_users|map(attribute='name')|join(',') }}"
+    insertafter: 'Subsystem'
+    validate: '/usr/sbin/sshd -t -f %s'
+  notify: reload sshd
+  when: grep_allowusers_ssh.rc == 0
+
+- name: "Add Match User sshd directive with '{{ user.name }}'"
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    line: "\nMatch User {{ evolinux_users|map(attribute='name')|join(',') }}\n    PasswordAuthentication no"
+    insertafter: "# END EVOLINUX PASSWORD RESTRICTIONS BY ADDRESS"
+    validate: '/usr/sbin/sshd -t -f %s'
+  notify: reload sshd
+  when: grep_matchuser_ssh == 0
+
 - include: ssh_allowusers.yml
   vars:
     user: "{{ item.value }}"
-    - allow_users_present: "{{ grep_allowusers_ssh.rc == 0 }}"
-    - match_users_present: "{{ grep_matchuser_ssh.rc == 0 }}"
-  with_dict: "{{ evolinux_users }}"
-  when:
-    - ssh_allowusers
-    - not ssh_allowgroups
+ with_dict: "{{ evolinux_users }}"
+  when: (grep_allowusers_ssh.rc != 0) or (grep_matchuser_ssh != 0)
 
 - name: disable root login
   replace:
