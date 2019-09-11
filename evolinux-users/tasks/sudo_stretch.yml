@@ -1,10 +1,5 @@
 ---
 
-- name: "Create '{{ evolinux_sudo_group }}' group (Debian 9 or later)"
-  group:
-    name: "{{ evolinux_sudo_group }}"
-    system: yes
-
 - name: "Add user to '{{ evolinux_sudo_group }}' group (Debian 9 or later)"
   user:
     name: '{{ user.name }}'
