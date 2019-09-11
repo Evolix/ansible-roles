@@ -55,7 +55,7 @@
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
   when:
-    - grep_allowusers_ssh.rc == 0
+    - grep_allowusers_ssh.rc != 0
     - ssh_allowusers
     - not ssh_allowgroups
 
@@ -67,7 +67,7 @@
     validate: '/usr/sbin/sshd -t -f %s'
   with_dict: "{{ evolinux_users }}"
   notify: reload sshd
-  when: grep_allowusers_ssh.rc != 0
+  when: grep_allowusers_ssh.rc == 0
 
 - name: "verify Match User directive"
   command: "grep -E '^Match User' /etc/ssh/sshd_config"
@@ -86,7 +86,7 @@
     insertafter: "# END EVOLINUX PASSWORD RESTRICTIONS BY ADDRESS"
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
-  when: grep_matchuser_ssh == 0
+  when: grep_matchuser_ssh != 0
 
 - name: "Append '{{ item.name }}' to Match User's sshd directive"
   replace:
@@ -96,7 +96,7 @@
     validate: '/usr/sbin/sshd -t -f %s'
   with_dict: "{{ evolinux_users }}"
   notify: reload sshd
-  when: grep_matchuser_ssh.rc != 0
+  when: grep_matchuser_ssh.rc == 0
 
 - name: disable root login
   replace:
