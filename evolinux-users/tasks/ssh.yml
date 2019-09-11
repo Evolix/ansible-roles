@@ -47,6 +47,28 @@
     - ssh_allowgroups
     - not ssh_allowusers
 
+- name: "Add AllowUsers sshd directive with all users"
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    line: "\nAllowUsers {{ evolinux_users|map(attribute='name')|join(',') }}"
+    insertafter: 'Subsystem'
+    validate: '/usr/sbin/sshd -t -f %s'
+  notify: reload sshd
+  when:
+    - grep_allowusers_ssh.rc == 0
+    - ssh_allowusers
+    - not ssh_allowgroups
+
+- name: "Append '{{ item.name }}' to AllowUsers sshd directive"
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '^(AllowUsers ((?!\b{{ item.name }}\b).)*)$'
+    replace: '\1 {{ item.name }}'
+    validate: '/usr/sbin/sshd -t -f %s'
+  with_dict: "{{ evolinux_users }}"
+  notify: reload sshd
+  when: grep_allowusers_ssh.rc != 0
+
 - name: "verify Match User directive"
   command: "grep -E '^Match User' /etc/ssh/sshd_config"
   changed_when: False
@@ -57,16 +79,7 @@
     - ssh_allowusers
     - not ssh_allowgroups
 
-- name: "Add AllowUsers sshd directive with all users"
-  lineinfile:
-    dest: /etc/ssh/sshd_config
-    line: "\nAllowUsers {{ evolinux_users|map(attribute='name')|join(',') }}"
-    insertafter: 'Subsystem'
-    validate: '/usr/sbin/sshd -t -f %s'
-  notify: reload sshd
-  when: grep_allowusers_ssh.rc == 0
-
-- name: "Add Match User sshd directive with '{{ user.name }}'"
+- name: "Add Match User sshd directive with all users"
   lineinfile:
     dest: /etc/ssh/sshd_config
     line: "\nMatch User {{ evolinux_users|map(attribute='name')|join(',') }}\n    PasswordAuthentication no"
@@ -75,11 +88,15 @@
   notify: reload sshd
   when: grep_matchuser_ssh == 0
 
-- include: ssh_allowusers.yml
-  vars:
-    user: "{{ item.value }}"
- with_dict: "{{ evolinux_users }}"
-  when: (grep_allowusers_ssh.rc != 0) or (grep_matchuser_ssh != 0)
+- name: "Append '{{ item.name }}' to Match User's sshd directive"
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '^(Match User ((?!{{ item.name }}).)*)$'
+    replace: '\1,{{ item.name }}'
+    validate: '/usr/sbin/sshd -t -f %s'
+  with_dict: "{{ evolinux_users }}"
+  notify: reload sshd
+  when: grep_matchuser_ssh.rc != 0
 
 - name: disable root login
   replace:
