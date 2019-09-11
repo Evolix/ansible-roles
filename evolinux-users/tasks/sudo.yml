@@ -19,11 +19,16 @@
   register: copy_sudoers_evolinux
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
-- include: sudo_jessie.yml
-  vars:
-    user: "{{ item.value }}"
+- name: "Add user in sudoers file for '{{ item.name }}' (jessie)"
+  replace:
+    dest: /etc/sudoers.d/evolinux
+    regexp: '^(User_Alias\s+ADMINS\s+=((?!{{ item.name }}).)*)$'
+    replace: '\1,{{ item.name }}'
+    validate: '/usr/sbin/visudo -cf %s'
   with_dict: "{{ evolinux_users }}"
-  when: ansible_distribution_release == "jessie"
+  when:
+    - not copy_sudoers_evolinux.changed
+    - ansible_distribution_release == "jessie"
 
 - name: "Create '{{ evolinux_sudo_group }}' group (Debian 9 or later)"
   group:
