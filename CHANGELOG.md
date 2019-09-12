@@ -18,6 +18,7 @@ The **patch** part changes incrementally at each release.
 * webapps/evoadmin-web Overload templates if needed
 * redis: max clients is configurable
 * generate-ldif: support MariaDB 10.3
+* mysql: activate binary logs by specifying log_bin path
 
 ### Changed
 * elasticsearch: listen on local interface only by default
