@@ -31,6 +31,7 @@ Tasks are extracted in several files, included in `tasks/main.yml` :
 * `mysql_query_cache_limit`: (default: `Null`, default evolinux config is then used) ;
 * `mysql_query_cache_size`: (default: `Null`, default evolinux config is then used) ;
 * `mysql_log_bin`: (default: `Null`, activates binlogs if used) ;
+* `mysql_server_id`: (default: `Null`, MySQL version default is then used) ;
 * `mysql_custom_datadir`: custom datadir.
 * `mysql_custom_tmpdir`: custom tmpdir.
 * `general_alert_email`: email address to send various alert messages (default: `root@localhost`).
