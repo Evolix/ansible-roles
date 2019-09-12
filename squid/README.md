@@ -18,3 +18,6 @@ A blank file is created at `/etc/squid3/whitelist-custom.conf` to add addresses 
 
 
 The full list of variables (with default values) can be found in `defaults/main.yml`.
+
+**Warning** : if squid has been installed with `squid_localproxy_enable: False`, it can't be simply switched to `True` and re-run.
+You have to purge the squid package, remove the configuration `rm -rf /etc/squid* /etc/default/squid*` and then re-run the playbook.
