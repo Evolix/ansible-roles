@@ -7,3 +7,6 @@
 
 - name: Reload php73-fpm
   command: "lxc-attach -n php73 -- systemctl reload php7.3-fpm"
+
+- name: Restart opensmtpd
+  command: "lxc-attach -n php73 -- systemctl restart opensmtpd"

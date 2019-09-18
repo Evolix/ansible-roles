@@ -23,27 +23,8 @@
   command: "lxc-attach -n {{name}} -- apt-get update"
   when: name == 'php73'
 
-- name: Install requirements for sury repository
-  command: "lxc-attach -n {{name}} -- apt-get install -y --no-install-recommends wget apt-transport-https ca-certificates gnupg"
-  when: name == 'php73'
-
-- name: Add sury APT repository
-  copy:
-    content: "deb https://packages.sury.org/php/ stretch main"
-    dest: "/var/lib/lxc/{{name}}/rootfs/etc/apt/sources.list.d/sury.list"
-    mode: "0644"
-  when: name == 'php73'
-
-- name: Add sury GPG key
-  shell: "wget -O- https://packages.sury.org/php/apt.gpg |lxc-attach -n {{name}} -- apt-key add -"
-  when: name == 'php73'
-
-- name: Update APT cache
-  command: "lxc-attach -n {{name}} -- apt-get update"
-  when: name == 'php73'
-
 - name: Install PHP packages
-  command: "lxc-attach -n {{name}} -- apt-get install -y php7.3 php7.3-fpm php7.3-cli php7.3-curl php7.3-mysql php7.3-pgsql php7.3-ldap php7.3-imap php7.3-gd php-ssh2 php-gettext composer libphp-phpmailer ssmtp git zip unzip php7.3-zip"
+  command: "lxc-attach -n {{name}} -- apt-get install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-gettext php-curl php-ssh2 composer libphp-phpmailer opensmtpd git zip unzip php-zip"
   when: name == 'php73'
 
 - name: Copy evolinux PHP 5.6 configuration
@@ -90,18 +71,29 @@
     name: "/var/lib/lxc/{{name}}/rootfs/etc/ssmtp/ssmtp.conf"
     regexp: "^mailhub=.*$"
     replace: "mailhub=127.0.0.1"
+  when: name != 'php73'
 
 - name: Configure ssmtp
   replace:
     name: "/var/lib/lxc/{{name}}/rootfs/etc/ssmtp/ssmtp.conf"
     regexp: "^#FromLineOverride=.*$"
     replace: "FromLineOverride=YES"
+  when: name != 'php73'
 
 - name: Configure ssmtp
   replace:
     name: "/var/lib/lxc/{{name}}/rootfs/etc/ssmtp/ssmtp.conf"
     regexp: "^hostname=.*"
     replace: "hostname={{ansible_fqdn}}"
+  when: name != 'php73'
+
+- name: Configure opensmtpd
+  replace:
+    name: "/var/lib/lxc/{{name}}/rootfs/etc/smtpd.conf"
+    regexp: "^listen.*"
+    replace: "#listen on localhost"
+  notify: "Restart opensmtpd"
+  when: name == 'php73'
 
 - name: Configure timezone
   copy:
