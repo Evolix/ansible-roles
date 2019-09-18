@@ -95,6 +95,13 @@
   notify: "Restart opensmtpd"
   when: name == 'php73'
 
+- name: Configure mailname
+  lineinfile:
+    dest: "/var/lib/lxc/{{name}}/rootfs/etc/mailname"
+    line: "{{ansible_fqdn}}"
+  notify: "Restart opensmtpd"
+  when: name == 'php73'
+
 - name: Configure timezone
   copy:
     dest: "/var/lib/lxc/{{name}}/rootfs/etc/timezone"
