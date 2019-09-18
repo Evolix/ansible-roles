@@ -24,7 +24,7 @@
   when: name == 'php73'
 
 - name: Install PHP packages
-  command: "lxc-attach -n {{name}} -- apt-get install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-gettext php-curl php-ssh2 composer libphp-phpmailer opensmtpd git zip unzip php-zip"
+  command: "lxc-attach -n {{name}} -- /bin/bash -c 'export DEBIAN_FRONTEND=noninteractive && apt-get install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-gettext php-curl php-ssh2 composer libphp-phpmailer opensmtpd git zip unzip php-zip'"
   when: name == 'php73'
 
 - name: Copy evolinux PHP 5.6 configuration
