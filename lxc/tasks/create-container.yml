@@ -27,7 +27,10 @@
   lineinfile:
     name: "/var/lib/lxc/{{name}}/rootfs/etc/default/halt"
     line: "NETDOWN=no"
-  when: lxc_network_type == "none" and release != "stretch"
+  when: 
+    - lxc_network_type == "none"
+    - release != "stretch" 
+    - release != "buster"
 
 - name: Make the container poweroff on SIGPWR (sent by lxc-stop) on jessie
   file:
@@ -49,7 +52,9 @@
     name: "/var/lib/lxc/{{name}}/rootfs/etc/rc.local"
     line: "chmod 755 /dev"
     insertbefore: "^exit 0$"
-  when: release != 'stretch'
+  when:
+    - release != 'stretch'
+    - release != 'buster'
 
 - name: Check if container is running
   command: "lxc-ls --running {{name}}"
