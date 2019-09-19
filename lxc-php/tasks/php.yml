@@ -88,10 +88,10 @@
   when: name != 'php73'
 
 - name: Configure opensmtpd
-  replace:
-    name: "/var/lib/lxc/{{name}}/rootfs/etc/smtpd.conf"
-    regexp: "^listen.*"
-    replace: "#listen on localhost"
+  template:
+    src: smtpd.conf.j2
+    dest: "/var/lib/lxc/{{name}}/rootfs/etc/smtpd.conf"
+    mode: "0644"
   notify: "Restart opensmtpd"
   when: name == 'php73'
 
