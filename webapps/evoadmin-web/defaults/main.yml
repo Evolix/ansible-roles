@@ -18,6 +18,8 @@ evoadmin_config_local_php_force: false
 evoadmin_sudoers_conf_force: false
 evoadmin_add_conf_force: false
 evoadmin_mail_tpl_force: false
+evoadmin_htpasswd_force: false
+evoadmin_htpasswd: false
 
 evoadmin_tpl_servername: "{{ ansible_fqdn }}"
 evoadmin_tpl_address: "{{ ansible_default_ipv4.address }}"

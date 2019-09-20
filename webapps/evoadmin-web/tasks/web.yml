@@ -45,6 +45,22 @@
   notify: reload apache2
   when: not evoadmin_enable_vhost
 
+- name: Copy htpasswd for evoadmin
+  template:
+    src: "{{ item }}"
+    dest: "/var/www/.ansible_evoadmin_htpasswd"
+    mode: "0644"
+    owner: root
+    group: www-data
+    force: "{{ evoadmin_htpasswd_force }}"
+  with_first_found:
+    - "templates/evoadmin-web/htpasswd.{{ inventory_hostname }}.j2"
+    - "templates/evoadmin-web/htpasswd.{{ host_group }}.j2"
+    - "templates/evoadmin-web/htpasswd.j2"
+    - "htpasswd.j2"
+  when: evoadmin_htpasswd
+  register: evoadmin_htpasswd_template
+
 - name: Copy config file for evoadmin
   template:
     src: "{{ item }}"

@@ -33,3 +33,14 @@ And force it to update:
 - "sudoers.j2"
 And force it to update:
 	evoadmin_sudoers_conf_force: True
+
+# Set evoadmin-web sudoers file
+evoadmin_htpasswd: true
+
+Overwrite its template:
+- "templates/evoadmin-web/htpasswd.{{ inventory_hostname }}.j2"
+- "templates/evoadmin-web/htpasswd.{{ host_group }}.j2"
+- "templates/evoadmin-web/htpasswd.j2"
+- "htpasswd.j2"
+And force it to update:
+	evoadmin_htpasswd_force: true

@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 * php: variable to install the mysqlnd module instead of the default mysql module
 * packweb-apache: Deploy opcache.php to give some insights on PHP's opcache status
 * webapps/evoadmin-web Overload templates if needed
+* webapps/evoadmin-web Add an htpasswd to evoadmin if you cant use an apache IP whitelist
 * redis: max clients is configurable
 * generate-ldif: support MariaDB 10.3
 * mysql: activate binary logs by specifying log_bin path
