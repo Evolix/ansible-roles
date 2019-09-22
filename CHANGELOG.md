@@ -11,6 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* evolinux-base: default value for "evolinux_ssh_group"
 
 ### Changed
 * elasticsearch: listen on local interface only by default
