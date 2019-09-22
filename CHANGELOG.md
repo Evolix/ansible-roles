@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 * elasticsearch: listen on local interface only by default
+* evolinux-base: use "evolinux_internal_group" for SSH authentication
 * squid: split systemd tasks into own file
 
 ### Fixed
