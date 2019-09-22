@@ -29,12 +29,6 @@
     dest: /etc/default/squid
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
-- name: "Set custom systemd unit service (Debian 10 or later)"
-  copy:
-    src: squid.service
-    dest: /etc/systemd/system/squid.service
-  when: ansible_distribution_major_version | version_compare('10', '>=')
-
 - name: "squid.conf is present (jessie)"
   template:
     src: squid.conf.j2
@@ -140,11 +134,7 @@
   notify: "reload squid"
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
-- name: "Reload systemd and restart squid (Debian 10 or later)"
-  systemd:
-    name: squid
-    state: restarted
-    daemon_reload: yes
+- include: systemd.yml
   when: ansible_distribution_major_version | version_compare('10', '>=')
 
 - include: logrotate_jessie.yml

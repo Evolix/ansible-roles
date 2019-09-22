@@ -14,6 +14,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 * elasticsearch: listen on local interface only by default
+* squid: split systemd tasks into own file
 
 ### Fixed
 * lxc-php: Don't remove the default pool

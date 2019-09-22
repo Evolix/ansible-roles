@@ -1,0 +1,14 @@
+---
+
+- name: "Set custom systemd unit service (Debian 10 or later)"
+  copy:
+    src: squid.service
+    dest: /etc/systemd/system/squid.service
+  when: ansible_distribution_major_version | version_compare('10', '>=')
+
+- name: "Reload systemd and restart squid (Debian 10 or later)"
+  systemd:
+    name: squid
+    state: restarted
+    daemon_reload: yes
+  when: ansible_distribution_major_version | version_compare('10', '>=')
