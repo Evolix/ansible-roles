@@ -3,7 +3,7 @@
 - name: "Create /etc/evolinux"
   file:
     dest: "/etc/evolinux"
-    recurse: true
+    recurse: True
     state: directory
 
 - name: Configure web-add config file

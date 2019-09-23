@@ -38,7 +38,7 @@
   apt:
     name: '{{ item }}'
     state: present
-    allow_unauthenticated: true
+    allow_unauthenticated: True
   with_items:
     - php5-pam
   when: ansible_distribution_release == "jessie"

@@ -16,7 +16,7 @@
   user:
     name: www-evoadmin
     groups: shadow
-    append: true
+    append: True
   when: ansible_distribution_release == "jessie"
 
 - name: "Create www-evoadmin (Debian 9 or later)"
@@ -53,7 +53,7 @@
     repo: https://forge.evolix.org/evoadmin-web.git
     dest: "{{ evoadmin_document_root }}"
     version: jessie
-    update: false
+    update: False
   when: ansible_distribution_release == "jessie"
 
 - name: "Clone evoadmin repository (Debian 9 or later)"
@@ -61,7 +61,7 @@
     repo: https://forge.evolix.org/evoadmin-web.git
     dest: "{{ evoadmin_document_root }}"
     version: master
-    update: false
+    update: False
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
 - name: Change ownership on git repository
@@ -69,7 +69,7 @@
     dest: "{{ evoadmin_document_root }}"
     owner: "{{ evoadmin_username }}"
     group: "{{ evoadmin_username }}"
-    recurse: true
+    recurse: True
 
 - name: Create evoadmin log directory
   file:
@@ -85,7 +85,7 @@
 - name: "Create {{ evoadmin_scripts_dir }}"
   file:
     dest: "{{ evoadmin_scripts_dir }}"
-    # recurse: true
+    # recurse: True
     mode: "0700"
     state: directory
 
@@ -99,9 +99,9 @@
   command: "chmod -R --verbose u=rwX,g=rX,o= {{ evoadmin_document_root }}"
   register: command_result
   changed_when: "'changed' in command_result.stdout"
-  # failed_when: false
+  # failed_when: False
   args:
-    warn: false
+    warn: False
 
 - name: Add evoadmin sudoers file
   template:
