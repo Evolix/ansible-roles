@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: default value for "evolinux_ssh_group"
 * generate-ldif: support MariaDB 10.3
 * listupgrade: install old-kernel-autoremoval script
+* mongodb: still incompatible with Debian 10
 * mysql: activate binary logs by specifying log_bin path
 * mysql: specify a custom server_id
 * packweb-apache: Deploy opcache.php to give some insights on PHP's opcache status
