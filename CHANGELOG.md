@@ -19,6 +19,7 @@ The **patch** part changes incrementally at each release.
 * webapps/evoadmin-web Add an htpasswd to evoadmin if you cant use an apache IP whitelist
 * redis: max clients is configurable
 * generate-ldif: support MariaDB 10.3
+* listupgrade: install old-kernel-autoremoval script
 * mysql: activate binary logs by specifying log_bin path
 * mysql: specify a custom server_id
 

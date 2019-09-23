@@ -52,3 +52,11 @@
     mode: "0600"
     owner: root
     group: root
+
+- name: old-kernel-autoremoval script is present
+  copy:
+    src: old-kernel-autoremoval.sh
+    dest: /usr/share/scripts/old-kernel-autoremoval.sh
+    mode: "0755"
+    owner: root
+    group: root
