@@ -58,8 +58,8 @@
     - "templates/evoadmin-web/htpasswd.{{ host_group }}.j2"
     - "templates/evoadmin-web/htpasswd.j2"
     - "htpasswd.j2"
-  when: evoadmin_htpasswd
   register: evoadmin_htpasswd_template
+  when: evoadmin_htpasswd
 
 - name: Copy config file for evoadmin
   template:
@@ -73,7 +73,7 @@
     - "templates/evoadmin-web/config.local.{{ inventory_hostname }}.php.j2"
     - "templates/evoadmin-web/config.local.{{ host_group }}.php.j2"
     - "templates/evoadmin-web/config.local.php.j2"
-    - "config.local.conf.php.j2"
+    - "config.local.php.j2"
   register: evoadmin_config_local_php_template
 
 - name: Enable proxy_fcgi
