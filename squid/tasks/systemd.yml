@@ -1,14 +1,24 @@
 ---
 
-- name: "Set custom systemd unit service (Debian 10 or later)"
+- name: Look for existing systemd unit
+  command: systemctl -q is-active squid.service
+  changed_when: False
+  failed_when: False
+  register: squid_systemd_active
+
+- name: "Squid systemd unit service is present (Debian 10 or later)"
   copy:
     src: squid.service
     dest: /etc/systemd/system/squid.service
-  when: ansible_distribution_major_version | version_compare('10', '>=')
+  when:
+    - ansible_distribution_major_version | version_compare('10', '>=')
+    - squid_systemd_active.rc != 0
 
-- name: "Reload systemd and restart squid (Debian 10 or later)"
+- name: "Systemd is reload and Squid restarted (Debian 10 or later)"
   systemd:
     name: squid
     state: restarted
     daemon_reload: yes
-  when: ansible_distribution_major_version | version_compare('10', '>=')
+  when:
+    - ansible_distribution_major_version | version_compare('10', '>=')
+    - squid_systemd_active.rc != 0
