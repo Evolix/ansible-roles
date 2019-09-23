@@ -428,7 +428,7 @@ check_squid() {
     if is_pack_web && (is_installed squid || is_installed squid3); then
         host=$(hostname -i)
         # shellcheck disable=SC2086
-        http_port=$(grep "http_port" $squidconffile | cut -f 2 -d " ")
+        http_port=$(grep -E "^http_port\s+[0-9]+" $squidconffile | awk '{ print $2 }')
         { grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -m owner --uid-owner proxy -j ACCEPT" "$MINIFW_FILE" \
             && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d $host -j ACCEPT" "$MINIFW_FILE" \
             && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d 127.0.0.(1|0/8) -j ACCEPT" "$MINIFW_FILE" \
@@ -1446,7 +1446,7 @@ readonly PROGDIR=$(realpath -m "$(dirname "$0")")
 # shellcheck disable=2124
 readonly ARGS=$@
 
-readonly VERSION="19.08"
+readonly VERSION="19.09"
 
 # Disable LANG*
 export LANG=C
