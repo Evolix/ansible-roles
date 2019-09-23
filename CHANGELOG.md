@@ -11,32 +11,32 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
-* evolinux-base: On debian 10 and later, add noexec on /dev/shm
 * evocheck: explicit PATH
-* php: variable to install the mysqlnd module instead of the default mysql module
-* packweb-apache: Deploy opcache.php to give some insights on PHP's opcache status
-* webapps/evoadmin-web Overload templates if needed
-* webapps/evoadmin-web Add an htpasswd to evoadmin if you cant use an apache IP whitelist
-* redis: max clients is configurable
+* evolinux-base: On debian 10 and later, add noexec on /dev/shm
 * generate-ldif: support MariaDB 10.3
 * listupgrade: install old-kernel-autoremoval script
 * mysql: activate binary logs by specifying log_bin path
 * mysql: specify a custom server_id
+* packweb-apache: Deploy opcache.php to give some insights on PHP's opcache status
+* php: variable to install the mysqlnd module instead of the default mysql module
+* redis: max clients is configurable
+* webapps/evoadmin-web Overload templates if needed
+* webapps/evoadmin-web Add an htpasswd to evoadmin if you cant use an apache IP whitelist
 
 ### Changed
 * elasticsearch: listen on local interface only by default
 * evocheck: upstream version 19.09
 * evocheck: cron jobs execute in verbose
-* squid: Remove wait time when we turn off squid
-* evomaintenance: Turn on API by default (instead of DB)
 * evomaintenance: upstream version 0.5.1
+* evomaintenance: Turn on API by default (instead of DB)
 * php: By default, allow 128M for OpCache (instead of 64M)
+* squid: Remove wait time when we turn off squid
 
 ### Fixed
 * lxc-php: Don't remove the default pool
+* nginx: fix munin fcgi not working (missing chmod 660 on logs)
 * roundcube: fix typo for roundcube vhost
 * tomcat: fix typo for default tomcat_version
-* nginx: fix munin fcgi not working (missing chmod 660 on logs)
 
 ### Security
 
