@@ -134,6 +134,9 @@
   notify: "reload squid"
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
+- include: systemd.yml
+  when: ansible_distribution_major_version | version_compare('10', '>=')
+
 - include: logrotate_jessie.yml
   when: ansible_distribution_release == "jessie"
 

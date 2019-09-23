@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 * evocheck: explicit PATH
 * evolinux-base: On debian 10 and later, add noexec on /dev/shm
+* evolinux-base: default value for "evolinux_ssh_group"
 * generate-ldif: support MariaDB 10.3
 * listupgrade: install old-kernel-autoremoval script
 * mysql: activate binary logs by specifying log_bin path
@@ -25,12 +26,14 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 * elasticsearch: listen on local interface only by default
-* evocheck: upstream version 19.09
+* evocheck : update (version 19.09) from upstream
 * evocheck: cron jobs execute in verbose
-* evomaintenance: upstream version 0.5.1
+* evolinux-base: use "evolinux_internal_group" for SSH authentication
 * evomaintenance: Turn on API by default (instead of DB)
+* evomaintenance: upstream version 0.5.1
 * php: By default, allow 128M for OpCache (instead of 64M)
 * squid: Remove wait time when we turn off squid
+* squid: split systemd tasks into own file
 
 ### Fixed
 * lxc-php: Don't remove the default pool

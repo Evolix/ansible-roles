@@ -79,6 +79,7 @@ evolinux_packages_diagnostic: True
 evolinux_packages_hardware: True
 evolinux_packages_common: True
 evolinux_packages_stretch: True
+evolinux_packages_buster: True
 evolinux_packages_serveur_base: True
 evolinux_packages_purge_openntpd: True
 evolinux_packages_purge_locate: True
@@ -124,6 +125,7 @@ evolinux_ssh_password_auth_addresses: "{{ evolinux_default_ssh_password_auth_add
 evolinux_ssh_match_address: True
 evolinux_ssh_disable_acceptenv: True
 evolinux_ssh_allow_current_user: False
+evolinux_ssh_group: "evolinux-ssh"
 
 ### disabled because of a memory leak
 # # evolinux users
