@@ -35,6 +35,7 @@ The **patch** part changes incrementally at each release.
 * php: By default, allow 128M for OpCache (instead of 64M)
 * squid: Remove wait time when we turn off squid
 * squid: split systemd tasks into own file
+* varnish: remove custom ExecReload= script for Debian 10+
 
 ### Fixed
 * lxc-php: Don't remove the default pool
