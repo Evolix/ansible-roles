@@ -1,0 +1,20 @@
+---
+
+- name: Redis is configured.
+  template:
+    src: redis.conf.j2
+    dest: "{{ redis_conf_dir }}/redis.conf"
+    mode: "0640"
+    owner: redis
+    group: redis
+  notify: "{{ redis_restart_handler_name }}"
+  tags:
+    - redis
+
+- name: Redis is running and enabled on boot.
+  systemd:
+    name: "{{ redis_systemd_name }}"
+    enabled: yes
+    state: started
+  tags:
+    - redis

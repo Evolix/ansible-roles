@@ -1,0 +1,134 @@
+---
+
+- name: "Instance '{{ redis_instance_name }}' group is present"
+  group:
+    name: "redis-{{ redis_instance_name }}"
+    state: present
+    system: True
+  tags:
+    - redis
+
+- name: "Instance '{{ redis_instance_name }}' user is present"
+  user:
+    name: "redis-{{ redis_instance_name }}"
+    group: "redis-{{ redis_instance_name }}"
+    state: present
+    system: True
+    shell: '/bin/false'
+  tags:
+    - redis
+
+- name: "Instance '{{ redis_instance_name }}' config directory is present"
+  file:
+    dest: "{{ redis_conf_dir }}"
+    mode: "0755"
+    owner: "root"
+    group: "root"
+    follow: yes
+    state: directory
+  tags:
+    - redis
+
+- name: "Instance '{{ redis_instance_name }}' config hooks directories are present"
+  file:
+    dest: "{{ item }}"
+    mode: "0755"
+    owner: "root"
+    group: "root"
+    follow: yes
+    state: directory
+  with_items:
+    - "{{ redis_conf_dir }}/redis-server.pre-up.d"
+    - "{{ redis_conf_dir }}/redis-server.post-up.d"
+    - "{{ redis_conf_dir }}/redis-server.pre-down.d"
+    - "{{ redis_conf_dir }}/redis-server.post-down.d"
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version | version_compare('9', '>=')
+  tags:
+    - redis
+
+- name: "Instance '{{ redis_instance_name }}' hooks examples are present"
+  command: "cp -a /etc/redis/{{ item }}/00_example {{ redis_conf_dir }}/{{ item }}"
+  args:
+    creates: "{{ redis_conf_dir }}/{{ item }}/00_example"
+  with_items:
+    - "redis-server.pre-up.d"
+    - "redis-server.post-up.d"
+    - "redis-server.pre-down.d"
+    - "redis-server.post-down.d"
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version | version_compare('9', '>=')
+  tags:
+    - redis
+
+- name: "Instance '{{ redis_instance_name }}' other directories are present"
+  file:
+    dest: "{{ item }}"
+    mode: "0750"
+    owner: "redis-{{ redis_instance_name }}"
+    group: "redis-{{ redis_instance_name }}"
+    follow: yes
+    state: directory
+  with_items:
+    - "{{ redis_pid_dir }}"
+    - "{{ redis_socket_dir }}"
+    - "{{ redis_data_dir }}"
+    - "{{ redis_log_dir }}"
+  tags:
+    - redis
+
+- name: "Instance '{{ redis_instance_name }}' configuration file is present"
+  template:
+    src: redis.conf.j2
+    dest: "{{ redis_conf_dir }}/redis.conf"
+    mode: "0640"
+    owner: redis-{{ redis_instance_name }}
+    group: redis-{{ redis_instance_name }}
+  tags:
+    - redis
+
+- name: Systemd template for redis instances is installed (Debian 8)
+  copy:
+    src: 'redis-server@jessie.service'
+    dest: '/etc/systemd/system/redis-server@.service'
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version | version_compare('9', '<')
+  tags:
+    - redis
+
+- name: Systemd template for redis instances is installed (Debian 9 or later)
+  copy:
+    src: 'redis-server@stretch.service'
+    dest: '/etc/systemd/system/redis-server@.service'
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version | version_compare('9', '>=')
+  tags:
+    - redis
+
+- name: "Instance '{{ redis_instance_name }}' systemd unit is enabled and started"
+  systemd:
+    name: "{{ redis_systemd_name }}"
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  tags:
+    - redis
+
+- name: Redis SysVinit script is stopped and disabled
+  service:
+    name: "redis-server"
+    enabled: no
+    state: stopped
+  when: redis_default_server_disabled
+  tags:
+    - redis
