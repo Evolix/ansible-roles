@@ -24,10 +24,18 @@ else
 fi
 
 check_server() {
-    host=$1
-    port=$2
+    name=$1
+    conf_file=$2
 
-    ${check_bin} -H ${host} -p "${port}" >/dev/null 2>&1
+    host=$(config_var "bind" "${conf_file}")
+    port=$(config_var "port" "${conf_file}")
+    pass=$(config_var "requirepass" "${conf_file}")
+
+    cmd="${check_bin} -H ${host} -p ${port}"
+    if [ -n "${pass}" ]; then
+        cmd="${cmd} -x ${pass}"
+    fi
+    $cmd >/dev/null 2>&1
     ret="${?}"
     if [ "${ret}" -ge 2 ]; then
         nb_crit=$((nb_crit + 1))
@@ -43,15 +51,15 @@ check_server() {
         [ "${return}" -le 0 ] && return=0
     fi
 }
+config_var() {
+    variable=$1
+    file=$2
+    test -f $file && grep -E "^${variable}\s+.+$" $file | awk '{ print $2 }'
+}
 
 # default instance
-conf_file="/etc/redis/redis.conf"
 if systemctl is-enabled -q redis-server; then
-    name="default"
-    host=$(grep "bind" "${conf_file}"| awk '{ print $2 }')
-    port=$(grep "port" "${conf_file}"| awk '{ print $2 }')
-
-    check_server $host $port
+    check_server "default" "/etc/redis/redis.conf"
 fi
 
 # additional instances
@@ -59,13 +67,10 @@ conf_files=$(ls /etc/redis-*/redis.conf)
 for conf_file in ${conf_files}; do
     name=$(dirname ${conf_file} | sed '{s|/etc/redis-||}')
     if systemctl is-enabled -q "redis-server@${name}.service"; then
-        host=$(grep "bind" "${conf_file}"| awk '{ print $2 }')
-        port=$(grep "port" "${conf_file}"| awk '{ print $2 }')
-
-        check_server $host $port
+        check_server $name $conf_file
     else
         nb_crit=$((nb_crit + 1))
-        output="${output}CRITICAL - ${name} (${port})\n"
+        output="${output}CRITICAL - ${name}\n"
     fi
 done
 
