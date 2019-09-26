@@ -1,0 +1,50 @@
+---
+
+- name: Certbot work directory is present
+  file:
+    dest: "{{ certbot_work_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Check if Nginx is installed
+  stat:
+    path: /etc/nginx
+  register: is_nginx
+
+- name: ACME challenge for Nginx is installed
+  template:
+    src: acme-challenge/nginx.conf.j2
+    dest: /etc/nginx/snippets/letsencrypt.conf
+    force: yes
+  notify: reload nginx
+  when: is_nginx.stat.exists
+
+- name: Check if Apache is installed
+  stat:
+    path: /etc/apache2
+  register: is_apache
+
+- block:
+  - name: ACME challenge for Apache is installed
+    template:
+      src: acme-challenge/apache.conf.j2
+      dest: /etc/apache2/conf-available/letsencrypt.conf
+      force: yes
+    notify: reload apache
+
+  - name: ACME challenge for Apache is enabled
+    command: "a2enconf letsencrypt"
+    register: command_result
+    changed_when: "'Enabling' in command_result.stderr"
+    notify: reload apache
+  when: is_apache.stat.exists
+
+- name: Check if HAProxy is installed
+  stat:
+    path: /etc/haproxy
+  register: is_haproxy
+
+- name: ACME challenge for HAProxy is installed
+  debug:
+    msg: "ACME challenge configuration for HAProxy should be configured manually"
+  when: is_haproxy.stat.exists

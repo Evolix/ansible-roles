@@ -1,0 +1,5 @@
+location ~ /.well-known/acme-challenge {
+    alias {{ certbot_work_dir }}/;
+    try_files $uri =404;
+    allow all;
+}

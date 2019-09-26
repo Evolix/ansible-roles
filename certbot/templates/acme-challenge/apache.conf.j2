@@ -1,0 +1,6 @@
+Alias /.well-known/acme-challenge {{ certbot_work_dir }}/.well-known/acme-challenge
+<Directory "{{ certbot_work_dir }}/.well-known/acme-challenge">
+    Options -Indexes
+    Allow from all
+    Require all granted
+</Directory>
