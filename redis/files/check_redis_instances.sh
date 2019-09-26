@@ -63,7 +63,7 @@ if systemctl is-enabled -q redis-server; then
 fi
 
 # additional instances
-conf_files=$(ls /etc/redis-*/redis.conf)
+conf_files=$(ls -1 /etc/redis-*/redis.conf)
 for conf_file in ${conf_files}; do
     name=$(dirname ${conf_file} | sed '{s|/etc/redis-||}')
     if systemctl is-enabled -q "redis-server@${name}.service"; then
