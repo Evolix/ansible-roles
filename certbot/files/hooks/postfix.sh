@@ -13,18 +13,19 @@ debug() {
     fi
 }
 
-if [ -n "$(pidof master)" ]; then
-    postconf_bin=$(command -v postconf)
-    if ${postconf_bin} > /dev/null; then
-        if ${postconf_bin} | grep -E "^smtpd_tls_cert_file" | grep -q "letsencrypt"; then
+postconf_bin=$(command -v postconf)
+
+if [ -n "$(pidof master)" ] && [ -n "${postconf_bin}" ]; then
+    if ${postconf_bin} | grep -E "^smtpd_tls_cert_file" | grep -q "letsencrypt"; then
+        if ${postconf_bin} > /dev/null; then
             debug "Postfix detected... reloading"
             systemctl reload postfix
         else
-            debug "Postfix doesn't use Let's Encrypt certificate. Skip."
+            error "Postfix config is broken, you must fix it !"
         fi
     else
-        error "Postfix config is broken, you must fix it !"
+        debug "Postfix doesn't use Let's Encrypt certificate. Skip."
     fi
 else
-    debug "Postfix is not running. Skip."
+    debug "Postfix is not running or missing. Skip."
 fi

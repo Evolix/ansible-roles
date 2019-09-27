@@ -13,18 +13,19 @@ debug() {
     fi
 }
 
-if [ -n "$(pidof apache2)" ]; then
-    apache2ctl_bin=$(command -v apache2ctl)
-    if ${apache2ctl_bin} configtest > /dev/null; then
-        if grep --dereference-recursive -E "^\s*SSLCertificate" /etc/apache2/sites-enabled | grep -q "letsencrypt"; then
+apache2ctl_bin=$(command -v apache2ctl)
+
+if [ -n "$(pidof apache2)" ] && [ -n "${apache2ctl_bin}" ]; then
+    if grep -r -E "letsencrypt" /etc/apache2/; then
+        if ${apache2ctl_bin} configtest > /dev/null; then
             debug "Apache detected... reloading"
             systemctl reload apache2
         else
-            debug "Apache doesn't use Let's Encrypt certificate. Skip."
+            error "Apache config is broken, you must fix it !"
         fi
     else
-        error "Apache config is broken, you must fix it !"
+        debug "Apache doesn't use Let's Encrypt certificate. Skip."
     fi
 else
-    debug "Apache is not running. Skip."
+    debug "Apache is not running or missing. Skip."
 fi

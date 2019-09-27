@@ -13,18 +13,19 @@ debug() {
     fi
 }
 
-if [ -n "$(pidof nginx)" ]; then
-    nginx_bin=$(command -v nginx)
-    if ${nginx_bin} -t > /dev/null; then
-        if grep --dereference-recursive -E "^\s*ssl_certificate" /etc/nginx/sites-enabled | grep -q "letsencrypt"; then
+nginx_bin=$(command -v nginx)
+
+if [ -n "$(pidof nginx)" ] && [ -n "${nginx_bin}" ]; then
+    if grep --dereference-recursive -E "letsencrypt" /etc/nginx/sites-enabled; then
+        if ${nginx_bin} -t > /dev/null; then
             debug "Nginx detected... reloading"
             systemctl reload nginx
         else
-            debug "Nginx doesn't use Let's Encrypt certificate. Skip."
+            error "Nginx config is broken, you must fix it !"
         fi
     else
-        error "Nginx config is broken, you must fix it !"
+        debug "Nginx doesn't use Let's Encrypt certificate. Skip."
     fi
 else
-    debug "Nginx is not running. Skip."
+    debug "Nginx is not running or missing. Skip."
 fi

@@ -13,18 +13,19 @@ debug() {
     fi
 }
 
-if [ -n "$(pidof dovecot)" ]; then
-    doveconf_bin=$(command -v doveconf)
-    if ${doveconf_bin} > /dev/null; then
-        if ${doveconf_bin} | grep -E "^ssl_cert[^_]" | grep -q "letsencrypt"; then
+doveconf_bin=$(command -v doveconf)
+
+if [ -n "$(pidof dovecot)" ] && [ -n "${doveconf_bin}" ]; then
+    if ${doveconf_bin} | grep -E "^ssl_cert[^_]" | grep -q "letsencrypt"; then
+        if ${doveconf_bin} > /dev/null; then
             debug "Dovecot detected... reloading"
             systemctl reload dovecot
         else
-            debug "Dovecot doesn't use Let's Encrypt certificate. Skip."
+            error "Dovecot config is broken, you must fix it !"
         fi
     else
-        error "Dovecot config is broken, you must fix it !"
+        debug "Dovecot doesn't use Let's Encrypt certificate. Skip."
     fi
 else
-    debug "Dovecot is not running. Skip."
+    debug "Dovecot is not running or missing. Skip."
 fi
