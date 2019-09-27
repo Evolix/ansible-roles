@@ -1,5 +1,6 @@
 #!/bin/sh
 
+readonly PROGNAME=$(basename "$0")
 readonly VERBOSE=${VERBOSE:-"0"}
 readonly QUIET=${QUIET:-"0"}
 
@@ -18,11 +19,16 @@ if [ -z "${RENEWED_LINEAGE}" ]; then
 fi
 
 haproxy_bin=$(command -v haproxy)
+haproxy_cert_dir="/etc/ssl/haproxy/"
 
 if [ -n "$(pidof haproxy)" ] && [ -n "${haproxy_bin}" ]; then
     if [ -f "${RENEWED_LINEAGE}/fullchain.pem" ] && [ -f "${RENEWED_LINEAGE}/privkey.pem" ]; then
-        haproxy_cert_file="/etc/ssl/haproxy/$(basename "${RENEWED_LINEAGE}").pem"
+        haproxy_cert_file="${haproxy_cert_dir}/$(basename "${RENEWED_LINEAGE}").pem"
         failed_cert_file="/root/$(basename "${RENEWED_LINEAGE}").failed.pem"
+
+        # shellcheck disable=SC2174
+        mkdir --mode=700 --parents "${haproxy_cert_dir}"
+        chown root: "${haproxy_cert_dir}"
 
         debug "Concatenating certificate files to ${haproxy_cert_file}"
         cat "${RENEWED_LINEAGE}/fullchain.pem" "${RENEWED_LINEAGE}/privkey.pem" > "${haproxy_cert_file}"
@@ -37,7 +43,7 @@ if [ -n "$(pidof haproxy)" ] && [ -n "${haproxy_bin}" ]; then
             error "Key and cert don't match, we moved the file to ${failed_cert_file} for inspection"
         fi
 
-        if ${haproxy_bin} -c -f /etc/haproxy/haproxy.cfg > /dev/null; then
+        if ${haproxy_bin} -c -f /etc/haproxy/haproxy.cfg > /dev/null 2>&1; then
             debug "HAProxy detected... reloading"
             systemctl reload apache2
         else

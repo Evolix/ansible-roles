@@ -1,5 +1,6 @@
 #!/bin/sh
 
+readonly PROGNAME=$(basename "$0")
 readonly VERBOSE=${VERBOSE:-"0"}
 readonly QUIET=${QUIET:-"0"}
 

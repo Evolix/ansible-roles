@@ -1,5 +1,6 @@
 #!/bin/sh
 
+readonly PROGNAME=$(basename "$0")
 readonly VERBOSE=${VERBOSE:-"0"}
 readonly QUIET=${QUIET:-"0"}
 
@@ -16,8 +17,8 @@ debug() {
 apache2ctl_bin=$(command -v apache2ctl)
 
 if [ -n "$(pidof apache2)" ] && [ -n "${apache2ctl_bin}" ]; then
-    if grep -r -E "letsencrypt" /etc/apache2/; then
-        if ${apache2ctl_bin} configtest > /dev/null; then
+    if grep -q -r -E "letsencrypt" /etc/apache2/; then
+        if ${apache2ctl_bin} configtest > /dev/null 2>&1; then
             debug "Apache detected... reloading"
             systemctl reload apache2
         else

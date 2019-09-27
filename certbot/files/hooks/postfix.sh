@@ -1,5 +1,6 @@
 #!/bin/sh
 
+readonly PROGNAME=$(basename "$0")
 readonly VERBOSE=${VERBOSE:-"0"}
 readonly QUIET=${QUIET:-"0"}
 
@@ -17,7 +18,7 @@ postconf_bin=$(command -v postconf)
 
 if [ -n "$(pidof master)" ] && [ -n "${postconf_bin}" ]; then
     if ${postconf_bin} | grep -E "^smtpd_tls_cert_file" | grep -q "letsencrypt"; then
-        if ${postconf_bin} > /dev/null; then
+        if ${postconf_bin} > /dev/null 2>&1; then
             debug "Postfix detected... reloading"
             systemctl reload postfix
         else
