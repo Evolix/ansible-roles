@@ -46,5 +46,5 @@
 
 - name: ACME challenge for HAProxy is installed
   debug:
-    msg: "ACME challenge configuration for HAProxy should be configured manually"
+    msg: "ACME challenge configuration for HAProxy must be configured manually"
   when: is_haproxy.stat.exists
