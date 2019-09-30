@@ -55,6 +55,13 @@
   tags:
     - apt
 
+- name: Check if Cron is installed
+  shell: "dpkg --list 'cron' 2>/dev/null | grep -q -E '^(i|h)i'"
+  register: is_cron
+  changed_when: false
+  failed_when: false
+  check_mode: no
+
 - name: Check for held packages (script)
   cron:
     cron_file: apt-hold-packages
@@ -67,5 +74,6 @@
     day: "{{ apt_check_hold_cron_day }}"
     month: "{{ apt_check_hold_cron_month }}"
     state: "present"
+  when: is_cron.rc == 0
   tags:
     - apt

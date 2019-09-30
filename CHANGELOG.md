@@ -11,6 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* apt: check if cron is installed before adding a cron job
 * certbot : new role to install and configure certbot
 * evocheck: explicit PATH
 * evolinux-base: On debian 10 and later, add noexec on /dev/shm
