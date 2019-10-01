@@ -5,7 +5,7 @@
   register: container_exists
 
 - name: Create container
-  command: "lxc-create --name {{name}} --template debian --bdev dir --logfile /var/log/lxc/lxc-{{name}}.log --logpriority INFO -- --arch amd64 --release {{release}}"
+  command: "lxc-create --name {{name}} --template download --bdev dir --logfile /var/log/lxc/lxc-{{name}}.log --logpriority INFO -- --dist debian --release {{release}} --arch amd64"
   when: container_exists.stdout_lines == []
 
 #- name: Create container
@@ -13,22 +13,23 @@
 #    name: "{{name}}"
 #    container_log: true
 #    template: download
-#    state: stopped
+#    state: started
 #    template_options: "--release {{release}}"
+#  when: container_exists.stdout_lines == []
 
 - name: Disable network configuration inside container
   replace:
     name: "/var/lib/lxc/{{name}}/rootfs/etc/default/networking"
     regexp: "^#CONFIGURE_INTERFACES=yes"
     replace: CONFIGURE_INTERFACES=no
-  when: lxc_network_type == "none"
+  when: lxc_net_0_type == "none"
 
 - name: Disable interface shut down on halt inside container
   lineinfile:
     name: "/var/lib/lxc/{{name}}/rootfs/etc/default/halt"
     line: "NETDOWN=no"
   when: 
-    - lxc_network_type == "none"
+    - lxc_net_0_type == "none"
     - release != "stretch" 
     - release != "buster"
 

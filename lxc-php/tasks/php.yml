@@ -96,9 +96,9 @@
   when: name == 'php73'
 
 - name: Configure mailname
-  lineinfile:
+  template:
+    src: mailname.j2
     dest: "/var/lib/lxc/{{name}}/rootfs/etc/mailname"
-    line: "{{ansible_fqdn}}"
   notify: "Restart opensmtpd"
   when: name == 'php73'
 
