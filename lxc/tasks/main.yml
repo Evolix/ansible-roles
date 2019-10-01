@@ -1,11 +1,10 @@
 ---
 - name: Install lxc tools
   apt:
-    name: '{{ item }}'
-  with_items:
-    - lxc
-    - debootstrap
-    - xz-utils
+    name:
+      - lxc
+      - debootstrap
+      - xz-utils
 
 - name: Copy LXC default containers configuration
   template:
