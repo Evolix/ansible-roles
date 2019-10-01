@@ -39,6 +39,7 @@ The **patch** part changes incrementally at each release.
 * squid: split systemd tasks into own file
 * varnish: remove custom ExecReload= script for Debian 10+
 * lxc: remove useless loop in apt execution
+* lxc: update our default template to be compatible with Debian 10
 
 ### Fixed
 * lxc-php: Don't remove the default pool
