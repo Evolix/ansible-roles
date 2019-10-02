@@ -35,19 +35,19 @@ check_server() {
     if [ -n "${pass}" ]; then
         cmd="${cmd} -x ${pass}"
     fi
-    $cmd >/dev/null 2>&1
+    result=$($cmd)
     ret="${?}"
     if [ "${ret}" -ge 2 ]; then
         nb_crit=$((nb_crit + 1))
-        output="${output}CRITICAL - ${name} (${host}:${port})\n"
+        output="${output}${result}\n"
         [ "${return}" -le 2 ] && return=2
     elif [ "${ret}" -ge 1 ]; then
         nb_warn=$((nb_warn + 1))
-        output="${output}WARNING - ${name} (${host}:${port})\n"
+        output="${output}${result}\n"
         [ "${return}" -le 1 ] && return=1
     else
         nb_ok=$((nb_ok + 1))
-        output="${output}OK - ${name} (${host}:${port})\n"
+        output="${output}${result}\n"
         [ "${return}" -le 0 ] && return=0
     fi
 }
@@ -69,8 +69,8 @@ for conf_file in ${conf_files}; do
     if systemctl is-enabled -q "redis-server@${name}.service"; then
         check_server $name $conf_file
     else
-        nb_crit=$((nb_crit + 1))
-        output="${output}CRITICAL - ${name}\n"
+        nb_unchk=$((nb_unchk + 1))
+        output="${output}UNCHK - ${name} (unit is disabled or missing)\n"
     fi
 done
 
