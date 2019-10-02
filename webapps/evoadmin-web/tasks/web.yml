@@ -9,14 +9,23 @@
   notify: reload apache2
   when: ansible_distribution_release == "jessie"
 
-- name: "Set custom values for PHP config (Debian 9 or later)"
+- name: "Set custom values for PHP config (Debian 9)"
   ini_file:
     dest: /etc/php/7.0/apache2/conf.d/zzz-evolinux-custom.ini
     section: PHP
     option: "disable_functions"
     value: "shell-exec,system,passthru,putenv,popen"
   notify: reload apache2
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version | version_compare('9', '=')
+
+- name: "Set custom values for PHP config (Debian 10)"
+  ini_file:
+    dest: /etc/php/7.3/apache2/conf.d/zzz-evolinux-custom.ini
+    section: PHP
+    option: "disable_functions"
+    value: "shell-exec,system,passthru,putenv,popen"
+  notify: reload apache2
+  when: ansible_distribution_major_version | version_compare('10', '=')
 
 - name: Install evoadmin VHost
   template:

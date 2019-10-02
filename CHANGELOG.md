@@ -46,6 +46,7 @@ The **patch** part changes incrementally at each release.
 * nginx: fix munin fcgi not working (missing chmod 660 on logs)
 * roundcube: fix typo for roundcube vhost
 * tomcat: fix typo for default tomcat_version
+* evoadmin-web: Put the php config at the right place for Buster
 
 ### Security
 
