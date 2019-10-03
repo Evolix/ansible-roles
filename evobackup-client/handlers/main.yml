@@ -1,5 +1,6 @@
 ---
 - name: restart minifirewall
-  service:
-    name: minifirewall
-    state: restarted
+  command: /etc/init.d/minifirewall restart
+  register: minifirewall_init_restart
+  failed_when: "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
+  changed_when: "'starting IPTables rules is now finish : OK' in minifirewall_init_restart.stdout"
