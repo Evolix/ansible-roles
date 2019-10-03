@@ -1310,7 +1310,7 @@ main() {
         test "${IS_HARDWARERAIDTOOL:=1}" = 1 && check_hardwareraidtool
         test "${IS_LOG2MAILSYSTEMDUNIT:=1}" = 1 && check_log2mailsystemdunit
         test "${IS_LISTUPGRADE:=1}" = 1 && check_listupgrade
-        test "${IS_MARIADBEVOLINUXCONF:=1}" = 1 && check_mariadbevolinuxconf
+        #test "${IS_MARIADBEVOLINUXCONF:=1}" = 1 && check_mariadbevolinuxconf
         test "${IS_SQL_BACKUP:=1}" = 1 && check_sql_backup
         test "${IS_POSTGRES_BACKUP:=1}" = 1 && check_postgres_backup
         test "${IS_MONGO_BACKUP:=1}" = 1 && check_mongo_backup
@@ -1320,7 +1320,7 @@ main() {
         test "${IS_MARIADBSYSTEMDUNIT:=1}" = 1 && check_mariadbsystemdunit
         test "${IS_MYSQLMUNIN:=1}" = 1 && check_mysqlmunin
         test "${IS_MYSQLNRPE:=1}" = 1 && check_mysqlnrpe
-        test "${IS_PHPEVOLINUXCONF:=1}" = 1 && check_phpevolinuxconf
+        #test "${IS_PHPEVOLINUXCONF:=1}" = 1 && check_phpevolinuxconf
         test "${IS_SQUIDLOGROTATE:=1}" = 1 && check_squidlogrotate
         test "${IS_SQUIDEVOLINUXCONF:=1}" = 1 && check_squidevolinuxconf
         test "${IS_DUPLICATE_FS_LABEL:=1}" = 1 && check_duplicate_fs_label
@@ -1329,7 +1329,7 @@ main() {
         test "${IS_EVOACME_LIVELINKS:=1}" = 1 && check_evoacme_livelinks
         test "${IS_APACHE_CONFENABLED:=1}" = 1 && check_apache_confenabled
         test "${IS_MELTDOWN_SPECTRE:=1}" = 1 && check_meltdown_spectre
-        test "${IS_OLD_HOME_DIR:=1}" = 1 && check_old_home_dir
+        #test "${IS_OLD_HOME_DIR:=1}" = 1 && check_old_home_dir
         test "${IS_EVOBACKUP_INCS:=1}" = 1 && check_evobackup_incs
         test "${IS_OSPROBER:=1}" = 1 && check_osprober
         test "${IS_JESSIE_BACKPORTS:=1}" = 1 && check_jessie_backports
