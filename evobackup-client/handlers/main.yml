@@ -4,3 +4,7 @@
   register: minifirewall_init_restart
   failed_when: "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
   changed_when: "'starting IPTables rules is now finish : OK' in minifirewall_init_restart.stdout"
+
+- name: 'created new jail'
+  command: "bkctld start {{ evolinux_hostname }}"
+  delegate_to: "{{ evobackup_client__hosts[0].ip }}"

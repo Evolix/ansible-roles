@@ -18,3 +18,14 @@
   tags:
     - evobackup_client
     - evobackup_client_backup_ssh_key
+
+- name: 'copy ssh public key to backup server'
+  copy:
+    content: "{{ evobackup_client__root_key.ssh_public_key }}"
+    dest: "/root/{{ evolinux_hostname }}.pub"
+  become: true
+  delegate_to: "{{ evobackup_client__hosts[0].ip }}"
+  tags:
+    - evobackup_client
+    - evobackup_client_backup_ssh_key
+    - evobackup_client_jail
