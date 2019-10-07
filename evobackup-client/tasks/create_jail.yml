@@ -6,24 +6,43 @@
     creates: "/backup/jails/{{ evolinux_hostname }}/"
   become: true
   delegate_to: "{{ evobackup_client__hosts[0].ip }}"
-  notify: 'created new jail'
+  notify:
+    - 'created new jail'
+    - 'jail updated'
+  tags:
+    - evobackup_client
+    - evobackup_client_jail
 
 - name: 'add ssh key to jail'
   command: "bkctld key {{ evolinux_hostname }} /root/{{ evolinux_hostname }}.pub"
   become: true
   delegate_to: "{{ evobackup_client__hosts[0].ip }}"
+  notify:  'jail updated'
+  tags:
+    - evobackup_client
+    - evobackup_client_jail
 
 - name: 'add ip to jail'
   command: "bkctld ip {{ evolinux_hostname }} {{ ansible_host }}"
   become: true
   delegate_to: "{{ evobackup_client__hosts[0].ip }}"
+  notify:  'jail updated'
+  tags:
+    - evobackup_client
+    - evobackup_client_jail
 
 - name: 'get jail port'
   command: "bkctld port {{ evolinux_hostname }}"
   become: true
   register: bkctld_port
   delegate_to: "{{ evobackup_client__hosts[0].ip }}"
+  tags:
+    - evobackup_client
+    - evobackup_client_jail
 
 - name: 'register jail port'
   set_fact:
     evobackup_ssh_port={{ bkctld_port.stdout }}
+  tags:
+    - evobackup_client
+    - evobackup_client_jail

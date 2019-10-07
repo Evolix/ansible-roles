@@ -8,3 +8,8 @@
 - name: 'created new jail'
   command: "bkctld start {{ evolinux_hostname }}"
   delegate_to: "{{ evobackup_client__hosts[0].ip }}"
+
+- name: 'jail updated'
+  command: "bkctld start {{ evolinux_hostname }}"
+  delegate_to: "{{ evobackup_client__hosts[0].ip }}"
+  when: evobackup_client__hosts|length > 1
