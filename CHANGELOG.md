@@ -26,6 +26,9 @@ The **patch** part changes incrementally at each release.
 * redis: rewrite of the role (separate instances, better systemd units…)
 * webapps/evoadmin-web Overload templates if needed
 * webapps/evoadmin-web Add an htpasswd to evoadmin if you cant use an apache IP whitelist
+* bind: enable query logging for recursive resolvers
+* bind: enable logrotate for recursive resolvers
+* bind: enable bind9 munin plugin for recursive resolvers
 
 ### Changed
 * elasticsearch: listen on local interface only by default
@@ -41,6 +44,8 @@ The **patch** part changes incrementally at each release.
 * lxc: remove useless loop in apt execution
 * lxc: update our default template to be compatible with Debian 10
 * lxc: rely on lxc_container module instead of command module
+* bind: the munin task was present, but not included
+* bind: change name of logrotate file to bind9
 
 ### Fixed
 * lxc-php: Don't remove the default pool
@@ -48,6 +53,7 @@ The **patch** part changes incrementally at each release.
 * roundcube: fix typo for roundcube vhost
 * tomcat: fix typo for default tomcat_version
 * evoadmin-web: Put the php config at the right place for Buster
+
 
 ### Security
 

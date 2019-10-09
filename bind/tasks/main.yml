@@ -65,7 +65,7 @@
     group: adm
     mode: "0640"
     state: touch
-  when: bind_authoritative_server and bind_chroot_set == False
+  when: bind_chroot_set == False
 
 - name: send chroot-bind.sh in /root
   copy:
@@ -98,7 +98,7 @@
 - name: logrotate for non chroot bind
   template:
     src: logrotate_bind
-    dest: /etc/logrotate.d/bind
+    dest: /etc/logrotate.d/bind9
     owner: root
     group: root
     mode: "0644"
@@ -109,10 +109,12 @@
 - name: logrotate for chroot bind
   template:
     src: logrotate_bind_chroot.j2
-    dest: /etc/logrotate.d/bind
+    dest: /etc/logrotate.d/bind9
     owner: root
     group: root
     mode: "0644"
     force: yes
   notify: restart bind
   when: bind_chroot_set
+
+- include: munin.yml

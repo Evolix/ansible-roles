@@ -8,9 +8,17 @@ options {
 };
 
 logging {
-        category default { default_file; };
-        channel default_file {
-                file "/var/log/bind.log";
-                severity info;
-        };
+    category default { default_file; };
+    category queries { query_logging; };
+
+    channel default_file {
+        file "/var/log/bind.log";
+        severity info;
+    };
+    channel query_logging {
+        file "/var/log/bind_queries.log" versions 2 size 128M;
+        print-category yes;
+        print-severity yes;
+        print-time yes;
+    };
 };
