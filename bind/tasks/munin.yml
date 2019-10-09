@@ -1,23 +1,23 @@
 ---
 
-- name: is Munin present ?
+- name: 'is Munin present ?'
   stat:
-    path: /etc/munin/plugin-conf.d/munin-node
+    path: '/etc/munin/plugin-conf.d/munin-node'
   check_mode: false
   register: munin_node_plugins_config
   tags:
     - bind
     - munin
 
-- name: Enable munin plugins for authoritative server
+- name: 'Enable munin plugins for authoritative server'
   file:
     src: "/usr/share/munin/plugins/{{ item }}"
     dest: "/etc/munin/plugins/{{ item }}"
-    state: link
+    state: 'link'
   with_items:
-    - bind9
-    - bind9_rndc
-  notify: restart munin-node
+    - 'bind9'
+    - 'bind9_rndc'
+  notify: 'restart munin-node'
   when:
     - bind_authoritative_server
     - munin_node_plugins_config.stat.exists
@@ -25,15 +25,15 @@
     - bind
     - munin
 
-- name: Enable munin plugins for recursive server
+- name: 'Enable munin plugins for recursive server'
   file:
     src: "/usr/share/munin/plugins/{{ item }}"
     dest: "/etc/munin/plugins/{{ item }}"
-    state: link
+    state: 'link'
   with_items:
-    - bind9
-    - bind9_rndc
-  notify: restart munin-node
+    - 'bind9'
+    - 'bind9_rndc'
+  notify: 'restart munin-node'
   when:
     - bind_recursive_server
     - munin_node_plugins_config.stat.exists
@@ -41,15 +41,15 @@
     - bind
     - munin
 
-- name: Add munin plugin configuration
+- name: 'Add munin plugin configuration'
   template:
-    src: munin-env_bind9.j2
-    dest: /etc/munin/plugin-conf.d/bind9
-    owner: root
-    group: root
-    mode: "0644"
+    src: 'munin-env_bind9.j2'
+    dest: '/etc/munin/plugin-conf.d/bind9'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
     force: true
-  notify: restart munin-node
+  notify: 'restart munin-node'
   when: munin_node_plugins_config.stat.exists
   tags:
     - bind

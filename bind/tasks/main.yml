@@ -1,84 +1,86 @@
-- name: package are installed
+---
+
+- name: 'packages are installed'
   apt:
     name: '{{ item }}'
-    state: present
+    state: 'present'
   with_items:
-  - bind9
-  - dnstop
+    - 'bind9'
+    - 'dnstop'
 
-- name: Set bind configuration for recursive server
+- name: 'Set bind configuration for recursive server'
   template:
-    src: named.conf.options_recursive.j2
-    dest: /etc/bind/named.conf.options
-    owner: bind
-    group: bind
-    mode: "0644"
+    src: 'named.conf.options_recursive.j2'
+    dest: '/etc/bind/named.conf.options'
+    owner: 'bind'
+    group: 'bind'
+    mode: '0644'
     force: true
-  notify: restart bind
+  notify: 'restart bind'
   when: bind_recursive_server
 
-- name: enable zones.rfc1918 for recursive server
+- name: 'enable zones.rfc1918 for recursive server'
   lineinfile:
-    dest: /etc/bind/named.conf.local
+    dest: '/etc/bind/named.conf.local'
     line: 'include "/etc/bind/zones.rfc1918";'
-    regexp: "zones.rfc1918"
-  notify: restart bind
+    regexp: 'zones.rfc1918'
+  notify: 'restart bind'
   when: bind_recursive_server
 
-- name: Set bind configuration for authoritative server
+- name: 'Set bind configuration for authoritative server'
   template:
-    src: named.conf.options_authoritative.j2
-    dest: /etc/bind/named.conf.options
-    owner: bind
-    group: bind
-    mode: "0644"
+    src: 'named.conf.options_authoritative.j2'
+    dest: '/etc/bind/named.conf.options'
+    owner: 'bind'
+    group: 'bind'
+    mode: '0644'
     force: true
-  notify: restart bind
+  notify: 'restart bind'
   when: bind_authoritative_server
 
-- name: Create systemd service
+- name: 'Create systemd service'
   template:
-    src: bind9.service.j2
+    src: 'bind9.service.j2'
     dest: "{{ bind_systemd_service_path }}"
-    owner: root
-    group: root
-    mode: "0644"
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
     force: true
   notify:
-  - reload systemd
-  - restart bind
+    - 'reload systemd'
+    - 'restart bind'
   when: ansible_distribution_release == "jessie"
 
-- name: touch /var/log/bind.log if non chroot
+- name: 'touch /var/log/bind.log if non chroot'
   file:
-    path: /var/log/bind.log
-    owner: bind
-    group: adm
-    mode: "0640"
-    state: touch
+    path: '/var/log/bind.log'
+    owner: 'bind'
+    group: 'adm'
+    mode: '0640'
+    state: 'touch'
   when: not bind_chroot_set
 
-- name: touch /var/log/bind_queries.log if non chroot
+- name: 'touch /var/log/bind_queries.log if non chroot'
   file:
-    path: /var/log/bind_queries.log
-    owner: bind
-    group: adm
-    mode: "0640"
-    state: touch
+    path: '/var/log/bind_queries.log'
+    owner: 'bind'
+    group: 'adm'
+    mode: '0640'
+    state: 'touch'
   when: not bind_chroot_set
 
-- name: send chroot-bind.sh in /root
+- name: 'send chroot-bind.sh in /root'
   copy:
-    src: chroot-bind.sh
-    dest: /root/chroot-bind.sh
-    mode: "0700"
-    owner: root
+    src: 'chroot-bind.sh'
+    dest: '/root/chroot-bind.sh'
+    mode: '0700'
+    owner: 'root'
     force: true
     backup: true
   when: bind_chroot_set
 
-- name: exec chroot-bind.sh
-  command: "/root/chroot-bind.sh"
+- name: 'exec chroot-bind.sh'
+  command: '/root/chroot-bind.sh'
   register: chrootbind_run
   changed_when: false
   when: bind_chroot_set
@@ -87,34 +89,34 @@
     var: chrootbind_run.stdout_lines
   when: bind_chroot_set and chrootbind_run.stdout != ""
 
-- name: Modify OPTIONS in /etc/default/bind9 for chroot
+- name: 'Modify OPTIONS in /etc/default/bind9 for chroot'
   replace:
-    dest: /etc/default/bind9
+    dest: '/etc/default/bind9'
     regexp: '^OPTIONS=.*'
     replace: 'OPTIONS="-u bind -t {{ bind_chroot_path }}"'
-  notify: restart bind
+  notify: 'restart bind'
   when: bind_chroot_set
 
-- name: logrotate for non chroot bind
+- name: 'logrotate for non chroot bind'
   template:
-    src: logrotate_bind
-    dest: /etc/logrotate.d/bind9
-    owner: root
-    group: root
-    mode: "0644"
+    src: 'logrotate_bind'
+    dest: '/etc/logrotate.d/bind9'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
     force: true
-  notify: restart bind
+  notify: 'restart bind'
   when: not bind_chroot_set
 
-- name: logrotate for chroot bind
+- name: 'logrotate for chroot bind'
   template:
-    src: logrotate_bind_chroot.j2
-    dest: /etc/logrotate.d/bind9
-    owner: root
-    group: root
-    mode: "0644"
+    src: 'logrotate_bind_chroot.j2'
+    dest: '/etc/logrotate.d/bind9'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
     force: true
-  notify: restart bind
+  notify: 'restart bind'
   when: bind_chroot_set
 
-- include: munin.yml
+- include: 'munin.yml'

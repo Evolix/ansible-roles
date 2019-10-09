@@ -1,14 +1,13 @@
 ---
-- name: reload systemd
-  command: systemctl daemon-reload
+- name: 'reload systemd'
+  command: 'systemctl daemon-reload'
 
-- name: restart bind
+- name: 'restart bind'
   service:
-    name: bind9
-    state: restarted
+    name: 'bind9'
+    state: 'restarted'
 
-- name: restart munin-node
+- name: 'restart munin-node'
   service:
-    name: munin-node
-    state: restarted
-
+    name: 'munin-node'
+    state: 'restarted'
