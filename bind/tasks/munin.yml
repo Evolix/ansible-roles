@@ -3,7 +3,7 @@
 - name: is Munin present ?
   stat:
     path: /etc/munin/plugin-conf.d/munin-node
-  check_mode: no
+  check_mode: false
   register: munin_node_plugins_config
   tags:
     - bind
@@ -48,7 +48,7 @@
     owner: root
     group: root
     mode: "0644"
-    force: yes
+    force: true
   notify: restart munin-node
   when: munin_node_plugins_config.stat.exists
   tags:
