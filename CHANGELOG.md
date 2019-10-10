@@ -17,6 +17,7 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: On debian 10 and later, add noexec on /dev/shm
 * evolinux-base: default value for "evolinux_ssh_group"
 * generate-ldif: support MariaDB 10.3
+* haproxy: add a variable to keep the existing configuration
 * listupgrade: install old-kernel-autoremoval script
 * mongodb: still incompatible with Debian 10
 * mysql: activate binary logs by specifying log_bin path
