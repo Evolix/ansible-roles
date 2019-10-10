@@ -5,7 +5,7 @@
     - evobackup_client
     - evobackup_client_backup_ssh_key
 
-- include: "create_jail.yml"
+- include: "jail.yml"
   tags:
     - evobackup_client
     - evobackup_client_jail
