@@ -1,0 +1,24 @@
+---
+
+- name: Configure ssmtp
+  replace:
+    name: "/var/lib/lxc/{{name}}/rootfs/etc/ssmtp/ssmtp.conf"
+    regexp: "{{ item.regexp }}"
+    replace: "{{ item.replace }}"
+  with_dict:
+    - { regexp: "^mailhub=.*$", replace: "mailhub=127.0.0.1"}
+    - { regexp: "^#FromLineOverride=.*$", replace: "FromLineOverride=YES"}
+    - { regexp: "^hostname=.*", replace: "hostname={{ansible_fqdn}}"}
+
+- name: Configure timezone
+  copy:
+    dest: "/var/lib/lxc/{{name}}/rootfs/etc/timezone"
+    content: "Europe/Paris\n"
+
+- name: Ensure containers root directory is 755
+  file:
+    path: "/var/lib/lxc/{{ item.name }}/rootfs"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{ lxc_containers }}"

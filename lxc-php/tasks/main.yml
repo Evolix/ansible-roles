@@ -3,16 +3,22 @@
   include_role:
     name: lxc
 
-- include: "php.yml name={{item.name}}"
+- name: Update APT cache
+  command: "lxc-attach -n {{name}} -- apt-get update"
+
+- include: "php56.yml"
   with_items:
     - "{{ lxc_containers }}"
+  when: name == "php56"
 
-- name: Ensure containers root directory is 755
-  file:
-    path: "/var/lib/lxc/{{ item.name }}/rootfs"
-    state: directory
-    mode: '0755'
+- include: "php70.yml"
   with_items:
     - "{{ lxc_containers }}"
+  when: name == "php70"
 
+- include: "php73.yml"
+  with_items:
+    - "{{ lxc_containers }}"
+  when: name == "php73"
 
+- include: "misc.yml"

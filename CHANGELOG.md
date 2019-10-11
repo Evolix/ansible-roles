@@ -35,14 +35,15 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: use "evolinux_internal_group" for SSH authentication
 * evomaintenance: Turn on API by default (instead of DB)
 * evomaintenance: upstream version 0.5.1
-* php: By default, allow 128M for OpCache (instead of 64M)
-* squid: Remove wait time when we turn off squid
-* squid: split systemd tasks into own file
-* varnish: remove custom ExecReload= script for Debian 10+
 * lxc: remove useless loop in apt execution
 * lxc: update our default template to be compatible with Debian 10
 * lxc: rely on lxc_container module instead of command module
+* lxc-php: refactor tasks for better maintainability
+* php: By default, allow 128M for OpCache (instead of 64M)
 * php: Don't set a chroot for the default fpm pool
+* squid: Remove wait time when we turn off squid
+* squid: split systemd tasks into own file
+* varnish: remove custom ExecReload= script for Debian 10+
 
 ### Fixed
 * lxc-php: Don't remove the default pool

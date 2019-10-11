@@ -1,0 +1,31 @@
+---
+
+- name: Install requirements for sury repository
+  command: "lxc-attach -n {{name}} -- apt-get install -y --no-install-recommends wget apt-transport-https ca-certificates gnupg"
+
+- name: Add sury APT repository
+  copy:
+    content: "deb https://packages.sury.org/php/ stretch main"
+    dest: "/var/lib/lxc/{{name}}/rootfs/etc/apt/sources.list.d/sury.list"
+    mode: "0644"
+
+- name: Add sury GPG key
+  shell: "wget -O- https://packages.sury.org/php/apt.gpg |lxc-attach -n {{name}} -- apt-key add -"
+
+- name: Update APT cache
+  command: "lxc-attach -n {{name}} -- apt-get update"
+
+- name: Install PHP packages
+  command: "lxc-attach -n {{name}} -- apt-get install -y php7.3 php7.3-fpm php7.3-cli php7.3-curl php7.3-mysql php7.3-pgsql php7.3-ldap php7.3-imap php7.3-gd php-ssh2 php-gettext composer libphp-phpmailer ssmtp git zip unzip php7.3-zip"
+
+- name: Copy evolinux PHP 7.3 configuration
+  template:
+    src: z-evolinux-defaults.ini.j2
+    dest: "{{ line_item }}"
+    mode: "0644"
+  notify: "Reload {{name}}-fpm"
+  with_items:
+    - "/var/lib/lxc/{{name}}/rootfs/etc/php/7.3/fpm/conf.d/z-evolinux-defaults.ini"
+    - "/var/lib/lxc/{{name}}/rootfs/etc/php/7.3/cli/conf.d/z-evolinux-defaults.ini"
+  loop_control:
+    loop_var: line_item

@@ -1,0 +1,16 @@
+---
+
+- name: Install PHP packages
+  command: "lxc-attach -n {{name}} -- apt-get install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mcrypt php-mysql php-pgsql php-gettext php-curl php-ssh2 composer libphp-phpmailer ssmtp git zip unzip php-zip"
+
+- name: Copy evolinux PHP 7.0 configuration
+  template:
+    src: z-evolinux-defaults.ini.j2
+    dest: "{{ line_item }}"
+    mode: "0644"
+  notify: "Reload {{name}}-fpm"
+  with_items:
+    - "/var/lib/lxc/{{name}}/rootfs/etc/php/7.0/fpm/conf.d/z-evolinux-defaults.ini"
+    - "/var/lib/lxc/{{name}}/rootfs/etc/php/7.0/cli/conf.d/z-evolinux-defaults.ini"
+  loop_control:
+    loop_var: line_item
