@@ -30,6 +30,7 @@
   - "templates/haproxy/haproxy.default.cfg.j2"
   - "haproxy.default.cfg.j2"
   notify: reload haproxy
+  when: "{{ haproxy_update_config }}"
   tags:
   - haproxy
   - config
