@@ -42,6 +42,7 @@ The **patch** part changes incrementally at each release.
 * lxc: remove useless loop in apt execution
 * lxc: update our default template to be compatible with Debian 10
 * lxc: rely on lxc_container module instead of command module
+* php: Don't set a chroot for the default fpm pool
 
 ### Fixed
 * lxc-php: Don't remove the default pool

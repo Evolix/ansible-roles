@@ -51,7 +51,6 @@
     - { option: "request_slowlog_timeout", value: "5s" }
     - { option: "pm.status_path", value: "/fpm_status" }
     - { option: "request_terminate_timeout", value: "60s" }
-    - { option: "chroot", value: "/var/www" }
   notify: "restart {{ php_fpm_service_name }}"
   when: ansible_distribution_major_version | version_compare('9', '>=')
 
