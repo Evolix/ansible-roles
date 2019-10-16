@@ -49,6 +49,7 @@ The **patch** part changes incrementally at each release.
 * roundcube: fix typo for roundcube vhost
 * tomcat: fix typo for default tomcat_version
 * evoadmin-web: Put the php config at the right place for Buster
+* php: add missing handler for php7.3-fpm
 
 ### Security
 
