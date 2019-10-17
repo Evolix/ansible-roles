@@ -23,3 +23,8 @@
   systemd:
     name: mysql
     daemon_reload: yes
+
+- name: 'restart xinetd'
+  service:
+    name: 'xinetd'
+    state: 'restart'
