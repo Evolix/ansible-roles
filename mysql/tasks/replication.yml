@@ -1,0 +1,53 @@
+---
+
+- name: 'Copy MySQL configuration for replication'
+  template:
+    src: 'replication.cnf.j2'
+    dest: "{{ mysql_config_directory }}/zzzz-replication.cnf"
+  with_first_found:
+    - "templates/mysql/replication.{{ inventory_hostname }}.cnf.j2"
+    - "templates/mysql/replication.{{ host_group }}.cnf.j2"
+    - 'templates/mysql/replication.cnf.j2'
+    - 'replication.cnf.j2'
+  notify: 'restart mysql'
+
+- name: 'Create repl user'
+  mysql_user:
+    name: 'repl'
+    host: '%'
+    encrypted: true
+    password: "{{ mysql_repl_password }}"
+    priv: '*.*:REPLICATION SLAVE,REPLICATION CLIENT'
+    update_password: 'on_create'
+    state: 'present'
+  register: create_repl_user
+  when: mysql_repl_password | length > 0
+
+- name: 'Add Nagios check for replication'
+  template:
+    src: 'replication_check.cfg.j2'
+    dest: '/etc/nagios/nrpe.d/replication.cfg'
+  notify: 'restart nagios-nrpe-server'
+
+- name: 'Install xinetd'
+  apt:
+    name: 'xinetd'
+
+- name: 'Add xinetd configuration for MySQL HAProxy check'
+  copy:
+    src: 'xinetd/mysqlchk'
+    dest: '/etc/xinetd.d/'
+    mode: '0644'
+  notify: 'restart xinetd'
+
+- name: 'Copy mysqlchk script'
+  copy:
+    src: 'xinetd/mysqlchk.sh'
+    dest: '/usr/share/scripts/'
+    mode: '0755'
+
+- name: 'Copy dbadmin script'
+  copy:
+    src: 'dbadmin.sh'
+    dest: '/usr/share/scripts/'
+    mode: '0755'
