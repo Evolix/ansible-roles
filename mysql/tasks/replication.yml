@@ -40,6 +40,10 @@
     mode: '0644'
   notify: 'restart xinetd'
 
+# /!\ Warning, this is a temporary hack
+- include_role:
+    name: remount-usr
+
 - name: 'Copy mysqlchk script'
   copy:
     src: 'xinetd/mysqlchk.sh'
