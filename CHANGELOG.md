@@ -48,6 +48,7 @@ The **patch** part changes incrementally at each release.
 * minifirewall: no http filtering by default
 * php: By default, allow 128M for OpCache (instead of 64M)
 * php: Don't set a chroot for the default fpm pool
+* php: Make sure the default pool we define can be fully functionnal witout debian's default pool file
 * rbenv: install Ruby 2.6.5 by default
 * squid: Remove wait time when we turn off squid
 * squid: compatibility wit Debian 10
