@@ -82,12 +82,20 @@
   tags:
     - etc-git
 
+- name: Check if cron is installed
+  shell: "dpkg -l cron 2> /dev/null | grep -q -E '^(i|h)i'"
+  failed_when: False
+  changed_when: False
+  check_mode: no
+  register: is_cron_installed
+
 - name: Optimize script is installed in monthly crontab
   copy:
     src: optimize-etc-git
     dest: /etc/cron.monthly/optimize-etc-git
     mode: "0750"
     force: no
+  when: is_cron_installed.rc == 0
   tags:
     - etc-git
 
@@ -96,7 +104,7 @@
     src: etc-git-status.j2
     dest: /etc/cron.d/etc-git-status
     mode: "0644"
-  when: etc_git_monitor_status
+  when: is_cron_installed.rc == 0 and etc_git_monitor_status
   tags:
     - etc-git
 
@@ -104,6 +112,6 @@
   file:
     dest: /etc/cron.d/etc-git-status
     state: absent
-  when: not etc_git_monitor_status
+  when: is_cron_installed.rc == 0 and not etc_git_monitor_status
   tags:
     - etc-git

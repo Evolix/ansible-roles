@@ -100,6 +100,12 @@
   tags:
   - postfix
 
+- name: Check if cron is installed
+  shell: "dpkg -l cron 2> /dev/null | grep -q -E '^(i|h)i'"
+  failed_when: False
+  changed_when: False
+  register: is_cron_installed
+
 - name: enable spam.sh cron
   lineinfile:
     dest: /etc/cron.d/spam
@@ -107,6 +113,7 @@
     create: yes
     state: present
     mode: "0640"
+  when: is_cron_installed.rc == 0
   tags:
   - postfix
 
