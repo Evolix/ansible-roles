@@ -22,6 +22,7 @@ The **patch** part changes incrementally at each release.
 * mongodb: still incompatible with Debian 10
 * mysql: activate binary logs by specifying log_bin path
 * mysql: specify a custom server_id
+* mysql-oracle: backport tasks from mysql role
 * packweb-apache: Deploy opcache.php to give some insights on PHP's opcache status
 * php: variable to install the mysqlnd module instead of the default mysql module
 * redis: rewrite of the role (separate instances, better systemd units…)
