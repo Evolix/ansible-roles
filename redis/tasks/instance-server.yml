@@ -86,6 +86,7 @@
     mode: "0640"
     owner: redis-{{ redis_instance_name }}
     group: redis-{{ redis_instance_name }}
+  notify: "{{ redis_restart_handler_name }}"
   tags:
     - redis
 
