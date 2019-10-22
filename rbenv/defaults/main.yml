@@ -1,6 +1,6 @@
 ---
 rbenv_version: v1.1.2
-rbenv_ruby_version: 2.6.3
+rbenv_ruby_version: 2.6.5
 rbenv_root: "~/.rbenv"
 rbenv_repo: "https://github.com/rbenv/rbenv.git"
 rbenv_plugins:
