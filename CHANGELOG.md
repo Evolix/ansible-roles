@@ -19,7 +19,7 @@ The **patch** part changes incrementally at each release.
 * generate-ldif: support MariaDB 10.3
 * haproxy: add a variable to keep the existing configuration
 * listupgrade: install old-kernel-autoremoval script
-* mongodb: still incompatible with Debian 10
+* mongodb: compatibility with Debian 10
 * mysql: activate binary logs by specifying log_bin path
 * mysql: specify a custom server_id
 * mysql-oracle: backport tasks from mysql role

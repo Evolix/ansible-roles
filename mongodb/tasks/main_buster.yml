@@ -1,9 +1,5 @@
 ---
 
-- name: MongoDB is incompatible with Debian 10
-  fail:
-    msg: MongoDB is incompatible with Debian 10
-
 - name: MongoDB public GPG Key
   apt_key:
     # url: https://www.mongodb.org/static/pgp/server-4.2.asc
@@ -27,16 +23,16 @@
     name: python-pymongo
     state: present
 
-# - name: Custom configuration
-#   template:
-#     src: mongod_buster.conf.j2
-#     dest: "/etc/mongod.conf"
-#     force: "{{ mongodb_force_config | bool | ternary('yes', 'no') }}"
-#   notify: restart mongod
-# 
-# - name: Configure logrotate
-#   template:
-#     src: logrotate_buster.j2
-#     dest: /etc/logrotate.d/mongodb
-#     force: yes
-#     backup: no
+- name: Custom configuration
+  template:
+    src: mongod_buster.conf.j2
+    dest: "/etc/mongod.conf"
+    force: "{{ mongodb_force_config | bool | ternary('yes', 'no') }}"
+  notify: restart mongod
+
+- name: Configure logrotate
+  template:
+    src: logrotate_buster.j2
+    dest: /etc/logrotate.d/mongodb
+    force: yes
+    backup: no
