@@ -1,0 +1,15 @@
+# {{ ansible_managed }}
+
+/var/log/mongodb/mongodb.log {
+    daily
+    missingok
+    rotate 365
+    dateext
+    compress
+    delaycompress
+    notifempty
+    sharedscripts
+    postrotate
+       pidof mongod | xargs kill -USR1
+    endscript
+}
