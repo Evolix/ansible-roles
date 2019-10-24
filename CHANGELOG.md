@@ -20,14 +20,14 @@ The **patch** part changes incrementally at each release.
 * haproxy: add a variable to keep the existing configuration
 * listupgrade: install old-kernel-autoremoval script
 * mongodb: still incompatible with Debian 10
+* mysql-oracle: backport tasks from mysql role
 * mysql: activate binary logs by specifying log_bin path
 * mysql: specify a custom server_id
-* mysql-oracle: backport tasks from mysql role
 * packweb-apache: Deploy opcache.php to give some insights on PHP's opcache status
 * php: variable to install the mysqlnd module instead of the default mysql module
 * redis: rewrite of the role (separate instances, better systemd units…)
-* webapps/evoadmin-web Overload templates if needed
 * webapps/evoadmin-web Add an htpasswd to evoadmin if you cant use an apache IP whitelist
+* webapps/evoadmin-web Overload templates if needed
 
 ### Changed
 * elasticsearch: listen on local interface only by default
@@ -36,10 +36,10 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: use "evolinux_internal_group" for SSH authentication
 * evomaintenance: Turn on API by default (instead of DB)
 * evomaintenance: upstream version 0.5.1
+* lxc-php: refactor tasks for better maintainability
+* lxc: rely on lxc_container module instead of command module
 * lxc: remove useless loop in apt execution
 * lxc: update our default template to be compatible with Debian 10
-* lxc: rely on lxc_container module instead of command module
-* lxc-php: refactor tasks for better maintainability
 * php: By default, allow 128M for OpCache (instead of 64M)
 * php: Don't set a chroot for the default fpm pool
 * rbenv: install Ruby 2.6.5 by default
@@ -48,12 +48,12 @@ The **patch** part changes incrementally at each release.
 * varnish: remove custom ExecReload= script for Debian 10+
 
 ### Fixed
+* evoadmin-web: Put the php config at the right place for Buster
 * lxc-php: Don't remove the default pool
 * nginx: fix munin fcgi not working (missing chmod 660 on logs)
+* php: add missing handler for php7.3-fpm
 * roundcube: fix typo for roundcube vhost
 * tomcat: fix typo for default tomcat_version
-* evoadmin-web: Put the php config at the right place for Buster
-* php: add missing handler for php7.3-fpm
 
 ### Security
 
