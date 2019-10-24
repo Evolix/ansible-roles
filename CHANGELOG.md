@@ -44,7 +44,7 @@ The **patch** part changes incrementally at each release.
 * php: Don't set a chroot for the default fpm pool
 * rbenv: install Ruby 2.6.5 by default
 * squid: Remove wait time when we turn off squid
-* squid: split systemd tasks into own file
+* squid: compatibility wit Debian 10
 * varnish: remove custom ExecReload= script for Debian 10+
 
 ### Fixed

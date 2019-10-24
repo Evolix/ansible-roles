@@ -4,21 +4,28 @@
   command: systemctl -q is-active squid.service
   changed_when: False
   failed_when: False
-  register: squid_systemd_active
+  register: _squid_systemd_active
+  
+- name: Squid systemd overrides directory exists
+  file:
+    dest: /etc/systemd/system/squid.service.d/
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
 
-- name: "Squid systemd unit service is present (Debian 10 or later)"
+- name: "Squid systemd unit service is present"
   copy:
-    src: squid.service
-    dest: /etc/systemd/system/squid.service
-  when:
-    - ansible_distribution_major_version | version_compare('10', '>=')
-    - squid_systemd_active.rc != 0
+    src: systemd-override.conf
+    dest: /etc/systemd/system/squid.service.d/override.conf
+    force: yes
+  register: _squid_systemd_override
 
-- name: "Systemd is reload and Squid restarted (Debian 10 or later)"
+- name: "Systemd daemon is reloaded and Squid restarted"
   systemd:
     name: squid
     state: restarted
     daemon_reload: yes
   when:
-    - ansible_distribution_major_version | version_compare('10', '>=')
-    - squid_systemd_active.rc != 0
+    - _squid_systemd_active.rc == 0
+    - _squid_systemd_override.changed
