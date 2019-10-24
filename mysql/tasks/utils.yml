@@ -24,7 +24,7 @@
     - mysql
   when: ansible_distribution_release == "jessie"
 
-- name: "Install depends for mytop (stretch)"
+- name: "Install dependencies for mytop (stretch)"
   apt:
     name: "{{ item }}"
   with_items:
@@ -33,7 +33,7 @@
   - libterm-readkey-perl
   when: ansible_distribution_release == "stretch"
 
-- name: "Install depends for mytop (Debian 10 or later)"
+- name: "Install dependencies for mytop (Debian 10 or later)"
   apt:
     name: "{{ item }}"
   with_items:

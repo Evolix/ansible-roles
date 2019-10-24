@@ -46,7 +46,7 @@
     - mysql
   when: ansible_distribution_release == "stretch"
 
-- name: "Install depends for mytop (Debian 10 or later)"
+- name: "Install dependencies for mytop (Debian 10 or later)"
   apt:
     name: "{{ item }}"
   with_items:
