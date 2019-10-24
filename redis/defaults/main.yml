@@ -34,7 +34,7 @@ redis_rdbcompression: True
 redis_data_dir: /var/lib/redis
 redis_data_file: dump.rdb
 
-redis_maxclients: 128
+redis_maxclients: 10000
 
 redis_maxmemory: 0
 redis_maxmemory_policy: "noeviction"

@@ -12,7 +12,6 @@ Everything is in the `tasks/main.yml` file.
 
 Main variables are :
 
-* `redis_daemon`: name of the process ;
 * `redis_conf_dir`: config directory ;
 * `redis_port`: listening TCP port ;
 * `redis_bind_interface`: listening IP address ;
@@ -20,5 +19,6 @@ Main variables are :
 * `redis_socket_dir`: Unix socket directory ;
 * `redis_log_level`: log verbosity ;
 * `redis_log_dir`: log file directory.
+* `redis_maxmemory`: max memory (0 for no limit)
 
 The full list of variables (with default values) can be found in `defaults/main.yml`.
