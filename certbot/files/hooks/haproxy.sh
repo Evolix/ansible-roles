@@ -53,7 +53,7 @@ main() {
 
             if config_check; then
                 debug "HAProxy detected... reloading"
-                systemctl reload apache2
+                systemctl reload haproxy
             else
                 error "HAProxy config is broken, you must fix it !"
             fi
