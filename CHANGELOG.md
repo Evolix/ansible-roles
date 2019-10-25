@@ -13,7 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 * apt: check if cron is installed before adding a cron job
 * certbot : new role to install and configure certbot
-* evocheck: explicit PATH
+* evocheck: upstream version 19.10
 * evolinux-base: On debian 10 and later, add noexec on /dev/shm
 * evolinux-base: default value for "evolinux_ssh_group"
 * generate-ldif: support MariaDB 10.3
