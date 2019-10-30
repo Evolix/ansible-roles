@@ -92,7 +92,7 @@
   include: provider_orange_fce.yml
   when: evolinux_provider_orange_fce_include
 
-- name: Override Logmail service
+- name: Override Log2mail service
   include: log2mail.yml
   when: evolinux_log2mail_include
 
