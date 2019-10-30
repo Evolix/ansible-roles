@@ -37,6 +37,12 @@
     regexp: "umask [0-9]+"
   when: evolinux_root_umask
 
+- name: "/usr/share/scripts" is present in root's PATH
+  lineinfile:
+    dest: "/root/.profile"
+    line: "PATH=\"${PATH}:/usr/share/scripts\""
+  when: ansible_distribution_major_version | version_compare('10', '>=')
+
 - name: Custom git config for root
   copy:
     src: root/gitconfig
