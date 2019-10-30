@@ -15,8 +15,9 @@ The **patch** part changes incrementally at each release.
 * apt: remove jessie/buster sources from Gandi servers
 * certbot : new role to install and configure certbot
 * evocheck: upstream version 19.10
-* evolinux-base: On debian 10 and later, add noexec on /dev/shm
 * evolinux-base: default value for "evolinux_ssh_group"
+* evolinux-base: install /sbin/deny
+* evolinux-base: on debian 10 and later, add noexec on /dev/shm
 * generate-ldif: support MariaDB 10.3
 * haproxy: add a variable to keep the existing configuration
 * listupgrade: install old-kernel-autoremoval script
