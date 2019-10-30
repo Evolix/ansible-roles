@@ -43,6 +43,7 @@ evolinux-base: on debian 10 and later, add /usr/share/scripts in root's PATH
 * lxc: rely on lxc_container module instead of command module
 * lxc: remove useless loop in apt execution
 * lxc: update our default template to be compatible with Debian 10
+* minifirewall: no http filtering by default
 * php: By default, allow 128M for OpCache (instead of 64M)
 * php: Don't set a chroot for the default fpm pool
 * rbenv: install Ruby 2.6.5 by default
