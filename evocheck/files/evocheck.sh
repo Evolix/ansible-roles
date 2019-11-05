@@ -252,7 +252,13 @@ check_usrro() {
     grep /usr /etc/fstab | grep -q ro || failed "IS_USRRO" "missing ro directive on fstab for /usr"
 }
 check_tmpnoexec() {
-    mount | grep "on /tmp" | grep -q noexec || failed "IS_TMPNOEXEC" "/tmp is mounted with exec, should be noexec"
+    FINDMNT_BIN=$(command -v findmnt)
+    if [ -x ${FINDMNT_BIN} ]; then
+        options=$(${FINDMNT_BIN} --noheadings --first-only --output OPTIONS /tmp)
+        grep -qE "\bnoexec\b" ${options} || failed "IS_TMPNOEXEC" "/tmp is not mounted with 'noexec'"
+    else
+        mount | grep "on /tmp" | grep -q noexec || failed "IS_TMPNOEXEC" "/tmp is not mounted with 'noexec' (WARNING: findmnt(8) is not found)"
+    fi
 }
 check_mountfstab() {
     # Test if lsblk available, if not skip this test...
@@ -622,7 +628,7 @@ check_uptime() {
         limit=$(date -d "now - 2 year" +%s)
         last_reboot_at=$(($(date +%s) - $(cut -f1 -d '.' /proc/uptime)))
         if [ "$limit" -gt "$last_reboot_at" ]; then
-            failed "IS_UPTIME" "machine has an uptime of more thant 2 years, reboot on new kernel advised"
+            failed "IS_UPTIME" "machine has an uptime of more than 2 years, reboot on new kernel advised"
         fi
     fi
 }
@@ -721,6 +727,7 @@ check_notupgraded() {
 check_tune2fs_m5() {
     min=5
     parts=$(grep -E "ext(3|4)" /proc/mounts | cut -d ' ' -f1 | tr -s '\n' ' ')
+    FINDMNT_BIN=$(command -v findmnt)
     for part in $parts; do
         blockCount=$(dumpe2fs -h "$part" 2>/dev/null | grep -e "Block count:" | grep -Eo "[0-9]+")
         # If buggy partition, skip it.
@@ -733,7 +740,12 @@ check_tune2fs_m5() {
         percentage=$(awk "BEGIN { pc=100*${reservedBlockCount}/${blockCount}; i=int(pc); print (pc-i<0.5)?i:i+1 }")
 
         if [ "$percentage" -lt "${min}" ]; then
-            failed "IS_TUNE2FS_M5" "Partition ${part} has less than ${min}% reserved blocks (${percentage}%)"
+            if [ -x ${FINDMNT_BIN} ]; then
+                mount=$(${FINDMNT_BIN} --noheadings --first-only --output TARGET ${part})
+            else
+                mount="unknown mount point"
+            fi
+            failed "IS_TUNE2FS_M5" "Partition ${part} (${mount}) has less than ${min}% reserved blocks (${percentage}%)"
         fi
     done
 }
@@ -1446,7 +1458,7 @@ readonly PROGDIR=$(realpath -m "$(dirname "$0")")
 # shellcheck disable=2124
 readonly ARGS=$@
 
-readonly VERSION="19.10"
+readonly VERSION="19.11"
 
 # Disable LANG*
 export LANG=C
@@ -1471,6 +1483,7 @@ while :; do
         --cron)
             IS_KERNELUPTODATE=0
             IS_UPTIME=0
+            IS_MELTDOWN_SPECTRE=0
             ;;
         -v|--verbose)
             VERBOSE=1

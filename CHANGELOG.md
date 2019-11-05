@@ -15,7 +15,6 @@ The **patch** part changes incrementally at each release.
 * apt: remove jessie/buster sources from Gandi servers
 * certbot : new role to install and configure certbot
 * evoacme: upstream version 19.11
-* evocheck: upstream version 19.10
 * evolinux-base: default value for "evolinux_ssh_group"
 * evolinux-base: install /sbin/deny
 * evolinux-base: on debian 10 and later, add noexec on /dev/shm
@@ -36,7 +35,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 * elasticsearch: listen on local interface only by default
-* evocheck : update (version 19.09) from upstream
+* evocheck: upstream version 19.11
 * evocheck: cron jobs execute in verbose
 * evolinux-base: use "evolinux_internal_group" for SSH authentication
 * evomaintenance: Turn on API by default (instead of DB)
