@@ -4,6 +4,7 @@
   command: systemctl -q is-active squid.service
   changed_when: False
   failed_when: False
+  check_mode: no
   register: _squid_systemd_active
   
 - name: Squid systemd overrides directory exists
