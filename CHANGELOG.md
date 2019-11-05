@@ -40,7 +40,7 @@ The **patch** part changes incrementally at each release.
 * evocheck: cron jobs execute in verbose
 * evolinux-base: use "evolinux_internal_group" for SSH authentication
 * evomaintenance: Turn on API by default (instead of DB)
-* evomaintenance: upstream version 0.5.1
+* evomaintenance: upstream version 0.6.0
 * lxc-php: refactor tasks for better maintainability
 * lxc: rely on lxc_container module instead of command module
 * lxc: remove useless loop in apt execution

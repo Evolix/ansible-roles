@@ -4,18 +4,19 @@
 # Dependencies (all OS): git postgresql-client
 # Dependencies (Debian): sudo
 
-# version 0.5.1
 # Copyright 2007-2019 Evolix <info@evolix.fr>, Gregory Colpart <reg@evolix.fr>,
 #                     Jérémy Lecour <jlecour@evolix.fr> and others.
 
-VERSION="0.5.1"
+VERSION="0.6.0"
 
 show_version() {
     cat <<END
 evomaintenance version ${VERSION}
 
-Copyright 2007-2019 Evolix <info@evolix.fr>, Gregory Colpart <reg@evolix.fr>,
-                    Jérémy Lecour <jlecour@evolix.fr> and others.
+Copyright 2007-2019 Evolix <info@evolix.fr>,
+                    Gregory Colpart <reg@evolix.fr>,
+                    Jérémy Lecour <jlecour@evolix.fr>
+                    and others.
 
 evomaintenance comes with ABSOLUTELY NO WARRANTY.  This is free software,
 and you are welcome to redistribute it under certain conditions.
@@ -167,12 +168,27 @@ print_session_data() {
     printf "Message   : %s\n" "${MESSAGE}"
 }
 
+is_repository_readonly() {
+    mountpoint=$(stat -c '%m' $1)
+    findmnt ${mountpoint} --noheadings --output OPTIONS | grep -q -E "\bro\b"
+}
+remount_repository_readwrite() {
+    mountpoint=$(stat -c '%m' $1)
+    mount -o remount,rw ${mountpoint}
+}
+remount_repository_readonly() {
+    mountpoint=$(stat -c '%m' $1)
+    mount -o remount,ro ${mountpoint} 2>/dev/null
+}
+
 hook_commit() {
     if [ -x "${GIT_BIN}" ]; then
         # loop on possible directories managed by GIT
         for dir in ${GIT_REPOSITORIES}; do
             # tell Git where to find the repository and the work tree (no need to `cd …` there)
             export GIT_DIR="${dir}/.git" GIT_WORK_TREE="${dir}"
+            # reset variable used to track if a mount point is readonly
+            READONLY_ORIG=0
             # If the repository and the work tree exist, try to commit changes
             if [ -d "${GIT_DIR}" ] && [ -d "${GIT_WORK_TREE}" ]; then
                 CHANGED_LINES=$(${GIT_BIN} status --porcelain | wc -l | tr -d ' ')
@@ -183,8 +199,13 @@ hook_commit() {
                         # GIT_COMMITS_SHORT=$(printf "%s\n%s : %s" "${GIT_COMMITS_SHORT}" "${GIT_DIR}" "${STATS_SHORT}" | sed -e '/^$/d')
                         GIT_COMMITS=$(printf "%s\n%s\n%s" "${GIT_COMMITS}" "${GIT_DIR}" "${STATS}" | sed -e '/^$/d')
                     else
+                        # remount mount point read-write if currently readonly
+                        is_repository_readonly ${dir} && { READONLY_ORIG=1; remount_repository_readwrite ${dir}; }
+                        # commit changes
                         ${GIT_BIN} add --all
                         ${GIT_BIN} commit --message "${MESSAGE}" --author="${USER} <${USER}@evolix.net>" --quiet
+                        # remount mount point read-only if it was before
+                        test "$READONLY_ORIG" = "1" && remount_repository_readonly ${dir}
                         # Add the SHA to the log file if something has been committed
                         SHA=$(${GIT_BIN} rev-parse --short HEAD)
                         # STATS_SHORT=$(${GIT_BIN} show --stat | tail -1)
@@ -347,7 +368,7 @@ while :; do
             show_help
             exit 0
             ;;
-        --version)
+        -V|--version)
             show_version
             exit 0
             ;;
@@ -482,7 +503,7 @@ fi
 
 EVOCHECK_BIN="/usr/share/scripts/evocheck.sh"
 
-GIT_REPOSITORIES="/etc /etc/bind"
+GIT_REPOSITORIES="/etc /etc/bind /usr/share/scripts"
 
 # initialize variable
 GIT_STATUSES=""
