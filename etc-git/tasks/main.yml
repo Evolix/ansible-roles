@@ -7,80 +7,30 @@
   tags:
     - etc-git
 
-- name: /etc is versioned with git
-  command: "git init ."
-  args:
-    chdir: /etc
-    creates: /etc/.git/
-    warn: no
-  register: git_init
-  tags:
-    - etc-git
+- include: repository.yml
+  vars:
+    repository_path: "/etc"
+    gitignore_items:
+      - "aliases.db"
+      - "*.swp"
+      - "postfix/sa-blacklist.access"
+      - "postfix/*.db"
+      - "postfix/spamd.cidr"
+      - "evobackup/.keep-*"
+      - "letsencrypt/.certbot.lock"
 
-- name: Git user.email is configured
-  git_config:
-    name: user.email
-    repo: /etc
-    scope: local
-    value: "root@{{ ansible_fqdn | default('localhost') }}"
-  tags:
-    - etc-git
+- name: verify /usr/share/scripts presence
+  stat:
+    path: /usr/share/scripts
+  register: _usr_share_scripts
 
-- name: /etc/.git is restricted to root
-  file:
-    path: /etc/.git
-    owner: root
-    mode: "0700"
-    state: directory
-  tags:
-    - etc-git
-
-- name: /etc/.gitignore is present
-  copy:
-    src: gitignore
-    dest: /etc/.gitignore
-    owner: root
-    mode: "0600"
-    force: no
-  tags:
-    - etc-git
-
-- name: Some entries MUST be in the /etc/.gitignore file
-  lineinfile:
-    dest: /etc/.gitignore
-    line: "{{ item }}"
-  with_items:
-    - "aliases.db"
-    - "*.swp"
-    - "postfix/sa-blacklist.access"
-    - "postfix/*.db"
-    - "postfix/spamd.cidr"
-    - "evobackup/.keep-*"
-    - "letsencrypt/.certbot.lock"
-  tags:
-    - etc-git
-
-- name: does /etc/ have any commit?
-  command: "git log"
-  args:
-    chdir: /etc
-    warn: no
-  changed_when: False
-  failed_when: False
-  register: git_log
-  check_mode: no
-  tags:
-    - etc-git
-
-- name: initial commit is present?
-  shell: "git add -A . && git commit -m \"Initial commit via Ansible\""
-  args:
-    chdir: /etc
-    warn: no
-  register: git_commit
-  when: git_log.rc != 0 or (git_init is defined and git_init.changed)
-  tags:
-    - etc-git
+- include: repository.yml
+  vars:
+    repository_path: "/usr/share/scripts"
+    gitignore_items: []
+  when:
+    - _usr_share_scripts.stat.isdir
+    - ansible_distribution_major_version | version_compare('10', '>=')
 
 - name: Check if cron is installed
   shell: "dpkg -l cron 2> /dev/null | grep -q -E '^(i|h)i'"
