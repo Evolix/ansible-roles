@@ -14,6 +14,7 @@ The **patch** part changes incrementally at each release.
 * apt: check if cron is installed before adding a cron job
 * apt: remove jessie/buster sources from Gandi servers
 * certbot : new role to install and configure certbot
+* evoacme: upstream version 19.11
 * evocheck: upstream version 19.10
 * evolinux-base: default value for "evolinux_ssh_group"
 * evolinux-base: install /sbin/deny

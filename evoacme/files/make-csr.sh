@@ -9,27 +9,52 @@
 
 set -u
 
-usage() {
-    cat <<EOT
-Usage: ${PROGNAME} VHOST DOMAIN...
-VHOST must correspond to an Apache or Nginx enabled VHost
-If VHOST ends with ".conf" it is stripped,
-then files are seached at those paths:
-- /etc/apache2/sites-enables/VHOST.conf
-- /etc/nginx/sites-enabled/VHOST.conf
-- /etc/nginx/sites-enabled/VHOST
-DOMAIN... is a list of domains for the CSR (passed as arguments or input)
+show_version() {
+    cat <<END
+make-csr version ${VERSION}
 
-If env variable VERBOSE=1, debug messages are sent to stderr
+Copyright 2009-2019 Evolix <info@evolix.fr>,
+                    Victor Laborie <vlaborie@evolix.fr>,
+                    Jérémy Lecour <jlecour@evolix.fr>,
+                    Benoit Série <bserie@evolix.fr>
+                    and others.
+
+make-csr comes with ABSOLUTELY NO WARRANTY.  This is free software,
+and you are welcome to redistribute it under certain conditions.
+See the GNU Affero General Public License v3.0 for details.
+END
+}
+
+show_help() {
+    cat <<EOT
+Usage: ${PROGNAME} VHOST DOMAIN [DOMAIN]
+    VHOST must correspond to an Apache or Nginx enabled VHost
+    If VHOST ends with ".conf" it is stripped,
+    then files are seached at those paths:
+    - /etc/apache2/sites-enables/VHOST.conf
+    - /etc/nginx/sites-enabled/VHOST.conf
+    - /etc/nginx/sites-enabled/VHOST
+
+    DOMAIN is a list of domains for the CSR (passed as arguments or input)
+
+    If env variable QUIET=1, no message is output
+    If env variable VERBOSE=1, debug messages are output
 EOT
 }
+
+log() {
+    if [ "${QUIET}" != "1" ]; then
+        echo "${PROGNAME}: $1"
+    fi
+}
 debug() {
-    if [ "${VERBOSE}" = 1 ]; then
+    if [ "${VERBOSE}" = "1" ] && [ "${QUIET}" != "1" ]; then
         >&2 echo "${PROGNAME}: $1"
     fi
 }
 error() {
     >&2 echo "${PROGNAME}: $1"
+    [ "$1" = "invalid argument(s)" ] && >&2 show_help
     exit 1
 }
 
@@ -173,13 +198,15 @@ EOF
 }
 
 main() {
+    # We must have at least 1 argument
+    [ "$#" -ge 1 ] || error "invalid argument(s)"
+    [ "$1" = "-h" ] || [ "$1" = "--help" ] && show_help && exit 0
+    [ "$1" = "-V" ] || [ "$1" = "--version" ] && show_version && exit 0
+
     if [ -t 0 ]; then
-        # We have STDIN, so we should have at least 2 arguments
-        if [ "$#" -lt 2 ]; then
-            >&2 echo "invalid arguments"
-            >&2 usage
-            exit 1
-        fi
+        # We have STDIN, so we should have 2 arguments
+        [ "$#" -eq 2 ] || error "invalid argument(s)"
+
         # read VHOST from first argument
         VHOST="$1"
         # remove the first argument
@@ -187,12 +214,9 @@ main() {
         # read domains from remaining arguments
         DOMAINS=$@
     else
-        # We don't have STDIN, so we should have only 1 argument
-        if [ "$#" != 1 ]; then
-            >&2 echo "invalid arguments"
-            >&2 usage
-            exit 1
-        fi
+        # We don't have STDIN, so we should have 1 argument
+        [ "$#" -eq 1 ] || error "invalid argument(s)"
+
         # read VHOST from first argument
         VHOST="$1"
         # read domains from input
@@ -239,6 +263,9 @@ readonly PROGDIR=$(realpath -m $(dirname "$0"))
 readonly ARGS=$@
 
 readonly VERBOSE=${VERBOSE:-"0"}
+readonly QUIET=${QUIET:-"0"}
+
+readonly VERSION="19.11"
 
 # Read configuration file, if it exists
 [ -r /etc/default/evoacme ] && . /etc/default/evoacme

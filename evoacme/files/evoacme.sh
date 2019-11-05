@@ -10,17 +10,33 @@
 set -e
 set -u
 
-usage() {
+show_version() {
+    cat <<END
+evoacme version ${VERSION}
+
+Copyright 2009-2019 Evolix <info@evolix.fr>,
+                    Victor Laborie <vlaborie@evolix.fr>,
+                    Jérémy Lecour <jlecour@evolix.fr>,
+                    Benoit Série <bserie@evolix.fr>
+                    and others.
+
+evoacme comes with ABSOLUTELY NO WARRANTY.  This is free software,
+and you are welcome to redistribute it under certain conditions.
+See the GNU Affero General Public License v3.0 for details.
+END
+}
+
+show_help() {
     cat <<EOT
 Usage: ${PROGNAME} NAME
-  NAME must be correspond to :
-  - a CSR in ${CSR_DIR}/NAME.csr
-  - a KEY in ${SSL_KEY_DIR}/NAME.key
+    NAME must be correspond to :
+    - a CSR in ${CSR_DIR}/NAME.csr
+    - a KEY in ${SSL_KEY_DIR}/NAME.key
 
-  If env variable TEST=1, certbot is run in staging mode
-  If env variable DRY_RUN=1, certbot is run in dry-run mode
-  If env variable QUIET=1, no message is output
-  If env variable VERBOSE=1, debug messages are output
+    If env variable TEST=1, certbot is run in staging mode
+    If env variable DRY_RUN=1, certbot is run in dry-run mode
+    If env variable QUIET=1, no message is output
+    If env variable VERBOSE=1, debug messages are output
 EOT
 }
 
@@ -36,7 +52,7 @@ debug() {
 }
 error() {
     >&2 echo "${PROGNAME}: $1"
-    [ "$1" = "invalid argument(s)" ] && >&2 usage
+    [ "$1" = "invalid argument(s)" ] && >&2 show_help
     exit 1
 }
 
@@ -75,7 +91,7 @@ sed_cert_path_for_nginx() {
         sed -i "s~${search}~${replace}~" "${vhost_full_path}"
         debug "Config in ${vhost_full_path} has been updated"
         $(command -v nginx) -t 2>/dev/null
-        [ "${?}" -eq 0 ] || $(command -v nginx) -t
+        [ "${?}" -eq 0 ] || $(command -v nginx) -t -q
     fi
 }
 x509_verify() {
@@ -98,7 +114,8 @@ main() {
     # check arguments
     [ "$#" -eq 1 ] || error "invalid argument(s)"
 
-    [ "$1" = "-h" ] || [ "$1" = "--help" ] && usage && exit 0
+    [ "$1" = "-h" ] || [ "$1" = "--help" ] && show_help && exit 0
+    [ "$1" = "-V" ] || [ "$1" = "--version" ] && show_version && exit 0
 
     mkdir -p "${ACME_DIR}"
     chown acme: "${ACME_DIR}"
@@ -286,6 +303,8 @@ readonly VERBOSE=${VERBOSE:-"0"}
 readonly QUIET=${QUIET:-"0"}
 readonly TEST=${TEST:-"0"}
 readonly DRY_RUN=${DRY_RUN:-"0"}
+
+readonly VERSION="19.11"
 
 # Read configuration file, if it exists
 [ -r /etc/default/evoacme ] && . /etc/default/evoacme

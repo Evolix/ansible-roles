@@ -9,27 +9,50 @@
 
 set -u
 
-usage() {
+show_version() {
+    cat <<END
+vhost-domains version ${VERSION}
+
+Copyright 2009-2019 Evolix <info@evolix.fr>,
+                    Victor Laborie <vlaborie@evolix.fr>,
+                    Jérémy Lecour <jlecour@evolix.fr>,
+                    Benoit Série <bserie@evolix.fr>
+                    and others.
+
+vhost-domains comes with ABSOLUTELY NO WARRANTY. This is free software,
+and you are welcome to redistribute it under certain conditions.
+See the GNU Affero General Public License v3.0 for details.
+END
+}
+
+show_help() {
     cat <<EOT
 Usage: ${PROGNAME} VHOST
-VHOST must correspond to an Apache or Nginx enabled VHost
-If VHOST ends with ".conf" it is stripped,
-then files are seached at those paths:
-- /etc/apache2/sites-enables/VHOST.conf
-- /etc/nginx/sites-enabled/VHOST.conf
-- /etc/nginx/sites-enabled/VHOST
+    VHOST must correspond to an Apache or Nginx enabled VHost
+    If VHOST ends with ".conf" it is stripped,
+    then files are seached at those paths:
+    - /etc/apache2/sites-enables/VHOST.conf
+    - /etc/nginx/sites-enabled/VHOST.conf
+    - /etc/nginx/sites-enabled/VHOST
 
-If env variable VERBOSE=1, debug messages are sent to stderr
+    If env variable QUIET=1, no message is output
+    If env variable VERBOSE=1, debug messages are output
 EOT
 }
 
+log() {
+    if [ "${QUIET}" != "1" ]; then
+        echo "${PROGNAME}: $1"
+    fi
+}
 debug() {
-    if [ "${VERBOSE}" = 1 ]; then
+    if [ "${VERBOSE}" = "1" ] && [ "${QUIET}" != "1" ]; then
         >&2 echo "${PROGNAME}: $1"
     fi
 }
 error() {
     >&2 echo "${PROGNAME}: $1"
+    [ "$1" = "invalid argument(s)" ] && >&2 show_help
     exit 1
 }
 
@@ -118,14 +141,11 @@ first_vhost_file_found() {
 }
 
 main() {
-    if [ "$#" != 1 ]; then
-        >&2 usage
-        exit 1
-    fi
-    if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
-        usage
-        exit 0
-    fi
+    # check arguments
+    [ "$#" -eq 1 ] || error "invalid argument(s)"
+
+    [ "$1" = "-h" ] || [ "$1" = "--help" ] && show_help && exit 0
+    [ "$1" = "-V" ] || [ "$1" = "--version" ] && show_version && exit 0
 
     local vhost_name=$(basename "$1" .conf)
     local vhost_file=$(first_vhost_file_found "${vhost_name}")
@@ -148,6 +168,10 @@ readonly PROGDIR=$(realpath -m $(dirname "$0"))
 readonly ARGS=$@
 
 readonly VERBOSE=${VERBOSE:-"0"}
+readonly QUIET=${QUIET:-"0"}
+
+readonly VERSION="19.11"
+
 readonly SRV_IP=${SRV_IP:-""}
 
 main $ARGS
