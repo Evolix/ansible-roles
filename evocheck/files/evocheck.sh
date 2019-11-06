@@ -249,15 +249,15 @@ check_apticron() {
     fi
 }
 check_usrro() {
-    grep /usr /etc/fstab | grep -q ro || failed "IS_USRRO" "missing ro directive on fstab for /usr"
+    grep /usr /etc/fstab | grep -qE "\bro\b" || failed "IS_USRRO" "missing ro directive on fstab for /usr"
 }
 check_tmpnoexec() {
     FINDMNT_BIN=$(command -v findmnt)
     if [ -x ${FINDMNT_BIN} ]; then
         options=$(${FINDMNT_BIN} --noheadings --first-only --output OPTIONS /tmp)
-        grep -qE "\bnoexec\b" ${options} || failed "IS_TMPNOEXEC" "/tmp is not mounted with 'noexec'"
+        echo "${options}" | grep -qE "\bnoexec\b" || failed "IS_TMPNOEXEC" "/tmp is not mounted with 'noexec'"
     else
-        mount | grep "on /tmp" | grep -q noexec || failed "IS_TMPNOEXEC" "/tmp is not mounted with 'noexec' (WARNING: findmnt(8) is not found)"
+        mount | grep "on /tmp" | grep -qE "\bnoexec\b" || failed "IS_TMPNOEXEC" "/tmp is not mounted with 'noexec' (WARNING: findmnt(8) is not found)"
     fi
 }
 check_mountfstab() {
@@ -1458,7 +1458,7 @@ readonly PROGDIR=$(realpath -m "$(dirname "$0")")
 # shellcheck disable=2124
 readonly ARGS=$@
 
-readonly VERSION="19.11"
+readonly VERSION="19.11.1"
 
 # Disable LANG*
 export LANG=C

@@ -36,7 +36,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 * elasticsearch: listen on local interface only by default
-* evocheck: upstream version 19.11
+* evocheck: upstream version 19.11.1
 * evocheck: cron jobs execute in verbose
 * evolinux-base: use "evolinux_internal_group" for SSH authentication
 * evomaintenance: Turn on API by default (instead of DB)
