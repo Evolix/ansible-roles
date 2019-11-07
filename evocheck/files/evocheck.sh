@@ -444,9 +444,10 @@ check_squid() {
 }
 check_evomaintenance_fw() {
     if [ -f "$MINIFW_FILE" ]; then
+        hook_db=$(grep -E '^\s*HOOK_DB' /etc/evomaintenance.cf | tr -d ' ' | cut -d= -f2)
         rulesNumber=$(grep -c "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s .* -m state --state ESTABLISHED,RELATED -j ACCEPT" "$MINIFW_FILE")
-        if [ "$rulesNumber" -lt 2 ]; then
-            failed "IS_EVOMAINTENANCE_FW" "missing evomaintenance rules in minifirewall"
+        if [ "$hook_db" = "1" ] && [ "$rulesNumber" -lt 2 ]; then
+            failed "IS_EVOMAINTENANCE_FW" "HOOK_DB is enabled but missing evomaintenance rules in minifirewall"
         fi
     fi
 }
@@ -658,9 +659,14 @@ check_muninrunning() {
 }
 # Check if files in /home/backup/ are up-to-date
 check_backupuptodate() {
-    if [ -d /home/backup/ ]; then
-        if [ -n "$(ls -A /home/backup/)" ]; then
-            for file in /home/backup/*; do
+    # find local backup directory
+    backup_dir=$(grep --no-messages 'LOCAL_BACKUP_DIR=' /etc/cron.daily/zzz_evobackup | tr -d \" | cut -d= -f2)
+    if [ -z "${backup_dir}" ]; then
+        backup_dir="/home/backup"
+    fi
+    if [ -d "${backup_dir}" ]; then
+        if [ -n "$(ls -A ${backup_dir})" ]; then
+            for file in ${backup_dir}/*; do
                 limit=$(date +"%s" -d "now - 2 day")
                 updated_at=$(stat -c "%Y" "$file")
 
@@ -670,10 +676,10 @@ check_backupuptodate() {
                 fi
             done
         else
-            failed "IS_BACKUPUPTODATE" "/home/backup/ is empty"
+            failed "IS_BACKUPUPTODATE" "${backup_dir}/ is empty"
         fi
     else
-        failed "IS_BACKUPUPTODATE" "/home/backup/ is missing"
+        failed "IS_BACKUPUPTODATE" "${backup_dir}/ is missing"
     fi
 }
 check_etcgit() {
@@ -1458,7 +1464,7 @@ readonly PROGDIR=$(realpath -m "$(dirname "$0")")
 # shellcheck disable=2124
 readonly ARGS=$@
 
-readonly VERSION="19.11.1"
+readonly VERSION="19.11.2"
 
 # Disable LANG*
 export LANG=C
