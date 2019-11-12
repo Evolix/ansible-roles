@@ -37,7 +37,7 @@
     regexp: "umask [0-9]+"
   when: evolinux_root_umask
 
-- name: "/usr/share/scripts" is present in root's PATH
+- name: "/usr/share/scripts is present in root's PATH"
   lineinfile:
     dest: "/root/.profile"
     line: "PATH=\"${PATH}:/usr/share/scripts\""
