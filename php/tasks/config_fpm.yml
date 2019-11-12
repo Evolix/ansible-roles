@@ -80,3 +80,10 @@
     - { option: "date.timezone", value: "Europe/Paris" }
   notify: "restart {{ php_fpm_service_name }}"
   when: php_symfony_requirements
+
+- name: Delete debian default pool
+  file:
+    path: "{{ php_fpm_debian_default_pool_file }}"
+    state: absent
+  notify: "restart {{ php_fpm_service_name }}"
+  when: php_fpm_remove_default_pool
