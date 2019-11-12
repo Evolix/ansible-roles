@@ -37,7 +37,7 @@
 
 - name: Set default PHP FPM values
   ini_file:
-    dest: "{{ php_fpm_defaults_conf_file }}"
+    dest: "{{ php_fpm_default_pool_file }}"
     section: www
     option: "{{ item.option }}"
     value: "{{ item.value }}"
@@ -61,7 +61,7 @@
 
 - name: Custom PHP FPM values
   copy:
-    dest: "{{ php_fpm_custom_conf_file }}"
+    dest: "{{ php_fpm_default_pool_custom_file }}"
     content: |
       ; Put customized values here.
       ; default_charset = "ISO-8859-1"

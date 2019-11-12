@@ -8,8 +8,8 @@
     php_apache_custom_ini_file: /etc/php/7.3/apache2/conf.d/zzz-evolinux-custom.ini
     php_fpm_defaults_ini_file: /etc/php/7.3/fpm/conf.d/z-evolinux-defaults.ini
     php_fpm_custom_ini_file: /etc/php/7.3/fpm/conf.d/zzz-evolinux-custom.ini
-    php_fpm_defaults_conf_file: /etc/php/7.3/fpm/pool.d/z-evolinux-defaults.conf
-    php_fpm_custom_conf_file: /etc/php/7.3/fpm/pool.d/zzz-evolinux-custom.conf
+    php_fpm_default_pool_file: /etc/php/7.3/fpm/pool.d/www-evolinux-defaults.conf
+    php_fpm_default_pool_custom_file: /etc/php/7.3/fpm/pool.d/www-evolinux-zcustom.conf
     php_fpm_default_pool_socket: /var/run/php/php7.3-fpm.sock
     php_fpm_service_name: php7.3-fpm
 
