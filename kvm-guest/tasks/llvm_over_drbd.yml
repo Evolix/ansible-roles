@@ -1,0 +1,60 @@
+---
+
+- name: "create logical volumes for {{ kvm-guest__name }} on kvm cloud"
+  block:
+    - name: "create logical volumes on {{ kvm-guest__primary }}"
+      lvol:
+        vg: "{{ item.group }}"'
+        lv: "{{ item.name }}"
+        size: "{{ item.size }}"
+      with_items: "{{ kvm-guest__volumes }}"
+      delegate_to: "{{ kvm-guest__primary }}"
+
+    - name: 'create logical volumes on {{ kvm-guest__secondary }}"'
+      lvol:
+        vg: "{{ item.group }}"'
+        lv: "{{ item.name }}"
+        size: "{{ item.size }}"
+      with_items: "{{ kvm-guest__volumes }}"
+      delegate_to: "{{ kvm-guest__secondary }}"
+
+- name: "create DRBD ressources for {{ kvm-guest__name }} on kvm cloud"
+  block:
+    - name: "check if DRBD ressource definition on {{ kvm-guest__primary }} exists"
+      stat: 
+        path: "/etc/drbd.d/{{ kvm-guest__name }}.res"
+      delegate_to: "{{ kvm-guest__primary }}"
+      register: kvm-guest__drbd_primary_ressource
+
+    - name: "check if DRBD ressource definition on {{ kvm-guest__secondary }} exists"
+      stat: 
+        path: "/etc/drbd.d/{{ kvm-guest__name }}.res"
+      delegate_to: "{{ kvm-guest__secondary }}"
+      register: kvm-guest__drbd_secondary_ressource
+
+    - name: "update DRBD ressource definition on {{ kvm-guest__primary }}"
+      template:
+        src: 'drbd_vm.res.j2'
+        dest: "/etc/drbd.d/{{ kvm-guest__name }}.res"
+        validate: 'drbdadm -d adjust all'
+      delegate_to: "{{ kvm-guest__primary }}"
+      notifies: 'primary DRBD was changed'
+
+    - name: 'update DRBD ressource definition on {{ kvm-guest__secondary }}"'
+      template:
+        src: 'drbd_vm.res.j2'
+        dest: "/etc/drbd.d/{{ kvm-guest__name }}.res"
+        validate: 'drbdadm -d adjust all'
+      delegate_to: "{{ kvm-guest__secondary }}"
+      notifies: 'secondary DRBD was changed'
+
+    - name: 'synchronize DRBD ressources'
+      command: "drbdadm -- --overwrite-data-of-peer primary {{ kvm-guest__name }}"
+      delegate_to: "{{ kvm-guest__primary }}"
+
+- name: "Define {{ kvm-guest__name }}"
+  virt:
+    command: define
+    xml: "{{ lookup('template', 'vm_template.xml.j2') }}"
+    autostart: true
+    delegate_to: "{{ kvm-guest__primary }}"

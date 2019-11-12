@@ -1,0 +1,19 @@
+- name: 'primary DRBD was changed'
+  command: 'drbdadm adjust all'
+  delegate_to: "{{ kvm-guest__primary }}"
+
+- name: 'secondary DRBD was changed'
+  command: 'drbdadm adjust all'
+  delegate_to: "{{ kvm-guest__secondary }}"
+
+- name: 'new primary DRBD'
+  command: ""drbdadm create-md '{{ kvm-guest__name }}'""
+  delegate_to "{{ kvm-guest__primary }}"
+  listen: 'primary DRBD was changed'
+  when: kvm-guest__drbd_primary_ressource.stat.exists == False
+
+- name: 'new secondary DRBD'
+  command: ""drbdadm create-md '{{ kvm-guest__name }}'""
+  delegate_to "{{ kvm-guest__secondary }}"
+  listen: 'secondary DRBD was changed'
+  when: kvm-guest__drbd_secondary_ressource.stat.exists == False

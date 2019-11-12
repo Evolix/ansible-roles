@@ -1,0 +1,28 @@
+resource "{{ kvm-guest__name }}" {
+    net {
+        cram-hmac-alg "sha1";
+        shared-secret "{{ kvm-guest__drbd_secret }}";
+        # Si pas de lien dedié 10G, passer en protocol A
+        # Et desactiver allow-two-primaries;
+        protocol C;
+        allow-two-primaries;
+        # Tuning perf.
+        #max-buffers 8000;
+        #max-epoch-size 8000;
+        #sndbuf-size 0;
+    }
+{% for volume in kvm-guest__volumes %}
+    volume {{ loop.index }} {
+        device minor {{ volume.device }};
+        disk /dev/{{ volume.group }}/{{ volume.name }};
+        meta-disk internal;
+    }
+{% endfor %}
+
+    on {{ kvm-guest__primary }} {
+        address {{ kvm-guest__primary_ip }}:{{ kvm-guest__port }};
+    }
+    on {{ kvm-guest__secondary }} {
+        address {{ kvm-guest__secondary_ip }}:{{ kvm-guest__port }};
+    }
+}
