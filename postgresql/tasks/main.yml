@@ -1,4 +1,5 @@
 ---
+- include: locales.yml
 
 - include: packages_jessie.yml
   when: ansible_distribution_release == "jessie"

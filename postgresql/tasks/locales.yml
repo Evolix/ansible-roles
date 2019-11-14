@@ -1,0 +1,19 @@
+---
+- include_role:
+    name: remount-usr
+
+- name: select locales to be generated
+  locale_gen:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "fr_FR.UTF-8"
+  become: yes
+  notify: reconfigure locales
+
+- name: set default locale
+  lineinfile:
+    dest: "/etc/default/locale"
+    regexp: "^LANG="
+    line: "LANG={{ locales_default }}"
+  notify: reconfigure locales

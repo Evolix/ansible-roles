@@ -16,3 +16,6 @@
 
 - name: Restart minifirewall
   command: /etc/init.d/minifirewall restart
+
+- name: reconfigure locales
+  command: dpkg-reconfigure -f noninteractive locales
