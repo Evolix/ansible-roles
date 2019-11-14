@@ -1,24 +1,26 @@
 ---
 
-- name: Configure ssmtp
-  replace:
-    name: "/var/lib/lxc/{{name}}/rootfs/etc/ssmtp/ssmtp.conf"
-    regexp: "{{ item.regexp }}"
-    replace: "{{ item.replace }}"
-  with_dict:
-    - { regexp: "^mailhub=.*$", replace: "mailhub=127.0.0.1"}
-    - { regexp: "^#FromLineOverride=.*$", replace: "FromLineOverride=YES"}
-    - { regexp: "^hostname=.*", replace: "hostname={{ansible_fqdn}}"}
+- name: Configure opensmtpd
+  template:
+    src: smtpd.conf.j2
+    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/smtpd.conf"
+    mode: "0644"
+  notify: "Restart opensmtpd"
+
+- name: Copy using inline content
+  copy:
+    content: "{{ evolinux_hostname }}.{{ evolinux_domain }}\n"
+    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/mailname"
+  notify: "Restart opensmtpd"
 
 - name: Configure timezone
   copy:
-    dest: "/var/lib/lxc/{{name}}/rootfs/etc/timezone"
-    content: "Europe/Paris\n"
+    remote_src: yes
+    src: "/etc/timezone"
+    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/timezone"
 
 - name: Ensure containers root directory is 755
   file:
-    path: "/var/lib/lxc/{{ item.name }}/rootfs"
+    path: "/var/lib/lxc/{{ lxc_php_version }}/rootfs"
     state: directory
     mode: '0755'
-  with_items:
-    - "{{ lxc_containers }}"

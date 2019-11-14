@@ -1,16 +1,18 @@
 ---
 
-- name: Install PHP packages
-  command: "lxc-attach -n {{name}} -- apt-get install -y php5-fpm php5-cli php5-gd php5-imap php5-ldap php5-mcrypt php5-mysql php5-pgsql php-gettext php5-intl php5-curl php5-ssh2 libphp-phpmailer ssmtp git zip unzip"
+- name: "{{ lxc_php_version }} - Install PHP packages"
+  lxc_container:
+    name: "{{ lxc_php_version }}"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php5-fpm php5-cli php5-gd php5-imap php5-ldap php5-mcrypt php5-mysql php5-pgsql php-gettext php5-intl php5-curl php5-ssh2 php5-zip php5-mbstring libphp-phpmailer opensmtpd git zip unzip"
 
-- name: Copy evolinux PHP 5.6 configuration
+- name: "{{ lxc_php_version }} - Copy evolinux PHP configuration"
   template:
     src: z-evolinux-defaults.ini.j2
     dest: "{{ line_item }}"
     mode: "0644"
-  notify: "Reload {{name}}-fpm"
+  notify: "Reload {{ lxc_php_version }}-fpm"
   with_items:
-    - "/var/lib/lxc/{{name}}/rootfs/etc/php5/fpm/conf.d/z-evolinux-defaults.ini"
-    - "/var/lib/lxc/{{name}}/rootfs/etc/php5/cli/conf.d/z-evolinux-defaults.ini"
+    - "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/php5/fpm/conf.d/z-evolinux-defaults.ini"
+    - "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/php5/cli/conf.d/z-evolinux-defaults.ini"
   loop_control:
     loop_var: line_item
