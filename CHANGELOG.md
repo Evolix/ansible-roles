@@ -90,6 +90,7 @@ The **patch** part changes incrementally at each release.
 ### Fixed
 * etc-git: fix warnings ansible-lint
 * evoadmin-web: Put the php config at the right place for Buster
+* lxc: Don't stop the container if it already exists
 * lxc-php: Don't remove the default pool
 * minifirewall: fix warnings ansible-lint
 * nginx: fix munin fcgi not working (missing chmod 660 on logs)

@@ -11,6 +11,7 @@
     template: debian
     state: stopped
     template_options: "--arch amd64 --release {{release}}"
+  when: container_exists.stdout_lines == []
 
 - name: "Disable network configuration inside container {{ name }}"
   replace:
