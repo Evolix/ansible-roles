@@ -57,13 +57,12 @@
     apt_key:
       # url: https://hwraid.le-vert.net/debian/hwraid.le-vert.net.gpg.key
       data: "{{ lookup('file', 'hwraid.le-vert.net.gpg.key') }}"
-    when: ansible_distribution_release == "stretch"
+    when: ansible_distribution_major_version | version_compare('9', '>=')
 
   - name: Add HW tool repository
     apt_repository:
-      repo: 'deb http://hwraid.le-vert.net/debian stretch main'
+      repo: 'deb http://hwraid.le-vert.net/debian {{ ansible_distribution_release }} main'
       state: present
-    when: ansible_distribution_release == "stretch"
 
   - name: Install packages for DELL/LSI hardware
     apt:
