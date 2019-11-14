@@ -10,7 +10,7 @@ evoadmin_scripts_dir: /usr/share/scripts/evoadmin
 evoadmin_host: "evoadmin.{{ ansible_fqdn }}"
 evoadmin_username: evoadmin
 
-evoadmin_multi_php: False
+evoadmin_multiphp_versions: []
 evoadmin_enable_vhost: True
 
 evoadmin_force_vhost: False
