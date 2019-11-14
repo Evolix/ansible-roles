@@ -5,4 +5,5 @@
     name: '{{item}}'
   with_items:
   - postgresql
+  - pgtop
   - libdbd-pg-perl
