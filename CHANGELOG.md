@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 * apt: check if cron is installed before adding a cron job
 * apt: remove jessie/buster sources from Gandi servers
+* apt: verify that /etc/evolinux is present
 * certbot : new role to install and configure certbot
 * etc-git: add versioning for /usr/share/scripts on Debian 10+
 * evoacme: upstream version 19.11

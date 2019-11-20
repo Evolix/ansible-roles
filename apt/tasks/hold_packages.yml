@@ -8,6 +8,12 @@
   tags:
     - apt
 
+- name: "/etc/evolinux is present"
+  file:
+    dest: /etc/evolinux
+    mode: "0700"
+    state: directory
+
 - name: "hold packages (config)"
   lineinfile:
     dest: /etc/evolinux/apt_hold_packages.cf
