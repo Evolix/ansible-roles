@@ -62,6 +62,7 @@ The **patch** part changes incrementally at each release.
 * php: add missing handler for php7.3-fpm
 * roundcube: fix typo for roundcube vhost
 * tomcat: fix typo for default tomcat_version
+* evolinux-base: Fix our zsyslog rotate config that doesn't work on Debian 10
 
 ### Security
 

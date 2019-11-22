@@ -24,6 +24,12 @@
     dest: /etc/logrotate.d/
   when: evolinux_logs_logrotate_confs
 
+- name: Copy rsyslog logrotate file
+  template:
+    src: logs/zsyslog.j2
+    dest: /etc/logrotate.d/zsyslog
+  when: evolinux_logs_logrotate_confs
+
 - name: Configure logrotate.conf
   replace:
     dest: /etc/logrotate.conf
