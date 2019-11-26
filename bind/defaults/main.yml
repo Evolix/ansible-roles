@@ -7,3 +7,4 @@ bind_systemd_service_path: /etc/systemd/system/bind9.service
 bind_statistics_file: /var/run/named.stats
 bind_log_file: /var/log/bind.log
 bind_query_file: /var/log/bind_queries.log
+bind_cache_dir: /var/cache/bind
