@@ -13,7 +13,7 @@
     owner: bind
     group: bind
     mode: "0644"
-    force: true
+    force: True
   notify: restart bind
   when: bind_recursive_server
 
@@ -32,7 +32,7 @@
     owner: bind
     group: bind
     mode: "0644"
-    force: true
+    force: True
   notify: restart bind
   when: bind_authoritative_server
 
@@ -43,7 +43,7 @@
     owner: root
     group: root
     mode: "0644"
-    force: true
+    force: True
   notify:
   - reload systemd
   - restart bind
@@ -73,14 +73,14 @@
     dest: /root/chroot-bind.sh
     mode: "0700"
     owner: root
-    force: true
-    backup: true
+    force: True
+    backup: True
   when: bind_chroot_set
 
 - name: exec chroot-bind.sh
   command: "/root/chroot-bind.sh"
   register: chrootbind_run
-  changed_when: false
+  changed_when: False
   when: bind_chroot_set
 
 - debug:
@@ -102,7 +102,7 @@
     owner: root
     group: root
     mode: "0644"
-    force: true
+    force: True
   notify: restart bind
   when: not bind_chroot_set
 
@@ -113,7 +113,7 @@
     owner: root
     group: root
     mode: "0644"
-    force: true
+    force: True
   notify: restart bind
   when: bind_chroot_set
 
