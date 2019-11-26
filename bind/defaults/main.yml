@@ -2,8 +2,8 @@
 bind_recursive_server: false
 bind_authoritative_server: true
 bind_chroot_set: true
-bind_chroot_path: '/var/chroot-bind'
-bind_systemd_service_path: '/etc/systemd/system/bind9.service'
-bind_statistics_file: '/var/run/named.stats'
-bind_log_file: '/var/log/bind.log'
-bind_query_file: '/var/log/bind_queries.log'
+bind_chroot_path: /var/chroot-bind
+bind_systemd_service_path: /etc/systemd/system/bind9.service
+bind_statistics_file: /var/run/named.stats
+bind_log_file: /var/log/bind.log
+bind_query_file: /var/log/bind_queries.log
