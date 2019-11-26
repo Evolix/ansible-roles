@@ -21,7 +21,7 @@
 
 - name: Check if Apache is installed
   stat:
-    path: /etc/apache2
+    path: /usr/sbin/apachectl
   register: is_apache
 
 - block:
