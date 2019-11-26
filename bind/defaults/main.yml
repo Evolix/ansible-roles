@@ -2,7 +2,8 @@
 bind_recursive_server: False
 bind_authoritative_server: True
 bind_chroot_set: True
-bind_chroot_path: /var/chroot-bind
+# Until chroot-bind.sh is migrated to ansible, we hardcode the chroot paths.
+#bind_chroot_path: /var/chroot-bind
 bind_systemd_service_path: /etc/systemd/system/bind9.service
 bind_statistics_file: /var/run/named.stats
 bind_log_file: /var/log/bind.log

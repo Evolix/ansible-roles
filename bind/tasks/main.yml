@@ -1,3 +1,13 @@
+# Until chroot-bind.sh is migrated to ansible, we hardcode the chroot paths.
+- name: set chroot variables
+  set_fact:
+     bind_log_file: /var/log/bind.log
+     bind_query_file: /var/log/bind_queries.log
+     bind_cache_dir: /var/cache/bind
+     bind_statistics_file: /var/run/named.stats
+     bind_chroot_path: /var/chroot-bind
+  when: bind_chroot_set
+
 - name: package are installed
   apt:
     name: '{{ item }}'
