@@ -49,18 +49,18 @@
   - restart bind
   when: ansible_distribution_release == "jessie"
 
-- name: touch /var/log/bind.log if non chroot
+- name: "touch {{ bind_log_file }} if non chroot"
   file:
-    path: /var/log/bind.log
+    path: "{{ bind_log_file }}"
     owner: bind
     group: adm
     mode: "0640"
     state: touch
   when: not bind_chroot_set
 
-- name: touch /var/log/bind_queries.log if non chroot
+- name: "touch {{ bind_query_file }} if non chroot"
   file:
-    path: /var/log/bind_queries.log
+    path: "{{ bind_query_file }}"
     owner: bind
     group: adm
     mode: "0640"
@@ -95,7 +95,7 @@
   notify: restart bind
   when: bind_chroot_set
 
-- name: logrotate for non chroot bind
+- name: logrotate for bind
   template:
     src: logrotate_bind
     dest: /etc/logrotate.d/bind9
@@ -104,17 +104,5 @@
     mode: "0644"
     force: yes
   notify: restart bind
-  when: not bind_chroot_set
-
-- name: logrotate for chroot bind
-  template:
-    src: logrotate_bind_chroot.j2
-    dest: /etc/logrotate.d/bind9
-    owner: root
-    group: root
-    mode: "0644"
-    force: yes
-  notify: restart bind
-  when: bind_chroot_set
 
 - include: munin.yml
