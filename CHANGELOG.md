@@ -64,6 +64,7 @@ The **patch** part changes incrementally at each release.
 * tomcat: fix typo for default tomcat_version
 * evolinux-base: Fix our zsyslog rotate config that doesn't work on Debian 10
 * certbot: Properly evaluate when apache is installed
+* evolinux-base: Don't make alert5.service executable as systemd will complain
 
 ### Security
 
