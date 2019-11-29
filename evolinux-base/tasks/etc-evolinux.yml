@@ -10,4 +10,4 @@
 #     state: directory
 
 - include_role:
-    name: evolinux-todo
+    name: evolix/evolinux-todo

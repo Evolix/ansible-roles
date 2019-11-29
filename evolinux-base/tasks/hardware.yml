@@ -18,7 +18,7 @@
 
 - name: Add non-free repo for Broadcom NetXtreme II
   include_role:
-    name: apt
+    name: evolix/apt
     tasks_from: basics.yml
   vars:
     apt_basics_components: "main contrib non-free"

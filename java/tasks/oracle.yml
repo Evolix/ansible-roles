@@ -41,7 +41,7 @@
   - java
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
 
 - name: Install java package
   apt:

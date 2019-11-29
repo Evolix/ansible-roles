@@ -7,7 +7,7 @@
     - redis
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
   tags:
     - redis
 

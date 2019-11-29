@@ -1,7 +1,7 @@
 ---
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
 
 - name: /usr/share/scripts exists
   file:

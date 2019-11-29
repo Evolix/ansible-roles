@@ -16,7 +16,7 @@
     dest: "/root/{{ mysql_apt_config_package }}"
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
 
 - name: MySQL APT config package is installed
   apt:
@@ -34,7 +34,7 @@
 - meta: flush_handlers
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
 
 - name: /usr/share/mysql exists
   file:

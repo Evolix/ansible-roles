@@ -1,6 +1,6 @@
 ---
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
   when: evocheck_bin_dir | search ("/usr")
   tags:
     - evocheck

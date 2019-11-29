@@ -6,7 +6,7 @@
     state: present
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
 
 # https://raw.githubusercontent.com/CaptPhunkosis/check_rabbitmq/master/check_rabbitmq
 - name: check_rabbitmq is installed

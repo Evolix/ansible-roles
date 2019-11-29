@@ -9,7 +9,7 @@
 
 - name: Apt configuration
   include_role:
-    name: apt
+    name: evolix/apt
   vars:
     apt_install_basics: "{{ evolinux_apt_replace_default_sources }}"
     apt_install_evolix_public: "{{ evolinux_apt_public_sources }}"
@@ -17,7 +17,7 @@
 
 - name: /etc versioning with Git
   include_role:
-    name: etc-git
+    name: evolix/etc-git
   when: evolinux_etcgit_include
 
 - name: /etc/evolinux base
@@ -46,12 +46,12 @@
 
 - name: Minifirewall
   include_role:
-    name: minifirewall
+    name: evolix/minifirewall
   when: evolinux_minifirewall_include
 
 - name: Evomaintenance
   include_role:
-    name: evomaintenance
+    name: evolix/evomaintenance
   when: evolinux_evomaintenance_include
 
 - name: SSH configuration
@@ -61,7 +61,7 @@
 ### disabled because of a memory leak
 # - name: Create evolinux users
 #   include_role:
-#     name: evolinux-users
+#     name: evolix/evolinux-users
 #   when: evolinux_users_include
 
 - name: Root user configuration
@@ -100,25 +100,25 @@
 
 - name: Munin
   include_role:
-    name: munin
+    name: evolix/munin
   when: evolinux_munin_include
 
 - name: Nagios/NRPE
   include_role:
-    name: nagios-nrpe
+    name: evolix/nagios-nrpe
   when: evolinux_nagios_nrpe_include
 
 - name: fail2ban
   include_role:
-    name: fail2ban
+    name: evolix/fail2ban
   when: evolinux_fail2ban_include
 
 - name: Listupgrade
   include_role:
-    name: listupgrade
+    name: evolix/listupgrade
   when: evolinux_listupgrade_include
 
 - name: Generate ldif script
   include_role:
-    name: generate-ldif
+    name: evolix/generate-ldif
   when: evolinux_generateldif_include

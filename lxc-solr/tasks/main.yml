@@ -1,7 +1,7 @@
 ---
 - name: LXC configuration
   include_role:
-    name: lxc
+    name: evolix/lxc
 
 - name: Ensure containers root directory is 755
   file:

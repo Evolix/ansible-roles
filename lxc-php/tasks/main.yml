@@ -1,7 +1,7 @@
 ---
 - name: LXC configuration      
   include_role:
-    name: lxc
+    name: evolix/lxc
 
 - name: Update APT cache
   command: "lxc-attach -n {{name}} -- apt-get update"

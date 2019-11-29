@@ -56,7 +56,7 @@
 
 - block:
   - include_role:
-      name: remount-usr
+      name: evolix/remount-usr
 
   - name: Logstash plugin is installed
     command: /usr/share/logstash/bin/logstash-plugin install logstash-input-beats

@@ -10,6 +10,6 @@ A separate `cat.yml` file can be imported manually in playbooks or roles to get 
 
 ```
 - include_role:
-    name: evolinux-todo
+    name: evolix/evolinux-todo
     tasks_from: cat.yml
 ```

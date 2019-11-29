@@ -10,7 +10,7 @@ A separate `exec.yml` file can be imported manually in playbooks or roles to exe
 
 ```
 - include_role:
-    name: evocheck
+    name: evolix/evocheck
     tasks_from: exec.yml
 ```
 ## Variables

@@ -79,7 +79,7 @@
     state: directory
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
   when: evoadmin_scripts_dir | search ("/usr")
 
 - name: "Create {{ evoadmin_scripts_dir }}"

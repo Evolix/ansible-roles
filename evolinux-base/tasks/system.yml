@@ -34,7 +34,7 @@
 # non-interactively (like tzdata ↑)
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
 
 - name: Ensure automagic vim conf is disabled
   lineinfile:
@@ -120,7 +120,7 @@
   when: is_cron_installed.rc == 0 and evolinux_system_cron_random
 
 - include_role:
-    name: ntpd
+    name: evolix/ntpd
 
 ## alert5
 

@@ -9,5 +9,5 @@ Include this role in task before write on /usr partition (eg. copy a file) :
 
 ~~~
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
 ~~~

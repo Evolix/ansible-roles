@@ -74,7 +74,7 @@
   - opendkim
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
 
 - name: deploy opendkim-add.sh script
   copy:
