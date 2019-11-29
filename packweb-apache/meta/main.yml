@@ -15,10 +15,10 @@ galaxy_info:
     - stretch
 
 dependencies:
-  - { role: apache }
-  - { role: php, php_apache_enable: True, when: packweb_apache_modphp }
-  - { role: php, php_fpm_enable: True, when: packweb_apache_fpm }
-  - { role: squid, squid_localproxy_enable: True }
-  - { role: mysql,        when: packweb_mysql_variant == "debian" }
-  - { role: mysql-oracle, when: packweb_mysql_variant == "oracle" }
-  - { role: webapps/evoadmin-web, evoadmin_enable_vhost: "{{ packweb_enable_evoadmin_vhost }}" }
+  - { role: evolix/apache }
+  - { role: evolix/php, php_apache_enable: True, when: packweb_apache_modphp }
+  - { role: evolix/php, php_fpm_enable: True, when: packweb_apache_fpm }
+  - { role: evolix/squid, squid_localproxy_enable: True }
+  - { role: evolix/mysql,        when: packweb_mysql_variant == "debian" }
+  - { role: evolix/mysql-oracle, when: packweb_mysql_variant == "oracle" }
+  - { role: evolix/webapps/evoadmin-web, evoadmin_enable_vhost: "{{ packweb_enable_evoadmin_vhost }}" }
