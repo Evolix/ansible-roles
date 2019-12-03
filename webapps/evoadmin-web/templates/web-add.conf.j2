@@ -2,5 +2,5 @@ CONTACT_MAIL="{{ evoadmin_contact_email or general_alert_email | mandatory }}"
 WWWBOUNCE_MAIL="{{ evoadmin_bounce_email or general_alert_email | mandatory }}"
 
 {% if evoadmin_multiphp_versions != [] %}
-PHP_VERSIONS={{ evoadmin_multiphp_versions.join(' ') | replace('php', '') }} );
+PHP_VERSIONS={{ evoadmin_multiphp_versions | join(' ') | replace('php', '') }} );
 {% endif %}
