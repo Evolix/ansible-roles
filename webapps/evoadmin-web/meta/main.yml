@@ -16,4 +16,4 @@ galaxy_info:
         - stretch
 
 dependencies:
-  - proftpd
+  - { role: evolix/proftpd }
