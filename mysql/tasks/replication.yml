@@ -23,12 +23,6 @@
   register: create_repl_user
   when: mysql_repl_password | length > 0
 
-- name: 'Add Nagios check for replication'
-  template:
-    src: 'replication_check.cfg.j2'
-    dest: '/etc/nagios/nrpe.d/replication.cfg'
-  notify: 'restart nagios-nrpe-server'
-
 - name: 'Install xinetd'
   apt:
     name: 'xinetd'
