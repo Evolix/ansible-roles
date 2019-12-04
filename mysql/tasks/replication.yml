@@ -49,9 +49,3 @@
     src: 'xinetd/mysqlchk.sh'
     dest: '/usr/share/scripts/'
     mode: '0755'
-
-- name: 'Copy dbadmin script'
-  copy:
-    src: 'dbadmin.sh'
-    dest: '/usr/share/scripts/'
-    mode: '0755'
