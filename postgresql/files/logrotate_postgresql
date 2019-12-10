@@ -1,7 +1,7 @@
-/var/log/postgresql.log {
-    weekly
+/var/log/postgresql/*.log {
+    daily
     missingok
-    rotate 8
-    create 640 root adm
+    rotate 10
+    create 640 postgres adm
 }
 
