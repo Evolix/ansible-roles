@@ -34,10 +34,23 @@
   failed_when: "'FAILED' in raidmodel.stdout"
 
 - block:
+  - name: Add HPE GPG key
+    apt_key:
+      #url: https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key1.pub
+      data: "{{ lookup('file', 'hpePublicKey2048_key1.pub') }}"
+
+  - name: Add HPE repository
+    apt_repository:
+      repo: 'deb https://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_distribution_release }}/current non-free'
+      state: present
+
   - name: Install packages for HP hardware
     apt:
-      name: cciss-vol-status
+      name: "{{ item }}"
       state: present
+    with_items:
+    - cciss-vol-status
+    - ssacli
 
   - name: Configure packages for HP hardware
     template:

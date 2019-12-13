@@ -34,6 +34,7 @@ The **patch** part changes incrementally at each release.
 * redis: rewrite of the role (separate instances, better systemd units…)
 * webapps/evoadmin-web Add an htpasswd to evoadmin if you cant use an apache IP whitelist
 * webapps/evoadmin-web Overload templates if needed
+* evolinux-base: install ssacli for HP Smart Array
 
 ### Changed
 * apache: improve permissions in save_apache_status script
