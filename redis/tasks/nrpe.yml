@@ -66,6 +66,18 @@
     - redis
     - nrpe
 
+- name: sudo without password for nagios
+  lineinfile:
+    dest: /etc/sudoers.d/evolinux
+    regexp: 'check_redis$'
+    line: 'nagios          ALL = NOPASSWD: {{ redis_check_redis_path }}'
+    insertafter: '^nagios'
+    validate: "visudo -cf %s"
+  when: redis_instance_name is undefined
+  tags:
+    - redis
+    - nrpe
+
 - name: install check_redis_instances
   copy:
     src: check_redis_instances.sh
