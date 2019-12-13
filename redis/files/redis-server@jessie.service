@@ -4,11 +4,16 @@ After=network.target
 
 [Service]
 Type=forking
-ExecStart=/usr/bin/redis-server /etc/redis-%i/redis.conf --unixsocket /var/run/redis-%i/redis.sock --pidfile /var/run/redis-%i/redis-server.pid 
-ExecStop=/usr/bin/redis-cli -s /var/run/redis-%i/redis.sock shutdown
-Restart=always
+PermissionsStartOnly=True
 User=redis-%i
 Group=redis-%i
+ExecStartPre=/bin/mkdir /var/run/redis-%i
+ExecStartPre=/bin/chown redis-%i:redis-%i /var/run/redis-%i
+ExecStartPre=/bin/chmod 0750 /var/run/redis-%i
+ExecStart=/usr/bin/redis-server /etc/redis-%i/redis.conf --unixsocket /var/run/redis-%i/redis.sock --pidfile /var/run/redis-%i/redis-server.pid
+ExecStop=/usr/bin/redis-cli -s /var/run/redis-%i/redis.sock shutdown
+ExecStopPost=/bin/rm -rf /var/run/redis-%i
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
