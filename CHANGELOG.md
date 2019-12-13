@@ -36,6 +36,7 @@ The **patch** part changes incrementally at each release.
 * webapps/evoadmin-web Overload templates if needed
 
 ### Changed
+* apache: improve permissions in save_apache_status script
 * elasticsearch: listen on local interface only by default
 * evocheck: upstream version 19.11.2
 * evocheck: cron jobs execute in verbose
