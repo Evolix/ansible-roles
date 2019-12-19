@@ -8,7 +8,6 @@
   delegate_to: "{{ evobackup_client__hosts[0].ip }}"
   notify:
     - 'created new jail'
-    - 'jail updated'
   tags:
     - evobackup_client
     - evobackup_client_jail
