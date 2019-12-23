@@ -33,5 +33,6 @@ CapabilityBoundingSet=~CAP_SYS_PTRACE
 # writing there (NB. ProtectSystem=true over ProtectSystem=full)
 ProtectSystem=true
 ReadWriteDirectories=-/etc/redis-%i
+
 [Install]
 WantedBy=multi-user.target
