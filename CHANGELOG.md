@@ -67,6 +67,7 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: Fix our zsyslog rotate config that doesn't work on Debian 10
 * certbot: Properly evaluate when apache is installed
 * evolinux-base: Don't make alert5.service executable as systemd will complain
+* webapps/evoadmin-web: Set default evoadmin_mail_tpl_force to True to fix a regression where the mail template would not get updated because the file is created before the role is first run.
 
 ### Security
 

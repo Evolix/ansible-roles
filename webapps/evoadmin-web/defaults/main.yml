@@ -17,7 +17,7 @@ evoadmin_force_vhost: False
 evoadmin_config_local_php_force: False
 evoadmin_sudoers_conf_force: False
 evoadmin_add_conf_force: False
-evoadmin_mail_tpl_force: False
+evoadmin_mail_tpl_force: True
 evoadmin_htpasswd_force: False
 evoadmin_htpasswd: False
 
