@@ -17,3 +17,6 @@
 - include: munin.yml
 
 - include: logrotate.yml
+
+- include: postgis.yml
+  when: postgresql_install_postgis == "true" 
