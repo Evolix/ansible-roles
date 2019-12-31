@@ -16,7 +16,7 @@
 # available
 - name: Install phpmyadmin using sid package (Debian >=10)
   apt:
-    deb: http://mirror.evolix.org/debian/pool/main/p/phpmyadmin/phpmyadmin_4.6.6-5_all.deb
+    deb: http://mirror.evolix.org/debian/pool/main/p/phpmyadmin/phpmyadmin_4.6.6-4_all.deb
   when: ansible_distribution_major_version is version_compare('10', '>=')
 
 - name: Check if phpmyadmin default configuration is present
