@@ -153,7 +153,7 @@
     mode: "0755"
   when:
     - evolinux_system_alert5_init
-    - ansible_distribution_major_version | version_compare('10', '>=')
+    - ansible_distribution_major_version is version_compare('10', '>=')
 
 - name: Install alert5 service (buster)
   copy:
@@ -163,7 +163,7 @@
     mode: "0644"
   when:
     - evolinux_system_alert5_init
-    - ansible_distribution_major_version | version_compare('10', '>=')
+    - ansible_distribution_major_version is version_compare('10', '>=')
 
 - name: Enable alert5 init script (buster)
   systemd:
@@ -173,7 +173,7 @@
   when:
     - evolinux_system_alert5_init
     - evolinux_system_alert5_enable
-    - ansible_distribution_major_version | version_compare('10', '>=')
+    - ansible_distribution_major_version is version_compare('10', '>=')
 
 ## network interfaces
 

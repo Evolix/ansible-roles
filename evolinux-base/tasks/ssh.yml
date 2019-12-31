@@ -27,7 +27,7 @@
   notify: reload sshd
   when:
     - evolinux_ssh_password_auth_addresses != []
-    - ansible_distribution_major_version | version_compare('10', '>=')
+    - ansible_distribution_major_version is version_compare('10', '>=')
 
 - name: Security directives for Evolinux (Jessie/Stretch)
   blockinfile:
@@ -41,7 +41,7 @@
   notify: reload sshd
   when:
     - evolinux_ssh_password_auth_addresses != []
-    - ansible_distribution_major_version | version_compare('10', '<')
+    - ansible_distribution_major_version is version_compare('10', '<')
 
 # We disable AcceptEnv because it can be a security issue, but also because we
 # do not want clients to push their environment variables like LANG.
@@ -59,7 +59,7 @@
     regexp: '^#?LogLevel [A-Z]+'
     replace: "LogLevel VERBOSE"
   notify: reload sshd
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version_compare('9', '>=')
 
 - name: "Get current user"
   command: logname

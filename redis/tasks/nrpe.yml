@@ -18,7 +18,7 @@
     group: root
   when:
     - ansible_distribution == "Debian"
-    - ansible_distribution_major_version | version_compare('9', '<')
+    - ansible_distribution_major_version is version_compare('9', '<')
   tags:
     - redis
     - nrpe
@@ -28,7 +28,7 @@
     redis_check_redis_path: /usr/local/lib/nagios/plugins/check_redis
   when:
     - ansible_distribution == "Debian"
-    - ansible_distribution_major_version | version_compare('9', '<')
+    - ansible_distribution_major_version is version_compare('9', '<')
   tags:
     - redis
     - nrpe
@@ -38,7 +38,7 @@
     redis_check_redis_path: /usr/lib/nagios/plugins/check_redis
   when:
     - ansible_distribution == "Debian"
-    - ansible_distribution_major_version | version_compare('9', '>=')
+    - ansible_distribution_major_version is version_compare('9', '>=')
   tags:
     - redis
     - nrpe

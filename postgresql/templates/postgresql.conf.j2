@@ -3,7 +3,7 @@ shared_buffers = {{ postgresql_shared_buffers }}
 work_mem = {{ postgresql_work_mem }}
 #shared_preload_libraries = 'pg_stat_statements'
 #synchronous_commit = off
-{% if postgresql_version | version_compare('9.5', '<') %}
+{% if postgresql_version is version_compare('9.5', '<') %}
 checkpoint_segments = 30
 {% else %}
 max_wal_size = 15GB

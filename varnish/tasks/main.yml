@@ -25,7 +25,7 @@
     mode: "0700"
     owner: root
     group: root
-  when: ansible_distribution_major_version | version_compare('9', '<=')
+  when: ansible_distribution_major_version is version_compare('9', '<=')
   notify: reload varnish
   tags:
   - varnish

@@ -4,19 +4,19 @@
     mysql_restart_handler_name: "{{ mysql_restart_if_needed | bool | ternary('restart mysql', 'restart mysql (noop)') }}"
 
 - include: packages_stretch.yml
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version_compare('9', '>=')
 
 - include: packages_jessie.yml
   when: ansible_distribution_release == "jessie"
 
 - include: users_stretch.yml
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version_compare('9', '>=')
 
 - include: users_jessie.yml
   when: ansible_distribution_release == "jessie"
 
 - include: config_stretch.yml
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version_compare('9', '>=')
 
 - include: config_jessie.yml
   when: ansible_distribution_release == "jessie"

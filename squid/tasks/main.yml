@@ -3,7 +3,7 @@
 - fail:
     msg: only compatible with Debian >= 8
   when:
-  - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
+  - ansible_distribution != "Debian" or ansible_distribution_major_version is version_compare('8', '<')
 
 - name: "Set squid name (jessie)"
   set_fact:
@@ -13,7 +13,7 @@
 - name: "Set squid name (Debian 9 or later)"
   set_fact:
     squid_daemon_name: squid
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version_compare('9', '>=')
 
 - name: "Install Squid packages"
   apt:
@@ -27,7 +27,7 @@
   copy:
     src: default_squid
     dest: /etc/default/squid
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version_compare('9', '>=')
 
 - name: "squid.conf is present (jessie)"
   template:
@@ -49,14 +49,14 @@
     src: evolinux-defaults.conf
     dest: /etc/squid/evolinux-defaults.conf
   notify: "restart squid"
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version_compare('9', '>=')
 
 - name: "evolinux defaults whitelist (Debian 9 or later)"
   copy:
     src: evolinux-whitelist-defaults.conf
     dest: /etc/squid/evolinux-whitelist-defaults.conf
   notify: "reload squid"
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version_compare('9', '>=')
 
 - name: "evolinux custom whitelist (Debian 9 or later)"
   copy:
@@ -64,7 +64,7 @@
     content: |
       # Put customized values here.
     force: no
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version_compare('9', '>=')
 
 - name: "evolinux acl for local proxy (Debian 9 or later)"
   template:
@@ -72,7 +72,7 @@
     dest: /etc/squid/evolinux-acl.conf
     force: no
   notify: "reload squid"
-  when: squid_localproxy_enable and ansible_distribution_major_version | version_compare('9', '>=')
+  when: squid_localproxy_enable and ansible_distribution_major_version is version_compare('9', '>=')
 
 - name: "evolinux custom acl (Debian 9 or later)"
   copy:
@@ -80,7 +80,7 @@
     content: |
       # Put customized values here.
     force: no
-  when: squid_localproxy_enable == False and ansible_distribution_major_version | version_compare('9', '>=')
+  when: squid_localproxy_enable == False and ansible_distribution_major_version is version_compare('9', '>=')
 
 - name: "evolinux http_access for local proxy (Debian 9 or later)"
   copy:
@@ -88,7 +88,7 @@
     dest: /etc/squid/evolinux-httpaccess.conf
     force: no
   notify: "reload squid"
-  when: squid_localproxy_enable and ansible_distribution_major_version | version_compare('9', '>=')
+  when: squid_localproxy_enable and ansible_distribution_major_version is version_compare('9', '>=')
 
 - name: "evolinux custom http_access (Debian 9 or later)"
   copy:
@@ -96,7 +96,7 @@
     content: |
       # Put customized values here.
     force: no
-  when: squid_localproxy_enable == False and ansible_distribution_major_version | version_compare('9', '>=')
+  when: squid_localproxy_enable == False and ansible_distribution_major_version is version_compare('9', '>=')
 
 - name: "evolinux overrides for local proxy (Debian 9 or later)"
   template:
@@ -104,7 +104,7 @@
     dest: /etc/squid/evolinux-custom.conf
     force: no
   notify: "reload squid"
-  when: squid_localproxy_enable and ansible_distribution_major_version | version_compare('9', '>=')
+  when: squid_localproxy_enable and ansible_distribution_major_version is version_compare('9', '>=')
 
 - name: "evolinux custom overrides (Debian 9 or later)"
   copy:
@@ -112,7 +112,7 @@
     content: |
       # Put customized values here.
     force: no
-  when: squid_localproxy_enable == False and ansible_distribution_major_version | version_compare('9', '>=')
+  when: squid_localproxy_enable == False and ansible_distribution_major_version is version_compare('9', '>=')
 
 - name: add some URL in whitelist (Debian 8)
   lineinfile:
@@ -132,16 +132,16 @@
     state: present
   with_items: '{{ squid_whitelist_items }}'
   notify: "reload squid"
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version_compare('9', '>=')
 
 - include: systemd.yml
-  when: ansible_distribution_major_version | version_compare('10', '>=')
+  when: ansible_distribution_major_version is version_compare('10', '>=')
 
 - include: logrotate_jessie.yml
   when: ansible_distribution_release == "jessie"
 
 - include: logrotate_stretch.yml
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version_compare('9', '>=')
 
 - include: minifirewall.yml
 
