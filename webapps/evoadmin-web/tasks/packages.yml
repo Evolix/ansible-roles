@@ -6,10 +6,8 @@
 
 - name: Install PHP packages (Debian 10 and later)
   apt:
-    name: '{{ item }}'
+    name: php-pear
     state: present
-  with_items:
-    - php-pear
   when: ansible_distribution_major_version is version_compare('10', '>=')
 
 # /!\ Warning, this is a temporary hack
@@ -27,18 +25,15 @@
 
 - name: Install PHP packages (stretch)
   apt:
-    name: '{{ item }}'
+    name:
+      - php-pear
+      - php-log
     state: present
-  with_items:
-    - php-pear
-    - php-log
   when: ansible_distribution_release == "stretch"
 
 - name: Install PHP5 packages (jessie)
   apt:
-    name: '{{ item }}'
+    name: php5-pam
     state: present
     allow_unauthenticated: True
-  with_items:
-    - php5-pam
   when: ansible_distribution_release == "jessie"

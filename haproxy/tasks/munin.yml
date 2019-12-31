@@ -1,11 +1,10 @@
 ---
 - name: Install Munin plugin and dependencies
   apt:
-    name: "{{ item }}"
+    name:
+      - munin-plugins-extra
+      - liblwp-useragent-determined-perl
     state: present
-  with_items:
-  - munin-plugins-extra
-  - liblwp-useragent-determined-perl
   tags:
   - haproxy
 

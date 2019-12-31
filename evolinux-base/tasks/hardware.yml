@@ -46,11 +46,10 @@
 
   - name: Install packages for HP hardware
     apt:
-      name: "{{ item }}"
+      name:
+        - cciss-vol-status
+        - ssacli
       state: present
-    with_items:
-    - cciss-vol-status
-    - ssacli
 
   - name: Configure packages for HP hardware
     template:
@@ -79,11 +78,10 @@
 
   - name: Install packages for DELL/LSI hardware
     apt:
-      name: "{{ item }}"
+      name:
+        - megacli
+        - megaclisas-status
       allow_unauthenticated: yes
-    with_items:
-    - megacli
-    - megaclisas-status
 
   - name: Configure packages for DELL/LSI hardware
     template:

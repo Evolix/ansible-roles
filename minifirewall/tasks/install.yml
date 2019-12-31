@@ -2,10 +2,8 @@
 
 - name: dependencies are satisfied
   apt:
-    name: '{{ item }}'
+    name: iptables
     state: present
-  with_items:
-  - iptables
 
 - name: init script is copied
   template:

@@ -1,12 +1,11 @@
 ---
 - name: Install packages
   apt:
-    name: "{{ item }}"
+    name:
+      - "tomcat{{ tomcat_version }}"
+      - "tomcat{{ tomcat_version }}-user"
+      - "libpam-systemd"
     state: present
-  with_items:
-    - "tomcat{{ tomcat_version }}"
-    - "tomcat{{ tomcat_version }}-user"
-    - "libpam-systemd"
 
 - name: Create tomcat root dir
   file:

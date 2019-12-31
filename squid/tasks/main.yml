@@ -17,11 +17,10 @@
 
 - name: "Install Squid packages"
   apt:
-    name: '{{ item }}'
+    name:
+      - "{{ squid_daemon_name }}"
+      - squidclient
     state: present
-  with_items:
-  - "{{ squid_daemon_name }}"
-  - squidclient
 
 - name: "Set alternative config file (Debian 9 or later)"
   copy:

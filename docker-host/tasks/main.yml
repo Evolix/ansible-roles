@@ -2,22 +2,20 @@
 ---
 - name: Remove older docker packages
   apt:
-    name: '{{ item }}'
+    name:
+      - docker
+      - docker-engine
+      - docker.io
     state: absent
-  with_items:
-    - docker
-    - docker-engine
-    - docker.io
 
 - name: Install source requirements
   apt:
-    name: '{{ item }}'
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg2
     state: present
     update_cache: yes
-  with_items:
-    - apt-transport-https
-    - ca-certificates
-    - gnupg2
 
 - name: Add Docker repository
   apt_repository:
@@ -36,11 +34,10 @@
 
 - name: Install docker and python-docker
   apt:
-    name: "{{ item }}"
+    name:
+      - docker-ce
+      - python-docker
     update_cache: yes
-  with_items:
-    - docker-ce
-    - python-docker
 
 - name: Copy Docker daemon configuration file
   template:

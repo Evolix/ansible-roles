@@ -1,9 +1,7 @@
 - name: Install packages
   apt:
-    name: "{{ item }}"
+    name: rabbitmq-server
     state: present
-  with_items:
-  - rabbitmq-server
 
 - name: Create rabbitmq-env.conf
   copy:

@@ -1,10 +1,9 @@
 - name: package are installed
   apt:
-    name: '{{ item }}'
+    name:
+      - bind9
+      - dnstop
     state: present
-  with_items:
-  - bind9
-  - dnstop
 
 - name: Set bind configuration for recursive server
   template:

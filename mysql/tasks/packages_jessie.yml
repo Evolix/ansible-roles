@@ -18,21 +18,18 @@
 
 - name: Install MySQL packages
   apt:
-    name: '{{ item }}'
+    name: "{{ mysql_packages }}"
     update_cache: yes
     state: present
-  with_items: "{{ mysql_packages }}"
   tags:
   - mysql
   - packages
 
 - name: Install MySQL dev packages
   apt:
-    name: '{{ item }}'
+    name: libmysqlclient-dev
     update_cache: yes
     state: present
-  with_items:
-  - libmysqlclient-dev
   tags:
   - mysql
   - packages

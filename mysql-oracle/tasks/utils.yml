@@ -26,20 +26,17 @@
 
 # - name: "mysql-utilities are installed (Debian 9 or later)"
 #   apt:
-#     name: "{{ item }}"
-#   with_items:
-#   - mysql-utilities
+#     name: mysql-utilities
 #   when: ansible_distribution_major_version is version_compare('9', '>=')
 
 - name: "mytop dependencies are installed (stretch)"
   apt:
-    name: "{{ item }}"
-  with_items:
-  - libconfig-inifiles-perl
-  - libdbd-mysql-perl
-  - libdbi-perl
-  - libterm-readkey-perl
-  - libtime-hires-perl
+    name:
+      - libconfig-inifiles-perl
+      - libdbd-mysql-perl
+      - libdbi-perl
+      - libterm-readkey-perl
+      - libtime-hires-perl
   tags:
     - packages
     - mytop
@@ -48,11 +45,10 @@
 
 - name: "Install dependencies for mytop (Debian 10 or later)"
   apt:
-    name: "{{ item }}"
-  with_items:
-  - mariadb-client-10.3
-  - libconfig-inifiles-perl
-  - libterm-readkey-perl
+    name:
+      - mariadb-client-10.3
+      - libconfig-inifiles-perl
+      - libterm-readkey-perl
   when: ansible_distribution_major_version is version_compare('10', '>=')
 
 - include_role:

@@ -2,14 +2,13 @@
 
 - name: packages are installed (Debian 9 or later)
   apt:
-    name: '{{ item }}'
+    name:
+      - apache2
+      - libapache2-mpm-itk
+      - libapache2-mod-evasive
+      - apachetop
+      - libwww-perl
     state: present
-  with_items:
-    - apache2
-    - libapache2-mpm-itk
-    - libapache2-mod-evasive
-    - apachetop
-    - libwww-perl
   tags:
     - apache
     - packages
@@ -17,13 +16,12 @@
 
 - name: packages are installed (jessie)
   apt:
-    name: '{{ item }}'
+    name:
+      - apache2-mpm-itk
+      - libapache2-mod-evasive
+      - apachetop
+      - libwww-perl
     state: present
-  with_items:
-    - apache2-mpm-itk
-    - libapache2-mod-evasive
-    - apachetop
-    - libwww-perl
   tags:
     - apache
     - packages

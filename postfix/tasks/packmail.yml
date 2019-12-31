@@ -1,13 +1,12 @@
 ---
 - name: ensure packages are installed
   apt:
-    name: '{{ item }}'
+    name:
+      - postfix
+      - postfix-ldap
+      - postfix-policyd-spf-python
+      - mailgraph
     state: present
-  with_items:
-  - postfix
-  - postfix-ldap
-  - postfix-policyd-spf-python
-  - mailgraph
   tags:
   - postfix
 
@@ -20,9 +19,7 @@
     mode: "0644"
     force: yes
   notify: restart postfix
-  when: postfix_force_main_cf == True or
-        postfix_maincf_md5_jessie in default_main_cf.stdout or
-        postfix_maincf_md5_stretch in default_main_cf.stdout
+  when: postfix_force_main_cf or postfix_maincf_md5_jessie in default_main_cf.stdout or postfix_maincf_md5_stretch in default_main_cf.stdout
   tags:
   - postfix
 

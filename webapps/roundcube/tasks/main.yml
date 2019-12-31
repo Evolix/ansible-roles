@@ -13,15 +13,14 @@
 
 - name: install Roundcube
   apt:
-    name: "{{ item }}"
+    name:
+      - imapproxy
+      - roundcube
+      - roundcube-sqlite3
+      - roundcube-plugins
+      - php-net-sieve
+      - php-zip
     state: present
-  with_items:
-    - imapproxy
-    - roundcube
-    - roundcube-sqlite3
-    - roundcube-plugins
-    - php-net-sieve
-    - php-zip
   tags:
     - roundcube
 

@@ -2,11 +2,10 @@
 
 - name: Postfix packages are installed
   apt:
-    name: "{{ item }}"
+    name:
+      - postfix
+      - mailgraph
     state: present
-  with_items:
-    - postfix
-    - mailgraph
   when: evolinux_postfix_packages
   tags:
     - packages
@@ -83,14 +82,13 @@
 
 - name: exim4 is absent
   apt:
-    name: "{{ item }}"
+    name:
+      - exim4
+      - exim4-base
+      - exim4-config
+      - exim4-daemon-light
     purge: yes
     state: absent
-  with_items:
-    - exim4
-    - exim4-base
-    - exim4-config
-    - exim4-daemon-light
   when: evolinux_postfix_purge_exim
   tags:
     - packages

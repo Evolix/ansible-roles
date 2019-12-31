@@ -1,13 +1,12 @@
 ---
 - name: install OpenDKIM
   apt:
-    name: "{{ item }}"
+    name:
+      - opendkim
+      - opendkim-tools
+      - ssl-cert
+      - dns-root-data
     state: present
-  with_items:
-  - opendkim
-  - opendkim-tools
-  - ssl-cert
-  - dns-root-data
   tags:
   - opendkim
 
@@ -59,7 +58,7 @@
 
 - name: Set folder permissions to 0750
   file:
-    path: "/etc/opendkim/" 
+    path: "/etc/opendkim/"
     mode: "0750"
     force: yes
   tags:

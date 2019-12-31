@@ -1,11 +1,10 @@
 ---
 - name: install SpamAssasin
   apt:
-    name: "{{ item }}"
+    name:
+      - spamassassin
+      - evomaintenance
     state: present
-  with_items:
-    - spamassassin
-    - evomaintenance
   tags:
     - spamassassin
 

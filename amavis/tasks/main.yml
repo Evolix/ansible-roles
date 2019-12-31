@@ -1,11 +1,10 @@
 ---
 - name: install Amavis
   apt:
-    name: "{{ item }}"
+    name:
+      - postgrey
+      - amavisd-new
     state: present
-  with_items:
-  - postgrey
-  - amavisd-new
   tags:
   - amavis
 

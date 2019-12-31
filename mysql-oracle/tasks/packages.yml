@@ -70,23 +70,20 @@
 
 - name: Install MySQL packages
   apt:
-    name: '{{ item }}'
+    name:
+      - mysql-server
+      - mysql-client
     update_cache: yes
     state: present
-  with_items:
-    - mysql-server
-    - mysql-client
   tags:
     - mysql
     - packages
 
 - name: Install MySQL dev packages
   apt:
-    name: '{{ item }}'
+    name: libmysqlclient20
     update_cache: yes
     state: present
-  with_items:
-    - libmysqlclient20
   tags:
     - mysql
     - packages

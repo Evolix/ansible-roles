@@ -2,23 +2,20 @@
 
 - name: Install MySQL packages
   apt:
-    name: '{{ item }}'
+    name:
+      - mariadb-server
+      - mariadb-client
     update_cache: yes
     state: present
-  with_items:
-  - mariadb-server
-  - mariadb-client
   tags:
   - mysql
   - packages
 
 - name: Install MySQL dev packages
   apt:
-    name: '{{ item }}'
+    name: default-libmysqlclient-dev
     update_cache: yes
     state: present
-  with_items:
-  - default-libmysqlclient-dev
   tags:
   - mysql
   - packages

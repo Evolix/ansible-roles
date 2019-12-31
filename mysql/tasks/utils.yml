@@ -26,20 +26,18 @@
 
 - name: "Install dependencies for mytop (stretch)"
   apt:
-    name: "{{ item }}"
-  with_items:
-  - mariadb-client-10.1
-  - libconfig-inifiles-perl
-  - libterm-readkey-perl
+    name:
+      - mariadb-client-10.1
+      - libconfig-inifiles-perl
+      - libterm-readkey-perl
   when: ansible_distribution_release == "stretch"
 
 - name: "Install dependencies for mytop (Debian 10 or later)"
   apt:
-    name: "{{ item }}"
-  with_items:
-  - mariadb-client-10.3
-  - libconfig-inifiles-perl
-  - libterm-readkey-perl
+    name:
+      - mariadb-client-10.3
+      - libconfig-inifiles-perl
+      - libterm-readkey-perl
   when: ansible_distribution_major_version is version_compare('10', '>=')
 
 - name: Read debian-sys-maint password

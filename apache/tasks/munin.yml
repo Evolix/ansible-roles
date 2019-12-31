@@ -2,11 +2,10 @@
 
 - name: "Install munin-node and core plugins packages"
   apt:
-    name: "{{ item }}"
+    name:
+      - munin-node
+      - munin-plugins-core
     state: present
-  with_items:
-    - munin-node
-    - munin-plugins-core
   tags:
     - apache
     - munin
@@ -27,11 +26,10 @@
 
 - name: "Install fcgi packages for Munin graphs"
   apt:
-    name: "{{ item }}"
+    name:
+      - libapache2-mod-fcgid
+      - libcgi-fast-perl
     state: present
-  with_items:
-    - libapache2-mod-fcgid
-    - libcgi-fast-perl
   notify: reload apache
   tags:
     - apache

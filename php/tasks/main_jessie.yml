@@ -16,38 +16,35 @@
 
 - name: "Install PHP packages (jessie)"
   apt:
-    name: '{{ item }}'
+    name:
+      - php5-cli
+      - php5-gd
+      - php5-imap
+      - php5-ldap
+      - php5-mcrypt
+      - "{{ php_modules_mysqlnd | bool | ternary('php5-mysqlnd','php5-mysql') }}"
+      - php5-pgsql
+      - php-gettext
+      - php5-intl
+      - php5-curl
+      - php5-ssh2
+      - libphp-phpmailer
     state: present
-  with_items:
-    - php5-cli
-    - php5-gd
-    - php5-imap
-    - php5-ldap
-    - php5-mcrypt
-    - "{{ php_modules_mysqlnd | bool | ternary('php5-mysqlnd','php5-mysql') }}"
-    - php5-pgsql
-    - php-gettext
-    - php5-intl
-    - php5-curl
-    - php5-ssh2
-    - libphp-phpmailer
 
 - name: "Install mod_php packages (jessie)"
   apt:
-    name: '{{ item }}'
+    name:
+      - libapache2-mod-php5
+      - php5
     state: present
-  with_items:
-    - libapache2-mod-php5
-    - php5
   when: php_apache_enable
 
 - name: "Install PHP FPM packages (jessie)"
   apt:
-    name: '{{ item }}'
+    name:
+      - php5-fpm
+      - php5
     state: present
-  with_items:
-    - php5-fpm
-    - php5
   when: php_fpm_enable
 
 # Configuration
@@ -58,6 +55,7 @@
     mode: "0755"
 
 - include: config_cli.yml
+
 - name: Enforce permissions on PHP cli directory
   file:
     dest: /etc/php5/cli
@@ -65,6 +63,7 @@
 
 - include: config_fpm.yml
   when: php_fpm_enable
+
 - name: Enforce permissions on PHP fpm directory
   file:
     dest: /etc/php5/fpm
@@ -73,6 +72,7 @@
 
 - include: config_apache.yml
   when: php_apache_enable
+
 - name: Enforce permissions on PHP apache2 directory
   file:
     dest: /etc/php5/apache2

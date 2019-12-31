@@ -5,11 +5,10 @@
 
 - name: Redis is installed.
   apt:
-    name: "{{ item }}"
+    name:
+      - redis-server
+      - redis-tools
     state: present
-  with_items:
-    - redis-server
-    - redis-tools
   tags:
     - redis
     - packages
@@ -86,8 +85,7 @@
     - nrpe
 
 - include: nrpe.yml
-  when:
-    - nrpe_evolix_config.stat.exists == true
+  when: nrpe_evolix_config.stat.exists
   tags:
     - redis
     - nrpe
