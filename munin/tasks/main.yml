@@ -87,4 +87,4 @@
 
       [swap]
       user root
-  when: ansible_kernel | search("-grs-")
+  when: ansible_kernel is search("-grs-")

@@ -2,7 +2,7 @@
 
 - include_role:
     name: evolix/remount-usr
-  when: elasticsearch_additional_scripts_dir | search ("/usr")
+  when: elasticsearch_additional_scripts_dir is search ("/usr")
 
 - name: "{{ elasticsearch_additional_scripts_dir }} exists"
   file:

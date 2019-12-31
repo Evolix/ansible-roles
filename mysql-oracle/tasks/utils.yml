@@ -2,7 +2,7 @@
 
 - include_role:
     name: evolix/remount-usr
-  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
+  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
 
 - name: Scripts directory exists
   file:
@@ -95,7 +95,7 @@
     name: evolix/remount-usr
   tags:
     - mysql
-  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
+  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
 
 - name: mysqltuner is installed
   # copy:
@@ -121,7 +121,7 @@
     name: evolix/remount-usr
   tags:
     - mysql
-  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
+  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
 
 - name: mysql-optimize.sh is installed
   copy:
@@ -192,7 +192,7 @@
 
 - include_role:
     name: evolix/remount-usr
-  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
+  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
 
 - name: Install my-add.sh
   copy:
