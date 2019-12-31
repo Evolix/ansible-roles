@@ -55,6 +55,7 @@ The **patch** part changes incrementally at each release.
 * rbenv: install Ruby 2.6.5 by default
 * squid: Remove wait time when we turn off squid
 * squid: compatibility wit Debian 10
+* tomcat: package version derived from Debian version if missing
 * varnish: remove custom ExecReload= script for Debian 10+
 
 ### Fixed

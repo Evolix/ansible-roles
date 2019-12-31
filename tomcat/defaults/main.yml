@@ -1,3 +1,2 @@
 ---
 tomcat_instance_root: '/srv/tomcat'
-tomcat_version: 8
