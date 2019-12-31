@@ -24,19 +24,20 @@
     path: /usr/sbin/apachectl
   register: is_apache
 
-- block:
-  - name: ACME challenge for Apache is installed
-    template:
-      src: acme-challenge/apache.conf.j2
-      dest: /etc/apache2/conf-available/letsencrypt.conf
-      force: yes
-    notify: reload apache
+- name: ACME challenge for Apache
+  block:
+    - name: ACME challenge for Apache is installed
+      template:
+        src: acme-challenge/apache.conf.j2
+        dest: /etc/apache2/conf-available/letsencrypt.conf
+        force: yes
+      notify: reload apache
 
-  - name: ACME challenge for Apache is enabled
-    command: "a2enconf letsencrypt"
-    register: command_result
-    changed_when: "'Enabling' in command_result.stderr"
-    notify: reload apache
+    - name: ACME challenge for Apache is enabled
+      command: "a2enconf letsencrypt"
+      register: command_result
+      changed_when: "'Enabling' in command_result.stderr"
+      notify: reload apache
   when: is_apache.stat.exists
 
 - name: Check if HAProxy is installed

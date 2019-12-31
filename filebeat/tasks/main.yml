@@ -54,16 +54,17 @@
   changed_when: false
   when: filebeat_logstash_plugin and logstash_plugin.stat.exists
 
-- block:
-  - include_role:
-      name: evolix/remount-usr
+- name: Logstash plugin is installed
+  block:
+    - include_role:
+        name: evolix/remount-usr
 
-  - name: Logstash plugin is installed
-    command: /usr/share/logstash/bin/logstash-plugin install logstash-input-beats
+    - name: logstash-plugin install logstash-input-beats
+      command: /usr/share/logstash/bin/logstash-plugin install logstash-input-beats
   when:
-  - filebeat_logstash_plugin
-  - logstash_plugin.stat.exists
-  - not logstash_plugin_installed | success
+    - filebeat_logstash_plugin
+    - logstash_plugin.stat.exists
+    - not logstash_plugin_installed | success
 
 - name: cloud_metadata processor is disabled
   replace:
