@@ -21,7 +21,7 @@
 - name: update apt
   apt:
     update_cache: yes
-  when: haproxy_apt_preferences | changed
+  when: haproxy_apt_preferences is changed
   tags:
   - haproxy
   - packages

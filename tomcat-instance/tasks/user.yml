@@ -37,7 +37,7 @@
 
 - name: Run newaliases
   command: newaliases
-  when: tomcat_instance_mail_alias | changed
+  when: tomcat_instance_mail_alias is changed
 
 - name: Enable sudo right
   lineinfile:

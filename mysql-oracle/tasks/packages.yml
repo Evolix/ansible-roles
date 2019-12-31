@@ -66,7 +66,7 @@
 - name: APT cache is up-to-date
   apt:
     update_cache: yes
-  when: mysql_apt_config_deb | changed
+  when: mysql_apt_config_deb is changed
 
 - name: Install MySQL packages
   apt:

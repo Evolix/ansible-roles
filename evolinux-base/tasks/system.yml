@@ -22,7 +22,7 @@
 
 - name: Reconfigure locales
   command: /usr/sbin/locale-gen
-  when: evolinux_system_locales and default_locales | changed
+  when: evolinux_system_locales and default_locales is changed
 
 - name: Setting default timezone
   timezone:

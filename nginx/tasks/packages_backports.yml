@@ -21,7 +21,7 @@
 - name: update apt
   apt:
     update_cache: yes
-  when: nginx_apt_preferences | changed
+  when: nginx_apt_preferences is changed
   tags:
     - nginx
     - packages
