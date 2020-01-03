@@ -37,6 +37,7 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: install ssacli for HP Smart Array
 
 ### Changed
+* removed some deprecations for Ansible 2.7
 * apache: improve permissions in save_apache_status script
 * elasticsearch: listen on local interface only by default
 * evocheck: upstream version 19.11.2
