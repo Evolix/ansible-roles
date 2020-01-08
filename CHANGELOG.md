@@ -60,6 +60,7 @@ The **patch** part changes incrementally at each release.
 * varnish: remove custom ExecReload= script for Debian 10+
 
 ### Fixed
+* etc-git: fix warnings ansible-lint
 * evoadmin-web: Put the php config at the right place for Buster
 * lxc-php: Don't remove the default pool
 * minifirewall: fix warnings ansible-lint
