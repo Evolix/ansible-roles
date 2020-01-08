@@ -62,6 +62,7 @@ The **patch** part changes incrementally at each release.
 ### Fixed
 * evoadmin-web: Put the php config at the right place for Buster
 * lxc-php: Don't remove the default pool
+* minifirewall: fix warnings ansible-lint
 * nginx: fix munin fcgi not working (missing chmod 660 on logs)
 * php: add missing handler for php7.3-fpm
 * roundcube: fix typo for roundcube vhost

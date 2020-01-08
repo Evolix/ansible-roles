@@ -1,6 +1,7 @@
 ---
 
-- set_fact:
+- name: Compose minifirewall_restart_handler_name variable
+  set_fact:
     minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
 
 - include: install.yml
