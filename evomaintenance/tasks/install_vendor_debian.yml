@@ -2,7 +2,7 @@
 
 - name: Dependencies are installed
   apt:
-    name: 
+    name:
       - postgresql-client
       - sudo
       - curl
