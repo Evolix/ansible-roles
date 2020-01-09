@@ -2,8 +2,7 @@
 
 - name: Install postgresql package
   apt:
-    name: '{{item}}'
-  with_items:
-  - postgresql
-  - pgtop
-  - libdbd-pg-perl
+    name:
+      - postgresql
+      - pgtop
+      - libdbd-pg-perl

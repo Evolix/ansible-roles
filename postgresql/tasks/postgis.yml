@@ -2,4 +2,3 @@
 - name: Install PostGIS extention 
   apt:
     name: postgis
-    state: present
