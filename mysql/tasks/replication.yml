@@ -4,11 +4,7 @@
   template:
     src: 'replication.cnf.j2'
     dest: "{{ mysql_config_directory }}/zzzz-replication.cnf"
-  with_first_found:
-    - "templates/mysql/replication.{{ inventory_hostname }}.cnf.j2"
-    - "templates/mysql/replication.{{ host_group }}.cnf.j2"
-    - 'templates/mysql/replication.cnf.j2'
-    - 'replication.cnf.j2'
+    mode: "0644"
   notify: 'restart mysql'
 
 - name: 'Create repl user'
