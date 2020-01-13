@@ -45,6 +45,7 @@ mysql_restart_if_needed: True
 # replication variables:
 mysql_replication: false
 mysql_log_bin: null
+mysql_binlog_format: mixed
 mysql_server_id: null
 mysql_bind_address: null
 mysql_repl_password: ''
