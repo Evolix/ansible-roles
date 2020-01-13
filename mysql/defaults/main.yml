@@ -28,6 +28,8 @@ mysql_tmp_table_size: Null
 mysql_max_heap_table_size: Null
 mysql_query_cache_limit: Null
 mysql_query_cache_size: Null
+mysql_max_allowed_packet: Null
+mysql_force_custom_config: 'no'
 
 mysql_cron_optimize: True
 mysql_cron_optimize_frequency: weekly
