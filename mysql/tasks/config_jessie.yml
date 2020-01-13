@@ -21,6 +21,6 @@
     owner: root
     group: root
     mode: "0644"
-    force: no
+    force: "{{ mysql_force_custom_config }}"
   tags:
     - mysql
