@@ -107,7 +107,7 @@
 
 - name: logrotate for bind
   template:
-    src: logrotate_bind
+    src: logrotate_bind.j2
     dest: /etc/logrotate.d/bind9
     owner: root
     group: root
