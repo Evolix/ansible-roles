@@ -30,6 +30,7 @@ mysql_query_cache_limit: Null
 mysql_query_cache_size: Null
 mysql_max_allowed_packet: Null
 mysql_force_custom_config: 'no'
+mysql_innodb_log_file_size: Null
 
 mysql_cron_optimize: True
 mysql_cron_optimize_frequency: weekly
@@ -51,3 +52,4 @@ mysql_binlog_format: mixed
 mysql_server_id: null
 mysql_bind_address: null
 mysql_repl_password: ''
+
