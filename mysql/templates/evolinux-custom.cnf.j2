@@ -35,5 +35,6 @@ max_allowed_packet = {{ mysql_max_allowed_packet }}
 {% if mysql_lower_case_table_names %}
 lower_case_table_names = {{ mysql_lower_case_table_names }}
 {% endif %}
-
-
+{% if mysql_innodb_log_file_size %}
+innodb_log_file_size = {{ mysql_innodb_log_file_size }}
+{% endif %}
