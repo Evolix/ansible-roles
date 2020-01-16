@@ -37,13 +37,18 @@
 
 - name: Set default PHP FPM values
   ini_file:
-    dest: "{{ php_fpm_defaults_conf_file }}"
+    dest: "{{ php_fpm_default_pool_file }}"
     section: www
     option: "{{ item.option }}"
     value: "{{ item.value }}"
     mode: "0644"
     create: yes
   with_items:
+    - { option: "user", value: "www-data" }
+    - { option: "group", value: "www-data" }
+    - { option: "listen", value: "{{ php_fpm_default_pool_socket }}" }
+    - { option: "listen.owner", value: "www-data" }
+    - { option: "listen.group", value: "www-data" }
     - { option: "pm", value: "ondemand" }
     - { option: "pm.max_children", value: "100" }
     - { option: "pm.process_idle_timeout", value: "10s" }
@@ -56,7 +61,7 @@
 
 - name: Custom PHP FPM values
   copy:
-    dest: "{{ php_fpm_custom_conf_file }}"
+    dest: "{{ php_fpm_default_pool_custom_file }}"
     content: |
       ; Put customized values here.
       ; default_charset = "ISO-8859-1"
@@ -75,3 +80,10 @@
     - { option: "date.timezone", value: "Europe/Paris" }
   notify: "restart {{ php_fpm_service_name }}"
   when: php_symfony_requirements
+
+- name: Delete debian default pool
+  file:
+    path: "{{ php_fpm_debian_default_pool_file }}"
+    state: absent
+  notify: "restart {{ php_fpm_service_name }}"
+  when: php_fpm_remove_default_pool
