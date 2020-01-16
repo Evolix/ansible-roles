@@ -63,8 +63,15 @@
   apt:
     name: openntpd
     state: absent
-    purge: yes
+    purge: True
   when: evolinux_packages_purge_openntpd
+
+- name: the chrony package is absent
+  apt:
+    name: chrony
+    purge: True
+    state: absent
+  when: evolinux_packages_purge_chrony
 
 - name: Be sure locate/mlocate is absent/purged
   apt:

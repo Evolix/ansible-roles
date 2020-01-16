@@ -82,6 +82,7 @@ evolinux_packages_stretch: True
 evolinux_packages_buster: True
 evolinux_packages_serveur_base: True
 evolinux_packages_purge_openntpd: True
+evolinux_packages_purge_chrony: True
 evolinux_packages_purge_locate: True
 evolinux_packages_invalid_mta: True
 evolinux_packages_delete_nfs: True

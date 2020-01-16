@@ -21,6 +21,7 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: install /sbin/deny
 * evolinux-base: on debian 10 and later, add noexec on /dev/shm
 * evolinux-base: on debian 10 and later, add /usr/share/scripts in root's PATH
+* evolinux-base: remove the chrony package
 * generate-ldif: support MariaDB 10.3
 * haproxy: add a variable to keep the existing configuration
 * listupgrade: install old-kernel-autoremoval script
