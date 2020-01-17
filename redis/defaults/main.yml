@@ -1,16 +1,16 @@
 ---
 redis_systemd_name: redis-server
 
-redis_conf_dir: /etc/redis
+redis_conf_dir_prefix: /etc/redis
 
 redis_port: 6379
 redis_bind_interface: 127.0.0.1
 
 redis_socket_enabled: True
-redis_socket_dir: '/var/run/redis'
+redis_socket_dir_prefix: '/var/run/redis'
 redis_socket_perms: 770
 
-redis_pid_dir: "/var/run/redis"
+redis_pid_dir_prefix: "/var/run/redis"
 
 redis_timeout: 300
 
@@ -19,7 +19,7 @@ redis_password: NULL
 # for slave authorization on master
 redis_password_master: "{{ redis_password }}"
 
-redis_log_dir: /var/log/redis
+redis_log_dir_prefix: /var/log/redis
 redis_log_level: "notice"
 
 redis_databases: 16
@@ -31,7 +31,7 @@ redis_save:
   - 60 10000
 
 redis_rdbcompression: True
-redis_data_dir: /var/lib/redis
+redis_data_dir_prefix: /var/lib/redis
 redis_data_file: dump.rdb
 
 redis_maxclients: 10000

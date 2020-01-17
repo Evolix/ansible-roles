@@ -39,14 +39,20 @@
 - include: instance-server.yml
   vars:
     redis_systemd_name: "redis-server@{{ redis_instance_name }}"
-    redis_conf_dir: "/etc/redis-{{ redis_instance_name }}"
-    redis_socket_dir: "/var/run/redis-{{ redis_instance_name }}"
-    redis_pid_dir: "/var/run/redis-{{ redis_instance_name }}"
-    redis_log_dir: "/var/log/redis-{{ redis_instance_name }}"
-    redis_data_dir: "/var/lib/redis-{{ redis_instance_name }}"
+    redis_conf_dir: "{{ redis_conf_dir_prefix }}-{{ redis_instance_name }}"
+    redis_socket_dir: "{{ redis_socket_dir_prefix }}-{{ redis_instance_name }}"
+    redis_pid_dir: "{{ redis_pid_dir_prefix }}-{{ redis_instance_name }}"
+    redis_log_dir: "{{ redis_log_dir_prefix }}-{{ redis_instance_name }}"
+    redis_data_dir: "{{ redis_data_dir_prefix }}-{{ redis_instance_name }}"
   when: redis_instance_name is defined
 
 - include: default-server.yml
+  vars:
+    redis_conf_dir: "{{ redis_conf_dir_prefix }}"
+    redis_socket_dir: "{{ redis_socket_dir_prefix }}"
+    redis_pid_dir: "{{ redis_pid_dir_prefix }}"
+    redis_log_dir: "{{ redis_log_dir_prefix }}"
+    redis_data_dir: "{{ redis_data_dir_prefix }}"
   when: redis_instance_name is not defined
 
 - name: Is Munin installed
