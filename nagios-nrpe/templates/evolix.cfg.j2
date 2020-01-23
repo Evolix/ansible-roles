@@ -66,7 +66,7 @@ command[check_mongodb_connect]={{ nagios_plugins_directory }}/check_mongodb -H l
 command[check_glusterfs]={{ nagios_plugins_directory }}/check_glusterfs -v all -n 0
 command[check_supervisord_status]={{ nagios_plugins_directory }}/check_supervisord
 command[check_varnish]={{ nagios_plugins_directory }}/check_varnish_health -i 127.0.0.1 -p 6082 -s /etc/varnish/secret -w 2 -c 4
-command[check_haproxy]=sudo {{ nagios_plugins_directory }}/check_haproxy_stats -s /var/run/haproxy.sock -w 80 -c 90 --ignore-maint --ignore-nolb
+command[check_haproxy]=sudo {{ nagios_plugins_directory }}/check_haproxy_stats -s /run/haproxy/admin.sock -w 80 -c 90 --ignore-maint --ignore-nolb
 command[check_minifirewall]=sudo {{ nagios_plugins_directory }}/check_minifirewall
 command[check_redis_instances]={{ nagios_plugins_directory }}/check_redis_instances
 
