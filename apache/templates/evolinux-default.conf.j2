@@ -43,6 +43,7 @@
         RewriteEngine on
         # Redirect to HTTPS, execpt for munin, because some plugins
         # can't handle HTTPS! :(
+        RewriteCond %{REQUEST_URI} !^/.well-known.*$ [NC] [OR]
         RewriteCond %{REQUEST_URI} !^/server-status.*$ [NC] [OR]
         RewriteCond %{REQUEST_URI} !^/munin_opcache.php$ [NC]
         RewriteRule ^/(.*) https://{{ ansible_fqdn }}/$1 [L,R=permanent]

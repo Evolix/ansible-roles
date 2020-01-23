@@ -11,6 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* apache: the default VHost doesn't redirect to https for ".well-known" paths
 * apt: check if cron is installed before adding a cron job
 * apt: remove jessie/buster sources from Gandi servers
 * apt: verify that /etc/evolinux is present
