@@ -1,7 +1,7 @@
 ---
 
 - name: "hold packages (apt)"
-  shell: "(apt-mark showhold | grep --quiet {{ item }}) || apt-mark hold {{ item }}"
+  shell: "(dpkg -l {{ item }} 2>/dev/null | grep -q -E '^(i|h)i') && ((apt-mark showhold | grep --quiet {{ item }}) || apt-mark hold {{ item }})"
   register: apt_mark
   changed_when: "'{{ item }} set on hold.' in apt_mark.stdout"
   with_items: "{{ apt_hold_packages }}"
@@ -13,6 +13,8 @@
     dest: /etc/evolinux
     mode: "0700"
     state: directory
+  tags:
+    - apt
 
 - name: "hold packages (config)"
   lineinfile:
@@ -25,7 +27,7 @@
     - apt
 
 - name: "unhold packages (apt)"
-  shell: "(apt-mark showhold | grep --quiet {{ item }}) && apt-mark unhold {{ item }}"
+  shell: "(dpkg -l {{ item }} 2>/dev/null | grep -q -E '^(i|h)i') && ((apt-mark showhold | grep --quiet {{ item }}) && apt-mark unhold {{ item }})"
   register: apt_mark
   changed_when: "'Canceled hold on {{ item }}.' in apt_mark.stdout"
   with_items: "{{ apt_unhold_packages }}"
@@ -67,6 +69,8 @@
   changed_when: false
   failed_when: false
   check_mode: no
+  tags:
+    - apt
 
 - name: Check for held packages (script)
   cron:
