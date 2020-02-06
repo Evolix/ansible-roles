@@ -38,6 +38,7 @@ The **patch** part changes incrementally at each release.
 * webapps/evoadmin-web Add an htpasswd to evoadmin if you cant use an apache IP whitelist
 * webapps/evoadmin-web Overload templates if needed
 * evolinux-base: install ssacli for HP Smart Array
+* evobackup-client role to configure a machine for backups with bkctld(8)
 
 ### Changed
 * removed some deprecations for Ansible 2.7

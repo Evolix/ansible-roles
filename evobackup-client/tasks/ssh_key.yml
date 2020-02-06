@@ -1,0 +1,31 @@
+---
+
+- name: Create SSH key
+  user:
+    name: root
+    generate_ssh_key: true
+    ssh_key_file: "{{ evobackup_client__root_key_path }}"
+    ssh_key_type: rsa
+  register: evobackup_client__root_key
+  tags:
+    - evobackup_client
+    - evobackup_client_backup_ssh_key
+
+- name: Print SSH key
+  debug:
+    var: evobackup_client__root_key.ssh_public_key
+  when: evobackup_client__root_key.ssh_public_key is defined
+  tags:
+    - evobackup_client
+    - evobackup_client_backup_ssh_key
+
+- name: 'copy ssh public key to backup server'
+  copy:
+    content: "{{ evobackup_client__root_key.ssh_public_key }}"
+    dest: "/root/{{ evolinux_hostname }}.pub"
+  become: true
+  delegate_to: "{{ evobackup_client__hosts[0].ip }}"
+  tags:
+    - evobackup_client
+    - evobackup_client_backup_ssh_key
+    - evobackup_client_jail

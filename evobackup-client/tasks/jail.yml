@@ -1,0 +1,60 @@
+---
+
+- name: 'create jail'
+  command: "bkctld init {{ evolinux_hostname }}"
+  args:
+    creates: "/backup/jails/{{ evolinux_hostname }}/"
+  become: true
+  delegate_to: "{{ evobackup_client__hosts[0].ip }}"
+  notify:
+    - 'created new jail'
+  tags:
+    - evobackup_client
+    - evobackup_client_jail
+
+- name: 'create jail'
+  command: "bkctld init {{ evolinux_hostname }}"
+  args:
+    creates: "/backup/jails/{{ evolinux_hostname }}/"
+  become: true
+  delegate_to: "{{ evobackup_client__hosts[0].ip }}"
+  notify:
+    - 'created new jail'
+  tags:
+    - evobackup_client
+    - evobackup_client_jail
+
+# temp fix for bkctld 2.x because the ip and key command return 1
+# if the jail is not started, see https://gitea.evolix.org/evolix/evobackup/issues/31
+- name: 'start jail'
+  command: "bkctld restart {{ evolinux_hostname }}"
+  become: true
+  delegate_to: "{{ evobackup_client__hosts[0].ip }}"
+  tags:
+    - evobackup_client
+    - evobackup_client_jail
+
+- name: 'add ip to jail'
+  command: "bkctld ip {{ evolinux_hostname }} {{ ansible_host }}"
+  become: true
+  delegate_to: "{{ evobackup_client__hosts[0].ip }}"
+  notify:  'jail updated'
+  tags:
+    - evobackup_client
+    - evobackup_client_jail
+
+- name: 'get jail port'
+  command: "bkctld port {{ evolinux_hostname }}"
+  become: true
+  register: bkctld_port
+  delegate_to: "{{ evobackup_client__hosts[0].ip }}"
+  tags:
+    - evobackup_client
+    - evobackup_client_jail
+
+- name: 'register jail port'
+  set_fact:
+    evobackup_ssh_port={{ bkctld_port.stdout }}
+  tags:
+    - evobackup_client
+    - evobackup_client_jail
