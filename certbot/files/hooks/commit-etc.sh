@@ -14,7 +14,7 @@ main() {
     export GIT_WORK_TREE="/etc"
 
     if test -x "${git_bin}" && test -d "${GIT_DIR}" && test -d "${GIT_WORK_TREE}"; then
-      changed_lines=$(${git_bin} status --porcelain -- ${letsencrypt_dir} | wc -l | tr -d ' ')
+      changed_lines=$(${git_bin} status --porcelain | wc -l | tr -d ' ')
 
       if [ "${changed_lines}" != "0" ]; then
           debug "Committing for ${RENEWED_DOMAINS}"
