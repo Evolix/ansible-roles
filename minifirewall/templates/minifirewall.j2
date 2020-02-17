@@ -7,7 +7,7 @@
 # Copyright (c) 2007-2015 Evolix
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
+# as published by the Free Software Foundation; either version 3
 # of the License.
 
 # Description
@@ -262,14 +262,14 @@ for x in $SSHOK
 # SMTP authorizations
 for x in $SMTPOK
     do
-        $IPT -A INPUT -p tcp ! --syn --sport 25 --dport $PORTSUSER -j ACCEPT
+        $IPT -A INPUT -p tcp ! --syn --sport 25 --dport $PORTSUSER -s $x -j ACCEPT
     done
 
 # secure SMTP (TCP/465 et TCP/587) authorizations
 for x in $SMTPSECUREOK
     do
-        $IPT -A INPUT -p tcp ! --syn --sport 465 --dport $PORTSUSER -j ACCEPT
-        $IPT -A INPUT -p tcp ! --syn --sport 587 --dport $PORTSUSER -j ACCEPT
+        $IPT -A INPUT -p tcp ! --syn --sport 465 --dport $PORTSUSER -s $x -j ACCEPT
+        $IPT -A INPUT -p tcp ! --syn --sport 587 --dport $PORTSUSER -s $x -j ACCEPT
     done
 
 # NTP authorizations
