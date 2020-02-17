@@ -84,6 +84,7 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: Don't make alert5.service executable as systemd will complain
 * webapps/evoadmin-web: Set default evoadmin_mail_tpl_force to True to fix a regression where the mail template would not get updated because the file is created before the role is first run.
 * minifirewall: Backport changes from minifirewall (properly open outgoing smtp(s))
+* minifirewall: Properly detect alert5.sh to turn on firewall at boot
 
 ### Security
 

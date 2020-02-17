@@ -16,7 +16,7 @@
 
 - name: check if /usr/share/scripts/alert5 exists
   stat:
-    path: /usr/share/scripts/alert5
+    path: /usr/share/scripts/alert5.sh
   register: usr_share_scripts_alert5
 
 - name: Uncomment minifirewall start line
