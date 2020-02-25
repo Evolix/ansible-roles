@@ -12,7 +12,7 @@
 #     solr_port: 8984
 #   - name: solr8
 #     release: stretch
-#     solr_version: 8.1.1
+#     solr_version: 8.4.1
 #     solr_port: 8985
 lxc_containers: []
 
