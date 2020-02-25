@@ -46,6 +46,7 @@ The **patch** part changes incrementally at each release.
 * removed some deprecations for Ansible 2.7
 * apache: improve permissions in save_apache_status script
 * apt: hold packages only if package is installed
+* certbot: commit hook must be executed at the end
 * elasticsearch: listen on local interface only by default
 * evocheck: upstream version 19.11.2
 * evocheck: cron jobs execute in verbose

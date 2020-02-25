@@ -18,7 +18,7 @@ main() {
 
       if [ "${changed_lines}" != "0" ]; then
           debug "Committing for ${RENEWED_DOMAINS}"
-          ${git_bin} add --all ${letsencrypt_dir}
+          ${git_bin} add --all
           message="[letsencrypt] certificates renewal (${RENEWED_DOMAINS})"
           ${git_bin} commit --message "${message}" --quiet
       else

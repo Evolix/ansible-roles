@@ -21,3 +21,17 @@
     mode: "0700"
     owner: root
     group: root
+
+- name: Move commit-etc.sh to z-commit-etc.sh if present
+  command: "mv /etc/letsencrypt/renewal-hooks/deploy/commit-etc.sh /etc/letsencrypt/renewal-hooks/deploy/z-commit-etc.sh"
+  args:
+    removes: /etc/letsencrypt/renewal-hooks/deploy/commit-etc.sh
+    creates: /etc/letsencrypt/renewal-hooks/deploy/z-commit-etc.sh
+
+- name: "certbot lock is ignored by Git"
+  lineinfile:
+    dest: /etc/.gitignore
+    line: letsencrypt/.certbot.lock
+    create: yes
+    owner: root
+    mode: "0600"
