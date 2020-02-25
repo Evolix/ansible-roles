@@ -3,10 +3,18 @@
 - name: Dependencies are installed
   apt:
     name:
-      - postgresql-client
       - sudo
       - curl
     state: present
+  tags:
+    - evomaintenance
+
+- name: PG dependencies are installed
+  apt:
+    name:
+      - postgresql-client
+    state: present
+  when: evomaintenance_hook_db
   tags:
     - evomaintenance
 
