@@ -38,7 +38,7 @@
       - mariadb-client-10.3
       - libconfig-inifiles-perl
       - libterm-readkey-perl
-  when: ansible_distribution_major_version is version_compare('10', '>=')
+  when: ansible_distribution_major_version is version('10', '>=')
 
 - name: Read debian-sys-maint password
   shell: 'cat /etc/mysql/debian.cnf | grep -m1 "password = .*" | cut -d" " -f3'
@@ -92,7 +92,7 @@
     - packages
     - percona-toolkit
     - mysql
-  when: ansible_distribution_major_version is version_compare('9', '>=')
+  when: ansible_distribution_major_version is version('9', '>=')
 
 # automatic optimizations
 

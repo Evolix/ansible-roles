@@ -42,6 +42,7 @@ The **patch** part changes incrementally at each release.
 * evobackup-client role to configure a machine for backups with bkctld(8)
 
 ### Changed
+* replace version_compare() with version()s
 * removed some deprecations for Ansible 2.7
 * apache: improve permissions in save_apache_status script
 * apt: hold packages only if package is installed

@@ -93,7 +93,7 @@
     name: net-tools
   when:
     - evolinux_packages_stretch
-    - ansible_distribution_major_version is version_compare('9', '>=')
+    - ansible_distribution_major_version is version('9', '>=')
 
 - name: Install/Update packages for Buster and later
   apt:
@@ -102,7 +102,7 @@
       - binutils
   when:
     - evolinux_packages_buster
-    - ansible_distribution_major_version is version_compare('10', '>=')
+    - ansible_distribution_major_version is version('10', '>=')
 
 - name: Customize logcheck recipient
   lineinfile:
@@ -141,6 +141,6 @@
     state: absent
   when:
     - ansible_distribution == "Debian"
-    - ansible_distribution_major_version is version_compare('9', '>=')
+    - ansible_distribution_major_version is version('9', '>=')
 
 - meta: flush_handlers

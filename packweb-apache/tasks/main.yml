@@ -3,7 +3,7 @@
 - fail:
     msg: only compatible with Debian >= 8
   when:
-    - ansible_distribution != "Debian" or ansible_distribution_major_version is version_compare('8', '<')
+    - ansible_distribution != "Debian" or ansible_distribution_major_version is version('8', '<')
 
 - name: install info.php
   copy:
@@ -67,7 +67,7 @@
     src: userlogrotate
     dest: /etc/cron.weekly/userlogrotate
     mode: "0755"
-  when: ansible_distribution_major_version is version_compare('9', '>=')
+  when: ansible_distribution_major_version is version('9', '>=')
 
 - name: Force DIR_MODE to 0750 in /etc/adduser.conf
   lineinfile:

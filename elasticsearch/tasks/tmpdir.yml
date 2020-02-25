@@ -29,7 +29,7 @@
         - restart elasticsearch
       tags:
         - elasticsearch
-      when: elastic_stack_version is version_compare('6', '<')
+      when: elastic_stack_version is version('6', '<')
 
     - name: check if ES_TMPDIR is available (>= 6.x)
       lineinfile:
@@ -41,7 +41,7 @@
         - restart elasticsearch
       tags:
         - elasticsearch
-      when: elastic_stack_version is version_compare('6', '>=')
+      when: elastic_stack_version is version('6', '>=')
 
     - name: change JVM tmpdir (>= 6.x)
       lineinfile:
@@ -53,5 +53,5 @@
         - restart elasticsearch
       tags:
         - elasticsearch
-      when: elastic_stack_version is version_compare('6', '>=')
+      when: elastic_stack_version is version('6', '>=')
   when: (elasticsearch_custom_tmpdir != '' and elasticsearch_custom_tmpdir != None) or fstab_tmp_noexec.rc == 0

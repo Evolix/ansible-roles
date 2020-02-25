@@ -66,6 +66,6 @@
     state: mounted
   when:
   - evolinux_fstab_dev_shm
-  - ansible_distribution_major_version is version_compare('10', '>=')
+  - ansible_distribution_major_version is version('10', '>=')
 
 - meta: flush_handlers

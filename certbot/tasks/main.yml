@@ -4,7 +4,7 @@
   assert:
     that:
       - ansible_distribution == "Debian"
-      - ansible_distribution_major_version is version_compare('9', '>=')
+      - ansible_distribution_major_version is version('9', '>=')
     msg: only compatible with Debian 9+
 
 - name: certbot package is installed

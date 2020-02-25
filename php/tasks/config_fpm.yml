@@ -57,7 +57,7 @@
     - { option: "pm.status_path", value: "/fpm_status" }
     - { option: "request_terminate_timeout", value: "60s" }
   notify: "restart {{ php_fpm_service_name }}"
-  when: ansible_distribution_major_version is version_compare('9', '>=')
+  when: ansible_distribution_major_version is version('9', '>=')
 
 - name: Custom PHP FPM values
   copy:

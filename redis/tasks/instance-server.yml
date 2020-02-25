@@ -44,7 +44,7 @@
     - "{{ redis_conf_dir }}/redis-server.post-down.d"
   when:
     - ansible_distribution == "Debian"
-    - ansible_distribution_major_version is version_compare('9', '=')
+    - ansible_distribution_major_version is version('9', '=')
   tags:
     - redis
 
@@ -59,7 +59,7 @@
     - "redis-server.post-down.d"
   when:
     - ansible_distribution == "Debian"
-    - ansible_distribution_major_version is version_compare('9', '=')
+    - ansible_distribution_major_version is version('9', '=')
   tags:
     - redis
 
@@ -99,7 +99,7 @@
     group: "root"
   when:
     - ansible_distribution == "Debian"
-    - ansible_distribution_major_version is version_compare('9', '<')
+    - ansible_distribution_major_version is version('9', '<')
   tags:
     - redis
 
@@ -112,7 +112,7 @@
     group: "root"
   when:
     - ansible_distribution == "Debian"
-    - ansible_distribution_major_version is version_compare('9', '>=')
+    - ansible_distribution_major_version is version('9', '>=')
   tags:
     - redis
 

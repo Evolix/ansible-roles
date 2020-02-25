@@ -71,7 +71,7 @@
       apt_key:
         # url: https://hwraid.le-vert.net/debian/hwraid.le-vert.net.gpg.key
         data: "{{ lookup('file', 'hwraid.le-vert.net.gpg.key') }}"
-      when: ansible_distribution_major_version is version_compare('9', '>=')
+      when: ansible_distribution_major_version is version('9', '>=')
 
     - name: Add HW tool repository
       apt_repository:
