@@ -3,7 +3,7 @@
 - name: "{{ lxc_php_version }} - Install PHP packages"
   lxc_container:
     name: "{{ lxc_php_version }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php5-fpm php5-cli php5-gd php5-imap php5-ldap php5-mcrypt php5-mysql php5-pgsql php-gettext php5-intl php5-curl php5-ssh2 php5-zip php5-mbstring libphp-phpmailer opensmtpd git zip unzip"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php5-fpm php5-cli php5-gd php5-imap php5-ldap php5-mcrypt php5-mysql php5-pgsql php-gettext php5-intl php5-curl php5-ssh2 libphp-phpmailer ssmtp git zip unzip"
 
 - name: "{{ lxc_php_version }} - Copy evolinux PHP configuration"
   template:

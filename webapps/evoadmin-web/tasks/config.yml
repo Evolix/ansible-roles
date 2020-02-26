@@ -35,4 +35,4 @@
     src: phpContainer
     dest: /usr/local/bin/phpContainer
     mode: 0700
-  when: evoadmin_multi_php
+  when: packweb_multiphp_versions is defined

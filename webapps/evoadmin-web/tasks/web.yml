@@ -90,4 +90,4 @@
     state: present
     name: proxy_fcgi
   notify: restart apache2
-  when: evoadmin_multi_php
+  when: packweb_multiphp_versions is defined

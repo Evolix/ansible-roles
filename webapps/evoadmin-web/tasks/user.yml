@@ -121,4 +121,4 @@
   lineinfile:
     dest: /etc/skel/.bashrc
     line: "alias php='sudo /usr/local/bin/phpContainer'"
-  when: evoadmin_multi_php
+  when: packweb_multiphp_versions is defined

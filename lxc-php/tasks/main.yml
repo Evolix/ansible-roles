@@ -1,14 +1,8 @@
 ---
-<<<<<<< HEAD
-- name: LXC configuration      
-  include_role:
-    name: evolix/lxc
-=======
 - name: "Ensure that lxc_php_version is defined"
   fail:
     msg: Please configure var lxc_php_version
   when: lxc_php_version is none
->>>>>>> lxc-php: An almost complete rewrite ** BREAKING **
 
 - name: "Update APT cache in container {{lxc_php_version}}"
   lxc_container:
