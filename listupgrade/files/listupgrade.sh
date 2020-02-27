@@ -78,7 +78,13 @@ if [[ "$1" != "--cron" ]]; then
 fi
 
 # Update APT cache and get packages to upgrade and packages on hold.
-apt -q2 update 2>&1 | (egrep -ve '^(Listing|WARNING|$)' -e upgraded -e 'up to date' || true )
+aptUpdateOutput=$(apt update 2>&1 | (egrep -ve '^(Listing|WARNING|$)' -e upgraded -e 'up to date' || true ))
+
+if (echo "$aptUpdateOutput" | egrep "^Err(:[0-9]+)? http"); then
+  echo "FATAL - Not able to fetch all sources (probably a pesky (mini)firewall). Please, fix me"
+  exit 100
+fi
+
 apt-mark showhold > $packagesHold
 apt list --upgradable 2>&1 | grep -v -f $packagesHold | egrep -v '^(Listing|WARNING|$)' > $packages
 packagesParsable=$(cut -f 1 -d / <$packages |tr '\n' ' ')
@@ -140,9 +146,9 @@ for pkg in $packagesParsable; do
     elif echo "$pkg" |grep -qE "^tomcat[[:digit:]]+$"; then
         echo "Tomcat" >>$servicesToRestart
     elif [ "$pkg" = "redis-server" ]; then
-        echo "redis-server" >>$servicesToRestart
+        echo "Redis" >>$servicesToRestart
     elif [ "$pkg" = "mongodb-server" ]; then
-        echo "redis-server" >>$servicesToRestart
+        echo "MondoDB" >>$servicesToRestart
     elif echo "$pkg" |grep -qE "^courier-(pop|imap)"; then
         echo "Courier POP/IMAP" >>$servicesToRestart
     elif echo "$pkg" |grep -qE "^dovecot-(pop|imap)d"; then
@@ -161,15 +167,19 @@ for pkg in $packagesParsable; do
         echo "Varnish" >>$servicesToRestart
     elif [ "$pkg" = "squid" ]; then
         echo "Squid" >>$servicesToRestart
+    elif [ "$pkg" = "elasticsearch" ]; then
+        echo "Elasticsearch" >>$servicesToRestart
+    elif [ "$pkg" = "logstash" ]; then
+        echo "Logstash" >>$servicesToRestart
 
     elif [ "$pkg" = "libc6" ]; then
-        echo "Tous les services (mise à jour de libc6)." >$servicesToRestart
+        echo "Tous les services sont susceptibles d'être redémarrés (mise à jour de libc6)." >$servicesToRestart
         break
     elif [ "$pkg" = "libstdc++6" ]; then
-        echo "Tous les services (mise à jour de libstdc++6)." >$servicesToRestart
+        echo "Tous les services sont susceptibles d'être redémarrés (mise à jour de libstdc++6)." >$servicesToRestart
         break
     elif echo "$pkg" |grep -q "^libssl"; then
-        echo "Tous les services (mise à jour de libssl)." >$servicesToRestart
+        echo "Tous les services sont susceptibles d'être redémarrés (mise à jour de libssl)." >$servicesToRestart
         break
     fi
 done
@@ -215,8 +225,16 @@ tôt possible.
 
 Cordialement,
 --
-Équipe Evolix <equipe@evolix.fr>
-Evolix - Hébergement et Infogérance Open Source http://www.evolix.fr/
+Équipe Evolix - Hébergement et Infogérance Open Source
+http://evolix.com | Twitter: @Evolix @EvolixNOC | http://blog.evolix.com
 EOT
 
 <$template /usr/sbin/sendmail $mailto
+
+# Now we try to fetch all the packages for the next update session
+downloadstatus=$(apt dist-upgrade --assume-yes --download-only -q2 2>&1)
+echo "$downloadstatus" | grep -q 'Download complete and in download only mode'
+
+if [ $? -ne 0 ]; then
+    echo "$downloadstatus"
+fi;
