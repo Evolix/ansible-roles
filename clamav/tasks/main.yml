@@ -81,7 +81,6 @@
       - clamav-freshclam
       - arc
       - arj
-      - zoo
       - pax
       - bzip2
       - cabextract
