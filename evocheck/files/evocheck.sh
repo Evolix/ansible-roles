@@ -659,11 +659,7 @@ check_muninrunning() {
 }
 # Check if files in /home/backup/ are up-to-date
 check_backupuptodate() {
-    # find local backup directory
-    backup_dir=$(grep --no-messages 'LOCAL_BACKUP_DIR=' /etc/cron.daily/zzz_evobackup | tr -d \" | cut -d= -f2)
-    if [ -z "${backup_dir}" ]; then
-        backup_dir="/home/backup"
-    fi
+    backup_dir="/home/backup"
     if [ -d "${backup_dir}" ]; then
         if [ -n "$(ls -A ${backup_dir})" ]; then
             for file in ${backup_dir}/*; do
@@ -758,7 +754,7 @@ check_tune2fs_m5() {
 check_evolinuxsudogroup() {
     if is_debian_stretch || is_debian_buster; then
         if grep -q "^evolinux-sudo:" /etc/group; then
-            grep -q '^%evolinux-sudo  ALL=(ALL:ALL) ALL' /etc/sudoers.d/evolinux \
+            grep -qE '^%evolinux-sudo +ALL ?= ?\(ALL:ALL\) ALL' /etc/sudoers.d/evolinux \
                 || failed "IS_EVOLINUXSUDOGROUP" "missing evolinux-sudo directive in sudoers file"
         fi
     fi
@@ -1464,7 +1460,7 @@ readonly PROGDIR=$(realpath -m "$(dirname "$0")")
 # shellcheck disable=2124
 readonly ARGS=$@
 
-readonly VERSION="19.11.2"
+readonly VERSION="20.02.1"
 
 # Disable LANG*
 export LANG=C

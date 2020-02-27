@@ -48,7 +48,7 @@ The **patch** part changes incrementally at each release.
 * apt: hold packages only if package is installed
 * certbot: commit hook must be executed at the end
 * elasticsearch: listen on local interface only by default
-* evocheck: upstream version 19.11.2
+* evocheck: upstream verison 20.02.1
 * evocheck: cron jobs execute in verbose
 * evolinux-base: use "evolinux_internal_group" for SSH authentication
 * evomaintenance: Turn on API by default (instead of DB)
