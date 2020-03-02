@@ -81,6 +81,32 @@
     - redis
     - munin
 
+- name: Is log2mail installed
+  stat:
+    path: /etc/log2mail/config
+  register: _log2mail_installed
+  tags:
+    - redis
+    - log2mail
+
+- include: default-log2mail.yml
+  when:
+    - _log2mail_installed.stat.exists
+    - _log2mail_installed.stat.isdir
+    - redis_instance_name is undefined
+  tags:
+    - redis
+    - log2mail
+
+- include: instance-log2mail.yml
+  when:
+    - _log2mail_installed.stat.exists
+    - _log2mail_installed.stat.isdir
+    - redis_instance_name is defined
+  tags:
+    - redis
+    - log2mail
+
 - name: is NRPE present ?
   stat:
     path: /etc/nagios/nrpe.d/evolix.cfg
