@@ -7,7 +7,7 @@
 # Copyright 2007-2019 Evolix <info@evolix.fr>, Gregory Colpart <reg@evolix.fr>,
 #                     Jérémy Lecour <jlecour@evolix.fr> and others.
 
-VERSION="0.6.0"
+VERSION="0.6.2"
 
 show_version() {
     cat <<END
@@ -169,16 +169,31 @@ print_session_data() {
 }
 
 is_repository_readonly() {
-    mountpoint=$(stat -c '%m' $1)
-    findmnt ${mountpoint} --noheadings --output OPTIONS | grep -q -E "\bro\b"
+    if [ "$(get_system)" = "OpenBSD" ]; then
+        partition=$(stat -f '%Sd' $1)
+        mount | grep ${partition} | grep -q "read-only"
+    else
+        mountpoint=$(stat -c '%m' $1)
+        findmnt ${mountpoint} --noheadings --output OPTIONS -O ro
+    fi
 }
 remount_repository_readwrite() {
-    mountpoint=$(stat -c '%m' $1)
-    mount -o remount,rw ${mountpoint}
+    if [ "$(get_system)" = "OpenBSD" ]; then
+        partition=$(stat -f '%Sd' $1)
+        mount -u -w /dev/${partition} 2>/dev/null
+    else
+        mountpoint=$(stat -c '%m' $1)
+        mount -o remount,rw ${mountpoint}
+    fi
 }
 remount_repository_readonly() {
-    mountpoint=$(stat -c '%m' $1)
-    mount -o remount,ro ${mountpoint} 2>/dev/null
+    if [ "$(get_system)" = "OpenBSD" ]; then
+        partition=$(stat -f '%Sd' $1)
+        mount -u -r /dev/${partition} 2>/dev/null
+    else
+        mountpoint=$(stat -c '%m' $1)
+        mount -o remount,ro ${mountpoint} 2>/dev/null
+    fi
 }
 
 hook_commit() {
@@ -532,7 +547,7 @@ if [ "${INTERACTIVE}" = "1" ] && [ "${EVOCHECK}" = "1" ]; then
     get_evocheck
 fi
 if [ -n "${GIT_STATUSES}" ] && [ "${INTERACTIVE}" = "1" ]; then
-    printf "/!\ There are some uncommited changes.\n%s\n\n" "${GIT_STATUSES}"
+    printf "/!\\\ There are some uncommited changes.\n%s\n\n" "${GIT_STATUSES}"
 fi
 
 if [ -z "${MESSAGE}" ]; then
