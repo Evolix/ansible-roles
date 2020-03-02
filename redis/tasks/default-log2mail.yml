@@ -14,7 +14,6 @@
       mailto = {{ log2mail_alert_email or general_alert_email | mandatory }}
       template = /etc/log2mail/mail
   notify: restart log2mail
-  when: log2mail_config_dir.stat.exists
   tags:
     - redis
     - log2mail

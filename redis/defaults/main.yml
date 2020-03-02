@@ -57,3 +57,6 @@ redis_disabled_commands: []
 redis_sentinel_install: False
 
 redis_default_server_disabled: False
+
+general_alert_email: "root@localhost"
+log2mail_alert_email: Null

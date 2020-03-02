@@ -36,8 +36,17 @@
   tags:
     - redis
 
-- include: instance-server.yml
-  vars:
+- name: set variables for default mode
+  set_fact:
+    redis_conf_dir: "{{ redis_conf_dir_prefix }}"
+    redis_socket_dir: "{{ redis_socket_dir_prefix }}"
+    redis_pid_dir: "{{ redis_pid_dir_prefix }}"
+    redis_log_dir: "{{ redis_log_dir_prefix }}"
+    redis_data_dir: "{{ redis_data_dir_prefix }}"
+  when: redis_instance_name is not defined
+
+- name: set variables for instance mode
+  set_fact:
     redis_systemd_name: "redis-server@{{ redis_instance_name }}"
     redis_conf_dir: "{{ redis_conf_dir_prefix }}-{{ redis_instance_name }}"
     redis_socket_dir: "{{ redis_socket_dir_prefix }}-{{ redis_instance_name }}"
@@ -46,14 +55,13 @@
     redis_data_dir: "{{ redis_data_dir_prefix }}-{{ redis_instance_name }}"
   when: redis_instance_name is defined
 
-- include: default-server.yml
-  vars:
-    redis_conf_dir: "{{ redis_conf_dir_prefix }}"
-    redis_socket_dir: "{{ redis_socket_dir_prefix }}"
-    redis_pid_dir: "{{ redis_pid_dir_prefix }}"
-    redis_log_dir: "{{ redis_log_dir_prefix }}"
-    redis_data_dir: "{{ redis_data_dir_prefix }}"
+- name: configure Redis for default mode
+  include: default-server.yml
   when: redis_instance_name is not defined
+
+- name: configure Redis for instance mode
+  include: instance-server.yml
+  when: redis_instance_name is defined
 
 - name: Is Munin installed
   stat:
@@ -63,7 +71,8 @@
     - redis
     - munin
 
-- include: default-munin.yml
+- name: configure Munin for default mode
+  include: default-munin.yml
   when:
     - _munin_installed.stat.exists
     - _munin_installed.stat.isdir
@@ -72,7 +81,8 @@
     - redis
     - munin
 
-- include: instance-munin.yml
+- name: configure Munin for instance mode
+  include: instance-munin.yml
   when:
     - _munin_installed.stat.exists
     - _munin_installed.stat.isdir
@@ -89,7 +99,8 @@
     - redis
     - log2mail
 
-- include: default-log2mail.yml
+- name: configure log2mail for default mode
+  include: default-log2mail.yml
   when:
     - _log2mail_installed.stat.exists
     - _log2mail_installed.stat.isdir
@@ -98,7 +109,8 @@
     - redis
     - log2mail
 
-- include: instance-log2mail.yml
+- name: configure log2mail for instance mode
+  include: instance-log2mail.yml
   when:
     - _log2mail_installed.stat.exists
     - _log2mail_installed.stat.isdir
