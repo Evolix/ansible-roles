@@ -15,4 +15,4 @@ postgresql_version: '9.6'
 locales_default: fr_FR.UTF-8
 
 # PostGIS
-postgresql_install_postgis: false 
+postgresql_install_postgis: False
