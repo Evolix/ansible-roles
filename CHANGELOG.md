@@ -35,6 +35,7 @@ The **patch** part changes incrementally at each release.
 * mysql: specify a custom server_id
 * packweb-apache: Deploy opcache.php to give some insights on PHP's opcache status
 * php: variable to install the mysqlnd module instead of the default mysql module
+* postgresql : variable to install PostGIS (default: `False`)
 * redis: rewrite of the role (separate instances, better systemd units…)
 * webapps/evoadmin-web Add an htpasswd to evoadmin if you cant use an apache IP whitelist
 * webapps/evoadmin-web Overload templates if needed
@@ -55,10 +56,11 @@ The **patch** part changes incrementally at each release.
 * evomaintenance: upstream version 0.6.2
 * evomaintenance: install PG dependencies only when needed
 * listupgrade: update from upstream
-* lxc-php: refactor tasks for better maintainability
 * lxc: rely on lxc_container module instead of command module
 * lxc: remove useless loop in apt execution
 * lxc: update our default template to be compatible with Debian 10
+* lxc-php: refactor tasks for better maintainability
+* lxc-solr: changed default Solr version to 8.4.1
 * minifirewall: better alert5 activation
 * minifirewall: no http filtering by default
 * nagios-nrpe: update check_redis_instances (same as redis role)
@@ -69,6 +71,7 @@ The **patch** part changes incrementally at each release.
 * php: Make sure the default pool we define can be fully functionnal witout debian's default pool file
 * php: Change the default pool names to something more explicit (and same for the variables names)
 * php: Add a task to remove Debian's default FPM pool file (off by default)
+* postgresql : changed logrotate config to 10 days (and fixed permissions)
 * rbenv: install Ruby 2.6.5 by default
 * squid: Remove wait time when we turn off squid
 * squid: compatibility wit Debian 10
@@ -90,6 +93,9 @@ The **patch** part changes incrementally at each release.
 * webapps/evoadmin-web: Set default evoadmin_mail_tpl_force to True to fix a regression where the mail template would not get updated because the file is created before the role is first run.
 * minifirewall: Backport changes from minifirewall (properly open outgoing smtp(s))
 * minifirewall: Properly detect alert5.sh to turn on firewall at boot
+
+### Removed
+* clamav : do not install the zoo package anymore
 
 ### Security
 
