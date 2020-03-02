@@ -54,7 +54,7 @@ check_server() {
 config_var() {
     variable=$1
     file=$2
-    test -f $file && grep -E "^${variable}\s+.+$" $file | awk '{ print $2 }'
+    test -f "${file}" && grep -E "^${variable}\s+.+$" "${file}" | awk '{ print $2 }'
 }
 
 # default instance
@@ -65,9 +65,9 @@ fi
 # additional instances
 conf_files=$(ls -1 /etc/redis-*/redis.conf)
 for conf_file in ${conf_files}; do
-    name=$(dirname ${conf_file} | sed '{s|/etc/redis-||}')
+    name=$(dirname "${conf_file}" | sed '{s|/etc/redis-||}')
     if systemctl is-enabled -q "redis-server@${name}.service"; then
-        check_server $name $conf_file
+        check_server "${name}" "${conf_file}"
     else
         nb_unchk=$((nb_unchk + 1))
         output="${output}UNCHK - ${name} (unit is disabled or missing)\n"
