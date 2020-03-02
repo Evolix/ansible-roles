@@ -7,7 +7,7 @@
 # Copyright 2007-2019 Evolix <info@evolix.fr>, Gregory Colpart <reg@evolix.fr>,
 #                     Jérémy Lecour <jlecour@evolix.fr> and others.
 
-VERSION="0.6.2"
+VERSION="0.6.3"
 
 show_version() {
     cat <<END
@@ -52,6 +52,12 @@ Options
      --help                  print this message and exit
      --version               print version and exit
 END
+}
+
+syslog() {
+    if [ -x "${LOGGER_BIN}" ]; then
+        ${LOGGER_BIN} -t "evomaintenance" "$1"
+    fi
 }
 
 get_system() {
@@ -184,6 +190,7 @@ remount_repository_readwrite() {
     else
         mountpoint=$(stat -c '%m' $1)
         mount -o remount,rw ${mountpoint}
+        syslog "Re-mount ${mountpoint} as read-write to commit in repository $1"
     fi
 }
 remount_repository_readonly() {
@@ -193,6 +200,7 @@ remount_repository_readonly() {
     else
         mountpoint=$(stat -c '%m' $1)
         mount -o remount,ro ${mountpoint} 2>/dev/null
+        syslog "Re-mount ${mountpoint} as read-only after commit to repository $1"
     fi
 }
 
@@ -511,6 +519,9 @@ readonly CURL_BIN
 if [ "${HOOK_API}" = "1" ] && [ -z "${CURL_BIN}" ]; then
     echo "No \`curl' command has been found, can't call the API." 2>&1
 fi
+
+LOGGER_BIN=$(command -v logger)
+readonly LOGGER_BIN
 
 if [ "${HOOK_API}" = "1" ] && [ -z "${API_ENDPOINT}" ]; then
     echo "No API endpoint specified, can't call the API." 2>&1
