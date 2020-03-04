@@ -52,6 +52,7 @@ The **patch** part changes incrementally at each release.
 * evocheck: upstream verison 20.02.1
 * evocheck: cron jobs execute in verbose
 * evolinux-base: use "evolinux_internal_group" for SSH authentication
+* evolinux-base: Don't customize the logcheck recipient by default.
 * evomaintenance: upstream release 0.6.3
 * evomaintenance: Turn on API by default (instead of DB)
 * evomaintenance: install PG dependencies only when needed
