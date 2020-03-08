@@ -57,6 +57,14 @@
       - tmp_tables
     notify: restart munin-node
 
+  - name: verify Munin configuration for mysql
+    replace:
+      dest: /etc/munin/plugin-conf.d/munin-node
+      after: '\[mysql\*\]'
+      regexp: '^env.mysqluser (.+)$'
+      replace: 'env.mysqluser debian-sys-maint'
+    notify: restart munin-node
+
   when: munin_node_plugins_config.stat.exists
   tags:
     - mysql
