@@ -67,6 +67,7 @@ The **patch** part changes incrementally at each release.
 * nagios-nrpe: update check_redis_instances (same as redis role)
 * nagios-nrpe: change default haproxy socket path
 * nagios-nrpe: check_mode per cpu dynamically
+* nodejs: change default version to 12 (new LTS)
 * php: By default, allow 128M for OpCache (instead of 64M)
 * php: Don't set a chroot for the default fpm pool
 * php: Make sure the default pool we define can be fully functionnal witout debian's default pool file
