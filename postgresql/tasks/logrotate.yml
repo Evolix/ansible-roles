@@ -2,5 +2,5 @@
 - name: logrotate configuration
   copy:
     src: logrotate_postgresql
-    dest: /etc/logrotate.d/postgresql
+    dest: /etc/logrotate.d/postgresql-common
     force: no
