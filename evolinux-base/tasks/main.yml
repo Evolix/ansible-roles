@@ -113,6 +113,13 @@
     name: evolix/fail2ban
   when: evolinux_fail2ban_include
 
+- name: Evocheck
+  include_role:
+    name: evolix/evocheck
+  vars:
+    evocheck_force_install: "{{ evolinux_evocheck_force_install }}"
+  when: evolinux_evocheck_include
+
 - name: Listupgrade
   include_role:
     name: evolix/listupgrade

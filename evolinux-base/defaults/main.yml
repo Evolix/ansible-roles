@@ -202,6 +202,11 @@ evolinux_nagios_nrpe_include: True
 
 evolinux_fail2ban_include: False
 
+# Evocheck
+
+evolinux_evocheck_include: True
+evolinux_evocheck_force_install: "local"
+
 # Listupgrade
 
 evolinux_listupgrade_include: True
