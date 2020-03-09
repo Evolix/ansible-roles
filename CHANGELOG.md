@@ -74,7 +74,7 @@ The **patch** part changes incrementally at each release.
 * php: Change the default pool names to something more explicit (and same for the variables names)
 * php: Add a task to remove Debian's default FPM pool file (off by default)
 * postgresql : changed logrotate config to 10 days (and fixed permissions)
-* rbenv: install Ruby 2.6.5 by default
+* rbenv: changed default Ruby version to 2.7.0
 * squid: Remove wait time when we turn off squid
 * squid: compatibility wit Debian 10
 * tomcat: package version derived from Debian version if missing
