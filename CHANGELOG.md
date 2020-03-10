@@ -42,6 +42,9 @@ The **patch** part changes incrementally at each release.
 * webapps/evoadmin-web Overload templates if needed
 * evolinux-base: install ssacli for HP Smart Array
 * evobackup-client role to configure a machine for backups with bkctld(8)
+* bind: enable query logging for recursive resolvers
+* bind: enable logrotate for recursive resolvers
+* bind: enable bind9 munin plugin for recursive resolvers
 
 ### Changed
 * replace version_compare() with version()s
@@ -80,6 +83,14 @@ The **patch** part changes incrementally at each release.
 * squid: compatibility wit Debian 10
 * tomcat: package version derived from Debian version if missing
 * varnish: remove custom ExecReload= script for Debian 10+
+<<<<<<< HEAD
+=======
+* lxc: remove useless loop in apt execution
+* lxc: update our default template to be compatible with Debian 10
+* lxc: rely on lxc_container module instead of command module
+* bind: the munin task was present, but not included
+* bind: change name of logrotate file to bind9
+>>>>>>> bind9_evocheck_fix
 
 ### Fixed
 * etc-git: fix warnings ansible-lint
@@ -99,6 +110,7 @@ The **patch** part changes incrementally at each release.
 
 ### Removed
 * clamav : do not install the zoo package anymore
+
 
 ### Security
 

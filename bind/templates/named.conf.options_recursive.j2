@@ -1,5 +1,5 @@
 options {
-    directory "/var/cache/bind";
+    directory "{{ bind_cache_dir }}";
     version "Bingo";
     auth-nxdomain no;
     listen-on-v6 { ::1; };
@@ -8,9 +8,17 @@ options {
 };
 
 logging {
-        category default { default_file; };
-        channel default_file {
-                file "/var/log/bind.log";
-                severity info;
-        };
+    category default { default_file; };
+    category queries { query_logging; };
+
+    channel default_file {
+        file "{{ bind_log_file }}";
+        severity info;
+    };
+    channel query_logging {
+        file "{{ bind_query_file }}" versions 2 size 128M;
+        print-category yes;
+        print-severity yes;
+        print-time yes;
+    };
 };
