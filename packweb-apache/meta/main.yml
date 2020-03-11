@@ -28,3 +28,4 @@ dependencies:
   - { role: evolix/mysql,        when: packweb_mysql_variant == "debian" }
   - { role: evolix/mysql-oracle, when: packweb_mysql_variant == "oracle" }
   - { role: evolix/webapps/evoadmin-web, evoadmin_enable_vhost: "{{ packweb_enable_evoadmin_vhost }}", evoadmin_multiphp_versions: "{{ packweb_multiphp_versions }}" }
+  - { role: evolix/evoacme }

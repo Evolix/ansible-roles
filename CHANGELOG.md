@@ -103,6 +103,7 @@ The **patch** part changes incrementally at each release.
 * webapps/evoadmin-web: Set default evoadmin_mail_tpl_force to True to fix a regression where the mail template would not get updated because the file is created before the role is first run.
 * minifirewall: Backport changes from minifirewall (properly open outgoing smtp(s))
 * minifirewall: Properly detect alert5.sh to turn on firewall at boot
+* packweb-apache: Add missing dependency to evoacme role
 
 ### Removed
 * clamav : do not install the zoo package anymore
