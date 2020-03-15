@@ -14,3 +14,7 @@
   service:
     name: haproxy
     state: reloaded
+
+- name: systemd daemon-reload
+  systemd:
+    daemon_reload: yes

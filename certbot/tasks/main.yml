@@ -4,13 +4,20 @@
   assert:
     that:
       - ansible_distribution == "Debian"
-      - ansible_distribution_major_version is version('9', '>=')
+      - ansible_distribution_major_version is version('8', '>=')
     msg: only compatible with Debian 9+
 
-- name: certbot package is installed
-  apt:
-    name: certbot
-    state: latest
+- name: Install from sources on Debian 8
+  include: install-sources.yml
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version is version('8', '=')
+
+- name: Install package on Debian 9+
+  include: install-package.yml
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version is version('9', '>=')
 
 - include: acme-challenge.yml
 

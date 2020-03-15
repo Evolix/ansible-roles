@@ -1,0 +1,34 @@
+---
+
+- name: certbot package is removed
+  apt:
+    name: certbot
+    state: absent
+
+- include_role:
+    name: evolix/remount-usr
+
+- name: Certbot script is downloaded
+  get_url:
+    url: https://dl.eff.org/certbot-auto
+    dest: /usr/local/bin/certbot
+    mode: '0755'
+    owner: root
+    group: root
+    force: no
+
+- name: systemd artefacts are absent
+  file:
+    dest: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/systemd/system/certbot.service
+    - /etc/systemd/system/certbot.service.d
+    - /etc/systemd/system/certbot.timer
+  notify: systemd daemon-reload
+
+- name: custom crontab is present
+  copy:
+    src: cron_jessie
+    dest: /etc/cron.d/certbot
+    force: yes
