@@ -25,7 +25,7 @@
 - name: This openjdk version is the default alternative
   alternatives:
     name: java
-    path: "/usr/lib/jvm/java-{{ java_version }}-openjdk-amd64/jre/bin/java"
+    path: "{{ java_bin_path[java_version] }}"
   when: java_default_alternative
   tags:
     - java

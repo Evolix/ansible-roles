@@ -28,6 +28,7 @@ The **patch** part changes incrementally at each release.
 * evomaintenance: don't configure firewall for database if not necessary
 * generate-ldif: support MariaDB 10.3
 * haproxy: add a variable to keep the existing configuration
+* java: add Java 11 as possible version to install
 * listupgrade: install old-kernel-autoremoval script
 * minifirewall: add a variable to force the check scripts update
 * mongodb: mongodb: compatibility with Debian 10
@@ -51,9 +52,11 @@ The **patch** part changes incrementally at each release.
 * removed some deprecations for Ansible 2.7
 * apache: improve permissions in save_apache_status script
 * apt: hold packages only if package is installed
+* bind: the munin task was present, but not included
+* bind: change name of logrotate file to bind9
 * certbot: commit hook must be executed at the end
 * elasticsearch: listen on local interface only by default
-* evocheck: upstream verison 20.02.1
+* evocheck: upstream version 20.02.1
 * evocheck: cron jobs execute in verbose
 * evolinux-base: use "evolinux_internal_group" for SSH authentication
 * evolinux-base: Don't customize the logcheck recipient by default.
@@ -83,14 +86,6 @@ The **patch** part changes incrementally at each release.
 * squid: compatibility wit Debian 10
 * tomcat: package version derived from Debian version if missing
 * varnish: remove custom ExecReload= script for Debian 10+
-<<<<<<< HEAD
-=======
-* lxc: remove useless loop in apt execution
-* lxc: update our default template to be compatible with Debian 10
-* lxc: rely on lxc_container module instead of command module
-* bind: the munin task was present, but not included
-* bind: change name of logrotate file to bind9
->>>>>>> bind9_evocheck_fix
 
 ### Fixed
 * etc-git: fix warnings ansible-lint
