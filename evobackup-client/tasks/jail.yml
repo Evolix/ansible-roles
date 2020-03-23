@@ -12,18 +12,6 @@
     - evobackup_client
     - evobackup_client_jail
 
-- name: 'create jail'
-  command: "bkctld init {{ evolinux_hostname }}"
-  args:
-    creates: "/backup/jails/{{ evolinux_hostname }}/"
-  become: true
-  delegate_to: "{{ evobackup_client__hosts[0].ip }}"
-  notify:
-    - 'created new jail'
-  tags:
-    - evobackup_client
-    - evobackup_client_jail
-
 # temp fix for bkctld 2.x because the ip and key command return 1
 # if the jail is not started, see https://gitea.evolix.org/evolix/evobackup/issues/31
 - name: 'start jail'
