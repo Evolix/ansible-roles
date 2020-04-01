@@ -78,6 +78,7 @@
 - include: apache.yml
 
 - include: phpmyadmin.yml
+  when: ansible_distribution_release != "buster"
 
 - include: awstats.yml
 
