@@ -106,6 +106,7 @@ The **patch** part changes incrementally at each release.
 * minifirewall: Properly detect alert5.sh to turn on firewall at boot
 * packweb-apache: Add missing dependency to evoacme role
 * php: Chose the debian version repo archive for packages.sury.org
+* php: update surry_post.yml to match current latest PHP release
 * packweb-apache: Don't try to install PHPMyAdmin on Buster as it's not available
 
 ### Removed
