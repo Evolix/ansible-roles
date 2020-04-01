@@ -16,3 +16,5 @@
     - "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/php5/cli/conf.d/z-evolinux-defaults.ini"
   loop_control:
     loop_var: line_item
+
+- include: "mail_ssmtp.yml"

@@ -1,0 +1,8 @@
+---
+
+- name: Configure opensmtpd (in the container)
+  template:
+    src: smtpd.conf.j2
+    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/smtpd.conf"
+    mode: "0644"
+  notify: "Restart opensmtpd"

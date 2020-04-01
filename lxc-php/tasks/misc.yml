@@ -1,26 +1,19 @@
 ---
 
-- name: Configure opensmtpd
-  template:
-    src: smtpd.conf.j2
-    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/smtpd.conf"
-    mode: "0644"
-  notify: "Restart opensmtpd"
-
-- name: Copy using inline content
-  copy:
-    content: "{{ evolinux_hostname }}.{{ evolinux_domain }}\n"
-    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/mailname"
-  notify: "Restart opensmtpd"
-
-- name: Configure timezone
+- name: Configure timezone for the container
   copy:
     remote_src: yes
     src: "/etc/timezone"
     dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/timezone"
 
-- name: Ensure containers root directory is 755
+- name: Ensure container's root directory is 755
   file:
     path: "/var/lib/lxc/{{ lxc_php_version }}/rootfs"
     state: directory
     mode: '0755'
+
+- name: Configure mailname for the container
+  copy:
+    content: "{{ evolinux_hostname }}.{{ evolinux_domain }}\n"
+    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/mailname"
+  notify: "Restart opensmtpd"

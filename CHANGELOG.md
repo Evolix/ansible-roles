@@ -68,6 +68,7 @@ The **patch** part changes incrementally at each release.
 * lxc: remove useless loop in apt execution
 * lxc: update our default template to be compatible with Debian 10
 * lxc-php: refactor tasks for better maintainability
+* lxc-php: Use OpenSMTPD for Stretch/Buster containers, and ssmtp for Jessie containers
 * lxc-solr: changed default Solr version to 8.4.1
 * minifirewall: better alert5 activation
 * minifirewall: no http filtering by default

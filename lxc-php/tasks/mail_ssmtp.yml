@@ -1,0 +1,7 @@
+---
+
+- name: Configure ssmtp (in the container)
+  template:
+    src: ssmtp.conf.j2
+    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/ssmtp/ssmtp.conf"
+    mode: "0644"
