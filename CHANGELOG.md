@@ -104,6 +104,7 @@ The **patch** part changes incrementally at each release.
 * minifirewall: Backport changes from minifirewall (properly open outgoing smtp(s))
 * minifirewall: Properly detect alert5.sh to turn on firewall at boot
 * packweb-apache: Add missing dependency to evoacme role
+* php: Chose the debian version repo archive for packages.sury.org
 
 ### Removed
 * clamav : do not install the zoo package anymore
