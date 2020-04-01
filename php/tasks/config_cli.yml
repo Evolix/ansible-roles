@@ -1,5 +1,5 @@
 ---
-- name: "Set default php.ini values for CLI (jessie)"
+- name: "Set default php.ini values for CLI"
   ini_file:
     dest: "{{ php_cli_defaults_ini_file }}"
     section: PHP
@@ -15,7 +15,7 @@
     - { option: "html_errors", value: "Off" }
     - { option: "allow_url_fopen", value: "Off" }
 
-- name: "Disable PHP functions for CLI (jessie)"
+- name: "Disable PHP functions for CLI"
   ini_file:
     dest: "{{ php_cli_defaults_ini_file }}"
     section: PHP
@@ -31,12 +31,12 @@
 
 # This task is not merged with the above copy
 # because "force: no" prevents any fix after the fact
-- name: "Permissions for custom php.ini for CLI (jessie)"
+- name: "Permissions for custom php.ini for CLI"
   file:
     dest: "{{ php_cli_custom_ini_file }}"
     mode: "0644"
 
-- name: "Set custom values for PHP to enable Symfony (jessie)"
+- name: "Set custom values for PHP to enable Symfony"
   ini_file:
     dest: "{{ php_cli_custom_ini_file }}"
     section: PHP
