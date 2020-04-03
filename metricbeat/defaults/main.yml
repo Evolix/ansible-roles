@@ -1,5 +1,9 @@
 ---
-elastic_stack_version: "6.x"
+general_alert_email: "root@localhost"
+log2mail_alert_email: Null
+metricbeat_log2mail_alert_email: Null
+
+elastic_stack_version: "7.x"
 
 metricbeat_elasticsearch_protocol: ""
 metricbeat_elasticsearch_hosts:

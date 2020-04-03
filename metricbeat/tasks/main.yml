@@ -88,3 +88,5 @@
     insert_after: '^processors:'
   notify: restart metricbeat
   when: metricbeat_processors_cloud_metadata
+
+- include: log2mail.yml

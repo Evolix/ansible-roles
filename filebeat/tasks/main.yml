@@ -81,3 +81,5 @@
     insert_after: '^processors:'
   notify: restart filebeat
   when: filebeat_processors_cloud_metadata
+
+- include: log2mail.yml

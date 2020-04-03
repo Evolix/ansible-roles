@@ -4,3 +4,8 @@
   systemd:
     name: filebeat
     state: restarted
+
+- name: restart log2mail
+  systemd:
+    name: log2mail
+    state: restarted

@@ -1,0 +1,21 @@
+---
+
+- name: Check if log2mail is installed
+  stat:
+    path: /etc/log2mail/config
+  register: _log2mail_config_dir
+
+- name: "Add user 'log2mail' to 'filebeat' group"
+  user:
+    name: 'log2mail'
+    groups: 'filebeat'
+    append: yes
+  notify: restart log2mail
+  when: _log2mail_config_dir.stat.isdir
+
+- name: Install filebeat log2mail configuration
+  template:
+    src: log2mail.j2
+    dest: /etc/log2mail/config/filebeat
+  notify: restart log2mail
+  when: _log2mail_config_dir.stat.isdir

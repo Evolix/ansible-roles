@@ -1,0 +1,4 @@
+file = /var/log/filebeat/filebeat
+pattern = "\bERROR\b"
+mailto = {{ filebeat_log2mail_alert_email or log2mail_alert_email or general_alert_email | mandatory }}
+template = /etc/log2mail/mail
