@@ -13,7 +13,7 @@
   copy:
     src: phpContainer
     dest: /usr/local/bin/phpContainer
-    mode: 0700
+    mode: 0755
 
 # - name: Copy php shim to call phpContainer when the user is a web user
 #   copy:
