@@ -1,6 +1,11 @@
 ---
 
-- name: Configure opensmtpd (in the container)
+- name: "{{ lxc_php_version }} - Install opensmtpd"
+  lxc_container:
+    name: "{{ lxc_php_version }}"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y ssmtp"
+
+- name: "{{ lxc_php_version }} - Configure opensmtpd (in the container)"
   template:
     src: smtpd.conf.j2
     dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/smtpd.conf"

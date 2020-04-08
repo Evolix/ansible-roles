@@ -3,7 +3,7 @@
 - name: "{{ lxc_php_version }} - Install PHP packages"
   lxc_container:
     name: "{{ lxc_php_version }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mcrypt php-mysql php-pgsql php-gettext php-curl php-ssh2 php-mbstring composer libphp-phpmailer opensmtpd git zip unzip php-zip"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mcrypt php-mysql php-pgsql php-gettext php-curl php-ssh2 php-zip php-mbstring composer libphp-phpmailer"
 
 - name: "{{ lxc_php_version }} - Copy evolinux PHP configuration"
   template:
@@ -17,4 +17,4 @@
   loop_control:
     loop_var: line_item
 
-- include: "mail_opensmtd.yml"
+- include: "mail_opensmtpd.yml"
