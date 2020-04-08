@@ -116,9 +116,3 @@
     - "templates/evoadmin-web/sudoers.j2"
     - "sudoers.j2"
   register: evoadmin_sudoers_conf
-
-- name: Modify bashrc skel file
-  lineinfile:
-    dest: /etc/skel/.bashrc
-    line: "alias php='sudo /usr/local/bin/phpContainer'"
-  when: packweb_multiphp_versions is defined

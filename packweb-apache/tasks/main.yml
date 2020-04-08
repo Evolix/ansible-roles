@@ -90,3 +90,6 @@
     name: "ProFTPd directory size caching"
     special_time: daily
     job: "/usr/share/scripts/evoadmin/stats.sh"
+
+- include: multiphp.yml
+  when: packweb_multiphp_versions | length > 0

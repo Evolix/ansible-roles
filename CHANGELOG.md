@@ -76,6 +76,7 @@ The **patch** part changes incrementally at each release.
 * nagios-nrpe: change default haproxy socket path
 * nagios-nrpe: check_mode per cpu dynamically
 * nodejs: change default version to 12 (new LTS)
+* packweb-apache: Do the install & conffigure phpContainer script (instead of evoadmin-web role)
 * php: By default, allow 128M for OpCache (instead of 64M)
 * php: Don't set a chroot for the default fpm pool
 * php: Make sure the default pool we define can be fully functionnal witout debian's default pool file
