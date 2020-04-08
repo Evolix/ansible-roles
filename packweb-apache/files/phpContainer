@@ -2,7 +2,7 @@
 
 # If this script isn't run as root, then, re-run it with sudo.
 if [ "$EUID" -ne 0 ]; then
-  sudo $(readlink -f  ${BASH_SOURCE[0]}) ${*@Q}
+  sudo $(readlink -f  ${BASH_SOURCE[0]}) "$@"
   exit 0;
 fi;
 
