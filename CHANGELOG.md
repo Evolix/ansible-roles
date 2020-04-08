@@ -93,6 +93,7 @@ The **patch** part changes incrementally at each release.
 * etc-git: fix warnings ansible-lint
 * evoadmin-web: Put the php config at the right place for Buster
 * lxc: Don't stop the container if it already exists
+* lxc: Fix container existance check to be able to run in check_mode
 * lxc-php: Don't remove the default pool
 * minifirewall: fix warnings ansible-lint
 * nginx: fix munin fcgi not working (missing chmod 660 on logs)
@@ -109,6 +110,7 @@ The **patch** part changes incrementally at each release.
 * php: Chose the debian version repo archive for packages.sury.org
 * php: update surry_post.yml to match current latest PHP release
 * packweb-apache: Don't try to install PHPMyAdmin on Buster as it's not available
+*
 
 ### Removed
 * clamav : do not install the zoo package anymore

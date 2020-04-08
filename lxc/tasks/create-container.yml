@@ -2,6 +2,7 @@
 - name: "Check if container {{ name }} exists"
   command: "lxc-ls {{name}}"
   changed_when: false
+  check_mode: no
   register: container_exists
 
 - name: "Create container {{ name }}"
