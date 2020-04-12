@@ -551,6 +551,20 @@ check_evobackup() {
     evobackup_found=$(find /etc/cron* -name '*evobackup*' | wc -l)
     test "$evobackup_found" -gt 0 || failed "IS_EVOBACKUP" "missing evobackup cron"
 }
+# Vérification de l'exclusion des montages (NFS) dans les sauvegardes
+check_evobackup_exclude_mount() {
+    excludes_file=$(mktemp)
+    # shellcheck disable=SC2064
+    trap "rm -f ${excludes_file}" 0
+    # shellcheck disable=SC2044
+    for evobackup_file in $(find /etc/cron* -name '*evobackup*'); do
+        grep -- "--exclude " "${evobackup_file}" | grep -E -o "\"[^\"]+\"" | tr -d '"' > "${excludes_file}"
+        not_excluded=$(findmnt --type nfs,nfs4,fuse.sshfs, -o target --noheadings | grep -v -f "${excludes_file}")
+        for mount in ${not_excluded}; do
+            failed "IS_EVOBACKUP_EXCLUDE_MOUNT" "${mount} is not excluded from ${evobackup_file} backup script"
+        done
+    done
+}
 # Verification de la presence du userlogrotate
 check_userlogrotate() {
     if is_pack_web; then
@@ -1300,6 +1314,7 @@ main() {
         test "${IS_AUTOIF:=1}" = 1 && check_autoif
         test "${IS_INTERFACESGW:=1}" = 1 && check_interfacesgw
         test "${IS_EVOBACKUP:=1}" = 1 && check_evobackup
+        test "${IS_EVOBACKUP_EXCLUDE_MOUNT:=1}" = 1 && check_evobackup_exclude_mount
         test "${IS_USERLOGROTATE:=1}" = 1 && check_userlogrotate
         test "${IS_APACHECTL:=1}" = 1 && check_apachectl
         test "${IS_APACHESYMLINK:=1}" = 1 && check_apachesymlink
@@ -1460,7 +1475,7 @@ readonly PROGDIR=$(realpath -m "$(dirname "$0")")
 # shellcheck disable=2124
 readonly ARGS=$@
 
-readonly VERSION="20.02.1"
+readonly VERSION="20.04.1"
 
 # Disable LANG*
 export LANG=C
