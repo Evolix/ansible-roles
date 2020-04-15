@@ -56,10 +56,11 @@ The **patch** part changes incrementally at each release.
 * bind: change name of logrotate file to bind9
 * certbot: commit hook must be executed at the end
 * elasticsearch: listen on local interface only by default
-* evocheck: upstream version 20.02.1
+* evocheck: upstream version 20.04.2
 * evocheck: cron jobs execute in verbose
 * evolinux-base: use "evolinux_internal_group" for SSH authentication
 * evolinux-base: Don't customize the logcheck recipient by default.
+* evolinux-base: configure cciss-vol-statusd in the proper file
 * evomaintenance: upstream release 0.6.3
 * evomaintenance: Turn on API by default (instead of DB)
 * evomaintenance: install PG dependencies only when needed
@@ -80,6 +81,7 @@ The **patch** part changes incrementally at each release.
 * php: Make sure the default pool we define can be fully functionnal witout debian's default pool file
 * php: Change the default pool names to something more explicit (and same for the variables names)
 * php: Add a task to remove Debian's default FPM pool file (off by default)
+* php: Cleanup CLI Settings. Also, allow url fopen and don't disable functions (in CLI only)
 * postgresql : changed logrotate config to 10 days (and fixed permissions)
 * rbenv: changed default Ruby version to 2.7.0
 * squid: Remove wait time when we turn off squid

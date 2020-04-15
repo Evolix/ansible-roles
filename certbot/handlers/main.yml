@@ -18,3 +18,6 @@
 - name: systemd daemon-reload
   systemd:
     daemon_reload: yes
+
+- name: install certbot-auto
+  command: /usr/local/bin/certbot --install-only
