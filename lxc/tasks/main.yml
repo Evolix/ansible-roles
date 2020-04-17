@@ -34,5 +34,5 @@
   include: create-container.yml
   vars:
     name: "{{ item.name }}"
-    release: "{{item.release}}"
-  with_items: "{{lxc_containers}}"
+    release: "{{ item.release }}"
+  loop: "{{ lxc_containers }}"

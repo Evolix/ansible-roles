@@ -1,36 +1,36 @@
 ---
 - name: "Check if container {{ name }} exists"
-  command: "lxc-ls {{name}}"
+  command: "lxc-ls {{ name }}"
   changed_when: false
   check_mode: no
   register: container_exists
 
 - name: "Create container {{ name }}"
   lxc_container:
-    name: "{{name}}"
+    name: "{{ name }}"
     container_log: true
     template: debian
     state: stopped
-    template_options: "--arch amd64 --release {{release}}"
+    template_options: "--arch amd64 --release {{ release }}"
   when: container_exists.stdout_lines == []
 
 - name: "Disable network configuration inside container {{ name }}"
   replace:
-    name: "/var/lib/lxc/{{name}}/rootfs/etc/default/networking"
+    name: "/var/lib/lxc/{{ name }}/rootfs/etc/default/networking"
     regexp: "^#CONFIGURE_INTERFACES=yes"
     replace: CONFIGURE_INTERFACES=no
   when: lxc_network_type == "none"
 
 - name: "Disable interface shut down on halt inside container {{ name }} (Jessie container)"
   lineinfile:
-    name: "/var/lib/lxc/{{name}}/rootfs/etc/default/halt"
+    name: "/var/lib/lxc/{{ name }}/rootfs/etc/default/halt"
     line: "NETDOWN=no"
   when: lxc_network_type == "none" and release == "jessie"
 
 - name: "Make the container {{ name }} poweroff on SIGPWR sent by lxc-stop (Jessie container)"
   file:
     src: /lib/systemd/system/poweroff.target
-    dest: "/var/lib/lxc/{{name}}/rootfs/etc/systemd/system/sigpwr.target"
+    dest: "/var/lib/lxc/{{ name }}/rootfs/etc/systemd/system/sigpwr.target"
     state: link
   when: release == 'jessie'
 
@@ -38,21 +38,21 @@
   copy:
     remote_src: yes
     src: /etc/resolv.conf
-    dest: "/var/lib/lxc/{{name}}/rootfs/etc/"
+    dest: "/var/lib/lxc/{{ name }}/rootfs/etc/"
 
 - name: "Add hostname in /etc/hosts for container {{ name }}"
   lineinfile:
-    name: "/var/lib/lxc/{{name}}/rootfs/etc/hosts"
-    line: "127.0.0.1 {{name}}"
+    name: "/var/lib/lxc/{{ name }}/rootfs/etc/hosts"
+    line: "127.0.0.1 {{ name }}"
 
 - name: "Fix permission on /dev for container {{ name }}"
   lineinfile:
-    name: "/var/lib/lxc/{{name}}/rootfs/etc/rc.local"
+    name: "/var/lib/lxc/{{ name }}/rootfs/etc/rc.local"
     line: "chmod 755 /dev"
     insertbefore: "^exit 0$"
   when: release == 'jessie'
 
-- name: "Ensure that {{name}} container is running"
+- name: "Ensure that {{ name }} container is running"
   lxc_container:
-    name: "{{name}}"
+    name: "{{ name }}"
     state: started
