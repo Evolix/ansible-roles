@@ -52,17 +52,24 @@
           - ssacli
         state: present
 
-    - name: Configure packages for HP hardware
+    - name: cciss-vol-statusd init script is present
       template:
         src: hardware/cciss-vol-statusd.j2
         dest: /etc/init.d/cciss-vol-statusd
         mode: "0755"
+        
+    - name: Configure cciss-vol-statusd
+      lineinfile:
+        dest: /etc/default/cciss-vol-statusd
+        line: 'MAILTO="{{ raid_alert_email or general_alert_email | mandatory }}"'
+        regexp: 'MAILTO='
+        create: yes
 
     - name: Enable HP hardware in systemd
       service:
         name: cciss-vol-statusd
         enabled: true
-        state: started
+        state: restarted
   when: "'Hewlett-Packard Company Smart Array' in raidmodel.stdout"
 
 - name: MegaRAID SAS package is present

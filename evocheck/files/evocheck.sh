@@ -4,6 +4,8 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
+readonly VERSION="20.04.2"
+
 # base functions
 
 show_version() {
@@ -550,6 +552,20 @@ check_interfacesgw() {
 check_evobackup() {
     evobackup_found=$(find /etc/cron* -name '*evobackup*' | wc -l)
     test "$evobackup_found" -gt 0 || failed "IS_EVOBACKUP" "missing evobackup cron"
+}
+# Vérification de l'exclusion des montages (NFS) dans les sauvegardes
+check_evobackup_exclude_mount() {
+    excludes_file=$(mktemp)
+    # shellcheck disable=SC2064
+    trap "rm -f ${excludes_file}" 0
+    # shellcheck disable=SC2044
+    for evobackup_file in $(find /etc/cron* -name '*evobackup*'); do
+        grep -- "--exclude " "${evobackup_file}" | grep -E -o "\"[^\"]+\"" | tr -d '"' > "${excludes_file}"
+        not_excluded=$(findmnt --type nfs,nfs4,fuse.sshfs, -o target --noheadings | grep -v -f "${excludes_file}")
+        for mount in ${not_excluded}; do
+            failed "IS_EVOBACKUP_EXCLUDE_MOUNT" "${mount} is not excluded from ${evobackup_file} backup script"
+        done
+    done
 }
 # Verification de la presence du userlogrotate
 check_userlogrotate() {
@@ -1225,6 +1241,29 @@ check_apt_valid_until() {
     fi
 }
 
+check_chrooted_binary_not_uptodate() {
+    # list of processes to check
+    process_list="sshd"
+    for process_name in ${process_list}; do
+        # what is the binary path?
+        original_bin=$(command -v "${process_name}")
+        for pid in $(pgrep ${process_name}); do
+            process_bin=$(realpath /proc/${pid}/exe)
+            # Is the process chrooted?
+            real_root=$(realpath /proc/${pid}/root)
+            if [ "${real_root}" != "/" ]; then
+                chrooted_md5=$(md5sum "${process_bin}" | cut -f 1 -d ' ')
+                original_md5=$(md5sum "${original_bin}" | cut -f 1 -d ' ')
+                # compare md5 checksums
+                if [ "$original_md5" != "$chrooted_md5" ]; then
+                    failed "IS_CHROOTED_BINARY_NOT_UPTODATE" "${process_bin} (${pid}) is different than ${original_bin}."
+                    test "${VERBOSE}" = 1 || break
+                fi
+            fi
+        done
+    done
+}
+
 main() {
     # Default return code : 0 = no error
     RC=0
@@ -1300,6 +1339,7 @@ main() {
         test "${IS_AUTOIF:=1}" = 1 && check_autoif
         test "${IS_INTERFACESGW:=1}" = 1 && check_interfacesgw
         test "${IS_EVOBACKUP:=1}" = 1 && check_evobackup
+        test "${IS_EVOBACKUP_EXCLUDE_MOUNT:=1}" = 1 && check_evobackup_exclude_mount
         test "${IS_USERLOGROTATE:=1}" = 1 && check_userlogrotate
         test "${IS_APACHECTL:=1}" = 1 && check_apachectl
         test "${IS_APACHESYMLINK:=1}" = 1 && check_apachesymlink
@@ -1348,6 +1388,7 @@ main() {
         test "${IS_OSPROBER:=1}" = 1 && check_osprober
         test "${IS_JESSIE_BACKPORTS:=1}" = 1 && check_jessie_backports
         test "${IS_APT_VALID_UNTIL:=1}" = 1 && check_apt_valid_until
+        test "${IS_CHROOTED_BINARY_NOT_UPTODATE:=1}" = 1 && check_chrooted_binary_not_uptodate
     fi
 
     #-----------------------------------------------------------
@@ -1459,8 +1500,6 @@ readonly PROGNAME=$(basename "$0")
 readonly PROGDIR=$(realpath -m "$(dirname "$0")")
 # shellcheck disable=2124
 readonly ARGS=$@
-
-readonly VERSION="20.02.1"
 
 # Disable LANG*
 export LANG=C

@@ -2,7 +2,7 @@
 
 Install MongoDB
 
-We use packages from 10Gen for Jessie and packages from Debian for Stretch.
+We use Debian packages for Stretch, but MongoDB.org packages for Jessie/Buster
 
 ## Tasks
 
