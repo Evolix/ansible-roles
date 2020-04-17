@@ -1,24 +1,21 @@
 ---
-- name: LXC configuration      
-  include_role:
-    name: evolix/lxc
+- name: "Ensure that lxc_php_version is defined"
+  fail:
+    msg: Please configure var lxc_php_version
+  when: lxc_php_version is none
 
-- name: Update APT cache
-  command: "lxc-attach -n {{name}} -- apt-get update"
+- name: "Update APT cache in container {{lxc_php_version}}"
+  lxc_container:
+    name: "{{ lxc_php_version }}"
+    container_command: "apt-get update"
 
 - include: "php56.yml"
-  with_items:
-    - "{{ lxc_containers }}"
-  when: name == "php56"
+  when: lxc_php_version == "php56"
 
 - include: "php70.yml"
-  with_items:
-    - "{{ lxc_containers }}"
-  when: name == "php70"
+  when: lxc_php_version == "php70"
 
 - include: "php73.yml"
-  with_items:
-    - "{{ lxc_containers }}"
-  when: name == "php73"
+  when: lxc_php_version == "php73"
 
 - include: "misc.yml"

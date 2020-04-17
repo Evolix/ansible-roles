@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# If this script isn't run as root, then, re-run it with sudo.
+if [ "$EUID" -ne 0 ]; then
+  sudo $(readlink -f  ${BASH_SOURCE[0]}) "$@"
+  exit 0;
+fi;
+
+PHPVersion=$(grep SetHandler /etc/apache2/sites-enabled/$LOGNAME.conf 2>/dev/null | grep -m 1 -o 'fpm[0-9][0-9]' | head -n 1 | sed 's/php//g' | sed 's/fpm//g')
+
+if [ "$PHPVersion" != "" ]; then
+    lxc-attach -n php$PHPVersion -- su - $LOGNAME -c "cd \"${PWD@E}\" && php ${*@Q}"
+else
+    # TODO: fallback?
+    # command php $*
+    echo "ERROR - Could not determine \$PHPVersion - Are you a web account ?"
+    exit 1
+fi

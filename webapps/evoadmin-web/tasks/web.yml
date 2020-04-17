@@ -84,10 +84,3 @@
     - "templates/evoadmin-web/config.local.php.j2"
     - "config.local.php.j2"
   register: evoadmin_config_local_php_template
-
-- name: Enable proxy_fcgi
-  apache2_module:
-    state: present
-    name: proxy_fcgi
-  notify: restart apache2
-  when: evoadmin_multi_php

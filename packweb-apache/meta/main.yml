@@ -13,12 +13,19 @@ galaxy_info:
     versions:
     - jessie
     - stretch
+    - buster
+
+allow_duplicates: true
 
 dependencies:
   - { role: evolix/apache }
   - { role: evolix/php, php_apache_enable: True, when: packweb_apache_modphp }
   - { role: evolix/php, php_fpm_enable: True, when: packweb_apache_fpm }
+  - { role: evolix/lxc-php, lxc_php_version: php56, when: "'php56' in packweb_multiphp_versions" }
+  - { role: evolix/lxc-php, lxc_php_version: php70, when: "'php70' in packweb_multiphp_versions" }
+  - { role: evolix/lxc-php, lxc_php_version: php73, when: "'php73' in packweb_multiphp_versions" }
   - { role: evolix/squid, squid_localproxy_enable: True }
   - { role: evolix/mysql,        when: packweb_mysql_variant == "debian" }
   - { role: evolix/mysql-oracle, when: packweb_mysql_variant == "oracle" }
-  - { role: evolix/webapps/evoadmin-web, evoadmin_enable_vhost: "{{ packweb_enable_evoadmin_vhost }}" }
+  - { role: evolix/webapps/evoadmin-web, evoadmin_enable_vhost: "{{ packweb_enable_evoadmin_vhost }}", evoadmin_multiphp_versions: "{{ packweb_multiphp_versions }}" }
+  - { role: evolix/evoacme }
