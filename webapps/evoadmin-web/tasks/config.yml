@@ -29,10 +29,3 @@
     - "templates/evoadmin-web/web-mail.tpl.j2"
     - "web-mail.tpl.j2"
   register: evoadmin_mail_tpl_template
-
-- name: Copy multi php-cli script
-  copy:
-    src: phpContainer
-    dest: /usr/local/bin/phpContainer
-    mode: 0700
-  when: evoadmin_multi_php

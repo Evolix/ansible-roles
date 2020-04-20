@@ -69,6 +69,7 @@ The **patch** part changes incrementally at each release.
 * lxc: remove useless loop in apt execution
 * lxc: update our default template to be compatible with Debian 10
 * lxc-php: refactor tasks for better maintainability
+* lxc-php: Use OpenSMTPD for Stretch/Buster containers, and ssmtp for Jessie containers
 * lxc-solr: changed default Solr version to 8.4.1
 * minifirewall: better alert5 activation
 * minifirewall: no http filtering by default
@@ -76,6 +77,7 @@ The **patch** part changes incrementally at each release.
 * nagios-nrpe: change default haproxy socket path
 * nagios-nrpe: check_mode per cpu dynamically
 * nodejs: change default version to 12 (new LTS)
+* packweb-apache: Do the install & conffigure phpContainer script (instead of evoadmin-web role)
 * php: By default, allow 128M for OpCache (instead of 64M)
 * php: Don't set a chroot for the default fpm pool
 * php: Make sure the default pool we define can be fully functionnal witout debian's default pool file
@@ -92,6 +94,8 @@ The **patch** part changes incrementally at each release.
 ### Fixed
 * etc-git: fix warnings ansible-lint
 * evoadmin-web: Put the php config at the right place for Buster
+* lxc: Don't stop the container if it already exists
+* lxc: Fix container existance check to be able to run in check_mode
 * lxc-php: Don't remove the default pool
 * minifirewall: fix warnings ansible-lint
 * nginx: fix munin fcgi not working (missing chmod 660 on logs)
@@ -104,6 +108,11 @@ The **patch** part changes incrementally at each release.
 * webapps/evoadmin-web: Set default evoadmin_mail_tpl_force to True to fix a regression where the mail template would not get updated because the file is created before the role is first run.
 * minifirewall: Backport changes from minifirewall (properly open outgoing smtp(s))
 * minifirewall: Properly detect alert5.sh to turn on firewall at boot
+* packweb-apache: Add missing dependency to evoacme role
+* php: Chose the debian version repo archive for packages.sury.org
+* php: update surry_post.yml to match current latest PHP release
+* packweb-apache: Don't try to install PHPMyAdmin on Buster as it's not available
+*
 
 ### Removed
 * clamav : do not install the zoo package anymore

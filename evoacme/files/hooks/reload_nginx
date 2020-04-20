@@ -1,6 +1,7 @@
 #!/bin/sh
 
 readonly PROGNAME=$(basename "$0")
+# shellcheck disable=SC2124,SC2034
 readonly ARGS=$@
 
 readonly VERBOSE=${VERBOSE:-"0"}
@@ -17,6 +18,7 @@ debug() {
 }
 
 if [ -n "$(pidof nginx)" ]; then
+    # shellcheck disable=SC2091
     if $($(command -v nginx) -t 2> /dev/null); then
         debug "Nginx detected... reloading"
         service nginx reload

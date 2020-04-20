@@ -1,0 +1,3 @@
+
+Defaults        env_keep += "LOGNAME PWD"
+ALL ALL = NOPASSWD: /usr/local/bin/phpContainer

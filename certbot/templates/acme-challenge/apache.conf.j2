@@ -1,5 +1,11 @@
-Alias /.well-known/acme-challenge {{ certbot_work_dir }}/.well-known/acme-challenge
-<Directory "{{ certbot_work_dir }}/.well-known/acme-challenge">
+<IfModule jk_module>
+    SetEnvIf Request_URI "/.well-known/acme-challenge/*" no-jk
+</IfModule>
+<IfModule proxy_module>
+    ProxyPass /.well-known/acme-challenge/ !
+</IfModule>
+Alias /.well-known/acme-challenge /var/lib/letsencrypt/.well-known/acme-challenge
+<Directory "/var/lib/letsencrypt/.well-known/acme-challenge">
     Options -Indexes
     Allow from all
     Require all granted
