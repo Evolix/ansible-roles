@@ -1,4 +1,3 @@
-#jinja2:variable_start_string:'[%' , variable_end_string:'%]'
 #!/bin/sh
 # Careful, the zzz_evobackup template was last updated on 2020/04/15
 #
@@ -47,7 +46,7 @@ LOGFILE="{{ evobackup_client__log_path }}"
 ## Enable/Disable tasks
 LOCAL_TASKS=${LOCAL_TASKS:-1}
 SYNC_TASKS=${SYNC_TASKS:-1}
-[%
+
 ##### SETUP AND FUNCTIONS #############################################
 
 BEGINNING=$(/bin/date +"%d-%m-%Y ; %H:%M")
@@ -306,4 +305,3 @@ printf "EvoBackup - %s - STOP %s ON %s (LOCAL_TASKS=%s SYNC_TASKS=%s)\\n" \
 tail -10 $LOGFILE |                                    \
     mail -s "[info] EvoBackup - Client ${HOSTNAME}"    \
     ${MAIL}
-%]
