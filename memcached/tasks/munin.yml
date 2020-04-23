@@ -1,8 +1,8 @@
 ---
 - name: Choose packages (Oracle)
   set_fact:
-    multi: "multi_"
-  when: memcached_instance_name
+     multi: "multi_"
+  when: memcached_instance_name !=""
 
 - name: is Munin present ?
   stat:
