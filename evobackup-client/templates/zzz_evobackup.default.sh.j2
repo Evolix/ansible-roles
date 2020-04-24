@@ -245,7 +245,7 @@ if [ "${SYNC_TASKS}" = "1" ]; then
     # It breaks the command and destroys data, simply remove (or add) lines.
 
     # Remote shell command
-    RSH_COMMAND="ssh -i /root/.ssh/evobackup_id -p ${SSH_PORT} -o 'ConnectTimeout ${SSH_CONNECT_TIMEOUT}'"
+    RSH_COMMAND="ssh -i {{ evobackup_client__root_key_path }} -p ${SSH_PORT} -o 'ConnectTimeout ${SSH_CONNECT_TIMEOUT}'"
 
     # ignore check because we want it to split the different arguments to $rep
     # shellcheck disable=SC2086
