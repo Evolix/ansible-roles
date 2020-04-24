@@ -1,5 +1,6 @@
 ---
-evobackup_client__root_key_path: "/root/.ssh/evobackup_id"
+evobackup_client__root_key_path: "/root/.ssh/id_ed25519"
+evobackup_client__root_key_type: "ed25519"
 evobackup_client__cron_path: "/etc/cron.daily/zzz_evobackup"
 evobackup_client__cron_template_name: "zzz_evobackup"
 evobackup_client__mail: null
