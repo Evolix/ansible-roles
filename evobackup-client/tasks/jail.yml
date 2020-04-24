@@ -31,6 +31,15 @@
     - evobackup_client
     - evobackup_client_jail
 
+- name: 'add key to jail'
+  command: "bkctld key {{ evolinux_hostname }} /root/{{ evolinux_hostname }}.pub"
+  become: true
+  delegate_to: "{{ evobackup_client__hosts[0].ip }}"
+  notify:  'jail updated'
+  tags:
+    - evobackup_client
+    - evobackup_client_jail
+
 - name: 'get jail port'
   command: "bkctld port {{ evolinux_hostname }}"
   become: true
