@@ -7,26 +7,38 @@
 
 - debug:
     msg: A /etc/network/interfaces file already exists, nothing is done.
-  when: interfaces_file.stat.exists
+  when: interfaces_file.stat.exists and not force_update_eni_file
 
 - block:
-  - name: "Parse addresses"
-    shell: "grep Address= /etc/systemd/network/50-default.network | cut -d'=' -f2"
-    register: network_address_grep
-    check_mode: no
-    
-  - name: "Parse gateways"
-    shell: "grep Gateway= /etc/systemd/network/50-default.network | cut -d'=' -f2"
-    register: network_gateway_grep
-    check_mode: no
+  - name: "Look for systemd network config"
+    stat:
+      path: /etc/systemd/network/50-default.network
+    register: systemd_network_file
 
-  - name: Prepare variables
+  - name: Set interface name
     set_fact:
       eni_interface_name: "{{ ansible_default_ipv4.interface }}"
-      eni_ipv4_address: "{{ network_address_grep.stdout_lines | ipv4 | first }}"
-      eni_ipv4_gateway: "{{ network_gateway_grep.stdout_lines | ipv4 | first }}"
-      eni_ipv6_address: "{{ network_address_grep.stdout_lines | ipv6 | first }}"
-      eni_ipv6_gateway: "{{ network_gateway_grep.stdout_lines | ipv6 | first }}"
+
+  - include: set_facts_from_systemd.yml
+    when: systemd_network_file.stat.exists
+
+  - include: set_facts_from_ansible.yml
+    when: not systemd_network_file.stat.exists
+
+  - name: Check config (IPv4)
+    assert:
+      that:
+        - eni_ipv4_address | ipv4
+        - eni_ipv4_gateway | ipv4
+      msg: "IPv4 configuration is invalid"
+
+  - name: Check config (IPV6)
+    assert:
+      that:
+        - eni_ipv6_address | ipv6
+        - eni_ipv6_gateway | ipv6
+      msg: "IPv6 configuration is invalid"
+    when: eni_ipv6_address or eni_ipv6_gateway
 
   - name: "A new /etc/network/interfaces is generated"
     template:
@@ -48,7 +60,7 @@
       enabled: True
       state: restarted
     ignore_errors: True
-  
+
   - debug:
       msg: You should verify your configuration, then reboot the server.
-  when: not interfaces_file.stat.exists
+  when: force_update_eni_file or not interfaces_file.stat.exists

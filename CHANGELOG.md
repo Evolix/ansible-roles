@@ -35,6 +35,7 @@ The **patch** part changes incrementally at each release.
 * mysql-oracle: backport tasks from mysql role
 * mysql: activate binary logs by specifying log_bin path
 * mysql: specify a custom server_id
+* networkd-to-ifconfig: add variables for configuration by variables
 * packweb-apache: Deploy opcache.php to give some insights on PHP's opcache status
 * php: variable to install the mysqlnd module instead of the default mysql module
 * postgresql : variable to install PostGIS (default: `False`)

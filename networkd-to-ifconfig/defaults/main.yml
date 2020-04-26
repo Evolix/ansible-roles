@@ -1,0 +1,9 @@
+---
+
+force_update_eni_file: False
+eni_interface_name: Null
+eni_ipv4_address: Null
+eni_ipv4_gateway: Null
+eni_ipv6_address: Null
+eni_ipv6_gateway: Null
+ipv6_gateway_mask: "xxxx.xxxx.xxxx.xxFF:FF:FF:FF:FF"

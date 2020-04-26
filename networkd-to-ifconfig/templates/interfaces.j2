@@ -10,8 +10,13 @@ iface {{ eni_interface_name }} inet static
   address {{ eni_ipv4_address }}
   gateway {{ eni_ipv4_gateway }}
 
+{% if eni_ipv6_address and eni_ipv6_gateway %}
 iface {{ eni_interface_name }} inet6 static
   address {{ eni_ipv6_address }}
-  gateway {{ eni_ipv6_gateway }}
-  post-up /sbin/ip -6 route add {{ eni_ipv6_gateway }} dev {{ eni_interface_name }}
-  post-up /sbin/ip -6 route add default via IPV6
+  netmask 128
+
+post-up /sbin/ip -f inet6 route add {{ eni_ipv6_gateway }} dev {{ eni_interface_name }}
+post-up /sbin/ip -f inet6 route add default via {{ eni_ipv6_address }}
+pre-down /sbin/ip -f inet6 route del {{ eni_ipv6_gateway }} dev {{ eni_interface_name }}
+pre-down /sbin/ip -f inet6 route del default via {{ eni_ipv6_gateway }}
+{% endif %}
