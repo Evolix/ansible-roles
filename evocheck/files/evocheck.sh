@@ -4,7 +4,7 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
-readonly VERSION="20.04.2"
+readonly VERSION="20.04.3"
 
 # base functions
 
@@ -255,7 +255,7 @@ check_usrro() {
 }
 check_tmpnoexec() {
     FINDMNT_BIN=$(command -v findmnt)
-    if [ -x ${FINDMNT_BIN} ]; then
+    if [ -x "${FINDMNT_BIN}" ]; then
         options=$(${FINDMNT_BIN} --noheadings --first-only --output OPTIONS /tmp)
         echo "${options}" | grep -qE "\bnoexec\b" || failed "IS_TMPNOEXEC" "/tmp is not mounted with 'noexec'"
     else
@@ -758,8 +758,8 @@ check_tune2fs_m5() {
         percentage=$(awk "BEGIN { pc=100*${reservedBlockCount}/${blockCount}; i=int(pc); print (pc-i<0.5)?i:i+1 }")
 
         if [ "$percentage" -lt "${min}" ]; then
-            if [ -x ${FINDMNT_BIN} ]; then
-                mount=$(${FINDMNT_BIN} --noheadings --first-only --output TARGET ${part})
+            if [ -x "${FINDMNT_BIN}" ]; then
+                mount=$(${FINDMNT_BIN} --noheadings --first-only --output TARGET "${part}")
             else
                 mount="unknown mount point"
             fi
@@ -1205,7 +1205,7 @@ check_evobackup_incs() {
         if [ -f "${bkctld_cron_file}" ]; then
             root_crontab=$(grep -v "^#" "${bkctld_cron_file}")
             echo "${root_crontab}" | grep -q "bkctld inc" || failed "IS_EVOBACKUP_INCS" "\`bkctld inc' is missing in ${bkctld_cron_file}"
-            echo "${root_crontab}" | grep -q "check-incs.sh" || failed "IS_EVOBACKUP_INCS" "\`check-incs.sh' is missing in ${bkctld_cron_file}"
+            echo "${root_crontab}" | grep -qE "(check-incs.sh|bkctld check-incs)" || failed "IS_EVOBACKUP_INCS" "\`check-incs.sh' is missing in ${bkctld_cron_file}"
         else
             failed "IS_EVOBACKUP_INCS" "Crontab \`${bkctld_cron_file}' is missing"
         fi
@@ -1241,27 +1241,41 @@ check_apt_valid_until() {
     fi
 }
 
-check_chrooted_binary_not_uptodate() {
+check_chrooted_binary_uptodate() {
     # list of processes to check
     process_list="sshd"
     for process_name in ${process_list}; do
         # what is the binary path?
         original_bin=$(command -v "${process_name}")
         for pid in $(pgrep ${process_name}); do
-            process_bin=$(realpath /proc/${pid}/exe)
+            process_bin=$(realpath "/proc/${pid}/exe")
             # Is the process chrooted?
-            real_root=$(realpath /proc/${pid}/root)
+            real_root=$(realpath "/proc/${pid}/root")
             if [ "${real_root}" != "/" ]; then
                 chrooted_md5=$(md5sum "${process_bin}" | cut -f 1 -d ' ')
                 original_md5=$(md5sum "${original_bin}" | cut -f 1 -d ' ')
                 # compare md5 checksums
                 if [ "$original_md5" != "$chrooted_md5" ]; then
-                    failed "IS_CHROOTED_BINARY_NOT_UPTODATE" "${process_bin} (${pid}) is different than ${original_bin}."
+                    failed "IS_CHROOTED_BINARY_UPTODATE" "${process_bin} (${pid}) is different than ${original_bin}."
                     test "${VERBOSE}" = 1 || break
                 fi
             fi
         done
     done
+}
+check_nginx_letsencrypt_uptodate() {
+    snippets=$(find /etc/nginx -type f -name "letsencrypt.conf")
+    while read -r snippet; do
+        if is_debian_jessie; then
+            if ! grep -qE "^\s*alias\s+/.+/\.well-known/acme-challenge" "${snippet}"; then
+                failed "IS_NGINX_LETSENCRYPT_UPTODATE" "Nginx snippet ${snippet} is not compatible with Nginx on Debian 8."
+            fi
+        else
+            if grep -qE "^\s*alias\s+/.+/\.well-known/acme-challenge" "${snippet}"; then
+                failed "IS_NGINX_LETSENCRYPT_UPTODATE" "Nginx snippet ${snippet} is not compatible with Nginx on Debian 9+."
+            fi
+        fi
+    done <<< "$snippets"
 }
 
 main() {
@@ -1388,7 +1402,8 @@ main() {
         test "${IS_OSPROBER:=1}" = 1 && check_osprober
         test "${IS_JESSIE_BACKPORTS:=1}" = 1 && check_jessie_backports
         test "${IS_APT_VALID_UNTIL:=1}" = 1 && check_apt_valid_until
-        test "${IS_CHROOTED_BINARY_NOT_UPTODATE:=1}" = 1 && check_chrooted_binary_not_uptodate
+        test "${IS_CHROOTED_BINARY_UPTODATE:=1}" = 1 && check_chrooted_binary_uptodate
+        test "${IS_NGINX_LETSENCRYPT_UPTODATE:=1}" = 1 && check_nginx_letsencrypt_uptodate
     fi
 
     #-----------------------------------------------------------
@@ -1496,7 +1511,9 @@ main() {
     exit ${RC}
 }
 
+# shellcheck disable=SC2034
 readonly PROGNAME=$(basename "$0")
+# shellcheck disable=SC2034
 readonly PROGDIR=$(realpath -m "$(dirname "$0")")
 # shellcheck disable=2124
 readonly ARGS=$@
