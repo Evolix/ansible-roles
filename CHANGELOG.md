@@ -57,7 +57,7 @@ The **patch** part changes incrementally at each release.
 * bind: change name of logrotate file to bind9
 * certbot: commit hook must be executed at the end
 * elasticsearch: listen on local interface only by default
-* evocheck: upstream version 20.04.3
+* evocheck: upstream version 20.04.4
 * evocheck: cron jobs execute in verbose
 * evolinux-base: use "evolinux_internal_group" for SSH authentication
 * evolinux-base: Don't customize the logcheck recipient by default.

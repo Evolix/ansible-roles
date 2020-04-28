@@ -1264,18 +1264,22 @@ check_chrooted_binary_uptodate() {
     done
 }
 check_nginx_letsencrypt_uptodate() {
-    snippets=$(find /etc/nginx -type f -name "letsencrypt.conf")
-    while read -r snippet; do
-        if is_debian_jessie; then
-            if ! grep -qE "^\s*alias\s+/.+/\.well-known/acme-challenge" "${snippet}"; then
-                failed "IS_NGINX_LETSENCRYPT_UPTODATE" "Nginx snippet ${snippet} is not compatible with Nginx on Debian 8."
-            fi
-        else
-            if grep -qE "^\s*alias\s+/.+/\.well-known/acme-challenge" "${snippet}"; then
-                failed "IS_NGINX_LETSENCRYPT_UPTODATE" "Nginx snippet ${snippet} is not compatible with Nginx on Debian 9+."
-            fi
+    if [ -d /etc/nginx ]; then
+        snippets=$(find /etc/nginx -type f -name "letsencrypt.conf")
+        if [ -n "${snippets}" ]; then
+            while read -r snippet; do
+                if is_debian_jessie; then
+                    if ! grep -qE "^\s*alias\s+/.+/\.well-known/acme-challenge" "${snippet}"; then
+                        failed "IS_NGINX_LETSENCRYPT_UPTODATE" "Nginx snippet ${snippet} is not compatible with Nginx on Debian 8."
+                    fi
+                else
+                    if grep -qE "^\s*alias\s+/.+/\.well-known/acme-challenge" "${snippet}"; then
+                        failed "IS_NGINX_LETSENCRYPT_UPTODATE" "Nginx snippet ${snippet} is not compatible with Nginx on Debian 9+."
+                    fi
+                fi
+            done <<< "${snippets}"
         fi
-    done <<< "$snippets"
+    fi
 }
 
 main() {
