@@ -54,7 +54,7 @@ check_server() {
 config_var() {
     variable=$1
     file=$2
-    test -f "${file}" && grep -E "^${variable}\s+.+$" "${file}" | awk '{ print $2 }'
+    test -f "${file}" && grep -E "^${variable}\s+.+$" "${file}" | awk '{ print $2 }' | sed -e "s/^[\"']//" -e "s/[\"']$//"
 }
 
 # default instance
