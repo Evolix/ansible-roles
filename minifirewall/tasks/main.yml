@@ -18,4 +18,5 @@
 - name: Force restart minifirewall
   command: /bin/true
   notify: restart minifirewall
+  changed_when: False
   when: minifirewall_restart_force

@@ -74,6 +74,7 @@ The **patch** part changes incrementally at each release.
 * lxc-solr: changed default Solr version to 8.4.1
 * minifirewall: better alert5 activation
 * minifirewall: no http filtering by default
+* minifirewall: /bin/true command doesn't report "changed" anymore
 * nagios-nrpe: update check_redis_instances (same as redis role)
 * nagios-nrpe: change default haproxy socket path
 * nagios-nrpe: check_mode per cpu dynamically
