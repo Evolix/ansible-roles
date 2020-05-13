@@ -14,7 +14,7 @@ There is also an independant task that can be executed to commit changes made in
 
   pre_tasks:
   - include_role:
-      name: etc-git
+      name: evolix/etc-git
       tasks_from: commit.yml
     vars:
       commit_message: "Ansible pre-run my splendid playbook"
@@ -24,7 +24,7 @@ There is also an independant task that can be executed to commit changes made in
 
   post_tasks:
   - include_role:
-      name: etc-git
+      name: evolix/etc-git
       tasks_from: commit.yml
     vars:
       commit_message: "Ansible post-run my splendid playbook"

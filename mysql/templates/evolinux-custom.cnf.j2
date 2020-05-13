@@ -29,3 +29,9 @@ query_cache_limit = {{ mysql_query_cache_limit }}
 {% if mysql_query_cache_limit %}
 query_cache_size = {{ mysql_query_cache_size }}
 {% endif %}
+{% if mysql_log_bin %}
+log_bin = {{ mysql_log_bin }}
+{% endif %}
+{% if mysql_server_id %}
+server_id = {{ mysql_server_id }}
+{% endif %}

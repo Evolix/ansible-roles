@@ -25,4 +25,5 @@
 
 - include: minifirewall.yml
   when:
+    - evomaintenance_hook_db
     - ansible_distribution == "Debian"

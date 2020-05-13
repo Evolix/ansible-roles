@@ -74,22 +74,20 @@
 
 - name: install ClamAV
   apt:
-    name: "{{ item }}"
+    name:
+      - clamav-daemon
+      - clamav
+      - clamdscan
+      - clamav-freshclam
+      - arc
+      - arj
+      - pax
+      - bzip2
+      - cabextract
+      - rpm
+      - lzop
+      - razor
     state: present
-  with_items:
-  - clamav-daemon
-  - clamav
-  - clamdscan
-  - clamav-freshclam
-  - arc
-  - arj
-  - zoo
-  - pax
-  - bzip2
-  - cabextract
-  - rpm
-  - lzop
-  - razor
   tags:
   - clamav
 

@@ -2,13 +2,12 @@
 
 - name: Ensure that Munin is installed
   apt:
-    name: '{{ item }}'
+    name:
+      - munin
+      - munin-node
+      - munin-plugins-core
+      - munin-plugins-extra
     state: present
-  with_items:
-    - munin
-    - munin-node
-    - munin-plugins-core
-    - munin-plugins-extra
   tags:
     - munin
     - packages
@@ -88,4 +87,4 @@
 
       [swap]
       user root
-  when: ansible_kernel | search("-grs-")
+  when: ansible_kernel is search("-grs-")

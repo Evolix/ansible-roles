@@ -6,12 +6,13 @@
   check_mode: no
   register: munin_node_plugins_config
 
-- block:
-  - name: Install munin plugin
-    copy:
-      src: munin_plugin
-      dest: /etc/munin/plugins/dovecot
-      mode: "0755"
+- name: Munin plugins are present and configured
+  block:
+    - name: Install munin plugin
+      copy:
+        src: munin_plugin
+        dest: /etc/munin/plugins/dovecot
+        mode: "0755"
 
 # TODO : add in /etc/munin/plugin-conf.d/munin-node
 # [dovecot]

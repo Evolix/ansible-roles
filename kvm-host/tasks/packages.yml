@@ -1,14 +1,13 @@
 ---
 - name: Install packages for kvm/libvirt
   apt:
-    name: "{{ item }}"
-  with_items:
-    - qemu-kvm
-    - netcat-openbsd
-    - bridge-utils
-    - qemu-utils
-    - virtinst
-    - libvirt-daemon-system
-    - libvirt-clients
-    - kvm-tools
-    - vlan
+    name:
+      - qemu-kvm
+      - netcat-openbsd
+      - bridge-utils
+      - qemu-utils
+      - virtinst
+      - libvirt-daemon-system
+      - libvirt-clients
+      - kvm-tools
+      - vlan

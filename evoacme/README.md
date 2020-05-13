@@ -1,10 +1,9 @@
 # Evoacme 2.0
 
-EvoAcme is an [Ansible](https://www.ansible.com/) role and a [Certbot](https://certbot.eff.org) wrapper for generate [Let's Encrypt](https://letsencrypt.org/) certificates.
+The upstream repository of EvoAcme is at <https://gitea.evolix.org/evolix/evoacme>
 
-It is a project hosted at [Evolix's forge](https://gitea.evolix.org/evolix/ansible-roles/)
-
-Evoacme is open source software licensed under the AGPLv3 License.
+Shell scripts are copied from the upstream repository after each release.
+No changes must be applied directly here ; patch upstream, release then copy here.
 
 ## Install
 
@@ -21,7 +20,7 @@ Evoacme is open source software licensed under the AGPLv3 License.
 ### 2 - Install evoacme prerequisite with ansible
 
 ~~~
-# ansible-playbook playbook.yml -K --diff --check --limit hostname
+# ansible-playbook playbook.yml -K --limit hostname
 ~~~
 
 ### 3 - Include letsencrypt.conf in your webserver

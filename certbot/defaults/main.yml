@@ -1,0 +1,3 @@
+---
+
+certbot_work_dir: /var/lib/letsencrypt

@@ -1,7 +1,11 @@
-/var/log/postgresql.log {
-    weekly
+/var/log/postgresql/*.log {
+    daily
+    rotate 10
+    copytruncate
+    nodelaycompress
+    compress
+    notifempty
     missingok
-    rotate 8
-    create 640 root adm
+    su root root
 }
 

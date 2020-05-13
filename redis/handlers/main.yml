@@ -1,7 +1,7 @@
 ---
 - name: restart redis
   systemd:
-    name: "{{ redis_daemon }}"
+    name: "{{ redis_systemd_name }}"
     state: restarted
 
 - name: restart redis (noop)
@@ -17,4 +17,9 @@
 - name: restart nagios-nrpe-server
   service:
     name: nagios-nrpe-server
+    state: restarted
+
+- name: restart log2mail
+  service:
+    name: log2mail
     state: restarted

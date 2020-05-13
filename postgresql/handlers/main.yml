@@ -10,9 +10,16 @@
     state: restarted
 
 - name: restart postgresql
-  service:
+  systemd:
     name: postgresql
     state: restarted
+    daemon_reload: yes
+
+- name: reload systemd
+  command: systemctl daemon-reload
 
 - name: Restart minifirewall
   command: /etc/init.d/minifirewall restart
+
+- name: reconfigure locales
+  command: dpkg-reconfigure -f noninteractive locales

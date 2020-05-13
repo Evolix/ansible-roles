@@ -2,11 +2,10 @@
 
 - name: Dependencies are installed
   openbsd_pkg:
-    name: "{{ item }}"
+    name:
+      - postgresql-client
+      - curl
     state: present
-  with_items:
-    - postgresql-client
-    - curl
   tags:
     - evomaintenance
 
@@ -32,7 +31,7 @@
   with_items:
     - { src: 'evomaintenance.sh', dest: '/usr/share/scripts/', mode: '0700' }
     - { src: 'evomaintenance.tpl', dest: '/usr/share/scripts/', mode: '0600' }
-  tags: 
+  tags:
     - evomaintenance
 
 - name: Configuration is installed
@@ -51,7 +50,7 @@
     src: mailevomaintenance.sh.j2
     dest: /usr/share/scripts/mailevomaintenance.sh
     owner: root
-    group: wheel               
+    group: wheel
     mode: "0700"
   tags:
     - evomaintenance

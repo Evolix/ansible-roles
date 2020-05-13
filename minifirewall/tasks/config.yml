@@ -37,9 +37,12 @@
     line: "# END ANSIBLE MANAGED BLOCK FOR IPS"
     insertafter: '^PRIVILEGIEDIPS='
 
-- fail:
+- name: Verify that at least 1 trusted IP is provided
+  assert:
+    that:
+      - minifirewall_trusted_ips != []
     msg: You must provide at least 1 trusted IP
-  when: minifirewall_trusted_ips == []
+
 - debug:
     msg: "Warning: minifirewall_trusted_ips='0.0.0.0/0', the firewall is useless!"
   when: minifirewall_trusted_ips == ["0.0.0.0/0"]

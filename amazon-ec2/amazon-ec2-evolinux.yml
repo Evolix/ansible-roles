@@ -10,10 +10,10 @@
 
   tasks:
     - include_role:
-        name: amazon-ec2
+        name: evolix/amazon-ec2
         tasks_from: setup.yml
     - include_role:
-        name: amazon-ec2
+        name: evolix/amazon-ec2
         tasks_from: create-instance.yml
 
 - name: Install Evolinux
@@ -52,11 +52,11 @@
 
   post_tasks:
   - include_role:
-      name: etc-git
+      name: evolix/etc-git
       tasks_from: commit.yml
     vars:
       commit_message: "Ansible post-run Evolinux playbook"
 
   - include_role:
-      name: evocheck
+      name: evolix/evocheck
       tasks_from: exec.yml

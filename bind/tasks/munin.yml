@@ -8,9 +8,8 @@
   tags:
     - bind
     - munin
-  when: bind_authoritative_server
 
-- name: Enable munin plugins
+- name: Enable munin plugins for authoritative server
   file:
     src: "/usr/share/munin/plugins/{{ item }}"
     dest: "/etc/munin/plugins/{{ item }}"
@@ -19,7 +18,25 @@
     - bind9
     - bind9_rndc
   notify: restart munin-node
-  when: bind_authoritative_server and munin_node_plugins_config.stat.exists
+  when:
+    - bind_authoritative_server
+    - munin_node_plugins_config.stat.exists
+  tags:
+    - bind
+    - munin
+
+- name: Enable munin plugins for recursive server
+  file:
+    src: "/usr/share/munin/plugins/{{ item }}"
+    dest: "/etc/munin/plugins/{{ item }}"
+    state: link
+  with_items:
+    - bind9
+    - bind9_rndc
+  notify: restart munin-node
+  when:
+    - bind_recursive_server
+    - munin_node_plugins_config.stat.exists
   tags:
     - bind
     - munin
@@ -33,7 +50,7 @@
     mode: "0644"
     force: yes
   notify: restart munin-node
-  when: bind_authoritative_server and munin_node_plugins_config.stat.exists
+  when: munin_node_plugins_config.stat.exists
   tags:
     - bind
     - munin

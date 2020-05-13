@@ -1,9 +1,11 @@
 ---
 
+- include: pgdg-repo.yml
+  when: postgresql_version != '9.6'
+
 - name: Install postgresql package
   apt:
-    name: '{{item}}'
-  with_items:
-  - postgresql
-  - ptop
-  - libdbd-pg-perl
+    name:
+      - postgresql
+      - ptop
+      - libdbd-pg-perl

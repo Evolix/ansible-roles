@@ -1,0 +1,34 @@
+---
+
+- name: Enable proxy_fcgi
+  apache2_module:
+    state: present
+    name: proxy_fcgi
+  notify: restart apache2
+
+- include_role:
+    name: remount-usr
+
+- name: Copy phpContainer script
+  copy:
+    src: phpContainer
+    dest: /usr/local/bin/phpContainer
+    mode: 0755
+
+# - name: Copy php shim to call phpContainer when the user is a web user
+#   copy:
+#     src: multiphp-shim
+#     dest: /usr/local/bin/php
+#     mode: 0755
+
+# - name: Modify bashrc skel file
+#   lineinfile:
+#     dest: /etc/skel/.bashrc
+#     line: "alias php='sudo /usr/local/bin/phpContainer'"
+
+- name: Add multiphp sudoers file
+  copy:
+    src: multiphp-sudoers
+    dest: /etc/sudoers.d/multiphp
+    mode: "0600"
+    validate: "visudo -cf %s"

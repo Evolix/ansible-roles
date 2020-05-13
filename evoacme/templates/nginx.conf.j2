@@ -1,5 +1,5 @@
 location ~ /.well-known/acme-challenge {
-{% if ansible_distribution_major_version | version_compare('9', '>=') %}
+{% if ansible_distribution_major_version is version('9', '>=') %}
     alias {{ evoacme_acme_dir }}/;
 {% else %}
     alias {{ evoacme_acme_dir }}/.well-known/acme-challenge;

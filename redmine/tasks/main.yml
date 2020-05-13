@@ -3,7 +3,7 @@
 - include: syslog.yml
 - include: user.yml
 - include_role:
-    name: rbenv
+    name: evolix/rbenv
   vars:
     - username: "{{ redmine_user }}"
 - include: config.yml

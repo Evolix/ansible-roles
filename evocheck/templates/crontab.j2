@@ -1,4 +1,5 @@
 # {{ ansible_managed }}
 
-33 1 1    * * root /usr/share/scripts/evocheck.sh
-33 1 2-31 * * root /usr/share/scripts/evocheck.sh --cron
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+33 1 1    * * root /usr/share/scripts/evocheck.sh --verbose
+33 1 2-31 * * root /usr/share/scripts/evocheck.sh --verbose --cron

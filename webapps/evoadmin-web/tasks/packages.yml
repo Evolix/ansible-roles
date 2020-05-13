@@ -1,22 +1,39 @@
 ---
 
 - include_role:
-    name: apt
+    name: evolix/apt
     tasks_from: evolix_public.yml
 
-- name: Install PHP packages
+- name: Install PHP packages (Debian 10 and later)
   apt:
-    name: '{{ item }}'
+    name: php-pear
     state: present
-  with_items:
-  - php-pear
-  - php-log
+  when: ansible_distribution_major_version is version('10', '>=')
 
-- name: Install PHP5 packages
+# /!\ Warning, this is a temporary hack
+- include_role:
+    name: evolix/remount-usr
+
+# /!\ Warning, this is a temporary hack
+- name: Install PHP packages from sid (Debian 10 and later)
   apt:
-    name: '{{ item }}'
+    deb: '{{ item }}'
     state: present
-    allow_unauthenticated: yes
   with_items:
-  - php5-pam
+    - 'http://mirror.evolix.org/debian/pool/main/p/php-log/php-log_1.12.9-2_all.deb'
+  when: ansible_distribution_major_version is version('10', '>=')
+
+- name: Install PHP packages (stretch)
+  apt:
+    name:
+      - php-pear
+      - php-log
+    state: present
+  when: ansible_distribution_release == "stretch"
+
+- name: Install PHP5 packages (jessie)
+  apt:
+    name: php5-pam
+    state: present
+    allow_unauthenticated: True
   when: ansible_distribution_release == "jessie"

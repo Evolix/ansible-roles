@@ -1,18 +1,19 @@
 ---
 
-- block:
-  - name: install jessie-backports
-    include_role:
-      name: apt
-      tasks_from: backports.yml
+- name: Use backports for jessie
+  block:
+    - name: install jessie-backports
+      include_role:
+        name: evolix/apt
+        tasks_from: backports.yml
 
-  - name: Add exceptions for certbot dependencies
-    copy:
-      src: backports-certbot
-      dest: /etc/apt/preferences.d/z-backports-certbot
-    notify: apt update
+    - name: Add exceptions for certbot dependencies
+      copy:
+        src: backports-certbot
+        dest: /etc/apt/preferences.d/z-backports-certbot
+      notify: apt update
 
-  - meta: flush_handlers
+    - meta: flush_handlers
   when: ansible_distribution_release == "jessie"
 
 - name: Install certbot with apt
@@ -21,7 +22,7 @@
     state: latest
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
 
 - name: Remove certbot symlink for apt install
   file:

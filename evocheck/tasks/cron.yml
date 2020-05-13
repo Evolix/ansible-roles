@@ -1,5 +1,12 @@
 ---
 
+- name: Check if cron is installed
+  shell: "dpkg -l cron 2> /dev/null | grep -q -E '^(i|h)i'"
+  failed_when: False
+  changed_when: False
+  check_mode: no
+  register: is_cron_installed
+
 - name: evocheck crontab is updated
   template:
     src: crontab.j2
@@ -8,3 +15,4 @@
     owner: root
     group: root
     force: yes
+  when: is_cron_installed.rc == 0

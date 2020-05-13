@@ -5,7 +5,7 @@ elasticsearch_cluster_name: Null
 elasticsearch_cluster_members: Null
 elasticsearch_minimum_master_nodes: Null
 elasticsearch_node_name: "${HOSTNAME}"
-elasticsearch_network_host: "[_site_, _local_]"
+elasticsearch_network_host: "[_local_]"
 elasticsearch_network_publish_host: Null
 elasticsearch_http_publish_host: Null
 elasticsearch_custom_datadir: Null

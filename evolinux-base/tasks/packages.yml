@@ -2,82 +2,84 @@
 
 - name: Install/Update system tools
   apt:
-    name: "{{ item }}"
-  with_items:
-  - locales
-  - sudo
-  - ntpdate
-  - lsb-release
-  - dnsutils
-  - pv
-  - apg
-  - conntrack
-  - logrotate
-  - bash-completion
-  - ssl-cert
-  - ca-certificates
-  - rename
+    name:
+      - locales
+      - sudo
+      - ntpdate
+      - lsb-release
+      - dnsutils
+      - pv
+      - apg
+      - conntrack
+      - logrotate
+      - bash-completion
+      - ssl-cert
+      - ca-certificates
+      - rename
   when: evolinux_packages_system
 
 - name: Install/Update diagnostic tools
   apt:
-    name: "{{ item }}"
-  with_items:
-  - strace
-  - htop
-  - iftop
-  - iptraf
-  - ncdu
-  - iotop
-  - tcpdump
-  - mtr-tiny
-  - curl
-  - telnet
-  - traceroute
-  - man
+    name:
+      - strace
+      - htop
+      - iftop
+      - iptraf
+      - ncdu
+      - iotop
+      - tcpdump
+      - mtr-tiny
+      - curl
+      - telnet
+      - traceroute
+      - man
   when: evolinux_packages_diagnostic
 
 - name: Install/Update hardware tools
   apt:
-    name: "{{ item }}"
-  with_items:
-  - hdparm
-  - smartmontools
-  - lm-sensors
+    name:
+      - hdparm
+      - smartmontools
+      - lm-sensors
   when: evolinux_packages_hardware
 
 - name: Install/Update common tools
   apt:
-    name: "{{ item }}"
-  with_items:
-  - vim
-  - screen
-  - tmux
-  - mutt
-  - tree
-  - git
-  - subversion
-  - rsync
-  - bc
-  - pinentry-curses
-  - ncurses-term
+    name:
+      - vim
+      - screen
+      - tmux
+      - mutt
+      - tree
+      - git
+      - subversion
+      - rsync
+      - bc
+      - pinentry-curses
+      - ncurses-term
   when: evolinux_packages_common
 
 - name: Be sure that openntpd package is absent/purged
   apt:
     name: openntpd
     state: absent
-    purge: yes
+    purge: True
   when: evolinux_packages_purge_openntpd
+
+- name: the chrony package is absent
+  apt:
+    name: chrony
+    purge: True
+    state: absent
+  when: evolinux_packages_purge_chrony
 
 - name: Be sure locate/mlocate is absent/purged
   apt:
-    name: "{{ item }}"
+    name:
+      - locate
+      - mlocate
     state: absent
     purge: yes
-  with_items:
-  - locate
-  - mlocate
   when: evolinux_packages_purge_locate
 
 - name: Install/Update serveur-base meta-package
@@ -88,12 +90,19 @@
 
 - name: Install/Update packages for Stretch and later
   apt:
-    name: "{{ item }}"
-  with_items:
-  - net-tools
+    name: net-tools
   when:
-  - evolinux_packages_stretch
-  - ansible_distribution_major_version | version_compare('9', '>=')
+    - evolinux_packages_stretch
+    - ansible_distribution_major_version is version('9', '>=')
+
+- name: Install/Update packages for Buster and later
+  apt:
+    name:
+      - spectre-meltdown-checker
+      - binutils
+  when:
+    - evolinux_packages_buster
+    - ansible_distribution_major_version is version('10', '>=')
 
 - name: Customize logcheck recipient
   lineinfile:
@@ -104,11 +113,10 @@
 
 - name: Deleting rpcbind and nfs-common
   apt:
-    name: "{{ item }}"
+    name:
+      - rpcbind
+      - nfs-common
     state: absent
-  with_items:
-    - rpcbind
-    - nfs-common
   when: evolinux_packages_delete_nfs
 
 
@@ -133,6 +141,6 @@
     state: absent
   when:
     - ansible_distribution == "Debian"
-    - ansible_distribution_major_version | version_compare('9', '>=')
+    - ansible_distribution_major_version is version('9', '>=')
 
 - meta: flush_handlers

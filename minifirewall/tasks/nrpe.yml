@@ -1,7 +1,7 @@
 ---
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
 
 - name: /usr/share/scripts exists
   file:
@@ -15,7 +15,7 @@
   copy:
     src: minifirewall_status
     dest: /usr/share/scripts/minifirewall_status
-    force: no
+    force: "{{ minifirewall_force_update_nrpe_scripts | bool }}"
     mode: "0700"
     owner: root
     group: root
@@ -32,7 +32,7 @@
   copy:
     src: check_minifirewall
     dest: "{{ nagios_plugins_directory }}/check_minifirewall"
-    force: no
+    force: "{{ minifirewall_force_update_nrpe_scripts | bool }}"
     mode: "0755"
     owner: root
     group: staff

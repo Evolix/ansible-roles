@@ -1,0 +1,7 @@
+---
+- name: Install PostGIS extention 
+  apt:
+    name:
+      - postgis
+      - "postgresql-{{ postgresql_version }}-postgis-2.5"
+      - "postgresql-{{ postgresql_version }}-postgis-2.5-scripts"

@@ -1,13 +1,12 @@
 ---
 - name: ensure packages are installed
   apt:
-    name: '{{ item }}'
+    name:
+      - postfix
+      - postfix-ldap
+      - postfix-policyd-spf-python
+      - mailgraph
     state: present
-  with_items:
-  - postfix
-  - postfix-ldap
-  - postfix-policyd-spf-python
-  - mailgraph
   tags:
   - postfix
 
@@ -20,9 +19,7 @@
     mode: "0644"
     force: yes
   notify: restart postfix
-  when: postfix_force_main_cf == True or
-        postfix_maincf_md5_jessie in default_main_cf.stdout or
-        postfix_maincf_md5_stretch in default_main_cf.stdout
+  when: postfix_force_main_cf or postfix_maincf_md5_jessie in default_main_cf.stdout or postfix_maincf_md5_stretch in default_main_cf.stdout
   tags:
   - postfix
 
@@ -88,7 +85,7 @@
   - postfix
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
   tags:
   - postfix
 
@@ -100,6 +97,12 @@
   tags:
   - postfix
 
+- name: Check if cron is installed
+  shell: "dpkg -l cron 2> /dev/null | grep -q -E '^(i|h)i'"
+  failed_when: False
+  changed_when: False
+  register: is_cron_installed
+
 - name: enable spam.sh cron
   lineinfile:
     dest: /etc/cron.d/spam
@@ -107,6 +110,7 @@
     create: yes
     state: present
     mode: "0640"
+  when: is_cron_installed.rc == 0
   tags:
   - postfix
 

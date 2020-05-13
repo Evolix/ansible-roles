@@ -1,12 +1,11 @@
 - name: LDAP packages are installed
   apt:
-    name: '{{ item }}'
+    name:
+      - slapd
+      - ldap-utils
+      - ldapvi
+      - shelldap
     state: present
-  with_items:
-    - slapd
-    - ldap-utils
-    - ldapvi
-    - shelldap
 
 - name: change sldap listen ip:port
   lineinfile:
@@ -68,10 +67,10 @@
     value: "{{ item.value }}"
     mode: 0640
   with_items:
-  - { option: 'hostname', value: '127.0.0.1' }
-  - { option: 'base', value: "{{ ldap_suffix }}" }
-  - { option: 'bind', value: "cn=nagios,ou=ldapusers,{{ ldap_suffix }}" }
-  - { option: 'pass', value: "{{ ldap_nagios_password.stdout }}" }
+    - { option: 'hostname', value: '127.0.0.1' }
+    - { option: 'base', value: "{{ ldap_suffix }}" }
+    - { option: 'bind', value: "cn=nagios,ou=ldapusers,{{ ldap_suffix }}" }
+    - { option: 'pass', value: "{{ ldap_nagios_password.stdout }}" }
 
 - name: upload ldap initial config
   template:

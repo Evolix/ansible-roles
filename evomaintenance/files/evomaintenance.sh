@@ -4,18 +4,19 @@
 # Dependencies (all OS): git postgresql-client
 # Dependencies (Debian): sudo
 
-# version 0.5.0
 # Copyright 2007-2019 Evolix <info@evolix.fr>, Gregory Colpart <reg@evolix.fr>,
 #                     Jérémy Lecour <jlecour@evolix.fr> and others.
 
-VERSION="0.5.0"
+VERSION="0.6.3"
 
 show_version() {
     cat <<END
 evomaintenance version ${VERSION}
 
-Copyright 2007-2019 Evolix <info@evolix.fr>, Gregory Colpart <reg@evolix.fr>,
-                    Jérémy Lecour <jlecour@evolix.fr> and others.
+Copyright 2007-2019 Evolix <info@evolix.fr>,
+                    Gregory Colpart <reg@evolix.fr>,
+                    Jérémy Lecour <jlecour@evolix.fr>
+                    and others.
 
 evomaintenance comes with ABSOLUTELY NO WARRANTY.  This is free software,
 and you are welcome to redistribute it under certain conditions.
@@ -51,6 +52,12 @@ Options
      --help                  print this message and exit
      --version               print version and exit
 END
+}
+
+syslog() {
+    if [ -x "${LOGGER_BIN}" ]; then
+        ${LOGGER_BIN} -t "evomaintenance" "$1"
+    fi
 }
 
 get_system() {
@@ -167,12 +174,44 @@ print_session_data() {
     printf "Message   : %s\n" "${MESSAGE}"
 }
 
+is_repository_readonly() {
+    if [ "$(get_system)" = "OpenBSD" ]; then
+        partition=$(stat -f '%Sd' $1)
+        mount | grep ${partition} | grep -q "read-only"
+    else
+        mountpoint=$(stat -c '%m' $1)
+        findmnt ${mountpoint} --noheadings --output OPTIONS -O ro
+    fi
+}
+remount_repository_readwrite() {
+    if [ "$(get_system)" = "OpenBSD" ]; then
+        partition=$(stat -f '%Sd' $1)
+        mount -u -w /dev/${partition} 2>/dev/null
+    else
+        mountpoint=$(stat -c '%m' $1)
+        mount -o remount,rw ${mountpoint}
+        syslog "Re-mount ${mountpoint} as read-write to commit in repository $1"
+    fi
+}
+remount_repository_readonly() {
+    if [ "$(get_system)" = "OpenBSD" ]; then
+        partition=$(stat -f '%Sd' $1)
+        mount -u -r /dev/${partition} 2>/dev/null
+    else
+        mountpoint=$(stat -c '%m' $1)
+        mount -o remount,ro ${mountpoint} 2>/dev/null
+        syslog "Re-mount ${mountpoint} as read-only after commit to repository $1"
+    fi
+}
+
 hook_commit() {
     if [ -x "${GIT_BIN}" ]; then
         # loop on possible directories managed by GIT
         for dir in ${GIT_REPOSITORIES}; do
             # tell Git where to find the repository and the work tree (no need to `cd …` there)
             export GIT_DIR="${dir}/.git" GIT_WORK_TREE="${dir}"
+            # reset variable used to track if a mount point is readonly
+            READONLY_ORIG=0
             # If the repository and the work tree exist, try to commit changes
             if [ -d "${GIT_DIR}" ] && [ -d "${GIT_WORK_TREE}" ]; then
                 CHANGED_LINES=$(${GIT_BIN} status --porcelain | wc -l | tr -d ' ')
@@ -183,8 +222,13 @@ hook_commit() {
                         # GIT_COMMITS_SHORT=$(printf "%s\n%s : %s" "${GIT_COMMITS_SHORT}" "${GIT_DIR}" "${STATS_SHORT}" | sed -e '/^$/d')
                         GIT_COMMITS=$(printf "%s\n%s\n%s" "${GIT_COMMITS}" "${GIT_DIR}" "${STATS}" | sed -e '/^$/d')
                     else
+                        # remount mount point read-write if currently readonly
+                        is_repository_readonly ${dir} && { READONLY_ORIG=1; remount_repository_readwrite ${dir}; }
+                        # commit changes
                         ${GIT_BIN} add --all
                         ${GIT_BIN} commit --message "${MESSAGE}" --author="${USER} <${USER}@evolix.net>" --quiet
+                        # remount mount point read-only if it was before
+                        test "$READONLY_ORIG" = "1" && remount_repository_readonly ${dir}
                         # Add the SHA to the log file if something has been committed
                         SHA=$(${GIT_BIN} rev-parse --short HEAD)
                         # STATS_SHORT=$(${GIT_BIN} show --stat | tail -1)
@@ -347,7 +391,7 @@ while :; do
             show_help
             exit 0
             ;;
-        --version)
+        -V|--version)
             show_version
             exit 0
             ;;
@@ -454,35 +498,38 @@ PATH=${PATH}:/usr/sbin
 
 SENDMAIL_BIN=$(command -v sendmail)
 readonly SENDMAIL_BIN
-if [ -z "${SENDMAIL_BIN}" ]; then
+if [ "${HOOK_MAIL}" = "1" ] && [ -z "${SENDMAIL_BIN}" ]; then
     echo "No \`sendmail' command has been found, can't send mail." 2>&1
 fi
 
 GIT_BIN=$(command -v git)
 readonly GIT_BIN
-if [ -z "${GIT_BIN}" ]; then
+if [ "${HOOK_COMMIT}" = "1" ] && [ -z "${GIT_BIN}" ]; then
     echo "No \`git' command has been found, can't commit changes" 2>&1
 fi
 
 PSQL_BIN=$(command -v psql)
 readonly PSQL_BIN
-if [ -z "${PSQL_BIN}" ]; then
+if [ "${HOOK_DB}" = "1" ] && [ -z "${PSQL_BIN}" ]; then
     echo "No \`psql' command has been found, can't save to the database." 2>&1
 fi
 
 CURL_BIN=$(command -v curl)
 readonly CURL_BIN
-if [ -z "${CURL_BIN}" ]; then
+if [ "${HOOK_API}" = "1" ] && [ -z "${CURL_BIN}" ]; then
     echo "No \`curl' command has been found, can't call the API." 2>&1
 fi
 
-if [ -z "${API_ENDPOINT}" ]; then
+LOGGER_BIN=$(command -v logger)
+readonly LOGGER_BIN
+
+if [ "${HOOK_API}" = "1" ] && [ -z "${API_ENDPOINT}" ]; then
     echo "No API endpoint specified, can't call the API." 2>&1
 fi
 
 EVOCHECK_BIN="/usr/share/scripts/evocheck.sh"
 
-GIT_REPOSITORIES="/etc /etc/bind"
+GIT_REPOSITORIES="/etc /etc/bind /usr/share/scripts"
 
 # initialize variable
 GIT_STATUSES=""
@@ -511,7 +558,7 @@ if [ "${INTERACTIVE}" = "1" ] && [ "${EVOCHECK}" = "1" ]; then
     get_evocheck
 fi
 if [ -n "${GIT_STATUSES}" ] && [ "${INTERACTIVE}" = "1" ]; then
-    printf "/!\ There are some uncommited changes.\n%s\n\n" "${GIT_STATUSES}"
+    printf "/!\\\ There are some uncommited changes.\n%s\n\n" "${GIT_STATUSES}"
 fi
 
 if [ -z "${MESSAGE}" ]; then

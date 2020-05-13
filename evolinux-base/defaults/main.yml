@@ -67,6 +67,8 @@ evolinux_fstab_home: True
 evolinux_fstab_home_options: defaults,noexec,nosuid,nodev
 evolinux_fstab_var_tmp: True
 evolinux_fstab_var_tmp_options: defaults,noexec,nosuid,nodev,size=1024m
+evolinux_fstab_dev_shm: True
+evolinux_fstab_dev_shm_options: defaults,nodev,nosuid,noexec
 
 # packages
 
@@ -77,13 +79,15 @@ evolinux_packages_diagnostic: True
 evolinux_packages_hardware: True
 evolinux_packages_common: True
 evolinux_packages_stretch: True
+evolinux_packages_buster: True
 evolinux_packages_serveur_base: True
 evolinux_packages_purge_openntpd: True
+evolinux_packages_purge_chrony: True
 evolinux_packages_purge_locate: True
 evolinux_packages_invalid_mta: True
 evolinux_packages_delete_nfs: True
 evolinux_packages_listchanges: True
-evolinux_packages_logcheck_recipient: True
+evolinux_packages_logcheck_recipient: False
 
 # system
 
@@ -122,6 +126,7 @@ evolinux_ssh_password_auth_addresses: "{{ evolinux_default_ssh_password_auth_add
 evolinux_ssh_match_address: True
 evolinux_ssh_disable_acceptenv: True
 evolinux_ssh_allow_current_user: False
+evolinux_ssh_group: "evolinux-ssh"
 
 ### disabled because of a memory leak
 # # evolinux users
@@ -196,6 +201,11 @@ evolinux_nagios_nrpe_include: True
 # fail2ban
 
 evolinux_fail2ban_include: False
+
+# Evocheck
+
+evolinux_evocheck_include: True
+evolinux_evocheck_force_install: "local"
 
 # Listupgrade
 

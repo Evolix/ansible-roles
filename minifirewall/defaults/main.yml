@@ -41,6 +41,8 @@ minifirewall_autostart: False
 minifirewall_restart_if_needed: True
 minifirewall_restart_force: False
 
+minifirewall_force_update_nrpe_scripts: False
+
 evomaintenance_hosts: []
 
 nagios_plugins_directory: "/usr/local/lib/nagios/plugins"

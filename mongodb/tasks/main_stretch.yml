@@ -2,11 +2,10 @@
 
 - name: Install packages
   apt:
-    name: "{{ item }}"
+    name:
+      - mongodb
+      - mongo-tools
     state: present
-  with_items:
-    - mongodb
-    - mongo-tools
 
 - name: install dependency for monitoring
   apt:

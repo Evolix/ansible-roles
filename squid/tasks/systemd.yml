@@ -1,0 +1,32 @@
+---
+
+- name: Look for existing systemd unit
+  command: systemctl -q is-active squid.service
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: _squid_systemd_active
+  
+- name: Squid systemd overrides directory exists
+  file:
+    dest: /etc/systemd/system/squid.service.d/
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: "Squid systemd unit service is present"
+  copy:
+    src: systemd-override.conf
+    dest: /etc/systemd/system/squid.service.d/override.conf
+    force: yes
+  register: _squid_systemd_override
+
+- name: "Systemd daemon is reloaded and Squid restarted"
+  systemd:
+    name: squid
+    state: restarted
+    daemon_reload: yes
+  when:
+    - _squid_systemd_active.rc == 0
+    - _squid_systemd_override.changed

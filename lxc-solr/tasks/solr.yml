@@ -1,0 +1,42 @@
+---
+- name: Install openjdk-8-jre-headless and lsof packages
+  command: "lxc-attach -n {{name}} -- apt-get install -y openjdk-8-jre-headless lsof"
+
+- name: "Download Solr {{ solr_version }}"
+  get_url:
+    url: "https://archive.apache.org/dist/lucene/solr/{{ solr_version }}/solr-{{ solr_version }}.tgz"
+    dest: "/var/lib/lxc/{{ name }}/rootfs/root/solr-{{ solr_version }}.tgz"
+    mode: '0644'
+
+- name: "Extract solr-{{ solr_version }}.tgz"
+  unarchive:
+    src: /var/lib/lxc/{{ name }}/rootfs/root/solr-{{ solr_version }}.tgz
+    dest: /var/lib/lxc/{{ name }}/rootfs/root/
+    remote_src: yes
+
+- name: "Install Solr {{ solr_version }}"
+  command: "lxc-attach -n {{name}} -- /root/solr-{{ solr_version }}/bin/install_solr_service.sh /root/solr-{{ solr_version }}.tgz"
+
+- name: "Stop Solr"
+  command: "lxc-attach -n {{name}} -- /etc/init.d/solr stop"
+  ignore_errors: True
+
+- name: "Make sure /home/solr exists"
+  file:
+    path: /home/solr
+    state: directory
+    mode: '0755'
+
+- name: "Move Solr data directory to /home/solr/{{name}}"
+  command: "lxc-attach -n {{name}} -- mv /var/solr /home/solr/{{name}}"
+
+- name: "Create a symbolic link to /home/solr/{{name}}"
+  command: "lxc-attach -n {{name}} -- ln -s /home/solr/{{name}} /var/solr"
+
+- name: "Set Solr port to {{ solr_port }}"
+  lineinfile:
+    dest: /var/lib/lxc/{{ name }}/rootfs/etc/default/solr.in.sh
+    line: "SOLR_PORT={{ solr_port }}"
+
+- name: "Start Solr"
+  command: "lxc-attach -n {{name}} -- /etc/init.d/solr start"

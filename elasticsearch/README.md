@@ -27,7 +27,7 @@ Tasks are extracted in several files, included in `tasks/main.yml` :
 * `elasticsearch_jvm_xmx`: maximum heap size reserved for the JVM (default: `2g`).
 * `elasticsearch_restart_on_upgrade`: restart the service after package upgrade (default: `true`)
 
-By default, Elasticsearch will listen to the public interfaces (`_site_` cf. https://www.elastic.co/guide/en/elasticsearch/reference/5.0/important-settings.html#network.host), so you will have to secure it, with firewall rules for example.
+By default, Elasticsearch will listen to the local interface (`_local_` cf. https://www.elastic.co/guide/en/elasticsearch/reference/5.0/important-settings.html#network.host).
 
 ## Curator
 

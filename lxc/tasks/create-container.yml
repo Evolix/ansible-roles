@@ -1,61 +1,58 @@
 ---
-- name: Check if container exists
-  command: "lxc-ls {{name}}"
+- name: "Check if container {{ name }} exists"
+  command: "lxc-ls {{ name }}"
   changed_when: false
+  check_mode: no
   register: container_exists
 
-- name: Create container
-  command: "lxc-create --name {{name}} --template debian --bdev dir --logfile /var/log/lxc/lxc-{{name}}.log --logpriority INFO -- --arch amd64 --release {{release}}"
+- name: "Create container {{ name }}"
+  lxc_container:
+    name: "{{ name }}"
+    container_log: true
+    template: debian
+    state: stopped
+    template_options: "--arch amd64 --release {{ release }}"
   when: container_exists.stdout_lines == []
 
-#- name: Create container
-#  lxc_container:
-#    name: "{{name}}"
-#    container_log: true
-#    template: download
-#    state: stopped
-#    template_options: "--release {{release}}"
-
-- name: Disable network configuration inside container
+- name: "Disable network configuration inside container {{ name }}"
   replace:
-    name: "/var/lib/lxc/{{name}}/rootfs/etc/default/networking"
+    name: "/var/lib/lxc/{{ name }}/rootfs/etc/default/networking"
     regexp: "^#CONFIGURE_INTERFACES=yes"
     replace: CONFIGURE_INTERFACES=no
   when: lxc_network_type == "none"
 
-- name: Disable interface shut down on halt inside container
+- name: "Disable interface shut down on halt inside container {{ name }} (Jessie container)"
   lineinfile:
-    name: "/var/lib/lxc/{{name}}/rootfs/etc/default/halt"
+    name: "/var/lib/lxc/{{ name }}/rootfs/etc/default/halt"
     line: "NETDOWN=no"
-  when: lxc_network_type == "none" and release != "stretch"
+  when: lxc_network_type == "none" and release == "jessie"
 
-- name: Make the container poweroff on SIGPWR (sent by lxc-stop) on jessie
+- name: "Make the container {{ name }} poweroff on SIGPWR sent by lxc-stop (Jessie container)"
   file:
     src: /lib/systemd/system/poweroff.target
-    dest: "/var/lib/lxc/{{name}}/rootfs/etc/systemd/system/sigpwr.target"
+    dest: "/var/lib/lxc/{{ name }}/rootfs/etc/systemd/system/sigpwr.target"
     state: link
   when: release == 'jessie'
 
-- name: Set the DNS resolvers
-  command: "cp /etc/resolv.conf /var/lib/lxc/{{name}}/rootfs/etc/"
+- name: "Configure the DNS resolvers in the container {{ name }}"
+  copy:
+    remote_src: yes
+    src: /etc/resolv.conf
+    dest: "/var/lib/lxc/{{ name }}/rootfs/etc/"
 
-- name: Add hostname in /etc/hosts
+- name: "Add hostname in /etc/hosts for container {{ name }}"
   lineinfile:
-    name: "/var/lib/lxc/{{name}}/rootfs/etc/hosts"
-    line: "127.0.0.1 {{name}}"
+    name: "/var/lib/lxc/{{ name }}/rootfs/etc/hosts"
+    line: "127.0.0.1 {{ name }}"
 
-- name: Fix permission on /dev
+- name: "Fix permission on /dev for container {{ name }}"
   lineinfile:
-    name: "/var/lib/lxc/{{name}}/rootfs/etc/rc.local"
+    name: "/var/lib/lxc/{{ name }}/rootfs/etc/rc.local"
     line: "chmod 755 /dev"
     insertbefore: "^exit 0$"
-  when: release != 'stretch'
+  when: release == 'jessie'
 
-- name: Check if container is running
-  command: "lxc-ls --running {{name}}"
-  changed_when: false
-  register: container_running
-
-- name: "Start {{name}} container"
-  command: "lxc-start -dn {{name}}"
-  when: container_running.stdout_lines == []
+- name: "Ensure that {{ name }} container is running"
+  lxc_container:
+    name: "{{ name }}"
+    state: started

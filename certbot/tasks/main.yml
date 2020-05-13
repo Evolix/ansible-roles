@@ -1,0 +1,44 @@
+---
+
+- name: "System compatibility checks"
+  assert:
+    that:
+      - ansible_distribution == "Debian"
+      - ansible_distribution_major_version is version('8', '>=')
+    msg: only compatible with Debian 9+
+
+- name: Install from sources on Debian 8
+  include: install-sources.yml
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version is version('8', '=')
+
+- name: Install package on Debian 9+
+  include: install-package.yml
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version is version('9', '>=')
+
+- include: acme-challenge.yml
+
+- name: Deploy hooks are present
+  copy:
+    src: hooks/
+    dest: /etc/letsencrypt/renewal-hooks/deploy/
+    mode: "0700"
+    owner: root
+    group: root
+
+- name: Move commit-etc.sh to z-commit-etc.sh if present
+  command: "mv /etc/letsencrypt/renewal-hooks/deploy/commit-etc.sh /etc/letsencrypt/renewal-hooks/deploy/z-commit-etc.sh"
+  args:
+    removes: /etc/letsencrypt/renewal-hooks/deploy/commit-etc.sh
+    creates: /etc/letsencrypt/renewal-hooks/deploy/z-commit-etc.sh
+
+- name: "certbot lock is ignored by Git"
+  lineinfile:
+    dest: /etc/.gitignore
+    line: letsencrypt/.certbot.lock
+    create: yes
+    owner: root
+    mode: "0600"

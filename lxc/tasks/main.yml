@@ -1,11 +1,18 @@
 ---
 - name: Install lxc tools
   apt:
-    name: '{{ item }}'
-  with_items:
-    - lxc
-    - debootstrap
-    - xz-utils
+    name:
+      - lxc
+      - debootstrap
+      - xz-utils
+      - python-lxc
+
+- name: Install additional packages on Buster
+  apt:
+    name:
+      - apparmor
+      - lxc-templates
+  when: ansible_distribution_major_version is version('10', '>=')
 
 - name: Copy LXC default containers configuration
   template:
@@ -29,5 +36,5 @@
   include: create-container.yml
   vars:
     name: "{{ item.name }}"
-    release: "{{item.release}}"
-  with_items: "{{lxc_containers}}"
+    release: "{{ item.release }}"
+  loop: "{{ lxc_containers }}"

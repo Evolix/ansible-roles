@@ -1,13 +1,12 @@
 - name: ensure packages are installed
   apt:
-    name: '{{ item }}'
+    name:
+      - dovecot-ldap
+      - dovecot-imapd
+      - dovecot-pop3d
+      - dovecot-sieve
+      - dovecot-managesieved
     state: present
-  with_items:
-  - dovecot-ldap
-  - dovecot-imapd
-  - dovecot-pop3d
-  - dovecot-sieve
-  - dovecot-managesieved
   tags:
   - dovecot
 
@@ -26,13 +25,13 @@
     regexp: "^#*{{ item.key }}"
     state: present
   with_items:
-  - { key: 'hosts', value: '127.0.0.1' }
-  - { key: 'auth_bind', value: 'yes' }
-  - { key: 'ldap_version', value: 3 }
-  - { key: 'base', value: "{{ ldap_suffix }}" }
-  - { key: 'user_attrs', value: 'homeDirectory=home' }
-  - { key: 'user_filter', value: '(&(isActive=TRUE)(uid=%u))' }
-  - { key: 'pass_attrs', value: 'uid=user,userPassword=password' }
+    - { key: 'hosts', value: '127.0.0.1' }
+    - { key: 'auth_bind', value: 'yes' }
+    - { key: 'ldap_version', value: 3 }
+    - { key: 'base', value: "{{ ldap_suffix }}" }
+    - { key: 'user_attrs', value: 'homeDirectory=home' }
+    - { key: 'user_filter', value: '(&(isActive=TRUE)(uid=%u))' }
+    - { key: 'pass_attrs', value: 'uid=user,userPassword=password' }
   when: ldap_suffix is defined
   notify: reload dovecot
   tags:

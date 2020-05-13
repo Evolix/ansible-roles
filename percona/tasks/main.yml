@@ -20,7 +20,7 @@
   when: not percona__apt_config_package_installed
 
 # - include_role:
-#     name: remount-usr
+#     name: evolix/remount-usr
 
 - name: Percona APT config package is installed from deb file
   apt:
@@ -39,7 +39,7 @@
 - name: APT cache is up-to-date
   apt:
     update_cache: yes
-  when: percona__apt_config_deb | changed
+  when: percona__apt_config_deb is changed
 
 - include: xtrabackup.yml
   when: percona__install_xtrabackup

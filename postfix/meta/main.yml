@@ -14,8 +14,8 @@ galaxy_info:
     - jessie
 
 dependencies:
-  - { role: ldap, ldap_schema: 'cn4evolix.ldif', when: postfix_packmail == True }
-  - { role: spamassasin, when: postfix_packmail == True }
-  - { role: clamav, when: postfix_packmail == True }
-  - { role: opendkim, when: postfix_packmail == True }
-  - { role: dovecot, when: postfix_packmail == True }
+  - { role: evolix/ldap, ldap_schema: 'cn4evolix.ldif', when: postfix_packmail == True }
+  - { role: evolix/spamassasin, when: postfix_packmail == True }
+  - { role: evolix/clamav, when: postfix_packmail == True }
+  - { role: evolix/opendkim, when: postfix_packmail == True }
+  - { role: evolix/dovecot, when: postfix_packmail == True }

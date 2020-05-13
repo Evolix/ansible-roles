@@ -63,14 +63,14 @@
   group:
     name: "{{ evolinux_ssh_group }}"
     state: present
-  when: ansible_distribution_major_version | version_compare('10', '>=')
+  when: ansible_distribution_major_version is version('10', '>=')
 
 - name: "Unix user '{{ user.name }}' belongs to group '{{ evolinux_ssh_group }}' (Debian 10 or later)"
   user:
     name: '{{ user.name }}'
     groups: "{{ evolinux_ssh_group }}"
     append: yes
-  when: ansible_distribution_major_version | version_compare('10', '>=')
+  when: ansible_distribution_major_version is version('10', '>=')
 
 ## Optional group for all evolinux users
 
@@ -81,7 +81,7 @@
   when:
     - evolinux_internal_group is defined
     - evolinux_internal_group != ""
-    - ansible_distribution_major_version | version_compare('9', '>=')
+    - ansible_distribution_major_version is version('9', '>=')
 
 - name: "Unix user '{{ user.name }}' belongs to group '{{ evolinux_internal_group }}' (Debian 9 or later)"
   user:
@@ -91,7 +91,7 @@
   when:
     - evolinux_internal_group is defined
     - evolinux_internal_group != ""
-    - ansible_distribution_major_version | version_compare('9', '>=')
+    - ansible_distribution_major_version is version('9', '>=')
 
 ## Optional secondary groups, defined per user
 

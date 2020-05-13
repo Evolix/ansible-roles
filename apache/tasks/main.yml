@@ -2,28 +2,26 @@
 
 - name: packages are installed (Debian 9 or later)
   apt:
-    name: '{{ item }}'
+    name:
+      - apache2
+      - libapache2-mpm-itk
+      - libapache2-mod-evasive
+      - apachetop
+      - libwww-perl
     state: present
-  with_items:
-    - apache2
-    - libapache2-mpm-itk
-    - libapache2-mod-evasive
-    - apachetop
-    - libwww-perl
   tags:
     - apache
     - packages
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version('9', '>=')
 
 - name: packages are installed (jessie)
   apt:
-    name: '{{ item }}'
+    name:
+      - apache2-mpm-itk
+      - libapache2-mod-evasive
+      - apachetop
+      - libwww-perl
     state: present
-  with_items:
-    - apache2-mpm-itk
-    - libapache2-mod-evasive
-    - apachetop
-    - libwww-perl
   tags:
     - apache
     - packages
@@ -140,7 +138,7 @@
     - apache
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
   tags:
     - apache
 

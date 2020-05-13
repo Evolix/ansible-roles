@@ -1,8 +1,8 @@
 ---
 
 - include_role:
-    name: remount-usr
-  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
+    name: evolix/remount-usr
+  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
 
 - name: Ensure scripts directory exists
   file:
@@ -24,14 +24,21 @@
     - mysql
   when: ansible_distribution_release == "jessie"
 
-- name: "Install depends for mytop (Debian 9 or later)"
+- name: "Install dependencies for mytop (stretch)"
   apt:
-    name: "{{ item }}"
-  with_items:
-  - mariadb-client-10.1
-  - libconfig-inifiles-perl
-  - libterm-readkey-perl
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+    name:
+      - mariadb-client-10.1
+      - libconfig-inifiles-perl
+      - libterm-readkey-perl
+  when: ansible_distribution_release == "stretch"
+
+- name: "Install dependencies for mytop (Debian 10 or later)"
+  apt:
+    name:
+      - mariadb-client-10.3
+      - libconfig-inifiles-perl
+      - libterm-readkey-perl
+  when: ansible_distribution_major_version is version('10', '>=')
 
 - name: Read debian-sys-maint password
   shell: 'cat /etc/mysql/debian.cnf | grep -m1 "password = .*" | cut -d" " -f3'
@@ -54,8 +61,8 @@
 # mysqltuner
 
 - include_role:
-    name: remount-usr
-  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
+    name: evolix/remount-usr
+  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
 
 - name: Install mysqltuner
   # copy:
@@ -75,11 +82,23 @@
   tags:
     - mysql
 
+# Percona Toolkit
+
+- name: "Install percona-toolkit (Debian 9 or later)"
+  apt:
+    name: percona-toolkit
+    state: present
+  tags:
+    - packages
+    - percona-toolkit
+    - mysql
+  when: ansible_distribution_major_version is version('9', '>=')
+
 # automatic optimizations
 
 - include_role:
-    name: remount-usr
-  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
+    name: evolix/remount-usr
+  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
 
 - name: Optimize script for MySQL
   copy:
@@ -142,8 +161,8 @@
 # my-add.sh
 
 - include_role:
-    name: remount-usr
-  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
+    name: evolix/remount-usr
+  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
 
 - name: Install my-add.sh
   copy:

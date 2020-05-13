@@ -26,6 +26,7 @@
     postgresql_user:
       name: nrpe
       password: '{{ postgresql_nrpe_password.stdout }}'
+      encrypted: yes
       no_password_changes: yes
     register: postgresql_create_nrpe_user
     when: nrpe_evolix_config.stat.exists

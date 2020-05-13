@@ -13,15 +13,14 @@
 
 - name: install Roundcube
   apt:
-    name: "{{ item }}"
+    name:
+      - imapproxy
+      - roundcube
+      - roundcube-sqlite3
+      - roundcube-plugins
+      - php-net-sieve
+      - php-zip
     state: present
-  with_items:
-    - imapproxy
-    - roundcube
-    - roundcube-sqlite3
-    - roundcube-plugins
-    - php-net-sieve
-    - php-zip
   tags:
     - roundcube
 
@@ -88,7 +87,7 @@
 - name: deploy apache roundcube vhost
   template:
     src: apache2.conf.j2
-    dest: /etc/apache2/sites-available/rouncube.conf
+    dest: /etc/apache2/sites-available/roundcube.conf
     mode: "0640"
   notify: reload apache2
   when: roundcube_webserver == "apache"
@@ -97,8 +96,8 @@
 
 - name: enable apache roundcube vhost
   file:
-    src: /etc/apache2/sites-available/rouncube.conf
-    dest: /etc/apache2/sites-enabled/rouncube.conf
+    src: /etc/apache2/sites-available/roundcube.conf
+    dest: /etc/apache2/sites-enabled/roundcube.conf
     state: link
   notify: reload apache2
   when: roundcube_webserver == "apache"
@@ -108,14 +107,14 @@
 - name: deploy Nginx roundcube vhost
   template:
     src: nginx.conf.j2
-    dest: /etc/nginx/sites-available/rouncube.conf
+    dest: /etc/nginx/sites-available/roundcube.conf
   when: roundcube_webserver == "nginx"
   notify: reload nginx
 
 - name: enable Nginx roundcube vhost
   file:
-    src: "/etc/nginx/sites-available/rouncube.conf"
-    dest: "/etc/nginx/sites-enabled/rouncube.conf"
+    src: "/etc/nginx/sites-available/roundcube.conf"
+    dest: "/etc/nginx/sites-enabled/roundcube.conf"
     state: link
   when: roundcube_webserver == "nginx" 
   notify: reload nginx

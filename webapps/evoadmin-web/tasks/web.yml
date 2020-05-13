@@ -9,19 +9,35 @@
   notify: reload apache2
   when: ansible_distribution_release == "jessie"
 
-- name: "Set custom values for PHP config (Debian 9 or later)"
+- name: "Set custom values for PHP config (Debian 9)"
   ini_file:
     dest: /etc/php/7.0/apache2/conf.d/zzz-evolinux-custom.ini
     section: PHP
     option: "disable_functions"
     value: "shell-exec,system,passthru,putenv,popen"
   notify: reload apache2
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version('9', '=')
+
+- name: "Set custom values for PHP config (Debian 10)"
+  ini_file:
+    dest: /etc/php/7.3/apache2/conf.d/zzz-evolinux-custom.ini
+    section: PHP
+    option: "disable_functions"
+    value: "shell-exec,system,passthru,putenv,popen"
+  notify: reload apache2
+  when: ansible_distribution_major_version is version('10', '=')
 
 - name: Install evoadmin VHost
   template:
-    src: evoadmin.conf.j2
+    src: "{{ item }}"
     dest: /etc/apache2/sites-available/evoadmin.conf
+    force: "{{ evoadmin_force_vhost }}"
+  with_first_found:
+    - "templates/evoadmin-web/evoadmin.{{ inventory_hostname }}.conf.j2"
+    - "templates/evoadmin-web/evoadmin.{{ host_group }}.conf.j2"
+    - "templates/evoadmin-web/evoadmin.conf.j2"
+    - "evoadmin.conf.j2"
+  register: evoadmin_vhost_template
   notify: reload apache2
 
 - name: Enable evoadmin vhost
@@ -38,18 +54,33 @@
   notify: reload apache2
   when: not evoadmin_enable_vhost
 
+- name: Copy htpasswd for evoadmin
+  template:
+    src: "{{ item }}"
+    dest: "/var/www/.ansible_evoadmin_htpasswd"
+    mode: "0644"
+    owner: root
+    group: www-data
+    force: "{{ evoadmin_htpasswd_force }}"
+  with_first_found:
+    - "templates/evoadmin-web/htpasswd.{{ inventory_hostname }}.j2"
+    - "templates/evoadmin-web/htpasswd.{{ host_group }}.j2"
+    - "templates/evoadmin-web/htpasswd.j2"
+    - "htpasswd.j2"
+  register: evoadmin_htpasswd_template
+  when: evoadmin_htpasswd
+
 - name: Copy config file for evoadmin
   template:
-    src: config.local.php.j2
-    dest: "{{ evoadmin_document_root}}/conf/config.local.php"
+    src: "{{ item }}"
+    dest: "{{ evoadmin_document_root }}/conf/config.local.php"
     mode: "0640"
     owner: evoadmin
     group: evoadmin
-    force: no
-
-- name: Enable proxy_fcgi
-  apache2_module:
-    state: present
-    name: proxy_fcgi
-  notify: restart apache2
-  when: evoadmin_multi_php == True
+    force: "{{ evoadmin_config_local_php_force }}"
+  with_first_found:
+    - "templates/evoadmin-web/config.local.{{ inventory_hostname }}.php.j2"
+    - "templates/evoadmin-web/config.local.{{ host_group }}.php.j2"
+    - "templates/evoadmin-web/config.local.php.j2"
+    - "config.local.php.j2"
+  register: evoadmin_config_local_php_template

@@ -1,0 +1,94 @@
+#!/bin/bash
+
+# README
+#
+# Variable to adjust : is_master and vrrpd_processes.
+# vrrpd_processes is the number of vrrpd processes that should run on the server.
+# is_master defines whether the vrrpd group should be master (1) or backup (0).
+#
+# If some instances have to be master and some other have to be backup,
+# then the value of is_master is 2 and the states has to be precised in arguments.
+# e.g. : ./check_vrrpd master backup master
+# The order is defined by the output order of `ps auwx | grep vrrp`
+
+RC=0
+IFS='
+'
+
+is_master=2         # 1 if master ; 0 if backup ; 2 if mixed master and backup, in this case, it has to be precised in arguments
+vrrpd_processes=3   # number of vrrpd processes that should be running
+is_vrrpd_running=$(sudo /usr/lib/nagios//plugins/check_procs -C vrrpd -c $vrrpd_processes:$vrrpd_processes)
+rc_is_vrrpd_running=$?
+IP_vrrpd=($(for i in $(ps auwx | grep vrrpd | grep -v grep | grep -v check); do echo $i | awk '{print $--NF}'; done))
+INT_vrrpd=($(for i in $(ps auwx | grep vrrpd | grep -v grep | grep -v check); do echo $i | awk '{print $13}'; done))
+ID_vrrpd=($(for i in $(ps auwx | grep vrrpd | grep -v grep | grep -v check); do echo $i | awk '{print $19}'; done))
+
+if [[ $rc_is_vrrpd_running -ne 0 ]]; then
+    echo $is_vrrpd_running instead of $vrrpd_processes
+    exit 2
+fi
+
+for i in $(seq 0  $((${#ID_vrrpd[*]}-1))); do
+    ifconfig vrrp_${ID_vrrpd[$i]}_${INT_vrrpd[$i]} >/dev/null 2>&1
+    # If has interface
+    if [[ $? -eq 0 ]]; then
+        # If has to be master : OK
+        if [[ $is_master -eq 1 ]]; then
+            echo OK - ${IP_vrrpd[$i]} exists and is master
+        # If has to be backup : KO
+        elif [[ $is_master -eq 0 ]]; then
+            echo CRITICAL - ${IP_vrrpd[$i]} exists whereas it should be backup
+            RC=2
+        # We retrieve the state it should be from args
+        elif [[ $is_master -eq 2 ]]; then
+            arg=$(($i+1))
+            state=${!arg}
+            # If has to be master : OK
+            if [[ $state = master ]]; then
+                echo OK - ${IP_vrrpd[$i]} exists and is master
+            # If has to be backup : KO
+            elif [[ $state = backup ]]; then
+                echo CRITICAL - ${IP_vrrpd[$i]} exists whereas it should be backup
+                RC=2
+            else
+                echo "CRITICAL - The arguments have to be master or backup. Exiting"
+                exit 2
+            fi
+        # Unknown
+        else
+            RC=3
+        fi
+    # If hasn't interface
+    elif [[ $? -ne 0 ]]; then
+        # If has to be master : KO
+        if [[ $is_master -eq 1 ]]; then
+            echo CRITICAL - ${IP_vrrpd[$i]} does not exist whereas it should be master
+            RC=2
+        # If has to be backup : OK
+        elif [[ $is_master -eq 0 ]]; then
+            echo OK - ${IP_vrrpd[$i]} is backup
+        # We retrieve the state it should be from args
+        elif [[ $is_master -eq 2 ]]; then
+            arg=$(($i+1))
+            state=${!arg}
+            # If has to be master : KO
+            if [[ $state = master ]]; then
+                echo CRITICAL - ${IP_vrrpd[$i]} does not exist whereas it should be master
+                RC=2
+            # If has to be backup : OK
+            elif [[ $state = backup ]]; then
+                echo OK - ${IP_vrrpd[$i]} is backup
+            else
+                echo "CRITICAL - The arguments have to be master or backup. Exiting"
+                exit 2
+            fi
+        # Unknown
+        else
+            RC=3
+        fi
+    # Unknown
+    else
+        RC=3
+    fi
+done
+exit $RC

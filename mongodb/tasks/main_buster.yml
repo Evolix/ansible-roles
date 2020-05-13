@@ -1,0 +1,46 @@
+---
+
+- name: MongoDB public GPG Key
+  apt_key:
+    # url: https://www.mongodb.org/static/pgp/server-4.2.asc
+    data: "{{ lookup('file', 'server-4.2.asc') }}"
+
+- name: enable APT sources list
+  apt_repository:
+    repo: deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.2 main
+    state: present
+    filename: mongodb-org-4.2
+    update_cache: yes
+
+- name: Install packages
+  apt:
+    name: mongodb-org
+    update_cache: yes
+    state: present
+  register: _mongodb_install_package
+
+- name: MongoDB service in enabled and started
+  systemd:
+    name: mongod
+    enabled: yes
+    state: started
+  when: _mongodb_install_package.changed
+
+- name: install dependency for monitoring
+  apt:
+    name: python-pymongo
+    state: present
+
+- name: Custom configuration
+  template:
+    src: mongodb_buster.conf.j2
+    dest: "/etc/mongod.conf"
+    force: "{{ mongodb_force_config | bool | ternary('yes', 'no') }}"
+  notify: restart mongod
+
+- name: Configure logrotate
+  template:
+    src: logrotate_buster.j2
+    dest: /etc/logrotate.d/mongodb
+    force: yes
+    backup: no

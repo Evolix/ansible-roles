@@ -1,8 +1,8 @@
 ---
 
 - include_role:
-    name: remount-usr
-  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
+    name: evolix/remount-usr
+  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
 
 - name: Scripts directory exists
   file:
@@ -26,28 +26,33 @@
 
 # - name: "mysql-utilities are installed (Debian 9 or later)"
 #   apt:
-#     name: "{{ item }}"
-#   with_items:
-#   - mysql-utilities
-#   when: ansible_distribution_major_version | version_compare('9', '>=')
+#     name: mysql-utilities
+#   when: ansible_distribution_major_version is version('9', '>=')
 
-- name: "mytop dependencies are installed (Debian 9 or later)"
+- name: "mytop dependencies are installed (stretch)"
   apt:
-    name: "{{ item }}"
-  with_items:
-  - libconfig-inifiles-perl
-  - libdbd-mysql-perl
-  - libdbi-perl
-  - libterm-readkey-perl
-  - libtime-hires-perl
+    name:
+      - libconfig-inifiles-perl
+      - libdbd-mysql-perl
+      - libdbi-perl
+      - libterm-readkey-perl
+      - libtime-hires-perl
   tags:
     - packages
     - mytop
     - mysql
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_release == "stretch"
+
+- name: "Install dependencies for mytop (Debian 10 or later)"
+  apt:
+    name:
+      - mariadb-client-10.3
+      - libconfig-inifiles-perl
+      - libterm-readkey-perl
+  when: ansible_distribution_major_version is version('10', '>=')
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
   tags:
     - mytop
     - mysql
@@ -63,7 +68,7 @@
   tags:
     - mytop
     - mysql
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version('9', '>=')
 
 - name: Read debian-sys-maint password
   shell: 'cat /etc/mysql/debian.cnf | grep -m1 "password = .*" | cut -d" " -f3'
@@ -87,10 +92,10 @@
 # mysqltuner
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
   tags:
     - mysql
-  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
+  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
 
 - name: mysqltuner is installed
   # copy:
@@ -113,10 +118,10 @@
 # automatic optimizations
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
   tags:
     - mysql
-  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
+  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
 
 - name: mysql-optimize.sh is installed
   copy:
@@ -186,8 +191,8 @@
 # my-add.sh
 
 - include_role:
-    name: remount-usr
-  when: (mysql_scripts_dir or general_scripts_dir) | search ("/usr")
+    name: evolix/remount-usr
+  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
 
 - name: Install my-add.sh
   copy:

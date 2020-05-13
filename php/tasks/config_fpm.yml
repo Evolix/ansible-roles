@@ -15,6 +15,8 @@
     - { option: "log_errors", value: "On" }
     - { option: "html_errors", value: "Off" }
     - { option: "allow_url_fopen", value: "Off" }
+    - { option: "opcache.memory_consumption", value: "128M" }
+    - { option: "opcache.max_accelerated_files", value: "8000" }
   notify: "restart {{ php_fpm_service_name }}"
 
 - name: Disable PHP functions for FPM
@@ -35,13 +37,18 @@
 
 - name: Set default PHP FPM values
   ini_file:
-    dest: "{{ php_fpm_defaults_conf_file }}"
+    dest: "{{ php_fpm_default_pool_file }}"
     section: www
     option: "{{ item.option }}"
     value: "{{ item.value }}"
     mode: "0644"
     create: yes
   with_items:
+    - { option: "user", value: "www-data" }
+    - { option: "group", value: "www-data" }
+    - { option: "listen", value: "{{ php_fpm_default_pool_socket }}" }
+    - { option: "listen.owner", value: "www-data" }
+    - { option: "listen.group", value: "www-data" }
     - { option: "pm", value: "ondemand" }
     - { option: "pm.max_children", value: "100" }
     - { option: "pm.process_idle_timeout", value: "10s" }
@@ -49,13 +56,12 @@
     - { option: "request_slowlog_timeout", value: "5s" }
     - { option: "pm.status_path", value: "/fpm_status" }
     - { option: "request_terminate_timeout", value: "60s" }
-    - { option: "chroot", value: "/var/www" }
   notify: "restart {{ php_fpm_service_name }}"
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version('9', '>=')
 
 - name: Custom PHP FPM values
   copy:
-    dest: "{{ php_fpm_custom_conf_file }}"
+    dest: "{{ php_fpm_default_pool_custom_file }}"
     content: |
       ; Put customized values here.
       ; default_charset = "ISO-8859-1"
@@ -74,3 +80,10 @@
     - { option: "date.timezone", value: "Europe/Paris" }
   notify: "restart {{ php_fpm_service_name }}"
   when: php_symfony_requirements
+
+- name: Delete debian default pool
+  file:
+    path: "{{ php_fpm_debian_default_pool_file }}"
+    state: absent
+  notify: "restart {{ php_fpm_service_name }}"
+  when: php_fpm_remove_default_pool

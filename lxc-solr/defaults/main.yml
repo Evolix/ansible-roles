@@ -1,0 +1,18 @@
+---
+# List of LXC containers to create alongside with the version of Solr to install for each of them
+# Eg.:
+# lxc_containers:
+#   - name: solr6
+#     release: stretch
+#     solr_version: 6.6.6
+#     solr_port: 8983
+#   - name: solr7
+#     release: stretch
+#     solr_version: 7.7.2
+#     solr_port: 8984
+#   - name: solr8
+#     release: stretch
+#     solr_version: 8.4.1
+#     solr_port: 8985
+lxc_containers: []
+

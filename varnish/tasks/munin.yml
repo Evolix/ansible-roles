@@ -5,7 +5,7 @@
   tags: varnish
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
   tags: varnish
 
 - name: Create plugin directory

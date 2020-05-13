@@ -1,0 +1,11 @@
+---
+
+- include: pgdg-repo.yml
+  when: postgresql_version != '11'
+
+- name: Install postgresql package
+  apt:
+    name:
+      - postgresql
+      - pgtop
+      - libdbd-pg-perl

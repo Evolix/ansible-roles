@@ -10,7 +10,7 @@ A separate `exec.yml` task file can be played manually in playbooks or roles to 
 
 ```
 - include_role:
-    name: generate-ldif
+    name: evolix/generate-ldif
     tasks_from: exec.yml
 ```
 ## Variables

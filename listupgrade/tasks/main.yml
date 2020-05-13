@@ -1,7 +1,7 @@
 ---
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
 
 - name: Scripts dir is present
   file:
@@ -12,8 +12,8 @@
     mode: "0700"
 
 - name: Copy listupgrade script
-  template:
-    src: listupgrade.sh.j2
+  copy:
+    src: listupgrade.sh
     dest: "/usr/share/scripts/listupgrade.sh"
     mode: "0700"
     owner: root
@@ -46,9 +46,18 @@
     group: root
 
 - name: Enable listupgrade cron
-  template:
-    src: listupgrade_cron.j2
+  copy:
+    src: listupgrade_cron
     dest: /etc/cron.d/listupgrade
     mode: "0600"
+    owner: root
+    group: root
+    force: no
+
+- name: old-kernel-autoremoval script is present
+  copy:
+    src: old-kernel-autoremoval.sh
+    dest: /usr/share/scripts/old-kernel-autoremoval.sh
+    mode: "0755"
     owner: root
     group: root

@@ -3,7 +3,7 @@
 - fail:
     msg: only compatible with Debian >= 8
   when:
-    - ansible_distribution != "Debian" or ansible_distribution_major_version | version_compare('8', '<')
+    - ansible_distribution != "Debian" or ansible_distribution_major_version is version('8', '<')
 
 - name: install info.php
   copy:
@@ -16,6 +16,18 @@
     dest: /var/www/index.html
     line: '            <li><a href="/info.php">Infos PHP</a></li>'
     regexp: "Infos PHP"
+
+- name: install opcache.php
+  copy:
+    src: opcache.php
+    dest: /var/www/opcache.php
+    mode: "0644"
+
+- name: enable opcache.php link in default site index
+  lineinfile:
+    dest: /var/www/index.html
+    line: '            <li><a href="/opcache.php">Infos OpCache PHP</a></li>'
+    regexp: "Infos OpCache PHP"
 
 - name: Add elements to user account template
   file:
@@ -55,7 +67,7 @@
     src: userlogrotate
     dest: /etc/cron.weekly/userlogrotate
     mode: "0755"
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version('9', '>=')
 
 - name: Force DIR_MODE to 0750 in /etc/adduser.conf
   lineinfile:
@@ -66,6 +78,7 @@
 - include: apache.yml
 
 - include: phpmyadmin.yml
+  when: ansible_distribution_release != "buster"
 
 - include: awstats.yml
 
@@ -77,3 +90,6 @@
     name: "ProFTPd directory size caching"
     special_time: daily
     job: "/usr/share/scripts/evoadmin/stats.sh"
+
+- include: multiphp.yml
+  when: packweb_multiphp_versions | length > 0

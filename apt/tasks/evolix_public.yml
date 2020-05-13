@@ -28,6 +28,6 @@
 - name: Apt update
   apt:
     update_cache: yes
-  when: apt_evolix_public | changed
+  when: apt_evolix_public is changed
   tags:
     - apt

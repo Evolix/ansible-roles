@@ -1,0 +1,23 @@
+galaxy_info:
+  author: Evolix
+  description: Creation of LXC Containers & Setting up PHP-FPM for a multiphp setup
+
+  issue_tracker_url: https://gitea.evolix.org/evolix/ansible-roles/issues
+
+  license: GPLv2
+
+  min_ansible_version: 2.2
+
+  platforms:
+  - name: Debian
+    versions:
+    - stretch
+    - buster
+
+allow_duplicates: yes
+
+dependencies:
+  - { role: evolix/lxc,
+      lxc_containers: [ { name: "{{ lxc_php_version }}", release: "{{ lxc_php_container_releases[lxc_php_version] }}" } ],
+      when: lxc_php_version is defined
+    }

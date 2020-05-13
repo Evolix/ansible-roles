@@ -1,21 +1,20 @@
 ---
 - name: Install dependancy
   apt:
-    name: "{{ item }}"
+    name:
+      - libpam-systemd
+      - imagemagick
+      - git-core
+      - git-svn
+      - gcc
+      - build-essential
+      - libxml2-dev
+      - libxslt1-dev
+      - libssl-dev
+      - libmagickwand-dev
+      - libmagickcore-dev
+      - libmariadbclient-dev
+      - python-mysqldb
     state: present
-  with_items:
-    - libpam-systemd
-    - imagemagick
-    - git-core
-    - git-svn
-    - gcc
-    - build-essential
-    - libxml2-dev
-    - libxslt1-dev
-    - libssl-dev
-    - libmagickwand-dev
-    - libmagickcore-dev
-    - libmariadbclient-dev
-    - python-mysqldb
   tags:
     - redmine

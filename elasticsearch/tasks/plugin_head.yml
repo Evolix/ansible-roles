@@ -8,28 +8,29 @@
     system: yes
     shell: /bin/false
 
-- block:
-  - name: Head repository is checked-out
-    git:
-      repo: "https://github.com/mobz/elasticsearch-head.git"
-      dest: "{{ elasticsearch_plugin_head_clone_dir }}"
-      clone: yes
-    tags:
-      - packages
+- name: Head plugin is installed
+  block:
+    - name: Head repository is checked-out
+      git:
+        repo: "https://github.com/mobz/elasticsearch-head.git"
+        dest: "{{ elasticsearch_plugin_head_clone_dir }}"
+        clone: yes
+      tags:
+        - packages
 
-  - name: Create tmpdir
-    file:
-      dest: "{{ elasticsearch_plugin_head_tmp_dir }}"
-      state: directory
+    - name: Create tmpdir
+      file:
+        dest: "{{ elasticsearch_plugin_head_tmp_dir }}"
+        state: directory
 
-  - name: NPM packages for head are installed
-    npm:
-      path: "{{ elasticsearch_plugin_head_clone_dir }}"
-    tags:
-      - packages
-      - npm
-    environment:
-      TMPDIR: "{{ elasticsearch_plugin_head_tmp_dir }}"
+    - name: NPM packages for head are installed
+      npm:
+        path: "{{ elasticsearch_plugin_head_clone_dir }}"
+      tags:
+        - packages
+        - npm
+      environment:
+        TMPDIR: "{{ elasticsearch_plugin_head_tmp_dir }}"
   become_user: "{{ elasticsearch_plugin_head_owner }}"
   become: yes
 

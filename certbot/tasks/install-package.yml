@@ -1,0 +1,6 @@
+---
+
+- name: certbot package is installed
+  apt:
+    name: certbot
+    state: latest

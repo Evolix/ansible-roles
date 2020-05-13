@@ -1,6 +1,6 @@
 ---
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
 
 - name: Is nrpe present ?
   stat:

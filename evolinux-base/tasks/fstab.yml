@@ -57,4 +57,15 @@
   when:
   - evolinux_fstab_var_tmp
 
+- name: /dev/shm is created (Debian 10 and later)
+  mount:
+    src: tmpfs
+    name: /dev/shm
+    fstype: tmpfs
+    opts: "{{ evolinux_fstab_dev_shm_options | mandatory }}"
+    state: mounted
+  when:
+  - evolinux_fstab_dev_shm
+  - ansible_distribution_major_version is version('10', '>=')
+
 - meta: flush_handlers

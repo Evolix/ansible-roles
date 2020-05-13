@@ -4,7 +4,7 @@
   user:
     name: evoadmin
     comment: "Evoadmin Web Account"
-    home: "{{ evoadmin_home_dir}}"
+    home: "{{ evoadmin_home_dir }}"
     password: "!"
 
 - name: Create www-evoadmin group
@@ -16,13 +16,13 @@
   user:
     name: www-evoadmin
     groups: shadow
-    append: yes
+    append: True
   when: ansible_distribution_release == "jessie"
 
 - name: "Create www-evoadmin (Debian 9 or later)"
   user:
     name: www-evoadmin
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+  when: ansible_distribution_major_version is version('9', '>=')
 
 - name: Is /etc/aliases present?
   stat:
@@ -36,8 +36,10 @@
     regexp: "{{ item.regexp }}"
     state: present
   with_items:
-    - { line: 'evoadmin: root',     regexp: '^evoadmin:'}
-    - { line: 'www-evoadmin: root', regexp: '^www-evoadmin:'}
+    - line: 'evoadmin: root'
+      regexp: '^evoadmin:'
+    - line: 'www-evoadmin: root'
+      regexp: '^www-evoadmin:'
   notify: "newaliases"
   when: etc_aliases.stat.exists
 
@@ -51,7 +53,7 @@
     repo: https://forge.evolix.org/evoadmin-web.git
     dest: "{{ evoadmin_document_root }}"
     version: jessie
-    update: no
+    update: False
   when: ansible_distribution_release == "jessie"
 
 - name: "Clone evoadmin repository (Debian 9 or later)"
@@ -59,15 +61,15 @@
     repo: https://forge.evolix.org/evoadmin-web.git
     dest: "{{ evoadmin_document_root }}"
     version: master
-    update: yes
-  when: ansible_distribution_major_version | version_compare('9', '>=')
+    update: False
+  when: ansible_distribution_major_version is version('9', '>=')
 
 - name: Change ownership on git repository
   file:
     dest: "{{ evoadmin_document_root }}"
     owner: "{{ evoadmin_username }}"
     group: "{{ evoadmin_username }}"
-    recurse: yes
+    recurse: True
 
 - name: Create evoadmin log directory
   file:
@@ -77,13 +79,13 @@
     state: directory
 
 - include_role:
-    name: remount-usr
-  when: evoadmin_scripts_dir | search ("/usr")
+    name: evolix/remount-usr
+  when: evoadmin_scripts_dir is search ("/usr")
 
 - name: "Create {{ evoadmin_scripts_dir }}"
   file:
     dest: "{{ evoadmin_scripts_dir }}"
-    # recurse: yes
+    # recurse: True
     mode: "0700"
     state: directory
 
@@ -99,17 +101,18 @@
   changed_when: "'changed' in command_result.stdout"
   # failed_when: False
   args:
-    warn: no
+    warn: False
 
 - name: Add evoadmin sudoers file
   template:
-    src: sudoers.j2
+    src: "{{ item }}"
     dest: /etc/sudoers.d/evoadmin
     mode: "0600"
+    force: "{{ evoadmin_sudoers_conf_force }}"
     validate: "visudo -cf %s"
-
-- name: Modify bashrc skel file
-  lineinfile:
-    dest: /etc/skel/.bashrc
-    line: "alias php='sudo /usr/local/bin/phpContainer'"
-  when: evoadmin_multi_php == True
+  with_first_found:
+    - "templates/evoadmin-web/sudoers.{{ inventory_hostname }}.j2"
+    - "templates/evoadmin-web/sudoers.{{ host_group }}.j2"
+    - "templates/evoadmin-web/sudoers.j2"
+    - "sudoers.j2"
+  register: evoadmin_sudoers_conf

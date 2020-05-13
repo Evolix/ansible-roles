@@ -1,44 +1,46 @@
 ---
 
-- block:
-  - name: "Is custom datadir present ?"
-    stat:
-      path: "{{ elasticsearch_custom_datadir }}"
-    register: elasticsearch_custom_datadir_test
-    check_mode: no
+- name: Set real datadir value when customized
+  block:
+    - name: "Is custom datadir present ?"
+      stat:
+        path: "{{ elasticsearch_custom_datadir }}"
+      register: elasticsearch_custom_datadir_test
+      check_mode: no
 
-  - name: "read the real datadir"
-    command: readlink -f /var/lib/elasticsearch
-    changed_when: false
-    register: elasticsearch_current_real_datadir_test
-    check_mode: no
+    - name: "read the real datadir"
+      command: readlink -f /var/lib/elasticsearch
+      changed_when: false
+      register: elasticsearch_current_real_datadir_test
+      check_mode: no
   tags:
     - elasticsearch
   when:
     - elasticsearch_custom_datadir != ''
     - elasticsearch_custom_datadir != None
 
-- block:
-  - name: elasticsearch is stopped
-    service:
-      name: elasticsearch
-      state: stopped
+- name: Datadir is moved to custom path
+  block:
+    - name: elasticsearch is stopped
+      service:
+        name: elasticsearch
+        state: stopped
 
-  - name: Move elasticsearch datadir to custom datadir
-    command: mv {{ elasticsearch_current_real_datadir_test.stdout }} {{ elasticsearch_custom_datadir }}
-    args:
-      creates: "{{ elasticsearch_custom_datadir }}"
+    - name: Move elasticsearch datadir to custom datadir
+      command: mv {{ elasticsearch_current_real_datadir_test.stdout }} {{ elasticsearch_custom_datadir }}
+      args:
+        creates: "{{ elasticsearch_custom_datadir }}"
 
-  - name: Symlink {{ elasticsearch_custom_datadir }} to /var/lib/elasticsearch
-    file:
-      src: "{{ elasticsearch_custom_datadir }}"
-      dest: '/var/lib/elasticsearch'
-      state: link
+    - name: Symlink {{ elasticsearch_custom_datadir }} to /var/lib/elasticsearch
+      file:
+        src: "{{ elasticsearch_custom_datadir }}"
+        dest: '/var/lib/elasticsearch'
+        state: link
 
-  - name: elasticsearch is started
-    service:
-      name: elasticsearch
-      state: started
+    - name: elasticsearch is started
+      service:
+        name: elasticsearch
+        state: started
   tags:
     - elasticsearch
   when:

@@ -8,7 +8,7 @@
 - name: APT cache is up-to-date
   apt:
     update_cache: yes
-  # when: percona__release_enable_tools | changed
+  # when: percona__release_enable_tools is changed
 
 - name: Percona XtraBackup package is installed
   apt:

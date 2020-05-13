@@ -1,15 +1,14 @@
 ---
 - name: packages are installed
   apt:
-    name: "{{ item }}"
+    name:
+      - nagios-nrpe-server
+      - monitoring-plugins
+      - monitoring-plugins-basic
+      - monitoring-plugins-common
+      - monitoring-plugins-standard
+      - nagios-plugins-contrib
     state: present
-  with_items:
-    - nagios-nrpe-server
-    - monitoring-plugins
-    - monitoring-plugins-basic
-    - monitoring-plugins-common
-    - monitoring-plugins-standard
-    - nagios-plugins-contrib
   tags:
     - nagios-nrpe
 
@@ -46,8 +45,8 @@
     - nagios-nrpe
 
 - include_role:
-    name: remount-usr
-  when: nagios_plugins_directory | search ("/usr")
+    name: evolix/remount-usr
+  when: nagios_plugins_directory is search ("/usr")
   tags:
     - nagios-nrpe
     - nagios-plugins

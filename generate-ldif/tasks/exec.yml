@@ -6,10 +6,10 @@
   failed_when: False
   check_mode: no
   tags:
-  - generateldif-exec
+    - generateldif-exec
 
 - debug:
     var: generateldif_run.stdout_lines
     verbosity: 1
   tags:
-  - generateldif-exec
+    - generateldif-exec

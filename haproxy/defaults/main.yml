@@ -2,3 +2,5 @@
 # backward compatibility with a previously used variable
 haproxy_backports: "{{ haproxy_jessie_backports | default(false, true) }}"
 haproxy_stats_url: "http://127.0.0.1:8080/"
+haproxy_update_config: True
+haproxy_force_config: True

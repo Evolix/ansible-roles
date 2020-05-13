@@ -1,0 +1,19 @@
+[Unit]
+Description=Advanced key-value store
+After=network.target
+
+[Service]
+Type=forking
+PermissionsStartOnly=True
+User=redis-%i
+Group=redis-%i
+ExecStartPre=/bin/mkdir -p {{ redis_socket_dir_prefix }}-%i {{ redis_pid_dir_prefix }}-%i
+ExecStartPre=/bin/chown redis-%i:redis-%i {{ redis_socket_dir_prefix }}-%i {{ redis_pid_dir_prefix }}-%i
+ExecStartPre=/bin/chmod 0750 {{ redis_socket_dir_prefix }}-%i {{ redis_pid_dir_prefix }}-%i
+ExecStart=/usr/bin/redis-server {{ redis_conf_dir_prefix }}-%i/redis.conf --unixsocket {{ redis_socket_dir_prefix }}-%i/redis.sock --pidfile {{ redis_pid_dir_prefix }}-%i/redis-server.pid
+ExecStop=/usr/bin/redis-cli -s {{ redis_socket_dir_prefix }}-%i/redis.sock shutdown
+ExecStopPost=/bin/rm -rf {{ redis_socket_dir_prefix }}-%i {{ redis_pid_dir_prefix }}-%i
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

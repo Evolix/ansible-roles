@@ -30,7 +30,7 @@
   tags:
     - fail2ban
 
-- name: Include ignoredips update task 
+- name: Include ignoredips update task
   include: ip_whitelist.yml
   when: fail2ban_force_update_ignore_ips
   tags:

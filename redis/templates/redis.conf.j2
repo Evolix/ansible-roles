@@ -1,11 +1,11 @@
 daemonize yes
-pidfile {{ redis_pidfile }}
+pidfile {{ redis_pid_dir }}/redis-server.pid
 port {{ redis_port }}
 bind {{ redis_bind_interface }}
 
-{% if redis_unixsocket %}
-unixsocket {{ redis_unixsocket }}
-unixsocketperm {{ redis_unixsocketperm }}
+{% if redis_socket_enabled %}
+unixsocket {{ redis_socket_dir }}/redis.sock
+unixsocketperm {{ redis_socket_perms }}
 {% endif %}
 
 {% if redis_password %}
@@ -17,8 +17,8 @@ masterauth {{ redis_password_master }}
 
 timeout {{ redis_timeout }}
 
-loglevel {{ redis_loglevel }}
-logfile {{ redis_logfile }}
+loglevel {{ redis_log_level }}
+logfile {{ redis_log_dir }}/redis-server.log
 
 # To enable logging to the system logger, just set 'syslog-enabled' to yes,
 # and optionally update the other syslog parameters to suit your needs.
@@ -32,15 +32,17 @@ databases {{ redis_databases }}
 save {{ save }}
 {% endfor %}
 
-rdbcompression {{ redis_rdbcompression }}
-dbfilename {{ redis_dbfilename }}
-dir {{ redis_dbdir }}
+rdbcompression {{ redis_rdbcompression | bool | ternary('yes','no') }}
+dbfilename {{ redis_data_file }}
+dir {{ redis_data_dir }}
 
-{% if redis_installed_version | version_compare('3.2', '>=') %}
-protected-mode {{ redis_protected_mode }}
+{% if redis_installed_version is version('3.2', '>=') %}
+protected-mode {{ redis_protected_mode | bool | ternary('yes','no') }}
 {% endif %}
 
-# maxclients 128
+{% if redis_maxclients %}
+maxclients {{ redis_maxclients }}
+{% endif %}
 
 {% if redis_maxmemory %}
 maxmemory {{ redis_maxmemory }}
@@ -48,7 +50,7 @@ maxmemory-policy {{ redis_maxmemory_policy }}
 maxmemory-samples {{ redis_maxmemory_samples }}
 {% endif %}
 
-appendonly {{ redis_appendonly }}
+appendonly {{ redis_appendonly | bool | ternary('yes','no') }}
 appendfsync {{ redis_appendfsync }}
 no-appendfsync-on-rewrite no
 

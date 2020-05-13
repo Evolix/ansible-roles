@@ -1,11 +1,10 @@
 ---
 - name: Install dependencies for build java package
   apt:
-    name: "{{ item }}"
+    name:
+      - java-package
+      - build-essential
     state: present
-  with_items:
-    - java-package
-    - build-essential
   tags:
   - java
 
@@ -41,7 +40,7 @@
   - java
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
 
 - name: Install java package
   apt:

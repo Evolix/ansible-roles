@@ -2,17 +2,24 @@
 
 - name: Dependencies are installed
   apt:
-    name: "{{ item }}"
+    name:
+      - sudo
+      - curl
     state: present
-  with_items:
-    - postgresql-client
-    - sudo
-    - curl
+  tags:
+    - evomaintenance
+
+- name: PG dependencies are installed
+  apt:
+    name:
+      - postgresql-client
+    state: present
+  when: evomaintenance_hook_db
   tags:
     - evomaintenance
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
   tags:
     - evomaintenance
 
@@ -38,7 +45,7 @@
   with_items:
     - { src: 'evomaintenance.sh', dest: '/usr/share/scripts/', mode: '0700' }
     - { src: 'evomaintenance.tpl', dest: '/usr/share/scripts/', mode: '0600' }
-  tags: 
+  tags:
     - evomaintenance
 
 - name: Configuration is installed

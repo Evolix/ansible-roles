@@ -16,7 +16,7 @@
     dest: "/root/{{ mysql_apt_config_package }}"
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
 
 - name: MySQL APT config package is installed
   apt:
@@ -34,7 +34,7 @@
 - meta: flush_handlers
 
 - include_role:
-    name: remount-usr
+    name: evolix/remount-usr
 
 - name: /usr/share/mysql exists
   file:
@@ -66,27 +66,24 @@
 - name: APT cache is up-to-date
   apt:
     update_cache: yes
-  when: mysql_apt_config_deb | changed
+  when: mysql_apt_config_deb is changed
 
 - name: Install MySQL packages
   apt:
-    name: '{{ item }}'
+    name:
+      - mysql-server
+      - mysql-client
     update_cache: yes
     state: present
-  with_items:
-    - mysql-server
-    - mysql-client
   tags:
     - mysql
     - packages
 
 - name: Install MySQL dev packages
   apt:
-    name: '{{ item }}'
+    name: libmysqlclient20
     update_cache: yes
     state: present
-  with_items:
-    - libmysqlclient20
   tags:
     - mysql
     - packages

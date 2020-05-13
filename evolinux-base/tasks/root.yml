@@ -37,6 +37,12 @@
     regexp: "umask [0-9]+"
   when: evolinux_root_umask
 
+- name: "/usr/share/scripts is present in root's PATH"
+  lineinfile:
+    dest: "/root/.profile"
+    line: "PATH=\"${PATH}:/usr/share/scripts\""
+  when: ansible_distribution_major_version is version('10', '>=')
+
 - name: Custom git config for root
   copy:
     src: root/gitconfig
@@ -87,7 +93,7 @@
     dest: /etc/ssh/sshd_config
     regexp: '^PermitRootLogin (yes|without-password|prohibit-password)'
     replace: "PermitRootLogin no"
-    validate: '/usr/sbin/sshd -T -f %s'
+    validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
   when: evolinux_root_disable_ssh
 

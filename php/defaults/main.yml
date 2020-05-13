@@ -4,3 +4,7 @@ php_sury_enable: False
 php_fpm_enable: False
 php_apache_enable: False
 php_symfony_requirements: False
+
+php_modules_mysqlnd: False
+
+php_fpm_remove_default_pool: False

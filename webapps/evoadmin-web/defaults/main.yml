@@ -10,11 +10,19 @@ evoadmin_scripts_dir: /usr/share/scripts/evoadmin
 evoadmin_host: "evoadmin.{{ ansible_fqdn }}"
 evoadmin_username: evoadmin
 
+evoadmin_multiphp_versions: []
 evoadmin_enable_vhost: True
-evoadmin_multi_php: False
+
+evoadmin_force_vhost: False
+evoadmin_config_local_php_force: False
+evoadmin_sudoers_conf_force: False
+evoadmin_add_conf_force: False
+evoadmin_mail_tpl_force: True
+evoadmin_htpasswd_force: False
+evoadmin_htpasswd: False
 
 evoadmin_tpl_servername: "{{ ansible_fqdn }}"
-evoadmin_tpl_address:  "{{ ansible_default_ipv4.address }}"
+evoadmin_tpl_address: "{{ ansible_default_ipv4.address }}"
 evoadmin_tpl_phpmyadmin_url: Null
 evoadmin_tpl_cgi_suffix: Null
 evoadmin_tpl_signature: evoadmin

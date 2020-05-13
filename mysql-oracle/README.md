@@ -21,6 +21,8 @@ Tasks are extracted in several files, included in `tasks/main.yml` :
 * `mysql_replace_root_with_mysqladmin`: switch from `root` to `mysqladmin` user or not ;
 * `mysql_thread_cache_size`: number of threads for the cache ;
 * `mysql_innodb_buffer_pool_size`: amount of RAM dedicated to InnoDB ;
+* `mysql_log_bin`: (default: `Null`, activates binlogs if used) ;
+* `mysql_server_id`: (default: `Null`, MySQL version default is then used) ;
 * `mysql_custom_datadir`: custom datadir
 * `mysql_custom_tmpdir`: custom tmpdir.
 * `general_alert_email`: email address to send various alert messages (default: `root@localhost`).

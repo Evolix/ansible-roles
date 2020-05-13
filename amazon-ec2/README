@@ -52,7 +52,7 @@ In your main evolinux playbook put this play before Evolinux one:
 
   tasks:
     - include_role:
-        name: amazon-ec2
+        name: evolix/amazon-ec2
         tasks_from: create-instance.yml
 ```
 

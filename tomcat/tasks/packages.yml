@@ -1,12 +1,33 @@
 ---
+
+- name: Set Tomcat version to 7 on Debian 8 if missing
+  set_fact:
+    tomcat_version: 7
+  when:
+    - ansible_distribution_release == "jessie"
+    - tomcat_version is not defined
+
+- name: Set Tomcat version to 8 on Debian 9 if missing
+  set_fact:
+    tomcat_version: 8
+  when:
+    - ansible_distribution_release == "stretch"
+    - tomcat_version is not defined
+
+- name: Set Tomcat version to 9 on Debian 10 if missing
+  set_fact:
+    tomcat_version: 9
+  when:
+    - ansible_distribution_release == "buster"
+    - tomcat_version is not defined
+
 - name: Install packages
   apt:
-    name: "{{ item }}"
+    name:
+      - "tomcat{{ tomcat_version }}"
+      - "tomcat{{ tomcat_version }}-user"
+      - "libpam-systemd"
     state: present
-  with_items:
-    - "tomcat{{ tomcat_version }}"
-    - "tomcat{{ tomcat_version }}-user"
-    - "libpam-systemd"
 
 - name: Create tomcat root dir
   file:

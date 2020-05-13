@@ -18,13 +18,14 @@
   tags:
   - varnish
 
-- name: Copy Custom Varnish ExecReload script
+- name: Copy Custom Varnish ExecReload script (Debian <=9)
   copy:
     src: "reload-vcl.sh"
     dest: "/etc/varnish/reload-vcl.sh"
     mode: "0700"
     owner: root
     group: root
+  when: ansible_distribution_major_version is version('9', '<=')
   notify: reload varnish
   tags:
   - varnish

@@ -1,8 +1,8 @@
 ---
 - name: Choose packages (Oracle)
   set_fact:
-    multi: "multi_"
-  when: memcached_instance_name != False
+     multi: "multi_"
+  when: memcached_instance_name !=""
 
 - name: is Munin present ?
   stat:
@@ -16,11 +16,10 @@
 - block:
   - name: Install munin-plugins-extra and libcache-memcached-perl for Munin
     apt:
-      name: "{{ item }}"
+      name:
+        - 'munin-plugins-extra'
+        - 'libcache-memcached-perl'
       state: present
-    with_items:
-    - 'munin-plugins-extra'
-    - 'libcache-memcached-perl'
 
   - name: Enable core Munin plugins
     file:

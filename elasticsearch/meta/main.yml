@@ -25,4 +25,4 @@ galaxy_info:
     # alphanumeric characters. Maximum 20 tags per role.
 
 dependencies:
-  - { role: java, alternative: 'openjdk', java_version: 8 }
+  - { role: evolix/java, alternative: 'openjdk' }

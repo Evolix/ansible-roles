@@ -1,10 +1,19 @@
 ---
 
 - name: "hold packages (apt)"
-  shell: "(apt-mark showhold | grep --quiet {{ item }}) || apt-mark hold {{ item }}"
+  shell: "(dpkg -l {{ item }} 2>/dev/null | grep -q -E '^(i|h)i') && ((apt-mark showhold | grep --quiet {{ item }}) || apt-mark hold {{ item }})"
   register: apt_mark
-  changed_when: "'{{ item }} set on hold.' in apt_mark.stdout"
-  with_items: "{{ apt_hold_packages }}"
+  changed_when: "item + ' set on hold.' in apt_mark.stdout"
+  failed_when: apt_mark.rc != 0 and not apt_mark.stdout == ''
+  loop: "{{ apt_hold_packages }}"
+  tags:
+    - apt
+
+- name: "/etc/evolinux is present"
+  file:
+    dest: /etc/evolinux
+    mode: "0700"
+    state: directory
   tags:
     - apt
 
@@ -14,15 +23,16 @@
     line: "{{ item }}"
     create: True
     state: present
-  with_items: "{{ apt_hold_packages }}"
+  loop: "{{ apt_hold_packages }}"
   tags:
     - apt
 
 - name: "unhold packages (apt)"
-  shell: "(apt-mark showhold | grep --quiet {{ item }}) && apt-mark unhold {{ item }}"
+  shell: "(dpkg -l {{ item }} 2>/dev/null | grep -q -E '^(i|h)i') && ((apt-mark showhold | grep --quiet {{ item }}) && apt-mark unhold {{ item }})"
   register: apt_mark
-  changed_when: "'Canceled hold on {{ item }}.' in apt_mark.stdout"
-  with_items: "{{ apt_unhold_packages }}"
+  changed_when: "'Canceled hold on' + item in apt_mark.stdout"
+  failed_when: apt_mark.rc != 0 and not apt_mark.stdout = ''
+  loop: "{{ apt_unhold_packages }}"
   tags:
     - apt
 
@@ -32,7 +42,7 @@
     line: "{{ item }}"
     create: True
     state: absent
-  with_items: "{{ apt_unhold_packages }}"
+  loop: "{{ apt_unhold_packages }}"
   tags:
     - apt
 
@@ -55,6 +65,15 @@
   tags:
     - apt
 
+- name: Check if Cron is installed
+  shell: "dpkg --list 'cron' 2>/dev/null | grep -q -E '^(i|h)i'"
+  register: is_cron
+  changed_when: false
+  failed_when: false
+  check_mode: no
+  tags:
+    - apt
+
 - name: Check for held packages (script)
   cron:
     cron_file: apt-hold-packages
@@ -67,5 +86,6 @@
     day: "{{ apt_check_hold_cron_day }}"
     month: "{{ apt_check_hold_cron_month }}"
     state: "present"
+  when: is_cron.rc == 0
   tags:
     - apt

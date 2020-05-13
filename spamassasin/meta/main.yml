@@ -1,3 +1,3 @@
 ---
 dependencies:
-  - { role: amavis }
+  - { role: evolix/amavis }

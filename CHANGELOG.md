@@ -16,7 +16,119 @@ The **patch** part changes incrementally at each release.
 
 ### Fixed
 
+### Removed
+
 ### Security
+
+## [10.0.0] - 2020-05-13
+
+### Added
+* apache: the default VHost doesn't redirect to https for ".well-known" paths
+* apt: added buster backports prerferences
+* apt: check if cron is installed before adding a cron job
+* apt: remove jessie/buster sources from Gandi servers
+* apt: verify that /etc/evolinux is present
+* certbot : new role to install and configure certbot
+* etc-git: add versioning for /usr/share/scripts on Debian 10+
+* evoacme: upstream version 19.11
+* evolinux-base: default value for "evolinux_ssh_group"
+* evolinux-base: install /sbin/deny
+* evolinux-base: install Evocheck (default: `True`)
+* evolinux-base: on debian 10 and later, add noexec on /dev/shm
+* evolinux-base: on debian 10 and later, add /usr/share/scripts in root's PATH
+* evolinux-base: remove the chrony package
+* evomaintenance: don't configure firewall for database if not necessary
+* generate-ldif: support MariaDB 10.3
+* haproxy: add a variable to keep the existing configuration
+* java: add Java 11 as possible version to install
+* listupgrade: install old-kernel-autoremoval script
+* minifirewall: add a variable to force the check scripts update
+* mongodb: mongodb: compatibility with Debian 10
+* mysql-oracle: backport tasks from mysql role
+* mysql: activate binary logs by specifying log_bin path
+* mysql: specify a custom server_id
+* networkd-to-ifconfig: add variables for configuration by variables
+* packweb-apache: Deploy opcache.php to give some insights on PHP's opcache status
+* php: variable to install the mysqlnd module instead of the default mysql module
+* postgresql : variable to install PostGIS (default: `False`)
+* redis: rewrite of the role (separate instances, better systemd units…)
+* webapps/evoadmin-web Add an htpasswd to evoadmin if you cant use an apache IP whitelist
+* webapps/evoadmin-web Overload templates if needed
+* evolinux-base: install ssacli for HP Smart Array
+* evobackup-client role to configure a machine for backups with bkctld(8)
+* bind: enable query logging for recursive resolvers
+* bind: enable logrotate for recursive resolvers
+* bind: enable bind9 munin plugin for recursive resolvers
+
+### Changed
+* replace version_compare() with version()s
+* removed some deprecations for Ansible 2.7
+* apache: improve permissions in save_apache_status script
+* apt: hold packages only if package is installed
+* bind: the munin task was present, but not included
+* bind: change name of logrotate file to bind9
+* certbot: commit hook must be executed at the end
+* elasticsearch: listen on local interface only by default
+* evocheck: upstream version 20.04.4
+* evocheck: cron jobs execute in verbose
+* evolinux-base: use "evolinux_internal_group" for SSH authentication
+* evolinux-base: Don't customize the logcheck recipient by default.
+* evolinux-base: configure cciss-vol-statusd in the proper file
+* evomaintenance: upstream release 0.6.3
+* evomaintenance: Turn on API by default (instead of DB)
+* evomaintenance: install PG dependencies only when needed
+* listupgrade: update from upstream
+* lxc: rely on lxc_container module instead of command module
+* lxc: remove useless loop in apt execution
+* lxc: update our default template to be compatible with Debian 10
+* lxc-php: refactor tasks for better maintainability
+* lxc-php: Use OpenSMTPD for Stretch/Buster containers, and ssmtp for Jessie containers
+* lxc-solr: changed default Solr version to 8.4.1
+* minifirewall: better alert5 activation
+* minifirewall: no http filtering by default
+* minifirewall: /bin/true command doesn't report "changed" anymore
+* nagios-nrpe: update check_redis_instances (same as redis role)
+* nagios-nrpe: change default haproxy socket path
+* nagios-nrpe: check_mode per cpu dynamically
+* nodejs: change default version to 12 (new LTS)
+* packweb-apache: Do the install & conffigure phpContainer script (instead of evoadmin-web role)
+* php: By default, allow 128M for OpCache (instead of 64M)
+* php: Don't set a chroot for the default fpm pool
+* php: Make sure the default pool we define can be fully functionnal witout debian's default pool file
+* php: Change the default pool names to something more explicit (and same for the variables names)
+* php: Add a task to remove Debian's default FPM pool file (off by default)
+* php: Cleanup CLI Settings. Also, allow url fopen and don't disable functions (in CLI only)
+* postgresql : changed logrotate config to 10 days (and fixed permissions)
+* rbenv: changed default Ruby version to 2.7.0
+* squid: Remove wait time when we turn off squid
+* squid: compatibility wit Debian 10
+* tomcat: package version derived from Debian version if missing
+* varnish: remove custom ExecReload= script for Debian 10+
+
+### Fixed
+* etc-git: fix warnings ansible-lint
+* evoadmin-web: Put the php config at the right place for Buster
+* lxc: Don't stop the container if it already exists
+* lxc: Fix container existance check to be able to run in check_mode
+* lxc-php: Don't remove the default pool
+* minifirewall: fix warnings ansible-lint
+* nginx: fix munin fcgi not working (missing chmod 660 on logs)
+* php: add missing handler for php7.3-fpm
+* roundcube: fix typo for roundcube vhost
+* tomcat: fix typo for default tomcat_version
+* evolinux-base: Fix our zsyslog rotate config that doesn't work on Debian 10
+* certbot: Properly evaluate when apache is installed
+* evolinux-base: Don't make alert5.service executable as systemd will complain
+* webapps/evoadmin-web: Set default evoadmin_mail_tpl_force to True to fix a regression where the mail template would not get updated because the file is created before the role is first run.
+* minifirewall: Backport changes from minifirewall (properly open outgoing smtp(s))
+* minifirewall: Properly detect alert5.sh to turn on firewall at boot
+* packweb-apache: Add missing dependency to evoacme role
+* php: Chose the debian version repo archive for packages.sury.org
+* php: update surry_post.yml to match current latest PHP release
+* packweb-apache: Don't try to install PHPMyAdmin on Buster as it's not available
+
+### Removed
+* clamav : do not install the zoo package anymore
 
 ## [9.10.1] - 2019-06-21
 

@@ -18,7 +18,7 @@
 
 - name: Setup deb.sury.org repository - Add source list
   apt_repository:
-    repo: "deb https://packages.sury.org/php/ stretch main"
+    repo: "deb https://packages.sury.org/php/ {{ ansible_distribution_release }} main"
     filename: sury
     state: present
 

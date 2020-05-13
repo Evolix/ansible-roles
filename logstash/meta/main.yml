@@ -14,4 +14,4 @@ galaxy_info:
     - jessie
 
 dependencies:
-  - { role: java, java_alternative: 'openjdk', java_version: 8 }
+  - { role: evolix/java, java_alternative: 'openjdk', java_version: 8 }

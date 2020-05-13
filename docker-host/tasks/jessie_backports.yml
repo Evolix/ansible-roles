@@ -1,6 +1,6 @@
 ---
 - include_role:
-    name: apt
+    name: evolix/apt
     tasks_from: backports.yml
   tags:
   - packages
@@ -18,6 +18,6 @@
 - name: update apt
   apt:
     update_cache: yes
-  when: docker_apt_preferences | changed
+  when: docker_apt_preferences is changed
   tags:
   - packages

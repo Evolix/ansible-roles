@@ -12,7 +12,7 @@ evolinux_internal_domain:   "{{ evolinux_domain }}"
 evolinux_internal_fqdn:     "{{ evolinux_internal_hostname }}.{{ evolinux_internal_domain }}"
 #################################
 
-evomaintenance_install_vendor: False
+evomaintenance_install_vendor: True
 evomaintenance_force_config: True
 
 evomaintenance_hostname: "{{ evolinux_internal_fqdn }}"
@@ -34,8 +34,8 @@ evomaintenance_realm: "{{ evolinux_internal_domain }}"
 evomaintenance_api_endpoint: Null
 evomaintenance_api_key: Null
 
-evomaintenance_hook_api: False
-evomaintenance_hook_db: True
+evomaintenance_hook_api: True
+evomaintenance_hook_db: False
 evomaintenance_hook_commit: True
 evomaintenance_hook_mail: True
 
