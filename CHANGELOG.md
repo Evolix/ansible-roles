@@ -11,6 +11,18 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [10.0.0] - 2020-05-13
+
+### Added
 * apache: the default VHost doesn't redirect to https for ".well-known" paths
 * apt: added buster backports prerferences
 * apt: check if cron is installed before adding a cron job
@@ -114,13 +126,9 @@ The **patch** part changes incrementally at each release.
 * php: Chose the debian version repo archive for packages.sury.org
 * php: update surry_post.yml to match current latest PHP release
 * packweb-apache: Don't try to install PHPMyAdmin on Buster as it's not available
-*
 
 ### Removed
 * clamav : do not install the zoo package anymore
-
-
-### Security
 
 ## [9.10.1] - 2019-06-21
 
