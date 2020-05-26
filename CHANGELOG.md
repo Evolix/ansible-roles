@@ -18,6 +18,7 @@ The **patch** part changes incrementally at each release.
 ### Changed
 
 * packweb-apache: Don't turn on mod-evasive emails by default
+* haproxy: chroot and socket path are configurable
 
 ### Fixed
 
