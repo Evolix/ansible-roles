@@ -2,11 +2,13 @@
 set -euo pipefail
 
 # This check_hpraid is a fork from check_cciss v0.15 written by Simone Rosa.
+# Usage of old tools and drivers were removed to use only the smartpqi driver and the ssacli tool from HP.
 # Upstream now at:
 # https://gitea.evolix.org/evolix/ansible-roles/src/branch/stable/nagios-nrpe/files/plugins
 # Source of the fork:
 # https://exchange.nagios.org/directory/Plugins/Hardware/Storage-Systems/RAID-Controllers/check_cciss--2D-HP-and-Compaq-Smart-Array-Hardware-status/details
-# 
+#
+# Licence: GPLv2
 # Description:
 #
 # This plugin checks hardware status for Smart Array Controllers,
