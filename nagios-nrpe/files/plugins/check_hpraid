@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2028
 set -euo pipefail
 
 # This check_hpraid is a fork from check_cciss v0.15 written by Simone Rosa.
+# Fork written by Evolix and for Evolix usage (Debian only).
 # Usage of old tools and drivers were removed to use only the smartpqi driver and the ssacli tool from HP.
-# Upstream now at:
+# Tools not used on Debian were also removed.
+# Linting tool shellcheck was used to use a better bash coding style.
+# Upstream at:
 # https://gitea.evolix.org/evolix/ansible-roles/src/branch/stable/nagios-nrpe/files/plugins
 # Source of the fork:
 # https://exchange.nagios.org/directory/Plugins/Hardware/Storage-Systems/RAID-Controllers/check_cciss--2D-HP-and-Compaq-Smart-Array-Hardware-status/details
@@ -72,14 +76,15 @@ set -euo pipefail
 #                 Controller Status: OK Cache Status: Temporarily Disabled \
 #                 Battery/Capacitor Status: Failed (Replace Batteries/Capacitors)
 
-PROGNAME=$(basename $0)
+PROGNAME=$(basename "$0")
 NAGIOS_PLUGINS="/usr/lib/nagios/plugins/"
-REVISION=$(echo '0.16-evolix')
+REVISION="0.16-evolix"
 DEBUG="0"
 VERBOSE="0"
 ssacli=$(command -v ssacli)
 PHYSICAL_DRIVE=0
 
+# shellcheck source=/dev/null
 . ${NAGIOS_PLUGINS}/utils.sh
 
 print_usage() {
@@ -100,7 +105,7 @@ print_usage() {
 }
 
 print_help() {
-    print_revision $PROGNAME $REVISION
+    print_revision "$PROGNAME" "$REVISION"
     echo ""
     print_usage
     echo ""
@@ -122,7 +127,7 @@ do
       e)  EXCLUDE_SLOT=1
           excludeslot="$OPTARG";;
       b)  EXCLUDE_BATTERY=1;;
-      V)  print_revision $PROGNAME $REVISION
+      V)  print_revision "$PROGNAME" "$REVISION"
           exit 0;;
       h)  print_help
           exit 0;;
@@ -142,79 +147,80 @@ else
     driverPresent='No!'
 fi
 if [ "$DEBUG" = "1" ]; then
-    echo "### Check if \"HP Smart Array\" ($DRIVER) is present >>>\n"${driverPresent}"\n"
+    echo "### Check if \"HP Smart Array\" ($DRIVER) is present >>>\n${driverPresent}\n"
 fi
 if [[ "$driverPresent" == "No!" ]]; then
     echo "RAID UNKNOWN - HP Smart Array not found"
-    exit $STATE_UNKNOWN
+    exit "$STATE_UNKNOWN"
 fi
 
 # Check if "HP Array Utility CLI" is present
 if [ "$DEBUG" = "1" ]; then
     echo "### Check if \"ssacli\" is present >>>\n"
 fi
-if [ ! -x $ssacli ]; then
-    if [ -x $ssacli ]; then
+if [ ! -x "$ssacli" ]; then
+    if [ -x "$ssacli" ]; then
         if [ "$DEBUG" = "1" ]; then
             echo "### \"ssacli\" is present >>>\n"
         fi
     else
         echo "ERROR: ssacli tools should be installed and with right sudoers/permissions (see the notes above)"
-        exit $STATE_UNKNOWN
+        exit "$STATE_UNKNOWN"
     fi
 fi
 
 # Check if "HP Controller" work correctly
-check=$(sudo -u root $ssacli controller all show status 2>&1)
+check=$(sudo -u root "$ssacli" controller all show status 2>&1)
 status=$?
 if [ "$DEBUG" = "1" ]; then
-    echo "### Check if \"HP Controller\" work correctly >>>\n"${check}"\n"
+    echo "### Check if \"HP Controller\" work correctly >>>\n""${check}""\n"
 fi
 if test ${status} -ne 0; then
-    echo "RAID UNKNOWN - $ssacli did not execute properly : "${check}
-    exit $STATE_UNKNOWN
+    echo "RAID UNKNOWN - $ssacli did not execute properly : ""${check}"
+    exit "$STATE_UNKNOWN"
 fi
 
 # Get "Slot" & exclude slot needed
 EXCLUDE_SLOT=${EXCLUDE_SLOT:-0}
 if [ "$EXCLUDE_SLOT" = "1" ]; then
-    slots=$(echo ${check} | egrep -o "Slot \w" | awk '{print $NF}' | grep -v "$excludeslot")
+    slots=$(grep -E -o "Slot \w" <<< "$check" | awk '{print $NF}' | grep -v "$excludeslot")
 else
-    slots=$(echo ${check} | egrep -o "Slot \w" | awk '{print $NF}')
+    slots=$(grep -E -o "Slot \w" <<< "$check" | awk '{print $NF}')
 fi
 if [ "$DEBUG" = "1" ]; then
-    echo "### Get \"Slot\" & exclude slot not needed >>>\n"${slots}"\n"
+    echo "### Get \"Slot\" & exclude slot not needed >>>\n""${slots}""\n"
 fi
+
 for slot in $slots; do
     # Get "logicaldrive" for slot
-    check2b=$(sudo -u root $ssacli controller slot=$slot logicaldrive all show 2>&1)
+    check2b=$(sudo -u root "$ssacli" controller slot="$slot" logicaldrive all show 2>&1)
     status=$?
     if test ${status} -ne 0; then
-        echo "RAID UNKNOWN - $ssacli did not execute properly : "${check2b}
-        exit $STATE_UNKNOWN
+        echo "RAID UNKNOWN - $ssacli did not execute properly : ""${check2b}"
+        exit "$STATE_UNKNOWN"
     fi
     check2=${check2:-}
     check2="$check2$check2b"
     if [ "$DEBUG" = "1" ]; then
-        echo "### Get \"logicaldrive\" for slot >>>\n"${check2b}"\n"
+        echo "### Get \"logicaldrive\" for slot >>>\n""${check2b}""\n"
     fi
 
     # Get "physicaldrive" for slot
-    if [ "$PHYSICAL_DRIVE" = "1" -o "$DEBUG" = "1" ]; then
-        check2b=$(sudo -u root $ssacli controller slot=$slot physicaldrive all show | sed -e 's/\?/\-/g' 2>&1 | grep "physicaldrive")
+    if [ "$PHYSICAL_DRIVE" = "1" ] || [ "$DEBUG" = "1" ]; then
+        check2b=$(sudo -u root "$ssacli" controller slot="$slot" physicaldrive all show | sed -e 's/\?/\-/g' 2>&1 | grep "physicaldrive")
     else
-        check2b=$(sudo -u root $ssacli controller slot=$slot physicaldrive all show | sed -e 's/\?/\-/g' 2>&1 | grep "physicaldrive" | (grep "\(Failure\|Failed\|Rebuilding\)" || true))
+        check2b=$(sudo -u root "$ssacli" controller slot="$slot" physicaldrive all show | sed -e 's/\?/\-/g' 2>&1 | grep "physicaldrive" | (grep "\(Failure\|Failed\|Rebuilding\)" || true))
     fi
     status=$?
-    if [ "$PHYSICAL_DRIVE" = "1" -o "$DEBUG" = "1" ]; then
+    if [ "$PHYSICAL_DRIVE" = "1" ] || [ "$DEBUG" = "1" ]; then
         if test ${status} -ne 0; then
-            echo "RAID UNKNOWN - $ssacli did not execute properly : "${check2b}
-            exit $STATE_UNKNOWN
+            echo "RAID UNKNOWN - $ssacli did not execute properly : ""${check2b}"
+            exit "$STATE_UNKNOWN"
         fi
     fi
     check2="$check2$check2b"
     if [ "$DEBUG" = "1" ]; then
-        echo "### Get \"physicaldrive\" for slot >>>\n"${check2b}"\n"
+        echo "### Get \"physicaldrive\" for slot >>>\n""${check2b}""\n"
     fi
 done
 
@@ -226,43 +232,42 @@ fi
 # Omit battery/capacitor/cache status check if requested
 EXCLUDE_BATTERY=${EXCLUDE_BATTERY:-0}
 if [ "$EXCLUDE_BATTERY" = "1" ]; then
-    check=$(echo "$check" | grep -v 'Battery/Capacitor Status: Failed (Replace Batteries/Capacitors)')
-    check=$(echo "$check" | grep -v 'Cache Status: Temporarily Disabled')
+    check=$(grep -v 'Battery/Capacitor Status: Failed (Replace Batteries/Capacitors)' "$check")
+    check=$(grep -v 'Cache Status: Temporarily Disabled' "$check")
 fi
 
-if echo ${check} | egrep Failed >/dev/null; then
-    echo "RAID CRITICAL - HP Smart Array Failed: "${check} | egrep Failed
-    exit $STATE_CRITICAL
-elif echo ${check} | egrep Disabled >/dev/null; then
-    echo "RAID CRITICAL - HP Smart Array Problem: "${check} | egrep Disabled
-    exit $STATE_CRITICAL
-elif echo ${check2} | egrep Failed >/dev/null; then
-    echo "RAID CRITICAL - HP Smart Array Failed: "${check2} | egrep Failed
-    exit $STATE_CRITICAL
-elif echo ${check2} | egrep Failure >/dev/null; then
-    echo "RAID WARNING - Component Failure: "${check2} | egrep Failure
-    exit $STATE_WARNING
-elif echo ${check2} | egrep Rebuild >/dev/null; then
-    echo "RAID WARNING - HP Smart Array Rebuilding: "${check2} | egrep Rebuild
-    exit $STATE_WARNING
-elif echo ${check2} | egrep Recover >/dev/null; then
-    echo "RAID WARNING - HP Smart Array Recovering: "${check2} | egrep Recover
-    exit $STATE_WARNING
-elif echo ${check} | egrep "Cache Status: Temporarily Disabled" >/dev/null; then
-    echo "RAID WARNING - HP Smart Array Cache Disabled: "${check}
-    exit $STATE_WARNING
-elif echo ${check} | egrep FIRMWARE >/dev/null; then
-    echo "RAID WARNING - "${check}
-    exit $STATE_WARNING
+if grep -qiE Failed <<< "$check"; then
+    echo  "RAID CRITICAL - HP Smart Array Failed: ${check}"
+    exit "$STATE_CRITICAL"
+elif grep -qiE Disabled <<< "$check"; then
+    echo "RAID CRITICAL - HP Smart Array Problem: ${check}"
+    exit "$STATE_CRITICAL"
+elif grep -qiE Failed <<< "$check2"; then
+    echo "RAID CRITICAL - HP Smart Array Failed: ${check2}"
+    exit "$STATE_CRITICAL"
+elif grep -qiE Failure <<< "$check2"; then
+    echo "RAID WARNING - Component Failure: ${check2}"
+    exit "$STATE_WARNING"
+elif grep -qiE Rebuild <<< "$check2"; then
+    echo "RAID WARNING - HP Smart Array Rebuilding: ${check2}"
+    exit "$STATE_WARNING"
+elif grep -qiE Recover <<< "$check2"; then
+    echo "RAID WARNING - HP Smart Array Recovering: ${check2}"
+    exit "$STATE_WARNING"
+elif grep -qiE "Cache Status: Temporarily Disabled" <<< "$check"; then
+    echo "RAID WARNING - HP Smart Array Cache Disabled: ${check}"
+    exit "$STATE_WARNING"
+elif grep -qiE FIRMWARE <<< "$check"; then
+    echo "RAID WARNING - ${check}"
+    exit "$STATE_WARNING"
 else
-    if [ "$DEBUG" = "1" -o "$VERBOSE" = "1" ]; then
-        check3=$(echo "${check}" | egrep Status)
-        check3=$(echo ${check3})
-        echo "RAID OK: "${check2}" ["${check3}"]"
+    if [ "$DEBUG" = "1" ] || [ "$VERBOSE" = "1" ]; then
+        check3=$(grep -E Status <<< "$check")
+        echo "RAID OK: ${check2} [${check3}]"
     else
         echo "RAID OK"
     fi
-    exit $STATE_OK
+    exit "$STATE_OK"
 fi
 
-exit $STATE_UNKNOWN
+exit "$STATE_UNKNOWN"
