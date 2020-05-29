@@ -4,7 +4,7 @@ set -euo pipefail
 
 # This check_hpraid is a fork from check_cciss v0.15 written by Simone Rosa.
 # Fork written by Evolix and for Evolix usage (Debian only).
-# Usage of old tools and drivers were removed to use only the smartpqi driver and the ssacli tool from HP.
+# Usage of old tools and drivers were removed to use only the smartpqi or hpsa drivers and the ssacli tool from HP.
 # Tools not used on Debian were also removed.
 # Linting tool shellcheck was used to use a better bash coding style.
 # Upstream at:
@@ -77,7 +77,7 @@ set -euo pipefail
 #                 Battery/Capacitor Status: Failed (Replace Batteries/Capacitors)
 
 PROGNAME=$(basename "$0")
-NAGIOS_PLUGINS="/usr/lib/nagios/plugins/"
+NAGIOS_PLUGINS="/usr/lib/nagios/plugins"
 REVISION="0.16-evolix"
 DEBUG="0"
 VERBOSE="0"
@@ -138,16 +138,15 @@ do
     esac
 done
 
-# Use smartpqi driver
+# Check if smartpqi or hpsa driver is loaded
 # https://manpages.debian.org/buster/manpages/smartpqi.4.en.html
-if [ -d /sys/bus/pci/drivers/smartpqi ]; then
-    DRIVER="/sys/bus/pci/drivers/smartpqi"
+if [ -d /sys/bus/pci/drivers/smartpqi ] || [ -d /sys/bus/pci/drivers/hpsa ]; then
     driverPresent='YES.'
 else
     driverPresent='No!'
 fi
 if [ "$DEBUG" = "1" ]; then
-    echo "### Check if \"HP Smart Array\" ($DRIVER) is present >>>\n${driverPresent}\n"
+    echo "### Check if \"HP Smart Array\" driver is present >>>\n${driverPresent}\n"
 fi
 if [[ "$driverPresent" == "No!" ]]; then
     echo "RAID UNKNOWN - HP Smart Array not found"
@@ -193,12 +192,18 @@ fi
 
 for slot in $slots; do
     # Get "logicaldrive" for slot
+    set +e
     check2b=$(sudo -u root "$ssacli" controller slot="$slot" logicaldrive all show 2>&1)
     status=$?
     if test ${status} -ne 0; then
+        # Skip empty slots
+        if grep -q "The specified device does not have any logical drives." <<< "$check2b"; then
+            break
+        fi
         echo "RAID UNKNOWN - $ssacli did not execute properly : ""${check2b}"
         exit "$STATE_UNKNOWN"
     fi
+    set -e
     check2=${check2:-}
     check2="$check2$check2b"
     if [ "$DEBUG" = "1" ]; then
