@@ -11,6 +11,9 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* mysql: activate binary logs by specifying log_bin path
+* mysql: specify a custom server_id
+* mysql: option to define as read only
 
 ### Changed
 
@@ -47,8 +50,6 @@ The **patch** part changes incrementally at each release.
 * minifirewall: add a variable to force the check scripts update
 * mongodb: mongodb: compatibility with Debian 10
 * mysql-oracle: backport tasks from mysql role
-* mysql: activate binary logs by specifying log_bin path
-* mysql: specify a custom server_id
 * networkd-to-ifconfig: add variables for configuration by variables
 * packweb-apache: Deploy opcache.php to give some insights on PHP's opcache status
 * php: variable to install the mysqlnd module instead of the default mysql module
