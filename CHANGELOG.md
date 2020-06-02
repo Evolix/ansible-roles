@@ -19,6 +19,7 @@ The **patch** part changes incrementally at each release.
 
 * packweb-apache: Don't turn on mod-evasive emails by default
 * haproxy: chroot and socket path are configurable
+* redis: create sudoers file if missing
 
 ### Fixed
 
