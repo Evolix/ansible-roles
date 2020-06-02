@@ -1,5 +1,11 @@
 ---
 
+- name: Verify Redis port
+  assert:
+    that:
+      - redis_port != 6379
+    msg: "If you want to use port 6379, use the default instance, not a named instance."
+
 - name: "Instance '{{ redis_instance_name }}' group is present"
   group:
     name: "redis-{{ redis_instance_name }}"

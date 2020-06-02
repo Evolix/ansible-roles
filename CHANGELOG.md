@@ -21,6 +21,7 @@ The **patch** part changes incrementally at each release.
 * haproxy: chroot and socket path are configurable
 * redis: create sudoers file if missing
 * redis: new syntax for match filter
+* redis: raise an error is port 6379 is used in "instance" mode
 
 ### Fixed
 
