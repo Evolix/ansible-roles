@@ -50,6 +50,7 @@
     line: 'nagios          ALL = NOPASSWD: {{ redis_check_redis_path }}'
     insertafter: '^nagios'
     validate: "visudo -cf %s"
+    create: yes
   when: redis_instance_name is defined
   tags:
     - redis
