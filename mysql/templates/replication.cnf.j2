@@ -1,0 +1,8 @@
+# {{ansible_managed}}
+
+[mysqld]
+{% if mysql_log_bin %}
+log_bin = {{ mysql_log_bin }}
+{% endif %}
+server_id = {{ mysql_server_id }}
+binlog_format = {{ mysql_binlog_format }}

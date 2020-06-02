@@ -4,11 +4,6 @@
     name: munin-node
     state: restarted
 
-- name: restart nagios-nrpe-server
-  service:
-    name: nagios-nrpe-server
-    state: restarted
-
 - name: restart mysql
   service:
     name: mysql
@@ -23,3 +18,8 @@
   systemd:
     name: mysql
     daemon_reload: yes
+
+- name: 'restart xinetd'
+  service:
+    name: 'xinetd'
+    state: 'restart'

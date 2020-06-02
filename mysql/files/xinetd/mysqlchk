@@ -1,0 +1,13 @@
+# Ansible managed
+service mysqlchk
+{
+        socket_type     = stream
+        port            = 8306
+        protocol        = tcp
+        wait            = no
+        type            = UNLISTED
+        user            = root
+        server          = /usr/share/scripts/mysqlchk.sh
+        log_on_failure  += USERID
+        disable         = no
+}

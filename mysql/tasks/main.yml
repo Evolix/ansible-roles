@@ -22,6 +22,9 @@
 - include: config_jessie.yml
   when: ansible_distribution_release == "jessie"
 
+- include: replication.yml
+  when: mysql_replication
+
 - include: datadir.yml
 
 - include: logdir.yml
