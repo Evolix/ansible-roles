@@ -265,7 +265,7 @@ readonly ARGS=$@
 readonly VERBOSE=${VERBOSE:-"0"}
 readonly QUIET=${QUIET:-"0"}
 
-readonly VERSION="19.11"
+readonly VERSION="20.06"
 
 # Read configuration file, if it exists
 [ -r /etc/default/evoacme ] && . /etc/default/evoacme
