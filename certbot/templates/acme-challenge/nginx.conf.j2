@@ -1,5 +1,9 @@
 location ~ /.well-known/acme-challenge {
+{% if ansible_distribution == "Debian" and ansible_distribution_major_version is version('8', '<=') %}
+    alias {{ certbot_work_dir }}/.well-known/acme-challenge;
+{% else %}
     alias {{ certbot_work_dir }}/;
+{% endif %}
     try_files $uri =404;
     allow all;
 }

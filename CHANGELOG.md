@@ -27,6 +27,8 @@ The **patch** part changes incrementally at each release.
 
 ### Fixed
 
+* certbot: restore compatibility with old Nginx
+
 ### Removed
 
 ### Security
