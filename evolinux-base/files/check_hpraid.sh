@@ -37,11 +37,12 @@ main() {
         cat << EOT
         Different RAID state detected.
         Was:
-        $check_hpraid_last
+        $(cat $check_hpraid_last)
         Is now:
-        $check_hpraid_output
+        $(cat $check_hpraid_output)
 EOT
-    exit 1
+        cp "$check_hpraid_output" $check_hpraid_last
+        exit 1
     fi
     
     # If check_hpraid returned error, display output, save status and 
