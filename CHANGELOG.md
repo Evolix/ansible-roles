@@ -14,6 +14,7 @@ The **patch** part changes incrementally at each release.
 * mysql: activate binary logs by specifying log_bin path
 * mysql: specify a custom server_id
 * mysql: option to define as read only
+* packweb-apache: Install zip & unzip by default
 
 ### Changed
 
