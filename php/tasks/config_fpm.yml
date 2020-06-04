@@ -24,7 +24,7 @@
     dest: "{{ php_fpm_defaults_ini_file }}"
     section: PHP
     option: disable_functions
-    value: "exec,shell-exec,system,passthru,putenv,popen"
+    value: "exec,shell-exec,system,passthru,popen"
   notify: "restart {{ php_fpm_service_name }}"
 
 - name: Custom php.ini for FPM
