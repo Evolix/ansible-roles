@@ -11,6 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+* lxc-php: Install php-sqlite by default
 * mysql: activate binary logs by specifying log_bin path
 * mysql: specify a custom server_id
 * mysql: option to define as read only
