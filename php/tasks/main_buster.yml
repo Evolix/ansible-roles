@@ -27,6 +27,7 @@
       - php-mysql
       # php-mcrypt is no longer packaged for PHP 7.2
       - php-pgsql
+      - php-sqlite3
       - php-gettext
       - php-curl
       - php-ssh2
@@ -76,7 +77,7 @@
 
 - include: config_fpm.yml
   when: php_fpm_enable
-  
+
 - name: Enforce permissions on PHP fpm directory
   file:
     dest: /etc/php/7.3/fpm
@@ -85,7 +86,7 @@
 
 - include: config_apache.yml
   when: php_apache_enable
-  
+
 - name: Enforce permissions on PHP apache2 directory
   file:
     dest: /etc/php/7.3/apache2
