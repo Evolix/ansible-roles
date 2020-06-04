@@ -18,6 +18,7 @@ The **patch** part changes incrementally at each release.
 * mysql: option to define as read only
 * packweb-apache: Install zip & unzip by default
 * php: Install php-sqlite by default
+* php: Don't disable putenv() by default in PHP settings
 
 ### Changed
 
