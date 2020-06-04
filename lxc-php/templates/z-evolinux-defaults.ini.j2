@@ -6,3 +6,11 @@ log_errors = {{ php_conf_log_errors }}
 html_errors = {{ php_conf_html_errors }}
 allow_url_fopen = {{ php_conf_allow_url_fopen }}
 disable_functions = {{ php_conf_disable_functions }}
+
+{% if php_conf_mysql_default_socket %}
+[Pdo_mysql]
+pdo_mysql.default_socket = {{ php_conf_mysql_default_socket }}
+
+[MySQLi]
+mysqli.default_socket = {{ php_conf_mysql_default_socket }}
+{% endif %}
