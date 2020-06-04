@@ -52,6 +52,7 @@ EOT
         cat "$check_hpraid_output"
         exit 1
     else
+        cp "$check_hpraid_output" $check_hpraid_last
         exit 0
     fi
 }
