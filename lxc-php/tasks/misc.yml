@@ -27,6 +27,5 @@
   lxc_container:
     name: "{{ lxc_php_version }}"
     container_config:
-      - "lxc.mount.entry = /var/run/mysqld/mysqld {{ php_conf_mysql_default_socket | replace('/', '', 1) }} none bind,create=file 0 0"
-    state: restarted
-  when: php_conf_mysql_default_socket is string
+      - "lxc.mount.entry = /var/run/mysqld {{ php_conf_mysql_socket_dir | replace('/', '', 1) }} none bind,create=dir 0 0"
+  when: php_conf_mysql_socket_dir is string
