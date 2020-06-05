@@ -33,6 +33,7 @@ The **patch** part changes incrementally at each release.
 ### Fixed
 
 * certbot: restore compatibility with old Nginx
+* lxc-php: Install opensmtpd as intended
 
 ### Removed
 
