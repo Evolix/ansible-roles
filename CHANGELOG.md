@@ -22,6 +22,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 
+* lxc-php: Do --no-install-recommends for ssmtp/opensmtpd
 * packweb-apache: Don't turn on mod-evasive emails by default
 * haproxy: chroot and socket path are configurable
 * redis: create sudoers file if missing
