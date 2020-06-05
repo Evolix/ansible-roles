@@ -11,6 +11,7 @@ The **patch** part changes incrementally at each release.
 ## [Unreleased]
 
 ### Added
+
 * lxc-php: Install php-sqlite by default
 * lxc-php: Don't disable putenv() by default in PHP settings
 * mysql: activate binary logs by specifying log_bin path
@@ -35,6 +36,7 @@ The **patch** part changes incrementally at each release.
 
 * certbot: restore compatibility with old Nginx
 * lxc-php: Install opensmtpd as intended
+* mongodb: fix logrotate patterm on Debian buster
 
 ### Removed
 
