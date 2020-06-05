@@ -204,8 +204,8 @@ main() {
     [ "$1" = "-V" ] || [ "$1" = "--version" ] && show_version && exit 0
 
     if [ -t 0 ]; then
-        # We have STDIN, so we should have 2 arguments
-        [ "$#" -eq 2 ] || error "invalid argument(s)"
+        # We have STDIN, so we should at least 2 arguments
+        [ "$#" -ge 2 ] || error "invalid argument(s)"
 
         # read VHOST from first argument
         VHOST="$1"
@@ -265,7 +265,7 @@ readonly ARGS=$@
 readonly VERBOSE=${VERBOSE:-"0"}
 readonly QUIET=${QUIET:-"0"}
 
-readonly VERSION="20.06"
+readonly VERSION="20.06.1"
 
 # Read configuration file, if it exists
 [ -r /etc/default/evoacme ] && . /etc/default/evoacme
