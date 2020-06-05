@@ -170,7 +170,7 @@ readonly ARGS=$@
 readonly VERBOSE=${VERBOSE:-"0"}
 readonly QUIET=${QUIET:-"0"}
 
-readonly VERSION="20.06"
+readonly VERSION="20.06.1"
 
 readonly SRV_IP=${SRV_IP:-""}
 

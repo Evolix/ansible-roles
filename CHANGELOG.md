@@ -28,7 +28,7 @@ The **patch** part changes incrementally at each release.
 * redis: create sudoers file if missing
 * redis: new syntax for match filter
 * redis: raise an error is port 6379 is used in "instance" mode
-* evoacme: upstream release 20.06
+* evoacme: upstream release 20.06.1
 * certbot: install certbot dependencies non-interactively for jessie
 
 ### Fixed

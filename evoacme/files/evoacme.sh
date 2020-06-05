@@ -303,7 +303,7 @@ readonly QUIET=${QUIET:-"0"}
 readonly TEST=${TEST:-"0"}
 readonly DRY_RUN=${DRY_RUN:-"0"}
 
-readonly VERSION="20.06"
+readonly VERSION="20.06.1"
 
 # Read configuration file, if it exists
 [ -r /etc/default/evoacme ] && . /etc/default/evoacme
