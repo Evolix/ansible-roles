@@ -1,5 +1,5 @@
 #!/bin/sh
-# Careful, the zzz_evobackup template was last updated on 2020/04/15
+# Careful, the zzz_evobackup template was last updated on 2020/06/08
 #
 # Script Evobackup client
 # See https://gitea.evolix.org/evolix/evobackup
@@ -76,7 +76,7 @@ test_server() {
     port=$(echo "${item}" | cut -d':' -f2)
 
     # Test if the server is accepting connections
-    ssh -q -o "ConnectTimeout ${SSH_CONNECT_TIMEOUT}" -i /root/.ssh/evobackup_id "${host}" -p "${port}" -t "exit"
+    ssh -q -o "ConnectTimeout ${SSH_CONNECT_TIMEOUT}" -i {{ evobackup_client__root_key_path }} "${host}" -p "${port}" -t "exit"
     # shellcheck disable=SC2181
     if [ $? = 0 ]; then
         # SSH connection is OK
