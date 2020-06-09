@@ -37,3 +37,23 @@ defaults
     errorfile 502 /etc/haproxy/errors/502.http
     errorfile 503 /etc/haproxy/errors/503.http
     errorfile 504 /etc/haproxy/errors/504.http
+
+{% if haproxy_stats_enable %}
+listen stats
+    mode http
+    bind {{ haproxy_stats_bind }}
+
+    stats enable
+    stats refresh 10s
+    stats uri /
+    stats show-legends
+    stats show-node
+
+    acl stats_access_ips src -f /etc/haproxy/stats_access_ips
+    http-request deny if !stats_access_ips
+
+    acl stats_admin_ips src -f /etc/haproxy/stats_admin_ips
+    stats admin if stats_admin_ips
+
+    http-request set-log-level silent
+{% endif %}
