@@ -31,6 +31,7 @@ The **patch** part changes incrementally at each release.
 * redis: new syntax for match filter
 * redis: raise an error is port 6379 is used in "instance" mode
 * evoacme: upstream release 20.06.1
+* evoacme: read values from environment before defaults file
 * certbot: install certbot dependencies non-interactively for jessie
 
 ### Fixed
