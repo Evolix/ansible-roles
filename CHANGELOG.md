@@ -12,6 +12,7 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+* haproxy: enable stats frontend with access lists
 * lxc-php: Install php-sqlite by default
 * lxc-php: Don't disable putenv() by default in PHP settings
 * mysql: activate binary logs by specifying log_bin path

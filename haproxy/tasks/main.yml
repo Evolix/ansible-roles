@@ -35,4 +35,40 @@
     - haproxy
     - config
 
+- name: HAProxy stats_access_ips are present
+  blockinfile:
+    dest: /etc/haproxy/stats_access_ips
+    create: yes
+    block: |
+      {% for ip in haproxy_stats_access_ips | default([]) %}
+      {{ ip }}
+      {% endfor %}
+  notify: reload haproxy
+  tags:
+    - haproxy
+    - config
+
+- name: HAProxy stats_admin_ips are present
+  blockinfile:
+    dest: /etc/haproxy/stats_admin_ips
+    create: yes
+    block: |
+      {% for ip in haproxy_stats_admin_ips | default([]) %}
+      {{ ip }}
+      {% endfor %}
+  notify: reload haproxy
+  tags:
+    - haproxy
+    - config
+
+- name: HAProxy maintenance_ips are present
+  blockinfile:
+    dest: /etc/haproxy/maintenance_ips
+    create: yes
+    block: |
+      {% for ip in haproxy_maintenance_ips | default([]) %}
+      {{ ip }}
+      {% endfor %}
+  notify: reload haproxy
+
 - include: munin.yml
