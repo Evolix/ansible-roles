@@ -7,30 +7,35 @@
     - haproxy
     - packages
 
-- include: packages_backports.yml
-  when: haproxy_backports
-
-- name: Install HAProxy package
-  apt:
-    name: haproxy
-    state: present
+- name: HAProxy SSL directory is present
+  file:
+    path: /etc/haproxy/ssl
+    owner: root
+    group: root
+    mode: "0700"
+    state: directory
   tags:
     - haproxy
-    - packages
+    - config
 
-- name: Copy HAProxy configuration
-  template:
-    src: "{{ item }}"
-    dest: /etc/haproxy/haproxy.cfg
-    force: "{{ haproxy_force_config }}"
-    validate: "haproxy -c -f %s"
-  with_first_found:
-    - "templates/haproxy/haproxy.{{ inventory_hostname }}.cfg.j2"
-    - "templates/haproxy/haproxy.{{ host_group }}.cfg.j2"
-    - "templates/haproxy/haproxy.default.cfg.j2"
-    - "haproxy.default.cfg.j2"
+- name: Self-signed certificate is present in HAProxy ssl directory
+  shell: "cat /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/private/ssl-cert-snakeoil.key > /etc/haproxy/ssl/ssl-cert-snakeoil.pem"
+  args:
+    creates: /etc/haproxy/ssl/ssl-cert-snakeoil.pem
   notify: reload haproxy
-  when: haproxy_update_config
+  tags:
+    - haproxy
+    - config
+
+- name: 2048 bits DHparam file is present
+  get_url:
+    url: https://ssl-config.mozilla.org/ffdhe2048.txt
+    dest: /etc/haproxy/dhparam2048.txt
+    mode: '0600'
+    owner: root
+    group: root
+    force: no
+  notify: reload haproxy
   tags:
     - haproxy
     - config
@@ -70,5 +75,33 @@
       {{ ip }}
       {% endfor %}
   notify: reload haproxy
+
+- include: packages_backports.yml
+  when: haproxy_backports
+
+- name: Install HAProxy package
+  apt:
+    name: haproxy
+    state: present
+  tags:
+    - haproxy
+    - packages
+
+- name: Copy HAProxy configuration
+  template:
+    src: "{{ item }}"
+    dest: /etc/haproxy/haproxy.cfg
+    force: "{{ haproxy_force_config }}"
+    validate: "haproxy -c -f %s"
+  with_first_found:
+    - "templates/haproxy/haproxy.{{ inventory_hostname }}.cfg.j2"
+    - "templates/haproxy/haproxy.{{ host_group }}.cfg.j2"
+    - "templates/haproxy/haproxy.default.cfg.j2"
+    - "haproxy.default.cfg.j2"
+  notify: reload haproxy
+  when: haproxy_update_config
+  tags:
+    - haproxy
+    - config
 
 - include: munin.yml
