@@ -51,12 +51,8 @@ listen stats
     stats uri /
     stats show-legends
     stats show-node
+    stats admin if { src -f /etc/haproxy/stats_admin_ips }
 
-    acl stats_access_ips src -f /etc/haproxy/stats_access_ips
-    http-request deny if !stats_access_ips
-
-    acl stats_admin_ips src -f /etc/haproxy/stats_admin_ips
-    stats admin if stats_admin_ips
-
+    http-request deny if !{ src -f /etc/haproxy/stats_access_ips }
     http-request set-log-level silent
 {% endif %}
