@@ -56,3 +56,27 @@ listen stats
     http-request deny if !{ src -f /etc/haproxy/stats_access_ips }
     http-request set-log-level silent
 {% endif %}
+
+# frontend http-https
+#     bind 0.0.0.0:80
+#     bind 0.0.0.0:443 ssl crt /etc/haproxy/ssl
+# 
+#     capture request header Host len 32
+# 
+#     option forwardfor
+# 
+#     acl self hdr(host) -i {{ ansible_fqdn }}
+# 
+#     # Detect Let's Encrypt challenge requests
+#     acl letsencrypt path_dir -i /.well-known/acme-challenge
+# 
+#     http-request set-header X-Forwarded-Proto https if { ssl_fc }
+#     http-request set-header X-Forwarded-Port 443 if { ssl_fc }
+# 
+#     use_backend local if letsencrypt || self
+# 
+# backend local
+#     mode http
+#     option forwardfor
+# 
+#     server localhost 127.0.0.1:81 send-proxy-v2
