@@ -2,6 +2,10 @@
 
 - include: packages.yml
 
+- include: server_status_read.yml
+  tags:
+    - nginx
+
 # TODO: find a way to override the main configuration
 # without touching the main file
 
@@ -108,7 +112,7 @@
   tags:
     - nginx
 
-- include: server_status.yml
+- include: server_status_write.yml
   tags:
     - nginx
 
