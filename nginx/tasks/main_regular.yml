@@ -89,10 +89,10 @@
 
 - name: nginx vhost is installed
   template:
-    src: evolinux-default.conf.j2
+    src: "{{ nginx_default_template_regular }}"
     dest: /etc/nginx/sites-available/evolinux-default.conf
     mode: "0640"
-    force: no
+    force: "{{ nginx_force_default_template | default(False) }}"
   notify: reload nginx
   tags:
     - nginx

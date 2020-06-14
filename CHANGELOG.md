@@ -19,6 +19,7 @@ The **patch** part changes incrementally at each release.
 * mysql: activate binary logs by specifying log_bin path
 * mysql: specify a custom server_id
 * mysql: option to define as read only
+* nginx: make default vhost configurable
 * packweb-apache: Install zip & unzip by default
 * php: Install php-sqlite by default
 * php: Don't disable putenv() by default in PHP settings
