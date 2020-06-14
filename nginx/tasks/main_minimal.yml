@@ -12,9 +12,10 @@
 
 - name: Copy default vhost
   template:
-    src: evolinux-default.minimal.conf.j2
+    src: "{{ nginx_default_template_minimal }}"
     dest: /etc/nginx/sites-available/evolinux-default.minimal.conf
     mode: 0644
+    force: "{{ nginx_force_default_template | default(False) }}"
   notify: reload nginx
   tags:
   - nginx
