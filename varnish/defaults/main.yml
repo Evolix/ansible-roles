@@ -1,7 +1,7 @@
 ---
 
 varnish_addresses:
-- 0.0.0.0:80
+  - 0.0.0.0:80
 
 varnish_management_address: localhost:6082
 
