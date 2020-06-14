@@ -4,8 +4,16 @@
     name: evolix/apt
     tasks_from: backports.yml
   tags:
-  - haproxy
-  - packages
+    - haproxy
+    - packages
+
+- set_fact:
+    haproxy_backports_packages: "{{ haproxy_backports_packages_stretch }}"
+  when: ansible_distribution_release == 'stretch'
+
+- set_fact:
+    haproxy_backports_packages: "{{ haproxy_backports_packages_buster }}"
+  when: ansible_distribution_release == 'buster'
 
 - name: Prefer HAProxy package from backports
   template:
@@ -15,13 +23,13 @@
     mode: "0640"
   register: haproxy_apt_preferences
   tags:
-  - haproxy
-  - packages
+    - haproxy
+    - packages
 
 - name: update apt
   apt:
     update_cache: yes
   when: haproxy_apt_preferences is changed
   tags:
-  - haproxy
-  - packages
+    - haproxy
+    - packages

@@ -29,6 +29,7 @@ The **patch** part changes incrementally at each release.
 * lxc-php: Do --no-install-recommends for ssmtp/opensmtpd
 * packweb-apache: Don't turn on mod-evasive emails by default
 * haproxy: chroot and socket path are configurable
+* haproxy: adapt backports installed package list to distibution
 * redis: create sudoers file if missing
 * redis: new syntax for match filter
 * redis: raise an error is port 6379 is used in "instance" mode
