@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 * certbot: detect HAProxy cert directory
+* haproxy: add some comments to default config
 * haproxy: enable stats frontend with access lists
 * haproxy: preconfigure SSL with defaults
 * lxc-php: Install php-sqlite by default
