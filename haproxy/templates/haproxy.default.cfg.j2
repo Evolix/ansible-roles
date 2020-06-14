@@ -70,6 +70,9 @@ listen stats
 #     # Detect Let's Encrypt challenge requests
 #     acl letsencrypt path_dir -i /.well-known/acme-challenge
 # 
+#     # Reject the request at the TCP level if source is in the denylist
+#     tcp-request connection reject if { src -f /etc/haproxy/deny_ips }
+# 
 #     http-request set-header X-Forwarded-Proto https if { ssl_fc }
 #     http-request set-header X-Forwarded-Port 443 if { ssl_fc }
 # 
