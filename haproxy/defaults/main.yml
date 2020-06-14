@@ -11,6 +11,7 @@ haproxy_chroot: /var/lib/haproxy
 haproxy_stats_access_ips: []
 haproxy_stats_admin_ips: []
 haproxy_maintenance_ips: []
+haproxy_deny_ips: []
 
 haproxy_stats_enable: False
 haproxy_stats_bind: "*:8080 ssl crt /etc/haproxy/ssl/"

@@ -76,6 +76,16 @@
       {% endfor %}
   notify: reload haproxy
 
+- name: HAProxy deny_ips are present
+  blockinfile:
+    dest: /etc/haproxy/deny_ips
+    create: yes
+    block: |
+      {% for ip in haproxy_deny_ips | default([]) %}
+      {{ ip }}
+      {% endfor %}
+  notify: reload haproxy
+
 - include: packages_backports.yml
   when: haproxy_backports
 
