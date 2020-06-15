@@ -44,11 +44,11 @@ defaults
 {% if haproxy_stats_enable %}
 listen stats
     mode http
-    bind {{ haproxy_stats_bind }}
+    bind {{ haproxy_stats_bind_directive }}
 
     stats enable
     stats refresh 10s
-    stats uri /
+    stats uri {{ haproxy_stats_path }}
     stats show-legends
     stats show-node
     stats admin if { src -f /etc/haproxy/stats_admin_ips }
@@ -59,7 +59,7 @@ listen stats
 
 # frontend http-https
 #     bind 0.0.0.0:80
-#     bind 0.0.0.0:443 ssl crt /etc/haproxy/ssl
+#     bind 0.0.0.0:443 ssl crt {{ haproxy_ssl_dir }}
 # 
 #     capture request header Host len 32
 # 
