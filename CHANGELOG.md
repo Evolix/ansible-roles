@@ -31,6 +31,7 @@ The **patch** part changes incrementally at each release.
 
 * lxc-php: Do --no-install-recommends for ssmtp/opensmtpd
 * packweb-apache: Don't turn on mod-evasive emails by default
+* haproxy: deport SSL tuning to Mozilla SSL generator
 * haproxy: chroot and socket path are configurable
 * haproxy: adapt backports installed package list to distibution
 * haproxy: split stats variables

@@ -27,19 +27,6 @@
     - haproxy
     - config
 
-- name: 2048 bits DHparam file is present
-  get_url:
-    url: https://ssl-config.mozilla.org/ffdhe2048.txt
-    dest: /etc/haproxy/dhparam2048.txt
-    mode: '0600'
-    owner: root
-    group: root
-    force: no
-  notify: reload haproxy
-  tags:
-    - haproxy
-    - config
-
 - name: HAProxy stats_access_ips are present
   blockinfile:
     dest: /etc/haproxy/stats_access_ips
