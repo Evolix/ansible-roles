@@ -33,6 +33,7 @@ The **patch** part changes incrementally at each release.
 * packweb-apache: Don't turn on mod-evasive emails by default
 * haproxy: chroot and socket path are configurable
 * haproxy: adapt backports installed package list to distibution
+* haproxy: split stats variables
 * nginx: read server-status values before changing the config
 * redis: create sudoers file if missing
 * redis: new syntax for match filter
