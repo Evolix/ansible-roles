@@ -214,3 +214,6 @@ evolinux_listupgrade_include: True
 # Generate ldif
 
 evolinux_generateldif_include: True
+
+# Cron check_hpraid
+evolinux_cron_checkhpraid_frequency: daily
