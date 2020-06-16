@@ -23,6 +23,7 @@ set -euo pipefail
 # 
 # - Adaptec Smart Storage PQI 12G SAS/PCIe 3 (rev 01)
 #   | Smart Array P408i-a SR Gen10
+#   | Smart Array P408i-p SR Gen10
 #   | Smart Array E208i-a SR Gen10
 # 
 # 
