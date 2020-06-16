@@ -230,7 +230,7 @@ for slot in $slots; do
             exit "$STATE_UNKNOWN"
         fi
     fi
-    check2="$check2$check2b"
+    printf -v check2 "%s\n%s" "$check2" "$check2b"
     if [ "$DEBUG" = "1" ]; then
         echo "### Get \"physicaldrive\" for slot >>>\n""${check2b}""\n"
     fi
@@ -278,7 +278,7 @@ elif grep -qiE FIRMWARE <<< "$check"; then
 else
     if [ "$DEBUG" = "1" ] || [ "$VERBOSE" = "1" ]; then
         check3=$(grep -E Status <<< "$check")
-        echo "RAID OK: ${check2} [${check3}]"
+        printf "RAID OK: %s\n%s\n" "$check2" "$check3"
     else
         echo "RAID OK"
     fi
