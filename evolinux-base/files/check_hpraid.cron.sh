@@ -7,7 +7,7 @@ set -euo pipefail
 TMPDIR=/tmp
 md5sum=$(command -v md5sum)
 awk=$(command -v awk)
-check_hpraid="/usr/local/lib/nagios/plugins/check_hpraid -v"
+check_hpraid="/usr/local/lib/nagios/plugins/check_hpraid -v -p"
 check_hpraid_output=$(mktemp -p $TMPDIR check_hpraid_XXX)
 check_hpraid_last="$TMPDIR/check_hpraid_last"
 trap trapFunc EXIT ERR
