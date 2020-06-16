@@ -244,8 +244,8 @@ fi
 # Omit battery/capacitor/cache status check if requested
 EXCLUDE_BATTERY=${EXCLUDE_BATTERY:-0}
 if [ "$EXCLUDE_BATTERY" = "1" ]; then
-    check=$(grep -v 'Battery/Capacitor Status: Failed (Replace Batteries/Capacitors)' "$check")
-    check=$(grep -v 'Cache Status: Temporarily Disabled' "$check")
+    check=$(grep -v 'Battery/Capacitor Status: Failed (Replace Batteries/Capacitors)' <<< "$check")
+    check=$(grep -v 'Cache Status: Temporarily Disabled' <<< "$check")
 fi
 
 check=${check:-}
