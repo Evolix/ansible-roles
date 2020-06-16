@@ -49,6 +49,7 @@ The **patch** part changes incrementally at each release.
 * lxc-php: Install opensmtpd as intended
 * mongodb: fix logrotate patterm on Debian buster
 * evobackup-client: fixed the ssh connection test
+* varnish: fix start command when multiple addresses are present
 
 ### Removed
 
