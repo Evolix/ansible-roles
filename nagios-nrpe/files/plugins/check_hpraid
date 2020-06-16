@@ -38,11 +38,11 @@ set -euo pipefail
 #
 # Examples:
 #
-#   ./check_cciss
+#   ./check_hpraid
 # ----------------
 # RAID OK
 #
-#   ./check_cciss -v
+#   ./check_hpraid -v
 # -------------------
 # RAID OK:  Smart Array 6i in Slot 0 array A logicaldrive 1 (67.8 GB, RAID 1+0, OK)
 #           [Controller Status: OK  Cache Status: OK  Battery Status: OK]
@@ -55,7 +55,7 @@ set -euo pipefail
 #          array A logicaldrive 1 (33.9 GB, RAID 1, Recovering, 26% complete) \
 #          physicaldrive 1:0 (port 1:id 0 , Parallel SCSI, 36.4 GB, Rebuilding)
 #
-# ./check_cciss -v -p
+# ./check_hpraid -v -p
 # --------------------
 # RAID OK:  Smart Array 6i in Slot 0 (Embedded) array A logicaldrive 1 (33.9 GB, RAID 1, OK)
 #           physicaldrive 2:0 (port 2:id 0 , Parallel SCSI, 36.4 GB, OK)
@@ -73,7 +73,7 @@ set -euo pipefail
 #          physicaldrive 1:0 (port 1:id 0 , Parallel SCSI, 36.4 GB, Rebuilding) \
 #          physicaldrive 1:1 (port 1:id 1 , Parallel SCSI, 36.4 GB, OK)
 #
-# ./check_cciss -v -b
+# ./check_hpraid -v -b
 # ----------------
 #
 # RAID OK:  Smart Array 6i in Slot 0 (Embedded) array A logicaldrive 1 (33.9 GB, RAID 1, OK) [Controller Status: OK]
