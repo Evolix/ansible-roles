@@ -19,6 +19,13 @@ set -euo pipefail
 # using HPE Smart Storage Administrator. It should support Debian 9 and over.
 # (Array, controller, cache, battery, etc...)
 #
+# Known working RAID controllers:
+# 
+# - Adaptec Smart Storage PQI 12G SAS/PCIe 3 (rev 01)
+#   | Smart Array P408i-a SR Gen10
+#   | Smart Array E208i-a SR Gen10
+# 
+# 
 # NOTE:
 #
 # You need to install the proprietary tool HPE Smart Storage Administrator (ssacli) from: 
@@ -241,6 +248,9 @@ if [ "$EXCLUDE_BATTERY" = "1" ]; then
     check=$(grep -v 'Cache Status: Temporarily Disabled' "$check")
 fi
 
+check=${check:-}
+check2=${check2:-}
+check3=${check3:-}
 if grep -qiE Failed <<< "$check"; then
     echo  "RAID CRITICAL - HP Smart Array Failed: ${check}"
     exit "$STATE_CRITICAL"
