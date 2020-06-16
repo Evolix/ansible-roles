@@ -69,6 +69,7 @@ command[check_varnish]={{ nagios_plugins_directory }}/check_varnish_health -i 12
 command[check_haproxy]=sudo {{ nagios_plugins_directory }}/check_haproxy_stats -s /run/haproxy/admin.sock -w 80 -c 90 --ignore-maint --ignore-nolb
 command[check_minifirewall]=sudo {{ nagios_plugins_directory }}/check_minifirewall
 command[check_redis_instances]={{ nagios_plugins_directory }}/check_redis_instances
+command[check_hpraid]={{ nagios_plugins_directory }}/check_hpraid
 
 # Check HTTP "many". Use this to check many websites (http, https, ports, sockets and SSL certificates).
 # Beware! All checks must not take more than 10s!
