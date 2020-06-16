@@ -76,7 +76,7 @@
         src: hardware/cciss-vol-statusd.j2
         dest: /etc/init.d/cciss-vol-statusd
         mode: "0755"
-        
+
     - name: Configure cciss-vol-statusd (HP gen <10)
       lineinfile:
         dest: /etc/default/cciss-vol-statusd
