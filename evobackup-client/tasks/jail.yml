@@ -39,19 +39,3 @@
   tags:
     - evobackup_client
     - evobackup_client_jail
-
-- name: 'get jail port'
-  command: "bkctld port {{ evolinux_hostname }}"
-  become: true
-  register: bkctld_port
-  delegate_to: "{{ evobackup_client__hosts[0].ip }}"
-  tags:
-    - evobackup_client
-    - evobackup_client_jail
-
-- name: 'register jail port'
-  set_fact:
-    evobackup_ssh_port={{ bkctld_port.stdout }}
-  tags:
-    - evobackup_client
-    - evobackup_client_jail

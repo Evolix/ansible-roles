@@ -1,5 +1,8 @@
 ---
 
+- include: "jail_port.yml"
+  when: evobackup_ssh_port = ''
+
 - name: Upload evobackup script
   template:
     src: "{{ item }}"
@@ -11,6 +14,3 @@
     - "templates/evobackup-client/{{ evobackup_client__cron_template_name }}.{{ host_group }}.sh.j2"
     - "templates/evobackup-client/{{ evobackup_client__cron_template_name }}.sh.j2"
     - "zzz_evobackup.default.sh.j2"
-  tags:
-    - evobackup_client
-    - evobackup_client_backup_scripts

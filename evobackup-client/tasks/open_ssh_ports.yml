@@ -8,6 +8,9 @@
     - evobackup_client
     - evobackup_client_backup_firewall
 
+- include: "jail_port.yml"
+  when: evobackup_ssh_port = ''
+
 - name: Add backup SSH port in /etc/default/minifirewall
   blockinfile:
     dest: /etc/default/minifirewall

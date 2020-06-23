@@ -1,5 +1,8 @@
 ---
 
+- include: "jail_port.yml"
+  when: evobackup_ssh_port = ''
+
 - name: Verify evolix backup servers
   known_hosts:
     path: /root/.ssh/known_hosts
