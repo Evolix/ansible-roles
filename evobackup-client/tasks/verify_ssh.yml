@@ -1,14 +1,15 @@
 ---
 
-- include: "jail_port.yml"
-  when: evobackup_ssh_port = ''
+- block:
+  - include: "jail_port.yml"
 
-- name: Verify evolix backup servers
-  known_hosts:
-    path: /root/.ssh/known_hosts
-    name: "[{{ item.name }}]:{{ item.port }}"
-    key: "[{{ item.name }}]:{{ item.port }} {{ item.fingerprint }}"
-  with_list: "{{ evobackup_client__hosts }}"
+  - name: Verify evolix backup servers
+    known_hosts:
+      path: /root/.ssh/known_hosts
+      name: "[{{ item.name }}]:{{ item.port }}"
+      key: "[{{ item.name }}]:{{ item.port }} {{ item.fingerprint }}"
+    with_list: "{{ evobackup_client__hosts }}"
+
   tags:
     - evobackup_client
-    - evobackup_client_backup_hosts
+    - evobackup_client_fingerprints

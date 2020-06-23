@@ -1,26 +1,11 @@
 ---
 
-- include: "ssh_key.yml"
-  tags:
-    - evobackup_client
-    - evobackup_client_backup_ssh_key
+- block:
+  - include: "ssh_key.yml"
+  - include: "jail.yml"
+  - include: "upload_scripts.yml"
+  - include: "open_ssh_ports.yml"
+  - include: "verify_ssh.yml"
 
-- include: "jail.yml"
   tags:
     - evobackup_client
-    - evobackup_client_jail
-
-- include: "upload_scripts.yml"
-  tags:
-    - evobackup_client
-    - evobackup_client_backup_scripts
-
-- include: "open_ssh_ports.yml"
-  tags:
-    - evobackup_client
-    - evobackup_client_backup_firewall
-
-- include: "verify_ssh.yml"
-  tags:
-    - evobackup_client
-    - evobackup_client_backup_hosts

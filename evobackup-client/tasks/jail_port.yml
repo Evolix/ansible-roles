@@ -1,11 +1,17 @@
 ---
 
-- name: 'get jail port'
-  command: "bkctld port {{ evolinux_hostname }}"
-  become: true
-  register: bkctld_port
-  delegate_to: "{{ evobackup_client__hosts[0].ip }}"
+- block:
+  - name: 'get jail port'
+    command: "bkctld port {{ evolinux_hostname }}"
+    become: true
+    register: bkctld_port
+    delegate_to: "{{ evobackup_client__hosts[0].ip }}"
 
-- name: 'register jail port'
-  set_fact:
-    evobackup_ssh_port={{ bkctld_port.stdout }}
+  - name: 'register jail port'
+    set_fact:
+      evobackup_ssh_port={{ bkctld_port.stdout }}
+
+  when: evobackup_ssh_port = ''
+  tags:
+    - evobackup_client
+    - evobackup_client_ssh_port
