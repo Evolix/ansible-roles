@@ -49,9 +49,6 @@ main() {
             cat "$check_hpraid_output"
         fi
         exit 1
-    else
-        cp "$check_hpraid_output" $check_hpraid_last
-        exit 0
     fi
 
     if [ ! -f $check_hpraid_last ]; then
