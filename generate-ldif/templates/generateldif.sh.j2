@@ -25,7 +25,8 @@ EvoComputerName=$(hostname -s)
 dnsPTRrecord=$(hostname -f)
 HardwareMark=$(dmidecode -s system-manufacturer | grep -v '^#')
 computerIP=$(hostname -i | cut -d' ' -f1)
-computerOS=$(lsb_release -s -d | sed 's#\..##')
+# The sed part does not works for squeeze and previous
+computerOS=$(lsb_release -s -d | sed -E 's#\.[0-9]{1,}##')
 computerKernel=$(uname -r)
 HardwareSerial=$(dmidecode -s system-serial-number | grep -v '^#')
 
