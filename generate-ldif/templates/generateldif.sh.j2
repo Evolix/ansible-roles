@@ -71,7 +71,7 @@ if (test -b /dev/vda); then
     sdaModel="Virtual VirtIO Disk"
 elif [ -d /proc/vz ] && [ ! -d /proc/bc ]; then
     sdaModel="OpenVZ SIMFS disk"
-else
+elif (lsblk -d -r -n -o TYPE,SIZE,PATH | grep -q sda); then
     hdparm -I /dev/sda 2>&1 | grep -q bad
     if [ $? -eq 0 ]; then
         if (test -n "${raidModel}"); then
@@ -82,6 +82,9 @@ else
     else
         sdaModel=$(hdparm -I /dev/sda | grep Model | tr -s '\t' ' ' | cut -d' ' -f4-)
     fi
+# hdparm does not support NVME, use smartctl
+elif (lsblk -d -r -n -o TYPE,SIZE,PATH | grep -q nvme); then
+    sdaModel="SSD NVMe: $(smartctl -a /dev/nvme0n1 | grep "Model Number" | tr -s ' ' | cut -d' ' -f3-)"
 fi
 
 ldif_file="/root/${EvoComputerName}.$(date +"%Y%m%d%H%M%S").ldif"
