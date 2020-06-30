@@ -276,7 +276,10 @@ for net in $(ls /sys/class/net); do
     echo $path | grep -q virtual
     if [ $? -ne 0 ]; then
         hw=$(cat ${path}/address)
+        # In some cases some devices does not have a vendor or device, skip it
+        test -f ${path}/device/vendor || continue
         vendor_id=$(cat ${path}/device/vendor)
+        test -f ${path}/device/device || continue
         dev_id=$(cat ${path}/device/device)
         [ "${dev_id}" = "0x0001" ] && dev_id="0x1000"
         dev=$(lspci -d "${vendor_id}:${dev_id}" -vm)
