@@ -44,7 +44,7 @@ main() {
         cp "$check_hpraid_output" "$check_hpraid_last"
         if $use_mail; then
             mail -s "RAID error on $hostname" "$clientmail" \
-             <<< "$check_hpraid_output"
+             < "$check_hpraid_output"
         else
             cat "$check_hpraid_output"
         fi
@@ -73,7 +73,7 @@ $(sed 's/^/> /g' "$check_hpraid_output")
 EOT
         if $use_mail; then
             mail -s "RAID status is different on $hostname" \
-             "$clientmail" <<< "$body"
+             "$clientmail" < "$body"
         else
             cat "$body"
         fi
