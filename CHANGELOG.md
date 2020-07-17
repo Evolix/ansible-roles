@@ -29,20 +29,21 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 
-* lxc-php: Do --no-install-recommends for ssmtp/opensmtpd
-* packweb-apache: Don't turn on mod-evasive emails by default
+* certbot: install certbot dependencies non-interactively for jessie
+* evoacme: upstream release 20.06.1
+* evoacme: read values from environment before defaults file
 * haproxy: deport SSL tuning to Mozilla SSL generator
 * haproxy: chroot and socket path are configurable
 * haproxy: adapt backports installed package list to distibution
 * haproxy: split stats variables
 * haproxy: rotate logs with date extension and immediate compression
+* lxc-php: Do --no-install-recommends for ssmtp/opensmtpd
+* mongodb: install custom munin plugins
 * nginx: read server-status values before changing the config
+* packweb-apache: Don't turn on mod-evasive emails by default
 * redis: create sudoers file if missing
 * redis: new syntax for match filter
 * redis: raise an error is port 6379 is used in "instance" mode
-* evoacme: upstream release 20.06.1
-* evoacme: read values from environment before defaults file
-* certbot: install certbot dependencies non-interactively for jessie
 
 ### Fixed
 

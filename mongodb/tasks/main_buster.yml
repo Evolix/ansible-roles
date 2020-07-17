@@ -44,3 +44,36 @@
     dest: /etc/logrotate.d/mongodb
     force: yes
     backup: no
+
+- name: Munin plugins are present
+  copy:
+    src: "munin/{{ item }}"
+    dest: '/usr/local/share/munin/plugins/{{ item }}'
+    force: yes
+    state: present
+  with_items:
+    - mongo_btree
+    - mongo_collections
+    - mongo_conn
+    - mongo_docs
+    - mongo_lock
+    - mongo_mem
+    - mongo_ops
+    - mongo_page_faults
+  notify: restart munin-node
+
+- name: Enable core Munin plugins
+  file:
+    src: '/usr/local/share/munin/plugins/{{ item }}'
+    dest: /etc/munin/plugins/{{ item }}
+    state: link
+  with_items:
+    - mongo_btree
+    - mongo_collections
+    - mongo_conn
+    - mongo_docs
+    - mongo_lock
+    - mongo_mem
+    - mongo_ops
+    - mongo_page_faults
+  notify: restart munin-node
