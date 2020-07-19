@@ -22,7 +22,7 @@
 - name: Configure network host
   lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
-    line: "network.host: {{ elasticsearch_network_host }}"
+    line: "network.host: {{ elasticsearch_network_host | to_yaml  }}"
     regexp: "^network.host:"
     insertafter: "^# *network.host:"
   when: elasticsearch_network_host|default("", True)
@@ -32,7 +32,7 @@
 - name: Configure network publish_host
   lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
-    line: "network.publish_host: {{ elasticsearch_network_publish_host }}"
+    line: "network.publish_host: {{ elasticsearch_network_publish_host | to_yaml  }}"
     regexp: "^network.publish_host:"
     insertafter: "^network.host:"
   when: elasticsearch_network_publish_host|default("", True)
@@ -42,10 +42,28 @@
 - name: Configure http publish_host
   lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
-    line: "http.publish_host: {{ elasticsearch_http_publish_host }}"
+    line: "http.publish_host: {{ elasticsearch_http_publish_host | to_yaml  }}"
     regexp: "^http.publish_host:"
     insertafter: "^http.port:"
   when: elasticsearch_http_publish_host|default("", True)
+  tags:
+    - config
+
+- name: Configure discovery seed hosts
+  lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "discovery.seed_hosts: {{ elasticsearch_discovery_seed_hosts | to_yaml }}"
+    regexp: "^discovery.seed_hosts:"
+  when: elasticsearch_discovery_seed_hosts
+  tags:
+    - config
+
+- name: Configure initial master nodes
+  lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "cluster.initial_master_nodes: {{ elasticsearch_cluster_initial_master_nodes | to_yaml }}"
+    regexp: "^cluster.initial_master_nodes:"
+  when: elasticsearch_cluster_initial_master_nodes
   tags:
     - config
 
@@ -93,5 +111,3 @@
   when: elasticsearch_minimum_master_nodes|default("", True)
   tags:
     - config
-
-
