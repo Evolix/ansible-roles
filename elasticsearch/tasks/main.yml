@@ -6,9 +6,9 @@
 
 - include: bootstrap_checks.yml
 
-- include: datadir.yml
-
 - include: tmpdir.yml
+
+- include: datadir.yml
 
 - include: logs.yml
 
