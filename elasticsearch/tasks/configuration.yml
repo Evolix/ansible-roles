@@ -22,7 +22,7 @@
 - name: Configure network host
   lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
-    line: "network.host: {{ elasticsearch_network_host | to_yaml  }}"
+    line: "network.host: {{ elasticsearch_network_host  }}"
     regexp: "^network.host:"
     insertafter: "^# *network.host:"
   when: elasticsearch_network_host|default("", True)
@@ -32,7 +32,7 @@
 - name: Configure network publish_host
   lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
-    line: "network.publish_host: {{ elasticsearch_network_publish_host | to_yaml  }}"
+    line: "network.publish_host: {{ elasticsearch_network_publish_host  }}"
     regexp: "^network.publish_host:"
     insertafter: "^network.host:"
   when: elasticsearch_network_publish_host|default("", True)
@@ -42,7 +42,7 @@
 - name: Configure http publish_host
   lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
-    line: "http.publish_host: {{ elasticsearch_http_publish_host | to_yaml  }}"
+    line: "http.publish_host: {{ elasticsearch_http_publish_host  }}"
     regexp: "^http.publish_host:"
     insertafter: "^http.port:"
   when: elasticsearch_http_publish_host|default("", True)
