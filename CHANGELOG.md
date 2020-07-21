@@ -29,6 +29,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 
+* certbot: fix haproxy hook (ssl cert directory detection)
 * certbot: install certbot dependencies non-interactively for jessie
 * elasticsearch: set tmpdir before datadir
 * elasticsearch: configure cluster with seed hosts and initial masters
