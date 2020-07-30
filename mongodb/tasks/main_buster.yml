@@ -50,7 +50,6 @@
     src: "munin/{{ item }}"
     dest: '/usr/local/share/munin/plugins/{{ item }}'
     force: yes
-    state: present
   with_items:
     - mongo_btree
     - mongo_collections
