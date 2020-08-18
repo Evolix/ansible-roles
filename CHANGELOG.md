@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 * certbot: detect HAProxy cert directory
+* filebeat: allow using a template
 * haproxy: add deny_ips file to reject connections
 * haproxy: add some comments to default config
 * haproxy: enable stats frontend with access lists
