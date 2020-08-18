@@ -40,51 +40,79 @@
     name: metricbeat
     enabled: yes
 
-- name: Metricbeat knows where to find Elasticsearch
-  lineinfile:
-    dest: /etc/metricbeat/metricbeat.yml
-    regexp: '^  hosts: .*'
-    line: "  hosts: [\"{{ metricbeat_elasticsearch_hosts | join('\", \"') }}\"]"
-    insertafter: "output.elasticsearch:"
-  notify: restart metricbeat
-  when:
-    - metricbeat_elasticsearch_hosts
+# When we don't use a config template (default)
+- block:
+  - name: Metricbeat knows where to find Elasticsearch
+    lineinfile:
+      dest: /etc/metricbeat/metricbeat.yml
+      regexp: '^  hosts: .*'
+      line: "  hosts: [\"{{ metricbeat_elasticsearch_hosts | join('\", \"') }}\"]"
+      insertafter: "output.elasticsearch:"
+    notify: restart metricbeat
+    when:
+      - metricbeat_elasticsearch_hosts
 
-- name: Metricbeat protocol for Elasticsearch
-  lineinfile:
-    dest: /etc/metricbeat/metricbeat.yml
-    regexp: '^  #?protocol: .*'
-    line: "  protocol: \"{{ metricbeat_elasticsearch_protocol }}\""
-    insertafter: "output.elasticsearch:"
-  notify: restart metricbeat
-  when: metricbeat_elasticsearch_protocol == "http" or metricbeat_elasticsearch_protocol == "https"
+  - name: Metricbeat protocol for Elasticsearch
+    lineinfile:
+      dest: /etc/metricbeat/metricbeat.yml
+      regexp: '^  #?protocol: .*'
+      line: "  protocol: \"{{ metricbeat_elasticsearch_protocol }}\""
+      insertafter: "output.elasticsearch:"
+    notify: restart metricbeat
+    when: metricbeat_elasticsearch_protocol == "http" or metricbeat_elasticsearch_protocol == "https"
 
-- name: Metricbeat auth/username for Elasticsearch are configured
-  lineinfile:
-    dest: /etc/metricbeat/metricbeat.yml
-    regexp: '{{ item.regexp }}'
-    line: '{{ item.line }}'
-    insertafter: "output.elasticsearch:"
-  with_items:
-    - { regexp: '^  #?username: .*', line: '  username: "{{ metricbeat_elasticsearch_auth_username }}"' }
-    - { regexp: '^  #?password: .*', line: '  password: "{{ metricbeat_elasticsearch_auth_password }}"' }
-  notify: restart metricbeat
-  when:
-    - metricbeat_elasticsearch_auth_username != ""
-    - metricbeat_elasticsearch_auth_password != ""
+  - name: Metricbeat auth/username for Elasticsearch are configured
+    lineinfile:
+      dest: /etc/metricbeat/metricbeat.yml
+      regexp: '{{ item.regexp }}'
+      line: '{{ item.line }}'
+      insertafter: "output.elasticsearch:"
+    with_items:
+      - { regexp: '^  #?username: .*', line: '  username: "{{ metricbeat_elasticsearch_auth_username }}"' }
+      - { regexp: '^  #?password: .*', line: '  password: "{{ metricbeat_elasticsearch_auth_password }}"' }
+    notify: restart metricbeat
+    when:
+      - metricbeat_elasticsearch_auth_username
+      - metricbeat_elasticsearch_auth_password
 
-- name: disable cloud_metadata
-  replace:
-    dest: /etc/metricbeat/metricbeat.yml
-    regexp: '^(\s+)(- add_cloud_metadata:)'
-    replace: '\1# \2'
-  notify: restart metricbeat
-  when: not metricbeat_processors_cloud_metadata
+  - name: Metricbeat api_key for Elasticsearch are configured
+    lineinfile:
+      dest: /etc/metricbeat/metricbeat.yml
+      regexp: '^  #?api_key: .*'
+      line: '  api_key: "{{ metricbeat_elasticsearch_auth_api_key }}"'
+      insertafter: "output.elasticsearch:"
+    notify: restart metricbeat
+    when: metricbeat_elasticsearch_auth_api_key
 
-- name: cloud_metadata processor is disabled
-  lineinfile:
-    dest: /etc/metricbeat/metricbeat.yml
-    line: "  - add_cloud_metadata: ~"
-    insert_after: '^processors:'
-  notify: restart metricbeat
-  when: metricbeat_processors_cloud_metadata
+  - name: disable cloud_metadata
+    replace:
+      dest: /etc/metricbeat/metricbeat.yml
+      regexp: '^(\s+)(- add_cloud_metadata:)'
+      replace: '\1# \2'
+    notify: restart metricbeat
+    when: not metricbeat_processors_cloud_metadata
+
+  - name: cloud_metadata processor is disabled
+    lineinfile:
+      dest: /etc/metricbeat/metricbeat.yml
+      line: "  - add_cloud_metadata: ~"
+      insert_after: '^processors:'
+    notify: restart metricbeat
+    when: metricbeat_processors_cloud_metadata
+  when: not metricbeat_use_config_template
+
+# When we use a config template
+- block:
+  - name: Configuration is up-to-date
+    template:
+      src: "{{ item }}"
+      dest: /etc/metricbeat/metricbeat.yml
+      force: "{{ metricbeat_force_config }}"
+    with_first_found:
+      - "templates/metricbeat/metricbeat.{{ inventory_hostname }}.yml.j2"
+      - "templates/metricbeat/metricbeat.{{ host_group }}.yml.j2"
+      - "templates/metricbeat/metricbeat.default.yml.j2"
+      - "metricbeat.default.yml.j2"
+    notify: restart metricbeat
+    when: metricbeat_update_config
+  when: metricbeat_use_config_template
