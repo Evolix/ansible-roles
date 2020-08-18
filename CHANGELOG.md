@@ -20,6 +20,7 @@ The **patch** part changes incrementally at each release.
 * haproxy: preconfigure SSL with defaults
 * lxc-php: Install php-sqlite by default
 * lxc-php: Don't disable putenv() by default in PHP settings
+* metricbeat: allow using a template
 * mysql: activate binary logs by specifying log_bin path
 * mysql: specify a custom server_id
 * mysql: option to define as read only

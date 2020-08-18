@@ -1,10 +1,25 @@
 ---
 elastic_stack_version: "6.x"
 
-metricbeat_elasticsearch_protocol: ""
 metricbeat_elasticsearch_hosts:
   - "localhost:9200"
+metricbeat_elasticsearch_protocol: ""
+metricbeat_elasticsearch_auth_api_key: ""
 metricbeat_elasticsearch_auth_username: ""
 metricbeat_elasticsearch_auth_password: ""
 
 metricbeat_processors_cloud_metadata: False
+
+metricbeat_use_config_template: False
+metricbeat_update_config: True
+metricbeat_force_config: True
+
+# Example :
+# metricbeat_tags:
+#   - "service-X"
+#   - "web-tier"
+metricbeat_tags: Null
+# Example :
+# metricbeat_fields:
+#   - "env: staging"
+metricbeat_fields: Null
