@@ -25,7 +25,8 @@ EvoComputerName=$(hostname -s)
 dnsPTRrecord=$(hostname -f)
 HardwareMark=$(dmidecode -s system-manufacturer | grep -v '^#')
 computerIP=$(hostname -i | cut -d' ' -f1)
-computerOS=$(lsb_release -s -d | sed 's#\..##')
+# The sed part does not works for squeeze and previous
+computerOS=$(lsb_release -s -d | sed -E 's#\.[0-9]{1,}##')
 computerKernel=$(uname -r)
 HardwareSerial=$(dmidecode -s system-serial-number | grep -v '^#')
 
@@ -71,7 +72,7 @@ if (test -b /dev/vda); then
     sdaModel="Virtual VirtIO Disk"
 elif [ -d /proc/vz ] && [ ! -d /proc/bc ]; then
     sdaModel="OpenVZ SIMFS disk"
-else
+elif (lsblk -d -r -n -o TYPE,SIZE,PATH | grep -q sda); then
     hdparm -I /dev/sda 2>&1 | grep -q bad
     if [ $? -eq 0 ]; then
         if (test -n "${raidModel}"); then
@@ -82,6 +83,9 @@ else
     else
         sdaModel=$(hdparm -I /dev/sda | grep Model | tr -s '\t' ' ' | cut -d' ' -f4-)
     fi
+# hdparm does not support NVME, use smartctl
+elif (lsblk -d -r -n -o TYPE,SIZE,PATH | grep -q nvme); then
+    sdaModel="SSD NVMe: $(smartctl -a /dev/nvme0n1 | grep "Model Number" | tr -s ' ' | cut -d' ' -f3-)"
 fi
 
 ldif_file="/root/${EvoComputerName}.$(date +"%Y%m%d%H%M%S").ldif"
@@ -273,7 +277,10 @@ for net in $(ls /sys/class/net); do
     echo $path | grep -q virtual
     if [ $? -ne 0 ]; then
         hw=$(cat ${path}/address)
+        # In some cases some devices does not have a vendor or device, skip it
+        test -f ${path}/device/vendor || continue
         vendor_id=$(cat ${path}/device/vendor)
+        test -f ${path}/device/device || continue
         dev_id=$(cat ${path}/device/device)
         [ "${dev_id}" = "0x0001" ] && dev_id="0x1000"
         dev=$(lspci -d "${vendor_id}:${dev_id}" -vm)
