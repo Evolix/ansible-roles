@@ -12,6 +12,8 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+* generate-ldif: add NVMe disk support
+* nagios-nrpe/evolinux-base: brand new check for hardware raid on HP servers gen 10
 * certbot: detect HAProxy cert directory
 * filebeat: allow using a template
 * haproxy: add deny_ips file to reject connections
@@ -52,6 +54,10 @@ The **patch** part changes incrementally at each release.
 
 ### Fixed
 
+* squid: better regex to match sa-update domains
+* nagios-nrpe: check_amavis: updated regex
+* generate-ldif: better detection of computerOS field
+* generate-ldif: skip some odd ethernet devices
 * certbot: restore compatibility with old Nginx
 * lxc-php: Install opensmtpd as intended
 * mongodb: fix logrotate patterm on Debian buster
