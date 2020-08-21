@@ -37,7 +37,7 @@ The **patch** part changes incrementally at each release.
 * certbot: install certbot dependencies non-interactively for jessie
 * elasticsearch: set tmpdir before datadir
 * elasticsearch: configure cluster with seed hosts and initial masters
-* evoacme: upstream release 20.06.1
+* evoacme: upstream release 20.08
 * evoacme: read values from environment before defaults file
 * evoacme: update for new certbot role
 * haproxy: deport SSL tuning to Mozilla SSL generator

@@ -285,7 +285,7 @@ main() {
     export EVOACME_FULLCHAIN="${LIVE_FULLCHAIN}"
 
     # search for files in hooks directory
-    for hook in $(find ${HOOKS_DIR} -type f); do
+    for hook in $(find ${HOOKS_DIR} -type f -executable | sort); do
         # keep only executables files, not containing a "."
         if [ -x "${hook}" ] && (basename "${hook}" | grep -vqF "."); then
             debug "Executing ${hook}"
@@ -303,7 +303,7 @@ readonly QUIET=${QUIET:-"0"}
 readonly TEST=${TEST:-"0"}
 readonly DRY_RUN=${DRY_RUN:-"0"}
 
-readonly VERSION="20.06.1"
+readonly VERSION="20.08"
 
 # Read configuration file, if it exists
 [ -r /etc/default/evoacme ] && . /etc/default/evoacme
@@ -314,7 +314,7 @@ readonly ACME_DIR=${ACME_DIR:-"/var/lib/letsencrypt"}
 readonly CSR_DIR=${CSR_DIR:-"/etc/ssl/requests"}
 readonly CRT_DIR=${CRT_DIR:-"/etc/letsencrypt"}
 readonly LOG_DIR=${LOG_DIR:-"/var/log/evoacme"}
-readonly HOOKS_DIR=${HOOKS_DIR:-"${CRT_DIR}/hooks"}
+readonly HOOKS_DIR=${HOOKS_DIR:-"${CRT_DIR}/renewal-hooks/deploy"}
 readonly SSL_MINDAY=${SSL_MINDAY:-"30"}
 readonly SSL_EMAIL=${SSL_EMAIL:-""}
 
