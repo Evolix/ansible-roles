@@ -1,45 +1,20 @@
 ---
-
-- name: Use backports for jessie
-  block:
-    - name: install jessie-backports
-      include_role:
-        name: evolix/apt
-        tasks_from: backports.yml
-
-    - name: Add exceptions for certbot dependencies
-      copy:
-        src: backports-certbot
-        dest: /etc/apt/preferences.d/z-backports-certbot
-      notify: apt update
-
-    - meta: flush_handlers
-  when: ansible_distribution_release == "jessie"
-
-- name: Install certbot with apt
-  apt:
-    name: certbot
-    state: latest
+- include_role:
+    name: evolix/certbot
 
 - include_role:
     name: evolix/remount-usr
 
-- name: Remove certbot symlink for apt install
-  file:
-    path: /usr/local/bin/certbot
-    state: absent
 
 - name: Disable /etc/cron.d/certbot
-  command: mv /etc/cron.d/certbot /etc/cron.d/certbot.disabled
+  command: mv -f /etc/cron.d/certbot /etc/cron.d/certbot.disabled
   args:
     removes: /etc/cron.d/certbot
-    creates: /etc/cron.d/certbot.disabled
 
 - name: Disable /etc/cron.daily/certbot
-  command: mv /etc/cron.daily/certbot /etc/cron.daily/certbot.disabled
+  command: mv -f /etc/cron.daily/certbot /etc/cron.daily/certbot.disabled
   args:
     removes: /etc/cron.daily/certbot
-    creates: /etc/cron.daily/certbot.disabled
 
 - name: Install evoacme custom cron
   copy:
