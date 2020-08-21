@@ -12,39 +12,39 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
-* generate-ldif: add NVMe disk support
-* nagios-nrpe/evolinux-base: brand new check for hardware raid on HP servers gen 10
 * certbot: detect HAProxy cert directory
 * filebeat: allow using a template
+* generate-ldif: add NVMe disk support
 * haproxy: add deny_ips file to reject connections
 * haproxy: add some comments to default config
 * haproxy: enable stats frontend with access lists
 * haproxy: preconfigure SSL with defaults
-* lxc-php: Install php-sqlite by default
 * lxc-php: Don't disable putenv() by default in PHP settings
+* lxc-php: Install php-sqlite by default
 * metricbeat: allow using a template
 * mysql: activate binary logs by specifying log_bin path
-* mysql: specify a custom server_id
 * mysql: option to define as read only
+* mysql: specify a custom server_id
+* nagios-nrpe/evolinux-base: brand new check for hardware raid on HP servers gen 10
 * nginx: make default vhost configurable
 * packweb-apache: Install zip & unzip by default
-* php: Install php-sqlite by default
 * php: Don't disable putenv() by default in PHP settings
+* php: Install php-sqlite by default
 
 ### Changed
 
 * certbot: fix haproxy hook (ssl cert directory detection)
 * certbot: install certbot dependencies non-interactively for jessie
-* elasticsearch: set tmpdir before datadir
 * elasticsearch: configure cluster with seed hosts and initial masters
-* evoacme: upstream release 20.08
+* elasticsearch: set tmpdir before datadir
 * evoacme: read values from environment before defaults file
 * evoacme: update for new certbot role
-* haproxy: deport SSL tuning to Mozilla SSL generator
-* haproxy: chroot and socket path are configurable
+* evoacme: upstream release 20.08
 * haproxy: adapt backports installed package list to distibution
-* haproxy: split stats variables
+* haproxy: chroot and socket path are configurable
+* haproxy: deport SSL tuning to Mozilla SSL generator
 * haproxy: rotate logs with date extension and immediate compression
+* haproxy: split stats variables
 * lxc-php: Do --no-install-recommends for ssmtp/opensmtpd
 * mongodb: install custom munin plugins
 * nginx: read server-status values before changing the config
@@ -55,14 +55,14 @@ The **patch** part changes incrementally at each release.
 
 ### Fixed
 
-* squid: better regex to match sa-update domains
-* nagios-nrpe: check_amavis: updated regex
+* certbot: restore compatibility with old Nginx
+* evobackup-client: fixed the ssh connection test
 * generate-ldif: better detection of computerOS field
 * generate-ldif: skip some odd ethernet devices
-* certbot: restore compatibility with old Nginx
 * lxc-php: Install opensmtpd as intended
 * mongodb: fix logrotate patterm on Debian buster
-* evobackup-client: fixed the ssh connection test
+* nagios-nrpe: check_amavis: updated regex
+* squid: better regex to match sa-update domains
 * varnish: fix start command when multiple addresses are present
 
 ### Removed
