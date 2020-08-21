@@ -9,10 +9,11 @@
 
 - include: permissions.yml
 
-- include: evoacme_hook.yml
-  vars:
-    hook_name: "{{ item }}"
-  loop: []
+# Enable this task if you want to deploy hooks
+# - include: evoacme_hook.yml
+#   vars:
+#     hook_name: "{{ item }}"
+#   loop: []
 
 - include: conf.yml
 
