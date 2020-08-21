@@ -16,7 +16,7 @@ found_renewed_lineage() {
     test -f "${RENEWED_LINEAGE}/fullchain.pem" && test -f "${RENEWED_LINEAGE}/privkey.pem"
 }
 config_check() {
-    ${haproxy_bin} -c -f /etc/haproxy/haproxy.cfg > /dev/null 2>&1
+    ${haproxy_bin} -c -f "${haproxy_config_file}" > /dev/null 2>&1
 }
 concat_files() {
     # shellcheck disable=SC2174
@@ -33,6 +33,22 @@ cert_and_key_mismatch() {
     haproxy_key_md5=$(openssl rsa -noout -modulus -in "${haproxy_cert_file}" | openssl md5)
 
     test "${haproxy_cert_md5}" != "${haproxy_key_md5}"
+}
+detect_haproxy_cert_dir() {
+    # get last field or line wich defines the crt directory
+    config_cert_dir=$(grep -r -o -E -h '^\s*bind .* crt /etc/\S+' "${haproxy_config_file}" | head -1 | awk '{ print $(NF)}')
+    if [ -n "${config_cert_dir}" ]; then
+        debug "Cert directory is configured with ${config_cert_dir}"
+        echo "${config_cert_dir}"
+    elif [ -d "/etc/haproxy/ssl" ]; then
+        debug "No configured cert directory found, but /etc/haproxy/ssl exists"
+        echo "/etc/haproxy/ssl"
+    elif [ -d "/etc/ssl/haproxy" ]; then
+        debug "No configured cert directory found, but /etc/ssl/haproxy exists"
+        echo "/etc/ssl/haproxy"
+    else
+        error "Cert directory not found."
+    fi
 }
 main() {
     if [ -z "${RENEWED_LINEAGE}" ]; then
@@ -70,6 +86,7 @@ readonly VERBOSE=${VERBOSE:-"0"}
 readonly QUIET=${QUIET:-"0"}
 
 readonly haproxy_bin=$(command -v haproxy)
-readonly haproxy_cert_dir="/etc/ssl/haproxy"
+readonly haproxy_config_file="/etc/haproxy/haproxy.cfg"
+readonly haproxy_cert_dir=$(detect_haproxy_cert_dir)
 
 main

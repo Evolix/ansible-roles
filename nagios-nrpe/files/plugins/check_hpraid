@@ -1,0 +1,289 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2028
+set -euo pipefail
+
+# This check_hpraid is a fork from check_cciss v0.15 written by Simone Rosa.
+# Fork written by Evolix and for Evolix usage (Debian only).
+# Usage of old tools and drivers were removed to use only the smartpqi or hpsa drivers and the ssacli tool from HP.
+# Tools not used on Debian were also removed.
+# Linting tool shellcheck was used to use a better bash coding style.
+# Upstream at:
+# https://gitea.evolix.org/evolix/ansible-roles/src/branch/stable/nagios-nrpe/files/plugins
+# Source of the fork:
+# https://exchange.nagios.org/directory/Plugins/Hardware/Storage-Systems/RAID-Controllers/check_cciss--2D-HP-and-Compaq-Smart-Array-Hardware-status/details
+#
+# Licence: GPLv2
+# Description:
+#
+# This plugin checks hardware status for Smart Array Controllers,
+# using HPE Smart Storage Administrator. It should support Debian 9 and over.
+# (Array, controller, cache, battery, etc...)
+#
+# Known working RAID controllers:
+# 
+# - Adaptec Smart Storage PQI 12G SAS/PCIe 3 (rev 01)
+#   | Smart Array P408i-a SR Gen10
+#   | Smart Array P408i-p SR Gen10
+#   | Smart Array E208i-a SR Gen10
+# 
+# 
+# NOTE:
+#
+# You need to install the proprietary tool HPE Smart Storage Administrator (ssacli) from: 
+# https://downloads.linux.hpe.com/SDR/repo/mcp
+# Also NRPE need to launch ssacli as root.
+#
+# Please add this line to /etc/sudoers :
+# --------------------------------------------------
+# nagios      ALL=NOPASSWD: /usr/sbin/ssacli
+#
+# Examples:
+#
+#   ./check_hpraid
+# ----------------
+# RAID OK
+#
+#   ./check_hpraid -v
+# -------------------
+# RAID OK:  Smart Array 6i in Slot 0 array A logicaldrive 1 (67.8 GB, RAID 1+0, OK)
+#           [Controller Status: OK  Cache Status: OK  Battery Status: OK]
+#
+# RAID CRITICAL - HP Smart Array Failed:  Smart Array 6i in Slot 0 (Embedded) \
+#          array A logicaldrive 1 (33.9 GB, RAID 1, Interim Recovery Mode) \
+#          physicaldrive 1:0 (port 1:id 0 , Parallel SCSI, --- GB, Failed)
+#
+# RAID WARNING - HP Smart Array Rebuilding:  Smart Array 6i in Slot 0 (Embedded) \
+#          array A logicaldrive 1 (33.9 GB, RAID 1, Recovering, 26% complete) \
+#          physicaldrive 1:0 (port 1:id 0 , Parallel SCSI, 36.4 GB, Rebuilding)
+#
+# ./check_hpraid -v -p
+# --------------------
+# RAID OK:  Smart Array 6i in Slot 0 (Embedded) array A logicaldrive 1 (33.9 GB, RAID 1, OK)
+#           physicaldrive 2:0 (port 2:id 0 , Parallel SCSI, 36.4 GB, OK)
+#           physicaldrive 2:1 (port 2:id 1 , Parallel SCSI, 36.4 GB, OK)
+#           physicaldrive 1:5 (port 1:id 5 , Parallel SCSI, 72.8 GB, OK, spare)
+#           [Controller Status: OK Cache Status: OK Battery/Capacitor Status: OK]
+#
+# RAID CRITICAL - HP Smart Array Failed:  Smart Array 6i in Slot 0 (Embedded) \
+#          array A logicaldrive 1 (33.9 GB, RAID 1, Interim Recovery Mode) \
+#          physicaldrive 1:0 (port 1:id 0 , Parallel SCSI, --- GB, Failed) \
+#          physicaldrive 1:1 (port 1:id 1 , Parallel SCSI, 36.4 GB, OK)
+#
+# RAID WARNING - HP Smart Array Rebuilding:  Smart Array 6i in Slot 0 (Embedded) \
+#          array A logicaldrive 1 (33.9 GB, RAID 1, Recovering, 26% complete) \
+#          physicaldrive 1:0 (port 1:id 0 , Parallel SCSI, 36.4 GB, Rebuilding) \
+#          physicaldrive 1:1 (port 1:id 1 , Parallel SCSI, 36.4 GB, OK)
+#
+# ./check_hpraid -v -b
+# ----------------
+#
+# RAID OK:  Smart Array 6i in Slot 0 (Embedded) array A logicaldrive 1 (33.9 GB, RAID 1, OK) [Controller Status: OK]
+#
+#  [insted of]
+# RAID CRITICAL - HP Smart Array Failed:  Smart Array 6i in Slot 0 (Embedded) \
+#                 Controller Status: OK Cache Status: Temporarily Disabled \
+#                 Battery/Capacitor Status: Failed (Replace Batteries/Capacitors)
+
+PROGNAME=$(basename "$0")
+NAGIOS_PLUGINS="/usr/lib/nagios/plugins"
+REVISION="0.16-evolix"
+DEBUG="0"
+VERBOSE="0"
+ssacli=$(command -v ssacli)
+PHYSICAL_DRIVE=0
+
+# shellcheck source=/dev/null
+. ${NAGIOS_PLUGINS}/utils.sh
+
+print_usage() {
+    echo ""
+    echo "Usage: $PROGNAME [-v] [-p] [-e <number>] [-E <name>] [-b] [-s] [-d]"
+    echo "Usage: $PROGNAME [-h]"
+    echo "Usage: $PROGNAME [-V]"
+    echo ""
+    echo "  -v                   = show status and informations about RAID"
+    echo "  -p                   = show detail for physical drives"
+    echo "  -e <number>          = exclude slot number"
+    echo "  -b                   = exclude battery/capacitor/cache status check"
+    echo "  -d                   = use for debug (command line mode)"
+    echo "  -h                   = help information"
+    echo "  -V                   = version information"
+    echo ""
+    echo " ============="
+}
+
+print_help() {
+    print_revision "$PROGNAME" "$REVISION"
+    echo ""
+    print_usage
+    echo ""
+    echo "This plugin checks hardware status for Smart Array Controllers,"
+    echo "using HPE Smart Storage Administrator."
+    echo ""
+    support
+    exit 0
+}
+
+while getopts "N:cvpbsde:Vh" options
+do
+    case $options in
+      N)  ;;
+      c)  ;;
+      v)  VERBOSE=1;;
+      p)  PHYSICAL_DRIVE=1;;
+      d)  DEBUG=1;;
+      e)  EXCLUDE_SLOT=1
+          excludeslot="$OPTARG";;
+      b)  EXCLUDE_BATTERY=1;;
+      V)  print_revision "$PROGNAME" "$REVISION"
+          exit 0;;
+      h)  print_help
+          exit 0;;
+      \?) print_usage
+          exit 0;;
+      *)  print_usage
+          exit 0;;
+    esac
+done
+
+# Check if smartpqi or hpsa driver is loaded
+# https://manpages.debian.org/buster/manpages/smartpqi.4.en.html
+if [ -d /sys/bus/pci/drivers/smartpqi ] || [ -d /sys/bus/pci/drivers/hpsa ]; then
+    driverPresent='YES.'
+else
+    driverPresent='No!'
+fi
+if [ "$DEBUG" = "1" ]; then
+    echo "### Check if \"HP Smart Array\" driver is present >>>\n${driverPresent}\n"
+fi
+if [[ "$driverPresent" == "No!" ]]; then
+    echo "RAID UNKNOWN - HP Smart Array not found"
+    exit "$STATE_UNKNOWN"
+fi
+
+# Check if "HP Array Utility CLI" is present
+if [ "$DEBUG" = "1" ]; then
+    echo "### Check if \"ssacli\" is present >>>\n"
+fi
+if [ ! -x "$ssacli" ]; then
+    if [ -x "$ssacli" ]; then
+        if [ "$DEBUG" = "1" ]; then
+            echo "### \"ssacli\" is present >>>\n"
+        fi
+    else
+        echo "ERROR: ssacli tools should be installed and with right sudoers/permissions (see the notes above)"
+        exit "$STATE_UNKNOWN"
+    fi
+fi
+
+# Check if "HP Controller" work correctly
+check=$(sudo -u root "$ssacli" controller all show status 2>&1)
+status=$?
+if [ "$DEBUG" = "1" ]; then
+    echo "### Check if \"HP Controller\" work correctly >>>\n""${check}""\n"
+fi
+if test ${status} -ne 0; then
+    echo "RAID UNKNOWN - $ssacli did not execute properly : ""${check}"
+    exit "$STATE_UNKNOWN"
+fi
+
+# Get "Slot" & exclude slot needed
+EXCLUDE_SLOT=${EXCLUDE_SLOT:-0}
+if [ "$EXCLUDE_SLOT" = "1" ]; then
+    slots=$(grep -E -o "Slot \w" <<< "$check" | awk '{print $NF}' | grep -v "$excludeslot")
+else
+    slots=$(grep -E -o "Slot \w" <<< "$check" | awk '{print $NF}')
+fi
+if [ "$DEBUG" = "1" ]; then
+    echo "### Get \"Slot\" & exclude slot not needed >>>\n""${slots}""\n"
+fi
+
+for slot in $slots; do
+    # Get "logicaldrive" for slot
+    set +e
+    check2b=$(sudo -u root "$ssacli" controller slot="$slot" logicaldrive all show 2>&1)
+    status=$?
+    if test ${status} -ne 0; then
+        # Skip empty slots
+        if grep -q "The specified device does not have any logical drives." <<< "$check2b"; then
+            break
+        fi
+        echo "RAID UNKNOWN - $ssacli did not execute properly : ""${check2b}"
+        exit "$STATE_UNKNOWN"
+    fi
+    set -e
+    check2=${check2:-}
+    check2="$check2$check2b"
+    if [ "$DEBUG" = "1" ]; then
+        echo "### Get \"logicaldrive\" for slot >>>\n""${check2b}""\n"
+    fi
+
+    # Get "physicaldrive" for slot
+    if [ "$PHYSICAL_DRIVE" = "1" ] || [ "$DEBUG" = "1" ]; then
+        check2b=$(sudo -u root "$ssacli" controller slot="$slot" physicaldrive all show | sed -e 's/\?/\-/g' 2>&1 | grep "physicaldrive")
+    else
+        check2b=$(sudo -u root "$ssacli" controller slot="$slot" physicaldrive all show | sed -e 's/\?/\-/g' 2>&1 | grep "physicaldrive" | (grep "\(Failure\|Failed\|Rebuilding\)" || true))
+    fi
+    status=$?
+    if [ "$PHYSICAL_DRIVE" = "1" ] || [ "$DEBUG" = "1" ]; then
+        if test ${status} -ne 0; then
+            echo "RAID UNKNOWN - $ssacli did not execute properly : ""${check2b}"
+            exit "$STATE_UNKNOWN"
+        fi
+    fi
+    printf -v check2 "%s\n%s" "$check2" "$check2b"
+    if [ "$DEBUG" = "1" ]; then
+        echo "### Get \"physicaldrive\" for slot >>>\n""${check2b}""\n"
+    fi
+done
+
+# Check STATUS
+if [ "$DEBUG" = "1" ]; then
+    echo "### Check STATUS >>>"
+fi
+
+# Omit battery/capacitor/cache status check if requested
+EXCLUDE_BATTERY=${EXCLUDE_BATTERY:-0}
+if [ "$EXCLUDE_BATTERY" = "1" ]; then
+    check=$(grep -v 'Battery/Capacitor Status: Failed (Replace Batteries/Capacitors)' <<< "$check")
+    check=$(grep -v 'Cache Status: Temporarily Disabled' <<< "$check")
+fi
+
+check=${check:-}
+check2=${check2:-}
+check3=${check3:-}
+if grep -qiE Failed <<< "$check"; then
+    echo  "RAID CRITICAL - HP Smart Array Failed: ${check}"
+    exit "$STATE_CRITICAL"
+elif grep -qiE Disabled <<< "$check"; then
+    echo "RAID CRITICAL - HP Smart Array Problem: ${check}"
+    exit "$STATE_CRITICAL"
+elif grep -qiE Failed <<< "$check2"; then
+    echo "RAID CRITICAL - HP Smart Array Failed: ${check2}"
+    exit "$STATE_CRITICAL"
+elif grep -qiE Failure <<< "$check2"; then
+    echo "RAID WARNING - Component Failure: ${check2}"
+    exit "$STATE_WARNING"
+elif grep -qiE Rebuild <<< "$check2"; then
+    echo "RAID WARNING - HP Smart Array Rebuilding: ${check2}"
+    exit "$STATE_WARNING"
+elif grep -qiE Recover <<< "$check2"; then
+    echo "RAID WARNING - HP Smart Array Recovering: ${check2}"
+    exit "$STATE_WARNING"
+elif grep -qiE "Cache Status: Temporarily Disabled" <<< "$check"; then
+    echo "RAID WARNING - HP Smart Array Cache Disabled: ${check}"
+    exit "$STATE_WARNING"
+elif grep -qiE FIRMWARE <<< "$check"; then
+    echo "RAID WARNING - ${check}"
+    exit "$STATE_WARNING"
+else
+    if [ "$DEBUG" = "1" ] || [ "$VERBOSE" = "1" ]; then
+        check3=$(grep -E Status <<< "$check")
+        printf "RAID OK: %s\n%s\n" "$check2" "$check3"
+    else
+        echo "RAID OK"
+    fi
+    exit "$STATE_OK"
+fi
+
+exit "$STATE_UNKNOWN"

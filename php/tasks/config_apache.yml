@@ -23,7 +23,7 @@
     dest: "{{ php_apache_defaults_ini_file }}"
     section: PHP
     option: disable_functions
-    value: "exec,shell-exec,system,passthru,putenv,popen"
+    value: "exec,shell-exec,system,passthru,popen"
     mode: "0644"
 
 - name: Custom php.ini

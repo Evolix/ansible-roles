@@ -20,4 +20,4 @@
     daemon_reload: yes
 
 - name: install certbot-auto
-  command: /usr/local/bin/certbot --install-only
+  command: /usr/local/bin/certbot --noninteractive --install-only

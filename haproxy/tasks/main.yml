@@ -4,8 +4,74 @@
     name: ssl-cert
     state: present
   tags:
-  - haproxy
-  - packages
+    - haproxy
+    - packages
+
+- name: HAProxy SSL directory is present
+  file:
+    path: /etc/haproxy/ssl
+    owner: root
+    group: root
+    mode: "0700"
+    state: directory
+  tags:
+    - haproxy
+    - config
+
+- name: Self-signed certificate is present in HAProxy ssl directory
+  shell: "cat /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/private/ssl-cert-snakeoil.key > /etc/haproxy/ssl/ssl-cert-snakeoil.pem"
+  args:
+    creates: /etc/haproxy/ssl/ssl-cert-snakeoil.pem
+  notify: reload haproxy
+  tags:
+    - haproxy
+    - config
+
+- name: HAProxy stats_access_ips are present
+  blockinfile:
+    dest: /etc/haproxy/stats_access_ips
+    create: yes
+    block: |
+      {% for ip in haproxy_stats_access_ips | default([]) %}
+      {{ ip }}
+      {% endfor %}
+  notify: reload haproxy
+  tags:
+    - haproxy
+    - config
+
+- name: HAProxy stats_admin_ips are present
+  blockinfile:
+    dest: /etc/haproxy/stats_admin_ips
+    create: yes
+    block: |
+      {% for ip in haproxy_stats_admin_ips | default([]) %}
+      {{ ip }}
+      {% endfor %}
+  notify: reload haproxy
+  tags:
+    - haproxy
+    - config
+
+- name: HAProxy maintenance_ips are present
+  blockinfile:
+    dest: /etc/haproxy/maintenance_ips
+    create: yes
+    block: |
+      {% for ip in haproxy_maintenance_ips | default([]) %}
+      {{ ip }}
+      {% endfor %}
+  notify: reload haproxy
+
+- name: HAProxy deny_ips are present
+  blockinfile:
+    dest: /etc/haproxy/deny_ips
+    create: yes
+    block: |
+      {% for ip in haproxy_deny_ips | default([]) %}
+      {{ ip }}
+      {% endfor %}
+  notify: reload haproxy
 
 - include: packages_backports.yml
   when: haproxy_backports
@@ -15,8 +81,8 @@
     name: haproxy
     state: present
   tags:
-  - haproxy
-  - packages
+    - haproxy
+    - packages
 
 - name: Copy HAProxy configuration
   template:
@@ -25,14 +91,34 @@
     force: "{{ haproxy_force_config }}"
     validate: "haproxy -c -f %s"
   with_first_found:
-  - "templates/haproxy/haproxy.{{ inventory_hostname }}.cfg.j2"
-  - "templates/haproxy/haproxy.{{ host_group }}.cfg.j2"
-  - "templates/haproxy/haproxy.default.cfg.j2"
-  - "haproxy.default.cfg.j2"
+    - "templates/haproxy/haproxy.{{ inventory_hostname }}.cfg.j2"
+    - "templates/haproxy/haproxy.{{ host_group }}.cfg.j2"
+    - "templates/haproxy/haproxy.default.cfg.j2"
+    - "haproxy.default.cfg.j2"
   notify: reload haproxy
-  when: "{{ haproxy_update_config }}"
+  when: haproxy_update_config
   tags:
-  - haproxy
-  - config
+    - haproxy
+    - config
+
+- name: Rotate logs with dateext
+  lineinfile:
+    dest: /etc/logrotate.d/haproxy
+    line: '    dateext'
+    regexp: '^\s*#*\s*(no)?dateext'
+    insertbefore: '}'
+  tags:
+    - haproxy
+    - config
+
+- name: Rotate logs with nodelaycompress
+  lineinfile:
+    dest: /etc/logrotate.d/haproxy
+    line: '    nodelaycompress'
+    regexp: '^\s*#*\s*(no)?delaycompress'
+    insertbefore: '}'
+  tags:
+    - haproxy
+    - config
 
 - include: munin.yml

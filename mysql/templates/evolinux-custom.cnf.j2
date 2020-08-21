@@ -29,9 +29,13 @@ query_cache_limit = {{ mysql_query_cache_limit }}
 {% if mysql_query_cache_limit %}
 query_cache_size = {{ mysql_query_cache_size }}
 {% endif %}
-{% if mysql_log_bin %}
-log_bin = {{ mysql_log_bin }}
+{% if mysql_max_allowed_packet %}
+max_allowed_packet = {{ mysql_max_allowed_packet }}
 {% endif %}
-{% if mysql_server_id %}
-server_id = {{ mysql_server_id }}
+{% if mysql_lower_case_table_names %}
+lower_case_table_names = {{ mysql_lower_case_table_names }}
 {% endif %}
+{% if mysql_innodb_log_file_size %}
+innodb_log_file_size = {{ mysql_innodb_log_file_size }}
+{% endif %}
+read_only = {{ mysql_read_only }}

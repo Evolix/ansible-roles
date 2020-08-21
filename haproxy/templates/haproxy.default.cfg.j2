@@ -3,8 +3,8 @@
 global
     log /dev/log    local0
     log /dev/log    local1 notice
-    chroot /var/lib/haproxy
-    stats socket /run/haproxy/admin.sock mode 660 level admin
+    chroot {{ haproxy_chroot }}
+    stats socket {{ haproxy_socket }} mode 660 level admin
     stats timeout 30s
     user haproxy
     group haproxy
@@ -14,20 +14,18 @@ global
     ca-base /etc/ssl/certs
     crt-base /etc/ssl/private
 
-    # Default ciphers to use on SSL-enabled listening sockets.
-    # For more information, see ciphers(1SSL). This list is from:
-    #  https://hynek.me/articles/hardening-your-web-servers-ssl-ciphers/
-    ssl-default-bind-ciphers ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS
-    ssl-default-bind-options no-sslv3
+    # Go to https://ssl-config.mozilla.org/ and build your SSL configuration
 
 defaults
     log global
+
     mode    http
     option  httplog
     option  dontlognull
-        timeout connect 5000
-        timeout client  50000
-        timeout server  50000
+    timeout connect 5000
+    timeout client  50000
+    timeout server  50000
+
     errorfile 400 /etc/haproxy/errors/400.http
     errorfile 403 /etc/haproxy/errors/403.http
     errorfile 408 /etc/haproxy/errors/408.http
@@ -35,3 +33,46 @@ defaults
     errorfile 502 /etc/haproxy/errors/502.http
     errorfile 503 /etc/haproxy/errors/503.http
     errorfile 504 /etc/haproxy/errors/504.http
+
+{% if haproxy_stats_enable %}
+listen stats
+    mode http
+    bind {{ haproxy_stats_bind_directive }}
+
+    stats enable
+    stats refresh 10s
+    stats uri {{ haproxy_stats_path }}
+    stats show-legends
+    stats show-node
+    stats admin if { src -f /etc/haproxy/stats_admin_ips }
+
+    http-request deny if !{ src -f /etc/haproxy/stats_access_ips }
+    http-request set-log-level silent
+{% endif %}
+
+# frontend http-https
+#     bind 0.0.0.0:80
+#     bind 0.0.0.0:443 ssl crt {{ haproxy_ssl_dir }}
+# 
+#     capture request header Host len 32
+# 
+#     option forwardfor
+# 
+#     acl self hdr(host) -i {{ ansible_fqdn }}
+# 
+#     # Detect Let's Encrypt challenge requests
+#     acl letsencrypt path_dir -i /.well-known/acme-challenge
+# 
+#     # Reject the request at the TCP level if source is in the denylist
+#     tcp-request connection reject if { src -f /etc/haproxy/deny_ips }
+# 
+#     http-request set-header X-Forwarded-Proto https if { ssl_fc }
+#     http-request set-header X-Forwarded-Port 443 if { ssl_fc }
+# 
+#     use_backend local if letsencrypt || self
+# 
+# backend local
+#     mode http
+#     option forwardfor
+# 
+#     server localhost 127.0.0.1:81 send-proxy-v2

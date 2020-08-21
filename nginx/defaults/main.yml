@@ -22,3 +22,10 @@ nginx_evolinux_default_enabled: True
 
 nginx_serverstatus_suffix: ""
 nginx_serverstatus_suffix_file: "/etc/evolinux/nginx_serverstatus_suffix"
+
+nginx_force_default_template: False
+nginx_default_template_regular: "evolinux-default.conf.j2"
+nginx_default_template_minimal: "evolinux-default.minimal.conf.j2"
+
+nginx_service_state: started
+nginx_service_enabled: True

@@ -1,4 +1,4 @@
-# filebeat
+# metricbeat
 
 Install Metricbeat.
 

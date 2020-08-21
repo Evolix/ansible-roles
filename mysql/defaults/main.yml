@@ -21,7 +21,6 @@ mysql_innodb_buffer_pool_size: '{{ (ansible_memtotal_mb * 0.3) | int }}M'
 # If these variables are changed to non-Null values,
 # they will be added in the zzz-evolinux-custom.cnf file.
 # Otherwise, the value from de the z-evolinux-defaults.cnf file will preveil.
-mysql_bind_address: Null
 mysql_max_connections: Null
 mysql_max_connect_errors: Null
 mysql_table_cache: Null
@@ -29,8 +28,10 @@ mysql_tmp_table_size: Null
 mysql_max_heap_table_size: Null
 mysql_query_cache_limit: Null
 mysql_query_cache_size: Null
-mysql_log_bin: Null
-mysql_server_id: Null
+mysql_max_allowed_packet: Null
+mysql_force_custom_config: 'no'
+mysql_innodb_log_file_size: Null
+mysql_lower_case_table_names: Null
 
 mysql_cron_optimize: True
 mysql_cron_optimize_frequency: weekly
@@ -44,3 +45,13 @@ mysql_evolinux_defaults_file: z-evolinux-defaults.cnf
 mysql_evolinux_custom_file: zzz-evolinux-custom.cnf
 
 mysql_restart_if_needed: True
+
+# replication variables:
+mysql_replication: false
+mysql_log_bin: null
+mysql_binlog_format: mixed
+mysql_server_id: null
+mysql_bind_address: null
+mysql_repl_password: ''
+mysql_read_only: 0
+

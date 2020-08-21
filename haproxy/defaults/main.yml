@@ -1,6 +1,30 @@
 ---
 # backward compatibility with a previously used variable
+haproxy_stats_ssl: True
+haproxy_stats_host: "*"
+haproxy_stats_port: "8080"
+haproxy_stats_path: "/"
+haproxy_stats_bind_directive: "{{ haproxy_stats_host }}:{{ haproxy_stats_port }} {% if haproxy_stats_ssl %}ssl crt {{ haproxy_ssl_dir }}{% endif %}"
+
+haproxy_stats_internal_url: "{% if haproxy_stats_ssl %}https:{% else %}http:{% endif %}//{% if haproxy_stats_host == '*' or haproxy_stats_host == '0.0.0.0' %}127.0.0.1{% else %}{{ haproxy_stats_host }}{% endif %}:{{ haproxy_stats_port }}{{ haproxy_stats_path }}"
+haproxy_stats_external_url: "{% if haproxy_stats_ssl %}https:{% else %}http:{% endif %}//{{ ansible_fqdn }}:{{ haproxy_stats_port }}{{ haproxy_stats_path }}"
+
 haproxy_backports: "{{ haproxy_jessie_backports | default(false, true) }}"
-haproxy_stats_url: "http://127.0.0.1:8080/"
 haproxy_update_config: True
 haproxy_force_config: True
+
+haproxy_socket: /run/haproxy/admin.sock
+haproxy_chroot: /var/lib/haproxy
+
+haproxy_stats_access_ips: []
+haproxy_stats_admin_ips: []
+haproxy_maintenance_ips: []
+haproxy_deny_ips: []
+
+haproxy_ssl_dir: "/etc/haproxy/ssl/"
+
+haproxy_stats_enable: False
+haproxy_stats_bind: "*:8080 ssl crt /etc/haproxy/ssl/"
+
+haproxy_backports_packages_stretch: haproxy libssl1.0.0
+haproxy_backports_packages_buster: haproxy

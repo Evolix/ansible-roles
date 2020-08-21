@@ -66,18 +66,79 @@
     - logstash_plugin.stat.exists
     - not logstash_plugin_installed | success
 
-- name: cloud_metadata processor is disabled
-  replace:
-    dest: /etc/filebeat/filebeat.yml
-    regexp: '^(\s+)(- add_cloud_metadata:)'
-    replace: '\1# \2'
-  notify: restart filebeat
-  when: not filebeat_processors_cloud_metadata
+# When we don't use a config template (default)
+- block:
+  - name: cloud_metadata processor is disabled
+    replace:
+      dest: /etc/filebeat/filebeat.yml
+      regexp: '^(\s+)(- add_cloud_metadata:)'
+      replace: '\1# \2'
+    notify: restart filebeat
+    when: not filebeat_processors_cloud_metadata
 
-- name: cloud_metadata processor is disabled
+  - name: cloud_metadata processor is disabled
+    lineinfile:
+      dest: /etc/filebeat/filebeat.yml
+      line: "  - add_cloud_metadata: ~"
+      insert_after: '^processors:'
+    notify: restart filebeat
+    when: filebeat_processors_cloud_metadata
+
+  - name: Filebeat knows where to find Elasticsearch
+    lineinfile:
+      dest: /etc/filebeat/filebeat.yml
+      regexp: '^  hosts: .*'
+      line: "  hosts: [\"{{ filebeat_elasticsearch_hosts | join('\", \"') }}\"]"
+      insertafter: "output.elasticsearch:"
+    notify: restart filebeat
+    when:
+      - filebeat_elasticsearch_hosts
+
+  - name: Filebeat protocol for Elasticsearch
+    lineinfile:
+      dest: /etc/filebeat/filebeat.yml
+      regexp: '^  #?protocol: .*'
+      line: "  protocol: \"{{ filebeat_elasticsearch_protocol }}\""
+      insertafter: "output.elasticsearch:"
+    notify: restart filebeat
+    when: filebeat_elasticsearch_protocol == "http" or filebeat_elasticsearch_protocol == "https"
+
+  - name: Filebeat auth/username for Elasticsearch are configured
+    lineinfile:
+      dest: /etc/filebeat/filebeat.yml
+      regexp: '{{ item.regexp }}'
+      line: '{{ item.line }}'
+      insertafter: "output.elasticsearch:"
+    with_items:
+      - { regexp: '^  #?username: .*', line: '  username: "{{ filebeat_elasticsearch_auth_username }}"' }
+      - { regexp: '^  #?password: .*', line: '  password: "{{ filebeat_elasticsearch_auth_password }}"' }
+    notify: restart filebeat
+    when:
+      - filebeat_elasticsearch_auth_username
+      - filebeat_elasticsearch_auth_password
+  when: not filebeat_use_config_template
+
+- name: Filebeat api_key for Elasticsearch are configured
   lineinfile:
     dest: /etc/filebeat/filebeat.yml
-    line: "  - add_cloud_metadata: ~"
-    insert_after: '^processors:'
+    regexp: '^  #?api_key: .*'
+    line: '  api_key: "{{ filebeat_elasticsearch_auth_api_key }}"'
+    insertafter: "output.elasticsearch:"
   notify: restart filebeat
-  when: filebeat_processors_cloud_metadata
+  when: filebeat_elasticsearch_auth_api_key
+
+# When we use a config template
+- block:
+  - name: Configuration is up-to-date
+    template:
+      src: "{{ item }}"
+      dest: /etc/filebeat/filebeat.yml
+      force: "{{ filebeat_force_config }}"
+    with_first_found:
+      - "templates/filebeat/filebeat.{{ inventory_hostname }}.yml.j2"
+      - "templates/filebeat/filebeat.{{ host_group }}.yml.j2"
+      - "templates/filebeat/filebeat.default.yml.j2"
+      - "filebeat.default.yml.j2"
+    notify: restart filebeat
+    when: filebeat_update_config
+  when: filebeat_use_config_template

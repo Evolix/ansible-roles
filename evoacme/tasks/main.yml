@@ -7,36 +7,14 @@
 
 - include: certbot.yml
 
-- include: acme.yml
+- include: permissions.yml
 
-- include: evoacme_hook.yml
-  vars:
-    hook_name: "{{ item }}"
-  with_items:
-    - reload_apache
-    - reload_nginx
-    - reload_dovecot
-    - reload_postfix
-    - commit
+# Enable this task if you want to deploy hooks
+# - include: evoacme_hook.yml
+#   vars:
+#     hook_name: "{{ item }}"
+#   loop: []
 
 - include: conf.yml
 
 - include: scripts.yml
-
-- name: Determine Apache presence
-  stat:
-    path: /etc/apache2/apache2.conf
-  check_mode: no
-  register: sta
-
-- name: Determine Nginx presence
-  stat:
-    path: /etc/nginx/nginx.conf
-  check_mode: no
-  register: stn
-
-- include: apache.yml
-  when: sta.stat.isreg is defined and sta.stat.isreg
-
-- include: nginx.yml
-  when: stn.stat.isreg is defined and stn.stat.isreg

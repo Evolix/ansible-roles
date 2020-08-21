@@ -59,6 +59,8 @@
 - name: Set folder permissions to 0750
   file:
     path: "/etc/opendkim/"
+    owner: opendkim
+    group: opendkim
     mode: "0750"
     force: yes
   tags:

@@ -20,6 +20,63 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [10.1.0] 2020-08-21
+
+### Added
+
+* certbot: detect HAProxy cert directory
+* filebeat: allow using a template
+* generate-ldif: add NVMe disk support
+* haproxy: add deny_ips file to reject connections
+* haproxy: add some comments to default config
+* haproxy: enable stats frontend with access lists
+* haproxy: preconfigure SSL with defaults
+* lxc-php: Don't disable putenv() by default in PHP settings
+* lxc-php: Install php-sqlite by default
+* metricbeat: allow using a template
+* mysql: activate binary logs by specifying log_bin path
+* mysql: option to define as read only
+* mysql: specify a custom server_id
+* nagios-nrpe/evolinux-base: brand new check for hardware raid on HP servers gen 10
+* nginx: make default vhost configurable
+* packweb-apache: Install zip & unzip by default
+* php: Don't disable putenv() by default in PHP settings
+* php: Install php-sqlite by default
+
+### Changed
+
+* certbot: fix haproxy hook (ssl cert directory detection)
+* certbot: install certbot dependencies non-interactively for jessie
+* elasticsearch: configure cluster with seed hosts and initial masters
+* elasticsearch: set tmpdir before datadir
+* evoacme: read values from environment before defaults file
+* evoacme: update for new certbot role
+* evoacme: upstream release 20.08
+* haproxy: adapt backports installed package list to distibution
+* haproxy: chroot and socket path are configurable
+* haproxy: deport SSL tuning to Mozilla SSL generator
+* haproxy: rotate logs with date extension and immediate compression
+* haproxy: split stats variables
+* lxc-php: Do --no-install-recommends for ssmtp/opensmtpd
+* mongodb: install custom munin plugins
+* nginx: read server-status values before changing the config
+* packweb-apache: Don't turn on mod-evasive emails by default
+* redis: create sudoers file if missing
+* redis: new syntax for match filter
+* redis: raise an error is port 6379 is used in "instance" mode
+
+### Fixed
+
+* certbot: restore compatibility with old Nginx
+* evobackup-client: fixed the ssh connection test
+* generate-ldif: better detection of computerOS field
+* generate-ldif: skip some odd ethernet devices
+* lxc-php: Install opensmtpd as intended
+* mongodb: fix logrotate patterm on Debian buster
+* nagios-nrpe: check_amavis: updated regex
+* squid: better regex to match sa-update domains
+* varnish: fix start command when multiple addresses are present
+
 ## [10.0.0] - 2020-05-13
 
 ### Added
@@ -45,8 +102,6 @@ The **patch** part changes incrementally at each release.
 * minifirewall: add a variable to force the check scripts update
 * mongodb: mongodb: compatibility with Debian 10
 * mysql-oracle: backport tasks from mysql role
-* mysql: activate binary logs by specifying log_bin path
-* mysql: specify a custom server_id
 * networkd-to-ifconfig: add variables for configuration by variables
 * packweb-apache: Deploy opcache.php to give some insights on PHP's opcache status
 * php: variable to install the mysqlnd module instead of the default mysql module

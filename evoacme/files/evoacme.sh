@@ -118,21 +118,21 @@ main() {
     [ "$1" = "-V" ] || [ "$1" = "--version" ] && show_version && exit 0
 
     mkdir -p "${ACME_DIR}"
-    chown acme: "${ACME_DIR}"
+    chown root: "${ACME_DIR}"
     [ -w "${ACME_DIR}" ]        || error "Directory ${ACME_DIR} is not writable"
 
     [ -d "${CSR_DIR}" ]         || error "Directory ${CSR_DIR} is not found"
 
     mkdir -p "${CRT_DIR}"
-    chown acme: "${CRT_DIR}"
+    chown root: "${CRT_DIR}"
     [ -w "${CRT_DIR}" ]         || error "Directory ${CRT_DIR} is not writable"
 
     mkdir -p "${LOG_DIR}"
-    chown acme: "${LOG_DIR}"
+    chown root: "${LOG_DIR}"
     [ -w "${LOG_DIR}" ]         || error "Directory ${LOG_DIR} is not writable"
 
     mkdir -p "${HOOKS_DIR}"
-    chown acme: "${HOOKS_DIR}"
+    chown root: "${HOOKS_DIR}"
     [ -d "${HOOKS_DIR}" ]        || error "Directory ${HOOKS_DIR} is not found"
 
     readonly VHOST=$(basename "$1" .conf)
@@ -195,7 +195,7 @@ main() {
 
     [ -d "${NEW_DIR}" ] && error "${NEW_DIR} directory already exists, remove it manually."
     mkdir -p "${NEW_DIR}"
-    chown -R acme: "${CRT_DIR}"
+    chown -R root: "${CRT_DIR}"
     chmod -R 0700 "${CRT_DIR}"
     chmod -R g+rX "${CRT_DIR}"
     debug "New cert will be created in ${NEW_DIR}"
@@ -218,15 +218,14 @@ main() {
         CERTBOT_REGISTRATION="${CERTBOT_REGISTRATION} --register-unsafely-without-email"
     fi
 
-    # Permissions checks for acme user
-    sudo -u acme test -r "${CSR_FILE}" || error "File ${CSR_FILE} is not readable by user 'acme'"
-    sudo -u acme test -w "${NEW_DIR}" || error "Directory ${NEW_DIR} is not writable by user 'acme'"
+    # Permissions checks
+    test -r "${CSR_FILE}" || error "File ${CSR_FILE} is not readable"
+    test -w "${NEW_DIR}" || error "Directory ${NEW_DIR} is not writable"
 
     # create a certificate with certbot
     # we disable the set -e during the certbot call
     set +e
-    sudo -u acme \
-        "${CERTBOT_BIN}" \
+    "${CERTBOT_BIN}" \
         certonly \
         ${CERTBOT_MODE} \
         ${CERTBOT_REGISTRATION} \
@@ -286,7 +285,7 @@ main() {
     export EVOACME_FULLCHAIN="${LIVE_FULLCHAIN}"
 
     # search for files in hooks directory
-    for hook in $(find ${HOOKS_DIR} -type f); do
+    for hook in $(find ${HOOKS_DIR} -type f -executable | sort); do
         # keep only executables files, not containing a "."
         if [ -x "${hook}" ] && (basename "${hook}" | grep -vqF "."); then
             debug "Executing ${hook}"
@@ -304,7 +303,7 @@ readonly QUIET=${QUIET:-"0"}
 readonly TEST=${TEST:-"0"}
 readonly DRY_RUN=${DRY_RUN:-"0"}
 
-readonly VERSION="19.11"
+readonly VERSION="20.08"
 
 # Read configuration file, if it exists
 [ -r /etc/default/evoacme ] && . /etc/default/evoacme
@@ -315,7 +314,7 @@ readonly ACME_DIR=${ACME_DIR:-"/var/lib/letsencrypt"}
 readonly CSR_DIR=${CSR_DIR:-"/etc/ssl/requests"}
 readonly CRT_DIR=${CRT_DIR:-"/etc/letsencrypt"}
 readonly LOG_DIR=${LOG_DIR:-"/var/log/evoacme"}
-readonly HOOKS_DIR=${HOOKS_DIR:-"${CRT_DIR}/hooks"}
+readonly HOOKS_DIR=${HOOKS_DIR:-"${CRT_DIR}/renewal-hooks/deploy"}
 readonly SSL_MINDAY=${SSL_MINDAY:-"30"}
 readonly SSL_EMAIL=${SSL_EMAIL:-""}
 
