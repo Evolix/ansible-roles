@@ -12,6 +12,18 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [10.1.0] 2020-08-21
+
+### Added
+
 * certbot: detect HAProxy cert directory
 * filebeat: allow using a template
 * generate-ldif: add NVMe disk support
@@ -64,10 +76,6 @@ The **patch** part changes incrementally at each release.
 * nagios-nrpe: check_amavis: updated regex
 * squid: better regex to match sa-update domains
 * varnish: fix start command when multiple addresses are present
-
-### Removed
-
-### Security
 
 ## [10.0.0] - 2020-05-13
 
