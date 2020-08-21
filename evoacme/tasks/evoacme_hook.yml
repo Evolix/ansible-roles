@@ -1,5 +1,10 @@
 ---
 
+- name: "Create {{ hook_name }} hook directory"
+  file:
+    dest: "{{ evoacme_hooks_dir }}"
+    state: directory
+
 - name: "Search for {{ hook_name }} hook"
   command: "find {{ evoacme_hooks_dir }} -type f \\( -name '{{ hook_name }}' -o -name '{{ hook_name }}.*' \\)"
   check_mode: no

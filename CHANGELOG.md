@@ -39,6 +39,7 @@ The **patch** part changes incrementally at each release.
 * elasticsearch: configure cluster with seed hosts and initial masters
 * evoacme: upstream release 20.06.1
 * evoacme: read values from environment before defaults file
+* evoacme: update for new certbot role
 * haproxy: deport SSL tuning to Mozilla SSL generator
 * haproxy: chroot and socket path are configurable
 * haproxy: adapt backports installed package list to distibution
