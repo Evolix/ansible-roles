@@ -12,12 +12,7 @@
 - include: evoacme_hook.yml
   vars:
     hook_name: "{{ item }}"
-  with_items:
-    - reload_apache
-    - reload_nginx
-    - reload_dovecot
-    - reload_postfix
-    - commit
+  loop: []
 
 - include: conf.yml
 
