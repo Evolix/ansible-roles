@@ -1,2 +1,5 @@
 ---
 tomcat_instance_root: '/srv/tomcat'
+
+tomcat_root_dir_owner: root
+tomcat_root_dir_group: root
