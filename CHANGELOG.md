@@ -16,6 +16,8 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 
+* Change default public SSH/SFTP port from 2222 to 22222
+
 ### Fixed
 
 ### Removed

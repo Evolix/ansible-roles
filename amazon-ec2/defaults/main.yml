@@ -123,6 +123,10 @@ ec2_evolinux_security_group:
       to_port: 2222
       cidr_ip: 0.0.0.0/0
     - proto: tcp
+      from_port: 22222
+      to_port: 22222
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
       from_port: 2223
       to_port: 2223
       cidr_ip: 0.0.0.0/0
