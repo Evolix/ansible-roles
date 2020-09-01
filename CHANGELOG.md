@@ -12,6 +12,7 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+* evolinux-base: swappiness is customizable
 * tomcat: root directory owner/group are configurable
 
 ### Changed
