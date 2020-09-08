@@ -21,6 +21,8 @@ The **patch** part changes incrementally at each release.
 
 ### Fixed
 
+* certbot: fix "no-self-upgrade" option
+
 ### Removed
 
 ### Security
