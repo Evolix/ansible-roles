@@ -26,6 +26,8 @@ The **patch** part changes incrementally at each release.
 
 ### Removed
 
+* evoacme: remove Debian 9 support
+
 ### Security
 
 ## [10.1.0] 2020-08-21
