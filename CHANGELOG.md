@@ -12,6 +12,7 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+* evoacme: remount /usr if necessary
 * evolinux-base: swappiness is customizable
 * evolinux-base: install wget
 * tomcat: root directory owner/group are configurable

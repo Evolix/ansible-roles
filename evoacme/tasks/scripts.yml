@@ -1,4 +1,8 @@
 ---
+
+- include_role:
+    name: evolix/remount-usr
+
 - name: Create CSR dir
   file:
     path: "{{ evoacme_csr_dir }}"
