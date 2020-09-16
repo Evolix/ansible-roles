@@ -23,6 +23,7 @@ The **patch** part changes incrementally at each release.
 
 ### Fixed
 
+* certbot: an empty change shouldn't raise an exception
 * certbot: fix "no-self-upgrade" option
 
 ### Removed
