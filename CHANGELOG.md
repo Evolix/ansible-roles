@@ -12,6 +12,18 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [10.2.0] 2020-09-17
+
+### Added
+
 * evoacme: remount /usr if necessary
 * evolinux-base: swappiness is customizable
 * evolinux-base: install wget
@@ -29,8 +41,6 @@ The **patch** part changes incrementally at each release.
 ### Removed
 
 * evoacme: remove Debian 9 support
-
-### Security
 
 ## [10.1.0] 2020-08-21
 
