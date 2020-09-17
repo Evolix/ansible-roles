@@ -20,6 +20,28 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [10.2.0] 2020-09-17
+
+### Added
+
+* evoacme: remount /usr if necessary
+* evolinux-base: swappiness is customizable
+* evolinux-base: install wget
+* tomcat: root directory owner/group are configurable
+
+### Changed
+
+* Change default public SSH/SFTP port from 2222 to 22222
+
+### Fixed
+
+* certbot: an empty change shouldn't raise an exception
+* certbot: fix "no-self-upgrade" option
+
+### Removed
+
+* evoacme: remove Debian 9 support
+
 ## [10.1.0] 2020-08-21
 
 ### Added

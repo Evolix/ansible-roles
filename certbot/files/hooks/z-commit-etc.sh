@@ -22,7 +22,7 @@ main() {
           message="[letsencrypt] certificates renewal (${RENEWED_DOMAINS})"
           ${git_bin} commit --message "${message}" --quiet
       else
-          error "Weird, nothing has changed but the hook has been executed for '${RENEWED_DOMAINS}'"
+          debug "Weird, nothing has changed but the hook has been executed for '${RENEWED_DOMAINS}'"
       fi
     fi
 }

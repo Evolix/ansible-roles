@@ -30,6 +30,7 @@
       - tcpdump
       - mtr-tiny
       - curl
+      - wget
       - telnet
       - traceroute
       - man
