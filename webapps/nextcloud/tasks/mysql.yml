@@ -1,0 +1,62 @@
+---
+- name: Get actual Mysql password
+  shell: "grep password {{ nextcloud_home }}/.my.cnf | awk '{ print $3 }'"
+  register: nextcloud_db_pass_grep
+  check_mode: no
+  changed_when: False
+  failed_when: False
+  tags:
+    - nextcloud
+
+- name: Generate Mysql password
+  command: 'apg -n 1 -m 16 -M lcN'
+  register: nextcloud_db_pass_apg
+  check_mode: no
+  changed_when: False
+  tags:
+    - nextcloud
+
+- name: Set Mysql password
+  set_fact:
+    nextcloud_db_pass: "{{ nextcloud_db_pass_grep.stdout | default(nextcloud_db_pass_apg.stdout, True) }}"
+  tags:
+    - nextcloud
+
+- debug:
+    var: nextcloud_db_pass
+    verbosity: 1
+
+- name: Create Mysql database
+  mysql_db:
+    name: "{{ nextcloud_db_name }}"
+    config_file: "/root/.my.cnf"
+    state: present
+  tags:
+    - nextcloud
+
+- name: Create Mysql user
+  mysql_user:
+    name: "{{ nextcloud_db_user }}"
+    password: '{{ nextcloud_db_pass }}'
+    priv: "{{ nextcloud_db_name }}.*:ALL"
+    config_file: "/root/.my.cnf"
+    update_password: always
+    state: present
+  tags:
+    - nextcloud
+
+- name: Store credentials in my.cnf
+  ini_file:
+    dest: "{{ nextcloud_home }}/.my.cnf"
+    owner: "{{ nextcloud_user }}"
+    group: "{{ nextcloud_user }}"
+    mode: "0600"
+    section: client
+    option: "{{ item.option }}"
+    value:  "{{ item.value }}"
+  with_items:
+    - { option: "user",     value: "{{ nextcloud_db_user }}" }
+    - { option: "database", value: "{{ nextcloud_db_name }}" }
+    - { option: "password", value: "{{ nextcloud_db_pass }}" }
+  tags:
+    - nextcloud

@@ -12,6 +12,8 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+* nextcloud: New role to setup a nextcloud instance
+
 ### Changed
 
 ### Fixed
