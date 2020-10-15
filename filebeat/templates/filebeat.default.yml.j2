@@ -143,15 +143,11 @@ setup.kibana:
 
 # Configure what output to use when sending the data collected by the beat.
 
+{% if filebeat_elasticsearch_hosts %}
 # ---------------------------- Elasticsearch Output ----------------------------
 output.elasticsearch:
-  # Array of hosts to connect to.
   hosts: ["{{ filebeat_elasticsearch_hosts | join('", "') }}"]
-
-  # Protocol - either `http` (default) or `https`.
   protocol: "{{ filebeat_elasticsearch_protocol | default('http') }}"
-
-  # Authentication credentials - either API key or username/password.
 {% if filebeat_elasticsearch_auth_api_key %}
   api_key: "{{ filebeat_elasticsearch_auth_api_key }}"
 {% endif %}
@@ -161,11 +157,22 @@ output.elasticsearch:
 {% if filebeat_elasticsearch_auth_password %}
   password: "{{ filebeat_elasticsearch_auth_password }}"
 {% endif %}
-
-# ------------------------------ Logstash Output -------------------------------
-#output.logstash:
-  # The Logstash hosts
-  #hosts: ["localhost:5044"]
+{% endif %}
+{% if filebeat_logstash_hosts %}
+# ---------------------------- Logstash Output ---------------------------------
+output.logstash:
+  hosts: ["{{ filebeat_logstash_hosts | join('", "') }}"]
+  protocol: "{{ filebeat_logstash_protocol | default('http') }}"
+{% if filebeat_logstash_auth_api_key %}
+  api_key: "{{ filebeat_logstash_auth_api_key }}"
+{% endif %}
+{% if filebeat_logstash_auth_username %}
+  username: "{{ filebeat_logstash_auth_username }}"
+{% endif %}
+{% if filebeat_logstash_auth_password %}
+  password: "{{ filebeat_logstash_auth_password }}"
+{% endif %}
+{% endif %}
 
   # Optional SSL. By default is off.
   # List of root certificates for HTTPS server verifications
