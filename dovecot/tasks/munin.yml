@@ -14,8 +14,10 @@
         dest: /etc/munin/plugins/dovecot
         mode: "0755"
 
-# TODO : add in /etc/munin/plugin-conf.d/munin-node
-# [dovecot]
-# group adm
+    - name: Install munin config
+      copy:
+        src: munin_config
+        dest: /etc/munin/plugin-conf.d/dovecot
+        mode: "0644"
 
   when: munin_node_plugins_config.stat.exists
