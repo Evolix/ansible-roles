@@ -12,6 +12,7 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+* dovecot: Update munin plugin & configure it
 * nextcloud: New role to setup a nextcloud instance
 * redis: variable to force use of port 6379 in instances mode
 
