@@ -18,3 +18,9 @@
   lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "systemctl restart opensmtpd"
+
+- name: Restart container
+  lxc_container:
+    name: "{{ lxc_php_version }}"
+    state: restarted
+
