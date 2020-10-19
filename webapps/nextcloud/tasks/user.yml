@@ -1,0 +1,38 @@
+---
+- name: Create Nextcloud group
+  group:
+    name: "{{ nextcloud_instance_name | mandatory }}"
+    state: present
+  tags:
+    - nextcloud
+
+- name: Create Nextcloud user
+  user:
+    name: "{{ nextcloud_user | mandatory }}"
+    group: "{{ nextcloud_user }}"
+    home: "{{ nextcloud_home | mandatory }}"
+    shell: '/bin/bash'
+    createhome: True
+    state: present
+  tags:
+  - nextcloud
+
+- name: Add the user 'www-data' to Nextcloud group
+  user:
+    name: www-data
+    groups: "{{ nextcloud_user | mandatory }}"
+    append: yes
+
+- name: Create top-level directories
+  file:
+    dest: "{{ item }}"
+    state: directory
+    mode: "0770"
+    owner: "{{ nextcloud_user }}"
+    group: "{{ nextcloud_user }}"
+  with_items:
+    - "{{ nextcloud_home }}/log"
+    - "{{ nextcloud_home }}/tmp"
+    - "{{ nextcloud_home }}/data"
+  tags:
+    - nextcloud

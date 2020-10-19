@@ -12,48 +12,94 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
-* certbot: detect HAProxy cert directory
-* haproxy: add deny_ips file to reject connections
-* haproxy: add some comments to default config
-* haproxy: enable stats frontend with access lists
-* haproxy: preconfigure SSL with defaults
-* lxc-php: Install php-sqlite by default
-* lxc-php: Don't disable putenv() by default in PHP settings
-* mysql: activate binary logs by specifying log_bin path
-* mysql: specify a custom server_id
-* mysql: option to define as read only
-* nginx: make default vhost configurable
-* packweb-apache: Install zip & unzip by default
-* php: Install php-sqlite by default
-* php: Don't disable putenv() by default in PHP settings
+* nextcloud: New role to setup a nextcloud instance
 
 ### Changed
 
-* lxc-php: Do --no-install-recommends for ssmtp/opensmtpd
-* packweb-apache: Don't turn on mod-evasive emails by default
-* haproxy: deport SSL tuning to Mozilla SSL generator
-* haproxy: chroot and socket path are configurable
-* haproxy: adapt backports installed package list to distibution
-* haproxy: split stats variables
-* nginx: read server-status values before changing the config
-* redis: create sudoers file if missing
-* redis: new syntax for match filter
-* redis: raise an error is port 6379 is used in "instance" mode
-* evoacme: upstream release 20.06.1
-* evoacme: read values from environment before defaults file
-* certbot: install certbot dependencies non-interactively for jessie
-
 ### Fixed
-
-* certbot: restore compatibility with old Nginx
-* lxc-php: Install opensmtpd as intended
-* mongodb: fix logrotate patterm on Debian buster
-* evobackup-client: fixed the ssh connection test
-* varnish: fix start command when multiple addresses are present
 
 ### Removed
 
 ### Security
+
+## [10.2.0] 2020-09-17
+
+### Added
+
+* evoacme: remount /usr if necessary
+* evolinux-base: swappiness is customizable
+* evolinux-base: install wget
+* tomcat: root directory owner/group are configurable
+
+### Changed
+
+* Change default public SSH/SFTP port from 2222 to 22222
+
+### Fixed
+
+* certbot: an empty change shouldn't raise an exception
+* certbot: fix "no-self-upgrade" option
+
+### Removed
+
+* evoacme: remove Debian 9 support
+
+## [10.1.0] 2020-08-21
+
+### Added
+
+* certbot: detect HAProxy cert directory
+* filebeat: allow using a template
+* generate-ldif: add NVMe disk support
+* haproxy: add deny_ips file to reject connections
+* haproxy: add some comments to default config
+* haproxy: enable stats frontend with access lists
+* haproxy: preconfigure SSL with defaults
+* lxc-php: Don't disable putenv() by default in PHP settings
+* lxc-php: Install php-sqlite by default
+* metricbeat: allow using a template
+* mysql: activate binary logs by specifying log_bin path
+* mysql: option to define as read only
+* mysql: specify a custom server_id
+* nagios-nrpe/evolinux-base: brand new check for hardware raid on HP servers gen 10
+* nginx: make default vhost configurable
+* packweb-apache: Install zip & unzip by default
+* php: Don't disable putenv() by default in PHP settings
+* php: Install php-sqlite by default
+
+### Changed
+
+* certbot: fix haproxy hook (ssl cert directory detection)
+* certbot: install certbot dependencies non-interactively for jessie
+* elasticsearch: configure cluster with seed hosts and initial masters
+* elasticsearch: set tmpdir before datadir
+* evoacme: read values from environment before defaults file
+* evoacme: update for new certbot role
+* evoacme: upstream release 20.08
+* haproxy: adapt backports installed package list to distibution
+* haproxy: chroot and socket path are configurable
+* haproxy: deport SSL tuning to Mozilla SSL generator
+* haproxy: rotate logs with date extension and immediate compression
+* haproxy: split stats variables
+* lxc-php: Do --no-install-recommends for ssmtp/opensmtpd
+* mongodb: install custom munin plugins
+* nginx: read server-status values before changing the config
+* packweb-apache: Don't turn on mod-evasive emails by default
+* redis: create sudoers file if missing
+* redis: new syntax for match filter
+* redis: raise an error is port 6379 is used in "instance" mode
+
+### Fixed
+
+* certbot: restore compatibility with old Nginx
+* evobackup-client: fixed the ssh connection test
+* generate-ldif: better detection of computerOS field
+* generate-ldif: skip some odd ethernet devices
+* lxc-php: Install opensmtpd as intended
+* mongodb: fix logrotate patterm on Debian buster
+* nagios-nrpe: check_amavis: updated regex
+* squid: better regex to match sa-update domains
+* varnish: fix start command when multiple addresses are present
 
 ## [10.0.0] - 2020-05-13
 

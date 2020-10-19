@@ -9,3 +9,8 @@
   service:
     name: mongodb
     state: restarted
+
+- name: restart munin-node
+  systemd:
+    name: munin-node
+    state: restarted

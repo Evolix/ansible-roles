@@ -11,8 +11,8 @@ galaxy_info:
   platforms:
   - name: Debian
     versions:
-    - jessie
     - stretch
+    - buster
 
 dependencies: []
   # List your role dependencies here, one per line.

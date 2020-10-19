@@ -36,7 +36,7 @@ cert_and_key_mismatch() {
 }
 detect_haproxy_cert_dir() {
     # get last field or line wich defines the crt directory
-    config_cert_dir=$(grep -r -o -E -h '^\s*bind .* crt /etc/.+\b' "${haproxy_config_file}" | head -1 | awk '{ print $(NF)}')
+    config_cert_dir=$(grep -r -o -E -h '^\s*bind .* crt /etc/\S+' "${haproxy_config_file}" | head -1 | awk '{ print $(NF)}')
     if [ -n "${config_cert_dir}" ]; then
         debug "Cert directory is configured with ${config_cert_dir}"
         echo "${config_cert_dir}"

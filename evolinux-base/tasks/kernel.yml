@@ -32,14 +32,14 @@
     reload: yes
   when: evolinux_kernel_disable_tcp_timestamps
 
-- name: Reduce the swapiness
+- name: Customize the swappiness
   sysctl:
     name: vm.swappiness
-    value: 20
+    value: "{{ evolinux_kernel_swappiness }}"
     sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
     state: present
     reload: yes
-  when: evolinux_kernel_reduce_swapiness
+  when: evolinux_kernel_customize_swappiness
 
 - name: Patch for TCP stack vulnerability CVE-2016-5696
   sysctl:

@@ -8,4 +8,4 @@
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-0 */12 * * * root test -x /usr/local/bin/certbot && perl -e 'sleep int(rand(3600))' && /usr/local/bin/certbot --no-self-update -q renew
+0 */12 * * * root test -x /usr/local/bin/certbot && perl -e 'sleep int(rand(3600))' && /usr/local/bin/certbot --no-self-upgrade -q renew

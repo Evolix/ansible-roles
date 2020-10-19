@@ -101,4 +101,24 @@
     - haproxy
     - config
 
+- name: Rotate logs with dateext
+  lineinfile:
+    dest: /etc/logrotate.d/haproxy
+    line: '    dateext'
+    regexp: '^\s*#*\s*(no)?dateext'
+    insertbefore: '}'
+  tags:
+    - haproxy
+    - config
+
+- name: Rotate logs with nodelaycompress
+  lineinfile:
+    dest: /etc/logrotate.d/haproxy
+    line: '    nodelaycompress'
+    regexp: '^\s*#*\s*(no)?delaycompress'
+    insertbefore: '}'
+  tags:
+    - haproxy
+    - config
+
 - include: munin.yml
