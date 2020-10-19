@@ -3,6 +3,8 @@ redis_systemd_name: redis-server
 
 redis_conf_dir_prefix: /etc/redis
 
+redis_force_instance_port: False
+
 redis_port: 6379
 redis_bind_interface: 127.0.0.1
 
