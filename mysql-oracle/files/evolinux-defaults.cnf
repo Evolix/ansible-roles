@@ -1,6 +1,8 @@
 [mysqld]
 
 ###### Connexions
+# Path to socket
+socket = /run/mysqld/mysqld.sock
 # Maximum de connexions concurrentes (defaut = 100)... provoque un "Too many connections"
 max_connections = 250
 # Maximum de connexions en attente en cas de max_connections atteint (defaut = 50)

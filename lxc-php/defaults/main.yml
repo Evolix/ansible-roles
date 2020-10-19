@@ -8,7 +8,7 @@ php_conf_allow_url_fopen: "Off"
 php_conf_disable_functions: "exec,shell-exec,system,passthru,popen"
 
 # Allows accessing a local mysql database using localhost
-php_conf_mysql_socket_dir: Null
+php_conf_mysql_socket_dir: /mysqld
 php_conf_mysql_default_socket: "{{ php_conf_mysql_socket_dir }}/mysqld.sock"
 
 lxc_php_version: Null
