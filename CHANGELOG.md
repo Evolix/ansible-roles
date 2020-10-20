@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 * nextcloud: New role to setup a nextcloud instance
+* lxc-php: Allow php containers to contact local MySQL with localhost
 
 ### Changed
 
