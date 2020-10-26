@@ -18,8 +18,16 @@
     dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/mailname"
   notify: "Restart opensmtpd"
 
-
 - name: "{{ lxc_php_version }} - Install misc packages"
   lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt install -y cron logrotate git zip unzip"
+
+- name: "{{ lxc_php_version }} - Add MySQL socket to container default mounts"
+  lxc_container:
+    name: "{{ lxc_php_version }}"
+    container_config:
+      - "lxc.mount.entry = /run/mysqld {{ php_conf_mysql_socket_dir | replace('/', '', 1) }} none bind,create=dir 0 0"
+  when: php_conf_mysql_socket_dir is string
+  notify: "Restart container"
+
