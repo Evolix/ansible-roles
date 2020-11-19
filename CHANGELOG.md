@@ -20,7 +20,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 
-* evoacme: Don't ignore hooks with . in the name (ignore when it's ".disable")
+* evoacme: upstream release 20.11
 
 ### Fixed
 
