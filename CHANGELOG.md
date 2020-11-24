@@ -21,6 +21,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 
+* apt: disable APT Periodic
 * evoacme: upstream release 20.11
 
 ### Fixed
