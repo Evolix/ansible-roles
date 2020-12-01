@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 * dovecot: Update munin plugin & configure it
 * evoacme: variable to disable Debian version check (default: False)
 * kvm-host: Add drbd role dependency (toggleable with kvm_install_drbd)
+* minifirewall: Docker support 
 * mysql: install save_mysql_processlist script
 * nextcloud: New role to setup a nextcloud instance
 * redis: variable to force use of port 6379 in instances mode

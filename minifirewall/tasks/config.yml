@@ -58,6 +58,12 @@
       # IPv6
       IPV6='{{ minifirewall_ipv6 }}'
 
+      # Docker Mode
+      # Changes the behaviour of minifirewall to not break the containers' network
+      # For instance, turning it on will disable nat table purge
+      # Also, we'll add the DOCKER-USER chain, in iptable
+      DOCKER='{{ minifirewall_docker }}'
+
       # Trusted IPv4 local network
       # ...will be often IP/32 if you don't trust anything
       INTLAN='{{ minifirewall_intlan }}'
