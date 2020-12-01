@@ -30,10 +30,20 @@ check_server() {
     host=$(config_var "bind" "${conf_file}")
     port=$(config_var "port" "${conf_file}")
     pass=$(config_var "requirepass" "${conf_file}")
+    maxmemory=$(config_var "maxmemory" "${conf_file}")
+    maxmemory_policy=$(config_var "maxmemory-policy" "${conf_file}")
 
     cmd="${check_bin} -H ${host} -p ${port}"
+    # If "requirepass" is set we add the password to the check
     if [ -n "${pass}" ]; then
         cmd="${cmd} -x ${pass}"
+    fi
+    # If "maxmemory" is set and "maxmemory-policy" is missing or set to "noeviction"
+    # then we enforce the "maxmemory" limit
+    if [ -n "${maxmemory}" ]; then
+        if [ -z "${maxmemory_policy}" ] || [ "${maxmemory_policy}" = "noeviction" ]; then
+            cmd="${cmd} --total_memory ${maxmemory} --memory_utilization 80,90"
+        fi
     fi
     result=$($cmd)
     ret="${?}"
