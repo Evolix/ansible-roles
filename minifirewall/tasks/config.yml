@@ -51,7 +51,7 @@
   blockinfile:
     dest: "{{ minifirewall_main_file }}"
     marker: "# {mark} ANSIBLE MANAGED BLOCK FOR IPS"
-    content: |
+    block: |
       # Main interface
       INT='{{ minifirewall_int }}'
 
@@ -95,7 +95,7 @@
   blockinfile:
     dest: "{{ minifirewall_main_file }}"
     marker: "# {mark} ANSIBLE MANAGED BLOCK FOR PORTS"
-    content: |
+    block: |
       # Protected services
       # (add also in Public services if needed)
       SERVICESTCP1p='{{ minifirewall_protected_ports_tcp | join(' ') }}'
