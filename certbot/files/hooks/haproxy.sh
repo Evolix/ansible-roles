@@ -56,6 +56,9 @@ main() {
     fi
 
     if daemon_found_and_running; then
+        readonly haproxy_config_file="/etc/haproxy/haproxy.cfg"
+        readonly haproxy_cert_dir=$(detect_haproxy_cert_dir)
+
         if found_renewed_lineage; then
             haproxy_cert_file="${haproxy_cert_dir}/$(basename "${RENEWED_LINEAGE}").pem"
             failed_cert_file="/root/$(basename "${RENEWED_LINEAGE}").failed.pem"
@@ -86,7 +89,5 @@ readonly VERBOSE=${VERBOSE:-"0"}
 readonly QUIET=${QUIET:-"0"}
 
 readonly haproxy_bin=$(command -v haproxy)
-readonly haproxy_config_file="/etc/haproxy/haproxy.cfg"
-readonly haproxy_cert_dir=$(detect_haproxy_cert_dir)
 
 main

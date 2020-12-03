@@ -29,6 +29,8 @@ The **patch** part changes incrementally at each release.
 
 ### Fixed
 
+* cerbot: parse HAProxy config file only if HAProxy is found
+
 ### Removed
 
 ### Security
