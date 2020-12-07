@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 * evoacme: variable to disable Debian version check (default: False)
 * kvm-host: Add drbd role dependency (toggleable with kvm_install_drbd)
 * minifirewall: upstream release 20.12
+* minifirewall: add variables to force upgrade the script and the config (default: False)
 * mysql: install save_mysql_processlist script
 * nextcloud: New role to setup a nextcloud instance
 * redis: variable to force use of port 6379 in instances mode
