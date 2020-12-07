@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 * dovecot: Update munin plugin & configure it
+* dovecot: vmail uid/gid are configurable
 * evoacme: variable to disable Debian version check (default: False)
 * kvm-host: Add drbd role dependency (toggleable with kvm_install_drbd)
 * minifirewall: upstream release 20.12
