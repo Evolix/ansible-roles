@@ -4,7 +4,7 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
-readonly VERSION="20.04.3"
+readonly VERSION="20.12"
 
 # base functions
 
@@ -205,10 +205,13 @@ check_customsudoers() {
     grep -E -qr "umask=0077" /etc/sudoers* || failed "IS_CUSTOMSUDOERS" "missing umask=0077 in sudoers file"
 }
 check_vartmpfs() {
-    df /var/tmp | grep -q tmpfs || failed "IS_VARTMPFS" "/var/tmp is not a tmpfs"
-}
-check_vartmpfs() {
-    df /var/tmp | grep -q tmpfs || failed "IS_VARTMPFS" "/var/tmp is not a tmpfs"
+    FINDMNT_BIN=$(command -v findmnt)
+    if [ -x "${FINDMNT_BIN}" ]; then
+        ${FINDMNT_BIN} /var/tmp --type tmpfs --noheadings > /dev/null || failed "IS_VARTMPFS" "/var/tmp is not a tmpfs"
+    else
+        df /var/tmp | grep -q tmpfs || failed "IS_VARTMPFS" "/var/tmp is not a tmpfs"
+    fi
+    
 }
 check_serveurbase() {
     is_installed serveur-base || failed "IS_SERVEURBASE" "serveur-base package is not installed"
@@ -559,7 +562,7 @@ check_evobackup_exclude_mount() {
     # shellcheck disable=SC2064
     trap "rm -f ${excludes_file}" 0
     # shellcheck disable=SC2044
-    for evobackup_file in $(find /etc/cron* -name '*evobackup*'); do
+    for evobackup_file in $(find /etc/cron* -name '*evobackup*' | grep -v -E ".disabled$"); do
         grep -- "--exclude " "${evobackup_file}" | grep -E -o "\"[^\"]+\"" | tr -d '"' > "${excludes_file}"
         not_excluded=$(findmnt --type nfs,nfs4,fuse.sshfs, -o target --noheadings | grep -v -f "${excludes_file}")
         for mount in ${not_excluded}; do
@@ -878,15 +881,25 @@ check_sql_backup() {
     if (is_installed "mysql-server" || is_installed "mariadb-server"); then
         # You could change the default path in /etc/evocheck.cf
         SQL_BACKUP_PATH=${SQL_BACKUP_PATH:-"/home/backup/mysql.bak.gz"}
-        test -f "$SQL_BACKUP_PATH" || failed "IS_SQL_BACKUP" "MySQL dump is missing (${SQL_BACKUP_PATH})"
+        for backup_path in ${SQL_BACKUP_PATH}; do
+            if [ ! -f "${backup_path}" ]; then
+                failed "IS_SQL_BACKUP" "MySQL dump is missing (${backup_path})"
+                test "${VERBOSE}" = 1 || break
+            fi
+        done
     fi
 }
 check_postgres_backup() {
-    if is_installed "postgresql-9*"; then
+    if is_installed "postgresql-9*" || is_installed "postgresql-1*"; then
         # If you use something like barman, you should disable this check
         # You could change the default path in /etc/evocheck.cf
-        POSTGRES_BACKUP_PATH=${POSTGRES_BACKUP_PATH:-"/home/backup/pg.dump.bak"}
-        test -f "$POSTGRES_BACKUP_PATH" || failed "IS_POSTGRES_BACKUP" "PostgreSQL dump is missing (${POSTGRES_BACKUP_PATH})"
+        POSTGRES_BACKUP_PATH=${POSTGRES_BACKUP_PATH:-"/home/backup/pg.dump.bak*"}
+        for backup_path in ${POSTGRES_BACKUP_PATH}; do
+            if [ ! -f "${backup_path}" ]; then
+                failed "IS_POSTGRES_BACKUP" "PostgreSQL dump is missing (${backup_path})"
+                test "${VERBOSE}" = 1 || break
+            fi
+        done
     fi
 }
 check_mongo_backup() {
@@ -1013,7 +1026,7 @@ check_duplicate_fs_label() {
     BLKID_BIN=$(command -v blkid)
     if [ -x "$BLKID_BIN" ]; then
         tmpFile=$(mktemp -p /tmp)
-        parts=$($BLKID_BIN | grep -ve raid_member -e EFI_SYSPART | grep -Eo ' LABEL=".*"' | cut -d'"' -f2)
+        parts=$($BLKID_BIN -c /dev/null | grep -ve raid_member -e EFI_SYSPART | grep -Eo ' LABEL=".*"' | cut -d'"' -f2)
         for part in $parts; do
             echo "$part" >> "$tmpFile"
         done
@@ -1517,8 +1530,6 @@ main() {
 
 # shellcheck disable=SC2034
 readonly PROGNAME=$(basename "$0")
-# shellcheck disable=SC2034
-readonly PROGDIR=$(realpath -m "$(dirname "$0")")
 # shellcheck disable=2124
 readonly ARGS=$@
 
