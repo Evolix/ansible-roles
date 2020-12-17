@@ -26,6 +26,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 
+* Create system users for vmail (dovecot) and evoadmin
 * apt: disable APT Periodic
 * evoacme: upstream release 20.12
 * evocheck: upstream release 20.12

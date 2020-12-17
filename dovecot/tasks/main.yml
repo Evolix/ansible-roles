@@ -41,6 +41,7 @@
   group:
     name: vmail
     gid: "{{ dovecot_vmail_gid }}"
+    system: True
   tags:
   - dovecot
 
@@ -50,6 +51,7 @@
     group: vmail
     uid: "{{ dovecot_vmail_uid }}"
     shell: /bin/false
+    system: True
   tags:
   - dovecot
 
