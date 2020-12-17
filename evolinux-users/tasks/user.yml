@@ -2,20 +2,41 @@
 
 # Unix account
 
+- fail:
+    msg: "You must provide a value for the 'user.name ' variable."
+  when: user.name  is not defined or user.name  == ''
+
+- fail:
+    msg: "You must provide a value for the 'user.uid ' variable."
+  when: user.uid  is not defined or user.uid  == ''
+
 - name: "Test if '{{ user.name }}' exists"
-  command: 'getent passwd {{ user.name }}'
-  register: loginisbusy
+  command: 'id -u "{{ user.name }}"'
+  register: get_id_from_login
   failed_when: False
   changed_when: False
   check_mode: no
 
-- name: "Test if uid exists for '{{ user.name }}'"
-  command: 'getent passwd {{ user.uid }}'
-  register: uidisbusy
+- name: "Test if uid '{{ user.uid }}' exists"
+  command: 'id -un -- "{{ user.uid }}"'
+  register: get_login_from_id
   failed_when: False
   changed_when: False
   check_mode: no
 
+# Error if
+# the uid already exists
+# and the user associated with this uid is not the desired user
+- name: "Fail if uid already exists for another user"
+  fail:
+    msg: "Uid '{{ user.uid }}' is already used by '{{ get_login_from_id.stdout }}'. You must change uid for '{{ user.name }}'"
+  when:
+    - get_login_from_id.rc == 0
+    - get_login_from_id.stdout != user.name
+
+# Create/Update the user account with defined uid if
+# the user doesn't already exist and the uid isn't already used
+# or the user exists with the defined uid
 - name: "Unix account for '{{ user.name }}' is present (with uid '{{ user.uid }}')"
   user:
     state: present
@@ -24,11 +45,13 @@
     comment: '{{ user.fullname }}'
     shell: /bin/bash
     password: '{{ user.password_hash }}'
-    update_password: on_create
+    update_password: "on_create"
   when:
-    - loginisbusy.rc != 0
-    - uidisbusy.rc   != 0
+    - (get_id_from_login.rc != 0 and get_login_from_id.rc != 0) or (get_id_from_login.rc == 0 and get_login_from_id.stdout == user.name)
 
+# Create/Update the user account without defined uid if
+# the user doesn't already exist but the defined uid is already used
+# or another user already exists with a the same uid
 - name: "Unix account for '{{ user.name }}' is present (with random uid)"
   user:
     state: present
@@ -36,10 +59,9 @@
     comment: '{{ user.fullname }}'
     shell: /bin/bash
     password: '{{ user.password_hash }}'
-    update_password: on_create
+    update_password: "on_create"
   when:
-    - loginisbusy.rc != 0
-    - uidisbusy.rc   == 0
+    - (get_id_from_login.rc != 0 and get_login_from_id.rc == 0) or (get_id_from_login.rc == 0 and get_login_from_id.stdout != user.name)
 
 - name: Is /etc/aliases present?
   stat:
