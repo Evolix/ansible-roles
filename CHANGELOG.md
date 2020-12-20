@@ -33,6 +33,8 @@ The **patch** part changes incrementally at each release.
 * evocheck: upstream release 20.12
 * evolinux-users: improve uid/login checks
 * tomcat-instance: fail if uid already exists
+* varnish: change template name for better readability
+* varnish: no threadpool delay by default
 
 ### Fixed
 
