@@ -23,6 +23,7 @@ The **patch** part changes incrementally at each release.
 * redis: variable to force use of port 6379 in instances mode
 * redis: check maxmemory in NRPE check
 * lxc-php: Allow php containers to contact local MySQL with localhost
+* varnish: config file name is configurable
 
 ### Changed
 

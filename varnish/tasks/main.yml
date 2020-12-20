@@ -19,8 +19,8 @@
   - varnish
 
 - name: Copy Custom Varnish ExecReload script (Debian <=9)
-  copy:
-    src: "reload-vcl.sh"
+  template:
+    src: "reload-vcl.sh.j2"
     dest: "/etc/varnish/reload-vcl.sh"
     mode: "0700"
     owner: root
@@ -62,7 +62,7 @@
 - name: Copy Varnish configuration
   template:
     src: "{{ item }}"
-    dest: /etc/varnish/default.vcl
+    dest: "{{ varnish_config_file }}"
     mode: "0644"
     force: yes
   with_first_found:
