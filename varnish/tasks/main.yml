@@ -4,19 +4,19 @@
     name: varnish
     state: present
   tags:
-  - varnish
+    - varnish
 
 - name: Remove default varnish configuration files
   file:
     path: "{{ item }}"
     state: absent
   with_items:
-    -  /etc/default/varnish
-    -  /etc/default/varnishncsa
-    -  /etc/default/varnishlog
+    - /etc/default/varnish
+    - /etc/default/varnishncsa
+    - /etc/default/varnishlog
   notify: reload varnish
   tags:
-  - varnish
+    - varnish
 
 - name: Copy Custom Varnish ExecReload script (Debian <=9)
   template:
@@ -28,14 +28,14 @@
   when: ansible_distribution_major_version is version('9', '<=')
   notify: reload varnish
   tags:
-  - varnish
+    - varnish
 
 - name: Create a system config directory for systemd overrides
   file:
     path: /etc/systemd/system/varnish.service.d
     state: directory
   tags:
-  - varnish
+    - varnish
 
 - name: Override Varnish systemd unit
   template:
@@ -46,7 +46,7 @@
     - reload systemd
     - restart varnish
   tags:
-  - varnish
+    - varnish
 
 - name: Patch logrotate conf
   replace:
@@ -57,7 +57,7 @@
     - varnishlog
     - varnishncsa
   tags:
-  - varnish
+    - varnish
 
 - name: Copy Varnish configuration
   template:
@@ -72,7 +72,7 @@
   - "default.vcl.j2"
   notify: reload varnish
   tags:
-  - varnish
+    - varnish
 
 - name: Create Varnish config dir
   file:
@@ -80,7 +80,7 @@
     state: directory
     mode: "0755"
   tags:
-  - varnish
+    - varnish
 
 - name: Copy included Varnish config
   template:
@@ -92,6 +92,6 @@
   - "templates/varnish/conf.d/*.vcl"
   notify: reload varnish
   tags:
-  - varnish
+    - varnish
 
 - include: munin.yml
