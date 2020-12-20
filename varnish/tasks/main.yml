@@ -18,14 +18,14 @@
   tags:
     - varnish
 
-- name: Copy Custom Varnish ExecReload script (Debian <=9)
+- name: Copy Custom Varnish ExecReload script (Debian <10)
   template:
     src: "reload-vcl.sh.j2"
     dest: "/etc/varnish/reload-vcl.sh"
     mode: "0700"
     owner: root
     group: root
-  when: ansible_distribution_major_version is version('9', '<=')
+  when: ansible_distribution_major_version is version('10', '<')
   notify: reload varnish
   tags:
     - varnish
@@ -37,11 +37,24 @@
   tags:
     - varnish
 
-- name: Override Varnish systemd unit
+- name: Override Varnish systemd unit (Stretch and before)
   template:
-    src: varnish.conf.j2
+    src: varnish.conf.jessie.j2
     dest: /etc/systemd/system/varnish.service.d/evolinux.conf
     force: yes
+  when: ansible_distribution_major_version is version('10', '<')
+  notify:
+    - reload systemd
+    - restart varnish
+  tags:
+    - varnish
+
+- name: Override Varnish systemd unit (Buster and later)
+  template:
+    src: varnish.conf.buster.j2
+    dest: /etc/systemd/system/varnish.service.d/evolinux.conf
+    force: yes
+  when: ansible_distribution_major_version is version('10', '>=')
   notify:
     - reload systemd
     - restart varnish

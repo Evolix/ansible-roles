@@ -35,6 +35,7 @@ The **patch** part changes incrementally at each release.
 * tomcat-instance: fail if uid already exists
 * varnish: change template name for better readability
 * varnish: no threadpool delay by default
+* varnish: no custom reload script for Debian 10 and later 
 
 ### Fixed
 
