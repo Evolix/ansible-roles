@@ -1,4 +1,24 @@
 ---
+
+- fail:
+    msg: "You must provide a value for the 'tomcat_instance_port' variable."
+  when: tomcat_instance_port is not defined or tomcat_instance_port == ''
+
+
+- name: "Test if uid '{{ tomcat_instance_port }}' exists"
+  command: 'id -un -- "{{ tomcat_instance_port }}"'
+  register: get_login_from_id
+  failed_when: False
+  changed_when: False
+  check_mode: no
+
+- name: "Fail if uid already exists for another user"
+  fail:
+    msg: "Uid '{{ tomcat_instance_port }}' is already used by '{{ get_login_from_id.stdout }}'. You must change uid for '{{ tomcat_instance_name }}'"
+  when:
+    - get_login_from_id.rc == 0
+    - get_login_from_id.stdout != tomcat_instance_name
+
 - name: Create group instance
   group:
     name: "{{ tomcat_instance_name }}"

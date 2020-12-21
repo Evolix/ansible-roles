@@ -14,7 +14,7 @@ show_version() {
     cat <<END
 evoacme version ${VERSION}
 
-Copyright 2009-2019 Evolix <info@evolix.fr>,
+Copyright 2009-2020 Evolix <info@evolix.fr>,
                     Victor Laborie <vlaborie@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>,
                     Benoit Série <bserie@evolix.fr>
@@ -284,13 +284,19 @@ main() {
     export EVOACME_CHAIN="${LIVE_CHAIN}"
     export EVOACME_FULLCHAIN="${LIVE_FULLCHAIN}"
 
+    # emulate certbot hooks environment variables
+    export RENEWED_LINEAGE="${LIVE_DIR}"
+    export RENEWED_DOMAINS="${VHOST}"
+
     # search for files in hooks directory
     for hook in $(find ${HOOKS_DIR} -type f -executable | sort); do
+        set +e
         # keep only executables files, not containing a "."
-        if [ -x "${hook}" ] && (basename "${hook}" | grep -vqF "."); then
+        if [ -x "${hook}" ] && (basename "${hook}" | grep -vqF ".disable"); then
             debug "Executing ${hook}"
             ${hook}
         fi
+        set -e
     done
 }
 
@@ -303,7 +309,7 @@ readonly QUIET=${QUIET:-"0"}
 readonly TEST=${TEST:-"0"}
 readonly DRY_RUN=${DRY_RUN:-"0"}
 
-readonly VERSION="20.08"
+readonly VERSION="20.12"
 
 # Read configuration file, if it exists
 [ -r /etc/default/evoacme ] && . /etc/default/evoacme

@@ -9,7 +9,7 @@
   template:
     src: minifirewall.j2
     dest: /etc/init.d/minifirewall
-    force: no
+    force: "{{ minifirewall_force_upgrade_script | default('no') }}"
     mode: "0700"
     owner: root
     group: root
@@ -18,7 +18,7 @@
   copy:
     src: minifirewall.conf
     dest: "{{ minifirewall_main_file }}"
-    force: no
+    force: "{{ minifirewall_force_upgrade_config | default('no') }}"
     mode: "0600"
     owner: root
     group: root

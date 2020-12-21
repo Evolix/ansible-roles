@@ -20,6 +20,39 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [10.3.0] 2020-12-21
+
+### Added
+
+* dovecot: Update munin plugin & configure it
+* dovecot: vmail uid/gid are configurable
+* evoacme: variable to disable Debian version check (default: False)
+* kvm-host: Add drbd role dependency (toggleable with kvm_install_drbd)
+* minifirewall: upstream release 20.12
+* minifirewall: add variables to force upgrade the script and the config (default: False)
+* mysql: install save_mysql_processlist script
+* nextcloud: New role to setup a nextcloud instance
+* redis: variable to force use of port 6379 in instances mode
+* redis: check maxmemory in NRPE check
+* lxc-php: Allow php containers to contact local MySQL with localhost
+* varnish: config file name is configurable
+
+### Changed
+
+* Create system users for vmail (dovecot) and evoadmin
+* apt: disable APT Periodic
+* evoacme: upstream release 20.12
+* evocheck: upstream release 20.12
+* evolinux-users: improve uid/login checks
+* tomcat-instance: fail if uid already exists
+* varnish: change template name for better readability
+* varnish: no threadpool delay by default
+* varnish: no custom reload script for Debian 10 and later 
+
+### Fixed
+
+* cerbot: parse HAProxy config file only if HAProxy is found
+
 ## [10.2.0] 2020-09-17
 
 ### Added

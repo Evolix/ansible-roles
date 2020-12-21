@@ -10,7 +10,7 @@ varnish_malloc_size: "2G"
 varnish_storage: malloc,{{ varnish_malloc_size }}
 
 varnish_thread_pools: "{{ ansible_processor_cores * ansible_processor_count }}"
-varnish_thread_pool_add_delay: 2
+varnish_thread_pool_add_delay: 0
 varnish_thread_pool_min: 500
 varnish_thread_pool_max: 5000
 

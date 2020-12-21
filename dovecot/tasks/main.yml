@@ -40,7 +40,8 @@
 - name: create vmail group
   group:
     name: vmail
-    gid: 5000
+    gid: "{{ dovecot_vmail_gid }}"
+    system: True
   tags:
   - dovecot
 
@@ -48,8 +49,9 @@
   user:
     name: vmail
     group: vmail
-    uid: 5000
+    uid: "{{ dovecot_vmail_uid }}"
     shell: /bin/false
+    system: True
   tags:
   - dovecot
 

@@ -4,49 +4,62 @@
     name: varnish
     state: present
   tags:
-  - varnish
+    - varnish
 
 - name: Remove default varnish configuration files
   file:
     path: "{{ item }}"
     state: absent
   with_items:
-    -  /etc/default/varnish
-    -  /etc/default/varnishncsa
-    -  /etc/default/varnishlog
+    - /etc/default/varnish
+    - /etc/default/varnishncsa
+    - /etc/default/varnishlog
   notify: reload varnish
   tags:
-  - varnish
+    - varnish
 
-- name: Copy Custom Varnish ExecReload script (Debian <=9)
-  copy:
-    src: "reload-vcl.sh"
+- name: Copy Custom Varnish ExecReload script (Debian <10)
+  template:
+    src: "reload-vcl.sh.j2"
     dest: "/etc/varnish/reload-vcl.sh"
     mode: "0700"
     owner: root
     group: root
-  when: ansible_distribution_major_version is version('9', '<=')
+  when: ansible_distribution_major_version is version('10', '<')
   notify: reload varnish
   tags:
-  - varnish
+    - varnish
 
 - name: Create a system config directory for systemd overrides
   file:
     path: /etc/systemd/system/varnish.service.d
     state: directory
   tags:
-  - varnish
+    - varnish
 
-- name: Override Varnish systemd unit
+- name: Override Varnish systemd unit (Stretch and before)
   template:
-    src: varnish.conf.j2
+    src: varnish.conf.jessie.j2
     dest: /etc/systemd/system/varnish.service.d/evolinux.conf
     force: yes
+  when: ansible_distribution_major_version is version('10', '<')
   notify:
     - reload systemd
     - restart varnish
   tags:
-  - varnish
+    - varnish
+
+- name: Override Varnish systemd unit (Buster and later)
+  template:
+    src: varnish.conf.buster.j2
+    dest: /etc/systemd/system/varnish.service.d/evolinux.conf
+    force: yes
+  when: ansible_distribution_major_version is version('10', '>=')
+  notify:
+    - reload systemd
+    - restart varnish
+  tags:
+    - varnish
 
 - name: Patch logrotate conf
   replace:
@@ -57,22 +70,26 @@
     - varnishlog
     - varnishncsa
   tags:
-  - varnish
+    - varnish
 
 - name: Copy Varnish configuration
   template:
     src: "{{ item }}"
-    dest: /etc/varnish/default.vcl
+    dest: "{{ varnish_config_file }}"
     mode: "0644"
     force: yes
   with_first_found:
-  - "templates/varnish/default.{{ inventory_hostname }}.vcl.j2"
-  - "templates/varnish/default.{{ host_group }}.vcl.j2"
-  - "templates/varnish/default.default.vcl.j2"
-  - "default.vcl.j2"
+    - "templates/varnish/varnish.{{ inventory_hostname }}.vcl.j2"
+    - "templates/varnish/default.{{ inventory_hostname }}.vcl.j2"
+    - "templates/varnish/varnish.{{ host_group }}.vcl.j2"
+    - "templates/varnish/default.{{ host_group }}.vcl.j2"
+    - "templates/varnish/varnish.default.vcl.j2"
+    - "templates/varnish/default.default.vcl.j2"
+    - "varnish.vcl.j2"
+    - "default.vcl.j2"
   notify: reload varnish
   tags:
-  - varnish
+    - varnish
 
 - name: Create Varnish config dir
   file:
@@ -80,7 +97,7 @@
     state: directory
     mode: "0755"
   tags:
-  - varnish
+    - varnish
 
 - name: Copy included Varnish config
   template:
@@ -92,6 +109,6 @@
   - "templates/varnish/conf.d/*.vcl"
   notify: reload varnish
   tags:
-  - varnish
+    - varnish
 
 - include: munin.yml

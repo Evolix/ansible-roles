@@ -1,0 +1,31 @@
+---
+- name: Install dependencies
+  apt:
+    state: present
+    name:
+    - bzip2
+    - php-gd
+    - php-json
+    - php-xml
+    - php-mbstring
+    - php-zip
+    - php-curl
+    - php-bz2
+    - php-intl
+    - php-gmp
+    - php-apcu
+    - php-redis
+    - php-bcmath
+    - python-mysqldb
+  tags:
+    - nextcloud
+
+- include: user.yml
+
+- include: archive.yml
+
+- include: vhost.yml
+
+- include: mysql.yml
+
+- include: config.yml

@@ -13,7 +13,7 @@ show_version() {
     cat <<END
 make-csr version ${VERSION}
 
-Copyright 2009-2019 Evolix <info@evolix.fr>,
+Copyright 2009-2020 Evolix <info@evolix.fr>,
                     Victor Laborie <vlaborie@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>,
                     Benoit Série <bserie@evolix.fr>
@@ -265,7 +265,7 @@ readonly ARGS=$@
 readonly VERBOSE=${VERBOSE:-"0"}
 readonly QUIET=${QUIET:-"0"}
 
-readonly VERSION="20.08"
+readonly VERSION="20.12"
 
 # Read configuration file, if it exists
 [ -r /etc/default/evoacme ] && . /etc/default/evoacme

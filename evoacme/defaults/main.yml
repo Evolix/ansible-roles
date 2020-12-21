@@ -14,3 +14,5 @@ evoacme_ssl_loc: 'Marseille'
 evoacme_ssl_org: 'Evolix'
 evoacme_ssl_ou: 'Security'
 evoacme_ssl_email: 'security@evolix.net'
+
+evoacme_disable_debian_check: False

@@ -6,6 +6,7 @@
     comment: "Evoadmin Web Account"
     home: "{{ evoadmin_home_dir }}"
     password: "!"
+    system: yes
 
 - name: Create www-evoadmin group
   group:
@@ -22,6 +23,7 @@
 - name: "Create www-evoadmin (Debian 9 or later)"
   user:
     name: www-evoadmin
+    system: yes
   when: ansible_distribution_major_version is version('9', '>=')
 
 - name: Is /etc/aliases present?

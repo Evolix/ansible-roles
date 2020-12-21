@@ -1,0 +1,5 @@
+#!/bin/sh
+UUID=`cat /proc/sys/kernel/random/uuid`
+/usr/sbin/varnishd -C -f {{ varnish_config_file }} >/dev/null \
+  && /usr/bin/varnishadm -T {{ varnish_management_address }} -S {{ varnish_secret_file }} "vcl.load vcl_$UUID {{ varnish_config_file }}" \
+  && /usr/bin/varnishadm -T {{ varnish_management_address }} -S {{ varnish_secret_file }} "vcl.use vcl_$UUID"

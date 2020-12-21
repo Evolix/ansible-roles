@@ -12,6 +12,12 @@ filebeat_elasticsearch_auth_api_key: ""
 filebeat_elasticsearch_auth_username: ""
 filebeat_elasticsearch_auth_password: ""
 
+filebeat_logstash_hosts: []
+filebeat_logstash_protocol: "http"
+filebeat_logstash_auth_api_key: ""
+filebeat_logstash_auth_username: ""
+filebeat_logstash_auth_password: ""
+
 filebeat_use_config_template: False
 filebeat_update_config: True
 filebeat_force_config: True

@@ -178,3 +178,12 @@
   tags:
     - mysql
     - packages
+
+- name: "Install save_mysql_processlist.sh"
+  copy:
+    src: save_mysql_processlist.sh
+    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/save_mysql_processlist.sh"
+    mode: "0755"
+    force: no
+  tags:
+    - mysql

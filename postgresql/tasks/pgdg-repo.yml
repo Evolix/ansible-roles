@@ -18,8 +18,13 @@
     #url: http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc
     data: "{{ lookup('file', 'ACCC4CF8.asc') }}"
 
+- name: Update and upgrade apt packages for PGDG repository
+  apt:
+    upgrade: yes
+    update_cache: yes
+
 - name: Add APT preference file
   template:
     src: postgresql.pref.j2
-    dest: /etc/apt/preferences.d/
+    dest: /etc/apt/preferences.d/postgresql.pref
     mode: "0644"

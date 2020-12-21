@@ -1,0 +1,34 @@
+---
+- block:
+  - name: Copy Nginx vhost
+    template:
+      src: nginx.conf.j2
+      dest: "/etc/nginx/sites-available/{{ nextcloud_instance_name }}.conf"
+      mode: "0640"
+    notify: reload nginx
+    tags:
+      - nextcloud
+
+  - name: Enable Nginx vhost
+    file:
+      src: "/etc/nginx/sites-available/{{ nextcloud_instance_name }}.conf"
+      dest: "/etc/nginx/sites-enabled/{{ nextcloud_instance_name }}.conf"
+      state: link
+    notify: reload nginx
+    tags:
+      - nextcloud
+
+  - name: Generate ssl config
+    shell:
+      cmd: "/usr/local/sbin/vhost-domains {{ nextcloud_instance_name }} | /usr/local/sbin/make-csr {{ nextcloud_instance_name }}"
+      creates: "/etc/nginx/ssl/{{ nextcloud_instance_name }}.conf"
+
+  - name: Copy PHP-FPM pool
+    template:
+      src: php-fpm.conf.j2
+      dest: "/etc/php/7.3/fpm/pool.d/{{ nextcloud_instance_name }}.conf"
+      mode: "0640"
+    notify: reload php-fpm
+    tags:
+      - nextcloud
+  when: nextcloud_webserver == 'nginx'
