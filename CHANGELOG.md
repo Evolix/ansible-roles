@@ -12,6 +12,18 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [10.3.0] 2020-12-21
+
+### Added
+
 * dovecot: Update munin plugin & configure it
 * dovecot: vmail uid/gid are configurable
 * evoacme: variable to disable Debian version check (default: False)
@@ -40,10 +52,6 @@ The **patch** part changes incrementally at each release.
 ### Fixed
 
 * cerbot: parse HAProxy config file only if HAProxy is found
-
-### Removed
-
-### Security
 
 ## [10.2.0] 2020-09-17
 
