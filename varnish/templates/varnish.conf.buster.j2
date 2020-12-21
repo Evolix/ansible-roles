@@ -2,4 +2,4 @@
 
 [Service]
 ExecStart=
-ExecStart=/usr/sbin/varnishd -j unix,user=vcache -F {{ varnish_addresses | map('regex_replace', '^(.*)$', '-a \\1') | list | join(' ') }} -T {{ varnish_management_address }} -f {{ varnish_config_file }} -S {{ varnish_secret_file }} -s {{ varnish_storage }} -p thread_pools={{ varnish_thread_pools }} -p thread_pool_add_delay={{ varnish_thread_pool_add_delay }} -p thread_pool_min={{ varnish_thread_pool_min }} -p thread_pool_max={{ varnish_thread_pool_max }}
+ExecStart=/usr/sbin/varnishd -F -j {{ varnish_jail }} {{ varnish_addresses | map('regex_replace', '^(.*)$', '-a \\1') | list | join(' ') }} -T {{ varnish_management_address }} -f {{ varnish_config_file }} -S {{ varnish_secret_file }} -s {{ varnish_storage }} -p thread_pools={{ varnish_thread_pools }} -p thread_pool_add_delay={{ varnish_thread_pool_add_delay }} -p thread_pool_min={{ varnish_thread_pool_min }} -p thread_pool_max={{ varnish_thread_pool_max }}

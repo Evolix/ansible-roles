@@ -12,6 +12,8 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+* varnish: variable for jail configuration
+
 ### Changed
 
 ### Fixed
