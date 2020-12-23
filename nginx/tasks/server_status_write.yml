@@ -9,12 +9,12 @@
 - name: add server-status suffix in default site index if missing
   replace:
     dest: /var/www/index.html
-    regexp: '"/nginx_status-?"'
-    replace: '"/nginx_status-{{ nginx_serverstatus_suffix }}"'
+    regexp: '"/server-status-?"'
+    replace: '"/server-status-{{ nginx_serverstatus_suffix }}"'
 
 - name: add server-status suffix in default VHost
   replace:
     dest: /etc/nginx/sites-available/evolinux-default.conf
-    regexp: 'location /nginx_status-? {'
-    replace: 'location /nginx_status-{{ nginx_serverstatus_suffix }} {'
+    regexp: 'location /server-status-? {'
+    replace: 'location /server-status-{{ nginx_serverstatus_suffix }} {'
   notify: reload nginx
