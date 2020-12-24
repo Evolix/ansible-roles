@@ -16,7 +16,7 @@
     state: directory
   tags:
     - haproxy
-    - config
+    - ssl
 
 - name: Self-signed certificate is present in HAProxy ssl directory
   shell: "cat /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/private/ssl-cert-snakeoil.key > /etc/haproxy/ssl/ssl-cert-snakeoil.pem"
@@ -25,7 +25,7 @@
   notify: reload haproxy
   tags:
     - haproxy
-    - config
+    - ssl
 
 - name: HAProxy stats_access_ips are present
   blockinfile:
@@ -39,6 +39,7 @@
   tags:
     - haproxy
     - config
+    - update-config
 
 - name: HAProxy stats_admin_ips are present
   blockinfile:
@@ -52,6 +53,7 @@
   tags:
     - haproxy
     - config
+    - update-config
 
 - name: HAProxy maintenance_ips are present
   blockinfile:
@@ -62,6 +64,10 @@
       {{ ip }}
       {% endfor %}
   notify: reload haproxy
+  tags:
+    - haproxy
+    - config
+    - update-config
 
 - name: HAProxy deny_ips are present
   blockinfile:
@@ -72,6 +78,10 @@
       {{ ip }}
       {% endfor %}
   notify: reload haproxy
+  tags:
+    - haproxy
+    - config
+    - update-config
 
 - include: packages_backports.yml
   when: haproxy_backports
@@ -100,6 +110,7 @@
   tags:
     - haproxy
     - config
+    - update-config
 
 - name: Rotate logs with dateext
   lineinfile:
@@ -109,7 +120,7 @@
     insertbefore: '}'
   tags:
     - haproxy
-    - config
+    - logrotate
 
 - name: Rotate logs with nodelaycompress
   lineinfile:
@@ -119,6 +130,6 @@
     insertbefore: '}'
   tags:
     - haproxy
-    - config
+    - logrotate
 
 - include: munin.yml

@@ -50,7 +50,7 @@ server {
     listen 80;
     server_name munin;
 
-    location /nginx_status-{{ nginx_serverstatus_suffix | mandatory }} {
+    location /server-status-{{ nginx_serverstatus_suffix | mandatory }} {
         stub_status on;
         access_log off;
     }

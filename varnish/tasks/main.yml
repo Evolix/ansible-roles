@@ -17,6 +17,7 @@
   notify: reload varnish
   tags:
     - varnish
+    - config
 
 - name: Copy Custom Varnish ExecReload script (Debian <10)
   template:
@@ -48,6 +49,8 @@
     - restart varnish
   tags:
     - varnish
+    - config
+    - update-config
 
 - name: Override Varnish systemd unit (Buster and later)
   template:
@@ -60,17 +63,20 @@
     - restart varnish
   tags:
     - varnish
+    - config
+    - update-config
 
 - name: Patch logrotate conf
   replace:
     name: /etc/logrotate.d/varnish
     regexp: '^(\s+)(/usr/sbin/invoke-rc.d {{item}}.*)'
     replace: '\1systemctl -q is-active {{item}} && \2'
-  with_items:
+  loop:
     - varnishlog
     - varnishncsa
   tags:
     - varnish
+    - logrotate
 
 - name: Copy Varnish configuration
   template:
@@ -90,6 +96,8 @@
   notify: reload varnish
   tags:
     - varnish
+    - config
+    - update-config
 
 - name: Create Varnish config dir
   file:
@@ -98,6 +106,7 @@
     mode: "0755"
   tags:
     - varnish
+    - config
 
 - name: Copy included Varnish config
   template:
@@ -106,9 +115,11 @@
     force: yes
     mode: "0644"
   with_fileglob:
-  - "templates/varnish/conf.d/*.vcl"
+    - "templates/varnish/conf.d/*.vcl"
   notify: reload varnish
   tags:
     - varnish
+    - config
+    - update-config
 
 - include: munin.yml

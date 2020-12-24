@@ -9,6 +9,13 @@ debug() {
         >&2 echo "${PROGNAME}: $1"
     fi
 }
+domain_from_cert() {
+    if [ -f "${RENEWED_LINEAGE}/fullchain.pem" ]; then
+        openssl x509 -noout -subject -in "${RENEWED_LINEAGE}/fullchain.pem" | sed 's/^.*CN\ *=\ *//'
+    else
+        debug "Unable to find \`${RENEWED_LINEAGE}/fullchain.pem', skip domain detection."
+    fi
+}
 main() {
     export GIT_DIR="/etc/.git"
     export GIT_WORK_TREE="/etc"
@@ -17,6 +24,9 @@ main() {
       changed_lines=$(${git_bin} status --porcelain | wc -l | tr -d ' ')
 
       if [ "${changed_lines}" != "0" ]; then
+          if [ -z "${RENEWED_DOMAINS}" ] && [ -n "${RENEWED_LINEAGE}" ]; then
+              RENEWED_DOMAINS=$(domain_from_cert)
+          fi
           debug "Committing for ${RENEWED_DOMAINS}"
           ${git_bin} add --all
           message="[letsencrypt] certificates renewal (${RENEWED_DOMAINS})"
@@ -32,6 +42,5 @@ readonly VERBOSE=${VERBOSE:-"0"}
 readonly QUIET=${QUIET:-"0"}
 
 readonly git_bin=$(command -v git)
-readonly letsencrypt_dir=/etc/letsencrypt
 
 main

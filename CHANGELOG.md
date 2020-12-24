@@ -20,6 +20,19 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [10.4.0] 2020-12-24
+
+### Added
+
+* certbot: detect domains if missing
+* certbot: new "sync_remote.sh" hook to sync certificates and execute hooks on remote servers
+* varnish: variable for jail configuration
+
+### Changed
+
+* certbot: disable auth for Let's Encrypt challenge
+* nginx: change from "nginx_status-XXX" to "server-status-XXX"
+
 ## [10.3.0] 2020-12-21
 
 ### Added

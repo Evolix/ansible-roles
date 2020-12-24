@@ -13,6 +13,7 @@ varnish_thread_pools: "{{ ansible_processor_cores * ansible_processor_count }}"
 varnish_thread_pool_add_delay: 0
 varnish_thread_pool_min: 500
 varnish_thread_pool_max: 5000
+varnish_jail: "unix,user=vcache"
 
 varnish_config_file: /etc/varnish/default.vcl
 varnish_secret_file: /etc/varnish/secret

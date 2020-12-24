@@ -4,36 +4,35 @@ server {
     server_name {{ evoadminmail_host }};
 
     return 301 https://{{ evoadminmail_host }}$request_uri;
-} 
+}
 server {
-    listen 443 ssl;            
-    # listen [::]:80 default_server ipv6only=on; ## listen for ipv6 
-  
+    listen 443 ssl;
+    # listen [::]:80 default_server ipv6only=on; ## listen for ipv6
+
     ssl_certificate /etc/ssl/certs/{{ evoadminmail_host }}.crt;
     ssl_certificate_key /etc/ssl/private/{{ evoadminmail_host }}.key;
-  
+
     server_name {{ evoadminmail_host }};
-    index index.php; 
-  
+
     access_log  /var/log/nginx/access.log;
     error_log  /var/log/nginx/error.log;
-    
+
     root /usr/share/evoadmin-mail/;
-    
+
     location / {
         try_files $uri $uri/ /index.php?$args;
-    }   
-        
-    location ~ \.php$ {        
-        fastcgi_pass   unix:/run/php/php7.0-evoadmin-mail-fpm.sock;  
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass   unix:/run/php/php7.0-evoadmin-mail-fpm.sock;
         include fastcgi_params;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         fastcgi_param DOCUMENT_ROOT $realpath_root;
-    }   
-        
-    location /fpm-status {     
-        fastcgi_pass   unix:/run/php/php7.0-evoadmin-mail-fpm.sock;  
-        fastcgi_index  index.php;       
+    }
+
+    location /fpm-status {
+        fastcgi_pass   unix:/run/php/php7.0-evoadmin-mail-fpm.sock;
+        fastcgi_index  index.php;
         include fastcgi_params;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         allow 127.0.0.1;

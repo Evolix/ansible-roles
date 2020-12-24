@@ -1,2 +1,2 @@
 [nginx_*]
-env.url http://munin/nginx_status-{{ nginx_serverstatus_suffix }}
+env.url http://munin/server-status-{{ nginx_serverstatus_suffix }}
