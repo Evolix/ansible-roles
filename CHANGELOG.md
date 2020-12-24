@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 
+* certbot: disable auth for Let's Encrypt challenge
 * nginx: change from "nginx_status-XXX" to "server-status-XXX"
 
 ### Fixed
