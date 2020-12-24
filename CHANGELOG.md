@@ -12,6 +12,7 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+* certbot: detect domains if missing
 * certbot: new "sync_remote.sh" hook to sync certificates and execute hooks on remote servers
 * varnish: variable for jail configuration
 
