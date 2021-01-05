@@ -12,6 +12,8 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+* apache: new variables for logrotate + server-status
+
 ### Changed
 
 ### Fixed

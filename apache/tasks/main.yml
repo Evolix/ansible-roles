@@ -161,19 +161,19 @@
   tags:
     - apache
 
-- name: "logrotate: rotate weekly"
+- name: "logrotate: {{ apache_logrotate_frequency }}"
   replace:
     dest: /etc/logrotate.d/apache2
     regexp: "(daily|weekly|monthly)"
-    replace: "weekly"
+    replace: "{{ apache_logrotate_frequency }}"
   tags:
     - apache
 
-- name: "logrotate: keep 52 files"
+- name: "logrotate: rotate {{ apache_logrotate_rotate }}"
   replace:
     dest: /etc/logrotate.d/apache2
     regexp: '^(\s+rotate) \d+$'
-    replace: '\1 52'
+    replace: '\1 {{ apache_logrotate_rotate }}'
   tags:
     - apache
 
