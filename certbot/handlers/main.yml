@@ -19,5 +19,5 @@
   systemd:
     daemon_reload: yes
 
-- name: install certbot-auto
-  command: /usr/local/bin/certbot --noninteractive --install-only
+- name: install letsencrypt-auto
+  command: /usr/local/bin/letsencrypt-auto --noninteractive --install-only --no-self-upgrade

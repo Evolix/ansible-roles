@@ -8,15 +8,40 @@
 - include_role:
     name: evolix/remount-usr
 
-- name: Certbot script is downloaded
-  get_url:
-    url: https://dl.eff.org/certbot-auto
-    dest: /usr/local/bin/certbot
+# - name: Certbot script is downloaded
+#   get_url:
+#     url: https://dl.eff.org/certbot-auto
+#     dest: /usr/local/bin/certbot
+#     mode: '0755'
+#     owner: root
+#     group: root
+#     force: no
+#   notify: install certbot-auto
+
+- name: Let's Encrypt script is present
+  copy:
+    src: letsencrypt-auto
+    dest: /usr/local/bin/letsencrypt-auto
     mode: '0755'
     owner: root
     group: root
-    force: no
-  notify: install certbot-auto
+    force: yes
+  notify: install letsencrypt-auto
+
+- name: Check certbot script
+  stat:
+    path: /usr/local/bin/certbot
+  register: certbot_path
+
+- name: Rename certbot script if present
+  command: "mv /usr/local/bin/certbot /usr/local/bin/certbot.bak"
+  when: certbot_path.stat.exists
+
+- name: Let's Encrypt script is symlinked as certbot
+  file:
+    src: "/usr/local/bin/letsencrypt-auto"
+    dest: "/usr/local/bin/certbot"
+    state: link
 
 - name: systemd artefacts are absent
   file:
