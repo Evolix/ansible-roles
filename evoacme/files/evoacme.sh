@@ -14,7 +14,7 @@ show_version() {
     cat <<END
 evoacme version ${VERSION}
 
-Copyright 2009-2020 Evolix <info@evolix.fr>,
+Copyright 2009-2021 Evolix <info@evolix.fr>,
                     Victor Laborie <vlaborie@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>,
                     Benoit Série <bserie@evolix.fr>
@@ -208,6 +208,7 @@ main() {
     [ "${TEST}" = "1" ] && CERTBOT_MODE="${CERTBOT_MODE} --test-cert"
     [ "${QUIET}" = "1" ] && CERTBOT_MODE="${CERTBOT_MODE} --quiet"
     [ "${DRY_RUN}" = "1" ] && CERTBOT_MODE="${CERTBOT_MODE} --dry-run"
+    [ "${CERTBOT_SELF_UPGRADE}" = "0" ] && CERTBOT_MODE="${CERTBOT_MODE} --no-self-upgrade"
 
     local CERTBOT_REGISTRATION="--agree-tos"
     if [ -n "${SSL_EMAIL}" ]; then
@@ -309,7 +310,7 @@ readonly QUIET=${QUIET:-"0"}
 readonly TEST=${TEST:-"0"}
 readonly DRY_RUN=${DRY_RUN:-"0"}
 
-readonly VERSION="20.12"
+readonly VERSION="21.01"
 
 # Read configuration file, if it exists
 [ -r /etc/default/evoacme ] && . /etc/default/evoacme
@@ -323,5 +324,6 @@ readonly LOG_DIR=${LOG_DIR:-"/var/log/evoacme"}
 readonly HOOKS_DIR=${HOOKS_DIR:-"${CRT_DIR}/renewal-hooks/deploy"}
 readonly SSL_MINDAY=${SSL_MINDAY:-"30"}
 readonly SSL_EMAIL=${SSL_EMAIL:-""}
+readonly CERTBOT_SELF_UPGRADE=${CERTBOT_SELF_UPGRADE:-"0"}
 
 main ${ARGS}

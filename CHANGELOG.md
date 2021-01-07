@@ -17,6 +17,7 @@ The **patch** part changes incrementally at each release.
 ### Changed
 
 * certbot: use a fixed 1.9.0 version of the certbot-auto script (renamed "letsencrypt-auto")
+* evoacme: upstream release 21.01
 
 ### Fixed
 
