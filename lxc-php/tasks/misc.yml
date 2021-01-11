@@ -28,6 +28,6 @@
     name: "{{ lxc_php_version }}"
     container_config:
       - "lxc.mount.entry = /run/mysqld {{ php_conf_mysql_socket_dir | replace('/', '', 1) }} none bind,create=dir 0 0"
-  when: php_conf_mysql_socket_dir is string
+  when: lxc_php_create_mysql_link and php_conf_mysql_socket_dir is string
   notify: "Restart container"
 
