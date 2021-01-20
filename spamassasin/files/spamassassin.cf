@@ -94,7 +94,7 @@ score ADDRESS_IN_SUBJECT 0.1
 score HELO_LH_HOME 1.0
 
 #internal_networks 192.168.XXX/24
-trusted_networks 62.212.111.216 88.179.18.233 85.118.59.50 31.170.8.0/21
+trusted_networks 62.212.121.90 82.65.34.85 31.170.8.0/21
 #score ALL_TRUSTED 0.3
 score HELO_DYNAMIC_IPADDR 0.3
 
