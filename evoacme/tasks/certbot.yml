@@ -1,4 +1,8 @@
 ---
+- name: Do no install certbot crontab
+  set_fact:
+    certbot_custom_crontab: False
+
 - include_role:
     name: evolix/certbot
 

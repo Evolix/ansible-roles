@@ -8,16 +8,6 @@
 - include_role:
     name: evolix/remount-usr
 
-# - name: Certbot script is downloaded
-#   get_url:
-#     url: https://dl.eff.org/certbot-auto
-#     dest: /usr/local/bin/certbot
-#     mode: '0755'
-#     owner: root
-#     group: root
-#     force: no
-#   notify: install certbot-auto
-
 - name: Let's Encrypt script is present
   copy:
     src: letsencrypt-auto
@@ -58,3 +48,12 @@
     src: cron_jessie
     dest: /etc/cron.d/certbot
     force: yes
+  when: certbot_custom_crontab
+
+- name: disable self-upgrade
+  ini_file:
+    dest: "/etc/letsencrypt/cli.ini"
+    section: null
+    option: "no-self-upgrade"
+    value: 0
+    state: present
