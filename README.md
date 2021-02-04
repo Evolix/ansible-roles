@@ -50,6 +50,8 @@ Before starting anything of importance, we suggest contacting us to discuss what
 
 Our conventions are available in the "ansible-public":https://gitea.evolix.org/evolix/ansible-public repository, in the CONVENTIONS.md file.
 
+All modifications should be documented in the CHANGELOG file, to help review releases. We encourage atomic commits, on a single role, and with the CHANGELOG in the same commit.
+
 ## Workflow
 
 The ideal and most typical workflow is to create a branch, based on the "unstable" branch. The branch should have a descriptive name (a ticket/issue number is great). The branch can be treated as a pull-request or merge-request. It should be propery tested and reviewed before merging into "unstable".
