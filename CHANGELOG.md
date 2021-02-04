@@ -25,6 +25,8 @@ The **patch** part changes incrementally at each release.
 
 ### Removed
 
+* nginx: no more "minimal" mode, but the package remains customizable. 
+
 ### Security
 
 ## [10.4.0] 2020-12-24
