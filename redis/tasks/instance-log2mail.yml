@@ -8,7 +8,7 @@
     mode: "0640"
     create: yes
     marker: "# {mark} ANSIBLE MANAGED RULES FOR INSTANCE {{ redis_instance_name }}"
-    content: |
+    block: |
       file = {{ redis_log_dir }}/redis-server.log
       pattern = "Cannot allocate memory"
       mailto = {{ log2mail_alert_email or general_alert_email | mandatory }}
