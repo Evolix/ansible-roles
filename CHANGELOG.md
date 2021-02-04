@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 * apache: new variables for logrotate + server-status
+* nginx: add access to server status on default VHost
 
 ### Changed
 
