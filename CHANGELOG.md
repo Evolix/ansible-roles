@@ -14,6 +14,7 @@ The **patch** part changes incrementally at each release.
 
 * apache: new variables for logrotate + server-status
 * nginx: add access to server status on default VHost
+* postfix: add smtpd_relay_restrictions in configuration
 
 ### Changed
 
