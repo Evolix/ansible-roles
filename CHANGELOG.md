@@ -19,9 +19,10 @@ The **patch** part changes incrementally at each release.
 ### Changed
 
 * certbot: use a fixed 1.9.0 version of the certbot-auto script (renamed "letsencrypt-auto")
+* cerbot: use the legacy script on Debian 8 and 9
 * evoacme: upstream release 21.01
 * minifirewall: change some defaults
-* cerbot: use the legacy script on Debian 8 and 9
+* nagios-nrpe: update check_phpfpm_status.pl & install perl dependencies
 
 ### Fixed
 

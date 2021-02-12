@@ -1,5 +1,5 @@
 ---
-- name: packages are installed
+- name: base nrpe & plugins packages are installed
   apt:
     name:
       - nagios-nrpe-server
@@ -11,6 +11,15 @@
     state: present
   tags:
     - nagios-nrpe
+
+
+- name: custom plugin dependencies packages are installed
+  apt:
+    name:
+      - libfcgi-client-perl
+    state: present
+  tags:
+    - nagios-plugins
 
 - name: custom configuration is present
   template:
