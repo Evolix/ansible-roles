@@ -384,7 +384,7 @@ strict_rfc821_envelopes = yes
 #par defaut, = yes
 #smtpd_reject_unlisted_recipient =
 
-smtpd_relay_restrictions = permit_mynetworks defer_unauth_destination
+smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
 
 #######################
 # Section : Chiffrement
