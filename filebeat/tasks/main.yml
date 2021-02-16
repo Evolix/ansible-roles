@@ -30,15 +30,17 @@
 - name: Filebeat is installed
   apt:
     name: filebeat
-    state: present
+    state: "{% if filebeat_upgrade_package %}latest{% else %}present{% endif %}"
+  notify: restart filebeat
   tags:
-  - filebeat
-  - packages
+    - filebeat
+    - packages
 
 - name: Filebeat service is enabled
   systemd:
     name: filebeat
     enabled: yes
+    notify: restart filebeat
 
 - name: is logstash-plugin available?
   stat:

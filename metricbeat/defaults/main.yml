@@ -13,6 +13,7 @@ metricbeat_processors_cloud_metadata: False
 metricbeat_use_config_template: False
 metricbeat_update_config: True
 metricbeat_force_config: True
+metribeat_upgrade_package: False
 
 # Example :
 # metricbeat_tags:

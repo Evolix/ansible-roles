@@ -30,15 +30,17 @@
 - name: Metricbeat is installed
   apt:
     name: metricbeat
-    state: present
+    state: "{% if metribeat_upgrade_package %}latest{% else %}present{% endif %}"
+  notify: restart metricbeat
   tags:
-  - metricbeat
-  - packages
+    - metricbeat
+    - packages
 
 - name: Metricbeat service is enabled
   systemd:
     name: metricbeat
     enabled: yes
+  notify: restart metricbeat
 
 # When we don't use a config template (default)
 - block:
