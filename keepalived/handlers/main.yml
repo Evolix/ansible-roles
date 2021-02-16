@@ -1,5 +1,10 @@
 ---
 - name: restart keepalived
   systemd:
-        name: keepalived
-        state: restarted
+    name: keepalived
+    state: restarted
+
+- name: restart nagios-nrpe-server
+  service:
+    name: nagios-nrpe-server
+    state: restarted
