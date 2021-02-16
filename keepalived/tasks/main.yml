@@ -1,18 +1,59 @@
 - name: install Keepalived service
   apt:
-        pkg: keepalived
-        state: present
+    pkg: keepalived
+    state: present
+  tags:
+    - keepalived
+
+- name: Add notify.sh script for NRPE check
+  file:
+    src: notify.sh
+    dest: /etc/keepalived/notify.sh
+    mode: "0755"
+    owner: root
+    group: root
+    force: yes
+  notify: restart keepalived
+  tags:
+    - keepalived
+    - nrpe
+
+- name: check_keepalived is installed
+  file:
+    src: check_keepalived
+    dest: /usr/local/lib/nagios/plugins/check_keepalived
+    mode: "0755"
+    owner: root
+    group: root
+    force: yes
+   tags:
+    - keepalived
+    - nrpe
+
+- name: Use check_keepalived for NRPE
+  lineinfile:
+    dest: /etc/nagios/nrpe.d/evolix.cfg
+    regexp: 'command\[check_keepalived\]'
+    replace: 'command[check_keepalived]=/usr/local/lib/nagios/plugins/check_keepalived'
+  notify: restart nagios-nrpe-server
+  tags:
+    - keepalived
+    - nrpe
 
 - name: generate Keepalived configuration
   template:
-        src: keepalived.conf.j2
-        dest: /etc/keepalived/keepalived.conf
-        mode: 0644
+    src: keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    mode: 0644
   notify: restart keepalived
+  tags:
+    - keepalived
 
 - name: enable and restart Keepalived service
   systemd:
-        name: keepalived
-        daemon_reload: yes
-        state: started
-        enabled: yes
+    name: keepalived
+    daemon_reload: yes
+    state: started
+    enabled: yes
+  tags:
+    - keepalived
