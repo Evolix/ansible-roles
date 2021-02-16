@@ -26,4 +26,5 @@ vrrp_instance vrrp {
         track_script {
                 chk_sshd
         }
+        notify /etc/keepalived/notify.sh
 }
