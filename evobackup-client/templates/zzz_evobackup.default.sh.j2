@@ -279,6 +279,8 @@ if [ "${SYNC_TASKS}" = "1" ]; then
         --exclude "/var/lib/clamav/*.tmp"                  \
         --exclude "/home/mysqltmp"                         \
         --exclude "/var/lib/php/sessions"                  \
+        --exclude "/home/images"                           \
+        --exclude "/var/lib/libvirt/images"                \
             ${rep}                                         \
             /etc                                           \
             /root                                          \
