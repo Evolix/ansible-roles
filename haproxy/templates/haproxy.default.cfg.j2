@@ -35,18 +35,34 @@ defaults
     errorfile 504 /etc/haproxy/errors/504.http
 
 {% if haproxy_stats_enable %}
+{% if haproxy_stats_users %}
+userlist stats_users
+{% for user in haproxy_stats_users | default([]) %}
+  user {{ user.login }} password {{ user.password }}
+{% endfor %}
+
+{% endif %}
 listen stats
     mode http
     bind {{ haproxy_stats_bind_directive }}
+
+    acl stats_access_ips src -f /etc/haproxy/stats_access_ips
+    acl stats_admin_ips  src -f /etc/haproxy/stats_admin_ips
 
     stats enable
     stats refresh 10s
     stats uri {{ haproxy_stats_path }}
     stats show-legends
     stats show-node
-    stats admin if { src -f /etc/haproxy/stats_admin_ips }
+    stats admin if stats_admin_ips
 
-    http-request deny if !{ src -f /etc/haproxy/stats_access_ips }
+{% if haproxy_stats_users %}
+    acl stats_users http_auth(stats_users)
+    stats http-request auth realm "HAProxy admin" if !stats_access_ips !stats_users
+{% else %}
+    stats http-request deny if !stats_access_ips
+{% endif %}
+
     http-request set-log-level silent
 {% endif %}
 

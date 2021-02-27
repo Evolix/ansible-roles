@@ -14,6 +14,7 @@ The **patch** part changes incrementally at each release.
 
 * apache: new variables for logrotate + server-status
 * filebeat: package can be upgraded to latest (default: False)
+* haproxy: possible admin access with login/pass
 * metricbeat: package can be upgraded to latest (default: False)
 * nagios-nrpe: new script check_phpfpm_multi
 * nginx: add access to server status on default VHost

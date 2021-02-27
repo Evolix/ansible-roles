@@ -18,6 +18,10 @@ haproxy_chroot: /var/lib/haproxy
 
 haproxy_stats_access_ips: []
 haproxy_stats_admin_ips: []
+haproxy_stats_users: []
+## use crypt(8) password encryption 
+# haproxy_stats_users:
+#   - { login: "", password: "" }
 haproxy_maintenance_ips: []
 haproxy_deny_ips: []
 
