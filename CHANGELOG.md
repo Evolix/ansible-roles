@@ -27,6 +27,7 @@ The **patch** part changes incrementally at each release.
 * certbot: use a fixed 1.9.0 version of the certbot-auto script (renamed "letsencrypt-auto")
 * cerbot: use the legacy script on Debian 8 and 9
 * evoacme: upstream release 21.01
+* evolinux-users: Add sudo rights for nagios for multi-php lxc
 * minifirewall: change some defaults
 * nagios-nrpe: update check_phpfpm_status.pl & install perl dependencies
 * redis: use /run instead or /var/run
