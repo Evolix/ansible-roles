@@ -70,7 +70,21 @@
   tags:
     - redis
 
-- name: "Instance '{{ redis_instance_name }}' other directories are present"
+- name: "Instance '{{ redis_instance_name }}' socket/pid directories are present"
+  file:
+    dest: "{{ item }}"
+    mode: "0755"
+    owner: "redis-{{ redis_instance_name }}"
+    group: "redis-{{ redis_instance_name }}"
+    follow: yes
+    state: directory
+  with_items:
+    - "{{ redis_pid_dir }}"
+    - "{{ redis_socket_dir }}"
+  tags:
+    - redis
+
+- name: "Instance '{{ redis_instance_name }}' data/log directories are present"
   file:
     dest: "{{ item }}"
     mode: "0750"
@@ -79,8 +93,6 @@
     follow: yes
     state: directory
   with_items:
-    - "{{ redis_pid_dir }}"
-    - "{{ redis_socket_dir }}"
     - "{{ redis_data_dir }}"
     - "{{ redis_log_dir }}"
   tags:
