@@ -31,6 +31,7 @@ The **patch** part changes incrementally at each release.
 * minifirewall: change some defaults
 * nagios-nrpe: update check_phpfpm_status.pl & install perl dependencies
 * redis: use /run instead or /var/run
+* redis: escape password in Munin configuration
 
 ### Fixed
 
