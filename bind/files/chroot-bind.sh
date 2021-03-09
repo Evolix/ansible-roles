@@ -22,7 +22,7 @@ mkdir -p /var/chroot-bind
 mkdir -p /var/chroot-bind/bin /var/chroot-bind/dev /var/chroot-bind/etc \
         /var/chroot-bind/lib /var/chroot-bind/usr/lib                   \
         /var/chroot-bind/usr/sbin /var/chroot-bind/var/cache/bind       \
-        /var/chroot-bind/var/log/named /var/chroot-bind/var/run/named/        \
+        /var/chroot-bind/var/log /var/chroot-bind/var/run/named/        \
         /var/chroot-bind/run/named/
 
 # for conf
@@ -32,9 +32,9 @@ if [ ! -h "/etc/bind" ]; then
 fi
 
 # for logs
-touch /var/chroot-bind/var/log/named/bind.log
-if [ ! -h "/var/log/named/bind.log" ]; then
-    ln -s /var/chroot-bind/var/log/named/bind.log /var/log/named/bind.log
+touch /var/chroot-bind/var/log/bind.log
+if [ ! -h "/var/log/bind.log" ]; then
+    ln -s /var/chroot-bind/var/log/bind.log /var/log/bind.log
 fi
 
 # for pid

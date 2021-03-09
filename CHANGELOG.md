@@ -32,9 +32,10 @@ The **patch** part changes incrementally at each release.
 * nagios-nrpe: update check_phpfpm_status.pl & install perl dependencies
 * redis: use /run instead or /var/run
 * redis: escape password in Munin configuration
-* bind9: moved logs from /var/log/bind* to /var/log/named/* to fix problems with apparmor
 
 ### Fixed
+
+* bind9: added log files to apparmor definition so bind can run
 
 
 ### Removed
