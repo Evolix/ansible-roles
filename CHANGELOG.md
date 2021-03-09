@@ -31,8 +31,10 @@ The **patch** part changes incrementally at each release.
 * minifirewall: change some defaults
 * nagios-nrpe: update check_phpfpm_status.pl & install perl dependencies
 * redis: use /run instead or /var/run
+* bind9: moved logs from /var/log/bind* to /var/log/named/* to fix problems with apparmor
 
 ### Fixed
+
 
 ### Removed
 
