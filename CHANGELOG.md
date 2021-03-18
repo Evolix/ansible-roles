@@ -36,6 +36,7 @@ The **patch** part changes incrementally at each release.
 ### Fixed
 
 * bind9: added log files to apparmor definition so bind can run
+* nagios-nrpe: libfcgi-client-perl is not available before Debian 10
 * redis: socket/pid directories have the correct permissions
 
 ### Removed
