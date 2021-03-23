@@ -112,6 +112,18 @@ output.elasticsearch:
 {% if metricbeat_elasticsearch_auth_password %}
   password: "{{ metricbeat_elasticsearch_auth_password }}"
 {% endif %}
+{% if metricbeat_elasticsearch_ssl %}
+  ssl.enabled: true
+{% if metricbeat_elasticsearch_ssl_certificate_authorities != [] %}
+  ssl.certificate_authorities: ["{{ metricbeat_elasticsearch_ssl_certificate_authorities | join('", "') }}"]
+{% endif %}
+{% if metricbeat_elasticsearch_ssl_certificate %}
+  ssl.certificate: "{{ metricbeat_elasticsearch_ssl_certificate }}"
+{% endif %}
+{% if metricbeat_elasticsearch_ssl_verification_mode %}
+  ssl.verification_mode: "{{ metricbeat_elasticsearch_ssl_verification_mode }}"
+{% endif %}
+{% endif %}
 
 # ------------------------------ Logstash Output -------------------------------
 #output.logstash:

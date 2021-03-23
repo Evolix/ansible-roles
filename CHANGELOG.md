@@ -16,6 +16,7 @@ The **patch** part changes incrementally at each release.
 * filebeat: package can be upgraded to latest (default: False)
 * haproxy: possible admin access with login/pass
 * metricbeat: package can be upgraded to latest (default: False)
+* metricbeat: new variables to configure SSL mode
 * nagios-nrpe: new script check_phpfpm_multi
 * nginx: add access to server status on default VHost
 * postfix: add smtpd_relay_restrictions in configuration
