@@ -40,7 +40,7 @@
   systemd:
     name: filebeat
     enabled: yes
-    notify: restart filebeat
+  notify: restart filebeat
 
 - name: is logstash-plugin available?
   stat:
