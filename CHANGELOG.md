@@ -28,6 +28,7 @@ The **patch** part changes incrementally at each release.
 * cerbot: use the legacy script on Debian 8 and 9
 * evoacme: upstream release 21.01
 * evolinux-users: Add sudo rights for nagios for multi-php lxc
+* listupgrade: update script from upstream
 * minifirewall: change some defaults
 * nagios-nrpe: update check_phpfpm_status.pl & install perl dependencies
 * redis: use /run instead or /var/run

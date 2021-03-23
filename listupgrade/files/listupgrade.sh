@@ -238,3 +238,27 @@ echo "$downloadstatus" | grep -q 'Download complete and in download only mode'
 if [ $? -ne 0 ]; then
     echo "$downloadstatus"
 fi;
+
+
+# Also, we try to update each container apt sources
+if which lxc-ls > /dev/null; then
+    for container in $(lxc-ls); do
+
+       aptUpdateOutput=$(lxc-attach -n $container -- apt update 2>&1 | (egrep -ve '^(Listing|WARNING|$)' -e upgraded -e 'up to date' || true ))
+
+       if (echo "$aptUpdateOutput" | egrep "^Err(:[0-9]+)? http"); then
+          echo "FATAL CONTAINER - Not able to fetch all sources (probably a pesky (mini)firewall). Please, fix me"
+          exit 150
+        fi
+
+        # Now we try to fetch all the packages for the next update session
+        downloadstatus=$(lxc-attach -n $container -- apt dist-upgrade --assume-yes --download-only -q2 2>&1)
+        echo "$downloadstatus" | grep -q 'Download complete and in download only mode'
+
+        if [ $? -ne 0 ]; then
+            echo "$downloadstatus"
+        fi;
+
+    done
+fi
+
