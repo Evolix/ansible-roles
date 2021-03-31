@@ -1,0 +1,60 @@
+---
+  
+- name: "{{ lxc_php_version }} - Install dependency packages"
+  lxc_container:
+    name: "{{ lxc_php_version }}"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y wget apt-transport-https gnupg"
+
+- name: "{{ lxc_php_version }} - Add sury repo"
+  lineinfile:
+    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/apt/sources.list.d/sury.list"
+    line: "{{ item }}"
+    state: present
+    create: yes
+    mode: "0644"
+  with_items:
+    - "deb https://packages.sury.org/php/ buster main"
+    - "deb http://pub.evolix.net/ buster-php74/"
+
+- name: Grab pub.evolix.net GPG Key
+  get_url:
+    url: https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x0C016D3BD1195D30105837CC44975278B8612B5D
+    dest: /var/lib/lxc/{{ lxc_php_version }}/rootfs/root/reg.gpg
+    mode: 0644
+    checksum: sha256:a2e0f56ba433aa0740aad6eeeb43bb67df9ab943d76324382b39948a4c7ce840
+
+- name: "{{ lxc_php_version }} - Update APT cache"
+  lxc_container:
+    name: "{{ lxc_php_version }}"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt-key --keyring /etc/apt/trusted.gpg.d/pub.evolix.net.gpg add /root/reg.gpg"
+
+- name: Grab packages.sury.org GPG Key
+  get_url:
+    url: https://packages.sury.org/php/apt.gpg
+    dest: /var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/apt/trusted.gpg.d/sury.gpg
+    mode: 0644
+    checksum: sha256:b3ea944563435e54bb64f181ee8bc26200985d09164cdc4c1702fc3ef051f19d
+
+- name: "{{ lxc_php_version }} - Update APT cache"
+  lxc_container:
+    name: "{{ lxc_php_version }}"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt update"
+  
+- name: "{{ lxc_php_version }} - Install PHP packages"
+  lxc_container:
+    name: "{{ lxc_php_version }}"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-sqlite3 php-gettext php-curl php-zip php-mbstring php-zip composer libphp-phpmailer"
+
+- name: "{{ lxc_php_version }} - Copy evolinux PHP configuration"
+  template:
+    src: z-evolinux-defaults.ini.j2
+    dest: "{{ line_item }}"
+    mode: "0644"
+  notify: "Reload {{ lxc_php_version }}-fpm"
+  with_items:
+    - "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/php/7.4/fpm/conf.d/z-evolinux-defaults.ini"
+    - "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/php/7.4/cli/conf.d/z-evolinux-defaults.ini"
+  loop_control:
+    loop_var: line_item
+
+- include: "mail_opensmtpd.yml"
