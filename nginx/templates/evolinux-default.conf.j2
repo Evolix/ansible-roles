@@ -44,6 +44,11 @@ server {
         fastcgi_pass unix:/var/run/munin/spawn-fcgi-munin-graph.sock;
         include fastcgi_params;
     }
+
+    location /server-status-{{ nginx_serverstatus_suffix | mandatory }} {
+        stub_status on;
+        access_log off;
+    }
 }
 
 server {

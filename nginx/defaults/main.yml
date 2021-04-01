@@ -4,7 +4,7 @@ nginx_minimal: False
 # backward compatibility with a previously used variable
 nginx_backports: "{{ nginx_jessie_backports | default(false, true) }}"
 
-nginx_package_name: "nginx-full"
+nginx_default_package_name: "nginx-full"
 
 nginx_default_ipaddr_whitelist_ips: []
 nginx_additional_ipaddr_whitelist_ips: []

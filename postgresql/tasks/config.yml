@@ -1,8 +1,14 @@
 ---
+- name: Ensure /etc/systemd/system/postgresql.service.d exists
+  file:
+    path: /etc/systemd/system/postgresql@.service.d
+    state: directory
+    recurse: true
+
 - name: Override PostgreSQL systemd unit
-  template:
-    src: postgresql.service.j2
-    dest: /etc/systemd/system/multi-user.target.wants/postgresql.service
+  copy:
+    src: postgresql.service.override.conf
+    dest: /etc/systemd/system/postgresql@.service.d/override.conf
     force: yes
   notify:
     - reload systemd

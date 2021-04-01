@@ -1,3 +1,9 @@
+
+
+- set_fact:
+    nginx_package_name_default: nginx-light
+  when: nginx_minimal
+
 - include: packages_backports.yml
   when: nginx_backports
 
@@ -5,12 +11,12 @@
 
 - name: Ensure Nginx is installed
   apt:
-    name: "{{ nginx_package_name }}"
+    name: "{{ nginx_package_name | default(nginx_default_package_name) }}"
     state: present
   tags:
     - nginx
     - packages
-    
+
 - name: Ensure nginx service is running as configured.
   service:
     name: nginx

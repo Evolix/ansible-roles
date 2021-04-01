@@ -1,0 +1,30 @@
+# {{ ansible_managed }}
+
+vrrp_script chk_sshd {
+        script "/usr/bin/pkill -0 sshd"
+        interval 5
+        weight -4
+        fall 2
+        rise 1
+}
+
+vrrp_instance vrrp {
+        interface {{ keepalived_interface | mandatory }}
+        virtual_router_id {{ keepalived_router_id | mandatory }}
+        state {{ keepalived_role | upper }}
+        priority {{ keepalived_priority }}
+
+        virtual_ipaddress {
+            {{ keepalived_ip | mandatory }}
+        }
+        
+        authentication {
+                auth_type PASS
+                auth_pass {{ keepalived_password | mandatory }}
+        }
+        
+        track_script {
+                chk_sshd
+        }
+        notify /etc/keepalived/notify.sh
+}

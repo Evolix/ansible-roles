@@ -1,0 +1,82 @@
+#!/bin/bash
+
+
+function detect_pool_dir() {
+  # Try to autodetect pool directory
+  php_version=$(php --version |head -n1 | sed -E 's/^PHP ([0-9]\.[0-9]).*/\1/g')
+  
+  if [[ $php_version =~ ^5. ]]; then
+    echo "/etc/php5/fpm/pool.d/";
+  else
+    echo "/etc/php/$php_version/fpm/pool.d/";
+  fi
+}
+
+return=0
+nb_crit=0
+nb_warn=0
+nb_ok=0
+nb_unchk=0
+output=""
+
+readonly POOL_FOLDER=${1:-$(detect_pool_dir)}
+
+if [[ ! -d "$POOL_FOLDER" ]]; then
+  echo "CRITICAL - $POOL_FOLDER does not exists"
+  exit 2
+fi;  
+
+readonly POOL_FILES=$(find "$POOL_FOLDER" -name "*.conf")
+
+for pool_file in $POOL_FILES; do
+  
+  pool_name=$(grep "^\[" "$pool_file" | sed -E 's/^\[(.*)\].*$/\1/g')
+  pool_status_path=$(grep -E "^pm.status_path\s?=" "$pool_file" |  sed -E "s/.*=\s?'?([^']*)'?\s?$/\1/g")
+  pool_listen=$(grep -E "^listen\s?=" "$pool_file" |  sed -E 's/.*=\s?(.*)\s?$/\1/g')
+  
+  if [[ "$pool_status_path" == '' ]]; then
+      nb_unchk=$((nb_unchk + 1))
+      output="${output}UNCHK - ${pool_name} (missing pm.status_path definition)\n" 
+      
+      continue;
+  fi;
+  
+  if [[ -S "$pool_listen" ]] || [[ ! "$pool_listen" =~ ':'  ]]; then
+    target=(-H 127.0.0.1 --unix "$pool_listen")
+  else
+    target=(-H "$(echo "$pool_listen" | cut -d':' -f1)" -p "$(echo "$pool_listen" | cut -d':' -f2 )")
+  fi
+  
+  result=$(perl /usr/local/lib/nagios/plugins/check_phpfpm_status.pl "${target[@]}" -u "$pool_status_path")
+  ret="${?}"
+  
+  if [ "${ret}" -ge 2 ]; then
+      nb_crit=$((nb_crit + 1))
+      output="${output}${result}\n"
+      [ "${return}" -le 2 ] && return=2
+  elif [ "${ret}" -ge 1 ]; then
+      nb_warn=$((nb_warn + 1))
+      output="${output}${result}\n"
+      [ "${return}" -le 1 ] && return=1
+  else
+      nb_ok=$((nb_ok + 1))
+      output="${output}$(echo "$result" | cut -d '|' -f1)\n"
+      [ "${return}" -le 0 ] && return=0
+  fi
+
+
+done;
+
+
+[ "${return}" -ge 0 ] && header="OK"
+[ "${return}" -ge 1 ] && header="WARNING"
+[ "${return}" -ge 2 ] && header="CRITICAL"
+
+printf "%s - %s UNCHK / %s CRIT / %s WARN / %s OK\n\n" "${header}" "${nb_unchk}" "${nb_crit}" "${nb_warn}" "${nb_ok}"
+
+printf "%b" "${output}" | grep -E "(CRITICAL|UNKNOWN)"
+printf "%b" "${output}" | grep -E "WARNING"
+printf "%b" "${output}" | grep -E "OK"
+printf "%b" "${output}" | grep -E "^UNCHK"
+
+exit "${return}"

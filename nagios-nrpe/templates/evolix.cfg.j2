@@ -70,6 +70,11 @@ command[check_haproxy]=sudo {{ nagios_plugins_directory }}/check_haproxy_stats -
 command[check_minifirewall]=sudo {{ nagios_plugins_directory }}/check_minifirewall
 command[check_redis_instances]={{ nagios_plugins_directory }}/check_redis_instances
 command[check_hpraid]={{ nagios_plugins_directory }}/check_hpraid
+command[check_php-fpm]={{ nagios_plugins_directory }}/check_phpfpm_multi
+command[check_php-fpm56]=sudo {{ nagios_plugins_directory }}/check_phpfpm_multi /var/lib/lxc/php56/rootfs/etc/php5/fpm/pool.d/
+command[check_php-fpm70]=sudo {{ nagios_plugins_directory }}/check_phpfpm_multi /var/lib/lxc/php70/rootfs/etc/php/7.0/fpm/pool.d/
+command[check_php-fpm73]=sudo {{ nagios_plugins_directory }}/check_phpfpm_multi /var/lib/lxc/php73/rootfs/etc/php/7.3/fpm/pool.d/
+command[check_php-fpm74]=sudo {{ nagios_plugins_directory }}/check_phpfpm_multi /var/lib/lxc/php74/rootfs/etc/php/7.4/fpm/pool.d/
 
 # Check HTTP "many". Use this to check many websites (http, https, ports, sockets and SSL certificates).
 # Beware! All checks must not take more than 10s!

@@ -2,6 +2,11 @@
 - name: reload systemd
   command: systemctl daemon-reload
 
+- name: restart apparmor
+  service:
+    name: apparmor
+    state: restarted
+
 - name: restart bind
   service:
     name: bind9

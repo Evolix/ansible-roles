@@ -7,12 +7,17 @@ metricbeat_elasticsearch_protocol: ""
 metricbeat_elasticsearch_auth_api_key: ""
 metricbeat_elasticsearch_auth_username: ""
 metricbeat_elasticsearch_auth_password: ""
+metricbeat_elasticsearch_ssl: False
+metricbeat_elasticsearch_ssl_certificate_authorities: []
+metricbeat_elasticsearch_ssl_certificate: ""
+metricbeat_elasticsearch_ssl_verification_mode: ""
 
 metricbeat_processors_cloud_metadata: False
 
 metricbeat_use_config_template: False
 metricbeat_update_config: True
 metricbeat_force_config: True
+metribeat_upgrade_package: False
 
 # Example :
 # metricbeat_tags:

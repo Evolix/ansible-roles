@@ -8,6 +8,16 @@
      bind_chroot_path: /var/chroot-bind
   when: bind_chroot_set
 
+- name: configure apparmor
+  template:
+    src: apparmor.usr.sbin.named.j2
+    dest: /etc/apparmor.d/usr.sbin.named
+    owner: root
+    group: root
+    mode: '0644'
+    force: yes
+  notify: restart apparmor
+
 - name: package are installed
   apt:
     name:

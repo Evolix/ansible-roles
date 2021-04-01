@@ -9,10 +9,10 @@ redis_port: 6379
 redis_bind_interface: 127.0.0.1
 
 redis_socket_enabled: True
-redis_socket_dir_prefix: '/var/run/redis'
+redis_socket_dir_prefix: '/run/redis'
 redis_socket_perms: 770
 
-redis_pid_dir_prefix: "/var/run/redis"
+redis_pid_dir_prefix: "/run/redis"
 
 redis_timeout: 300
 

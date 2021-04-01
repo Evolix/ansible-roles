@@ -12,11 +12,7 @@ User=redis-%i
 Group=redis-%i
 RuntimeDirectory=redis-%i
 
-ExecStartPre=-/bin/run-parts --verbose {{ redis_conf_dir_prefix }}-%i/redis-server.pre-up.d
-ExecStartPost=-/bin/run-parts --verbose {{ redis_conf_dir_prefix }}-%i/redis-server.post-up.d
-ExecStop=-/bin/run-parts --verbose {{ redis_conf_dir_prefix }}-%i/redis-server.pre-down.d
 ExecStop=/bin/kill -s TERM $MAINPID
-ExecStopPost=-/bin/run-parts --verbose {{ redis_conf_dir_prefix }}-%i/redis-server.post-down.d
 
 UMask=007
 PrivateTmp=yes

@@ -21,3 +21,4 @@ filebeat_logstash_auth_password: ""
 filebeat_use_config_template: False
 filebeat_update_config: True
 filebeat_force_config: True
+filebeat_upgrade_package: False

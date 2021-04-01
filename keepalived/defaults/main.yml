@@ -1,0 +1,6 @@
+keepalived_interface: "{{ ansible_default_ipv4.interface }}"
+keepalived_role: "master"
+keepalived_router_id: "42"
+keepalived_priority: "{% if keepalived_role == 'master' %}100{% else %}50{% endif %}"
+keepalived_ip: ""
+keepalived_password: ""

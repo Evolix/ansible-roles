@@ -70,7 +70,21 @@
   tags:
     - redis
 
-- name: "Instance '{{ redis_instance_name }}' other directories are present"
+- name: "Instance '{{ redis_instance_name }}' socket/pid directories are present"
+  file:
+    dest: "{{ item }}"
+    mode: "0755"
+    owner: "redis-{{ redis_instance_name }}"
+    group: "redis-{{ redis_instance_name }}"
+    follow: yes
+    state: directory
+  with_items:
+    - "{{ redis_pid_dir }}"
+    - "{{ redis_socket_dir }}"
+  tags:
+    - redis
+
+- name: "Instance '{{ redis_instance_name }}' data/log directories are present"
   file:
     dest: "{{ item }}"
     mode: "0750"
@@ -79,8 +93,6 @@
     follow: yes
     state: directory
   with_items:
-    - "{{ redis_pid_dir }}"
-    - "{{ redis_socket_dir }}"
     - "{{ redis_data_dir }}"
     - "{{ redis_log_dir }}"
   tags:
@@ -110,7 +122,7 @@
   tags:
     - redis
 
-- name: Systemd template for redis instances is installed (Debian 9 or later)
+- name: Systemd template for redis instances is installed (Debian 9)
   template:
     src: 'redis-server@stretch.service.j2'
     dest: '/etc/systemd/system/redis-server@.service'
@@ -119,7 +131,20 @@
     group: "root"
   when:
     - ansible_distribution == "Debian"
-    - ansible_distribution_major_version is version('9', '>=')
+    - ansible_distribution_major_version is version('9', '=')
+  tags:
+    - redis
+
+- name: Systemd template for redis instances is installed (Debian 10 or later)
+  template:
+    src: 'redis-server@buster.service.j2'
+    dest: '/etc/systemd/system/redis-server@.service'
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version is version('10', '>=')
   tags:
     - redis
 

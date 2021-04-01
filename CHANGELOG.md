@@ -20,6 +20,46 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [10.5.0] 2021-04-01
+
+### Added
+
+* apache: new variables for logrotate + server-status
+* filebeat: package can be upgraded to latest (default: False)
+* haproxy: possible admin access with login/pass
+* lxc-php: Add PHP 7.4 support 
+* metricbeat: package can be upgraded to latest (default: False)
+* metricbeat: new variables to configure SSL mode
+* nagios-nrpe: new script check_phpfpm_multi
+* nginx: add access to server status on default VHost
+* postfix: add smtpd_relay_restrictions in configuration
+
+### Changed
+
+* apache: rotate logs daily instead of weekly
+* apache: deny requests to ^/evolinux_fpm_status-.*
+* certbot: use a fixed 1.9.0 version of the certbot-auto script (renamed "letsencrypt-auto")
+* certbot: use the legacy script on Debian 8 and 9
+* elasticsearch: log rotation is more readable/maintainable
+* evoacme: upstream release 21.01
+* evolinux-users: Add sudo rights for nagios for multi-php lxc
+* listupgrade: update script from upstream
+* minifirewall: change some defaults
+* nagios-nrpe: update check_phpfpm_status.pl & install perl dependencies
+* redis: use /run instead or /var/run
+* redis: escape password in Munin configuration
+
+### Fixed
+
+* bind9: added log files to apparmor definition so bind can run
+* filebeat: fix Ansible syntax error
+* nagios-nrpe: libfcgi-client-perl is not available before Debian 10
+* redis: socket/pid directories have the correct permissions
+
+### Removed
+
+* nginx: no more "minimal" mode, but the package remains customizable.
+
 ## [10.4.0] 2020-12-24
 
 ### Added
