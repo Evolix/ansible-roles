@@ -12,10 +12,22 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [10.5.0] 2021-04-01
+
+### Added
+
 * apache: new variables for logrotate + server-status
 * filebeat: package can be upgraded to latest (default: False)
 * haproxy: possible admin access with login/pass
-* lxc-php: Add php 7.4 support 
+* lxc-php: Add PHP 7.4 support 
 * metricbeat: package can be upgraded to latest (default: False)
 * metricbeat: new variables to configure SSL mode
 * nagios-nrpe: new script check_phpfpm_multi
@@ -27,7 +39,7 @@ The **patch** part changes incrementally at each release.
 * apache: rotate logs daily instead of weekly
 * apache: deny requests to ^/evolinux_fpm_status-.*
 * certbot: use a fixed 1.9.0 version of the certbot-auto script (renamed "letsencrypt-auto")
-* cerbot: use the legacy script on Debian 8 and 9
+* certbot: use the legacy script on Debian 8 and 9
 * elasticsearch: log rotation is more readable/maintainable
 * evoacme: upstream release 21.01
 * evolinux-users: Add sudo rights for nagios for multi-php lxc
@@ -46,9 +58,7 @@ The **patch** part changes incrementally at each release.
 
 ### Removed
 
-* nginx: no more "minimal" mode, but the package remains customizable. 
-
-### Security
+* nginx: no more "minimal" mode, but the package remains customizable.
 
 ## [10.4.0] 2020-12-24
 
@@ -146,7 +156,6 @@ The **patch** part changes incrementally at each release.
 * certbot: fix haproxy hook (ssl cert directory detection)
 * certbot: install certbot dependencies non-interactively for jessie
 * elasticsearch: configure cluster with seed hosts and initial masters
-* elasticsearch: log rotation is more readable/maintainable
 * elasticsearch: set tmpdir before datadir
 * evoacme: read values from environment before defaults file
 * evoacme: update for new certbot role
