@@ -45,6 +45,9 @@ userlist stats_users
 listen stats
     mode http
     bind {{ haproxy_stats_bind_directive }}
+{% if haproxy_stats_internal_enable %}
+    bind {{ haproxy_stats_internal_host }}:{{ haproxy_stats_internal_port }}
+{% endif %}
 
     acl stats_access_ips src -f /etc/haproxy/stats_access_ips
     acl stats_admin_ips  src -f /etc/haproxy/stats_admin_ips

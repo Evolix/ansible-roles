@@ -12,6 +12,8 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+* haproxy: dedicated internal address/binding (without SSL)
+
 ### Changed
 
 ### Fixed
