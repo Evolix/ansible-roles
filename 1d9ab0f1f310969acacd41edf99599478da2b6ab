@@ -1,0 +1,3 @@
+I am not dealing with php's mysql_ extension as it has been removed in php
+7.0.0 and I would rather not create a difference between the default config
+for php5 and php7[03].
