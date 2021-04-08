@@ -16,6 +16,8 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 
+* etc-git: commit in /usr/share/scripts when there's an active repository
+
 ### Fixed
 
 ### Removed

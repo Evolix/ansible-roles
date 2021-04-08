@@ -1,57 +1,27 @@
 ---
-- name: is /etc clean?
-  command: git status --porcelain
-  args:
-    chdir: /etc
-  changed_when: False
-  register: git_status
-  when: not ansible_check_mode
-  ignore_errors: yes
-  tags:
-    - etc-git
-    - commit-etc
 
-- debug:
-    var: git_status
-    verbosity: 3
-  tags:
-    - etc-git
-    - commit-etc
+- name: Is /etc a git repository
+  stat:
+    path: /etc/.git
+  register: _etc_git
 
-- name: fetch current Git user.email
-  git_config:
-    name: user.email
-    repo: /etc
-  register: git_config_user_email
-  ignore_errors: yes
-  tags:
-    - etc-git
-    - commit-etc
+- include: do_commit.yml
+  vars:
+    git_folder: "/etc"
+  when: 
+  - _etc_git.stat.exists
+  - _etc_git.stat.isdir
 
-- name: "set commit author"
-  set_fact:
-    commit_author: '{% if ansible_env.SUDO_USER is not defined %}root{% else %}{{ ansible_env.SUDO_USER }}{% endif %}'
-    commit_email:  '{% if git_config_user_email.config_value is not defined or not git_config_user_email.config_value %}root@localhost{% else %}{{ git_config_user_email.config_value }}{% endif %}' # noqa 204
-  tags:
-    - etc-git
-    - commit-etc
 
-- name: "/etc modifications are committed"
-  shell: "git add -A . && git commit -m \"{{ commit_message | mandatory }}\" --author \"{{ commit_author | mandatory }} <{{ commit_email | mandatory }}>\""
-  args:
-    chdir: /etc
-  register: etc_commit_end_run
+
+- name: Is /usr/share/scripts a git repository
+  stat:
+    path: /usr/share/scripts/.git
+  register: _usr_share_scripts_git
+
+- include: do_commit.yml
+  vars:
+    git_folder: "/usr/share/scripts"
   when:
-    - not ansible_check_mode
-    - git_status.stdout
-  ignore_errors: yes
-  tags:
-    - etc-git
-    - commit-etc
-
-- debug:
-    var: etc_commit_end_run
-    verbosity: 4
-  tags:
-    - etc-git
-    - commit-etc
+  - _usr_share_scripts_git.stat.exists 
+  - _usr_share_scripts_git.stat.isdir
