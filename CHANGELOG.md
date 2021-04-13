@@ -20,6 +20,16 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [10.5.1] 2021-04-13
+
+### Added
+
+* haproxy: dedicated internal address/binding (without SSL)
+
+### Changed
+
+* etc-git: commit in /usr/share/scripts when there's an active repository
+
 ## [10.5.0] 2021-04-01
 
 ### Added

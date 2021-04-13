@@ -1,0 +1,64 @@
+---
+
+- name: "Remount /usr if needed"
+  include_role:
+    name: remount-usr
+  when: git_folder is match('/usr/.*')
+
+
+- name: "is {{ git_folder }} clean?"
+  command: git status --porcelain
+  args:
+    chdir: "{{ git_folder }}"
+  changed_when: False
+  register: git_status
+  when: not ansible_check_mode
+  ignore_errors: yes
+  tags:
+    - etc-git
+    - commit
+
+- debug:
+    var: git_status
+    verbosity: 3
+  tags:
+    - etc-git
+    - commit
+
+- name: fetch current Git user.email
+  git_config:
+    name: user.email
+    repo: "{{ git_folder }}"
+  register: git_config_user_email
+  ignore_errors: yes
+  tags:
+    - etc-git
+    - commit
+
+- name: "set commit author"
+  set_fact:
+    commit_author: '{% if ansible_env.SUDO_USER is not defined %}root{% else %}{{ ansible_env.SUDO_USER }}{% endif %}'
+    commit_email:  '{% if git_config_user_email.config_value is not defined or not git_config_user_email.config_value %}root@localhost{% else %}{{ git_config_user_email.config_value }}{% endif %}' # noqa 204
+  tags:
+    - etc-git
+    - commit
+
+- name: "{{ git_folder }} modifications are committed"
+  shell: "git add -A . && git commit -m \"{{ commit_message | mandatory }}\" --author \"{{ commit_author | mandatory }} <{{ commit_email | mandatory }}>\""
+  args:
+    chdir: "{{ git_folder }}"
+  register: commit_end_run
+  when:
+    - not ansible_check_mode
+    - git_status.stdout
+  ignore_errors: yes
+  tags:
+    - etc-git
+    - commit
+
+- debug:
+    var: commit_end_run
+    verbosity: 4
+  tags:
+    - etc-git
+    - commit

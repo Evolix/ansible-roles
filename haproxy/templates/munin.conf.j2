@@ -1,2 +1,4 @@
 [haproxy_*]
-env.url {{ haproxy_stats_internal_url }};csv;norefresh
+{% if haproxy_stats_internal_enable %}
+env.url http://{{ haproxy_stats_internal_host }}:{{ haproxy_stats_internal_port }}/;csv;norefresh
+{% endif %}
