@@ -4,7 +4,6 @@
   apt:
     name:
       - apache2
-      - libapache2-mpm-itk
       - libapache2-mod-evasive
       - apachetop
       - libwww-perl
@@ -13,6 +12,18 @@
     - apache
     - packages
   when: ansible_distribution_major_version is version('9', '>=')
+
+- name: itk package is installed if required (Debian 9 or later)
+  apt:
+    name:
+      - libapache2-mpm-itk
+    state: present
+  tags:
+    - apache
+    - packages
+  when: 
+    - ansible_distribution_major_version is version('9', '>=')
+    - apache_mpm == "itk" 
 
 - name: packages are installed (jessie)
   apt:
@@ -35,7 +46,6 @@
     - rewrite
     - expires
     - headers
-    - cgi
     - ssl
     - include
     - negotiation
@@ -43,6 +53,18 @@
   notify: reload apache
   tags:
     - apache
+
+- name: basic modules are enabled
+  apache2_module:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - cgi
+  notify: reload apache
+  when: apache_mpm == "prefork" or apache_mpm == "itk"
+  tags:
+    - apache
+
 
 - name: Copy Apache defaults config file
   copy:

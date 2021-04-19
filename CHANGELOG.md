@@ -12,6 +12,8 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+* apache: new variable for mpm mode (+ updated default config accordingly)
+
 ### Changed
 
 ### Fixed
