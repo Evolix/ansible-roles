@@ -2,6 +2,11 @@
 
 driftfile /var/lib/ntp/ntp.drift
 
+{% if ansible_distribution_major_version is version('10', '>=') %}
+# Leap seconds definition provided by tzdata
+leapfile /usr/share/zoneinfo/leap-seconds.list
+{% endif %}
+
 # Enable this if you want statistics to be logged.
 #statsdir /var/log/ntpstats/
 

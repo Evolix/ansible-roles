@@ -16,6 +16,8 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 
+* ntpd: Add leapfile configuration setting to ntpd on debian 10+
+
 ### Fixed
 
 ### Removed
