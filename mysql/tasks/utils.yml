@@ -169,6 +169,7 @@
     src: my-add.sh
     dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/my-add.sh"
     mode: "0700"
+    force: "{{ mysql_force_myadd_script }}"
   tags:
     - mysql
 

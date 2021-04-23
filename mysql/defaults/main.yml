@@ -41,6 +41,8 @@ mysql_cron_mysqltuner_frequency: monthly
 
 mysql_force_new_nrpe_password: False
 
+mysql_force_myadd_script: True
+
 mysql_evolinux_defaults_file: z-evolinux-defaults.cnf
 mysql_evolinux_custom_file: zzz-evolinux-custom.cnf
 
