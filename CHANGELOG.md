@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 * apache: new variable for mpm mode (+ updated default config accordingly)
+* evolinux-base: add default motd template
 
 ### Changed
 
