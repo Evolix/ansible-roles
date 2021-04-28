@@ -14,6 +14,7 @@ The **patch** part changes incrementally at each release.
 
 * apache: new variable for mpm mode (+ updated default config accordingly)
 * evolinux-base: add default motd template
+* kvm-host: add migrate-vm script
 * mysql: variable to disable myadd script overwrite (default: True)
 
 ### Changed

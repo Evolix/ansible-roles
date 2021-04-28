@@ -1,0 +1,13 @@
+---
+
+- include_role:
+    name: remount-usr
+
+- name: migrate-vm scripts is present
+  copy:
+    src: migrate-vm.sh
+    dest: /usr/share/scripts/migrate-vm
+    mode: "0755"
+    owner: root
+    group: root
+    force: yes
