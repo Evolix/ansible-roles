@@ -11,7 +11,7 @@
 # * migrate "from"
 # * switch to Bash to use local and readonly variables
 
-VERSION="21.04"
+VERSION="21.04.1"
 
 show_version() {
     cat <<END
@@ -66,7 +66,8 @@ drbd_config_file() {
 }
 
 is_drbd_resource() {
-    test -f "$(drbd_config_file "${1:-}")"
+    resource=${1:-}
+    test -f "$(drbd_config_file "${resource}")" && drbdadm role "${resource}" >/dev/null 2>&1
 }
 
 drbd_peers() {
