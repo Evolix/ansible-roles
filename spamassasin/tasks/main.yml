@@ -3,7 +3,6 @@
   apt:
     name:
       - spamassassin
-      - evomaintenance
     state: present
   tags:
     - spamassassin
@@ -46,6 +45,17 @@
     name: evolix/remount-usr
   tags:
     - spamassassin
+
+- name: Check evomaintenance config
+  stat:
+    path: /etc/evomaintenance.cf
+  register: _evomaintenance_config
+
+- name: Verify sa-update dependency
+  assert:
+    that:
+      - _evomaintenance_config.stat.exists
+    msg: sa-update.sh needs /etc/evomaintenance.cf
 
 - name: copy sa-update.sh script
   copy:
