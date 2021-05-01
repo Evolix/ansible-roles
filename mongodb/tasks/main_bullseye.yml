@@ -6,6 +6,7 @@
     src: server-4.4.gpg
     dest: /usr/share/keyrings/mongodb-server-4.4.gpg
     force: yes
+    mode: "0644"
 
 - name: enable APT sources list
   apt_repository:
