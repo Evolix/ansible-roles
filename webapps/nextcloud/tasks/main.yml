@@ -16,7 +16,24 @@
     - php-apcu
     - php-redis
     - php-bcmath
-    - python-mysqldb
+  tags:
+    - nextcloud
+
+# dependency for mysql_user and mysql_db
+- name: python-mysqldb is installed (Ansible dependency)
+  apt:
+    name: python-mysqldb
+    state: present
+  when: ansible_distribution_major_version is version('10', '<=')
+  tags:
+    - nextcloud
+
+# dependency for mysql_user and mysql_db
+- name: python3-mysqldb is installed (Ansible dependency)
+  apt:
+    name: python3-mysqldb
+    state: present
+  when: ansible_distribution_major_version is version('10', '>')
   tags:
     - nextcloud
 

@@ -19,6 +19,7 @@ The **patch** part changes incrementally at each release.
 ### Changed
 
 * listupgrade: upstream release 21.06.3
+* mysql: use python3 with Debian 11 and later
 
 ### Fixed
 
