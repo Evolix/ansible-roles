@@ -5,7 +5,18 @@
       - lxc
       - debootstrap
       - xz-utils
-      - python-lxc
+
+- name: python-lxc is installed
+  apt:
+    name: python-lxc
+    state: present
+  when: ansible_distribution_major_version is version('10', '<=')
+
+- name: python3-lxc is installed
+  apt:
+    name: python3-lxc
+    state: present
+  when: ansible_distribution_major_version is version('10', '>')
 
 - name: Install additional packages on Buster
   apt:

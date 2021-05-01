@@ -31,7 +31,7 @@
 
 - name: install dependency for monitoring
   apt:
-    name: python-pymongo
+    name: python3-pymongo
     state: present
 
 - name: Custom configuration

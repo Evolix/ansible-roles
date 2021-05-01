@@ -23,6 +23,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 
+* Use python3 modules for Debian 11 and later
 * elasticsearch: 7.x by default
 * evolinux-base: copy GPG key instead of using apt-key
 * evolinux-base: force Debian version to buster for Evolix repository (temporary)

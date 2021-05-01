@@ -40,8 +40,19 @@
   apt:
     name:
       - docker-ce
-      - python-docker
     update_cache: yes
+
+- name: python-docker is installed
+  apt:
+    name: python-docker
+    state: present
+  when: ansible_distribution_major_version is version('10', '<=')
+
+- name: python3-docker is installed
+  apt:
+    name: python3-docker
+    state: present
+  when: ansible_distribution_major_version is version('10', '>')
 
 - name: Copy Docker daemon configuration file
   template:
