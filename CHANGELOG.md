@@ -18,6 +18,7 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: add default motd template
 * kvm-host: add migrate-vm script
 * listupgrade: crontab is configurable
+* mongodb: create munin plugins directory if missing
 * mysql: variable to disable myadd script overwrite (default: True)
 * redis: instance service for Debian 11
 

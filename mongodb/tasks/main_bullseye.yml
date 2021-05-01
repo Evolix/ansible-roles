@@ -48,6 +48,12 @@
     force: yes
     backup: no
 
+- name: Munin plugins local directory exists
+  file:
+    dest: /usr/local/share/munin/plugins/
+    state: directory
+    mode: "0755"
+
 - name: Munin plugins are present
   copy:
     src: "munin/{{ item }}"
