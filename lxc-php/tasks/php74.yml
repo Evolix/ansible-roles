@@ -13,8 +13,8 @@
     create: yes
     mode: "0644"
   loop:
-    - "deb https://packages.sury.org/php/ buster main"
-    - "deb http://pub.evolix.net/ buster-php74/"
+    - "deb https://packages.sury.org/php/ bullseye main"
+    - "deb http://pub.evolix.net/ bullseye-php74/"
 
 - name: copy pub.evolix.net GPG key
   copy:

@@ -19,6 +19,7 @@
     - /etc/apt/sources.list.d/debian-jessie.list
     - /etc/apt/sources.list.d/debian-stretch.list
     - /etc/apt/sources.list.d/debian-buster.list
+    - /etc/apt/sources.list.d/debian-bullseye.list
     - /etc/apt/sources.list.d/debian-update.list
   when: apt_clean_gandi_sourceslist | bool
   tags:

@@ -153,7 +153,7 @@
 
 
 
-- name: Install alert5 init script (buster)
+- name: Install alert5 init script (buster and later)
   template:
     src: system/alert5.sh.j2
     dest: /usr/share/scripts/alert5.sh
@@ -163,7 +163,7 @@
     - evolinux_system_alert5_init | bool
     - ansible_distribution_major_version is version('10', '>=')
 
-- name: Install alert5 service (buster)
+- name: Install alert5 service (buster and later)
   copy:
     src: alert5.service
     dest: /etc/systemd/system/alert5.service
@@ -173,7 +173,7 @@
     - evolinux_system_alert5_init | bool
     - ansible_distribution_major_version is version('10', '>=')
 
-- name: Enable alert5 init script (buster)
+- name: Enable alert5 init script (buster and later)
   systemd:
     name: alert5
     daemon_reload: yes

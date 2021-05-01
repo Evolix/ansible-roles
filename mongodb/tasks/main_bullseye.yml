@@ -1,0 +1,80 @@
+---
+
+# https://wiki.debian.org/DebianRepository/UseThirdParty
+- name: Add MongoDB GPG key for version 4.4
+  copy:
+    src: server-4.4.gpg
+    dest: /usr/share/keyrings/mongodb-server-4.4.gpg
+    force: yes
+
+- name: enable APT sources list
+  apt_repository:
+    repo: deb [signed-by=/usr/share/keyrings/mongodb-server-4.4.gpg] http://repo.mongodb.org/apt/debian buster/mongodb-org/4.4 main
+    state: present
+    filename: mongodb-org-4.4
+    update_cache: yes
+
+- name: Install packages
+  apt:
+    name: mongodb-org
+    update_cache: yes
+    state: present
+  register: _mongodb_install_package
+
+- name: MongoDB service in enabled and started
+  systemd:
+    name: mongod
+    enabled: yes
+    state: started
+  when: _mongodb_install_package.changed
+
+- name: install dependency for monitoring
+  apt:
+    name: python-pymongo
+    state: present
+
+- name: Custom configuration
+  template:
+    src: mongodb_bullseye.conf.j2
+    dest: "/etc/mongod.conf"
+    force: "{{ mongodb_force_config | bool | ternary('yes', 'no') }}"
+  notify: restart mongod
+
+- name: Configure logrotate
+  template:
+    src: logrotate_bullseye.j2
+    dest: /etc/logrotate.d/mongodb
+    force: yes
+    backup: no
+
+- name: Munin plugins are present
+  copy:
+    src: "munin/{{ item }}"
+    dest: '/usr/local/share/munin/plugins/{{ item }}'
+    force: yes
+  with_items:
+    - mongo_btree
+    - mongo_collections
+    - mongo_conn
+    - mongo_docs
+    - mongo_lock
+    - mongo_mem
+    - mongo_ops
+    - mongo_page_faults
+  notify: restart munin-node
+
+- name: Enable core Munin plugins
+  file:
+    src: '/usr/local/share/munin/plugins/{{ item }}'
+    dest: /etc/munin/plugins/{{ item }}
+    state: link
+  with_items:
+    - mongo_btree
+    - mongo_collections
+    - mongo_conn
+    - mongo_docs
+    - mongo_lock
+    - mongo_mem
+    - mongo_ops
+    - mongo_page_faults
+  notify: restart munin-node

@@ -12,6 +12,7 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+* Preliminary support for Debian 11 « Bullseye »
 * certbot: add script for manual deploy hooks execution
 * listupgrade: crontab is configurable
 
