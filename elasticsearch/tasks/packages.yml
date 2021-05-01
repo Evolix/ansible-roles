@@ -31,7 +31,7 @@
 
 - name: Elastic sources list is available
   apt_repository:
-    repo: "deb https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
+    repo: "deb [signed-by=/usr/share/keyrings/elastic.gpg] https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
     filename: elastic
     state: present
     update_cache: yes
@@ -52,4 +52,4 @@
     name: elasticsearch
     enabled: yes
   tags:
-  - elasticsearch
+    - elasticsearch
