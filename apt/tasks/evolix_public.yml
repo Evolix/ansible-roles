@@ -7,11 +7,10 @@
 #   tags:
 #   - apt
 
-
 - name: Add Evolix GPG key
-  apt_key:
-    #url: http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x44975278B8612B5D
-    data: "{{ lookup('file', 'reg.gpg') }}"
+  copy:
+    src: reg.gpg
+    dest: /etc/apt/trusted.gpg.d/reg.gpg
   tags:
     - apt
 
