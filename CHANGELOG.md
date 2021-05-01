@@ -13,8 +13,13 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 * Preliminary support for Debian 11 « Bullseye »
+* apache: new variable for mpm mode (+ updated default config accordingly)
 * certbot: add script for manual deploy hooks execution
+* evolinux-base: add default motd template
+* kvm-host: add migrate-vm script
 * listupgrade: crontab is configurable
+* mysql: variable to disable myadd script overwrite (default: True)
+* redis: instance service for Debian 11
 
 ### Changed
 
