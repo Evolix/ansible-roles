@@ -33,6 +33,7 @@ The **patch** part changes incrementally at each release.
 * mysql: mariadb-client-10.5 on Debian 11
 * mysql: use python3 with Debian 11 and later
 * ntpd: Add leapfile configuration setting to ntpd on debian 10+
+* spamassassin: change dependency on evomaintenance
 * squid: remove obsolete variable on Squid 4
 
 ### Fixed
