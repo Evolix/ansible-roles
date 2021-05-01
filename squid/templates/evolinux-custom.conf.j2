@@ -1,4 +1,4 @@
 http_port 8888 transparent
 cache deny all
-ignore_expect_100 on
+{% if ansible_facts.packages[squid_daemon_name][0]['version'] is version (4, '<') %}ignore_expect_100 on{% endif %}
 tcp_outgoing_address {{ squid_address }}

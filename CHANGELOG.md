@@ -22,6 +22,8 @@ The **patch** part changes incrementally at each release.
 * listupgrade: upstream release 21.06.3
 * mysql: mariadb-client-10.5 on Debian 11
 * mysql: use python3 with Debian 11 and later
+* ntpd: Add leapfile configuration setting to ntpd on debian 10+
+* squid: remove obsolete variable on Squid 4
 
 ### Fixed
 
