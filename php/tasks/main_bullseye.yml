@@ -28,7 +28,6 @@
       # php-mcrypt is no longer packaged for PHP 7.2
       - php-pgsql
       - php-sqlite3
-      - php-gettext
       - php-curl
       - php-ssh2
       - php-zip

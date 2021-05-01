@@ -26,6 +26,8 @@ The **patch** part changes incrementally at each release.
 
 ### Removed
 
+* php: remove php-gettext for 7.4
+
 ### Security
 
 ## [10.6.0] 2021-06-28
