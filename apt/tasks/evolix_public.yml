@@ -6,6 +6,7 @@
     src: reg.gpg
     dest: /usr/share/keyrings/reg.gpg
     force: yes
+    mode: "0644"
   tags:
     - apt
 
