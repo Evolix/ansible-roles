@@ -26,6 +26,8 @@ The **patch** part changes incrementally at each release.
 
 ### Fixed
 
+* ldap: fix edge cases where passwords were not set/get properly
+
 ### Removed
 
 ### Security

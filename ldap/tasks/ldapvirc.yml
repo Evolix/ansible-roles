@@ -1,0 +1,62 @@
+---
+
+- name: "Is /root/.ldapvirc present ?"
+  stat:
+    path: /root/.ldapvirc
+  check_mode: no
+  register: root_ldapvirc_path
+
+- name: Warning when ldapvirc file is present and ldap_admin_password is given
+  debug:
+    msg: "WARNING: an LDAP admin password is given, but an ldapvirc file already exists. It will not be updated."
+  when: 
+    - ldap_admin_password != ""
+    - root_ldapvirc_path.stat.exists
+
+# Generate ldap password if none is given and ldapvirc is absent
+- name: apg package is installed
+  apt:
+    name: apg
+    state: present
+  when: not root_ldapvirc_path.stat.exists
+
+- name: create a password for cn=admin
+  command: "apg -n 1 -m 16 -M lcN"
+  register: new_ldap_admin_password
+  changed_when: False
+  when:
+    - ldap_admin_password == ""
+    - not root_ldapvirc_path.stat.exists
+
+# Use the generated password or the one found in the file 
+- name: overwrite ldap_admin_password
+  set_fact:
+    ldap_admin_password: "{{ new_ldap_admin_password.stdout }}"
+  when:
+    - ldap_admin_password == ""
+    - not root_ldapvirc_path.stat.exists
+
+- name: hash password for cn=admin
+  command: "slappasswd -s {{ ldap_admin_password }}"
+  register: ldap_admin_password_ssha
+  changed_when: False
+  when: not root_ldapvirc_path.stat.exists
+
+- name: create ldapvirc config
+  template:
+    src: ldapvirc.j2
+    dest: /root/.ldapvirc
+    mode: "0640"
+  when: not root_ldapvirc_path.stat.exists
+
+# Read ldap password when none is given and ldapvirc is present
+- name: read ldap admin password from ldapvirc file
+  shell: "grep -E '^password: .+$' /root/.ldapvirc | awk '{print $2}'"
+  changed_when: False
+  check_mode: no
+  register: new_ldap_admin_password
+
+# Use the password found in the file 
+- name: overwrite ldap_admin_password
+  set_fact:
+    ldap_admin_password: "{{ new_ldap_admin_password.stdout }}"

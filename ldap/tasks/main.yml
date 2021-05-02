@@ -6,103 +6,21 @@
       - ldapvi
       - shelldap
     state: present
+    update_cache: yes
 
-- name: change sldap listen ip:port
+- name: change slapd listen ip:port
   lineinfile:
     dest: /etc/default/slapd
     regexp: 'SLAPD_SERVICES=.*'
     line: "SLAPD_SERVICES=\"{{ ldap_listen }}\""
   notify: restart slapd
 
-- name: "Is /root/.ldapvirc present ?"
-  stat:
-    path: /root/.ldapvirc
-  check_mode: no
-  register: root_ldapvirc_path
+- name: ldapvirc file
+  include: ldapvirc.yml
 
-- name: apg package is installed
-  apt:
-    name: apg
-    state: present
+- name: nagios config file for LDAP
+  include: nagios.yml
+
+- name: initialize database
+  include: init.yml
   when: not root_ldapvirc_path.stat.exists
-
-- name: create a password for cn=admin
-  command: "apg -n 1 -m 16 -M lcN"
-  register: ldap_admin_password
-  changed_when: False
-  when: not root_ldapvirc_path.stat.exists
-
-- name: create a password for cn=nagios
-  command: "apg -n 1 -m 16 -M lcN"
-  register: ldap_nagios_password
-  changed_when: False
-  when: not root_ldapvirc_path.stat.exists
-
-- name: hash password for cn=admin
-  command: "slappasswd -s {{ ldap_admin_password.stdout }}"
-  register: ldap_admin_password_ssha
-  changed_when: False
-  when: not root_ldapvirc_path.stat.exists
-
-- name: hash password for cn=nagios
-  command: "slappasswd -s {{ ldap_nagios_password.stdout }}"
-  register: ldap_nagios_password_ssha
-  changed_when: False
-  when: not root_ldapvirc_path.stat.exists
-
-- name: create ldapvirc config
-  template:
-    src: ldapvirc.j2
-    dest: /root/.ldapvirc
-    mode: "0640"
-  when: not root_ldapvirc_path.stat.exists
-
-- name: set params for NRPE check
-  ini_file:
-    dest: /etc/nagios/monitoring-plugins.ini
-    owner: root
-    group: nagios
-    section: check_ldap
-    option: "{{ item.option }}"
-    value: "{{ item.value }}"
-    mode: 0640
-  with_items:
-    - { option: 'hostname', value: '127.0.0.1' }
-    - { option: 'base', value: "{{ ldap_suffix }}" }
-    - { option: 'bind', value: "cn=nagios,ou=ldapusers,{{ ldap_suffix }}" }
-    - { option: 'pass', value: "{{ ldap_nagios_password.stdout }}" }
-
-- name: upload ldap initial config
-  template:
-    src: config_ldapvi.j2
-    dest: /root/evolinux_ldap_config.ldapvi
-    mode: "0640"
-  when: not root_ldapvirc_path.stat.exists
-
-- name: upload ldap initial entries
-  template:
-    src: first-entries.ldif.j2
-    dest: /root/evolinux_ldap_first-entries.ldif
-    mode: "0640"
-  when: not root_ldapvirc_path.stat.exists
-
-- name: inject config
-  command: ldapvi -Y EXTERNAL -h ldapi:// --ldapmodify /root/evolinux_ldap_config.ldapvi
-  environment:
-    TERM: xterm
-  when: not root_ldapvirc_path.stat.exists
-
-- name: inject first entries
-  command: slapadd -l /root/evolinux_ldap_first-entries.ldif
-  when: not root_ldapvirc_path.stat.exists
-
-- name: upload custom schema
-  copy:
-    src: "{{ ldap_schema }}"
-    dest: "/root/{{ ldap_schema }}"
-    mode: "0640"
-  when: not root_ldapvirc_path.stat.exists and ldap_schema is defined
-
-- name: inject custom schema
-  command: "ldapadd -Y EXTERNAL -H ldapi:/// -f /root/{{ ldap_schema }}"
-  when: not root_ldapvirc_path.stat.exists and ldap_schema is defined
