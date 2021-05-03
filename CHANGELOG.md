@@ -21,6 +21,7 @@ The **patch** part changes incrementally at each release.
 
 * evolinux-base: copy GPG key instead of using apt-key
 * ntpd: Add leapfile configuration setting to ntpd on debian 10+
+* certbot: sync_remote.sh is configurable
 * spamassassin: change dependency on evomaintenance
 * squid: remove obsolete variable on Squid 4
 
