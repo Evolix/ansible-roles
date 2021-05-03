@@ -34,7 +34,7 @@ main() {
         for server in ${servers}; do
             remote_host="root@${server}"
             # shellcheck disable=SC2029
-            ssh "${remote_host}" "mkdir -p ${remote_dir}" \
+            ssh "${remote_host}" "mkdir -p ${remote_lineage}" \
                 || error "Couldn't create ${remote_dir} directory ${server}"
 
             rsync --archive --copy-links --delete "${RENEWED_LINEAGE}/" "${remote_host}:${remote_lineage}/" \
