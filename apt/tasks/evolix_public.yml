@@ -3,8 +3,8 @@
 # https://wiki.debian.org/DebianRepository/UseThirdParty
 - name: Add Evolix GPG key
   copy:
-    src: reg.gpg
-    dest: /usr/share/keyrings/reg.gpg
+    src: reg.asc
+    dest: /etc/apt/trusted.gpg.d/reg.asc
     force: yes
     mode: "0644"
   tags:
