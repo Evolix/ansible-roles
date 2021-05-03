@@ -32,7 +32,7 @@
 - name: "sync_remote is configured with servers"
   lineinfile:
     dest: /etc/letsencrypt/renewal-hooks/deploy/sync_remote.cf
-    regexp: "^servers\b"
+    regexp: "^servers="
     line: "servers=\"{{ certbot_hooks_sync_remote_servers | join(' ') }}\""
     create: yes
 
