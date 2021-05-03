@@ -8,11 +8,20 @@
   - elasticsearch
   - packages
 
-- name: Elastic GPG key is installed
+- name: Elastic GPG embedded key is absent
   apt_key:
-    # url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    data: "{{ lookup('file', 'elasticsearch.key') }}"
-    state: present
+    id: "D88E42B4"
+    state: absent
+  tags:
+  - elasticsearch
+  - packages
+
+- name: Elastic GPG key is installed
+  copy:
+    src: elastic.asc
+    dest: /etc/apt/trusted.gpg.d/elastic.asc
+    force: yes
+    mode: "0644"
   tags:
   - elasticsearch
   - packages

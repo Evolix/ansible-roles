@@ -1,6 +1,12 @@
 ---
 
-# https://wiki.debian.org/DebianRepository/UseThirdParty
+- name: Evolix GPG embedded key is absent
+  apt_key:
+    id: "B8612B5D"
+    state: absent
+  tags:
+    - apt
+
 - name: Add Evolix GPG key
   copy:
     src: reg.asc

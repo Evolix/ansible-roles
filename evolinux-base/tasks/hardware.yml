@@ -37,10 +37,17 @@
 
 - name: HPE Smart Storage Administrator (ssacli) is present
   block:
-    - name: Add HPE GPG key
+    - name: HPE GPG is absent in embedded database
       apt_key:
-        #url: https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key1.pub
-        data: "{{ lookup('file', 'hpePublicKey2048_key1.pub') }}"
+        id: "26C2B797"
+        state: absent
+
+    - name: HPE GPG key is installed
+      copy:
+        src: hpePublicKey2048_key1.asc
+        dest: /etc/apt/trusted.gpg.d/hpePublicKey2048_key1.asc
+        force: yes
+        mode: "0644"
 
     - name: Add HPE repository
       apt_repository:
@@ -93,10 +100,18 @@
 
 - name: MegaRAID SAS package is present
   block:
-    - name: Add HW tool GPG key
+    - name: HWRaid GPG embedded key is absent
       apt_key:
-        # url: https://hwraid.le-vert.net/debian/hwraid.le-vert.net.gpg.key
-        data: "{{ lookup('file', 'hwraid.le-vert.net.gpg.key') }}"
+        id: "23B3D3B4"
+        state: absent
+      when: ansible_distribution_major_version is version('9', '>=')
+
+    - name: HWRaid GPG key is installed
+      copy:
+        src: hwraid.le-vert.net.asc
+        dest: /etc/apt/trusted.gpg.d/hwraid.le-vert.net.asc
+        force: yes
+        mode: "0644"
       when: ansible_distribution_major_version is version('9', '>=')
 
     - name: Add HW tool repository

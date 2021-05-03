@@ -28,9 +28,11 @@
   when: ansible_distribution_release == 'jessie'
 
 - name: Add Docker's official GPG key
-  apt_key:
-    #url: https://download.docker.com/linux/debian/gpg
-    data: "{{ lookup('file', 'docker-debian.gpg') }}"
+  copy:
+    src: docker-debian.asc
+    dest: /etc/apt/trusted.gpg.d/docker-debian.asc
+    force: yes
+    mode: "0644"
 
 - name: Install docker and python-docker
   apt:

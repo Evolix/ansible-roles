@@ -1,9 +1,16 @@
 ---
 
-- name: MongoDB public GPG Key
+- name: MongoDB GPG embedded key is absent
   apt_key:
-    # url: https://www.mongodb.org/static/pgp/server-4.2.asc
-    data: "{{ lookup('file', 'server-4.2.asc') }}"
+    id: "B8612B5D"
+    state: absent
+
+- name: Add MongoDB GPG key
+  copy:
+    src: server-4.2.asc
+    dest: /etc/apt/trusted.gpg.d/mongodb-server-4.2.asc
+    force: yes
+    mode: "0644"
 
 - name: enable APT sources list
   apt_repository:

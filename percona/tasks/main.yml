@@ -3,9 +3,17 @@
 - set_fact:
     percona__apt_config_package_file: "percona-release_latest.{{ ansible_distribution_release }}_all.deb"
 
-- name: Add Percona's official GPG key
+- name: Percona GPG embedded key is absent
   apt_key:
-    data: "{{ lookup('file', 'percona.asc') }}"
+    id: "8507EFA5"
+    state: absent
+
+- name: Add Percona GPG key
+  copy:
+    src: percona.asc
+    dest: /etc/apt/trusted.gpg.d/percona.asc
+    force: yes
+    mode: "0644"
 
 - name: Check if percona-release is installed
   command: "dpkg -l percona-release"

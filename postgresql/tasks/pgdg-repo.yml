@@ -13,10 +13,17 @@
     repo: "deb http://apt.postgresql.org/pub/repos/apt/ {{ansible_distribution_release}}-pgdg main"
     update_cache: yes
 
-- name: Add GPG key for PGDG repository
+- name: PGDG GPG embedded key is absent
   apt_key:
-    #url: http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc
-    data: "{{ lookup('file', 'ACCC4CF8.asc') }}"
+    id: "ACCC4CF8"
+    state: absent
+
+- name: Add PGDG GPG key
+  copy:
+    src: pgdg.asc
+    dest: /etc/apt/trusted.gpg.d/pgdg.asc
+    force: yes
+    mode: "0644"
 
 - name: Update and upgrade apt packages for PGDG repository
   apt:

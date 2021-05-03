@@ -1,9 +1,16 @@
 ---
 
-- name: Add dotdeb GPG key
+- name: NewRelic GPG embedded key is absent
   apt_key:
-    # url: https://download.newrelic.com/548C16BF.gpg
-    data: "{{ lookup('file', '548C16BF.gpg') }}"
+    id: "548C16BF"
+    state: absent
+
+- name: Add NewRelic GPG key
+  copy:
+    src: newrelic.asc
+    dest: /etc/apt/trusted.gpg.d/newrelic.asc
+    force: yes
+    mode: "0644"
 
 - name: Install NewRelic repository
   apt_repository:

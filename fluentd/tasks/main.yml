@@ -1,9 +1,19 @@
 ---
 
-- name: Fluentd GPG key is installed
+- name: Fluentd GPG embedded key is absent
   apt_key:
-    # url: https://packages.treasuredata.com/GPG-KEY-td-agent
-    data: "{{ lookup('file', 'fluentd.gpg') }}"
+    id: "AB97ACBE"
+    state: absent
+  tags:
+    - packages
+    - fluentd
+
+- name: Add Fluentd GPG key
+  copy:
+    src: fluentd.asc
+    dest: /etc/apt/trusted.gpg.d/fluentd.asc
+    force: yes
+    mode: "0644"
   tags:
     - packages
     - fluentd
