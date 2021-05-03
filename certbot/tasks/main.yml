@@ -29,6 +29,13 @@
     owner: root
     group: root
 
+- name: "sync_remote is configured with servers"
+  lineinfile:
+    dest: /etc/letsencrypt/renewal-hooks/deploy/sync_remote.cf
+    regexp: "^servers\b"
+    line: "servers=\"{{ certbot_hooks_sync_remote_servers | join(' ') }}\""
+    create: yes
+
 - name: Move commit-etc.sh to z-commit-etc.sh if present
   command: "mv /etc/letsencrypt/renewal-hooks/deploy/commit-etc.sh /etc/letsencrypt/renewal-hooks/deploy/z-commit-etc.sh"
   args:

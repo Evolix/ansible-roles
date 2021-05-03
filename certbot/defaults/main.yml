@@ -2,3 +2,5 @@
 
 certbot_work_dir: /var/lib/letsencrypt
 certbot_custom_crontab: True
+
+certbot_hooks_sync_remote_servers: []
