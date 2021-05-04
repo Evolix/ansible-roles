@@ -25,6 +25,8 @@ The **patch** part changes incrementally at each release.
 ### Changed
 
 * Use python3 modules for Debian 11 and later
+* apt: store keys in /etc/apt/trusted.gpg.d in ascii format
+* certbot: sync_remote.sh is configurable
 * elasticsearch: 7.x by default
 * evolinux-base: copy GPG key instead of using apt-key
 * evolinux-base: force Debian version to buster for Evolix repository (temporary)
@@ -33,6 +35,7 @@ The **patch** part changes incrementally at each release.
 * mysql: mariadb-client-10.5 on Debian 11
 * mysql: use python3 with Debian 11 and later
 * ntpd: Add leapfile configuration setting to ntpd on debian 10+
+* packweb-apache: install phpMyAdmin from buster-backports
 * spamassassin: change dependency on evomaintenance
 * squid: remove obsolete variable on Squid 4
 
