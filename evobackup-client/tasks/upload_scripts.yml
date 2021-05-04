@@ -6,11 +6,13 @@
     dest: "{{ evobackup_client__cron_path }}"
     force: true
     mode: 0755
-  with_first_found:
-    - "templates/evobackup-client/{{ evobackup_client__cron_template_name }}.{{ inventory_hostname }}.sh.j2"
-    - "templates/evobackup-client/{{ evobackup_client__cron_template_name }}.{{ host_group }}.sh.j2"
-    - "templates/evobackup-client/{{ evobackup_client__cron_template_name }}.sh.j2"
-    - "zzz_evobackup.default.sh.j2"
+  loop: "{{ query('first_found', templates) }}"
+  vars:
+    templates:
+      - "templates/evobackup-client/{{ evobackup_client__cron_template_name }}.{{ inventory_hostname }}.sh.j2"
+      - "templates/evobackup-client/{{ evobackup_client__cron_template_name }}.{{ host_group }}.sh.j2"
+      - "templates/evobackup-client/{{ evobackup_client__cron_template_name }}.sh.j2"
+      - "templates/zzz_evobackup.default.sh.j2"
   tags:
     - evobackup_client
     - evobackup_client_backup_scripts

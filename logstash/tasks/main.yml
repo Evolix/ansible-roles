@@ -72,11 +72,13 @@
     group: logstash
     mode: "0640"
     force: yes
-  with_first_found:
-  - "templates/logstash/logstash.{{ inventory_hostname }}.conf.j2"
-  - "templates/logstash/logstash.{{ host_group }}.conf.j2"
-  - "templates/logstash/logstash.default.conf.j2"
-  - "logstash.default.conf.j2"
+  loop: "{{ query('first_found', templates) }}"
+  vars:
+    templates:
+      - "templates/logstash/logstash.{{ inventory_hostname }}.conf.j2"
+      - "templates/logstash/logstash.{{ host_group }}.conf.j2"
+      - "templates/logstash/logstash.default.conf.j2"
+      - "templates/logstash.default.conf.j2"
   register: logstash_template
 
 - debug:

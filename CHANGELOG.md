@@ -19,6 +19,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 
+* Use 'loop' syntax instead of 'with_first_found'
 * apt: store keys in /etc/apt/trusted.gpg.d in ascii format
 * evolinux-base: copy GPG key instead of using apt-key
 * ntpd: Add leapfile configuration setting to ntpd on debian 10+

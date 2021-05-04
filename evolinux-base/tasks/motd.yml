@@ -7,11 +7,11 @@
     owner: root
     group: root
     mode: "0644"
-  with_first_found:
-    - files:
+  loop: "{{ query('first_found', templates, errors='ignore') }}"
+  vars:
+    templates:
       - "motd/motd.{{ inventory_hostname }}.j2"
       - "motd/motd.{{ host_group }}.j2"
       - "motd/motd.default.j2"
-      skip: True
   tags:
     - motd

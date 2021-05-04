@@ -145,11 +145,13 @@
       src: "{{ item }}"
       dest: /etc/filebeat/filebeat.yml
       force: "{{ filebeat_force_config }}"
-    with_first_found:
+  loop: "{{ query('first_found', templates) }}"
+  vars:
+    templates:
       - "templates/filebeat/filebeat.{{ inventory_hostname }}.yml.j2"
       - "templates/filebeat/filebeat.{{ host_group }}.yml.j2"
       - "templates/filebeat/filebeat.default.yml.j2"
-      - "filebeat.default.yml.j2"
+      - "templates/filebeat.default.yml.j2"
     notify: restart filebeat
     when: filebeat_update_config
   when: filebeat_use_config_template

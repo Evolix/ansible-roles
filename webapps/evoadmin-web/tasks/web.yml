@@ -32,11 +32,13 @@
     src: "{{ item }}"
     dest: /etc/apache2/sites-available/evoadmin.conf
     force: "{{ evoadmin_force_vhost }}"
-  with_first_found:
-    - "templates/evoadmin-web/evoadmin.{{ inventory_hostname }}.conf.j2"
-    - "templates/evoadmin-web/evoadmin.{{ host_group }}.conf.j2"
-    - "templates/evoadmin-web/evoadmin.conf.j2"
-    - "evoadmin.conf.j2"
+  loop: "{{ query('first_found', templates) }}"
+  vars:
+    templates:
+      - "templates/evoadmin-web/evoadmin.{{ inventory_hostname }}.conf.j2"
+      - "templates/evoadmin-web/evoadmin.{{ host_group }}.conf.j2"
+      - "templates/evoadmin-web/evoadmin.conf.j2"
+      - "templates/evoadmin.conf.j2"
   register: evoadmin_vhost_template
   notify: reload apache2
 
@@ -62,11 +64,13 @@
     owner: root
     group: www-data
     force: "{{ evoadmin_htpasswd_force }}"
-  with_first_found:
-    - "templates/evoadmin-web/htpasswd.{{ inventory_hostname }}.j2"
-    - "templates/evoadmin-web/htpasswd.{{ host_group }}.j2"
-    - "templates/evoadmin-web/htpasswd.j2"
-    - "htpasswd.j2"
+  loop: "{{ query('first_found', templates) }}"
+  vars:
+    templates:
+      - "templates/evoadmin-web/htpasswd.{{ inventory_hostname }}.j2"
+      - "templates/evoadmin-web/htpasswd.{{ host_group }}.j2"
+      - "templates/evoadmin-web/htpasswd.j2"
+      - "templates/htpasswd.j2"
   register: evoadmin_htpasswd_template
   when: evoadmin_htpasswd
 
@@ -78,9 +82,11 @@
     owner: evoadmin
     group: evoadmin
     force: "{{ evoadmin_config_local_php_force }}"
-  with_first_found:
-    - "templates/evoadmin-web/config.local.{{ inventory_hostname }}.php.j2"
-    - "templates/evoadmin-web/config.local.{{ host_group }}.php.j2"
-    - "templates/evoadmin-web/config.local.php.j2"
-    - "config.local.php.j2"
+  loop: "{{ query('first_found', templates) }}"
+  vars:
+    templates:
+      - "templates/evoadmin-web/config.local.{{ inventory_hostname }}.php.j2"
+      - "templates/evoadmin-web/config.local.{{ host_group }}.php.j2"
+      - "templates/evoadmin-web/config.local.php.j2"
+      - "templates/config.local.php.j2"
   register: evoadmin_config_local_php_template
