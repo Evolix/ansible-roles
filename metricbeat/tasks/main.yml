@@ -121,13 +121,13 @@
       src: "{{ item }}"
       dest: /etc/metricbeat/metricbeat.yml
       force: "{{ metricbeat_force_config }}"
-  loop: "{{ query('first_found', templates) }}"
-  vars:
-    templates:
-      - "templates/metricbeat/metricbeat.{{ inventory_hostname }}.yml.j2"
-      - "templates/metricbeat/metricbeat.{{ host_group | default('all') }}.yml.j2"
-      - "templates/metricbeat/metricbeat.default.yml.j2"
-      - "templates/metricbeat.default.yml.j2"
-    notify: restart metricbeat
-    when: metricbeat_update_config | bool
+    loop: "{{ query('first_found', templates) }}"
+    vars:
+      templates:
+        - "templates/metricbeat/metricbeat.{{ inventory_hostname }}.yml.j2"
+        - "templates/metricbeat/metricbeat.{{ host_group | default('all') }}.yml.j2"
+        - "templates/metricbeat/metricbeat.default.yml.j2"
+        - "templates/metricbeat.default.yml.j2"
+      notify: restart metricbeat
+      when: metricbeat_update_config | bool
   when: metricbeat_use_config_template | bool
