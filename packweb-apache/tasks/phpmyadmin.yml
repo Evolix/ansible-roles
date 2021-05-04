@@ -16,7 +16,7 @@
     src: phpmyadmin_apt_preferences.j2
     dest: /etc/apt/preferences.d/999-phpmyadmin
     force: yes
-    mode: "0640"
+    mode: "0644"
   when: ansible_distribution_major_version is version('10', '=')
 
 - name: Install phpmyadmin
