@@ -15,14 +15,14 @@
   include: user.yml
   vars:
     user: "{{ item.value }}"
-  with_dict: "{{ evolinux_users }}"
+  loop: "{{ evolinux_users | dict2items }}"
   when: evolinux_users != {}
 
 - name: Configure sudo
   include: sudo.yml
   vars:
     user: "{{ item.value }}"
-  with_dict: "{{ evolinux_users }}"
+  loop: "{{ evolinux_users | dict2items }}"
   when: evolinux_users != {}
 
 - name: Configure SSH

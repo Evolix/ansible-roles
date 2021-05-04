@@ -48,7 +48,7 @@
 - include: ssh_allowusers.yml
   vars:
     user: "{{ item.value }}"
-  with_dict: "{{ evolinux_users }}"
+  loop: "{{ evolinux_users | dict2items }}"
   when:
     - ssh_allowusers
     - not ssh_allowgroups
