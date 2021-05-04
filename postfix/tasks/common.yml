@@ -14,7 +14,7 @@
     line: '{{ item }}'
     state: present
     create: no
-  with_items:
+  loop:
     - "postfix/sa-blacklist.access"
     - "postfix/*.db"
   tags:

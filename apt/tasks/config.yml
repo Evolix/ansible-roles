@@ -8,7 +8,7 @@
     create: yes
     state: present
     mode: "0640"
-  with_items:
+  loop:
     - { line: "APT::Install-Recommends \"false\";", regexp: 'APT::Install-Recommends' }
     - { line: "APT::Install-Suggests \"false\";",   regexp: 'APT::Install-Suggests' }
     - { line: "APT::Periodic::Enable \"0\";",   regexp: 'APT::Periodic::Enable' }
@@ -23,7 +23,7 @@
     create: yes
     state: present
     mode: "0640"
-  with_items:
+  loop:
     - "DPkg::Pre-Invoke { \"df /tmp | grep -q /tmp && mount -oremount,exec /tmp || true\"; };"
     - "DPkg::Pre-Invoke { \"df /usr | grep -q /usr && mount -oremount,rw /usr || true\"; };"
     - "DPkg::Post-Invoke { \"df /tmp | grep -q /tmp && mount -oremount /tmp || true\"; };"

@@ -42,7 +42,7 @@
     section: client
     option: '{{ item.option }}'
     value: '{{ item.value }}'
-  with_items:
+  loop:
     - { option: 'host', value: "{{ redmine_db_host }}" }
     - { option: 'user', value: "{{ redmine_db_username }}" }
     - { option: 'database', value: "{{ redmine_db_name }}" }

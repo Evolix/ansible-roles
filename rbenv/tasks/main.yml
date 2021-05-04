@@ -46,7 +46,7 @@
     owner: '{{ username }}'
     group: '{{ username }}'
     create: yes
-  with_items: '{{ rbenv_default_gems }}'
+  loop: '{{ rbenv_default_gems }}'
   become_user: "{{ username }}"
   become: yes
   tags:
@@ -68,7 +68,7 @@
     version: '{{ item.version }}'
     accept_hostkey: yes
     force: yes
-  with_items:
+  loop:
   - "{{ rbenv_plugins }}"
   become_user: "{{ username }}"
   become: yes

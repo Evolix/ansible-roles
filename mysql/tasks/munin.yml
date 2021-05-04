@@ -22,7 +22,7 @@
       src: '/usr/share/munin/plugins/{{ item }}'
       dest: /etc/munin/plugins/{{ item }}
       state: link
-    with_items:
+    loop:
       - mysql_bytes
       - mysql_queries
       - mysql_slowqueries
@@ -34,7 +34,7 @@
       src: /usr/share/munin/plugins/mysql_
       dest: '/etc/munin/plugins/mysql_{{ item }}'
       state: link
-    with_items:
+    loop:
       - commands
       - connections
       - files_tables

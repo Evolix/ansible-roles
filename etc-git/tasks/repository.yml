@@ -46,7 +46,7 @@
   lineinfile:
     dest: "{{ repository_path }}/.gitignore"
     line: "{{ item }}"
-  with_items: "{{ gitignore_items | default([]) }}"
+  loop: "{{ gitignore_items | default([]) }}"
   tags:
     - etc-git
 

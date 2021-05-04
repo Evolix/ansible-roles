@@ -37,7 +37,7 @@
     src: filter
     dest: "/etc/postfix/{{ item }}"
     force: no
-  with_items:
+  loop:
   - virtual
   - client.access
   - client.access_local
@@ -55,7 +55,7 @@
 
 - name: postmap filter files
   command: "postmap /etc/postfix/{{ item }}"
-  with_items:
+  loop:
   - virtual
   - client.access
   - client.access_local
@@ -76,7 +76,7 @@
     src: "{{ item }}.j2"
     dest: "/etc/postfix/{{ item }}"
     mode: "0644"
-  with_items:
+  loop:
     - virtual_aliases.cf
     - virtual_domains.cf
     - virtual_mailboxes.cf

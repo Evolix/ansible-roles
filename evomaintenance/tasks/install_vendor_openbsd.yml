@@ -28,7 +28,7 @@
     mode: "{{ item.mode }}"
     force: yes
     backup: yes
-  with_items:
+  loop:
     - { src: 'evomaintenance.sh', dest: '/usr/share/scripts/', mode: '0700' }
     - { src: 'evomaintenance.tpl', dest: '/usr/share/scripts/', mode: '0600' }
   tags:

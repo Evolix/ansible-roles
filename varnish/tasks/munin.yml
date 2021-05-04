@@ -35,7 +35,7 @@
     src: /usr/local/share/munin/plugins/varnish4_
     dest: "/etc/munin/plugins/varnish4_{{item}}"
     state: link
-  with_items:
+  loop:
     - backend_traffic
     - bad
     - expunge

@@ -6,7 +6,7 @@
     mode: "u=rwx,g=rwxs,o="
     owner: "{{ tomcat_instance_name }}"
     group: "{{ tomcat_instance_name }}"
-  with_items:
+  loop:
     - 'conf'
     - 'logs'
     - 'webapps'

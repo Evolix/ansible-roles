@@ -27,7 +27,7 @@
       regexp: "^#? *{{ item }}"
       line: "{{ item }}"
       insertafter: "^# Proxy"
-    with_items:
+    loop:
       - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -m owner --uid-owner proxy -j ACCEPT"
       - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -d {{ squid_address }} -j ACCEPT"
       - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -d 127.0.0.0/8 -j ACCEPT"

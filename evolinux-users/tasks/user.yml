@@ -120,7 +120,7 @@
 - name: "Secondary Unix groups are present"
   group:
     name: "{{ group }}"
-  with_items: "{{ user.groups }}"
+  loop: "{{ user.groups }}"
   loop_control:
     loop_var: group
   when:
@@ -184,7 +184,7 @@
     user: "{{ user.name }}"
     key: "{{ ssk_key }}"
     state: present
-  with_items: "{{ user.ssh_keys }}"
+  loop: "{{ user.ssh_keys }}"
   loop_control:
     loop_var: ssk_key
   when: user.ssh_keys is defined

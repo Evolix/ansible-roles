@@ -27,14 +27,14 @@
     dest: "{{ item }}"
     regexp: '^;?newrelic.daemon.utilization.detect_aws'
     line: 'newrelic.daemon.utilization.detect_aws = false'
-  with_items: "{{ find_newrelic_ini.stdout_lines }}"
+  loop: "{{ find_newrelic_ini.stdout_lines }}"
 
 - name: Disable Docker detection
   lineinfile:
     dest: "{{ item }}"
     regexp: '^;?newrelic.daemon.utilization.detect_docker'
     line: 'newrelic.daemon.utilization.detect_docker = false'
-  with_items: "{{ find_newrelic_ini.stdout_lines }}"
+  loop: "{{ find_newrelic_ini.stdout_lines }}"
 
 - name: Install package for PHP
   apt:

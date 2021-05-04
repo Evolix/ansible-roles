@@ -33,7 +33,7 @@
     special_time: "hourly"
     user: root
     job: "rsync -a --delete /etc/libvirt/qemu/ {{ hostvars[item]['ansible_hostname'] }}:/root/libvirt-{{ inventory_hostname }}/"
-  with_items:
+  loop:
     - "{{ groups['hypervisors'] }}"
   when: item != inventory_hostname
 
@@ -44,6 +44,6 @@
     special_time: "daily"
     user: root
     job: "virsh list | ssh {{ hostvars[item]['ansible_hostname'] }} 'cat >/root/libvirt-{{ inventory_hostname }}/virsh-list.txt'"
-  with_items:
+  loop:
     - "{{ groups['hypervisors'] }}"
   when: item != inventory_hostname

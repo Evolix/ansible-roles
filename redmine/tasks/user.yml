@@ -33,7 +33,7 @@
     owner: "{{ redmine_user }}"
     group: "{{ redmine_user }}"
     mode: "0750"
-  with_items:
+  loop:
     - "/home/{{ redmine_user }}"
     - "/home/{{ redmine_user }}/files"
   tags:

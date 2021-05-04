@@ -42,7 +42,7 @@
   apache2_module:
     name: '{{ item }}'
     state: present
-  with_items:
+  loop:
     - rewrite
     - expires
     - headers
@@ -58,7 +58,7 @@
   apache2_module:
     name: '{{ item }}'
     state: present
-  with_items:
+  loop:
     - cgi
   notify: reload apache
   when: apache_mpm == "prefork" or apache_mpm == "itk"
@@ -102,7 +102,7 @@
   command: "a2enconf {{ item }}"
   register: command_result
   changed_when: "'Enabling' in command_result.stderr"
-  with_items:
+  loop:
     - z-evolinux-defaults.conf
     - zzz-evolinux-custom.conf
   notify: reload apache

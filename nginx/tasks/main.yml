@@ -80,7 +80,7 @@
     dest: /etc/nginx/snippets/private_htpasswd
     line: "{{ item }}"
     state: present
-  with_items: "{{ nginx_private_htpasswd_present }}"
+  loop: "{{ nginx_private_htpasswd_present }}"
   notify: reload nginx
   tags:
     - nginx
@@ -90,7 +90,7 @@
     dest: /etc/nginx/snippets/private_htpasswd
     line: "{{ item }}"
     state: absent
-  with_items: "{{ nginx_private_htpasswd_absent }}"
+  loop: "{{ nginx_private_htpasswd_absent }}"
   notify: reload nginx
   tags:
     - nginx

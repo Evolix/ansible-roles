@@ -44,7 +44,7 @@
     group: "root"
     follow: yes
     state: directory
-  with_items:
+  loop:
     - "{{ redis_conf_dir }}/redis-server.pre-up.d"
     - "{{ redis_conf_dir }}/redis-server.post-up.d"
     - "{{ redis_conf_dir }}/redis-server.pre-down.d"
@@ -59,7 +59,7 @@
   command: "cp -a /etc/redis/{{ item }}/00_example {{ redis_conf_dir }}/{{ item }}"
   args:
     creates: "{{ redis_conf_dir }}/{{ item }}/00_example"
-  with_items:
+  loop:
     - "redis-server.pre-up.d"
     - "redis-server.post-up.d"
     - "redis-server.pre-down.d"
@@ -78,7 +78,7 @@
     group: "redis-{{ redis_instance_name }}"
     follow: yes
     state: directory
-  with_items:
+  loop:
     - "{{ redis_pid_dir }}"
     - "{{ redis_socket_dir }}"
   tags:
@@ -92,7 +92,7 @@
     group: "redis-{{ redis_instance_name }}"
     follow: yes
     state: directory
-  with_items:
+  loop:
     - "{{ redis_data_dir }}"
     - "{{ redis_log_dir }}"
   tags:

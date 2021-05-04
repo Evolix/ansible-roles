@@ -57,7 +57,7 @@
     src: "munin/{{ item }}"
     dest: '/usr/local/share/munin/plugins/{{ item }}'
     force: yes
-  with_items:
+  loop:
     - mongo_btree
     - mongo_collections
     - mongo_conn
@@ -73,7 +73,7 @@
     src: '/usr/local/share/munin/plugins/{{ item }}'
     dest: /etc/munin/plugins/{{ item }}
     state: link
-  with_items:
+  loop:
     - mongo_btree
     - mongo_collections
     - mongo_conn

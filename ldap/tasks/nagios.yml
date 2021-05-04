@@ -47,7 +47,7 @@
     option: "{{ item.option }}"
     value: "{{ item.value }}"
     mode: "0640"
-  with_items:
+  loop:
     - { option: 'hostname', value: '127.0.0.1' }
     - { option: 'base', value: "{{ ldap_suffix }}" }
     - { option: 'bind', value: "cn=nagios,ou=ldapusers,{{ ldap_suffix }}" }
@@ -66,7 +66,7 @@
 # and set the variable
 - name: overwrite ldap_nagios_password (from file)
   set_fact:
-    ldap_nagios_password: "{{ lookup('ini', 'pass section=check_ldap file=/tmp/{{ inventory_hostname }}/etc/nagios/monitoring-plugins.ini') }}"
+    ldap_nagios_password: "{{ lookup('ini', 'pass section=check_ldap file=/tmp/{{ inventory_hostname }}/monitoring-plugins.ini') }}"
 
 - name: hash password for cn=nagios
   command: "slappasswd -s {{ ldap_nagios_password }}"

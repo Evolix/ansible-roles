@@ -37,7 +37,7 @@
     line: "{{ item.line }}"
     regexp: "{{ item.regexp }}"
     state: present
-  with_items:
+  loop:
     - line: 'evoadmin: root'
       regexp: '^evoadmin:'
     - line: 'www-evoadmin: root'

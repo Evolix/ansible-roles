@@ -28,7 +28,7 @@
   apache2_module:
     name: '{{ item }}'
     state: present
-  with_items:
+  loop:
     - ssl
     - include
     - negotiation
@@ -56,6 +56,6 @@
   command: "a2enconf {{ item }}"
   register: command_result
   changed_when: "'Enabling' in command_result.stderr"
-  with_items:
+  loop:
     - evolinux-evasive
     - evolinux-modsec

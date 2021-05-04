@@ -66,17 +66,17 @@
 - name: Install default plugin
   shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} || {{ wordpress_wpcli }} plugin install {{ item }}'
   changed_when: false
-  with_items: "{{ wordpress_plugins }}"
+  loop: "{{ wordpress_plugins }}"
 
 - name: Update default plugins
   shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} && {{ wordpress_wpcli }} plugin update {{ item }}'
   changed_when: false
-  with_items: "{{ wordpress_plugins }}"
+  loop: "{{ wordpress_plugins }}"
 
 - name: Activate default plugins
   shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} && {{ wordpress_wpcli }} plugin activate {{ item }}'
   changed_when: false
-  with_items: "{{ wordpress_plugins }}"
+  loop: "{{ wordpress_plugins }}"
 
 - name: Send a summary mail
   mail:

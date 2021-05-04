@@ -13,7 +13,7 @@
     path: "{{ item }}"
     state: directory
     mode: "0777"
-  with_items:
+  loop:
   - /srv/java-package
   - /srv/java-package/src
   - /srv/java-package/tmp

@@ -107,7 +107,7 @@
 #     args:
 #       creates: "/var/lib/kibana/{{ item }}"
 #     notify: restart kibana
-#     with_items:
+#     loop:
 #       - optimize
 #       - data
 

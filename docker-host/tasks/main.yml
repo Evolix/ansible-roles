@@ -80,7 +80,7 @@
     src: "{{ item }}.j2"
     dest: "{{ docker_tls_path }}/{{ item }}"
     mode: "0744"
-  with_items:
+  loop:
     - shellpki.sh
     - openssl.cnf
   when: docker_tls_enabled

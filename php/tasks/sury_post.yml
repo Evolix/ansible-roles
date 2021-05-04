@@ -6,7 +6,7 @@
     dest: "{{ item.dest }}"
     force: yes
     state: link
-  with_items:
+  loop:
     - { src: "{{ php_cli_defaults_ini_file }}", dest: "/etc/php/7.4/cli/conf.d/z-evolinux-defaults.ini" }
     - { src: "{{ php_cli_custom_ini_file }}", dest: "/etc/php/7.4/cli/conf.d/zzz-evolinux-custom.ini" }
 
@@ -21,7 +21,7 @@
     dest: "{{ item.dest }}"
     force: yes
     state: link
-  with_items:
+  loop:
     - { src: "{{ php_apache_defaults_ini_file }}", dest: "/etc/php/7.4/apache2/conf.d/z-evolinux-defaults.ini" }
     - { src: "{{ php_apache_custom_ini_file }}", dest: "/etc/php/7.4/apache2/conf.d/zzz-evolinux-custom.ini" }
   when: php_apache_enable
@@ -38,7 +38,7 @@
     dest: "{{ item.dest }}"
     force: yes
     state: link
-  with_items:
+  loop:
     - { src: "{{ php_fpm_defaults_ini_file }}", dest: "/etc/php/7.4/fpm/conf.d/z-evolinux-defaults.ini" }
     - { src: "{{ php_fpm_custom_ini_file }}", dest: "/etc/php/7.4/fpm/conf.d/zzz-evolinux-custom.ini" }
     - { src: "{{ php_fpm_defaults_conf_file }}", dest: "/etc/php/7.4/fpm/pool.d/z-evolinux-defaults.conf" }

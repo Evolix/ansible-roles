@@ -35,7 +35,7 @@
   file:
     path: '/etc/munin/plugins/{{ item }}'
     state: absent
-  with_items:
+  loop:
     - http_loadtime
     - exim_mailqueue
     - exim_mailstats
@@ -52,7 +52,7 @@
     src: "/usr/share/munin/plugins/{{ item }}"
     dest: "/etc/munin/plugins/{{ item }}"
     state: link
-  with_items:
+  loop:
     - meminfo
     - netstat_multi
     - tcp

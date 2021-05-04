@@ -14,7 +14,7 @@
     state: link
     src: '/usr/share/munin/plugins/{{item}}'
     dest: '/etc/munin/plugins/{{item}}'
-  with_items:
+  loop:
   - postgres_bgwriter
   - postgres_checkpoints
   - postgres_connections_db

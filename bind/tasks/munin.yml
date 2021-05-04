@@ -14,7 +14,7 @@
     src: "/usr/share/munin/plugins/{{ item }}"
     dest: "/etc/munin/plugins/{{ item }}"
     state: link
-  with_items:
+  loop:
     - bind9
     - bind9_rndc
   notify: restart munin-node
@@ -30,7 +30,7 @@
     src: "/usr/share/munin/plugins/{{ item }}"
     dest: "/etc/munin/plugins/{{ item }}"
     state: link
-  with_items:
+  loop:
     - bind9
     - bind9_rndc
   notify: restart munin-node

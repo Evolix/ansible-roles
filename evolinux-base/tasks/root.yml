@@ -13,7 +13,7 @@
     line: "{{ item }}"
     create: yes
     state: present
-  with_items:
+  loop:
     - "export HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoreboth,erasedups"
     - "export HISTSIZE=65535"
     - "export HISTTIMEFORMAT=\"%c : \""
@@ -79,7 +79,7 @@
     line: "{{ item }}"
     create: yes
     state: present
-  with_items:
+  loop:
     - "syntax on"
     - "set background=dark"
     - "set expandtab"

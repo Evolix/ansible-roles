@@ -5,7 +5,7 @@
     question: "{{ item.key }}"
     value: "{{ item.value }}"
     vtype: "{{ item.type }}"
-  with_items:
+  loop:
     - { key: 'roundcube/database-type', type: 'select', value: 'sqlite3' }
     - { key: 'roundcube/db/basepath', type: 'string', value: '/var/lib/roundcube/' }
   tags:

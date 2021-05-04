@@ -1,14 +1,14 @@
 ---
 - include: accounts_password.yml
   when: item.password is undefined
-  with_items: "{{ proftpd_accounts }}"
+  loop: "{{ proftpd_accounts }}"
   tags:
     - proftpd
 
 - set_fact:
     proftpd_accounts_final: "{{ proftpd_accounts_final + [ item ] }}"
   when: item.password is defined
-  with_items: "{{ proftpd_accounts }}"
+  loop: "{{ proftpd_accounts }}"
   tags:
     - proftpd
 
@@ -20,7 +20,7 @@
     mode: "0440"
     line: "{{ item.name | mandatory }}:{{ item.password }}:{{ item.uid }}:{{ item.gid }}::{{ item.home | mandatory }}:/bin/false"
     regexp: "^{{ item.name }}:.*"
-  with_items: "{{ proftpd_accounts_final }}"
+  loop: "{{ proftpd_accounts_final }}"
   notify: restart proftpd
   tags:
     - proftpd
@@ -31,7 +31,7 @@
     state: present
     line: "\tAllowUser {{ item.name }}"
     insertbefore: "DenyAll"
-  with_items: "{{ proftpd_accounts_final }}"
+  loop: "{{ proftpd_accounts_final }}"
   notify: restart proftpd
   when: proftpd_ftp_enable
   tags:
@@ -43,7 +43,7 @@
     state: present
     line: "\tAllowUser {{ item.name }}"
     insertbefore: "DenyAll"
-  with_items: "{{ proftpd_accounts_final }}"
+  loop: "{{ proftpd_accounts_final }}"
   notify: restart proftpd
   when: proftpd_ftps_enable
   tags:
@@ -55,7 +55,7 @@
     state: present
     line: "\tAllowUser {{ item.name }}"
     insertbefore: "DenyAll"
-  with_items: "{{ proftpd_accounts_final }}"
+  loop: "{{ proftpd_accounts_final }}"
   notify: restart proftpd
   when: proftpd_sftp_enable
   tags:

@@ -9,7 +9,7 @@
     owner: root
     group: root
     mode: "0755"
-  with_items:
+  loop:
     - "/etc/fail2ban"
     - "/etc/fail2ban/filter.d"
   tags:
@@ -52,7 +52,7 @@
     src: "{{ item }}"
     dest: /etc/fail2ban/filter.d/
     mode: "0644"
-  with_items:
+  loop:
     - dovecot-evolix.conf
     - sasl-evolix.conf
     - wordpress-soft.conf

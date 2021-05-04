@@ -26,7 +26,7 @@
       src: '/usr/share/munin/plugins/memcached_'
       dest: /etc/munin/plugins/{{ multi }}{{ item }}
       state: link
-    with_items:
+    loop:
       - memcached_bytes
       - memcached_counters
       - memcached_rates

@@ -14,7 +14,7 @@
     marker: "# {mark} {{ item.name }}"
     block: |
       /sbin/iptables -A INPUT -p tcp --sport {{ item.port }} --dport 1024:65535 -s {{ item.ip }} -m state --state ESTABLISHED,RELATED -j ACCEPT
-  with_items: "{{ evobackup_client__hosts }}"
+  loop: "{{ evobackup_client__hosts }}"
   notify: restart minifirewall
   when: evobackup_client__minifirewall.stat.exists
   tags:

@@ -45,7 +45,7 @@
     dest: /etc/aliases
     regexp: "^{{ item }}:.*"
     line: "{{ item }}: root"
-  with_items: "{{ non_root_users_list.stdout_lines }}"
+  loop: "{{ non_root_users_list.stdout_lines }}"
   notify: newaliases
   when: evolinux_postfix_users_alias_root
   tags:
@@ -56,7 +56,7 @@
     dest: /etc/aliases
     regexp: "^{{ item }}:.*"
     line: "{{ item }}: root"
-  with_items:
+  loop:
     - postmaster
     - abuse
     - mailer-daemon

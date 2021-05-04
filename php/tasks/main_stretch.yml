@@ -65,7 +65,7 @@
   file:
     dest: "{{ item }}"
     mode: "0755"
-  with_items:
+  loop:
     - /etc/php
     - /etc/php/7.0
 

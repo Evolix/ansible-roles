@@ -8,9 +8,9 @@
     path: "/var/lib/lxc/{{ item.name }}/rootfs"
     state: directory
     mode: '0755'
-  with_items:
+  loop:
     - "{{ lxc_containers }}"
 
 - include: "solr.yml name={{item.name}} solr_version={{item.solr_version}} solr_port={{item.solr_port}}"
-  with_items:
+  loop:
     - "{{ lxc_containers }}"

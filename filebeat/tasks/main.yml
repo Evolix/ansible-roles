@@ -120,7 +120,7 @@
       regexp: '{{ item.regexp }}'
       line: '{{ item.line }}'
       insertafter: "output.elasticsearch:"
-    with_items:
+    loop:
       - { regexp: '^  #?username: .*', line: '  username: "{{ filebeat_elasticsearch_auth_username }}"' }
       - { regexp: '^  #?password: .*', line: '  password: "{{ filebeat_elasticsearch_auth_password }}"' }
     notify: restart filebeat

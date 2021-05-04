@@ -24,7 +24,7 @@
     line: "{{ item.key }} = {{ item.value }}"
     regexp: "^#*{{ item.key }}"
     state: present
-  with_items:
+  loop:
     - { key: 'hosts', value: '127.0.0.1' }
     - { key: 'auth_bind', value: 'yes' }
     - { key: 'ldap_version', value: 3 }

@@ -15,7 +15,7 @@
       create: yes
       state: present
     changed_when: false
-    with_items:
+    loop:
       - "en_US.UTF-8 UTF-8"
       - "fr_FR ISO-8859-1"
       - "fr_FR.UTF-8 UTF-8"
