@@ -21,9 +21,10 @@
     state: present
     key: "{{ item[0] }}"
   delegate_to: "{{ item[1] }}"
-  with_nested:
-    - "{{ ssh_keys.stdout }}"
-    - "{{ groups['hypervisors'] }}"
+  loop: "{{ _keys | product(_servers) | list }}"
+  vars:
+    _keys: ssh_keys.stdout
+    _servers: groups['hypervisors']
   when: item[1] != inventory_hostname
 
 - name: Crontab for sync libvirt xml file
