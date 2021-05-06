@@ -7,11 +7,22 @@
   tags:
     - system
     - packages
+    - nodejs
+
+- name: Look for /etc/apt/trusted.gpg
+  stat:
+    path: /etc/apt/trusted.gpg
+    register: apt_trusted_gpg
+  tags:
+    - system
+    - packages
+    - nodejs
 
 - name: NodeJS GPG embedded key is absent
   apt_key:
     id: "68576280"
     state: absent
+  when: apt_trusted_gpg.stat.exists
   tags:
     - system
     - packages

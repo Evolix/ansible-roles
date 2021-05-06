@@ -5,10 +5,16 @@
 # http://mirrors.jenkins.io/.*
 # http://jenkins.mirror.isppower.de/.*
 
+- name: Look for /etc/apt/trusted.gpg
+  stat:
+    path: /etc/apt/trusted.gpg
+    register: apt_trusted_gpg
+
 - name: Jenkins GPG embedded key is absent
   apt_key:
     id: "D50582E6"
     state: absent
+  when: apt_trusted_gpg.stat.exists
 
 - name: Add Jenkins GPG key
   copy:

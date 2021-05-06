@@ -5,16 +5,25 @@
     name: apt-transport-https
     state: present
   tags:
-  - elasticsearch
-  - packages
+    - elasticsearch
+    - packages
+
+- name: Look for /etc/apt/trusted.gpg
+  stat:
+    path: /etc/apt/trusted.gpg
+    register: apt_trusted_gpg
+  tags:
+    - elasticsearch
+    - packages
 
 - name: Elastic GPG embedded key is absent
   apt_key:
     id: "D88E42B4"
     state: absent
+  when: apt_trusted_gpg.stat.exists
   tags:
-  - elasticsearch
-  - packages
+    - elasticsearch
+    - packages
 
 - name: Elastic GPG key is installed
   copy:
@@ -23,8 +32,8 @@
     force: yes
     mode: "0644"
   tags:
-  - elasticsearch
-  - packages
+    - elasticsearch
+    - packages
 
 - name: Elastic sources list is available
   apt_repository:
@@ -33,16 +42,16 @@
     state: present
     update_cache: yes
   tags:
-  - elasticsearch
-  - packages
+    - elasticsearch
+    - packages
 
 - name: Elasticsearch is installed
   apt:
     name: elasticsearch
     state: present
   tags:
-  - elasticsearch
-  - packages
+    - elasticsearch
+    - packages
 
 - name: Elasticsearch service is enabled
   service:

@@ -5,16 +5,25 @@
     name: apt-transport-https
     state: present
   tags:
-  - kibana
-  - packages
+    - kibana
+    - packages
+
+- name: Look for /etc/apt/trusted.gpg
+  stat:
+    path: /etc/apt/trusted.gpg
+    register: apt_trusted_gpg
+  tags:
+    - kibana
+    - packages
 
 - name: Elastic GPG embedded key is absent
   apt_key:
     id: "D88E42B4"
     state: absent
+  when: apt_trusted_gpg.stat.exists
   tags:
-  - kibana
-  - packages
+    - kibana
+    - packages
 
 - name: Elastic GPG key is installed
   copy:
@@ -23,8 +32,8 @@
     force: yes
     mode: "0644"
   tags:
-  - kibana
-  - packages
+    - kibana
+    - packages
 
 - name: Elastic sources list is available
   apt_repository:
@@ -33,14 +42,15 @@
     state: present
     update_cache: yes
   tags:
-  - kibana
-  - packages
+    - kibana
+    - packages
 
 - name: Kibana is installed
   apt:
     name: kibana
     state: present
   tags:
+    - kibana
     - packages
 
 - name: kibana server host configuration
@@ -50,6 +60,8 @@
     regexp: '^server.host:'
     insertafter: '^#server.host:'
   notify: restart kibana
+  tags:
+    - kibana
 
 - name: kibana server basepath configuration
   lineinfile:
@@ -58,6 +70,8 @@
     regexp: '^server.basePath:'
     insertafter: '^#server.basePath:'
   notify: restart kibana
+  tags:
+    - kibana
 
 - name: kibana log destination is present
   file:
@@ -66,6 +80,8 @@
     group: kibana
     mode: "0750"
     state: directory
+  tags:
+    - kibana
 
 - name: kibana log messages go to custom file
   lineinfile:
@@ -74,12 +90,16 @@
     regexp: '^logging.dest:'
     insertafter: '^#logging.dest:'
   notify: restart kibana
+  tags:
+    - kibana
 
 - name: Kibana service is enabled and started
   systemd:
     name: kibana
     enabled: yes
     state: started
+  tags:
+    - kibana
 
 - name: Logrotate configuration is enabled
   copy:
@@ -88,6 +108,8 @@
     mode: "0644"
     owner: root
     group: root
+  tags:
+    - kibana
 
 # - name: Get mount options for /usr partition
 #   shell: "mount | grep 'on /usr type'"

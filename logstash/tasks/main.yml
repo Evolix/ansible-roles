@@ -5,16 +5,25 @@
     name: apt-transport-https
     state: present
   tags:
-  - logstash
-  - packages
+    - logstash
+    - packages
+
+- name: Look for /etc/apt/trusted.gpg
+  stat:
+    path: /etc/apt/trusted.gpg
+    register: apt_trusted_gpg
+  tags:
+    - logstash
+    - packages
 
 - name: Elastic GPG embedded key is absent
   apt_key:
     id: "D88E42B4"
     state: absent
+  when: apt_trusted_gpg.stat.exists
   tags:
-  - logstash
-  - packages
+    - logstash
+    - packages
 
 - name: Elastic GPG key is installed
   copy:
@@ -23,8 +32,8 @@
     force: yes
     mode: "0644"
   tags:
-  - logstash
-  - packages
+    - logstash
+    - packages
 
 - name: Elastic sources list is available
   apt_repository:
@@ -33,20 +42,23 @@
     state: present
     update_cache: yes
   tags:
-  - logstash
-  - packages
+    - logstash
+    - packages
 
 - name: Logstash is installed
   apt:
     name: logstash
     state: present
   tags:
+    - logstash
     - packages
 
 - name: Logstash service is enabled
   systemd:
     name: logstash
     enabled: yes
+  tags:
+    - logstash
 
 - name: JVM Heap size (min) is set
   lineinfile:
@@ -54,6 +66,7 @@
     regexp: "^-Xms"
     line: "-Xms{{ logstash_jvm_xms }}"
   tags:
+    - logstash
     - config
 
 - name: JVM Heap size (max) is set
@@ -62,6 +75,7 @@
     regexp: "^-Xmx"
     line: "-Xmx{{ logstash_jvm_xmx }}"
   tags:
+    - logstash
     - config
 
 - name: Add a configuration
@@ -80,6 +94,9 @@
       - "templates/logstash/logstash.default.conf.j2"
       - "templates/logstash.default.conf.j2"
   register: logstash_template
+  tags:
+    - logstash
+    - config
 
 - debug:
     var: logstash_template

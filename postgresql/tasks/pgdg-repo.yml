@@ -13,10 +13,16 @@
     repo: "deb http://apt.postgresql.org/pub/repos/apt/ {{ansible_distribution_release}}-pgdg main"
     update_cache: yes
 
+- name: Look for /etc/apt/trusted.gpg
+  stat:
+    path: /etc/apt/trusted.gpg
+    register: apt_trusted_gpg
+
 - name: PGDG GPG embedded key is absent
   apt_key:
     id: "ACCC4CF8"
     state: absent
+  when: apt_trusted_gpg.stat.exists
 
 - name: Add PGDG GPG key
   copy:

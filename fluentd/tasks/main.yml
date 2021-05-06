@@ -1,9 +1,18 @@
 ---
 
+- name: Look for /etc/apt/trusted.gpg
+  stat:
+    path: /etc/apt/trusted.gpg
+    register: apt_trusted_gpg
+  tags:
+    - packages
+    - fluentd
+
 - name: Fluentd GPG embedded key is absent
   apt_key:
     id: "AB97ACBE"
     state: absent
+  when: apt_trusted_gpg.stat.exists
   tags:
     - packages
     - fluentd

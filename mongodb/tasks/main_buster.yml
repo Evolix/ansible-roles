@@ -1,9 +1,15 @@
 ---
 
+- name: Look for /etc/apt/trusted.gpg
+  stat:
+    path: /etc/apt/trusted.gpg
+    register: apt_trusted_gpg
+
 - name: MongoDB GPG embedded key is absent
   apt_key:
     id: "B8612B5D"
     state: absent
+  when: apt_trusted_gpg.stat.exists
 
 - name: Add MongoDB GPG key
   copy:
