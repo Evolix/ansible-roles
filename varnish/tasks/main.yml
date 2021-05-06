@@ -109,6 +109,7 @@
   tags:
     - varnish
     - config
+    - update-config
 
 - name: Copy included Varnish config
   template:
