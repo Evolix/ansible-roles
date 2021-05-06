@@ -3,7 +3,7 @@
 - name: Look for /etc/apt/trusted.gpg
   stat:
     path: /etc/apt/trusted.gpg
-    register: apt_trusted_gpg
+  register: apt_trusted_gpg
   tags:
     - apt
 
