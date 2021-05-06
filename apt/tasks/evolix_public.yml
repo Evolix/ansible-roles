@@ -7,7 +7,7 @@
   tags:
     - apt
 
-- name: Evolix GPG embedded key is absent
+- name: Evolix embedded GPG key is absent
   apt_key:
     id: "B8612B5D"
     state: absent

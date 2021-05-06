@@ -18,7 +18,7 @@
     path: /etc/apt/trusted.gpg
     register: apt_trusted_gpg
 
-- name: PGDG GPG embedded key is absent
+- name: PGDG embedded GPG key is absent
   apt_key:
     id: "ACCC4CF8"
     state: absent

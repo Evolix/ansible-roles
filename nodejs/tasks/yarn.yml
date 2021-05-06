@@ -10,7 +10,7 @@
     - nodejs
     - yarn
 
-- name: NodeJS GPG embedded key is absent
+- name: NodeJS embedded GPG key is absent
   apt_key:
     id: "86E50310"
     state: absent

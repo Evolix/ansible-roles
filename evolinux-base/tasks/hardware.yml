@@ -111,7 +111,7 @@
         path: /etc/apt/trusted.gpg
       register: apt_trusted_gpg
 
-    - name: HWRaid GPG embedded key is absent
+    - name: HWRaid embedded GPG key is absent
       apt_key:
         id: "23B3D3B4"
         state: absent

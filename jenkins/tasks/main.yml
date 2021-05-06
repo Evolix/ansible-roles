@@ -10,7 +10,7 @@
     path: /etc/apt/trusted.gpg
     register: apt_trusted_gpg
 
-- name: Jenkins GPG embedded key is absent
+- name: Jenkins embedded GPG key is absent
   apt_key:
     id: "D50582E6"
     state: absent

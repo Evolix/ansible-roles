@@ -8,7 +8,7 @@
     - packages
     - fluentd
 
-- name: Fluentd GPG embedded key is absent
+- name: Fluentd embedded GPG key is absent
   apt_key:
     id: "AB97ACBE"
     state: absent

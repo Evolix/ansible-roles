@@ -5,7 +5,7 @@
     path: /etc/apt/trusted.gpg
     register: apt_trusted_gpg
 
-- name: MongoDB GPG embedded key is absent
+- name: MongoDB embedded GPG key is absent
   apt_key:
     id: "B8612B5D"
     state: absent

@@ -8,7 +8,7 @@
     path: /etc/apt/trusted.gpg
     register: apt_trusted_gpg
 
-- name: Percona GPG embedded key is absent
+- name: Percona embedded GPG key is absent
   apt_key:
     id: "8507EFA5"
     state: absent

@@ -16,7 +16,7 @@
     - kibana
     - packages
 
-- name: Elastic GPG embedded key is absent
+- name: Elastic embedded GPG key is absent
   apt_key:
     id: "D88E42B4"
     state: absent

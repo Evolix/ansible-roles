@@ -18,7 +18,7 @@
     - packages
     - nodejs
 
-- name: NodeJS GPG embedded key is absent
+- name: NodeJS embedded GPG key is absent
   apt_key:
     id: "68576280"
     state: absent
