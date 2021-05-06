@@ -8,19 +8,11 @@
     - kibana
     - packages
 
-- name: Look for /etc/apt/trusted.gpg
-  stat:
-    path: /etc/apt/trusted.gpg
-    register: apt_trusted_gpg
-  tags:
-    - kibana
-    - packages
-
 - name: Elastic embedded GPG key is absent
   apt_key:
     id: "D88E42B4"
+    keyring: /etc/apt/trusted.gpg
     state: absent
-  when: apt_trusted_gpg.stat.exists
   tags:
     - kibana
     - packages

@@ -37,16 +37,11 @@
 
 - name: HPE Smart Storage Administrator (ssacli) is present
   block:
-    - name: Look for /etc/apt/trusted.gpg
-      stat:
-        path: /etc/apt/trusted.gpg
-      register: apt_trusted_gpg
-
-    - name: HPE GPG is absent in embedded database
+    - name: HPE GPG embedded key is absent
       apt_key:
         id: "26C2B797"
+        keyring: /etc/apt/trusted.gpg
         state: absent
-      when: apt_trusted_gpg.stat.exists
 
     - name: HPE GPG key is installed
       copy:
@@ -106,18 +101,12 @@
 
 - name: MegaRAID SAS package is present
   block:
-    - name: Look for /etc/apt/trusted.gpg
-      stat:
-        path: /etc/apt/trusted.gpg
-      register: apt_trusted_gpg
-
     - name: HWRaid embedded GPG key is absent
       apt_key:
         id: "23B3D3B4"
+        keyring: /etc/apt/trusted.gpg
         state: absent
-      when:
-        - apt_trusted_gpg.stat.exists
-        - ansible_distribution_major_version is version('9', '>=')
+      when: ansible_distribution_major_version is version('9', '>=')
 
     - name: HWRaid GPG key is installed
       copy:

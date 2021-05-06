@@ -1,17 +1,10 @@
 ---
 
-- name: Look for /etc/apt/trusted.gpg
-  stat:
-    path: /etc/apt/trusted.gpg
-  register: apt_trusted_gpg
-  tags:
-    - apt
-
 - name: Evolix embedded GPG key is absent
   apt_key:
     id: "B8612B5D"
+    keyring: /etc/apt/trusted.gpg
     state: absent
-  when: apt_trusted_gpg.stat.exists
   tags:
     - apt
 

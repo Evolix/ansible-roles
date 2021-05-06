@@ -3,16 +3,11 @@
 - set_fact:
     percona__apt_config_package_file: "percona-release_latest.{{ ansible_distribution_release }}_all.deb"
 
-- name: Look for /etc/apt/trusted.gpg
-  stat:
-    path: /etc/apt/trusted.gpg
-    register: apt_trusted_gpg
-
 - name: Percona embedded GPG key is absent
   apt_key:
     id: "8507EFA5"
+    keyring: /etc/apt/trusted.gpg
     state: absent
-  when: apt_trusted_gpg.stat.exists
 
 - name: Add Percona GPG key
   copy:
