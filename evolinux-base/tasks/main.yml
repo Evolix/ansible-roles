@@ -56,7 +56,7 @@
 
 - name: SSH configuration
   include: ssh.yml
-  when: evolinux_ssh_include
+  when: evolinux_ssh_include | bool
     
 ### disabled because of a memory leak
 # - name: Create evolinux users

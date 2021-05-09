@@ -43,7 +43,7 @@
     name: percona-release
     state: latest
   register: percona__apt_config_deb
-  when: percona__apt_config_package_installed
+  when: percona__apt_config_package_installed | bool
 
 - name: APT cache is up-to-date
   apt:
