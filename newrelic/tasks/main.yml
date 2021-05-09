@@ -3,7 +3,7 @@
 - include: sources.yml
 
 - include: php.yml
-  when: newrelic_php
+  when: newrelic_php | bool
 
 - include: sysmond.yml
-  when: newrelic_sysmond
+  when: newrelic_sysmond | bool

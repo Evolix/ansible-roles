@@ -26,6 +26,6 @@
   alternatives:
     name: java
     path: "{{ java_bin_path[java_version] }}"
-  when: java_default_alternative
+  when: java_default_alternative | bool
   tags:
     - java

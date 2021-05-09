@@ -89,7 +89,7 @@
 - include: awstats.yml
 
 - include: fhs_retrictions.yml
-  when: packweb_fhs_retrictions
+  when: packweb_fhs_retrictions | bool
 
 - name: Periodically cache ftp directory sizes for ftpadmin.sh
   cron:

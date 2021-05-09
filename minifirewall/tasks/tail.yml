@@ -39,14 +39,14 @@
   changed_when: "'starting IPTables rules is now finish : OK' in minifirewall_init_restart.stdout"
   when:
     - minifirewall_tail_template is changed
-    - minifirewall_restart_if_needed
+    - minifirewall_restart_if_needed | bool
 
 - name: restart minifirewall (noop)
   meta: noop
   register: minifirewall_init_restart
   failed_when: False
   changed_when: False
-  when: not minifirewall_restart_if_needed
+  when: not (minifirewall_restart_if_needed | bool)
 
 - debug:
     var: minifirewall_init_restart

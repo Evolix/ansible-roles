@@ -84,7 +84,7 @@
     - update-config
 
 - include: packages_backports.yml
-  when: haproxy_backports
+  when: haproxy_backports | bool
 
 - name: Install HAProxy package
   apt:
@@ -108,7 +108,7 @@
       - "templates/haproxy/haproxy.default.cfg.j2"
       - "templates/haproxy.default.cfg.j2"
   notify: reload haproxy
-  when: haproxy_update_config
+  when: haproxy_update_config | bool
   tags:
     - haproxy
     - config

@@ -32,7 +32,7 @@
     name: mongod
     enabled: yes
     state: started
-  when: _mongodb_install_package.changed
+  when: _mongodb_install_package is changed
 
 - name: install dependency for monitoring
   apt:

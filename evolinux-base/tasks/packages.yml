@@ -16,7 +16,7 @@
       - ssl-cert
       - ca-certificates
       - rename
-  when: evolinux_packages_system
+  when: evolinux_packages_system | bool
 
 - name: Install/Update diagnostic tools
   apt:
@@ -34,7 +34,7 @@
       - telnet
       - traceroute
       - man
-  when: evolinux_packages_diagnostic
+  when: evolinux_packages_diagnostic | bool
 
 - name: Install/Update hardware tools
   apt:
@@ -42,7 +42,7 @@
       - hdparm
       - smartmontools
       - lm-sensors
-  when: evolinux_packages_hardware
+  when: evolinux_packages_hardware | bool
 
 - name: Install/Update common tools
   apt:
@@ -58,21 +58,21 @@
       - bc
       - pinentry-curses
       - ncurses-term
-  when: evolinux_packages_common
+  when: evolinux_packages_common | bool
 
 - name: Be sure that openntpd package is absent/purged
   apt:
     name: openntpd
     state: absent
     purge: True
-  when: evolinux_packages_purge_openntpd
+  when: evolinux_packages_purge_openntpd | bool
 
 - name: the chrony package is absent
   apt:
     name: chrony
     purge: True
     state: absent
-  when: evolinux_packages_purge_chrony
+  when: evolinux_packages_purge_chrony | bool
 
 - name: Be sure locate/mlocate is absent/purged
   apt:
@@ -81,19 +81,19 @@
       - mlocate
     state: absent
     purge: yes
-  when: evolinux_packages_purge_locate
+  when: evolinux_packages_purge_locate | bool
 
 - name: Install/Update serveur-base meta-package
   apt:
     name: serveur-base
     allow_unauthenticated: yes
-  when: evolinux_packages_serveur_base
+  when: evolinux_packages_serveur_base | bool
 
 - name: Install/Update packages for Stretch and later
   apt:
     name: net-tools
   when:
-    - evolinux_packages_stretch
+    - evolinux_packages_stretch | bool
     - ansible_distribution_major_version is version('9', '>=')
 
 - name: Install/Update packages for Buster and later
@@ -102,7 +102,7 @@
       - spectre-meltdown-checker
       - binutils
   when:
-    - evolinux_packages_buster
+    - evolinux_packages_buster | bool
     - ansible_distribution_major_version is version('10', '>=')
 
 - name: Customize logcheck recipient
@@ -110,7 +110,7 @@
     dest: /etc/logcheck/logcheck.conf
     regexp: '^SENDMAILTO=".*"$'
     line: 'SENDMAILTO="{{ logcheck_alert_email or general_alert_email | mandatory }}"'
-  when: evolinux_packages_logcheck_recipient
+  when: evolinux_packages_logcheck_recipient | bool
 
 - name: Deleting rpcbind and nfs-common
   apt:
@@ -118,7 +118,7 @@
       - rpcbind
       - nfs-common
     state: absent
-  when: evolinux_packages_delete_nfs
+  when: evolinux_packages_delete_nfs | bool
 
 
 # TODO: use ini_file when Ansible > 2.1 (no_extra_spaces: yes)
@@ -132,7 +132,7 @@
     - { option: "confirm", value: "1" }
     - { option: "which",   value: "both" }
   when:
-    - evolinux_packages_listchanges
+    - evolinux_packages_listchanges | bool
     - ansible_distribution == "Debian"
     - ansible_distribution_release == "jessie"
 

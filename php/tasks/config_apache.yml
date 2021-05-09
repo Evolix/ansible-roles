@@ -44,4 +44,4 @@
     mode: "0644"
   loop:
     - { option: "date.timezone", value: "Europe/Paris" }
-  when: php_symfony_requirements
+  when: php_symfony_requirements | bool

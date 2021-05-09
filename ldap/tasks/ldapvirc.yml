@@ -10,7 +10,7 @@
   debug:
     msg: "WARNING: an LDAP admin password is given, but an ldapvirc file already exists. It will not be updated."
   when: 
-    - ldap_admin_password != ""
+    - ldap_admin_password | length > 0
     - root_ldapvirc_path.stat.exists
 
 # Generate ldap password if none is given and ldapvirc is absent
@@ -25,7 +25,7 @@
   register: new_ldap_admin_password
   changed_when: False
   when:
-    - ldap_admin_password == ""
+    - ldap_admin_password | length == 0
     - not root_ldapvirc_path.stat.exists
 
 # Use the generated password or the one found in the file 
@@ -33,7 +33,7 @@
   set_fact:
     ldap_admin_password: "{{ new_ldap_admin_password.stdout }}"
   when:
-    - ldap_admin_password == ""
+    - ldap_admin_password | length == 0
     - not root_ldapvirc_path.stat.exists
 
 - name: hash password for cn=admin

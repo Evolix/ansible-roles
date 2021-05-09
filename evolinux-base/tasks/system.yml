@@ -5,7 +5,7 @@
     path: /tmp
     state: directory
     mode: "u=rwx,g=rwx,o=rwxt"
-  when: evolinux_system_chmod_tmp
+  when: evolinux_system_chmod_tmp | bool
 
 - name: Setting default locales
   lineinfile:
@@ -18,7 +18,7 @@
     - "fr_FR ISO-8859-1"
     - "fr_FR.UTF-8 UTF-8"
   register: default_locales
-  when: evolinux_system_locales
+  when: evolinux_system_locales | bool
 
 - name: Reconfigure locales
   command: /usr/sbin/locale-gen
@@ -28,7 +28,7 @@
   timezone:
     name: "{{ evolinux_system_timezone | mandatory }}"
   notify: restart cron
-  when: evolinux_system_set_timezone
+  when: evolinux_system_set_timezone | bool
 
 # TODO : find a way to force the console-data configuration
 # non-interactively (like tzdata ↑)
@@ -41,13 +41,13 @@
     dest: /etc/vim/vimrc
     regexp: 'let g:skip_defaults_vim ='
     line: 'let g:skip_defaults_vim = 1'
-  when: evolinux_system_vim_skip_defaults
+  when: evolinux_system_vim_skip_defaults | bool
 
 - name: Setting vim as default editor
   alternatives:
     name: editor
     path: /usr/bin/vim.basic
-  when: evolinux_system_vim_default_editor
+  when: evolinux_system_vim_default_editor | bool
 
 - name: Add "umask 027" to /etc/profile.d/evolinux.sh
   lineinfile:
@@ -55,14 +55,14 @@
     line: "umask 027"
     create: yes
     state: present
-  when: evolinux_system_profile
+  when: evolinux_system_profile | bool
 
 - name: Set /etc/adduser.conf DIR_MODE to 0700
   replace:
     dest: /etc/adduser.conf
     regexp: "^DIR_MODE=0755$"
     replace: "DIR_MODE=0700"
-  when: evolinux_system_dirmode_adduser
+  when: evolinux_system_dirmode_adduser | bool
 
 # TODO: trouver comment ne pas faire ça sur Xen Dom-U
 
@@ -72,7 +72,7 @@
     line: "tty2"
     create: yes
     state: present
-  when: evolinux_system_restrict_securetty
+  when: evolinux_system_restrict_securetty | bool
 
 - name: Setting TMOUT to disconnect inactive users
   lineinfile:
@@ -80,7 +80,7 @@
     line: "export TMOUT=36000"
     create: yes
     state: present
-  when: evolinux_system_set_timeout
+  when: evolinux_system_set_timeout | bool
 
 #- name: Customizing /etc/fstab
 
@@ -97,7 +97,9 @@
     line: "EXTRA_OPTS='-L 15'"
     create: yes
     state: present
-  when: is_cron_installed.rc == 0 and evolinux_system_cron_verboselog
+  when:
+    - is_cron_installed.rc == 0
+    - evolinux_system_cron_verboselog | bool
 
 - name: Modify default umask for cron deamon
   lineinfile:
@@ -105,7 +107,9 @@
     line: "umask 022"
     create: yes
     state: present
-  when: is_cron_installed.rc == 0 and evolinux_system_cron_umask
+  when:
+    - is_cron_installed.rc == 0
+    - evolinux_system_cron_umask | bool
 
 - name: Randomize periodic crontabs
   replace:
@@ -117,7 +121,9 @@
   - { regexp: '^25\s*6((\s*\*){3})',     replace: '{{ 59|random(start=1) }} {{ [0,1,3,4,5,6,7]|random }}\1' }
   - { regexp: '^47\s*6((\s*\*){2}\s*7)', replace: '{{ 59|random(start=1) }} {{ [0,1,3,4,5,6,7]|random }}\1' }
   - { regexp: '^52\s*6(\s*1(\s*\*){2})', replace: '{{ 59|random(start=1) }} {{ [0,1,3,4,5,6,7]|random }}\1' }
-  when: is_cron_installed.rc == 0 and evolinux_system_cron_random
+  when:
+    - is_cron_installed.rc == 0
+    - evolinux_system_cron_random | bool
 
 - include_role:
     name: evolix/ntpd
@@ -131,7 +137,7 @@
     force: no
     mode: "0755"
   when:
-    - evolinux_system_alert5_init
+    - evolinux_system_alert5_init | bool
     - ansible_distribution_release == "jessie" or ansible_distribution_release == "stretch"
 
 - name: Enable alert5 init script (jessie/stretch)
@@ -139,8 +145,8 @@
     name: alert5
     enabled: yes
   when:
-    - evolinux_system_alert5_init
-    - evolinux_system_alert5_enable
+    - evolinux_system_alert5_init | bool
+    - evolinux_system_alert5_enable | bool
     - ansible_distribution_release == "jessie" or ansible_distribution_release == "stretch"
 
 
@@ -152,7 +158,7 @@
     force: no
     mode: "0755"
   when:
-    - evolinux_system_alert5_init
+    - evolinux_system_alert5_init | bool
     - ansible_distribution_major_version is version('10', '>=')
 
 - name: Install alert5 service (buster)
@@ -162,7 +168,7 @@
     force: yes
     mode: "0644"
   when:
-    - evolinux_system_alert5_init
+    - evolinux_system_alert5_init | bool
     - ansible_distribution_major_version is version('10', '>=')
 
 - name: Enable alert5 init script (buster)
@@ -171,8 +177,8 @@
     daemon_reload: yes
     enabled: yes
   when:
-    - evolinux_system_alert5_init
-    - evolinux_system_alert5_enable
+    - evolinux_system_alert5_init | bool
+    - evolinux_system_alert5_enable | bool
     - ansible_distribution_major_version is version('10', '>=')
 
 ## network interfaces
@@ -189,7 +195,9 @@
     dest: /etc/network/interfaces
     regexp: "allow-hotplug"
     replace: "auto"
-  when: evolinux_system_eni_auto and grep_hotplug_eni.rc == 0
+  when:
+    - evolinux_system_eni_auto | bool
+    - grep_hotplug_eni.rc == 0
 
 ## /sbin/deny
 

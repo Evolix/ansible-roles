@@ -33,7 +33,7 @@
     insertbefore: "DenyAll"
   loop: "{{ proftpd_accounts_final }}"
   notify: restart proftpd
-  when: proftpd_ftp_enable
+  when: proftpd_ftp_enable | bool
   tags:
     - proftpd
 
@@ -45,7 +45,7 @@
     insertbefore: "DenyAll"
   loop: "{{ proftpd_accounts_final }}"
   notify: restart proftpd
-  when: proftpd_ftps_enable
+  when: proftpd_ftps_enable | bool
   tags:
     - proftpd
 
@@ -57,6 +57,6 @@
     insertbefore: "DenyAll"
   loop: "{{ proftpd_accounts_final }}"
   notify: restart proftpd
-  when: proftpd_sftp_enable
+  when: proftpd_sftp_enable | bool
   tags:
     - proftpd

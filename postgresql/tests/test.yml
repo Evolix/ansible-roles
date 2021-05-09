@@ -24,7 +24,7 @@
   - name: Reconfigure locales
     command: /usr/sbin/locale-gen
     changed_when: false
-    when: test_locales.changed
+    when: test_locales is changed
 
   roles:
     - role: postgresql

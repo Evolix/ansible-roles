@@ -10,4 +10,4 @@
 - name: "Content of /etc/evolinux/todo.txt"
   debug:
     var: evolinux_todo.stdout_lines
-  when: evolinux_todo.stdout != ""
+  when: evolinux_todo.stdout | length > 0

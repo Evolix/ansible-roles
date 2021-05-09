@@ -71,7 +71,9 @@
     dest: /etc/squid/evolinux-acl.conf
     force: no
   notify: "reload squid"
-  when: squid_localproxy_enable and ansible_distribution_major_version is version('9', '>=')
+  when:
+    - squid_localproxy_enable | bool
+    - ansible_distribution_major_version is version('9', '>=')
 
 - name: "evolinux custom acl (Debian 9 or later)"
   copy:
@@ -79,7 +81,9 @@
     content: |
       # Put customized values here.
     force: no
-  when: squid_localproxy_enable == False and ansible_distribution_major_version is version('9', '>=')
+  when:
+    - not (squid_localproxy_enable | bool)
+    - ansible_distribution_major_version is version('9', '>=')
 
 - name: "evolinux http_access for local proxy (Debian 9 or later)"
   copy:
@@ -87,7 +91,9 @@
     dest: /etc/squid/evolinux-httpaccess.conf
     force: no
   notify: "reload squid"
-  when: squid_localproxy_enable and ansible_distribution_major_version is version('9', '>=')
+  when:
+    - squid_localproxy_enable | bool
+    - ansible_distribution_major_version is version('9', '>=')
 
 - name: "evolinux custom http_access (Debian 9 or later)"
   copy:
@@ -95,7 +101,9 @@
     content: |
       # Put customized values here.
     force: no
-  when: squid_localproxy_enable == False and ansible_distribution_major_version is version('9', '>=')
+  when:
+    - not (squid_localproxy_enable | bool)
+    - ansible_distribution_major_version is version('9', '>=')
 
 - name: "evolinux overrides for local proxy (Debian 9 or later)"
   template:
@@ -103,7 +111,9 @@
     dest: /etc/squid/evolinux-custom.conf
     force: no
   notify: "reload squid"
-  when: squid_localproxy_enable and ansible_distribution_major_version is version('9', '>=')
+  when:
+    - squid_localproxy_enable | bool
+    - ansible_distribution_major_version is version('9', '>=')
 
 - name: "evolinux custom overrides (Debian 9 or later)"
   copy:
@@ -111,7 +121,9 @@
     content: |
       # Put customized values here.
     force: no
-  when: squid_localproxy_enable == False and ansible_distribution_major_version is version('9', '>=')
+  when:
+    - not (squid_localproxy_enable | bool)
+    - ansible_distribution_major_version is version('9', '>=')
 
 - name: add some URL in whitelist (Debian 8)
   lineinfile:

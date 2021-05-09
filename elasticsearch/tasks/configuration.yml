@@ -6,7 +6,7 @@
     line: "cluster.name: {{ elasticsearch_cluster_name }}"
     regexp: "^cluster.name:"
     insertafter: "^# *cluster.name:"
-  when: elasticsearch_cluster_name|default("", True)
+  when: elasticsearch_cluster_name | default("", True) | length > 0
   tags:
     - config
 
@@ -25,7 +25,7 @@
     line: "network.host: {{ elasticsearch_network_host  }}"
     regexp: "^network.host:"
     insertafter: "^# *network.host:"
-  when: elasticsearch_network_host|default("", True)
+  when: elasticsearch_network_host | default("", True) | length > 0
   tags:
     - config
 
@@ -35,7 +35,7 @@
     line: "network.publish_host: {{ elasticsearch_network_publish_host  }}"
     regexp: "^network.publish_host:"
     insertafter: "^network.host:"
-  when: elasticsearch_network_publish_host|default("", True)
+  when: elasticsearch_network_publish_host | default("", True) | length > 0
   tags:
     - config
 
@@ -45,7 +45,7 @@
     line: "http.publish_host: {{ elasticsearch_http_publish_host  }}"
     regexp: "^http.publish_host:"
     insertafter: "^http.port:"
-  when: elasticsearch_http_publish_host|default("", True)
+  when: elasticsearch_http_publish_host | default("", True) | length > 0
   tags:
     - config
 
@@ -54,7 +54,7 @@
     dest: /etc/elasticsearch/elasticsearch.yml
     line: "discovery.seed_hosts: {{ elasticsearch_discovery_seed_hosts | to_yaml }}"
     regexp: "^discovery.seed_hosts:"
-  when: elasticsearch_discovery_seed_hosts
+  when: elasticsearch_discovery_seed_hosts | length > 0
   tags:
     - config
 
@@ -63,7 +63,7 @@
     dest: /etc/elasticsearch/elasticsearch.yml
     line: "cluster.initial_master_nodes: {{ elasticsearch_cluster_initial_master_nodes | to_yaml }}"
     regexp: "^cluster.initial_master_nodes:"
-  when: elasticsearch_cluster_initial_master_nodes
+  when: elasticsearch_cluster_initial_master_nodes | length > 0
   tags:
     - config
 
@@ -98,7 +98,7 @@
     line: "discovery.zen.ping.unicast.hosts: {{ elasticsearch_cluster_members }}"
     regexp: "^discovery.zen.ping.unicast.hosts:"
     insertafter: "^#discovery.zen.ping.unicast.hosts"
-  when: elasticsearch_cluster_members|default("", True)
+  when: elasticsearch_cluster_members | default("", True) | length > 0
   tags:
     - config
 
@@ -108,6 +108,6 @@
     line: "discovery.zen.minimum_master_nodes: {{ elasticsearch_minimum_master_nodes }}"
     regexp: "^discovery.zen.minimum_master_nodes:"
     insertafter: "^#discovery.zen.minimum_master_nodes"
-  when: elasticsearch_minimum_master_nodes|default("", True)
+  when: elasticsearch_minimum_master_nodes | default("", True) | length > 0
   tags:
     - config

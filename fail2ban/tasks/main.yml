@@ -32,7 +32,7 @@
 
 - name: Include ignoredips update task
   include: ip_whitelist.yml
-  when: fail2ban_force_update_ignore_ips
+  when: fail2ban_force_update_ignore_ips | bool
   tags:
     - fail2ban
 
@@ -43,7 +43,7 @@
     option: enabled
     value: false
   notify: restart fail2ban
-  when: fail2ban_disable_ssh
+  when: fail2ban_disable_ssh | bool
   tags:
     - fail2ban
 

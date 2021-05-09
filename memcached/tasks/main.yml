@@ -13,7 +13,7 @@
   notify: restart memcached
   tags:
     - memcached
-  when: memcached_instance_name == ""
+  when: memcached_instance_name | length == 0
 
 - name: Memcached is running and enabled on boot.
   service:
@@ -22,7 +22,7 @@
     state: started
   tags:
     - memcached
-  when: memcached_instance_name == ""
+  when: memcached_instance_name | length == 0
 
 - name: Add systemd template
   copy:
@@ -30,7 +30,7 @@
     dest: /etc/systemd/system/memcached@.service
   tags:
     - memcached
-  when: memcached_instance_name != ""
+  when: memcached_instance_name | length > 0
 
 - name: Delete default memcached systemd configuration file
   systemd:
@@ -39,7 +39,7 @@
     state: stopped
   tags:
     - memcached
-  when: memcached_instance_name != ""
+  when: memcached_instance_name | length > 0
 
 - name: Make sure memcached.conf is absent
   file:
@@ -47,7 +47,7 @@
     state: absent
   tags:
     - memcached
-  when: memcached_instance_name != ""
+  when: memcached_instance_name | length > 0
 
 - name: Create a configuration file
   template:
@@ -56,7 +56,7 @@
     mode: "0644"
   tags:
     - memcached
-  when: memcached_instance_name != ""
+  when: memcached_instance_name | length > 0
 
 - name: Enable and start the memcached instance
   systemd:
@@ -67,7 +67,7 @@
     masked: no
   tags:
     - memcached
-  when: memcached_instance_name != ""
+  when: memcached_instance_name | length > 0
 
 - include: munin.yml
 

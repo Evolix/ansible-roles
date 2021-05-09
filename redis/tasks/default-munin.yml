@@ -67,8 +67,8 @@
     value: '{{ redis_password }}'
   notify: restart munin-node
   when:
-    - redis_password != ''
-    - redis_password != None
+    - redis_password is not none
+    - redis_password | length > 0
     - (munin_redis_blocs_in_config.stdout | int) <= 1
   tags: redis
 
@@ -77,6 +77,6 @@
   debug:
     msg: "WARNING - It seems you have multiple redis sections in your munin-node configuration - Munin config NOT changed"
   when:
-    - redis_password != ''
-    - redis_password != None
+    - redis_password is not none
+    - redis_password | length > 0
     - (munin_redis_blocs_in_config.stdout | int) > 1

@@ -14,7 +14,7 @@
     register: mysql_current_real_datadir_test
   tags:
     - mysql
-  when: mysql_custom_datadir != ''
+  when: mysql_custom_datadir | length > 0
 
 - block:
   - name: MySQL is stopped
@@ -40,6 +40,6 @@
   tags:
     - mysql
   when:
-    - mysql_custom_datadir != ''
+    - mysql_custom_datadir | length > 0
     - mysql_custom_datadir != mysql_current_real_datadir_test.stdout
     - not mysql_custom_datadir_test.stat.exists

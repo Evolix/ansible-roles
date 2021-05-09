@@ -98,7 +98,7 @@
     chdir: "/home/{{ redmine_user }}/www/"
   become_user: "{{ redmine_user }}"
   environment: "{{ user_env }}"
-  when: redmine_mysql_create.changed
+  when: redmine_mysql_create is changed
   tags:
     - redmine
 

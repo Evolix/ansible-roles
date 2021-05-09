@@ -4,10 +4,10 @@
   set_fact:
     eni_ipv4_address: "{{ ansible_default_ipv4.address | ipv4 }}"
     eni_ipv4_gateway: "{{ ansible_default_ipv4.gateway | ipv4 }}"
-  when: ansible_default_ipv4
+  when: ansible_default_ipv4 | length > 0
 
 - name: Prepare variables (IPv6)
   set_fact:
     eni_ipv6_address: "{{ ansible_default_ipv6.address | ipv6 | first }}"
     eni_ipv6_gateway: "{{ ansible_default_ipv6.gateway | ipv6 | first }}"
-  when: ansible_default_ipv6
+  when: ansible_default_ipv6 | length > 0

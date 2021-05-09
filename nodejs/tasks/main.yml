@@ -48,4 +48,4 @@
     - nodejs
 
 - include: yarn.yml
-  when: nodejs_install_yarn
+  when: nodejs_install_yarn | bool

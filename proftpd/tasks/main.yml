@@ -22,7 +22,7 @@
     mode: "0644"
     force: no
   notify: restart proftpd
-  when: proftpd_ftp_enable
+  when: proftpd_ftp_enable | bool
   tags:
     - proftpd
 
@@ -33,7 +33,7 @@
     mode: "0644"
     force: no
   notify: restart proftpd
-  when: proftpd_ftps_enable
+  when: proftpd_ftps_enable | bool
   tags:
     - proftpd
 
@@ -44,7 +44,7 @@
     mode: "0644"
     force: no
   notify: restart proftpd
-  when: proftpd_sftp_enable
+  when: proftpd_sftp_enable | bool
   tags:
     - proftpd
 
@@ -80,4 +80,4 @@
     - proftpd
 
 - include: accounts.yml
-  when: proftpd_accounts != "[]"
+  when: proftpd_accounts | length > 0

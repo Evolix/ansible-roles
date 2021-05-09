@@ -17,7 +17,7 @@
   notify: remount /home
   when:
   - fstab_content.stdout | regex_search('\s/home\s')
-  - evolinux_fstab_home
+  - evolinux_fstab_home | bool
 
 - name: /tmp partition is customized
   replace:
@@ -26,7 +26,7 @@
     replace: '\1{{ evolinux_fstab_tmp_options | mandatory }}\3'
   when:
   - fstab_content.stdout | regex_search('\s/tmp\s')
-  - evolinux_fstab_tmp
+  - evolinux_fstab_tmp | bool
 
 - name: /usr partition is customized
   replace:
@@ -35,7 +35,7 @@
     replace: '\1{{ evolinux_fstab_usr_options | mandatory }}\3'
   when:
   - fstab_content.stdout | regex_search('\s/usr\s')
-  - evolinux_fstab_usr
+  - evolinux_fstab_usr | bool
 
 - name: /var partition is customized
   replace:
@@ -45,7 +45,7 @@
   notify: remount /var
   when:
   - fstab_content.stdout | regex_search('\s/var\s')
-  - evolinux_fstab_var
+  - evolinux_fstab_var | bool
 
 - name: /var/tmp is created
   mount:
@@ -55,7 +55,7 @@
     opts: "{{ evolinux_fstab_var_tmp_options | mandatory }}"
     state: mounted
   when:
-  - evolinux_fstab_var_tmp
+  - evolinux_fstab_var_tmp | bool
 
 - name: /dev/shm is created (Debian 10 and later)
   mount:
@@ -65,7 +65,7 @@
     opts: "{{ evolinux_fstab_dev_shm_options | mandatory }}"
     state: mounted
   when:
-  - evolinux_fstab_dev_shm
+  - evolinux_fstab_dev_shm | bool
   - ansible_distribution_major_version is version('10', '>=')
 
 - meta: flush_handlers

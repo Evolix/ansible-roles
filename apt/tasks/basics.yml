@@ -20,7 +20,7 @@
     - /etc/apt/sources.list.d/debian-stretch.list
     - /etc/apt/sources.list.d/debian-buster.list
     - /etc/apt/sources.list.d/debian-update.list
-  when: apt_clean_gandi_sourceslist
+  when: apt_clean_gandi_sourceslist | bool
   tags:
     - apt
 

@@ -13,7 +13,7 @@
       changed_when: False
       check_mode: no
       register: kvm_libvirt_images_current_real_path_test
-  when: kvm_custom_libvirt_images_path != ''
+  when: kvm_custom_libvirt_images_path | length > 0
 
 - name: Images directory is moved to custom path
   block:
@@ -35,6 +35,6 @@
         dest: '/var/lib/libvirt/images'
         state: link
   when:
-    - kvm_custom_libvirt_images_path != ''
+    - kvm_custom_libvirt_images_path | length > 0
     - kvm_custom_libvirt_images_path != kvm_libvirt_images_current_real_path_test.stdout
     - not kvm_custom_libvirt_images_path_test.stat.exists

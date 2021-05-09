@@ -12,7 +12,7 @@
     - { line: "APT::Install-Recommends \"false\";", regexp: 'APT::Install-Recommends' }
     - { line: "APT::Install-Suggests \"false\";",   regexp: 'APT::Install-Suggests' }
     - { line: "APT::Periodic::Enable \"0\";",   regexp: 'APT::Periodic::Enable' }
-  when: apt_evolinux_config
+  when: apt_evolinux_config | bool
   tags:
     - apt
 
@@ -28,7 +28,7 @@
     - "DPkg::Pre-Invoke { \"df /usr | grep -q /usr && mount -oremount,rw /usr || true\"; };"
     - "DPkg::Post-Invoke { \"df /tmp | grep -q /tmp && mount -oremount /tmp || true\"; };"
     - "DPkg::Post-Invoke { \"df /usr | grep -q /usr && mount -oremount /usr || true\"; };"
-  when: apt_hooks
+  when: apt_hooks | bool
   tags:
     - apt
 
@@ -36,7 +36,7 @@
   apt:
     name: aptitude
     state: absent
-  when: apt_remove_aptitude
+  when: apt_remove_aptitude | bool
   tags:
     - apt
 
@@ -50,6 +50,6 @@
 - name: Upgrading system
   apt:
     upgrade: dist
-  when: apt_upgrade
+  when: apt_upgrade | bool
   tags:
     - apt

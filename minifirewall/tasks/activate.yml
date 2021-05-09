@@ -12,7 +12,7 @@
     replace: '/etc/init.d/minifirewall start'
   when:
     - initd_alert5.stat.exists
-    - minifirewall_autostart
+    - minifirewall_autostart | bool
 
 - name: check if /usr/share/scripts/alert5 exists
   stat:
@@ -26,4 +26,4 @@
     replace: '/etc/init.d/minifirewall start'
   when:
     - usr_share_scripts_alert5.stat.exists
-    - minifirewall_autostart
+    - minifirewall_autostart | bool

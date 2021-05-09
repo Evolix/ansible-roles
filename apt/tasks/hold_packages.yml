@@ -4,7 +4,9 @@
   shell: "(dpkg -l {{ item }} 2>/dev/null | grep -q -E '^(i|h)i') && ((apt-mark showhold | grep --quiet {{ item }}) || apt-mark hold {{ item }})"
   register: apt_mark
   changed_when: "item + ' set on hold.' in apt_mark.stdout"
-  failed_when: apt_mark.rc != 0 and not apt_mark.stdout == ''
+  failed_when:
+    - apt_mark.rc != 0
+    - apt_mark.stdout | length > 0
   loop: "{{ apt_hold_packages }}"
   tags:
     - apt

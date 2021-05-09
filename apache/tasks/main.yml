@@ -21,9 +21,9 @@
   tags:
     - apache
     - packages
-  when: 
+  when:
     - ansible_distribution_major_version is version('9', '>=')
-    - apache_mpm == "itk" 
+    - apache_mpm == "itk"
 
 - name: packages are installed (jessie)
   apt:

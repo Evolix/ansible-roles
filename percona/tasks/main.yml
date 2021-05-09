@@ -26,7 +26,7 @@
   copy:
     src: "{{ percona__apt_config_package_file }}"
     dest: "/root/{{ percona__apt_config_package_file }}"
-  when: not percona__apt_config_package_installed
+  when: not (percona__apt_config_package_installed | bool)
 
 # - include_role:
 #     name: evolix/remount-usr
@@ -36,7 +36,7 @@
     deb: "/root/{{ percona__apt_config_package_file }}"
     state: present
   register: percona__apt_config_deb
-  when: not percona__apt_config_package_installed
+  when: not (percona__apt_config_package_installed | bool)
 
 - name: Percona APT config package is installed from repository
   apt:
@@ -51,4 +51,4 @@
   when: percona__apt_config_deb is changed
 
 - include: xtrabackup.yml
-  when: percona__install_xtrabackup
+  when: percona__install_xtrabackup | bool

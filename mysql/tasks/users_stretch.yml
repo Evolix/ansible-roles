@@ -40,7 +40,7 @@
   loop:
     - { option: 'user',     value: 'mysqladmin' }
     - { option: 'password', value: '{{ mysql_admin_password.stdout }}' }
-  when: create_mysqladmin_user.changed
+  when: create_mysqladmin_user is changed
   tags:
   - mysql
 
@@ -79,7 +79,7 @@
     _credentials:
       - { option: 'user',     value: 'debian-sys-maint' }
       - { option: 'password', value: '{{ mysql_debian_password.stdout }}' }
-  when: create_debian_user.changed
+  when: create_debian_user is changed
   tags:
     - mysql
 

@@ -21,7 +21,7 @@
     dest: "/etc/nginx/sites-enabled/evoadminmail.conf"
     state: link
   notify: reload nginx
-  when: evoadminmail_enable_vhost
+  when: evoadminmail_enable_vhost | bool
   tags:
     - evoadmin-mail
 
@@ -30,6 +30,6 @@
     dest: "/etc/nginx/sites-enabled/evoadminmail.conf"
     state: absent
   notify: reload nginx
-  when: not evoadminmail_enable_vhost
+  when: not (evoadminmail_enable_vhost | bool)
   tags:
     - evoadmin-mail

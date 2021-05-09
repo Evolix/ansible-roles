@@ -13,7 +13,7 @@
     dest: "/etc/apache2/sites-enabled/evoadminmail.conf"
     state: link
   notify: reload apache2
-  when: evoadminmail_enable_vhost
+  when: evoadminmail_enable_vhost | bool
   tags:
     - evoadmin-mail
 
@@ -22,6 +22,6 @@
     dest: "/etc/apache2/sites-enabled/evoadminmail.conf"
     state: absent
   notify: reload apache2
-  when: not evoadminmail_enable_vhost
+  when: not (evoadminmail_enable_vhost | bool)
   tags:
     - evoadmin-mail

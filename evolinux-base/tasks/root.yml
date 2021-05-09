@@ -5,7 +5,7 @@
     path: /root
     state: directory
     mode: "0700"
-  when: evolinux_root_chmod
+  when: evolinux_root_chmod | bool
 
 - name: "Customize root's bashrc..."
   lineinfile:
@@ -19,7 +19,7 @@
     - "export HISTTIMEFORMAT=\"%c : \""
     - "shopt -s histappend"
     - "PROMPT_COMMAND=\"history -a;${PROMPT_COMMAND}\""
-  when: evolinux_root_bashrc
+  when: evolinux_root_bashrc | bool
 
 ## .bash_history should be append-only
 
@@ -28,14 +28,14 @@
     content: ""
     dest: "/root/.bash_history"
     force: no
-  when: evolinux_root_bash_history
+  when: evolinux_root_bash_history | bool
 
 - name: Set umask in /root/.profile
   lineinfile:
     dest: "/root/.profile"
     line: "umask 0077"
     regexp: "umask [0-9]+"
-  when: evolinux_root_umask
+  when: evolinux_root_umask | bool
 
 - name: "/usr/share/scripts is present in root's PATH"
   lineinfile:
@@ -48,7 +48,7 @@
     src: root/gitconfig
     dest: "/root/.gitconfig"
     force: no
-  when: evolinux_root_gitconfig
+  when: evolinux_root_gitconfig | bool
 
 - name: Is .bash_history append-only
   shell: lsattr /root/.bash_history | grep -E "^.*a.* "
@@ -61,7 +61,7 @@
 - name: Set .bash_history append-only
   command: chattr +a /root/.bash_history
   when:
-  - evolinux_root_bash_history_appendonly
+  - evolinux_root_bash_history_appendonly | bool
   - bash_history_append_only.rc != 0
   - "'Inappropriate ioctl' not in bash_history_append_only.stderr"
 
@@ -71,7 +71,7 @@
     regexp: '^SELECTED_EDITOR='
     line: "SELECTED_EDITOR=\"/usr/bin/vim.basic\""
     create: yes
-  when: evolinux_root_vim_default
+  when: evolinux_root_vim_default | bool
 
 - name: Setting vim root configuration
   lineinfile:
@@ -86,7 +86,7 @@
     - "set tabstop=4"
     - "set softtabstop=4"
     - "set shiftwidth=4"
-  when: evolinux_root_vim_conf
+  when: evolinux_root_vim_conf | bool
 
 - name: disable SSH access for root
   replace:
@@ -95,7 +95,7 @@
     replace: "PermitRootLogin no"
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
-  when: evolinux_root_disable_ssh
+  when: evolinux_root_disable_ssh | bool
 
 ### Disabled : it seems useless and too dangerous for now
 # - name: remove root from AllowUsers directive

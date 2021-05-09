@@ -126,4 +126,4 @@
 #       - data
 
 - include: proxy_nginx.yml
-  when: kibana_proxy_nginx
+  when: kibana_proxy_nginx | bool

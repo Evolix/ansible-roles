@@ -24,13 +24,13 @@
   loop:
     - { src: "{{ php_apache_defaults_ini_file }}", dest: "/etc/php/7.4/apache2/conf.d/z-evolinux-defaults.ini" }
     - { src: "{{ php_apache_custom_ini_file }}", dest: "/etc/php/7.4/apache2/conf.d/zzz-evolinux-custom.ini" }
-  when: php_apache_enable
+  when: php_apache_enable | bool
 
 - name: Enforce permissions on PHP 7.4/cli directory
   file:
     dest: /etc/php/7.4/apache2
     mode: "0755"
-  when: php_apache_enable
+  when: php_apache_enable | bool
 
 - name: Symlink Evolix FPM config files from 7.4 to 7.0
   file:
@@ -43,10 +43,10 @@
     - { src: "{{ php_fpm_custom_ini_file }}", dest: "/etc/php/7.4/fpm/conf.d/zzz-evolinux-custom.ini" }
     - { src: "{{ php_fpm_defaults_conf_file }}", dest: "/etc/php/7.4/fpm/pool.d/z-evolinux-defaults.conf" }
     - { src: "{{ php_fpm_custom_conf_file }}", dest: "/etc/php/7.4/fpm/pool.d/zzz-evolinux-custom.conf" }
-  when: php_fpm_enable
+  when: php_fpm_enable | bool
 
 - name: Enforce permissions on PHP 7.4/cli directory
   file:
     dest: /etc/php/7.4/fpm
     mode: "0755"
-  when: php_fpm_enable
+  when: php_fpm_enable | bool

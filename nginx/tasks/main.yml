@@ -2,7 +2,7 @@
 
 - debug:
     msg: "Nginx minimal mode has been removed, falling back to normal mode."
-  when: nginx_minimal
+  when: nginx_minimal | bool
 
 - include: packages.yml
 
@@ -112,7 +112,7 @@
     state: link
     force: yes
   notify: reload nginx
-  when: nginx_evolinux_default_enabled
+  when: nginx_evolinux_default_enabled | bool
   tags:
     - nginx
 

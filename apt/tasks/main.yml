@@ -10,30 +10,30 @@
 
 - name: Custom configuration
   include: config.yml
-  when: apt_config
+  when: apt_config | bool
   tags:
     - apt
 
 - name: Install basics repositories
   include: basics.yml
-  when: apt_install_basics
+  when: apt_install_basics | bool
   tags:
     - apt
 
 - name: Install APT Backports repository
   include: backports.yml
-  when: apt_install_backports
+  when: apt_install_backports | bool
   tags:
     - apt
 
 - name: Install Evolix Public APT repository
   include: evolix_public.yml
-  when: apt_install_evolix_public
+  when: apt_install_evolix_public | bool
   tags:
     - apt
 
 - name: Install check for packages marked hold
   include: hold_packages.yml
-  when: apt_install_hold_packages
+  when: apt_install_hold_packages | bool
   tags:
     - apt

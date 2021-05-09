@@ -47,14 +47,14 @@
   register: cmd_a2ensite
   changed_when: "'Enabling site' in cmd_a2ensite.stdout"
   notify: reload apache2
-  when: evoadmin_enable_vhost
+  when: evoadmin_enable_vhost | bool
 
 - name: Disable evoadmin vhost
   command: "a2dissite evoadmin.conf"
   register: cmd_a2dissite
   changed_when: "'Disabling site' in cmd_a2dissite.stdout"
   notify: reload apache2
-  when: not evoadmin_enable_vhost
+  when: not (evoadmin_enable_vhost | bool)
 
 - name: Copy htpasswd for evoadmin
   template:
@@ -72,7 +72,7 @@
       - "templates/evoadmin-web/htpasswd.j2"
       - "templates/htpasswd.j2"
   register: evoadmin_htpasswd_template
-  when: evoadmin_htpasswd
+  when: evoadmin_htpasswd | bool
 
 - name: Copy config file for evoadmin
   template:

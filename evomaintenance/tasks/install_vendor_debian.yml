@@ -14,7 +14,7 @@
     name:
       - postgresql-client
     state: present
-  when: evomaintenance_hook_db
+  when: evomaintenance_hook_db | bool
   tags:
     - evomaintenance
 

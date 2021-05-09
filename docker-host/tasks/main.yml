@@ -73,7 +73,7 @@
     state: directory
     mode: "0644"
     owner: root
-  when: docker_tls_enabled
+  when: docker_tls_enabled | bool
 
 - name: Copy shellpki utility to Docker TLS directory
   template:
@@ -83,7 +83,7 @@
   loop:
     - shellpki.sh
     - openssl.cnf
-  when: docker_tls_enabled
+  when: docker_tls_enabled | bool
 
 - name: Check if certs are already created
   stat:
@@ -92,4 +92,6 @@
 
 - name: Creating a CA, server key
   command: "{{ docker_tls_path }}/shellpki.sh init"
-  when: docker_tls_enabled and not tls_certs_stat.stat.isdir is defined
+  when:
+    - docker_tls_enabled | bool
+    - not tls_certs_stat.stat.isdir

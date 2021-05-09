@@ -68,6 +68,6 @@
     chdir: "{{ repository_path }}"
     warn: no
   register: git_commit
-  when: git_log.rc != 0 or (git_init is defined and git_init.changed)
+  when: git_log.rc != 0 or (git_init is defined and git_init is changed)
   tags:
     - etc-git

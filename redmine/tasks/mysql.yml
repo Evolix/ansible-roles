@@ -13,7 +13,7 @@
   register: redmine_generate_mysql_password
   check_mode: no
   changed_when: False
-  when: redmine_get_mysql_password.stdout == ""
+  when: redmine_get_mysql_password.stdout | length == 0
   tags:
   - redmine
 

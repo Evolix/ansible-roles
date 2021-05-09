@@ -19,7 +19,7 @@
     mode: "0644"
     force: yes
   notify: restart postfix
-  when: postfix_force_main_cf or postfix_maincf_md5_jessie in default_main_cf.stdout or postfix_maincf_md5_stretch in default_main_cf.stdout
+  when: (postfix_force_main_cf | bool) or (postfix_maincf_md5_jessie in default_main_cf.stdout) or (postfix_maincf_md5_stretch in default_main_cf.stdout)
   tags:
   - postfix
 
@@ -67,7 +67,7 @@
   - sender.access
   - sender.access_local
   - spamd.cidr
-  when: postfix_copy_filter.changed
+  when: postfix_copy_filter is changed
   tags:
   - postfix
 

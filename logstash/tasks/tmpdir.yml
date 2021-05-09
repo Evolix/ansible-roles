@@ -8,9 +8,12 @@
   check_mode: no
 
 - block:
-  - name: "Create {{ logstash_custom_tmpdir or logstash_default_tmpdir | mandatory }}"
+  - set_fact:
+      _logstash_custom_tmpdir: "{{ logstash_custom_tmpdir | default(logstash_default_tmpdir, True) | mandatory }}"
+
+  - name: "Create {{ _logstash_custom_tmpdir }}"
     file:
-      path: "{{ logstash_custom_tmpdir or logstash_default_tmpdir | mandatory }}"
+      path: "{{ _logstash_custom_tmpdir }}"
       owner: logstash
       group: logstash
       mode: "0755"
@@ -21,11 +24,11 @@
   - name: change JVM tmpdir
     lineinfile:
       dest: /etc/logstash/jvm.options
-      line: "-Djava.io.tmpdir={{ logstash_custom_tmpdir or logstash_default_tmpdir | mandatory }}"
+      line: "-Djava.io.tmpdir={{ _logstash_custom_tmpdir }}"
       regexp: "^-Djava.io.tmpdir="
       insertafter: "## JVM configuration"
     notify:
       - restart logstash
     tags:
       - logstash
-  when: (logstash_custom_tmpdir != '' and logstash_custom_tmpdir != None) or fstab_tmp_noexec.rc == 0
+  when: (logstash_custom_tmpdir is not none and logstash_custom_tmpdir | length > 0) or fstab_tmp_noexec.rc == 0

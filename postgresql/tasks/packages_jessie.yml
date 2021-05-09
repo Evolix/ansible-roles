@@ -3,7 +3,7 @@
 - name: "Set variables (Debian 8)"
   set_fact:
     postgresql_version: '9.4'
-  when: postgresql_version == ""
+  when: postgresql_version is none or postgresql_version | length == 0
 
 - include: pgdg-repo.yml
   when: postgresql_version != '9.4'

@@ -59,6 +59,6 @@
     regexp: '^PermitRootLogin (yes|without-password|prohibit-password)'
     replace: "PermitRootLogin no"
   notify: reload sshd
-  when: evolinux_root_disable_ssh
+  when: evolinux_root_disable_ssh | bool
 
 - meta: flush_handlers

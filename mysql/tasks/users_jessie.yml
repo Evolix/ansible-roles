@@ -45,7 +45,7 @@
   loop:
     - { option: 'user',     value: 'mysqladmin' }
     - { option: 'password', value: '{{ mysql_admin_password.stdout }}' }
-  when: create_mysqladmin_user.changed
+  when: create_mysqladmin_user is changed
   tags:
   - mysql
 

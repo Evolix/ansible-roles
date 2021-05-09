@@ -50,7 +50,7 @@
   register: commit_end_run
   when:
     - not ansible_check_mode
-    - git_status.stdout
+    - git_status.stdout | length > 0
   ignore_errors: yes
   tags:
     - etc-git

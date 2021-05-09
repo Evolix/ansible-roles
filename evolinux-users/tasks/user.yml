@@ -4,11 +4,11 @@
 
 - fail:
     msg: "You must provide a value for the 'user.name ' variable."
-  when: user.name  is not defined or user.name  == ''
+  when: user.name is not defined or user.name | length == 0
 
 - fail:
     msg: "You must provide a value for the 'user.uid ' variable."
-  when: user.uid  is not defined or user.uid  == ''
+  when: user.uid  is not defined or user.uid | length == 0
 
 - name: "Test if '{{ user.name }}' exists"
   command: 'id -u "{{ user.name }}"'
@@ -102,7 +102,7 @@
     state: present
   when:
     - evolinux_internal_group is defined
-    - evolinux_internal_group != ""
+    - evolinux_internal_group | length > 0
     - ansible_distribution_major_version is version('9', '>=')
 
 - name: "Unix user '{{ user.name }}' belongs to group '{{ evolinux_internal_group }}' (Debian 9 or later)"
@@ -112,7 +112,7 @@
     append: yes
   when:
     - evolinux_internal_group is defined
-    - evolinux_internal_group != ""
+    - evolinux_internal_group | length > 0
     - ansible_distribution_major_version is version('9', '>=')
 
 ## Optional secondary groups, defined per user
@@ -125,7 +125,7 @@
     loop_var: group
   when:
     - user.groups is defined
-    - user.groups != []
+    - user.groups | length > 0
 
 - name: "Unix user '{{ user.name }}' belongs to secondary groups"
   user:
@@ -134,7 +134,7 @@
     append: yes
   when:
     - user.groups is defined
-    - user.groups != []
+    - user.groups | length > 0
 
 # Permissions on home directory
 
@@ -177,7 +177,9 @@
     user: "{{ user.name }}"
     key: "{{ user.ssh_key }}"
     state: present
-  when: user.ssh_key is defined
+  when:
+    - user.ssh_key is defined
+    - user.ssh_key | length > 0
 
 - name: "SSH public keys for '{{ user.name }}' are present"
   authorized_key:
@@ -187,6 +189,8 @@
   loop: "{{ user.ssh_keys }}"
   loop_control:
     loop_var: ssk_key
-  when: user.ssh_keys is defined
+  when:
+    - user.ssh_keys is defined
+    - user.ssh_keys | length > 0
 
 - meta: flush_handlers

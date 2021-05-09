@@ -1,12 +1,15 @@
 ---
 
+- set_fact:
+    _mysql_scripts_dir: "{{ mysql_scripts_dir | default(general_scripts_dir, True) | mandatory }}"
+
 - include_role:
     name: evolix/remount-usr
-  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
+  when: _mysql_scripts_dir is search ("/usr")
 
 - name: Ensure scripts directory exists
   file:
-    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}"
+    dest: "{{ _mysql_scripts_dir }}"
     mode: "0700"
     state: directory
   tags:
@@ -62,12 +65,12 @@
 
 - include_role:
     name: evolix/remount-usr
-  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
+  when: _mysql_scripts_dir is search ("/usr")
 
 - name: Install mysqltuner
   # copy:
   #   src: mysqltuner.pl
-  #   dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysqltuner.pl"
+  #   dest: "{{ _mysql_scripts_dir }}/mysqltuner.pl"
   #   mode: "0700"
   apt:
     name: mysqltuner
@@ -98,12 +101,12 @@
 
 - include_role:
     name: evolix/remount-usr
-  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
+  when: _mysql_scripts_dir is search ("/usr")
 
 - name: Optimize script for MySQL
   copy:
     src: mysql-optimize.sh
-    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysql-optimize.sh"
+    dest: "{{ _mysql_scripts_dir }}/mysql-optimize.sh"
     mode: "0700"
   tags:
     - mysql
@@ -118,10 +121,10 @@
 
 - name: "Enable cron to optimize MySQL"
   file:
-    src: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysql-optimize.sh"
+    src: "{{ _mysql_scripts_dir }}/mysql-optimize.sh"
     dest: /etc/cron.{{ mysql_cron_optimize_frequency | mandatory }}/mysql-optimize.sh
     state: link
-  when: mysql_cron_optimize
+  when: mysql_cron_optimize | bool
   tags:
     - mysql
 
@@ -129,7 +132,7 @@
   file:
     dest: /etc/cron.{{ mysql_cron_optimize_frequency | mandatory }}/mysql-optimize.sh
     state: absent
-  when: not mysql_cron_optimize
+  when: not (mysql_cron_optimize | bool)
   tags:
     - mysql
 
@@ -146,7 +149,7 @@
     src: mysqltuner.cron.sh
     dest: /etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}/mysqltuner.sh
     mode: "0755"
-  when: mysql_cron_mysqltuner
+  when: mysql_cron_mysqltuner | bool
   tags:
     - mysql
 
@@ -154,7 +157,7 @@
   file:
     dest: /etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}/mysqltuner.sh
     state: absent
-  when: not mysql_cron_mysqltuner
+  when: not (mysql_cron_mysqltuner | bool)
   tags:
     - mysql
 
@@ -162,12 +165,12 @@
 
 - include_role:
     name: evolix/remount-usr
-  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
+  when: _mysql_scripts_dir is search ("/usr")
 
 - name: Install my-add.sh
   copy:
     src: my-add.sh
-    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/my-add.sh"
+    dest: "{{ _mysql_scripts_dir }}/my-add.sh"
     mode: "0700"
     force: "{{ mysql_force_myadd_script }}"
   tags:
@@ -183,7 +186,7 @@
 - name: "Install save_mysql_processlist.sh"
   copy:
     src: save_mysql_processlist.sh
-    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/save_mysql_processlist.sh"
+    dest: "{{ _mysql_scripts_dir }}/save_mysql_processlist.sh"
     mode: "0755"
     force: no
   tags:

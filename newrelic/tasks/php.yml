@@ -6,7 +6,7 @@
     question: "newrelic-php5/application-name"
     value: "{{ newrelic_appname }}"
     vtype: string
-  when: newrelic_appname != ""
+  when: newrelic_appname | length > 0
 
 - name: Pre-seed package configuration with license
   debconf:
@@ -14,7 +14,7 @@
     question: "newrelic-php5/license-key"
     value: "{{ newrelic_license }}"
     vtype: "string"
-  when: newrelic_license != ""
+  when: newrelic_license | length > 0
 
 - name: list newrelic config files
   shell: "find /etc/php* -type f -name newrelic.ini"
