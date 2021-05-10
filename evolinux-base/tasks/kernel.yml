@@ -44,7 +44,7 @@
 - name: Patch for TCP stack vulnerability CVE-2016-5696
   sysctl:
     name: net.ipv4.tcp_challenge_ack_limit
-    value: 1073741823
+    value: "1073741823"
     sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
     state: present
     reload: yes
@@ -58,9 +58,9 @@
     state: present
     reload: yes
   loop:
-    - { name: "net.ipv4.ipfrag_low_thresh",   value: 196608 }
-    - { name: "net.ipv6.ip6frag_low_thresh",  value: 196608 }
-    - { name: "net.ipv4.ipfrag_high_thresh",  value: 262144 }
-    - { name: "net.ipv6.ip6frag_high_thresh", value: 262144 }
+    - { name: "net.ipv4.ipfrag_low_thresh",   value: "196608" }
+    - { name: "net.ipv6.ip6frag_low_thresh",  value: "196608" }
+    - { name: "net.ipv4.ipfrag_high_thresh",  value: "262144" }
+    - { name: "net.ipv6.ip6frag_high_thresh", value: "262144" }
 
 - meta: flush_handlers
