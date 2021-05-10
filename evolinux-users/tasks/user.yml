@@ -4,11 +4,11 @@
 
 - fail:
     msg: "You must provide a value for the 'user.name ' variable."
-  when: user.name is not defined or user.name | length == 0
+  when: (user.name is not defined) or (user.name | length == 0)
 
 - fail:
     msg: "You must provide a value for the 'user.uid ' variable."
-  when: user.uid  is not defined or user.uid | length == 0
+  when: (user.uid is not defined) or (user.uid | string | length == 0)
 
 - name: "Test if '{{ user.name }}' exists"
   command: 'id -u "{{ user.name }}"'
