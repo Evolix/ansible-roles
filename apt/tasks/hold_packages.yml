@@ -1,7 +1,7 @@
 ---
 
 - name: "hold packages (apt)"
-  shell: "(dpkg -l {{ item }} 2>/dev/null | grep -q -E '^(i|h)i') && ((apt-mark showhold | grep --quiet {{ item }}) || apt-mark hold {{ item }})"
+  shell: "set -o pipefail && (dpkg -l {{ item }} 2>/dev/null | grep -q -E '^(i|h)i') && ((apt-mark showhold | grep --quiet {{ item }}) || apt-mark hold {{ item }})"
   register: apt_mark
   changed_when: "item + ' set on hold.' in apt_mark.stdout"
   failed_when:
@@ -30,7 +30,7 @@
     - apt
 
 - name: "unhold packages (apt)"
-  shell: "(dpkg -l {{ item }} 2>/dev/null | grep -q -E '^(i|h)i') && ((apt-mark showhold | grep --quiet {{ item }}) && apt-mark unhold {{ item }})"
+  shell: "set -o pipefail && (dpkg -l {{ item }} 2>/dev/null | grep -q -E '^(i|h)i') && ((apt-mark showhold | grep --quiet {{ item }}) && apt-mark unhold {{ item }})"
   register: apt_mark
   changed_when: "'Canceled hold on' + item in apt_mark.stdout"
   failed_when: apt_mark.rc != 0 and not apt_mark.stdout = ''

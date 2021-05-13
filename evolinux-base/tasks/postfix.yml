@@ -32,7 +32,7 @@
     - postfix
 
 - name: fetch users list
-  shell: getent passwd | cut -d":" -f 1 | grep -v root
+  shell: "set -o pipefail && getent passwd | cut -d':' -f 1 | grep -v root"
   check_mode: no
 
   register: non_root_users_list
