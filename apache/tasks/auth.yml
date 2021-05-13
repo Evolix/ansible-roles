@@ -10,7 +10,7 @@
     force: no
   tags:
     - apache
-    
+
 - name: Load IP whitelist task
   include: ip_whitelist.yml
 

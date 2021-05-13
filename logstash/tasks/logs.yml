@@ -4,7 +4,7 @@
   failed_when: False
   changed_when: False
   register: is_cron_installed
-  
+
 - name: "log rotation script"
   template:
     src: rotate_logstash_logs.j2

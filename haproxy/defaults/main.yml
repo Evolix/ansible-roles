@@ -19,7 +19,7 @@ haproxy_stats_external_url: "{% if haproxy_stats_ssl %}https:{% else %}http:{% e
 haproxy_stats_access_ips: []
 haproxy_stats_admin_ips: []
 haproxy_stats_users: []
-## use crypt(8) password encryption 
+## use crypt(8) password encryption
 # haproxy_stats_users:
 #   - { login: "", password: "" }
 

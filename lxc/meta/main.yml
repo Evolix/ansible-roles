@@ -1,6 +1,6 @@
 galaxy_info:
   author: Evolix
-  description: Creation of LXC Containers 
+  description: Creation of LXC Containers
 
   issue_tracker_url: https://gitea.evolix.org/evolix/ansible-roles/issues
 

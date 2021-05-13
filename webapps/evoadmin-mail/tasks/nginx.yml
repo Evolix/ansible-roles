@@ -15,7 +15,7 @@
   tags:
     - evoadmin-mail
 
-- name: Active evoadminmail VHost     
+- name: Active evoadminmail VHost
   file:
     src: "/etc/nginx/sites-available/evoadminmail.conf"
     dest: "/etc/nginx/sites-enabled/evoadminmail.conf"

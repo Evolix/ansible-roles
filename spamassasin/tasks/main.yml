@@ -70,7 +70,7 @@
   failed_when: False
   changed_when: False
   register: is_cron_installed
-  
+
 - name: enable sa-update.sh cron
   lineinfile:
     dest: /etc/cron.d/sa-update

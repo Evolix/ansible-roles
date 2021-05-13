@@ -6,7 +6,7 @@
   failed_when: False
   check_mode: no
   register: _squid_systemd_active
-  
+
 - name: Squid systemd overrides directory exists
   file:
     dest: /etc/systemd/system/squid.service.d/

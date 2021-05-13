@@ -1,5 +1,5 @@
 ---
-  
+
 - name: "{{ lxc_php_version }} - Install dependency packages"
   lxc_container:
     name: "{{ lxc_php_version }}"
@@ -32,7 +32,7 @@
   lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt update"
-  
+
 - name: "{{ lxc_php_version }} - Install PHP packages"
   lxc_container:
     name: "{{ lxc_php_version }}"

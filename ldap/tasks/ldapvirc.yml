@@ -9,7 +9,7 @@
 - name: Warning when ldapvirc file is present and ldap_admin_password is given
   debug:
     msg: "WARNING: an LDAP admin password is given, but an ldapvirc file already exists. It will not be updated."
-  when: 
+  when:
     - ldap_admin_password | length > 0
     - root_ldapvirc_path.stat.exists
 
@@ -28,7 +28,7 @@
     - ldap_admin_password | length == 0
     - not root_ldapvirc_path.stat.exists
 
-# Use the generated password or the one found in the file 
+# Use the generated password or the one found in the file
 - name: overwrite ldap_admin_password
   set_fact:
     ldap_admin_password: "{{ new_ldap_admin_password.stdout }}"
@@ -56,7 +56,7 @@
   check_mode: no
   register: new_ldap_admin_password
 
-# Use the password found in the file 
+# Use the password found in the file
 - name: overwrite ldap_admin_password
   set_fact:
     ldap_admin_password: "{{ new_ldap_admin_password.stdout }}"
