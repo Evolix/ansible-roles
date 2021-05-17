@@ -32,7 +32,7 @@ The **patch** part changes incrementally at each release.
 ### Fixed
 
 * ldap: fix edge cases where passwords were not set/get properly
-* listupgrade: print error if wget fails
+* listupgrade: fix wget error + shellcheck cleanup
 
 ### Removed
 
