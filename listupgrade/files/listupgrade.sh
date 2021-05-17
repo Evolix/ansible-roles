@@ -46,6 +46,11 @@ get_value() {
 fetch_upgrade_info() {
     upgradeInfo=$(mktemp --tmpdir=/tmp evoupdate.XXX)
     wget -q -O $upgradeInfo https://upgrades.evolix.org/upgrade
+
+    if [ "$?" != "0" ]; then
+        printf >&2 "Error fetching upgrade directives.\n"
+    fi
+
     r_releases="$(get_value $upgradeInfo "releases")"
     r_skip_releases="$(get_value $upgradeInfo "skip_releases")"
     r_packages="$(get_value $upgradeInfo "packages")"
@@ -261,4 +266,3 @@ if which lxc-ls > /dev/null; then
 
     done
 fi
-
