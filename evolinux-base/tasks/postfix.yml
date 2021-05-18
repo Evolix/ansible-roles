@@ -33,8 +33,9 @@
 
 - name: fetch users list
   shell: "set -o pipefail && getent passwd | cut -d':' -f 1 | grep -v root"
+  args:
+    executable: /bin/bash
   check_mode: no
-
   register: non_root_users_list
   changed_when: False
   tags:

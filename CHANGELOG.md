@@ -31,6 +31,7 @@ The **patch** part changes incrementally at each release.
 
 ### Fixed
 
+* fix pipefail option for shell invocations
 * ldap: fix edge cases where passwords were not set/get properly
 * listupgrade: fix wget error + shellcheck cleanup
 
