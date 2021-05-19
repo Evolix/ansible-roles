@@ -33,6 +33,7 @@ The **patch** part changes incrementally at each release.
 
 * add default (useless) value for file lookup (first_found)
 * fix pipefail option for shell invocations
+* evolinux-base: fix motd lookup path
 * ldap: fix edge cases where passwords were not set/get properly
 * listupgrade: fix wget error + shellcheck cleanup
 
