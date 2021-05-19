@@ -89,8 +89,8 @@
     templates:
       - "templates/varnish/varnish.{{ inventory_hostname }}.vcl.j2"
       - "templates/varnish/default.{{ inventory_hostname }}.vcl.j2"
-      - "templates/varnish/varnish.{{ host_group }}.vcl.j2"
-      - "templates/varnish/default.{{ host_group }}.vcl.j2"
+      - "templates/varnish/varnish.{{ host_group | default('all') }}.vcl.j2"
+      - "templates/varnish/default.{{ host_group | default('all') }}.vcl.j2"
       - "templates/varnish/varnish.default.vcl.j2"
       - "templates/varnish/default.default.vcl.j2"
       - "templates/varnish.vcl.j2"

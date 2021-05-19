@@ -10,7 +10,7 @@
   vars:
     templates:
       - "templates/evobackup-client/{{ evobackup_client__cron_template_name }}.{{ inventory_hostname }}.sh.j2"
-      - "templates/evobackup-client/{{ evobackup_client__cron_template_name }}.{{ host_group }}.sh.j2"
+      - "templates/evobackup-client/{{ evobackup_client__cron_template_name }}.{{ host_group | default('all') }}.sh.j2"
       - "templates/evobackup-client/{{ evobackup_client__cron_template_name }}.sh.j2"
       - "templates/zzz_evobackup.default.sh.j2"
   tags:

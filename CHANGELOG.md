@@ -31,6 +31,7 @@ The **patch** part changes incrementally at each release.
 
 ### Fixed
 
+* add default (useless) value for file lookup (first_found)
 * fix pipefail option for shell invocations
 * ldap: fix edge cases where passwords were not set/get properly
 * listupgrade: fix wget error + shellcheck cleanup

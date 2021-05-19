@@ -116,7 +116,7 @@
   vars:
     templates:
       - "templates/evoadmin-web/sudoers.{{ inventory_hostname }}.j2"
-      - "templates/evoadmin-web/sudoers.{{ host_group }}.j2"
+      - "templates/evoadmin-web/sudoers.{{ host_group | default('all') }}.j2"
       - "templates/evoadmin-web/sudoers.j2"
       - "templates/sudoers.j2"
   register: evoadmin_sudoers_conf

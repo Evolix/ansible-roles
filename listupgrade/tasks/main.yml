@@ -53,6 +53,7 @@
     owner: root
     group: root
     force: no
+  when: listupgrade_cron_enabled | bool
 
 - name: old-kernel-autoremoval script is present
   copy:

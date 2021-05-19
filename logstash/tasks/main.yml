@@ -82,7 +82,7 @@
   vars:
     templates:
       - "templates/logstash/logstash.{{ inventory_hostname }}.conf.j2"
-      - "templates/logstash/logstash.{{ host_group }}.conf.j2"
+      - "templates/logstash/logstash.{{ host_group | default('all') }}.conf.j2"
       - "templates/logstash/logstash.default.conf.j2"
       - "templates/logstash.default.conf.j2"
   register: logstash_template

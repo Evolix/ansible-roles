@@ -8,7 +8,7 @@
   vars:
     templates:
       - "templates/minifirewall-tail/minifirewall.{{ inventory_hostname }}.tail.j2"
-      - "templates/minifirewall-tail/minifirewall.{{ host_group }}.tail.j2"
+      - "templates/minifirewall-tail/minifirewall.{{ host_group | default('all') }}.tail.j2"
       - "templates/minifirewall-tail/minifirewall.default.tail.j2"
       - "templates/minifirewall.default.tail.j2"
   register: minifirewall_tail_template

@@ -123,7 +123,7 @@
   vars:
     templates:
       - "templates/metricbeat/metricbeat.{{ inventory_hostname }}.yml.j2"
-      - "templates/metricbeat/metricbeat.{{ host_group }}.yml.j2"
+      - "templates/metricbeat/metricbeat.{{ host_group | default('all') }}.yml.j2"
       - "templates/metricbeat/metricbeat.default.yml.j2"
       - "templates/metricbeat.default.yml.j2"
     notify: restart metricbeat

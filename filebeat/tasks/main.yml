@@ -151,7 +151,7 @@
     vars:
       templates:
         - "templates/filebeat/filebeat.{{ inventory_hostname }}.yml.j2"
-        - "templates/filebeat/filebeat.{{ host_group }}.yml.j2"
+        - "templates/filebeat/filebeat.{{ host_group | default('all') }}.yml.j2"
         - "templates/filebeat/filebeat.default.yml.j2"
         - "templates/filebeat.default.yml.j2"
     notify: restart filebeat
