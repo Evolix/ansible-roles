@@ -14,10 +14,10 @@
   loop: "{{ query('first_found', templates) }}"
   vars:
     templates:
-    - "templates/evoadmin-web/web-add.{{ inventory_hostname }}.conf.j2"
-    - "templates/evoadmin-web/web-add.{{ host_group | default('all') }}.conf.j2"
-    - "templates/evoadmin-web/web-add.conf.j2"
-    - "templates/web-add.conf.j2"
+      - "templates/evoadmin-web/web-add.{{ inventory_hostname }}.conf.j2"
+      - "templates/evoadmin-web/web-add.{{ host_group | default('all') }}.conf.j2"
+      - "templates/evoadmin-web/web-add.conf.j2"
+      - "templates/web-add.conf.j2"
   register: evoadmin_add_conf_template
 
 - name: Configure web-add template file for mail
