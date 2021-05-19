@@ -91,7 +91,6 @@
   check_mode: no
   failed_when: False
   changed_when: False
-  check_mode: no
   register: is_cron_installed
 
 - name: Set verbose logging for cron deamon
