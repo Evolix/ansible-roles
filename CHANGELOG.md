@@ -12,6 +12,7 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+* Add Elastic GPG key to kibana, filebeat, logstash, metricbeat roles
 * apache: new variable for mpm mode (+ updated default config accordingly)
 * evolinux-base: add default motd template
 * kvm-host: add migrate-vm script
