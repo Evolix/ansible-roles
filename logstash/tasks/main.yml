@@ -23,6 +23,8 @@
     dest: /etc/apt/trusted.gpg.d/elastic.asc
     force: yes
     mode: "0644"
+    owner: root
+    group: root
   tags:
     - logstash
     - packages

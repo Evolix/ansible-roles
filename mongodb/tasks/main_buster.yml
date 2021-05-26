@@ -12,6 +12,8 @@
     dest: /etc/apt/trusted.gpg.d/mongodb-server-4.2.asc
     force: yes
     mode: "0644"
+    owner: root
+    group: root
 
 - name: enable APT sources list
   apt_repository:

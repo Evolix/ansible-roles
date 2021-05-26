@@ -5,6 +5,8 @@
     url: https://packages.sury.org/php/apt.gpg
     dest: /etc/apt/trusted.gpg.d/sury.gpg
     mode: "0644"
+    owner: root
+    group: root
 
 - name: Setup deb.sury.org repository - Install apt-transport-https
   apt:

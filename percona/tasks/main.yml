@@ -15,6 +15,8 @@
     dest: /etc/apt/trusted.gpg.d/percona.asc
     force: yes
     mode: "0644"
+    owner: root
+    group: root
 
 - name: Check if percona-release is installed
   shell: "set -o pipefail && dpkg -l percona-release 2> /dev/null | grep -q -E '^(i|h)i'"

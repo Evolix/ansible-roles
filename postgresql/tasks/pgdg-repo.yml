@@ -25,6 +25,8 @@
     dest: /etc/apt/trusted.gpg.d/pgdg.asc
     force: yes
     mode: "0644"
+    owner: root
+    group: root
 
 - name: Update and upgrade apt packages for PGDG repository
   apt:

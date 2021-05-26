@@ -33,6 +33,8 @@
     dest: /etc/apt/trusted.gpg.d/docker-debian.asc
     force: yes
     mode: "0644"
+    owner: root
+    group: root
 
 - name: Install docker and python-docker
   apt:

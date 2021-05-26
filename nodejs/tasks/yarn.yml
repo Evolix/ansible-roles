@@ -15,6 +15,9 @@
   copy:
     src: yarnpkg.asc
     dest: /etc/apt/trusted.gpg.d/yarnpkg.asc
+    mode: "0644"
+    owner: root
+    group: root
   tags:
     - system
     - packages

@@ -23,6 +23,9 @@
   copy:
     src: nodesource.asc
     dest: /etc/apt/trusted.gpg.d/nodesource.asc
+    mode: "0644"
+    owner: root
+    group: root
   tags:
     - system
     - packages

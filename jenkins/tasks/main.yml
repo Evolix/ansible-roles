@@ -17,6 +17,8 @@
     dest: /etc/apt/trusted.gpg.d/jenkins.asc
     force: yes
     mode: "0644"
+    owner: root
+    group: root
 
 - name: Add jenkins APT repository
   apt_repository:

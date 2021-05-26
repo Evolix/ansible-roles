@@ -12,6 +12,8 @@
     dest: /etc/apt/trusted.gpg.d/newrelic.asc
     force: yes
     mode: "0644"
+    owner: root
+    group: root
 
 - name: Install NewRelic repository
   apt_repository:

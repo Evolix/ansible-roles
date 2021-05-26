@@ -49,6 +49,8 @@
         dest: /etc/apt/trusted.gpg.d/hpePublicKey2048_key1.asc
         force: yes
         mode: "0644"
+        owner: root
+        group: root
 
     - name: Add HPE repository
       apt_repository:
@@ -114,6 +116,8 @@
         dest: /etc/apt/trusted.gpg.d/hwraid.le-vert.net.asc
         force: yes
         mode: "0644"
+        owner: root
+        group: root
       when: ansible_distribution_major_version is version('9', '>=')
 
     - name: Add HW tool repository
