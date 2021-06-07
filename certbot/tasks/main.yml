@@ -23,7 +23,7 @@
 
 - name: Deploy hooks are present
   copy:
-    src: hooks/
+    src: hooks/deploy/
     dest: /etc/letsencrypt/renewal-hooks/deploy/
     mode: "0700"
     owner: root
@@ -36,11 +36,13 @@
     line: "servers=\"{{ certbot_hooks_sync_remote_servers | join(' ') }}\""
     create: yes
 
-- name: Move commit-etc.sh to z-commit-etc.sh if present
+# begining of backward compatibility tasks
+- name: Move deploy/commit-etc.sh to deploy/z-commit-etc.sh if present
   command: "mv /etc/letsencrypt/renewal-hooks/deploy/commit-etc.sh /etc/letsencrypt/renewal-hooks/deploy/z-commit-etc.sh"
   args:
     removes: /etc/letsencrypt/renewal-hooks/deploy/commit-etc.sh
     creates: /etc/letsencrypt/renewal-hooks/deploy/z-commit-etc.sh
+# end of backward compatibility tasks
 
 - name: "certbot lock is ignored by Git"
   lineinfile:
