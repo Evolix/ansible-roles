@@ -46,6 +46,7 @@
   apt:
     name: nodejs
     state: present
+    update_cache: yes
   tags:
     - packages
     - nodejs

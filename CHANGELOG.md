@@ -17,6 +17,7 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: add default motd template
 * kvm-host: add migrate-vm script
 * mysql: variable to disable myadd script overwrite (default: True)
+* nodejs: update apt cache before installing the package
 
 ### Changed
 
