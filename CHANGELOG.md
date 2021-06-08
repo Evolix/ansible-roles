@@ -26,6 +26,7 @@ The **patch** part changes incrementally at each release.
 * apt: store keys in /etc/apt/trusted.gpg.d in ascii format
 * certbot: sync_remote.sh is configurable
 * evolinux-base: copy GPG key instead of using apt-key
+* nodejs: change GPG key name
 * ntpd: Add leapfile configuration setting to ntpd on debian 10+
 * packweb-apache: install phpMyAdmin from buster-backports
 * spamassassin: change dependency on evomaintenance
