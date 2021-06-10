@@ -13,9 +13,9 @@ set -euo pipefail
 dryRun() {
 
     if ($doDryRun); then
-        echo -e "\e[34mDoing:" $* "\e[39m"
+        echo -e "\e[34mDoing:" "$*" "\e[39m"
     else
-        echo -e "\e[34mDoing:" $* "\e[39m"
+        echo -e "\e[34mDoing:" "$*" "\e[39m"
         $*
     fi
 }
@@ -40,11 +40,15 @@ isoImagePath="${isoImagePath:-}"
 debianVersion="${debianAuto:-stable}"
 preseedURL="${preseedURL:-}"
 
-export DIALOGOUT=$(mktemp --tmpdir=/tmp addvm.XXX)
+DIALOGOUT=$(mktemp --tmpdir=/tmp addvm.XXX)
+export DIALOGOUT
 # TODO: How to replace _ with a space??
-export DIALOG="$(which dialog) --backtitle Add-VM_Press_F1_for_help"
-export DIALOGRC=.dialogrc
-export HELPFILE=$(mktemp --tmpdir=/tmp addvm.XXX)
+DIALOG="$(which dialog) --backtitle Add-VM_Press_F1_for_help"
+export DIALOG
+DIALOGRC=.dialogrc
+export DIALOGRC
+HELPFILE=$(mktemp --tmpdir=/tmp addvm.XXX)
+export HELPFILE
 tmpResFile=$(mktemp --tmpdir=/tmp addvm.XXX)
 xmlVM=$(mktemp --tmpdir=/tmp addvm.XXX)
 masterKVM="$(hostname -s)"
