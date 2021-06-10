@@ -1,5 +1,9 @@
 ---
 
+- include_role:
+    name: evolix/drbd
+  when: kvm_install_drbd
+
 ## TODO: check why it's disabled
 #- include: ssh.yml
 

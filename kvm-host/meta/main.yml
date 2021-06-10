@@ -1,19 +1,20 @@
+---
+
 galaxy_info:
   author: Evolix
+  company: Evolix
   description: Install tools to set-up a KVM host
+  galaxy_tags: []
 
   issue_tracker_url: https://gitea.evolix.org/evolix/ansible-roles/issues
 
   license: GPLv2
 
-  min_ansible_version: 2.2
+  min_ansible_version: "2.2"
 
   platforms:
   - name: Debian
     versions:
-    - jessie
-    - stretch
-    - buster
-
-dependencies:
-  - { role: evolix/drbd, when: kvm_install_drbd }
+      - jessie
+      - stretch
+      - buster

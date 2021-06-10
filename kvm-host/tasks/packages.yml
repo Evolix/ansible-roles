@@ -1,4 +1,5 @@
 ---
+
 - name: Install packages for kvm/libvirt
   apt:
     name:
@@ -10,4 +11,11 @@
       - libvirt-daemon-system
       - libvirt-clients
       - vlan
+    state: present
+
+- name: Install packages for kvmstats
+  apt:
+    name:
+      - dialog
+      - html-xml-utils
     state: present
