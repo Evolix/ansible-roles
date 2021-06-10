@@ -32,6 +32,7 @@
     src: "/usr/local/share/munin/plugins/{{item}}"
     dest: "/etc/munin/plugins/{{item}}"
     state: link
+    force: yes
   loop:
     - kvm_cpu
     - kvm_io
