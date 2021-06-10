@@ -37,6 +37,21 @@
     group: root
     force: yes
 
+- name: kvmstats cron is present
+  template:
+    src: kvmstats.cron.j2
+    dest: "/etc/cron.hourly/kvmstats"
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: entry for kvmstats in web page is present
+  lineinfile:
+    dest: /var/www/index.html
+    insertbefore: '</ul>'
+    line: '<li><a href="/kvmstats.html">kvmstats</a></li>'
+
+
 # backward compatibility
 
 - name: remove old migrate-vm script

@@ -37,6 +37,8 @@ disks="${disks:-}"
 bridgeName="${bridgeName:-br0}"
 doDryRun=${doDryRun:-false}
 isoImagePath="${isoImagePath:-}"
+debianVersion="${debianAuto:-stable}"
+preseedURL="${preseedURL:-}"
 
 export DIALOGOUT=$(mktemp --tmpdir=/tmp addvm.XXX)
 # TODO: How to replace _ with a space??
@@ -184,7 +186,7 @@ ${drbdadm} adjust "$vmName"
 ssh $slaveKVMIP ${drbdadm} adjust "$vmName"
 ${drbdadm} -- --overwrite-data-of-peer primary "$vmName"
 
-if !($doDryRun); then
+if ! ($doDryRun); then
     sleep 5 && drbd-overview | tail -4
 
     drbdDiskPath="/dev/drbd/by-res/${vmName}/0"
@@ -200,6 +202,7 @@ fi
 virtHome=""
 [ "$volhomeDisk" != "none" ] && virtHome="--disk path=/dev/drbd/by-disk/${volhomeDisk}/${vmName}_home,bus=virtio,io=threads,cache=none,format=raw"
 bootMode="--pxe"
+[ -n "${preseedURL}" ] && bootMode="--location https://deb.debian.org/debian/dists/${debianVersion}/main/installer-amd64/ --extra-args \"auto=true priority=critical url=${preseedURL} hostname=${vmName}\""
 [ -f "$isoImagePath" ] && bootMode="--cdrom=$isoImagePath"
 
 dryRun virt-install --connect=qemu:///system \
