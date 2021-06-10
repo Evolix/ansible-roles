@@ -9,5 +9,5 @@
       - virtinst
       - libvirt-daemon-system
       - libvirt-clients
-      - kvm-tools
       - vlan
+    state: present
