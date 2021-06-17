@@ -26,6 +26,7 @@ The **patch** part changes incrementally at each release.
 * apt: store keys in /etc/apt/trusted.gpg.d in ascii format
 * certbot: sync_remote.sh is configurable
 * evolinux-base: copy GPG key instead of using apt-key
+* evomaintenance: upstream release 0.6.4
 * kvm-host: replace the "kvm-tools" package with scripts deployed by Ansible
 * nodejs: change GPG key name
 * ntpd: Add leapfile configuration setting to ntpd on debian 10+
