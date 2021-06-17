@@ -18,6 +18,7 @@ The **patch** part changes incrementally at each release.
 * kvm-host: add migrate-vm script
 * mysql: variable to disable myadd script overwrite (default: True)
 * nodejs: update apt cache before installing the package
+* squid: add Yarn apt repository in default whitelist
 
 ### Changed
 
