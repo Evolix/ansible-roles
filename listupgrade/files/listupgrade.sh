@@ -7,31 +7,24 @@
 # - 60 : current release is not in the $r_releases list
 # - 70 : at least an upgradable package is not in the $r_packages list
 
-set -e
+VERSION="21.06"
 
-configFile="/etc/evolinux/listupgrade.cnf"
+show_version() {
+    cat <<END
+listupgrade.sh version ${VERSION}
 
-packages=$(mktemp --tmpdir=/tmp evoupdate.XXX)
-packagesHold=$(mktemp --tmpdir=/tmp evoupdate.XXX)
-servicesToRestart=$(mktemp --tmpdir=/tmp evoupdate.XXX)
-template=$(mktemp --tmpdir=/tmp evoupdate.XXX)
-clientmail=$(grep EVOMAINTMAIL /etc/evomaintenance.cf | cut -d'=' -f2)
-mailto="${clientmail}"
-date="Ce jeudi entre 18h00 et 23h00."
-hostname=$(grep HOSTNAME /etc/evomaintenance.cf | cut -d'=' -f2)
-hostname=${hostname%%.evolix.net}
+Copyright 2018-2021 Evolix <info@evolix.fr>,
+               Gregory Colpart <reg@evolix.fr>,
+               Romain Dessort <rdessort@evolix.fr>,
+               Ludovic Poujol <lpoujol@evolix.fr>,
+               Jérémy Lecour <jlecour@evolix.fr>
+               and others.
 
-# If hostname is composed with -, remove the first part.
-if [[ "${hostname}" =~ "-" ]]; then
-    hostname=$(echo "${hostname}" | cut -d'-' -f2-)
-fi
-# Edit $configFile to override some variables.
-# shellcheck disable=SC1090,SC1091
-[ -r "${configFile}" ] && . "${configFile}"
-
-# Remove temporary files on exit.
-# shellcheck disable=SC2064
-trap "rm ${packages} ${packagesHold} ${servicesToRestart} ${template}" EXIT
+listupgrade.sh comes with ABSOLUTELY NO WARRANTY.  This is free software,
+and you are welcome to redistribute it under certain conditions.
+See the GNU General Public Licence for details.
+END
+}
 
 # Parse line in retrieved upgrade file and ensure there is no malicious values.
 get_value() {
@@ -48,7 +41,7 @@ get_value() {
 
 # Fetch which packages/releases will be upgraded.
 fetch_upgrade_info() {
-    upgradeInfo=$(mktemp --tmpdir=/tmp evoupdate.XXX)
+    upgradeInfo=$(mktemp --tmpdir=/tmp listupgrade.XXX)
     wget --no-check-certificate --quiet --output-document="${upgradeInfo}" https://upgrades.evolix.org/upgrade
 
     # shellcheck disable=SC2181
@@ -78,130 +71,9 @@ is_in() {
     return 1
 }
 
-if [[ "$1" != "--cron" ]]; then
-    echo "À quel date/heure allez vous planifier l'envoi ?"
-    echo "Exemple : le jeudi 6 mars entre 18h00 et 23h00"
-    echo -n "> "
-    read -r date
-    echo "À qui envoyer le mail ?"
-    echo -n "> "
-    read -r mailto
-fi
-
-# Update APT cache and get packages to upgrade and packages on hold.
-aptUpdateOutput=$(apt update 2>&1 | (grep -E -ve '^(Listing|WARNING|$)' -e upgraded -e 'up to date' || true ))
-
-if echo "${aptUpdateOutput}" | grep -E "^Err(:[0-9]+)? http"; then
-  echo "FATAL - Not able to fetch all sources (probably a pesky (mini)firewall). Please, fix me"
-  exit 100
-fi
-
-apt-mark showhold > "${packagesHold}"
-apt list --upgradable 2>&1 | grep -v -f "${packagesHold}" | grep -Ev '^(Listing|WARNING|$)' > "${packages}"
-packagesParsable=$(cut -f 1 -d / < "${packages}" |tr '\n' ' ')
-
-# No updates? Exit!
-test ! -s "${packages}" && exit 0
-test ! -s "${packagesHold}" && echo 'Aucun' > "${packagesHold}"
-
-fetch_upgrade_info
-local_release=$(cut -f 1 -d . </etc/debian_version)
-
-# Exit if skip_releases or skip_packages in upgrade info file are set to all.
-if [ "${r_skip_releases}" = "all" ] || [ "${r_skip_packages}" = "all" ]; then
-    exit 30
-fi
-
-# Exit if the server's release is in skip_releases.
-if [ -n "${r_skip_releases}" ] && is_in "${r_skip_releases}" "${local_release}"; then
-    exit 40
-fi
-
-# Exit if all packages to upgrade are listed in skip_packages:
-# we remove each package to skip from the $packageToUpgrade list. At the end,
-# if there is no additional packages to upgrade, we can exit.
-if [ -n "${r_skip_packages}" ]; then
-    packageToUpgrade="${packagesParsable}"
-    for pkg in ${r_skip_packages}; do
-        packageToUpgrade="${packageToUpgrade}/${pkg}"
-    done
-    packageToUpgrade=$(echo "${packageToUpgrade}" | sed 's/  \+//g')
-    if [ -z "${packageToUpgrade}" ]; then
-        exit 50
-    fi
-fi
-
-# Exit if the server's release is not in releases.
-if [ -n "${r_releases}" ] && [ "${r_releases}" != "all" ]; then
-    is_in "${r_releases}" "${local_release}" || exit 60
-fi
-
-# Exit if there is packages to upgrades that are not in packages list:
-# we exit at the first package encountered that is not in packages list.
-if [ -n "${r_packages}" ] && [ "${r_packages}" != "all" ]; then
-    for pkg in ${packagesParsable}; do
-        is_in "${r_packages}" "${pkg}" || exit 70
-    done
-fi
-
-# Guess which services will be restarted.
-for pkg in ${packagesParsable}; do
-    if echo "${pkg}" | grep -qE "^(lib)?apache2"; then
-        echo "Apache2" >> "${servicesToRestart}"
-    elif echo "${pkg}" | grep -q "^nginx"; then
-        echo "Nginx" >> "${servicesToRestart}"
-    elif echo "${pkg}" | grep -q "^php5-fpm"; then
-        echo "PHP FPM" >> "${servicesToRestart}"
-    elif echo "${pkg}" | grep -q "^mysql-server"; then
-        echo "MySQL" >> "${servicesToRestart}"
-    elif echo "${pkg}" | grep -q "^mariadb-server"; then
-        echo "MariaDB" >> "${servicesToRestart}"
-    elif echo "${pkg}" | grep -qE "^postgresql-[[:digit:]]+\.[[:digit:]]+$"; then
-        echo "PostgreSQL" >> "${servicesToRestart}"
-    elif echo "${pkg}" | grep -qE "^tomcat[[:digit:]]+$"; then
-        echo "Tomcat" >> "${servicesToRestart}"
-    elif [ "${pkg}" = "redis-server" ]; then
-        echo "Redis" >> "${servicesToRestart}"
-    elif [ "${pkg}" = "mongodb-server" ]; then
-        echo "MondoDB" >> "${servicesToRestart}"
-    elif echo "${pkg}" | grep -qE "^courier-(pop|imap)"; then
-        echo "Courier POP/IMAP" >> "${servicesToRestart}"
-    elif echo "${pkg}" | grep -qE "^dovecot-(pop|imap)d"; then
-        echo "Dovecot POP/IMAP" >> "${servicesToRestart}"
-    elif [ "${pkg}" = "samba" ]; then
-        echo "Samba" >> "${servicesToRestart}"
-    elif [ "${pkg}" = "slapd" ]; then
-        echo "OpenLDAP" >> "${servicesToRestart}"
-    elif [ "${pkg}" = "bind9" ]; then
-        echo "Bind9" >> "${servicesToRestart}"
-    elif [ "${pkg}" = "postfix" ]; then
-        echo "Postfix" >> "${servicesToRestart}"
-    elif [ "${pkg}" = "haproxy" ]; then
-        echo "HAProxy" >> "${servicesToRestart}"
-    elif [ "${pkg}" = "varnish" ]; then
-        echo "Varnish" >> "${servicesToRestart}"
-    elif [ "${pkg}" = "squid" ]; then
-        echo "Squid" >> "${servicesToRestart}"
-    elif [ "${pkg}" = "elasticsearch" ]; then
-        echo "Elasticsearch" >> "${servicesToRestart}"
-    elif [ "${pkg}" = "logstash" ]; then
-        echo "Logstash" >> "${servicesToRestart}"
-    elif [ "${pkg}" = "kibana" ]; then
-        echo "Kibana" >> "${servicesToRestart}"
-    elif [ "${pkg}" = "libc6" ]; then
-        echo "Tous les services sont susceptibles d'être redémarrés (mise à jour de libc6)." > "${servicesToRestart}"
-        break
-    elif [ "${pkg}" = "libstdc++6" ]; then
-        echo "Tous les services sont susceptibles d'être redémarrés (mise à jour de libstdc++6)." > "${servicesToRestart}"
-        break
-    elif echo "${pkg}" | grep -q "^libssl"; then
-        echo "Tous les services sont susceptibles d'être redémarrés (mise à jour de libssl)." > "${servicesToRestart}"
-        break
-    fi
-done
-test ! -s "${servicesToRestart}" && echo "Aucun" > "${servicesToRestart}"
-
-cat << EOT > "${template}"
+render_mail_template() {
+    local template_file=$1
+    cat <<EOT >"${template_file}"
 Content-Type: text/plain; charset="utf-8"
 Reply-To: equipe@evolix.fr
 From: equipe@evolix.net
@@ -244,37 +116,281 @@ Cordialement,
 Équipe Evolix - Hébergement et Infogérance Open Source
 http://evolix.com | Twitter: @Evolix @EvolixNOC | http://blog.evolix.com
 EOT
+}
+# Files found in the directory passed as 1st argument
+# are executed if they are executable
+# and if their name doesn't contain a dot
+exec_hooks_in_dir() {
+    hooks=$(find "${1}" -type f -executable -not -name '*.*')
+    for hook in ${hooks}; do
+        if ! cron_mode; then
+            printf "Running '%s\`\n" "${hook}"
+        fi
+        ${hook}
+    done
+}
+pre_hooks() {
+    if [ -d "${hooksDir}/pre" ]; then
+        exec_hooks_in_dir "${hooksDir}/pre"
+    fi
+}
+post_hooks_and_exit() {
+    status=${1:-0}
+    if [ -d "${hooksDir}/post" ]; then
+        exec_hooks_in_dir "${hooksDir}/post"
+    fi
+    exit ${status}
+}
 
-< "${template}" /usr/sbin/sendmail "${mailto}"
+cron_mode() {
+    test "${cron_mode}" = "1"
+}
 
-# Now we try to fetch all the packages for the next update session
-downloadstatus=$(apt dist-upgrade --assume-yes --download-only -q2 2>&1)
-echo "${downloadstatus}" | grep -q 'Download complete and in download only mode'
+force_mode() {
+    test "${force_mode}" = "1"
+}
 
-# shellcheck disable=SC2181
-if [ $? -ne 0 ]; then
-    echo "${downloadstatus}"
-fi;
+main() {
+    # Update APT cache and get packages to upgrade and packages on hold.
+    aptUpdateOutput=$(apt update 2>&1 | (grep -E -ve '^(Listing|WARNING|$)' -e upgraded -e 'up to date' || true))
 
+    if echo "${aptUpdateOutput}" | grep -E "^Err(:[0-9]+)? http"; then
+        echo "FATAL - Not able to fetch all sources (probably a pesky (mini)firewall). Please, fix me"
+        post_hooks_and_exit 100
+    fi
 
-# Also, we try to update each container apt sources
-if which lxc-ls > /dev/null; then
-    for container in $(lxc-ls); do
+    apt-mark showhold | sed -e 's/\(.\+\)/^\1\//' >"${packagesHold}"
+    apt list --upgradable 2>&1 | grep -v -f "${packagesHold}" | grep -v -E '^(Listing|WARNING|$)' >"${packages}"
+    packagesParsable=$(cut -f 1 -d / <"${packages}" | tr '\n' ' ')
 
-       aptUpdateOutput=$(lxc-attach -n "${container}" -- apt update 2>&1 | (grep -Eve '^(Listing|WARNING|$)' -e upgraded -e 'up to date' || true ))
+    # No updates? Exit!
+    if [ ! -s "${packages}" ]; then
+        if ! cron_mode; then
+            echo "There is nothing to upgrade. Bye."
+        fi
+        post_hooks_and_exit 0
+    fi
 
-       if (echo "${aptUpdateOutput}" | grep -E "^Err(:[0-9]+)? http"); then
-          echo "FATAL CONTAINER - Not able to fetch all sources (probably a pesky (mini)firewall). Please, fix me"
-          exit 150
+    if [ ! -s "${packagesHold}" ]; then
+        echo 'Aucun' >"${packagesHold}"
+    fi
+
+    if force_mode; then
+        if ! cron_mode; then
+            echo "Force mode is enabled, as if every release/package is available for upgrade."
+        fi
+    else
+        fetch_upgrade_info
+        local_release=$(cut -f 1 -d . </etc/debian_version)
+
+        # Exit if skip_releases or skip_packages in upgrade info file are set to all.
+        if [ "${r_skip_releases}" = "all" ] || [ "${r_skip_packages}" = "all" ]; then
+            post_hooks_and_exit 30
         fi
 
-        # Now we try to fetch all the packages for the next update session
-        downloadstatus=$(lxc-attach -n "${container}" -- apt dist-upgrade --assume-yes --download-only -q2 2>&1)
-        echo "${downloadstatus}" | grep -q 'Download complete and in download only mode'
+        # Exit if the server's release is in skip_releases.
+        if [ -n "${r_skip_releases}" ] && is_in "${r_skip_releases}" "${local_release}"; then
+            post_hooks_and_exit 40
+        fi
 
-        if [ $? -ne 0 ]; then
-            echo "${downloadstatus}"
-        fi;
+        # Exit if all packages to upgrade are listed in skip_packages:
+        # we remove each package to skip from the $packageToUpgrade list. At the end,
+        # if there is no additional packages to upgrade, we can exit.
+        if [ -n "${r_skip_packages}" ]; then
+            packageToUpgrade="${packagesParsable}"
+            for pkg in ${r_skip_packages}; do
+                packageToUpgrade="${packageToUpgrade}/${pkg}"
+            done
+            # shellcheck disable=SC2001
+            packageToUpgrade=$(echo "${packageToUpgrade}" | sed 's/  \+//g')
+            if [ -z "${packageToUpgrade}" ]; then
+                post_hooks_and_exit 50
+            fi
+        fi
 
+        # Exit if the server's release is not in releases.
+        if [ -n "${r_releases}" ] && [ "${r_releases}" != "all" ]; then
+            is_in "${r_releases}" "${local_release}" || post_hooks_and_exit 60
+        fi
+
+        # Exit if there is packages to upgrades that are not in packages list:
+        # we exit at the first package encountered that is not in packages list.
+        if [ -n "${r_packages}" ] && [ "${r_packages}" != "all" ]; then
+            for pkg in ${packagesParsable}; do
+                is_in "${r_packages}" "${pkg}" || post_hooks_and_exit 70
+            done
+        fi
+    fi
+
+    # Guess which services will be restarted.
+    for pkg in ${packagesParsable}; do
+        if echo "${pkg}" | grep -qE "^(lib)?apache2"; then
+            echo "Apache2" >>"${servicesToRestart}"
+        elif echo "${pkg}" | grep -q "^nginx"; then
+            echo "Nginx" >>"${servicesToRestart}"
+        elif echo "${pkg}" | grep -q "^php5-fpm"; then
+            echo "PHP FPM" >>"${servicesToRestart}"
+        elif echo "${pkg}" | grep -q "^mysql-server"; then
+            echo "MySQL" >>"${servicesToRestart}"
+        elif echo "${pkg}" | grep -q "^mariadb-server"; then
+            echo "MariaDB" >>"${servicesToRestart}"
+        elif echo "${pkg}" | grep -qE "^postgresql-[[:digit:]]+\.[[:digit:]]+$"; then
+            echo "PostgreSQL" >>"${servicesToRestart}"
+        elif echo "${pkg}" | grep -qE "^tomcat[[:digit:]]+$"; then
+            echo "Tomcat" >>"${servicesToRestart}"
+        elif [ "${pkg}" = "redis-server" ]; then
+            echo "Redis" >>"${servicesToRestart}"
+        elif [ "${pkg}" = "mongodb-server" ]; then
+            echo "MondoDB" >>"${servicesToRestart}"
+        elif echo "${pkg}" | grep -qE "^courier-(pop|imap)"; then
+            echo "Courier POP/IMAP" >>"${servicesToRestart}"
+        elif echo "${pkg}" | grep -qE "^dovecot-(pop|imap)d"; then
+            echo "Dovecot POP/IMAP" >>"${servicesToRestart}"
+        elif [ "${pkg}" = "samba" ]; then
+            echo "Samba" >>"${servicesToRestart}"
+        elif [ "${pkg}" = "slapd" ]; then
+            echo "OpenLDAP" >>"${servicesToRestart}"
+        elif [ "${pkg}" = "bind9" ]; then
+            echo "Bind9" >>"${servicesToRestart}"
+        elif [ "${pkg}" = "postfix" ]; then
+            echo "Postfix" >>"${servicesToRestart}"
+        elif [ "${pkg}" = "haproxy" ]; then
+            echo "HAProxy" >>"${servicesToRestart}"
+        elif [ "${pkg}" = "varnish" ]; then
+            echo "Varnish" >>"${servicesToRestart}"
+        elif [ "${pkg}" = "squid" ]; then
+            echo "Squid" >>"${servicesToRestart}"
+        elif [ "${pkg}" = "elasticsearch" ]; then
+            echo "Elasticsearch" >>"${servicesToRestart}"
+        elif [ "${pkg}" = "logstash" ]; then
+            echo "Logstash" >>"${servicesToRestart}"
+        elif [ "${pkg}" = "kibana" ]; then
+            echo "Kibana" >>"${servicesToRestart}"
+        elif [ "${pkg}" = "libc6" ]; then
+            echo "Tous les services sont susceptibles d'être redémarrés (mise à jour de libc6)." >"${servicesToRestart}"
+            break
+        elif [ "${pkg}" = "libstdc++6" ]; then
+            echo "Tous les services sont susceptibles d'être redémarrés (mise à jour de libstdc++6)." >"${servicesToRestart}"
+            break
+        elif echo "${pkg}" | grep -q "^libssl"; then
+            echo "Tous les services sont susceptibles d'être redémarrés (mise à jour de libssl)." >"${servicesToRestart}"
+            break
+        fi
     done
+    test ! -s "${servicesToRestart}" && echo "Aucun" >"${servicesToRestart}"
+
+    render_mail_template "${template}"
+    /usr/sbin/sendmail "${mailto}" <"${template}"
+
+    # Now we try to fetch all the packages for the next update session
+    downloadstatus=$(apt dist-upgrade --assume-yes --download-only -q2 2>&1)
+    echo "${downloadstatus}" | grep -q 'Download complete and in download only mode'
+
+    # shellcheck disable=SC2181
+    if [ $? -ne 0 ]; then
+        echo "${downloadstatus}"
+    fi
+
+    # Also, we try to update each container apt sources
+    if which lxc-ls >/dev/null; then
+        for container in $(lxc-ls); do
+
+            aptUpdateOutput=$(lxc-attach -n "${container}" -- apt update 2>&1 | (grep -Eve '^(Listing|WARNING|$)' -e upgraded -e 'up to date' || true))
+
+            if (echo "${aptUpdateOutput}" | grep -E "^Err(:[0-9]+)? http"); then
+                echo "FATAL CONTAINER - Not able to fetch all sources (probably a pesky (mini)firewall). Please, fix me"
+                post_hooks_and_exit 150
+            fi
+
+            # Now we try to fetch all the packages for the next update session
+            downloadstatus=$(lxc-attach -n "${container}" -- apt dist-upgrade --assume-yes --download-only -q2 2>&1)
+
+            if echo "${downloadstatus}" | grep -q 'Download complete and in download only mode'; then
+                echo "${downloadstatus}"
+            fi
+
+        done
+    fi
+}
+
+# Options parsing.
+while :; do
+    case ${1} in
+    -V | --version)
+        show_version
+        exit 0
+        ;;
+    --cron)
+        cron_mode=1
+        ;;
+    -f | --force)
+        # Ignore exclusions from "upgrade info" and do as if all releases and packages are to be upgraded
+        force_mode=1
+        ;;
+    -?* | [[:alnum:]]*)
+        # ignore unknown options
+        printf 'ERROR: Unknown option : %s\n' "$1" >&2
+        exit 1
+        ;;
+    *)
+        # Default case: If no more options then break out of the loop.
+        break
+        ;;
+    esac
+
+    shift
+done
+
+## Do not stop on error. Instead we should catch them manually
+# set -e
+## Error on unassigned variables
+set -u
+
+export LC_ALL=C
+
+configFile="/etc/evolinux/listupgrade.cnf"
+
+cron_mode=${cron_mode:-0}
+force_mode=${force_mode:-0}
+clientmail=$(grep EVOMAINTMAIL /etc/evomaintenance.cf | cut -d'=' -f2)
+mailto="${clientmail}"
+date="Ce jeudi entre 18h00 et 23h00."
+hostname=$(grep HOSTNAME /etc/evomaintenance.cf | cut -d'=' -f2)
+hostname=${hostname%%.evolix.net}
+hooksDir="/etc/evolinux/listupgrade-hooks"
+
+# If hostname is composed with -, remove the first part.
+if [[ "${hostname}" =~ "-" ]]; then
+    hostname=$(echo "${hostname}" | cut -d'-' -f2-)
 fi
+# Edit $configFile to override some variables.
+# shellcheck disable=SC1090,SC1091
+[ -r "${configFile}" ] && . "${configFile}"
+
+# Create temporary files
+packages=$(mktemp --tmpdir=/tmp listupgrade.XXX)
+packagesHold=$(mktemp --tmpdir=/tmp listupgrade.XXX)
+servicesToRestart=$(mktemp --tmpdir=/tmp listupgrade.XXX)
+template=$(mktemp --tmpdir=/tmp listupgrade.XXX)
+# Remove temporary files on exit.
+# shellcheck disable=SC2064
+trap "rm ${packages} ${packagesHold} ${servicesToRestart} ${template}" EXIT
+
+if ! cron_mode; then
+    echo "À quelle date/heure allez vous planifier les mises à jour ?"
+    echo "Exemple : le jeudi 6 mars entre 18h00 et 23h00"
+    echo -n "> "
+    read -r date
+    echo "À qui envoyer le mail ?"
+    echo -n "> "
+    read -r mailto
+fi
+
+# Execute pre hooks
+pre_hooks
+
+# call main function
+main
+
+# Execute post hooks and exit
+post_hooks_and_exit 0
