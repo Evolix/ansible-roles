@@ -256,7 +256,7 @@ dryRun virt-install \
     --graphics "vnc,listen=127.0.0.1,keymap=fr" \
     --rng /dev/random \
     --os-variant=none
-virst_install_rc=$?
+virt_install_rc=$?
 
 if [ "${virt_install_rc}" = "0" ]; then
     echo -e "\e[32mDone! Now you can install your VM with virt-manager.\e[39m"
