@@ -5,7 +5,6 @@
     name: remount-usr
   when: git_folder is match('/usr/.*')
 
-
 - name: "is {{ git_folder }} clean?"
   command: git status --porcelain
   args:
