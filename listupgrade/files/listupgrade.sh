@@ -7,7 +7,7 @@
 # - 60 : current release is not in the $r_releases list
 # - 70 : at least an upgradable package is not in the $r_packages list
 
-VERSION="21.06"
+VERSION="21.06.1"
 
 show_version() {
     cat <<END
@@ -152,21 +152,21 @@ force_mode() {
 
 main() {
     # Update APT cache and get packages to upgrade and packages on hold.
-    aptUpdateOutput=$(apt update 2>&1 | (grep -E -ve '^(Listing|WARNING|$)' -e upgraded -e 'up to date' || true))
+    aptUpdateOutput=$(apt -o Dir::State::Lists="${listupgrade_state_dir}"  update 2>&1 | (grep -E -ve '^(Listing|WARNING|$)' -e upgraded -e 'up to date' || true))
 
     if echo "${aptUpdateOutput}" | grep -E "^Err(:[0-9]+)? http"; then
-        echo "FATAL - Not able to fetch all sources (probably a pesky (mini)firewall). Please, fix me"
+        echo "FATAL - Not able to fetch all sources (probably a pesky (mini)firewall). Please, fix me" >&2
         post_hooks_and_exit 100
     fi
 
     apt-mark showhold | sed -e 's/\(.\+\)/^\1\//' >"${packagesHold}"
-    apt list --upgradable 2>&1 | grep -v -f "${packagesHold}" | grep -v -E '^(Listing|WARNING|$)' >"${packages}"
+    apt -o Dir::State::Lists="${listupgrade_state_dir}" list --upgradable 2>&1 | grep -v -f "${packagesHold}" | grep -v -E '^(Listing|WARNING|$)' >"${packages}"
     packagesParsable=$(cut -f 1 -d / <"${packages}" | tr '\n' ' ')
 
     # No updates? Exit!
     if [ ! -s "${packages}" ]; then
         if ! cron_mode; then
-            echo "There is nothing to upgrade. Bye."
+            echo "There is nothing to upgrade. Bye." >&2
         fi
         post_hooks_and_exit 0
     fi
@@ -283,7 +283,7 @@ main() {
     /usr/sbin/sendmail "${mailto}" <"${template}"
 
     # Now we try to fetch all the packages for the next update session
-    downloadstatus=$(apt dist-upgrade --assume-yes --download-only -q2 2>&1)
+    downloadstatus=$(apt -o Dir::State::Lists="${listupgrade_state_dir}" dist-upgrade --assume-yes --download-only -q2 2>&1)
     echo "${downloadstatus}" | grep -q 'Download complete and in download only mode'
 
     # shellcheck disable=SC2181
@@ -295,15 +295,15 @@ main() {
     if which lxc-ls >/dev/null; then
         for container in $(lxc-ls); do
 
-            aptUpdateOutput=$(lxc-attach -n "${container}" -- apt update 2>&1 | (grep -Eve '^(Listing|WARNING|$)' -e upgraded -e 'up to date' || true))
+            aptUpdateOutput=$(lxc-attach -n "${container}" -- apt -o Dir::State::Lists="${listupgrade_state_dir}" update 2>&1 | (grep -Eve '^(Listing|WARNING|$)' -e upgraded -e 'up to date' || true))
 
             if (echo "${aptUpdateOutput}" | grep -E "^Err(:[0-9]+)? http"); then
-                echo "FATAL CONTAINER - Not able to fetch all sources (probably a pesky (mini)firewall). Please, fix me"
+                echo "FATAL CONTAINER - Not able to fetch all sources (probably a pesky (mini)firewall). Please, fix me" >&2
                 post_hooks_and_exit 150
             fi
 
             # Now we try to fetch all the packages for the next update session
-            downloadstatus=$(lxc-attach -n "${container}" -- apt dist-upgrade --assume-yes --download-only -q2 2>&1)
+            downloadstatus=$(lxc-attach -n "${container}" -- apt -o Dir::State::Lists="${listupgrade_state_dir}" dist-upgrade --assume-yes --download-only -q2 2>&1)
 
             if echo "${downloadstatus}" | grep -q 'Download complete and in download only mode'; then
                 echo "${downloadstatus}"
@@ -357,6 +357,7 @@ mailto="${clientmail}"
 date="Ce jeudi entre 18h00 et 23h00."
 hostname=$(grep HOSTNAME /etc/evomaintenance.cf | cut -d'=' -f2)
 hostname=${hostname%%.evolix.net}
+listupgrade_state_dir="${listupgrade_state_dir:-/var/lib/listupgrade}"
 hooksDir="/etc/evolinux/listupgrade-hooks"
 
 # If hostname is composed with -, remove the first part.
