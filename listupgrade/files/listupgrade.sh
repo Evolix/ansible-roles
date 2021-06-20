@@ -7,7 +7,7 @@
 # - 60 : current release is not in the $r_releases list
 # - 70 : at least an upgradable package is not in the $r_packages list
 
-VERSION="21.06.1"
+VERSION="21.06.2"
 
 show_version() {
     cat <<END
@@ -151,6 +151,9 @@ force_mode() {
 }
 
 main() {
+    if ! cron_mode; then
+        echo "Updating lists..."
+    fi
     # Update APT cache and get packages to upgrade and packages on hold.
     aptUpdateOutput=$(apt -o Dir::State::Lists="${listupgrade_state_dir}"  update 2>&1 | (grep -E -ve '^(Listing|WARNING|$)' -e upgraded -e 'up to date' || true))
 
@@ -282,6 +285,9 @@ main() {
     render_mail_template "${template}"
     /usr/sbin/sendmail "${mailto}" <"${template}"
 
+    if ! cron_mode; then
+        echo "Dowloading packages..."
+    fi
     # Now we try to fetch all the packages for the next update session
     downloadstatus=$(apt -o Dir::State::Lists="${listupgrade_state_dir}" dist-upgrade --assume-yes --download-only -q2 2>&1)
     echo "${downloadstatus}" | grep -q 'Download complete and in download only mode'
