@@ -46,6 +46,8 @@ The **patch** part changes incrementally at each release.
 
 ### Removed
 
+* elasticsearch: recent versiond don't depend on external JRE
+
 ### Security
 
 ## [10.5.1] 2021-04-13
