@@ -52,18 +52,36 @@
 - name: Configure discovery seed hosts
   lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
-    line: "discovery.seed_hosts: {{ elasticsearch_discovery_seed_hosts | to_yaml }}"
+    line: "discovery.seed_hosts: {{ elasticsearch_discovery_seed_hosts | to_yaml(default_flow_style=True) }}"
     regexp: "^discovery.seed_hosts:"
-  when: elasticsearch_discovery_seed_hosts | length > 0
+  when: elasticsearch_discovery_seed_hosts | default([], True) | length > 0
+  tags:
+    - config
+
+- name: Configure empty discovery seed hosts
+  lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    regexp: "^discovery.seed_hosts:"
+    state: absent
+  when: elasticsearch_discovery_seed_hosts | default([], True) | length <= 0
   tags:
     - config
 
 - name: Configure initial master nodes
   lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
-    line: "cluster.initial_master_nodes: {{ elasticsearch_cluster_initial_master_nodes | to_yaml }}"
+    line: "cluster.initial_master_nodes: {{ elasticsearch_cluster_initial_master_nodes | to_yaml(default_flow_style=True) }}"
     regexp: "^cluster.initial_master_nodes:"
-  when: elasticsearch_cluster_initial_master_nodes | length > 0
+  when: elasticsearch_cluster_initial_master_nodes | default([], True) | length > 0
+  tags:
+    - config
+
+- name: Configure empty initial master nodes
+  lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    regexp: "^cluster.initial_master_nodes:"
+    state: absent
+  when: elasticsearch_cluster_initial_master_nodes | default([], True) | length <= 0
   tags:
     - config
 
