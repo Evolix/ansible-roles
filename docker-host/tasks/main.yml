@@ -28,9 +28,13 @@
   when: ansible_distribution_release == 'jessie'
 
 - name: Add Docker's official GPG key
-  apt_key:
-    #url: https://download.docker.com/linux/debian/gpg
-    data: "{{ lookup('file', 'docker-debian.gpg') }}"
+  copy:
+    src: docker-debian.asc
+    dest: /etc/apt/trusted.gpg.d/docker-debian.asc
+    force: yes
+    mode: "0644"
+    owner: root
+    group: root
 
 - name: Install docker and python-docker
   apt:
@@ -71,17 +75,17 @@
     state: directory
     mode: "0644"
     owner: root
-  when: docker_tls_enabled
+  when: docker_tls_enabled | bool
 
 - name: Copy shellpki utility to Docker TLS directory
   template:
     src: "{{ item }}.j2"
     dest: "{{ docker_tls_path }}/{{ item }}"
     mode: "0744"
-  with_items:
+  loop:
     - shellpki.sh
     - openssl.cnf
-  when: docker_tls_enabled
+  when: docker_tls_enabled | bool
 
 - name: Check if certs are already created
   stat:
@@ -90,4 +94,6 @@
 
 - name: Creating a CA, server key
   command: "{{ docker_tls_path }}/shellpki.sh init"
-  when: docker_tls_enabled and not tls_certs_stat.stat.isdir is defined
+  when:
+    - docker_tls_enabled | bool
+    - not tls_certs_stat.stat.isdir

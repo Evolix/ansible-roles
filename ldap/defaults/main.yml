@@ -1,5 +1,10 @@
 ---
-ldap_hostname: "{{ ansible_hostname }}"
+
 ldap_listen: "ldap://127.0.0.1:389/"
+
+ldap_hostname: "{{ ansible_hostname }}"
 ldap_domain: "{{ ansible_domain }}"
 ldap_suffix: "dc={{ ldap_hostname }},dc={{ ldap_domain.split('.')[-2] }},dc={{ ldap_domain.split('.')[-1] }}"
+
+ldap_admin_password: ""
+ldap_nagios_password: ""

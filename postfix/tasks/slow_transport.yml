@@ -13,7 +13,7 @@
     dest: /etc/postfix/transport
     line: "{{ item }}"
     create: yes
-  with_items:
+  loop:
     - "orange.fr slow:"
     - "wanadoo.fr slow:"
     - "voila.fr slow:"

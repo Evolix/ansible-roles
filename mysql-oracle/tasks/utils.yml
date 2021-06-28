@@ -1,12 +1,15 @@
 ---
 
+- set_fact:
+    _mysql_scripts_dir: "{{ mysql_scripts_dir | default(general_scripts_dir, True) | mandatory }}"
+
 - include_role:
     name: evolix/remount-usr
-  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
+  when: _mysql_scripts_dir is search ("/usr")
 
 - name: Scripts directory exists
   file:
-    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}"
+    dest: "{{ _mysql_scripts_dir }}"
     mode: "0700"
     state: directory
   tags:
@@ -95,12 +98,12 @@
     name: evolix/remount-usr
   tags:
     - mysql
-  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
+  when: _mysql_scripts_dir is search ("/usr")
 
 - name: mysqltuner is installed
   # copy:
   #   src: mysqltuner.pl
-  #   dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysqltuner.pl"
+  #   dest: "{{ _mysql_scripts_dir }}/mysqltuner.pl"
   #   mode: "0700"
   apt:
     name: mysqltuner
@@ -121,12 +124,12 @@
     name: evolix/remount-usr
   tags:
     - mysql
-  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
+  when: _mysql_scripts_dir is search ("/usr")
 
 - name: mysql-optimize.sh is installed
   copy:
     src: mysql-optimize.sh
-    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysql-optimize.sh"
+    dest: "{{ _mysql_scripts_dir }}/mysql-optimize.sh"
     mode: "0700"
   tags:
     - mysql
@@ -143,7 +146,7 @@
 
 - name: "Enable cron to optimize MySQL"
   file:
-    src: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/mysql-optimize.sh"
+    src: "{{ _mysql_scripts_dir }}/mysql-optimize.sh"
     dest: /etc/cron.{{ mysql_cron_optimize_frequency | mandatory }}/mysql-optimize.sh
     state: link
   when: mysql_cron_optimize | bool
@@ -192,12 +195,12 @@
 
 - include_role:
     name: evolix/remount-usr
-  when: (mysql_scripts_dir or general_scripts_dir) is search ("/usr")
+  when: _mysql_scripts_dir is search ("/usr")
 
 - name: Install my-add.sh
   copy:
     src: my-add.sh
-    dest: "{{ mysql_scripts_dir or general_scripts_dir | mandatory }}/my-add.sh"
+    dest: "{{ _mysql_scripts_dir }}/my-add.sh"
     mode: "0700"
   tags:
     - mysql

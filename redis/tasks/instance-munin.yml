@@ -41,7 +41,7 @@
     src: /usr/local/share/munin/plugins/redis_
     dest: "/etc/munin/plugins/{{ redis_instance_name }}_redis_{{item}}"
     state: link
-  with_items:
+  loop:
     - connected_clients
     - key_ratio
     - keys_per_sec

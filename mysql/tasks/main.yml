@@ -23,7 +23,7 @@
   when: ansible_distribution_release == "jessie"
 
 - include: replication.yml
-  when: mysql_replication
+  when: mysql_replication | bool
 
 - include: datadir.yml
 

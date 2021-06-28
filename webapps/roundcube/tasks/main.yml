@@ -5,7 +5,7 @@
     question: "{{ item.key }}"
     value: "{{ item.value }}"
     vtype: "{{ item.type }}"
-  with_items:
+  loop:
     - { key: 'roundcube/database-type', type: 'select', value: 'sqlite3' }
     - { key: 'roundcube/db/basepath', type: 'string', value: '/var/lib/roundcube/' }
   tags:
@@ -116,7 +116,7 @@
     src: "/etc/nginx/sites-available/roundcube.conf"
     dest: "/etc/nginx/sites-enabled/roundcube.conf"
     state: link
-  when: roundcube_webserver == "nginx" 
+  when: roundcube_webserver == "nginx"
   notify: reload nginx
 
 - name: enable roundcube link in default site index

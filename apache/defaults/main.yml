@@ -23,3 +23,5 @@ log2mail_alert_email: Null
 
 apache_logrotate_frequency: daily
 apache_logrotate_rotate: 365
+
+apache_mpm: "itk"

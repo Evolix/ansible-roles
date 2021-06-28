@@ -5,17 +5,29 @@
     name: apt-transport-https
     state: present
   tags:
-  - logstash
-  - packages
+    - logstash
+    - packages
+
+- name: Elastic embedded GPG key is absent
+  apt_key:
+    id: "D88E42B4"
+    keyring: /etc/apt/trusted.gpg
+    state: absent
+  tags:
+    - logstash
+    - packages
 
 - name: Elastic GPG key is installed
-  apt_key:
-    # url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    data: "{{ lookup('file', 'elasticsearch.key') }}"
-    state: present
+  copy:
+    src: elastic.asc
+    dest: /etc/apt/trusted.gpg.d/elastic.asc
+    force: yes
+    mode: "0644"
+    owner: root
+    group: root
   tags:
-  - logstash
-  - packages
+    - logstash
+    - packages
 
 - name: Elastic sources list is available
   apt_repository:
@@ -24,20 +36,23 @@
     state: present
     update_cache: yes
   tags:
-  - logstash
-  - packages
+    - logstash
+    - packages
 
 - name: Logstash is installed
   apt:
     name: logstash
     state: present
   tags:
+    - logstash
     - packages
 
 - name: Logstash service is enabled
   systemd:
     name: logstash
     enabled: yes
+  tags:
+    - logstash
 
 - name: JVM Heap size (min) is set
   lineinfile:
@@ -45,6 +60,7 @@
     regexp: "^-Xms"
     line: "-Xms{{ logstash_jvm_xms }}"
   tags:
+    - logstash
     - config
 
 - name: JVM Heap size (max) is set
@@ -53,6 +69,7 @@
     regexp: "^-Xmx"
     line: "-Xmx{{ logstash_jvm_xmx }}"
   tags:
+    - logstash
     - config
 
 - name: Add a configuration
@@ -63,12 +80,17 @@
     group: logstash
     mode: "0640"
     force: yes
-  with_first_found:
-  - "templates/logstash/logstash.{{ inventory_hostname }}.conf.j2"
-  - "templates/logstash/logstash.{{ host_group }}.conf.j2"
-  - "templates/logstash/logstash.default.conf.j2"
-  - "logstash.default.conf.j2"
+  loop: "{{ query('first_found', templates) }}"
+  vars:
+    templates:
+      - "templates/logstash/logstash.{{ inventory_hostname }}.conf.j2"
+      - "templates/logstash/logstash.{{ host_group | default('all') }}.conf.j2"
+      - "templates/logstash/logstash.default.conf.j2"
+      - "templates/logstash.default.conf.j2"
   register: logstash_template
+  tags:
+    - logstash
+    - config
 
 - debug:
     var: logstash_template

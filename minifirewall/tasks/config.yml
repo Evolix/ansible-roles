@@ -39,8 +39,7 @@
 
 - name: Verify that at least 1 trusted IP is provided
   assert:
-    that:
-      - minifirewall_trusted_ips != []
+    that: minifirewall_trusted_ips | length > 0
     msg: You must provide at least 1 trusted IP
 
 - debug:
@@ -184,14 +183,14 @@
     dest: "{{ minifirewall_main_file }}"
     line: "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s {{ item }} -m state --state ESTABLISHED,RELATED -j ACCEPT"
     insertafter: "^# EvoMaintenance"
-  with_items: "{{ evomaintenance_hosts }}"
+  loop: "{{ evomaintenance_hosts }}"
 
 - name: remove minifirewall example rule for the evomaintenance
   lineinfile:
     dest: "{{ minifirewall_main_file }}"
     regexp: '^#.*(--sport 5432).*(-s X\.X\.X\.X)'
     state: absent
-  when: evomaintenance_hosts != []
+  when: evomaintenance_hosts | length > 0
 
 - name: Stat minifirewall config file (after)
   stat:
@@ -207,7 +206,7 @@
   failed_when: "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
   changed_when: "'starting IPTables rules is now finish : OK' in minifirewall_init_restart.stdout"
   when:
-    - minifirewall_restart_if_needed
+    - minifirewall_restart_if_needed | bool
     - minifirewall_is_running.rc == 0
     - minifirewall_before.stat.checksum != minifirewall_after.stat.checksum
 
@@ -216,7 +215,7 @@
   register: minifirewall_init_restart
   failed_when: False
   changed_when: False
-  when: not minifirewall_restart_if_needed
+  when: not (minifirewall_restart_if_needed | bool)
 
 - debug:
     var: minifirewall_init_restart

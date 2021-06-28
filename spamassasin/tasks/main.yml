@@ -3,7 +3,6 @@
   apt:
     name:
       - spamassassin
-      - evomaintenance
     state: present
   tags:
     - spamassassin
@@ -47,6 +46,17 @@
   tags:
     - spamassassin
 
+- name: Check evomaintenance config
+  stat:
+    path: /etc/evomaintenance.cf
+  register: _evomaintenance_config
+
+- name: Verify sa-update dependency
+  assert:
+    that:
+      - _evomaintenance_config.stat.exists
+    msg: sa-update.sh needs /etc/evomaintenance.cf
+
 - name: copy sa-update.sh script
   copy:
     src: sa-update.sh
@@ -56,11 +66,14 @@
     - spamassassin
 
 - name: Check if cron is installed
-  shell: "dpkg -l cron 2> /dev/null | grep -q -E '^(i|h)i'"
+  shell: "set -o pipefail && dpkg -l cron 2>/dev/null | grep -q -E '^(i|h)i'"
+  args:
+    executable: /bin/bash
+  check_mode: no
   failed_when: False
   changed_when: False
   register: is_cron_installed
-  
+
 - name: enable sa-update.sh cron
   lineinfile:
     dest: /etc/cron.d/sa-update

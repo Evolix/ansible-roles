@@ -12,7 +12,7 @@
     dest: /etc/resolv.conf
     line: "nameserver {{ item }}"
     state: present
-  with_items: "{{ nameservers }}"
+  loop: "{{ nameservers }}"
   tags:
   - nameserver
 
@@ -21,7 +21,7 @@
     dest: /etc/resolv.conf
     line: "nameserver {{ item }}"
     state: absent
-  with_items: "{{ grep_nameserver.stdout_lines }}"
+  loop: "{{ grep_nameserver.stdout_lines }}"
   when: item not in nameservers
   tags:
   - nameserver

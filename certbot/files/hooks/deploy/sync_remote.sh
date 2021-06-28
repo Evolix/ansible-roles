@@ -29,20 +29,22 @@ main() {
     if found_renewed_lineage; then
         RENEWED_DOMAINS=${RENEWED_DOMAINS:-$(domain_from_cert)}
 
-        remore_lineage=${remote_dir}/renewed_lineage/$(basename ${RENEWED_LINEAGE})
+        remote_lineage=${remote_dir}/renewed_lineage/$(basename "${RENEWED_LINEAGE}")
 
         for server in ${servers}; do
             remote_host="root@${server}"
-            ssh ${remote_host} "mkdir -p ${remote_dir}" \
+            # shellcheck disable=SC2029
+            ssh "${remote_host}" "mkdir -p ${remote_lineage}" \
                 || error "Couldn't create ${remote_dir} directory ${server}"
 
-            rsync --archive --copy-links --delete ${RENEWED_LINEAGE}/ ${remote_host}:${remore_lineage}/ \
+            rsync --archive --copy-links --delete "${RENEWED_LINEAGE}/" "${remote_host}:${remote_lineage}/" \
                 || error "Couldn't sync certificate on ${server}"
 
-            rsync --archive --copy-links --delete --exclude $0 --delete-excluded ${hooks_dir}/ ${remote_host}:${remote_dir}/hooks/ \
+            rsync --archive --copy-links --delete --exclude $0 --delete-excluded "${hooks_dir}/" "${remote_host}:${remote_dir}/hooks/" \
                 || error "Couldn't sync hooks on ${server}"
 
-            ssh ${remote_host} "export RENEWED_LINEAGE=\"${remore_lineage}/\" RENEWED_DOMAINS=${RENEWED_DOMAINS}; find ${remote_dir}/hooks/ -mindepth 1 -maxdepth 1 -type f -executable -exec {} \;" \
+            # shellcheck disable=SC2029
+            ssh "${remote_host}" "export RENEWED_LINEAGE=\"${remote_lineage}/\" RENEWED_DOMAINS=${RENEWED_DOMAINS}; find ${remote_dir}/hooks/ -mindepth 1 -maxdepth 1 -type f -executable -exec {} \;" \
                 || error "Something went wrong on ${server} for deploy hooks"
         done
     else
@@ -50,13 +52,23 @@ main() {
     fi
 }
 
-readonly PROGNAME=$(basename "$0")
-readonly VERBOSE=${VERBOSE:-"0"}
-readonly QUIET=${QUIET:-"0"}
+PROGNAME=$(basename "$0")
+VERBOSE=${VERBOSE:-"0"}
+QUIET=${QUIET:-"0"}
 
-readonly hooks_dir="/etc/letsencrypt/renewal-hooks/deploy"
-readonly remote_dir="/root/cert_sync"
+hooks_dir="/etc/letsencrypt/renewal-hooks/deploy"
+# The config file lust have the same name as the script, with a different extension (.cf instead of .sh)
+config_file="${0%.*}.cf"
+remote_dir="/root/cert_sync"
 
-readonly servers=""
+if [ -f "${config_file}" ]; then
+    . "${config_file}"
+fi
+servers=${servers:-""}
+
+if [ -z "${servers}" ]; then
+    echo "${PROGNAME}: No server provided. Skip." >&2
+    exit 0
+fi
 
 main

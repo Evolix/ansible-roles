@@ -19,7 +19,7 @@
     mode: "0644"
     force: yes
   notify: restart postfix
-  when: postfix_force_main_cf or postfix_maincf_md5_jessie in default_main_cf.stdout or postfix_maincf_md5_stretch in default_main_cf.stdout
+  when: (postfix_force_main_cf | bool) or (postfix_maincf_md5_jessie in default_main_cf.stdout) or (postfix_maincf_md5_stretch in default_main_cf.stdout)
   tags:
   - postfix
 
@@ -37,7 +37,7 @@
     src: filter
     dest: "/etc/postfix/{{ item }}"
     force: no
-  with_items:
+  loop:
   - virtual
   - client.access
   - client.access_local
@@ -55,7 +55,7 @@
 
 - name: postmap filter files
   command: "postmap /etc/postfix/{{ item }}"
-  with_items:
+  loop:
   - virtual
   - client.access
   - client.access_local
@@ -67,7 +67,7 @@
   - sender.access
   - sender.access_local
   - spamd.cidr
-  when: postfix_copy_filter.changed
+  when: postfix_copy_filter is changed
   tags:
   - postfix
 
@@ -76,7 +76,7 @@
     src: "{{ item }}.j2"
     dest: "/etc/postfix/{{ item }}"
     mode: "0644"
-  with_items:
+  loop:
     - virtual_aliases.cf
     - virtual_domains.cf
     - virtual_mailboxes.cf
@@ -98,7 +98,10 @@
   - postfix
 
 - name: Check if cron is installed
-  shell: "dpkg -l cron 2> /dev/null | grep -q -E '^(i|h)i'"
+  shell: "set -o pipefail && dpkg -l cron 2>/dev/null | grep -q -E '^(i|h)i'"
+  args:
+    executable: /bin/bash
+  check_mode: no
   failed_when: False
   changed_when: False
   register: is_cron_installed

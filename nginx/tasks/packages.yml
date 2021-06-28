@@ -2,10 +2,10 @@
 
 - set_fact:
     nginx_package_name_default: nginx-light
-  when: nginx_minimal
+  when: nginx_minimal | bool
 
 - include: packages_backports.yml
-  when: nginx_backports
+  when: nginx_backports | bool
 
 # TODO: install "nginx" + only necessary modules, instead of "nginx-full"
 

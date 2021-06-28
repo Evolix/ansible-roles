@@ -6,7 +6,7 @@
     mode: "0750"
     owner: "{{ redmine_user }}"
     group: "{{ redmine_user }}"
-  with_items:
+  loop:
   - ".config"
   - ".config/systemd"
   - ".config/systemd/user"
@@ -50,7 +50,7 @@
     owner: "{{ redmine_user }}"
     group: "{{ redmine_user }}"
     mode: "0640"
-  with_items:
+  loop:
     - 'configuration.yml'
     - 'database.yml'
     - 'additional_environment.rb'

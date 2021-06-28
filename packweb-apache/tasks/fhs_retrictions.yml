@@ -5,7 +5,7 @@
   register: command_result
   changed_when: "'changed' in command_result.stdout"
   failed_when: False
-  with_items:
+  loop:
     - /
     - /etc
     - /usr
@@ -29,7 +29,7 @@
   register: command_result
   changed_when: "'changed' in command_result.stdout"
   failed_when: False
-  with_items:
+  loop:
     - /var/log/apt
     - /var/lib/dpkg
     - /var/log/munin
@@ -51,7 +51,7 @@
   register: command_result
   changed_when: "'changed' in command_result.stdout"
   failed_when: False
-  with_items:
+  loop:
     - /bin/ping
     - /bin/ping6
     - /usr/bin/fping
@@ -63,6 +63,6 @@
   register: command_result
   changed_when: "'changed' in command_result.stdout"
   failed_when: False
-  with_items:
+  loop:
     - /var/log/evolix.log
     - /etc/warnquota.conf

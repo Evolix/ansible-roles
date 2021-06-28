@@ -6,7 +6,7 @@
   locale_gen:
     name: "{{ item }}"
     state: present
-  with_items:
+  loop:
     - "fr_FR.UTF-8"
   become: yes
   notify: reconfigure locales

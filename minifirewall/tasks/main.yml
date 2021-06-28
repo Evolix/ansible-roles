@@ -2,7 +2,7 @@
 
 - name: Compose minifirewall_restart_handler_name variable
   set_fact:
-    minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
+    minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | bool | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
 
 - include: install.yml
 
@@ -13,10 +13,10 @@
 - include: activate.yml
 
 - include: tail.yml
-  when: minifirewall_tail_included
+  when: minifirewall_tail_included | bool
 
 - name: Force restart minifirewall
   command: /bin/true
   notify: restart minifirewall
   changed_when: False
-  when: minifirewall_restart_force
+  when: minifirewall_restart_force | bool

@@ -51,7 +51,7 @@
     regexp: '^AcceptEnv'
     replace: "#AcceptEnv"
   notify: reload sshd
-  when: evolinux_ssh_disable_acceptenv
+  when: evolinux_ssh_disable_acceptenv | bool
 
 - name: Set log level to verbose (for Debian >= 9)
   replace:
@@ -66,7 +66,7 @@
   changed_when: False
   register: logname
   check_mode: no
-  when: evolinux_ssh_allow_current_user
+  when: evolinux_ssh_allow_current_user | bool
 
 # we must double-escape caracters, because python
 - name: verify AllowUsers directive
@@ -75,7 +75,7 @@
   changed_when: False
   register: grep_allowusers_ssh
   check_mode: no
-  when: evolinux_ssh_allow_current_user
+  when: evolinux_ssh_allow_current_user | bool
 
 - name: "Add AllowUsers sshd directive for current user"
   lineinfile:

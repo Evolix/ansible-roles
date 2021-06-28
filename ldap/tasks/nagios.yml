@@ -1,0 +1,74 @@
+---
+
+- name: "Is /etc/nagios/monitoring-plugins.ini present ?"
+  stat:
+    path: /etc/nagios/monitoring-plugins.ini
+  check_mode: no
+  register: nagios_monitoring_plugins_path
+
+- name: Warning when nagios config is present and ldap_nagios_password is given
+  debug:
+    msg: "WARNING: an LDAP nagios password is given, but a nagios config already exists. It will not be updated."
+  when:
+    - ldap_nagios_password | length > 0
+    - nagios_monitoring_plugins_path.stat.exists
+
+# Generate ldap password if none is given and nagios config is absent
+- name: apg package is installed
+  apt:
+    name: apg
+    state: present
+  when:
+    - ldap_nagios_password | length == 0
+    - not nagios_monitoring_plugins_path.stat.exists
+
+- name: create a password for cn=admin
+  command: "apg -n 1 -m 16 -M lcN"
+  register: new_ldap_nagios_password
+  changed_when: False
+  when:
+    - ldap_nagios_password | length == 0
+    - not nagios_monitoring_plugins_path.stat.exists
+
+# Use the generated password or the one found in the file
+- name: overwrite ldap_nagios_password (from apg)
+  set_fact:
+    ldap_nagios_password: "{{ new_ldap_nagios_password.stdout }}"
+  when:
+    - ldap_nagios_password | length == 0
+    - not nagios_monitoring_plugins_path.stat.exists
+
+- name: set params for NRPE check
+  ini_file:
+    dest: /etc/nagios/monitoring-plugins.ini
+    owner: root
+    group: nagios
+    section: check_ldap
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0640"
+  loop:
+    - { option: 'hostname', value: '127.0.0.1' }
+    - { option: 'base', value: "{{ ldap_suffix }}" }
+    - { option: 'bind', value: "cn=nagios,ou=ldapusers,{{ ldap_suffix }}" }
+    - { option: 'pass', value: "{{ ldap_nagios_password }}" }
+  when: not nagios_monitoring_plugins_path.stat.exists
+
+# Read ldap password when none is given and nagios config is present
+# We can't parse a remote file, so we have to fetch it first
+- name: Fetch /etc/nagios/monitoring-plugins.ini
+  fetch:
+    src: /etc/nagios/monitoring-plugins.ini
+    dest: /tmp/{{ inventory_hostname }}/
+    flat: yes
+
+# Then web can parse it with the 'ini' lookup
+# and set the variable
+- name: overwrite ldap_nagios_password (from file)
+  set_fact:
+    ldap_nagios_password: "{{ lookup('ini', 'pass section=check_ldap file=/tmp/{{ inventory_hostname }}/monitoring-plugins.ini') }}"
+
+- name: hash password for cn=nagios
+  command: "slappasswd -s {{ ldap_nagios_password }}"
+  register: ldap_nagios_password_ssha
+  changed_when: False

@@ -10,6 +10,6 @@
 
 - debug:
     var: evocheck_run.stdout_lines
-  when: evocheck_run.stdout != ""
+  when: evocheck_run.stdout | length > 0
   tags:
   - evocheck-exec

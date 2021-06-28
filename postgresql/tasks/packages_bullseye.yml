@@ -1,0 +1,16 @@
+---
+  
+- name: "Set variables (Debian 11)"
+  set_fact:
+    postgresql_version: '13'
+  when: postgresql_version is none or postgresql_version | length == 0
+
+- include: pgdg-repo.yml
+  when: postgresql_version != '13'
+
+- name: Install postgresql package
+  apt:
+    name:
+      - postgresql
+      - pgtop
+      - libdbd-pg-perl

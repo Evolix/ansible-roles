@@ -42,7 +42,7 @@
     regexp: '^allowed_hosts='
     insertafter: '# Allowed IPs'
   notify: restart nagios-nrpe-server
-  when: nagios_nrpe_force_update_allowed_hosts
+  when: nagios_nrpe_force_update_allowed_hosts | bool
   tags:
     - nagios-nrpe
 

@@ -4,16 +4,16 @@
 # Dependencies (all OS): git postgresql-client
 # Dependencies (Debian): sudo
 
-# Copyright 2007-2019 Evolix <info@evolix.fr>, Gregory Colpart <reg@evolix.fr>,
+# Copyright 2007-2021 Evolix <info@evolix.fr>, Gregory Colpart <reg@evolix.fr>,
 #                     Jérémy Lecour <jlecour@evolix.fr> and others.
 
-VERSION="0.6.3"
+VERSION="0.6.4"
 
 show_version() {
     cat <<END
 evomaintenance version ${VERSION}
 
-Copyright 2007-2019 Evolix <info@evolix.fr>,
+Copyright 2007-2021 Evolix <info@evolix.fr>,
                     Gregory Colpart <reg@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>
                     and others.
@@ -178,9 +178,11 @@ is_repository_readonly() {
     if [ "$(get_system)" = "OpenBSD" ]; then
         partition=$(stat -f '%Sd' $1)
         mount | grep ${partition} | grep -q "read-only"
-    else
+    elif command -v findmnt >/dev/null; then
         mountpoint=$(stat -c '%m' $1)
         findmnt ${mountpoint} --noheadings --output OPTIONS -O ro
+    else
+        grep /usr /proc/mounts | grep -E '\bro\b'
     fi
 }
 remount_repository_readwrite() {

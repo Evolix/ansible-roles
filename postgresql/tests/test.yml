@@ -15,7 +15,7 @@
       create: yes
       state: present
     changed_when: false
-    with_items:
+    loop:
       - "en_US.UTF-8 UTF-8"
       - "fr_FR ISO-8859-1"
       - "fr_FR.UTF-8 UTF-8"
@@ -24,7 +24,7 @@
   - name: Reconfigure locales
     command: /usr/sbin/locale-gen
     changed_when: false
-    when: test_locales.changed
+    when: test_locales is changed
 
   roles:
     - role: postgresql

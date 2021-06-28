@@ -36,7 +36,7 @@
       - libphp-phpmailer
 
 - include: sury_pre.yml
-  when: php_sury_enable
+  when: php_sury_enable | bool
 
 - name: "Install PHP packages (Debian 9 or later)"
   apt:
@@ -49,7 +49,7 @@
       - libapache2-mod-php
       - php
     state: present
-  when: php_apache_enable
+  when: php_apache_enable | bool
 
 - name: "Install PHP FPM packages (Debian 9 or later)"
   apt:
@@ -57,7 +57,7 @@
       - php-fpm
       - php
     state: present
-  when: php_fpm_enable
+  when: php_fpm_enable | bool
 
 # Configuration
 
@@ -65,7 +65,7 @@
   file:
     dest: "{{ item }}"
     mode: "0755"
-  with_items:
+  loop:
     - /etc/php
     - /etc/php/7.0
 
@@ -77,22 +77,22 @@
     mode: "0755"
 
 - include: config_fpm.yml
-  when: php_fpm_enable
+  when: php_fpm_enable | bool
 
 - name: Enforce permissions on PHP fpm directory
   file:
     dest: /etc/php/7.0/fpm
     mode: "0755"
-  when: php_fpm_enable
+  when: php_fpm_enable | bool
 
 - include: config_apache.yml
-  when: php_apache_enable
+  when: php_apache_enable | bool
 
 - name: Enforce permissions on PHP apache2 directory
   file:
     dest: /etc/php/7.0/apache2
     mode: "0755"
-  when: php_apache_enable
+  when: php_apache_enable | bool
 
 - include: sury_post.yml
-  when: php_sury_enable
+  when: php_sury_enable | bool

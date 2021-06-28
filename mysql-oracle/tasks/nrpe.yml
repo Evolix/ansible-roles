@@ -44,12 +44,14 @@
       section: client
       option: '{{ item.option }}'
       value: '{{ item.value }}'
-    with_items:
+    loop:
       - { option: 'user', value: 'nrpe' }
       - { option: 'password', value: '{{ mysql_nrpe_password.stdout }}' }
-    when: create_nrpe_user.changed
+    when: create_nrpe_user is changed
 
-  when: nrpe_evolix_config.stat.exists and (not nrpe_my_cnf.stat.exists or mysql_force_new_nrpe_password)
+  when:
+    - nrpe_evolix_config.stat.exists
+    - (not nrpe_my_cnf.stat.exists or (mysql_force_new_nrpe_password | bool))
   tags:
     - mysql
     - nrpe

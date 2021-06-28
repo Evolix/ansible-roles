@@ -41,7 +41,7 @@
     path: "/etc/skel/{{ item.path }}"
     state: "{{ item.state }}"
     mode: "{{ item.mode }}"
-  with_items:
+  loop:
     - { path: log, mode: "0750", state: directory }
     - { path: awstats, mode: "0750", state: directory }
     - { path: www, mode: "0750", state: directory }
@@ -50,7 +50,7 @@
   command: "touch /etc/skel/log/{{ item }}"
   args:
     creates: "/etc/skel/log/{{ item }}"
-  with_items:
+  loop:
     - access.log
     - error.log
 
@@ -58,7 +58,7 @@
   file:
     dest: "/etc/skel/log/{{ item }}"
     mode: "0644"
-  with_items:
+  loop:
     - access.log
     - error.log
 
@@ -85,12 +85,11 @@
 - include: apache.yml
 
 - include: phpmyadmin.yml
-  when: ansible_distribution_release != "buster"
 
 - include: awstats.yml
 
 - include: fhs_retrictions.yml
-  when: packweb_fhs_retrictions
+  when: packweb_fhs_retrictions | bool
 
 - name: Periodically cache ftp directory sizes for ftpadmin.sh
   cron:

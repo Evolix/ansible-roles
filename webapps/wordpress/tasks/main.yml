@@ -55,28 +55,28 @@
   register: check_version
   check_mode: no
   failed_when: false
-  changed_when: check_version.rc
+  changed_when: check_version.rc == 1
 
 - name: Update Wordpress
   shell: '{{ wordpress_wpcli }} core update --version={{ wordpress_version }}'
   args:
     removes: "{{ ansible_env.HOME }}/www/index.php"
-  when: check_version.rc
+  when: check_version.rc == 1
 
 - name: Install default plugin
   shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} || {{ wordpress_wpcli }} plugin install {{ item }}'
   changed_when: false
-  with_items: "{{ wordpress_plugins }}"
+  loop: "{{ wordpress_plugins }}"
 
 - name: Update default plugins
   shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} && {{ wordpress_wpcli }} plugin update {{ item }}'
   changed_when: false
-  with_items: "{{ wordpress_plugins }}"
+  loop: "{{ wordpress_plugins }}"
 
 - name: Activate default plugins
   shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} && {{ wordpress_wpcli }} plugin activate {{ item }}'
   changed_when: false
-  with_items: "{{ wordpress_plugins }}"
+  loop: "{{ wordpress_plugins }}"
 
 - name: Send a summary mail
   mail:

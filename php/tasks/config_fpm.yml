@@ -8,7 +8,7 @@
     value: "{{ item.value }}"
     mode: "0644"
     create: yes
-  with_items:
+  loop:
     - { option: "short_open_tag", value: "Off" }
     - { option: "expose_php", value: "Off" }
     - { option: "display_errors", value: "Off" }
@@ -43,7 +43,7 @@
     value: "{{ item.value }}"
     mode: "0644"
     create: yes
-  with_items:
+  loop:
     - { option: "user", value: "www-data" }
     - { option: "group", value: "www-data" }
     - { option: "listen", value: "{{ php_fpm_default_pool_socket }}" }
@@ -76,14 +76,14 @@
     option: "{{ item.option }}"
     value: "{{ item.value }}"
     mode: "0644"
-  with_items:
+  loop:
     - { option: "date.timezone", value: "Europe/Paris" }
   notify: "restart {{ php_fpm_service_name }}"
-  when: php_symfony_requirements
+  when: php_symfony_requirements | bool
 
 - name: Delete debian default pool
   file:
-    path: "{{ php_fpm_debian_default_pool_file }}"
+    path: "{{ php_fpm_debian_default_pool_file | mandatory }}"
     state: absent
   notify: "restart {{ php_fpm_service_name }}"
-  when: php_fpm_remove_default_pool
+  when: php_fpm_remove_default_pool | bool

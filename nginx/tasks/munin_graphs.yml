@@ -12,7 +12,7 @@
     src: '/usr/share/munin/plugins/{{ item }}'
     dest: '/etc/munin/plugins/{{ item }}'
     state: link
-  with_items:
+  loop:
     - nginx_request
     - nginx_status
   notify: restart munin

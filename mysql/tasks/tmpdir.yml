@@ -20,4 +20,4 @@
     notify: "{{ mysql_restart_handler_name }}"
     tags:
       - mysql
-  when: mysql_custom_tmpdir != ''
+  when: mysql_custom_tmpdir | length > 0

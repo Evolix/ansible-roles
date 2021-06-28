@@ -48,7 +48,7 @@
     src: cron_jessie
     dest: /etc/cron.d/certbot
     force: yes
-  when: certbot_custom_crontab
+  when: certbot_custom_crontab | bool
 
 - name: disable self-upgrade
   ini_file:

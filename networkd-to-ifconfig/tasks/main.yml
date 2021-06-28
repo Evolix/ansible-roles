@@ -7,7 +7,9 @@
 
 - debug:
     msg: A /etc/network/interfaces file already exists, nothing is done.
-  when: interfaces_file.stat.exists and not force_update_eni_file
+  when:
+    - interfaces_file.stat.exists
+    - not (force_update_eni_file | bool)
 
 - block:
   - name: "Look for systemd network config"
@@ -38,7 +40,7 @@
         - eni_ipv6_address | ipv6
         - eni_ipv6_gateway | ipv6
       msg: "IPv6 configuration is invalid"
-    when: eni_ipv6_address or eni_ipv6_gateway
+    when: (eni_ipv6_address | length > 0) or (eni_ipv6_gateway | length > 0)
 
   - name: "A new /etc/network/interfaces is generated"
     template:
@@ -63,4 +65,4 @@
 
   - debug:
       msg: You should verify your configuration, then reboot the server.
-  when: force_update_eni_file or not interfaces_file.stat.exists
+  when: (force_update_eni_file | bool) or (not interfaces_file.stat.exists)

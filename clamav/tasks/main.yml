@@ -5,7 +5,7 @@
     question: "{{ item.key }}"
     value: "{{ item.value }}"
     vtype: "{{ item.type }}"
-  with_items:
+  loop:
   - { key: 'clamav-daemon/debconf', type: 'boolean', value: 'true' }
   - { key: 'clamav-daemon/MaxHTMLNormalize', type: 'string', value: '10M' }
   - { key: 'clamav-daemon/StatsPEDisabled', type: 'boolean', value: 'true' }
@@ -57,7 +57,7 @@
     question: "{{ item.key }}"
     value: "{{ item.value }}"
     vtype: "{{ item.type }}"
-  with_items:
+  loop:
   - { key: 'clamav-freshclam/autoupdate_freshclam', type: 'select', value: 'daemon' }
   - { key: 'clamav-freshclam/proxy_user', type: 'string', value: '' }
   - { key: 'clamav-freshclam/NotifyClamd', type: 'boolean', value: 'true' }

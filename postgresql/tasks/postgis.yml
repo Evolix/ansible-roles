@@ -1,5 +1,5 @@
 ---
-- name: Install PostGIS extention 
+- name: Install PostGIS extention
   apt:
     name:
       - postgis

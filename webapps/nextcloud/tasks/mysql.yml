@@ -54,7 +54,7 @@
     section: client
     option: "{{ item.option }}"
     value:  "{{ item.value }}"
-  with_items:
+  loop:
     - { option: "user",     value: "{{ nextcloud_db_user }}" }
     - { option: "database", value: "{{ nextcloud_db_name }}" }
     - { option: "password", value: "{{ nextcloud_db_pass }}" }

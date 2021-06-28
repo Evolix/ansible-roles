@@ -5,17 +5,29 @@
     name: apt-transport-https
     state: present
   tags:
-  - filebeat
-  - packages
+    - filebeat
+    - packages
+
+- name: Elastic embedded GPG key is absent
+  apt_key:
+    id: "D88E42B4"
+    keyring: /etc/apt/trusted.gpg
+    state: absent
+  tags:
+    - filebeat
+    - packages
 
 - name: Elastic GPG key is installed
-  apt_key:
-    # url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    data: "{{ lookup('file', 'elasticsearch.key') }}"
-    state: present
+  copy:
+    src: elastic.asc
+    dest: /etc/apt/trusted.gpg.d/elastic.asc
+    force: yes
+    mode: "0644"
+    owner: root
+    group: root
   tags:
-  - filebeat
-  - packages
+    - filebeat
+    - packages
 
 - name: Elastic sources list is available
   apt_repository:
@@ -24,8 +36,8 @@
     state: present
     update_cache: yes
   tags:
-  - filebeat
-  - packages
+    - filebeat
+    - packages
 
 - name: Filebeat is installed
   apt:
@@ -54,7 +66,9 @@
   register: logstash_plugin_installed
   failed_when: false
   changed_when: false
-  when: filebeat_logstash_plugin and logstash_plugin.stat.exists
+  when:
+    - filebeat_logstash_plugin | bool
+    - logstash_plugin.stat.exists
 
 - name: Logstash plugin is installed
   block:
@@ -64,9 +78,9 @@
     - name: logstash-plugin install logstash-input-beats
       command: /usr/share/logstash/bin/logstash-plugin install logstash-input-beats
   when:
-    - filebeat_logstash_plugin
+    - filebeat_logstash_plugin | bool
     - logstash_plugin.stat.exists
-    - not logstash_plugin_installed | success
+    - not (logstash_plugin_installed | success)
 
 # When we don't use a config template (default)
 - block:
@@ -76,7 +90,7 @@
       regexp: '^(\s+)(- add_cloud_metadata:)'
       replace: '\1# \2'
     notify: restart filebeat
-    when: not filebeat_processors_cloud_metadata
+    when: not (filebeat_processors_cloud_metadata | bool)
 
   - name: cloud_metadata processor is disabled
     lineinfile:
@@ -84,7 +98,7 @@
       line: "  - add_cloud_metadata: ~"
       insert_after: '^processors:'
     notify: restart filebeat
-    when: filebeat_processors_cloud_metadata
+    when: filebeat_processors_cloud_metadata | bool
 
   - name: Filebeat knows where to find Elasticsearch
     lineinfile:
@@ -93,8 +107,7 @@
       line: "  hosts: [\"{{ filebeat_elasticsearch_hosts | join('\", \"') }}\"]"
       insertafter: "output.elasticsearch:"
     notify: restart filebeat
-    when:
-      - filebeat_elasticsearch_hosts
+    when: filebeat_elasticsearch_hosts | length > 0
 
   - name: Filebeat protocol for Elasticsearch
     lineinfile:
@@ -111,14 +124,14 @@
       regexp: '{{ item.regexp }}'
       line: '{{ item.line }}'
       insertafter: "output.elasticsearch:"
-    with_items:
+    loop:
       - { regexp: '^  #?username: .*', line: '  username: "{{ filebeat_elasticsearch_auth_username }}"' }
       - { regexp: '^  #?password: .*', line: '  password: "{{ filebeat_elasticsearch_auth_password }}"' }
     notify: restart filebeat
     when:
-      - filebeat_elasticsearch_auth_username
-      - filebeat_elasticsearch_auth_password
-  when: not filebeat_use_config_template
+      - filebeat_elasticsearch_auth_username | length > 0
+      - filebeat_elasticsearch_auth_password | length > 0
+  when: not (filebeat_use_config_template | bool)
 
 - name: Filebeat api_key for Elasticsearch are configured
   lineinfile:
@@ -127,7 +140,7 @@
     line: '  api_key: "{{ filebeat_elasticsearch_auth_api_key }}"'
     insertafter: "output.elasticsearch:"
   notify: restart filebeat
-  when: filebeat_elasticsearch_auth_api_key
+  when: filebeat_elasticsearch_auth_api_key | length > 0
 
 # When we use a config template
 - block:
@@ -136,11 +149,13 @@
       src: "{{ item }}"
       dest: /etc/filebeat/filebeat.yml
       force: "{{ filebeat_force_config }}"
-    with_first_found:
-      - "templates/filebeat/filebeat.{{ inventory_hostname }}.yml.j2"
-      - "templates/filebeat/filebeat.{{ host_group }}.yml.j2"
-      - "templates/filebeat/filebeat.default.yml.j2"
-      - "filebeat.default.yml.j2"
+    loop: "{{ query('first_found', templates) }}"
+    vars:
+      templates:
+        - "templates/filebeat/filebeat.{{ inventory_hostname }}.yml.j2"
+        - "templates/filebeat/filebeat.{{ host_group | default('all') }}.yml.j2"
+        - "templates/filebeat/filebeat.default.yml.j2"
+        - "templates/filebeat.default.yml.j2"
     notify: restart filebeat
-    when: filebeat_update_config
-  when: filebeat_use_config_template
+    when: filebeat_update_config | bool
+  when: filebeat_use_config_template | bool

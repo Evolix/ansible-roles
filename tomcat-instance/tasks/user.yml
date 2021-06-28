@@ -2,7 +2,7 @@
 
 - fail:
     msg: "You must provide a value for the 'tomcat_instance_port' variable."
-  when: tomcat_instance_port is not defined or tomcat_instance_port == ''
+  when: tomcat_instance_port is not defined or tomcat_instance_port | length == 0
 
 
 - name: "Test if uid '{{ tomcat_instance_port }}' exists"

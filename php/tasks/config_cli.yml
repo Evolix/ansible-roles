@@ -7,7 +7,7 @@
     value: "{{ item.value }}"
     mode: "0644"
     create: yes
-  with_items:
+  loop:
     - { option: "display_errors", value: "On" }
     - { option: "allow_url_fopen", value: "On" }
     - { option: "disable_functions", value: "" }
@@ -33,6 +33,6 @@
     option: "{{ item.option }}"
     value: "{{ item.value }}"
     mode: "0644"
-  with_items:
+  loop:
     - { option: "date.timezone", value: "Europe/Paris" }
-  when: php_symfony_requirements
+  when: php_symfony_requirements | bool

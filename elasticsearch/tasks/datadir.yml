@@ -16,8 +16,8 @@
   tags:
     - elasticsearch
   when:
-    - elasticsearch_custom_datadir != ''
-    - elasticsearch_custom_datadir != None
+    - elasticsearch_custom_datadir is not none
+    - elasticsearch_custom_datadir | length > 0
 
 - name: Datadir is moved to custom path
   block:
@@ -44,7 +44,7 @@
   tags:
     - elasticsearch
   when:
-    - elasticsearch_custom_datadir != ''
-    - elasticsearch_custom_datadir != None
+    - elasticsearch_custom_datadir is not none
+    - elasticsearch_custom_datadir | length > 0
     - elasticsearch_custom_datadir != elasticsearch_current_real_datadir_test.stdout
     - not elasticsearch_custom_datadir_test.stat.exists

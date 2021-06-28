@@ -14,6 +14,7 @@
     shell: '/bin/bash'
     createhome: True
     state: present
+    mode: "0755"
   tags:
   - nextcloud
 
@@ -30,7 +31,7 @@
     mode: "0770"
     owner: "{{ nextcloud_user }}"
     group: "{{ nextcloud_user }}"
-  with_items:
+  loop:
     - "{{ nextcloud_home }}/log"
     - "{{ nextcloud_home }}/tmp"
     - "{{ nextcloud_home }}/data"

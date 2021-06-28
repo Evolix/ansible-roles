@@ -9,22 +9,22 @@
 
 - debug:
     msg: "Warning: empty 'evolinux_users' variable, tasks will be skipped!"
-  when: evolinux_users == {}
+  when: evolinux_users | length == 0
 
 - name: Create user accounts
   include: user.yml
   vars:
     user: "{{ item.value }}"
-  with_dict: "{{ evolinux_users }}"
-  when: evolinux_users != {}
+  loop: "{{ evolinux_users | dict2items }}"
+  when: evolinux_users | length > 0
 
 - name: Configure sudo
   include: sudo.yml
   vars:
     user: "{{ item.value }}"
-  with_dict: "{{ evolinux_users }}"
-  when: evolinux_users != {}
+  loop: "{{ evolinux_users | dict2items }}"
+  when: evolinux_users | length > 0
 
 - name: Configure SSH
   include: ssh.yml
-  when: evolinux_users != {}
+  when: evolinux_users | length > 0

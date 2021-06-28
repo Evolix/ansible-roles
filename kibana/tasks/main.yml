@@ -5,17 +5,29 @@
     name: apt-transport-https
     state: present
   tags:
-  - kibana
-  - packages
+    - kibana
+    - packages
+
+- name: Elastic embedded GPG key is absent
+  apt_key:
+    id: "D88E42B4"
+    keyring: /etc/apt/trusted.gpg
+    state: absent
+  tags:
+    - kibana
+    - packages
 
 - name: Elastic GPG key is installed
-  apt_key:
-    # url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    data: "{{ lookup('file', 'elasticsearch.key') }}"
-    state: present
+  copy:
+    src: elastic.asc
+    dest: /etc/apt/trusted.gpg.d/elastic.asc
+    force: yes
+    mode: "0644"
+    owner: root
+    group: root
   tags:
-  - kibana
-  - packages
+    - kibana
+    - packages
 
 - name: Elastic sources list is available
   apt_repository:
@@ -24,14 +36,15 @@
     state: present
     update_cache: yes
   tags:
-  - kibana
-  - packages
+    - kibana
+    - packages
 
 - name: Kibana is installed
   apt:
     name: kibana
     state: present
   tags:
+    - kibana
     - packages
 
 - name: kibana server host configuration
@@ -41,6 +54,8 @@
     regexp: '^server.host:'
     insertafter: '^#server.host:'
   notify: restart kibana
+  tags:
+    - kibana
 
 - name: kibana server basepath configuration
   lineinfile:
@@ -49,6 +64,8 @@
     regexp: '^server.basePath:'
     insertafter: '^#server.basePath:'
   notify: restart kibana
+  tags:
+    - kibana
 
 - name: kibana log destination is present
   file:
@@ -57,6 +74,8 @@
     group: kibana
     mode: "0750"
     state: directory
+  tags:
+    - kibana
 
 - name: kibana log messages go to custom file
   lineinfile:
@@ -65,12 +84,16 @@
     regexp: '^logging.dest:'
     insertafter: '^#logging.dest:'
   notify: restart kibana
+  tags:
+    - kibana
 
 - name: Kibana service is enabled and started
   systemd:
     name: kibana
     enabled: yes
     state: started
+  tags:
+    - kibana
 
 - name: Logrotate configuration is enabled
   copy:
@@ -79,6 +102,8 @@
     mode: "0644"
     owner: root
     group: root
+  tags:
+    - kibana
 
 # - name: Get mount options for /usr partition
 #   shell: "mount | grep 'on /usr type'"
@@ -98,9 +123,9 @@
 #     args:
 #       creates: "/var/lib/kibana/{{ item }}"
 #     notify: restart kibana
-#     with_items:
+#     loop:
 #       - optimize
 #       - data
 
 - include: proxy_nginx.yml
-  when: kibana_proxy_nginx
+  when: kibana_proxy_nginx | bool

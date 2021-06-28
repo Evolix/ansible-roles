@@ -42,4 +42,4 @@
     name: mysql
     daemon_reload: yes
   notify: "{{ mysql_restart_handler_name }}"
-  when: mariadb_systemd_override.changed
+  when: mariadb_systemd_override is changed

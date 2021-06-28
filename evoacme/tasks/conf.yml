@@ -4,7 +4,7 @@
     section: 'req'
     option: "{{ item.name }}"
     value: "{{ item.var }}"
-  with_items:
+  loop:
      - { name: 'default_bits', var: "{{ evoacme_ssl_key_size }}" }
      - { name: 'encrypt_key', var: 'yes' }
      - { name: 'distinguished_name', var: 'req_dn' }
@@ -16,7 +16,7 @@
     section: 'req_dn'
     option: "{{ item.name }}"
     value: "{{ item.var }}"
-  with_items:
+  loop:
      - { name: 'C', var: "{{ evoacme_ssl_ct }}" }
      - { name: 'ST', var: "{{ evoacme_ssl_state }}" }
      - { name: 'L', var: "{{ evoacme_ssl_loc }}" }

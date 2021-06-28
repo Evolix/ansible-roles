@@ -5,17 +5,29 @@
     name: apt-transport-https
     state: present
   tags:
-  - elasticsearch
-  - packages
+    - elasticsearch
+    - packages
+
+- name: Elastic embedded GPG key is absent
+  apt_key:
+    id: "D88E42B4"
+    keyring: /etc/apt/trusted.gpg
+    state: absent
+  tags:
+    - elasticsearch
+    - packages
 
 - name: Elastic GPG key is installed
-  apt_key:
-    # url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    data: "{{ lookup('file', 'elasticsearch.key') }}"
-    state: present
+  copy:
+    src: elastic.asc
+    dest: /etc/apt/trusted.gpg.d/elastic.asc
+    force: yes
+    mode: "0644"
+    owner: root
+    group: root
   tags:
-  - elasticsearch
-  - packages
+    - elasticsearch
+    - packages
 
 - name: Elastic sources list is available
   apt_repository:
@@ -24,16 +36,16 @@
     state: present
     update_cache: yes
   tags:
-  - elasticsearch
-  - packages
+    - elasticsearch
+    - packages
 
 - name: Elasticsearch is installed
   apt:
     name: elasticsearch
     state: present
   tags:
-  - elasticsearch
-  - packages
+    - elasticsearch
+    - packages
 
 - name: Elasticsearch service is enabled
   service:

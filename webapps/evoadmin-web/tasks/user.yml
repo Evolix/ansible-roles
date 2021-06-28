@@ -37,7 +37,7 @@
     line: "{{ item.line }}"
     regexp: "{{ item.regexp }}"
     state: present
-  with_items:
+  loop:
     - line: 'evoadmin: root'
       regexp: '^evoadmin:'
     - line: 'www-evoadmin: root'
@@ -112,9 +112,11 @@
     mode: "0600"
     force: "{{ evoadmin_sudoers_conf_force }}"
     validate: "visudo -cf %s"
-  with_first_found:
-    - "templates/evoadmin-web/sudoers.{{ inventory_hostname }}.j2"
-    - "templates/evoadmin-web/sudoers.{{ host_group }}.j2"
-    - "templates/evoadmin-web/sudoers.j2"
-    - "sudoers.j2"
+  loop: "{{ query('first_found', templates) }}"
+  vars:
+    templates:
+      - "templates/evoadmin-web/sudoers.{{ inventory_hostname }}.j2"
+      - "templates/evoadmin-web/sudoers.{{ host_group | default('all') }}.j2"
+      - "templates/evoadmin-web/sudoers.j2"
+      - "templates/sudoers.j2"
   register: evoadmin_sudoers_conf

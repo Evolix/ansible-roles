@@ -14,7 +14,7 @@
     register: mysql_current_real_logdir_test
   tags:
     - mysql
-  when: mysql_custom_logdir != ''
+  when: mysql_custom_logdir | length > 0
 
 - block:
   - name: MySQL is stopped
@@ -40,6 +40,6 @@
   tags:
     - mysql
   when:
-    - mysql_custom_logdir != ''
+    - mysql_custom_logdir | length > 0
     - mysql_custom_logdir != mysql_current_real_logdir_test.stdout
     - not mysql_custom_logdir_test.stat.exists

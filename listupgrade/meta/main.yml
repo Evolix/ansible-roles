@@ -1,17 +1,19 @@
 galaxy_info:
-  author: Evolix
+  company: Evolix
   description: Installation and configuration of the listupgrade script
 
   issue_tracker_url: https://gitea.evolix.org/evolix/ansible-roles/issues
 
   license: GPLv2
 
-  min_ansible_version: 2.2
+  min_ansible_version: "2.2"
 
   platforms:
-  - name: Debian
-    versions:
-    - jessie
+    - name: Debian
+      versions:
+        - jessie
+        - stretch
+        - buster
 
   galaxy_tags: []
     # List tags for your role here, one per line. A tag is

@@ -5,17 +5,29 @@
     name: apt-transport-https
     state: present
   tags:
-  - metricbeat
-  - packages
+    - metricbeat
+    - packages
+
+- name: Elastic embedded GPG key is absent
+  apt_key:
+    id: "D88E42B4"
+    keyring: /etc/apt/trusted.gpg
+    state: absent
+  tags:
+    - metricbeat
+    - packages
 
 - name: Elastic GPG key is installed
-  apt_key:
-    # url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    data: "{{ lookup('file', 'elasticsearch.key') }}"
-    state: present
+  copy:
+    src: elastic.asc
+    dest: /etc/apt/trusted.gpg.d/elastic.asc
+    force: yes
+    mode: "0644"
+    owner: root
+    group: root
   tags:
-  - metricbeat
-  - packages
+    - metricbeat
+    - packages
 
 - name: Elastic sources list is available
   apt_repository:
@@ -24,8 +36,8 @@
     state: present
     update_cache: yes
   tags:
-  - metricbeat
-  - packages
+    - metricbeat
+    - packages
 
 - name: Metricbeat is installed
   apt:
@@ -51,8 +63,7 @@
       line: "  hosts: [\"{{ metricbeat_elasticsearch_hosts | join('\", \"') }}\"]"
       insertafter: "output.elasticsearch:"
     notify: restart metricbeat
-    when:
-      - metricbeat_elasticsearch_hosts
+    when: metricbeat_elasticsearch_hosts | length > 0
 
   - name: Metricbeat protocol for Elasticsearch
     lineinfile:
@@ -69,13 +80,13 @@
       regexp: '{{ item.regexp }}'
       line: '{{ item.line }}'
       insertafter: "output.elasticsearch:"
-    with_items:
+    loop:
       - { regexp: '^  #?username: .*', line: '  username: "{{ metricbeat_elasticsearch_auth_username }}"' }
       - { regexp: '^  #?password: .*', line: '  password: "{{ metricbeat_elasticsearch_auth_password }}"' }
     notify: restart metricbeat
     when:
-      - metricbeat_elasticsearch_auth_username
-      - metricbeat_elasticsearch_auth_password
+      - metricbeat_elasticsearch_auth_username | length > 0
+      - metricbeat_elasticsearch_auth_password | length > 0
 
   - name: Metricbeat api_key for Elasticsearch are configured
     lineinfile:
@@ -84,7 +95,7 @@
       line: '  api_key: "{{ metricbeat_elasticsearch_auth_api_key }}"'
       insertafter: "output.elasticsearch:"
     notify: restart metricbeat
-    when: metricbeat_elasticsearch_auth_api_key
+    when: metricbeat_elasticsearch_auth_api_key | length > 0
 
   - name: disable cloud_metadata
     replace:
@@ -92,7 +103,7 @@
       regexp: '^(\s+)(- add_cloud_metadata:)'
       replace: '\1# \2'
     notify: restart metricbeat
-    when: not metricbeat_processors_cloud_metadata
+    when: not (metricbeat_processors_cloud_metadata | bool)
 
   - name: cloud_metadata processor is disabled
     lineinfile:
@@ -100,8 +111,8 @@
       line: "  - add_cloud_metadata: ~"
       insert_after: '^processors:'
     notify: restart metricbeat
-    when: metricbeat_processors_cloud_metadata
-  when: not metricbeat_use_config_template
+    when: metricbeat_processors_cloud_metadata | bool
+  when: not (metricbeat_use_config_template | bool)
 
 # When we use a config template
 - block:
@@ -110,11 +121,13 @@
       src: "{{ item }}"
       dest: /etc/metricbeat/metricbeat.yml
       force: "{{ metricbeat_force_config }}"
-    with_first_found:
+  loop: "{{ query('first_found', templates) }}"
+  vars:
+    templates:
       - "templates/metricbeat/metricbeat.{{ inventory_hostname }}.yml.j2"
-      - "templates/metricbeat/metricbeat.{{ host_group }}.yml.j2"
+      - "templates/metricbeat/metricbeat.{{ host_group | default('all') }}.yml.j2"
       - "templates/metricbeat/metricbeat.default.yml.j2"
-      - "metricbeat.default.yml.j2"
+      - "templates/metricbeat.default.yml.j2"
     notify: restart metricbeat
-    when: metricbeat_update_config
-  when: metricbeat_use_config_template
+    when: metricbeat_update_config | bool
+  when: metricbeat_use_config_template | bool

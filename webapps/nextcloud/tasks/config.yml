@@ -15,7 +15,7 @@
 
   tags:
     - nextcloud
-  when: nextcloud_admin_password == ""
+  when: nextcloud_admin_password | length == 0
 
 - name: Get Nextcloud Status
   shell: "php ./occ status --output json | grep -v 'Nextcloud is not installed'"

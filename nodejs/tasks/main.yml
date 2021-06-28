@@ -7,11 +7,25 @@
   tags:
     - system
     - packages
+    - nodejs
+
+- name: NodeJS embedded GPG key is absent
+  apt_key:
+    id: "68576280"
+    keyring: /etc/apt/trusted.gpg
+    state: absent
+  tags:
+    - system
+    - packages
+    - nodejs
 
 - name: NodeJS GPG key is installed
-  apt_key:
-    # url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
-    data: "{{ lookup('file', 'nodesource.gpg.key') }}"
+  copy:
+    src: nodesource.asc
+    dest: /etc/apt/trusted.gpg.d/nodesource.asc
+    mode: "0644"
+    owner: root
+    group: root
   tags:
     - system
     - packages
@@ -32,9 +46,10 @@
   apt:
     name: nodejs
     state: present
+    update_cache: yes
   tags:
     - packages
     - nodejs
 
 - include: yarn.yml
-  when: nodejs_install_yarn
+  when: nodejs_install_yarn | bool

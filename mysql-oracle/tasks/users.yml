@@ -36,7 +36,7 @@
     option: '{{ item.option }}'
     value: '{{ item.value }}'
     create: yes
-  with_items:
+  loop:
     - { option: 'user', value: 'mysqladmin' }
     - { option: 'password', value: '{{ mysql_admin_password.stdout }}' }
   when: create_mysqladmin_user is changed
@@ -71,11 +71,12 @@
     option: '{{ item[1].option }}'
     value: '{{ item[1].value }}'
     create: yes
-  with_nested:
-    - [ "client", "mysql_upgrade" ]
-    - [ { option: 'user', value: 'debian-sys-maint' },
-        { option: 'password', value: '{{ mysql_debian_password.stdout }}' }
-      ]
+  loop: "{{ _sections | product(_credentials) | list }}"
+  vars:
+    _sections: [ 'client', 'mysql_upgrade' ]
+    _credentials:
+      - { option: 'user',     value: 'debian-sys-maint' }
+      - { option: 'password', value: '{{ mysql_debian_password.stdout }}' }
   when: create_debian_user is changed
   tags:
     - mysql

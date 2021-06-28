@@ -1,16 +1,30 @@
 ---
 
-- name: yarn GPG key is installed
+- name: Yarn embedded GPG key is absent
   apt_key:
-    # url: https://dl.yarnpkg.com/debian/pubkey.gpg
-    data: "{{ lookup('file', 'yarnpkg.gpg.key') }}"
+    id: "86E50310"
+    keyring: /etc/apt/trusted.gpg
+    state: absent
   tags:
     - system
     - packages
     - nodejs
     - yarn
 
-- name: yarn sources list is available
+- name: Yarn GPG key is installed
+  copy:
+    src: yarn.asc
+    dest: /etc/apt/trusted.gpg.d/yarn.asc
+    mode: "0644"
+    owner: root
+    group: root
+  tags:
+    - system
+    - packages
+    - nodejs
+    - yarn
+
+- name: Yarn sources list is available
   apt_repository:
     repo: "deb https://dl.yarnpkg.com/debian/ stable main"
     filename: yarn
@@ -22,7 +36,7 @@
     - nodejs
     - yarn
 
-- name: yarn is installed
+- name: Yarn is installed
   apt:
     name: yarn
     state: present

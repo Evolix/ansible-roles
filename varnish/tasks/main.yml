@@ -10,7 +10,7 @@
   file:
     path: "{{ item }}"
     state: absent
-  with_items:
+  loop:
     - /etc/default/varnish
     - /etc/default/varnishncsa
     - /etc/default/varnishlog
@@ -84,15 +84,17 @@
     dest: "{{ varnish_config_file }}"
     mode: "0644"
     force: yes
-  with_first_found:
-    - "templates/varnish/varnish.{{ inventory_hostname }}.vcl.j2"
-    - "templates/varnish/default.{{ inventory_hostname }}.vcl.j2"
-    - "templates/varnish/varnish.{{ host_group }}.vcl.j2"
-    - "templates/varnish/default.{{ host_group }}.vcl.j2"
-    - "templates/varnish/varnish.default.vcl.j2"
-    - "templates/varnish/default.default.vcl.j2"
-    - "varnish.vcl.j2"
-    - "default.vcl.j2"
+  loop: "{{ query('first_found', templates) }}"
+  vars:
+    templates:
+      - "templates/varnish/varnish.{{ inventory_hostname }}.vcl.j2"
+      - "templates/varnish/default.{{ inventory_hostname }}.vcl.j2"
+      - "templates/varnish/varnish.{{ host_group | default('all') }}.vcl.j2"
+      - "templates/varnish/default.{{ host_group | default('all') }}.vcl.j2"
+      - "templates/varnish/varnish.default.vcl.j2"
+      - "templates/varnish/default.default.vcl.j2"
+      - "templates/varnish.vcl.j2"
+      - "templates/default.vcl.j2"
   notify: reload varnish
   tags:
     - varnish
@@ -107,6 +109,7 @@
   tags:
     - varnish
     - config
+    - update-config
 
 - name: Copy included Varnish config
   template:

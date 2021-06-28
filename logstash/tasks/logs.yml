@@ -1,10 +1,13 @@
 ---
 - name: Check if cron is installed
-  shell: "dpkg -l cron 2> /dev/null | grep -q -E '^(i|h)i'"
+  shell: "set -o pipefail && dpkg -l cron 2>/dev/null | grep -q -E '^(i|h)i'"
+  args:
+    executable: /bin/bash
+  check_mode: no
   failed_when: False
   changed_when: False
   register: is_cron_installed
-  
+
 - name: "log rotation script"
   template:
     src: rotate_logstash_logs.j2

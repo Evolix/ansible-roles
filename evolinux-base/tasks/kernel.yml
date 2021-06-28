@@ -7,10 +7,10 @@
     sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
     state: present
     reload: yes
-  with_items:
+  loop:
   - { name: kernel.panic_on_oops, value: 1 }
   - { name: kernel.panic, value: 60 }
-  when: evolinux_kernel_reboot_after_panic
+  when: evolinux_kernel_reboot_after_panic | bool
 
 - name: Don't reboot after panic
   sysctl:
@@ -18,10 +18,10 @@
     sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
     state: absent
     reload: yes
-  with_items:
+  loop:
   - kernel.panic_on_oops
   - kernel.panic
-  when: not evolinux_kernel_reboot_after_panic
+  when: not evolinux_kernel_reboot_after_panic | bool
 
 - name: Disable net.ipv4.tcp_timestamps
   sysctl:
@@ -30,7 +30,7 @@
     sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
     state: present
     reload: yes
-  when: evolinux_kernel_disable_tcp_timestamps
+  when: evolinux_kernel_disable_tcp_timestamps | bool
 
 - name: Customize the swappiness
   sysctl:
@@ -39,16 +39,16 @@
     sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
     state: present
     reload: yes
-  when: evolinux_kernel_customize_swappiness
+  when: evolinux_kernel_customize_swappiness | bool
 
 - name: Patch for TCP stack vulnerability CVE-2016-5696
   sysctl:
     name: net.ipv4.tcp_challenge_ack_limit
-    value: 1073741823
+    value: "1073741823"
     sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
     state: present
     reload: yes
-  when: evolinux_kernel_cve20165696
+  when: evolinux_kernel_cve20165696 | bool
 
 - name: Patch for TCP stack vulnerability CVE-2018-5391 (FragmentSmack)
   sysctl:
@@ -57,10 +57,10 @@
     sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
     state: present
     reload: yes
-  with_items:
-    - { name: "net.ipv4.ipfrag_low_thresh",   value: 196608 }
-    - { name: "net.ipv6.ip6frag_low_thresh",  value: 196608 }
-    - { name: "net.ipv4.ipfrag_high_thresh",  value: 262144 }
-    - { name: "net.ipv6.ip6frag_high_thresh", value: 262144 }
+  loop:
+    - { name: "net.ipv4.ipfrag_low_thresh",   value: "196608" }
+    - { name: "net.ipv6.ip6frag_low_thresh",  value: "196608" }
+    - { name: "net.ipv4.ipfrag_high_thresh",  value: "262144" }
+    - { name: "net.ipv6.ip6frag_high_thresh", value: "262144" }
 
 - meta: flush_handlers

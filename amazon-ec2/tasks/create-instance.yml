@@ -21,11 +21,11 @@
     groupname: launched-instances
     ansible_user: admin
     ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
-  with_items: "{{ec2.instances}}"
+  loop: "{{ec2.instances}}"
 
 - debug:
     msg: "Your newly created instance is reachable at: {{item.public_dns_name}}"
-  with_items: "{{ec2.instances}}"
+  loop: "{{ec2.instances}}"
 
 - name: Wait for SSH to come up on all instances (give up after 2m)
   wait_for:
@@ -33,4 +33,4 @@
     host: "{{item.public_dns_name}}"
     port: 22
     timeout: 120
-  with_items: "{{ec2.instances}}"
+  loop: "{{ec2.instances}}"

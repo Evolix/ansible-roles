@@ -5,10 +5,20 @@
 # http://mirrors.jenkins.io/.*
 # http://jenkins.mirror.isppower.de/.*
 
-- name: Add jenkins GPG key
+- name: Jenkins embedded GPG key is absent
   apt_key:
-    # url: https://jenkins-ci.org/debian/jenkins-ci.org.key
-    data: "{{ lookup('file', 'jenkins.key') }}"
+    id: "D50582E6"
+    keyring: /etc/apt/trusted.gpg
+    state: absent
+
+- name: Add Jenkins GPG key
+  copy:
+    src: jenkins.asc
+    dest: /etc/apt/trusted.gpg.d/jenkins.asc
+    force: yes
+    mode: "0644"
+    owner: root
+    group: root
 
 - name: Add jenkins APT repository
   apt_repository:

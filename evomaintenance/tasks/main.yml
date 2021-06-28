@@ -1,7 +1,7 @@
 ---
 
 - set_fact:
-    minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
+    minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | bool | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
 
 - assert:
     that:
@@ -11,19 +11,15 @@
 
 - include: install_package_debian.yml
   when:
-    - not evomaintenance_install_vendor
+    - not (evomaintenance_install_vendor | bool)
     - ansible_distribution == "Debian"
 
 - include: install_vendor_debian.yml
   when:
-    - evomaintenance_install_vendor
+    - evomaintenance_install_vendor | bool
     - ansible_distribution == "Debian"
-
-- include: install_vendor_openbsd.yml
-  when:
-    - ansible_distribution == "OpenBSD"
 
 - include: minifirewall.yml
   when:
-    - evomaintenance_hook_db
+    - evomaintenance_hook_db | bool
     - ansible_distribution == "Debian"

@@ -109,7 +109,7 @@ is_pack_samba(){
 }
 is_installed(){
     for pkg in "$@"; do
-        dpkg -l "$pkg" 2> /dev/null | grep -q -E '^(i|h)i' || return 1
+        dpkg -l "$pkg" 2>/dev/null | grep -q -E '^(i|h)i' || return 1
     done
 }
 minifirewall_file() {

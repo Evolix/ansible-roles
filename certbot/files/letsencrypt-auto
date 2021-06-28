@@ -497,7 +497,7 @@ Python36SclIsAvailable() {
 
 # Try to enable rh-python36 from SCL if it is necessary and possible.
 EnablePython36SCL() {
-  if "$EXISTS" python3.6 > /dev/null 2> /dev/null; then
+  if "$EXISTS" python3.6 > /dev/null 2>/dev/null; then
       return 0
   fi
   if [ ! -f /opt/rh/rh-python36/enable ]; then
@@ -815,7 +815,7 @@ elif [ -f /etc/redhat-release ]; then
   unset LE_PYTHON
   DeterminePythonVersion "NOCRASH"
 
-  RPM_DIST_NAME=`(. /etc/os-release 2> /dev/null && echo $ID) || echo "unknown"`
+  RPM_DIST_NAME=`(. /etc/os-release 2>/dev/null && echo $ID) || echo "unknown"`
 
   if [ "$PYVER" -eq 26 -a $(uname -m) != 'x86_64' ]; then
     # 32 bits CentOS 6 and affiliates are not supported anymore by certbot-auto.
@@ -825,7 +825,7 @@ elif [ -f /etc/redhat-release ]; then
   # Set RPM_DIST_VERSION to VERSION_ID from /etc/os-release after splitting on
   # '.' characters (e.g. "8.0" becomes "8"). If the command exits with an
   # error, RPM_DIST_VERSION is set to "unknown".
-  RPM_DIST_VERSION=$( (. /etc/os-release 2> /dev/null && echo "$VERSION_ID") | cut -d '.' -f1 || echo "unknown")
+  RPM_DIST_VERSION=$( (. /etc/os-release 2>/dev/null && echo "$VERSION_ID") | cut -d '.' -f1 || echo "unknown")
 
   # If RPM_DIST_VERSION is an empty string or it contains any nonnumeric
   # characters, the value is unexpected so we set RPM_DIST_VERSION to 0.

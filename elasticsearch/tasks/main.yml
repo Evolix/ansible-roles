@@ -15,7 +15,7 @@
 - include: additional_scripts.yml
 
 - include: plugin_head.yml
-  when: elasticsearch_plugin_head
+  when: elasticsearch_plugin_head | bool
 
 - include: curator.yml
-  when: elasticsearch_curator
+  when: elasticsearch_curator | bool

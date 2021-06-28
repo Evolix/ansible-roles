@@ -1,14 +1,42 @@
 ---
 
+- include_role:
+    name: remount-usr
+
+- name: Create local munin directory
+  file:
+    name: /usr/local/share/munin/
+    state: directory
+    mode: "0755"
+
+- name: Create plugin directory
+  file:
+    name: /usr/local/share/munin/plugins/
+    state: directory
+    mode: "0755"
+
 - name: Get Munin plugins
   get_url:
     url: "https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/libvirt/{{ item }}"
-    dest: "/etc/munin/plugins/"
+    dest: "/usr/local/share/munin/plugins/"
     mode: "0755"
-  with_items:
-  - kvm_cpu
-  - kvm_io
-  - kvm_mem
+    force: no
+  loop:
+    - kvm_cpu
+    - kvm_io
+    - kvm_mem
+  notify: restart munin-node
+
+- name: Enable redis munin plugin
+  file:
+    src: "/usr/local/share/munin/plugins/{{item}}"
+    dest: "/etc/munin/plugins/{{item}}"
+    state: link
+    force: yes
+  loop:
+    - kvm_cpu
+    - kvm_io
+    - kvm_mem
   notify: restart munin-node
 
 - name: Copy Munin plugins conf

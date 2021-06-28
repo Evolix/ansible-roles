@@ -9,9 +9,14 @@
 
 - name: Tmpdir is moved to custom path
   block:
-    - name: "Create {{ elasticsearch_custom_tmpdir or elasticsearch_default_tmpdir | mandatory }}"
+    - set_fact:
+        _elasticsearch_custom_tmpdir: "{{ elasticsearch_custom_tmpdir | default(elasticsearch_default_tmpdir, True) | mandatory }}"
+      tags:
+        - elasticsearch
+
+    - name: "Create {{ _elasticsearch_custom_tmpdir }}"
       file:
-        path: "{{ elasticsearch_custom_tmpdir or elasticsearch_default_tmpdir | mandatory }}"
+        path: "{{ _elasticsearch_custom_tmpdir }}"
         owner: elasticsearch
         group: elasticsearch
         mode: "0755"
@@ -22,7 +27,7 @@
     - name: change JVM tmpdir (< 6.x)
       lineinfile:
         dest: /etc/elasticsearch/jvm.options
-        line: "-Djava.io.tmpdir={{ elasticsearch_custom_tmpdir or elasticsearch_default_tmpdir | mandatory }}"
+        line: "-Djava.io.tmpdir={{ _elasticsearch_custom_tmpdir }}"
         regexp: "^-Djava.io.tmpdir="
         insertafter: "## JVM configuration"
       notify:
@@ -34,7 +39,7 @@
     - name: check if ES_TMPDIR is available (>= 6.x)
       lineinfile:
         dest: /etc/default/elasticsearch
-        line: "ES_TMPDIR={{ elasticsearch_custom_tmpdir or elasticsearch_default_tmpdir | mandatory }}"
+        line: "ES_TMPDIR={{ _elasticsearch_custom_tmpdir }}"
         regexp: "^ES_TMPDIR="
         insertafter: "JAVA_HOME"
       notify:
@@ -54,4 +59,4 @@
       tags:
         - elasticsearch
       when: elastic_stack_version is version('6', '>=')
-  when: (elasticsearch_custom_tmpdir != '' and elasticsearch_custom_tmpdir != None) or fstab_tmp_noexec.rc == 0
+  when: (elasticsearch_custom_tmpdir is not none and elasticsearch_custom_tmpdir | length > 0) or fstab_tmp_noexec.rc == 0

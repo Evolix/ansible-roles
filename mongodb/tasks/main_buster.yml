@@ -1,9 +1,19 @@
 ---
 
-- name: MongoDB public GPG Key
+- name: MongoDB embedded GPG key is absent
   apt_key:
-    # url: https://www.mongodb.org/static/pgp/server-4.2.asc
-    data: "{{ lookup('file', 'server-4.2.asc') }}"
+    id: "B8612B5D"
+    keyring: /etc/apt/trusted.gpg
+    state: absent
+
+- name: Add MongoDB GPG key
+  copy:
+    src: server-4.2.asc
+    dest: /etc/apt/trusted.gpg.d/mongodb-server-4.2.asc
+    force: yes
+    mode: "0644"
+    owner: root
+    group: root
 
 - name: enable APT sources list
   apt_repository:
@@ -24,7 +34,7 @@
     name: mongod
     enabled: yes
     state: started
-  when: _mongodb_install_package.changed
+  when: _mongodb_install_package is changed
 
 - name: install dependency for monitoring
   apt:
@@ -45,12 +55,24 @@
     force: yes
     backup: no
 
+- name: Create plugin directory
+  file:
+    name: /usr/local/share/munin/
+    state: directory
+    mode: "0755"
+
+- name: Create plugin directory
+  file:
+    name: /usr/local/share/munin/plugins/
+    state: directory
+    mode: "0755"
+
 - name: Munin plugins are present
   copy:
     src: "munin/{{ item }}"
     dest: '/usr/local/share/munin/plugins/{{ item }}'
     force: yes
-  with_items:
+  loop:
     - mongo_btree
     - mongo_collections
     - mongo_conn
@@ -66,7 +88,7 @@
     src: '/usr/local/share/munin/plugins/{{ item }}'
     dest: /etc/munin/plugins/{{ item }}
     state: link
-  with_items:
+  loop:
     - mongo_btree
     - mongo_collections
     - mongo_conn

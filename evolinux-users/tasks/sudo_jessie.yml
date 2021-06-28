@@ -15,4 +15,4 @@
     regexp: '^(User_Alias\s+ADMINS\s+=((?!{{ user.name }}).)*)$'
     replace: '\1,{{ user.name }}'
     validate: '/usr/sbin/visudo -cf %s'
-  when: not copy_sudoers_evolinux.changed
+  when: copy_sudoers_evolinux is not changed

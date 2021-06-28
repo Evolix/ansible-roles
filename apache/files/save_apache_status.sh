@@ -4,7 +4,7 @@ set -e
 
 DIR="/var/log/apache-status"
 URL="http://127.0.0.1/server-status"
-TS=`date +%Y%m%d%H%M%S`
+TS=$(date +%Y%m%d%H%M%S)
 FILE="${DIR}/${TS}.html"
 
 if [ ! -d "${DIR}" ]; then

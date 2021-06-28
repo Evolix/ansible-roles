@@ -16,4 +16,4 @@
     src: "hooks/{{ hook_name }}"
     dest: "{{ evoacme_hooks_dir }}/{{ hook_name }}"
     mode: "0750"
-  when: _find_hook.stdout == ""
+  when: _find_hook.stdout | length == 0

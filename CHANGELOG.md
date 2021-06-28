@@ -20,6 +20,48 @@ The **patch** part changes incrementally at each release.
 
 ### Security
 
+## [10.6.0] 2021-06-28
+
+### Added
+
+* Add Elastic GPG key to kibana, filebeat, logstash, metricbeat roles
+* apache: new variable for mpm mode (+ updated default config accordingly)
+* evolinux-base: add default motd template
+* kvm-host: add migrate-vm script
+* mysql: variable to disable myadd script overwrite (default: True)
+* nodejs: update apt cache before installing the package
+* squid: add Yarn apt repository in default whitelist
+
+### Changed
+
+* Update Galaxy metadata (company, platforms and galaxy_tags)
+* Use 'loop' syntax instead of 'with_first_found/with_items/with_dict/with_nested/with_list'
+* Use Ansible syntax used in Ansible 2.8+
+* apt: store keys in /etc/apt/trusted.gpg.d in ascii format
+* certbot: sync_remote.sh is configurable
+* evolinux-base: copy GPG key instead of using apt-key
+* evomaintenance: upstream release 0.6.4
+* kvm-host: replace the "kvm-tools" package with scripts deployed by Ansible
+* listupgrade: upstream release 21.06.2
+* nodejs: change GPG key name
+* ntpd: Add leapfile configuration setting to ntpd on debian 10+
+* packweb-apache: install phpMyAdmin from buster-backports
+* spamassassin: change dependency on evomaintenance
+* squid: remove obsolete variable on Squid 4
+
+### Fixed
+
+* add default (useless) value for file lookup (first_found)
+* fix pipefail option for shell invocations
+* elasticsearch: inline YAML formatting of seed_hosts and initial_master_nodes
+* evolinux-base: fix motd lookup path
+* ldap: fix edge cases where passwords were not set/get properly
+* listupgrade: fix wget error + shellcheck cleanup
+
+### Removed
+
+* elasticsearch: recent versiond don't depend on external JRE
+
 ## [10.5.1] 2021-04-13
 
 ### Added
@@ -37,7 +79,7 @@ The **patch** part changes incrementally at each release.
 * apache: new variables for logrotate + server-status
 * filebeat: package can be upgraded to latest (default: False)
 * haproxy: possible admin access with login/pass
-* lxc-php: Add PHP 7.4 support 
+* lxc-php: Add PHP 7.4 support
 * metricbeat: package can be upgraded to latest (default: False)
 * metricbeat: new variables to configure SSL mode
 * nagios-nrpe: new script check_phpfpm_multi
@@ -110,7 +152,7 @@ The **patch** part changes incrementally at each release.
 * tomcat-instance: fail if uid already exists
 * varnish: change template name for better readability
 * varnish: no threadpool delay by default
-* varnish: no custom reload script for Debian 10 and later 
+* varnish: no custom reload script for Debian 10 and later
 
 ### Fixed
 

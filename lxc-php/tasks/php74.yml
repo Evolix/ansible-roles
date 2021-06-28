@@ -1,5 +1,5 @@
 ---
-  
+
 - name: "{{ lxc_php_version }} - Install dependency packages"
   lxc_container:
     name: "{{ lxc_php_version }}"
@@ -12,29 +12,31 @@
     state: present
     create: yes
     mode: "0644"
-  with_items:
+  loop:
     - "deb https://packages.sury.org/php/ buster main"
     - "deb http://pub.evolix.net/ buster-php74/"
 
-- name: Grab pub.evolix.net GPG Key
-  get_url:
-    url: https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x0C016D3BD1195D30105837CC44975278B8612B5D
+- name: copy pub.evolix.net GPG key
+  copy:
+    src: reg.asc
     dest: /var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/apt/trusted.gpg.d/reg.asc
-    mode: 0644
-    checksum: sha256:a2e0f56ba433aa0740aad6eeeb43bb67df9ab943d76324382b39948a4c7ce840
+    mode: "0644"
+    owner: root
+    group: root
 
-- name: Grab packages.sury.org GPG Key
-  get_url:
-    url: https://packages.sury.org/php/apt.gpg
+- name: copy packages.sury.org GPG Key
+  copy:
+    src: sury.gpg
     dest: /var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/apt/trusted.gpg.d/sury.gpg
-    mode: 0644
-    checksum: sha256:b3ea944563435e54bb64f181ee8bc26200985d09164cdc4c1702fc3ef051f19d
+    mode: "0644"
+    owner: root
+    group: root
 
 - name: "{{ lxc_php_version }} - Update APT cache"
   lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt update"
-  
+
 - name: "{{ lxc_php_version }} - Install PHP packages"
   lxc_container:
     name: "{{ lxc_php_version }}"
@@ -46,7 +48,7 @@
     dest: "{{ line_item }}"
     mode: "0644"
   notify: "Reload {{ lxc_php_version }}-fpm"
-  with_items:
+  loop:
     - "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/php/7.4/fpm/conf.d/z-evolinux-defaults.ini"
     - "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/php/7.4/cli/conf.d/z-evolinux-defaults.ini"
   loop_control:

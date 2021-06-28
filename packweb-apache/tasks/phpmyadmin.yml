@@ -4,20 +4,25 @@
   apt:
     name: apg
 
-- name: Install phpmyadmin (Debian <=9)
+# On Debian 10, we need to install the package from buster-backports
+- name: Enable backports (Debian 10)
+  include_role:
+    name: evolix/apt
+    tasks_from: backports.yml
+  when: ansible_distribution_major_version is version('10', '=')
+
+- name: Prefer phpMyAdmin package from backports (Debian 10)
+  template:
+    src: phpmyadmin_apt_preferences.j2
+    dest: /etc/apt/preferences.d/999-phpmyadmin
+    force: yes
+    mode: "0644"
+  when: ansible_distribution_major_version is version('10', '=')
+
+- name: Install phpmyadmin
   apt:
     name: phpmyadmin
-  when: ansible_distribution_major_version is version('9', '<=')
-
-- include_role:
-    name: evolix/remount-usr
-
-# /!\ Warning: this is a temporary hack as phpmyadmin for Buster is not yet
-# available
-- name: Install phpmyadmin using sid package (Debian >=10)
-  apt:
-    deb: http://mirror.evolix.org/debian/pool/main/p/phpmyadmin/phpmyadmin_4.6.6-4_all.deb
-  when: ansible_distribution_major_version is version('10', '>=')
+    update_cache: yes
 
 - name: Check if phpmyadmin default configuration is present
   stat:
@@ -48,7 +53,7 @@
     # The last character "\u000A" is a line feed (LF), it's better to keep it
     content: "{{ packweb_phpmyadmin_suffix }}\u000A"
     force: yes
-  when: packweb_phpmyadmin_suffix != ""
+  when: packweb_phpmyadmin_suffix | length > 0
 
 - name: generate random string for phpmyadmin suffix
   shell: "apg -a 1 -M N -n 1 > {{ packweb_phpmyadmin_suffix_file }}"

@@ -9,7 +9,7 @@
     owner: root
     group: root
     mode: "0755"
-  with_items:
+  loop:
     - "/etc/fail2ban"
     - "/etc/fail2ban/filter.d"
   tags:
@@ -32,7 +32,7 @@
 
 - name: Include ignoredips update task
   include: ip_whitelist.yml
-  when: fail2ban_force_update_ignore_ips
+  when: fail2ban_force_update_ignore_ips | bool
   tags:
     - fail2ban
 
@@ -43,7 +43,7 @@
     option: enabled
     value: false
   notify: restart fail2ban
-  when: fail2ban_disable_ssh
+  when: fail2ban_disable_ssh | bool
   tags:
     - fail2ban
 
@@ -52,7 +52,7 @@
     src: "{{ item }}"
     dest: /etc/fail2ban/filter.d/
     mode: "0644"
-  with_items:
+  loop:
     - dovecot-evolix.conf
     - sasl-evolix.conf
     - wordpress-soft.conf

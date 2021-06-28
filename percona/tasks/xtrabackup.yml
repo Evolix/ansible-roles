@@ -2,7 +2,7 @@
 
 - name: Percona Tools is enabled
   command: percona-release enable tools release
-  # changed_when: 
+  # changed_when:
   # register: percona__release_enable_tools
 
 - name: APT cache is up-to-date

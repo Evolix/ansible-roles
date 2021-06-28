@@ -12,6 +12,6 @@
     mode: "0644"
     force: no
   notify: restart supervisor
-  when: supervisord_enable_http
+  when: supervisord_enable_http | bool
   tags:
     - supervisord

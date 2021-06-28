@@ -33,7 +33,7 @@
   tags:
   - mysql
   - packages
-  when: mysql_install_libclient
+  when: mysql_install_libclient | bool
 
 - name: MySQL is started
   service:

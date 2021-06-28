@@ -8,7 +8,7 @@
     dest: /etc/rsyslog.conf
     mode: "0644"
   notify: restart rsyslog
-  when: evolinux_logs_rsyslog_conf
+  when: evolinux_logs_rsyslog_conf | bool
 
 - name: Disable logrotate default conf
   command: mv /etc/logrotate.d/rsyslog /etc/logrotate.d/rsyslog.disabled
@@ -16,25 +16,25 @@
     removes: /etc/logrotate.d/rsyslog
     creates: /etc/logrotate.d/rsyslog.disabled
   notify: restart rsyslog
-  when: evolinux_logs_disable_logrotate_rsyslog
+  when: evolinux_logs_disable_logrotate_rsyslog | bool
 
 - name: Copy many logrotate files
   copy:
     src: logs/logrotate.d/
     dest: /etc/logrotate.d/
-  when: evolinux_logs_logrotate_confs
+  when: evolinux_logs_logrotate_confs | bool
 
 - name: Copy rsyslog logrotate file
   template:
     src: logs/zsyslog.j2
     dest: /etc/logrotate.d/zsyslog
-  when: evolinux_logs_logrotate_confs
+  when: evolinux_logs_logrotate_confs | bool
 
 - name: Configure logrotate.conf
   replace:
     dest: /etc/logrotate.conf
     regexp: "rotate [0-9]+"
     replace: "rotate 12"
-  when: evolinux_logs_default_rotate
+  when: evolinux_logs_default_rotate | bool
 
 - meta: flush_handlers

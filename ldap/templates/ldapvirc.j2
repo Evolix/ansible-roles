@@ -3,4 +3,4 @@ host: ldap://127.0.0.1
 base: {{ ldap_suffix }}
 user: cn=admin,{{ ldap_suffix }}
 bind: simple
-password: {{ ldap_admin_password.stdout }}
+password: {{ ldap_admin_password }}

@@ -3,10 +3,10 @@ fluentd_daemon: td-agent
 fluentd_conf_path: /etc/td-agent/td-agent.conf
 
 fluentd_port: 24230
-fluentd_bind_interface: 
+fluentd_bind_interface:
 
-fluentd_host: 
-fluentd_host_port: 
+fluentd_host:
+fluentd_host_port:
 
-fluentd_flush_interval: 
+fluentd_flush_interval:
 fluentd_heartbeat_type:

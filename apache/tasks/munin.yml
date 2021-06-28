@@ -15,7 +15,7 @@
     src: "/usr/share/munin/plugins/{{ item }}"
     dest: "/etc/munin/plugins/{{ item }}"
     state: link
-  with_items:
+  loop:
     - apache_accesses
     - apache_processes
     - apache_volume
