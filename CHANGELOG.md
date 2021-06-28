@@ -22,6 +22,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 
+* Update Galaxy metadata (company, platforms and galaxy_tags)
 * Use 'loop' syntax instead of 'with_first_found/with_items/with_dict/with_nested/with_list'
 * Use Ansible syntax used in Ansible 2.8+
 * apt: store keys in /etc/apt/trusted.gpg.d in ascii format
