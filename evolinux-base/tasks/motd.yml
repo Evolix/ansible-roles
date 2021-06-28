@@ -13,5 +13,6 @@
       - "templates/motd/motd.{{ inventory_hostname }}.j2"
       - "templates/motd/motd.{{ host_group | default('all') }}.j2"
       - "templates/motd/motd.default.j2"
+      - "templates/motd.default.j2"
   tags:
     - motd
