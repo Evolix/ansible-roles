@@ -65,13 +65,13 @@ do
 
     # mem
     # libvirt stores memory in KiB, POW must be lowered by 1
-    virsh dommemstat "$VM" 2> /dev/null | awk 'BEGIN{ret=1}$1~/^actual$/{print $2 / '$((POW / 1024))';ret=0}END{exit ret}' ||
+    virsh dommemstat "$VM" 2>/dev/null | awk 'BEGIN{ret=1}$1~/^actual$/{print $2 / '$((POW / 1024))';ret=0}END{exit ret}' ||
         virsh dumpxml "$VM" | awk -F'[<>]' '$2~/^memory unit/{print $3/'$((POW / 1024))'}'
 
     # disk
     for BLK in $(virsh domblklist "$VM" | sed '1,2d;/-$/d;/^$/d' | awk '{print $1}')
     do
-        virsh domblkinfo "$VM" "$BLK" 2> /dev/null
+        virsh domblkinfo "$VM" "$BLK" 2>/dev/null
     done | awk '/Physical:/ { size += $2 } END { print int(size / '${POW}') }'
 
     # state

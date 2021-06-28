@@ -124,7 +124,7 @@ pick_server() {
 if [ -e "${PIDFILE}" ]; then
     pid=$(cat "${PIDFILE}")
     # Does process still exist ?
-    if kill -0 "${pid}" 2> /dev/null; then
+    if kill -0 "${pid}" 2>/dev/null; then
         # Killing the childs of evobackup.
         for ppid in $(pgrep -P "${pid}"); do
             kill -9 "${ppid}";

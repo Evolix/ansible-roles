@@ -112,9 +112,9 @@ openssl_selfsigned() {
     [ -r "${key}" ] || error "File ${key} is not readable"
     [ -w "${crt_dir}" ] || error "Directory ${crt_dir} is not writable"
     if grep -q SAN "${cfg}"; then
-        "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -extensions SAN -extfile "${cfg}" -signkey "${key}" -out "${crt}" 2> /dev/null
+        "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -extensions SAN -extfile "${cfg}" -signkey "${key}" -out "${crt}" 2>/dev/null
     else
-        "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -signkey "${key}" -out "${crt}" 2> /dev/null
+        "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -signkey "${key}" -out "${crt}" 2>/dev/null
     fi
 
     [ -r "${crt}" ] || error "Something went wrong, ${crt} has not been generated"
@@ -126,7 +126,7 @@ openssl_key(){
 
     [ -w "${key_dir}" ] || error "Directory ${key_dir} is not writable"
 
-    "${OPENSSL_BIN}" genrsa -out "${key}" "${size}" 2> /dev/null
+    "${OPENSSL_BIN}" genrsa -out "${key}" "${size}" 2>/dev/null
 
     [ -r "${key}" ] || error "Something went wrong, ${key} has not been generated"
 }

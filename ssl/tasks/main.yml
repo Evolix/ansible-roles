@@ -29,7 +29,7 @@
     - ssl
 
 - name: Check if Haproxy is installed
-  shell: "set -o pipefail && dpkg -l haproxy 2> /dev/null | grep -q -E '^(i|h)i'"
+  shell: "set -o pipefail && dpkg -l haproxy 2>/dev/null | grep -q -E '^(i|h)i'"
   args:
     executable: /bin/bash
   register: haproxy_check

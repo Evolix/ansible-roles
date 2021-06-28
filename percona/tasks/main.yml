@@ -19,7 +19,7 @@
     group: root
 
 - name: Check if percona-release is installed
-  shell: "set -o pipefail && dpkg -l percona-release 2> /dev/null | grep -q -E '^(i|h)i'"
+  shell: "set -o pipefail && dpkg -l percona-release 2>/dev/null | grep -q -E '^(i|h)i'"
   args:
     executable: /bin/bash
   check_mode: no
