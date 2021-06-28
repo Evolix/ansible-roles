@@ -12,6 +12,18 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [10.6.0] 2021-06-28
+
+### Added
+
 * Add Elastic GPG key to kibana, filebeat, logstash, metricbeat roles
 * apache: new variable for mpm mode (+ updated default config accordingly)
 * evolinux-base: add default motd template
@@ -50,8 +62,6 @@ The **patch** part changes incrementally at each release.
 
 * elasticsearch: recent versiond don't depend on external JRE
 
-### Security
-
 ## [10.5.1] 2021-04-13
 
 ### Added
@@ -69,7 +79,7 @@ The **patch** part changes incrementally at each release.
 * apache: new variables for logrotate + server-status
 * filebeat: package can be upgraded to latest (default: False)
 * haproxy: possible admin access with login/pass
-* lxc-php: Add PHP 7.4 support 
+* lxc-php: Add PHP 7.4 support
 * metricbeat: package can be upgraded to latest (default: False)
 * metricbeat: new variables to configure SSL mode
 * nagios-nrpe: new script check_phpfpm_multi
@@ -142,7 +152,7 @@ The **patch** part changes incrementally at each release.
 * tomcat-instance: fail if uid already exists
 * varnish: change template name for better readability
 * varnish: no threadpool delay by default
-* varnish: no custom reload script for Debian 10 and later 
+* varnish: no custom reload script for Debian 10 and later
 
 ### Fixed
 
