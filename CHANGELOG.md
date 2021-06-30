@@ -16,6 +16,8 @@ The **patch** part changes incrementally at each release.
 
 ### Fixed
 
+* certbot: sync_remote excludes itself
+
 ### Removed
 
 ### Security

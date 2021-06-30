@@ -40,7 +40,7 @@ main() {
             rsync --archive --copy-links --delete "${RENEWED_LINEAGE}/" "${remote_host}:${remote_lineage}/" \
                 || error "Couldn't sync certificate on ${server}"
 
-            rsync --archive --copy-links --delete --exclude $0 --delete-excluded "${hooks_dir}/" "${remote_host}:${remote_dir}/hooks/" \
+            rsync --archive --copy-links --delete --exclude "$(basename "$0")" --delete-excluded "${hooks_dir}/" "${remote_host}:${remote_dir}/hooks/" \
                 || error "Couldn't sync hooks on ${server}"
 
             # shellcheck disable=SC2029
