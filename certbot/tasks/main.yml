@@ -29,6 +29,14 @@
     owner: root
     group: root
 
+- name: Manual deploy hook is present
+  copy:
+    src: hooks/manual-deploy.sh
+    dest: /etc/letsencrypt/renewal-hooks/manual-deploy.sh
+    mode: "0700"
+    owner: root
+    group: root
+
 - name: "sync_remote is configured with servers"
   lineinfile:
     dest: /etc/letsencrypt/renewal-hooks/deploy/sync_remote.cf

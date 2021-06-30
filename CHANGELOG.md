@@ -12,6 +12,8 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+* certbot: add script for manual deploy hooks execution
+
 ### Changed
 
 ### Fixed
