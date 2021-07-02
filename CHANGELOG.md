@@ -16,6 +16,8 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 
+* listupgrade: upstream release 21.06.3
+
 ### Fixed
 
 * certbot: sync_remote excludes itself
