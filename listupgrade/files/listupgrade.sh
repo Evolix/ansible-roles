@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Repository: https://gitea.evolix.org/evolix/maj.sh/
+
 # Exit codes :
 # - 30 : $skip_releases or $skip_packages is set to "all"
 # - 40 : current release is in $skip_releases list

@@ -1,6 +1,10 @@
 #!/bin/sh
 
+# Repository: https://gitea.evolix.org/evolix/maj.sh/
+
 # fork by reg from /etc/kernel/postinst.d/apt-auto-removal script
+
+VERSION="21.06.3"
 
 set -e
 
