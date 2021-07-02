@@ -1,16 +1,24 @@
 ---
 
 # https://wiki.debian.org/DebianRepository/UseThirdParty
-- name: Add MongoDB GPG key for version 4.4
+- name: MongoDB embedded GPG key is absent
+  apt_key:
+    id: "B8612B5D"
+    keyring: /etc/apt/trusted.gpg
+    state: absent
+
+- name: Add MongoDB GPG key
   copy:
-    src: server-4.4.gpg
-    dest: /usr/share/keyrings/mongodb-server-4.4.gpg
+    src: server-4.4.asc
+    dest: /etc/apt/trusted.gpg.d/mongodb-server-4.4.asc
     force: yes
     mode: "0644"
+    owner: root
+    group: root
 
 - name: enable APT sources list
   apt_repository:
-    repo: deb [signed-by=/usr/share/keyrings/mongodb-server-4.4.gpg] http://repo.mongodb.org/apt/debian buster/mongodb-org/4.4 main
+    repo: deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.4 main
     state: present
     filename: mongodb-org-4.4
     update_cache: yes
