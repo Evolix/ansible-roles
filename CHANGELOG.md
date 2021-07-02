@@ -37,6 +37,7 @@ The **patch** part changes incrementally at each release.
 * ntpd: Add leapfile configuration setting to ntpd on debian 10+
 * packweb-apache: install phpMyAdmin from buster-backports
 * spamassassin: change dependency on evomaintenance
+* squid: must be started in foreground mode for systemd
 * squid: remove obsolete variable on Squid 4
 
 ### Fixed

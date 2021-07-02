@@ -16,8 +16,8 @@
     mode: "0755"
 
 - name: "Squid systemd unit service is present"
-  copy:
-    src: systemd-override.conf
+  template:
+    src: systemd-override.conf.j2
     dest: /etc/systemd/system/squid.service.d/override.conf
     force: yes
   register: _squid_systemd_override
