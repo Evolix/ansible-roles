@@ -3,3 +3,9 @@ general_alert_email: "root@localhost"
 listupgrade_alert_email: Null
 
 listupgrade_cron_enabled: true
+listupgrade_cron_minute: "42"
+listupgrade_cron_hour: "9"
+listupgrade_cron_day: "*"
+listupgrade_cron_month: "*"
+listupgrade_cron_weekday: "2"
+listupgrade_cron_force: false

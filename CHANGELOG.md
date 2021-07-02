@@ -13,6 +13,7 @@ The **patch** part changes incrementally at each release.
 ### Added
 
 * certbot: add script for manual deploy hooks execution
+* listupgrade: crontab is configurable
 
 ### Changed
 
