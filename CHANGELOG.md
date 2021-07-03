@@ -18,7 +18,7 @@ The **patch** part changes incrementally at each release.
 ### Changed
 
 * listupgrade: upstream release 21.06.3
-
+* squid: improve default whitelist (more specific patterns)
 ### Fixed
 
 * certbot: sync_remote excludes itself
