@@ -129,5 +129,5 @@
         - "templates/metricbeat/metricbeat.default.yml.j2"
         - "templates/metricbeat.default.yml.j2"
       notify: restart metricbeat
-      when: metricbeat_update_config | bool
+    when: metricbeat_update_config | bool
   when: metricbeat_use_config_template | bool
