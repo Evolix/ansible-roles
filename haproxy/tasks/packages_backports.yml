@@ -15,6 +15,10 @@
     haproxy_backports_packages: "{{ haproxy_backports_packages_buster }}"
   when: ansible_distribution_release == 'buster'
 
+- set_fact:
+    haproxy_backports_packages: "{{ haproxy_backports_packages_bullseye }}"
+  when: ansible_distribution_release == 'bullseye'
+
 - name: Prefer HAProxy package from backports
   template:
     src: haproxy_apt_preferences.j2

@@ -12,3 +12,6 @@
 
 - include: main_buster.yml
   when: ansible_distribution_release == "buster"
+
+- include: main_bullseye.yml
+  when: ansible_distribution_release == "bullseye"

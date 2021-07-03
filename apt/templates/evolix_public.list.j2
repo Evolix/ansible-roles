@@ -1,3 +1,8 @@
 # {{ ansible_managed }}
 
+{% if ansible_distribution_release == 'bullseye' %}
+# Force previous Debian version (temporary)
+deb http://pub.evolix.net/ buster/
+{% else  %}
 deb http://pub.evolix.net/ {{ ansible_distribution_release }}/
+{% endif  %}

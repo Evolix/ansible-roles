@@ -1,0 +1,8 @@
+# systemd override for Squid
+[Service]
+ExecStart=
+{% if ansible_distribution_major_version is version('11', '>=') %}
+ExecStart=/usr/sbin/squid --foreground -sYC -f /etc/squid/evolinux-defaults.conf
+{% else %}
+ExecStart=/usr/sbin/squid -sYC -f /etc/squid/evolinux-defaults.conf
+{% endif %}

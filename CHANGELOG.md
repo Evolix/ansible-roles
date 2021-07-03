@@ -12,18 +12,32 @@ The **patch** part changes incrementally at each release.
 
 ### Added
 
+* Preliminary support for Debian 11 « Bullseye »
+* apache: new variable for mpm mode (+ updated default config accordingly)
 * certbot: add script for manual deploy hooks execution
 * listupgrade: crontab is configurable
+* mongodb: create munin plugins directory if missing
+* redis: instance service for Debian 11
 
 ### Changed
 
+* Use python3 modules for Debian 11 and later
+* elasticsearch: 7.x by default
+* evolinux-base: force Debian version to buster for Evolix repository (temporary)
+* kibana: 7.x by default
 * listupgrade: upstream release 21.06.3
+* mysql: mariadb-client-10.5 on Debian 11
+* mysql: use python3 with Debian 11 and later
 * squid: improve default whitelist (more specific patterns)
+* squid: must be started in foreground mode for systemd
+* squid: remove obsolete variable on Squid 4
 ### Fixed
 
 * certbot: sync_remote excludes itself
 
 ### Removed
+
+* php: remove php-gettext for 7.4
 
 ### Security
 

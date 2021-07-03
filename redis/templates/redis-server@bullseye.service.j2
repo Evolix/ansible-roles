@@ -1,0 +1,45 @@
+[Unit]
+Description=Advanced key-value store
+After=network.target
+Documentation=http://redis.io/documentation, man:redis-server(1)
+
+[Service]
+Type=notify
+ExecStart=/usr/bin/redis-server {{ redis_conf_dir_prefix }}-%i/redis.conf --supervised systemd --daemonize no
+PIDFile=/run/redis-%i/redis-server.pid
+TimeoutStopSec=0
+Restart=always
+User=redis-%i
+Group=redis-%i
+RuntimeDirectory=redis-%i
+RuntimeDirectoryMode=2755
+
+UMask=007
+PrivateTmp=yes
+LimitNOFILE=65535
+PrivateDevices=yes
+ProtectHome={{ redis_data_dir_prefix is match('/home') | ternary('no', 'yes') }}
+ReadOnlyDirectories=/
+ReadWritePaths=-{{ redis_data_dir_prefix }}-%i
+ReadWritePaths=-{{ redis_log_dir_prefix }}-%i
+ReadWritePaths=-{{ redis_pid_dir_prefix }}-%i
+ReadWritePaths=-{{ redis_socket_dir_prefix }}-%i
+
+NoNewPrivileges=true
+CapabilityBoundingSet=CAP_SETGID CAP_SETUID CAP_SYS_RESOURCE
+MemoryDenyWriteExecute=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictNamespaces=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+# redis-server can write to its own config file when in cluster mode so we
+# permit writing there by default. If you are not using this feature, it is
+# recommended that you replace the following lines with "ProtectSystem=full".
+ProtectSystem=true
+ReadWriteDirectories=-{{ redis_conf_dir_prefix }}-%i
+
+[Install]
+WantedBy=multi-user.target
