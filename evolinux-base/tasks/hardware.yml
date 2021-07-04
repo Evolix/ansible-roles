@@ -35,6 +35,11 @@
   changed_when: "'FAILED' in raidmodel.stdout"
   failed_when: "'FAILED' in raidmodel.stdout"
 
+- name: Look for legacy apt keyring
+  stat:
+    path: /etc/apt/trusted.gpg
+  register: _trusted_gpg_keyring
+
 - name: HPE Smart Storage Administrator (ssacli) is present
   block:
     - name: HPE GPG embedded key is absent
@@ -42,6 +47,7 @@
         id: "26C2B797"
         keyring: /etc/apt/trusted.gpg
         state: absent
+      when: _trusted_gpg_keyring.stat.exists
 
     - name: HPE GPG key is installed
       copy:
@@ -108,7 +114,9 @@
         id: "23B3D3B4"
         keyring: /etc/apt/trusted.gpg
         state: absent
-      when: ansible_distribution_major_version is version('9', '>=')
+      when:
+        - trusted_gpg_keyring.stat.present
+        - ansible_distribution_major_version is version('9', '>=')
 
     - name: HWRaid GPG key is installed
       copy:

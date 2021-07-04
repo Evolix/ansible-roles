@@ -22,7 +22,9 @@ The **patch** part changes incrementally at each release.
 ### Changed
 
 * Use python3 modules for Debian 11 and later
+* Remove embedded GPG keys only if legacy keyring is present
 * elasticsearch: 7.x by default
+* evolinux-base: alert5 comes after the network
 * evolinux-base: force Debian version to buster for Evolix repository (temporary)
 * kibana: 7.x by default
 * listupgrade: upstream release 21.06.3

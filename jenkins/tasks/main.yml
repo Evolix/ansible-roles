@@ -5,11 +5,17 @@
 # http://mirrors.jenkins.io/.*
 # http://jenkins.mirror.isppower.de/.*
 
+- name: Look for legacy apt keyring
+  stat:
+    path: /etc/apt/trusted.gpg
+  register: _trusted_gpg_keyring
+
 - name: Jenkins embedded GPG key is absent
   apt_key:
     id: "D50582E6"
     keyring: /etc/apt/trusted.gpg
     state: absent
+  when: _trusted_gpg_keyring.stat.exists
 
 - name: Add Jenkins GPG key
   copy:

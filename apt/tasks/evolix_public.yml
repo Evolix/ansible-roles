@@ -1,10 +1,18 @@
 ---
 
+- name: Look for legacy apt keyring
+  stat:
+    path: /etc/apt/trusted.gpg
+  register: _trusted_gpg_keyring
+  tags:
+    - apt
+
 - name: Evolix embedded GPG key is absent
   apt_key:
     id: "B8612B5D"
     keyring: /etc/apt/trusted.gpg
     state: absent
+  when: _trusted_gpg_keyring.stat.exists
   tags:
     - apt
 
