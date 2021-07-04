@@ -1,10 +1,19 @@
 ---
 
+- name: Look for legacy apt keyring
+  stat:
+    path: /etc/apt/trusted.gpg
+  register: _trusted_gpg_keyring
+  tags:
+    - packages
+    - fluentd
+
 - name: Fluentd embedded GPG key is absent
   apt_key:
     id: "AB97ACBE"
     keyring: /etc/apt/trusted.gpg
     state: absent
+  when: _trusted_gpg_keyring.stat.exists
   tags:
     - packages
     - fluentd

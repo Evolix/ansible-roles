@@ -9,11 +9,21 @@
     - packages
     - nodejs
 
+- name: Look for legacy apt keyring
+  stat:
+    path: /etc/apt/trusted.gpg
+  register: _trusted_gpg_keyring
+  tags:
+    - system
+    - packages
+    - nodejs
+
 - name: NodeJS embedded GPG key is absent
   apt_key:
     id: "68576280"
     keyring: /etc/apt/trusted.gpg
     state: absent
+  when: _trusted_gpg_keyring.stat.exists
   tags:
     - system
     - packages
