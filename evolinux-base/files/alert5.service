@@ -7,3 +7,4 @@ ExecStart=/usr/share/scripts/alert5.sh
 
 [Install]
 WantedBy=multi-user.target
+After=network.target
