@@ -153,6 +153,6 @@
         name: megaclisas-statusd
         enabled: true
         state: started
-  when: "'MegaRAID SAS' in raidmodel.stdout"
+  when: "'MegaRAID' in raidmodel.stdout"
 
 - meta: flush_handlers
