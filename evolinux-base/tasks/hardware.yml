@@ -117,7 +117,7 @@
         keyring: /etc/apt/trusted.gpg
         state: absent
       when:
-        - trusted_gpg_keyring.stat.present
+        - _trusted_gpg_keyring.stat.present
         - ansible_distribution_major_version is version('9', '>=')
 
     - name: HWRaid GPG key is installed
