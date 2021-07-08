@@ -199,3 +199,12 @@
     force: no
   tags:
     - mysql
+
+- name: "Install mysql_connections"
+  copy:
+    src: mysql_connections.sh
+    dest: "{{ _mysql_scripts_dir }}/mysql_connections"
+    mode: "0755"
+    force: no
+  tags:
+    - mysql

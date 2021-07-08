@@ -17,6 +17,7 @@ The **patch** part changes incrementally at each release.
 * certbot: add script for manual deploy hooks execution
 * listupgrade: crontab is configurable
 * mongodb: create munin plugins directory if missing
+* mysql: script "mysql_connections" to display a compact list of connections
 * redis: instance service for Debian 11
 
 ### Changed
