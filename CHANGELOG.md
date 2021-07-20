@@ -24,6 +24,7 @@ The **patch** part changes incrementally at each release.
 
 * Use python3 modules for Debian 11 and later
 * Remove embedded GPG keys only if legacy keyring is present
+* certbot: silence letsencrypt deprecation warnings
 * elasticsearch: 7.x by default
 * evocheck: upstream release 21.07
 * evolinux-base: alert5 comes after the network
@@ -35,6 +36,7 @@ The **patch** part changes incrementally at each release.
 * squid: improve default whitelist (more specific patterns)
 * squid: must be started in foreground mode for systemd
 * squid: remove obsolete variable on Squid 4
+
 ### Fixed
 
 * certbot: sync_remote excludes itself
