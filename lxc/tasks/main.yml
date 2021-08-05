@@ -52,6 +52,8 @@
 - name: Create containers
   include: create-container.yml
   vars:
-    name: "{{ item.name }}"
-    release: "{{ item.release }}"
+    name: "{{ container.name }}"
+    release: "{{ container.release }}"
   loop: "{{ lxc_containers }}"
+  loop_control:
+    loop_var: container

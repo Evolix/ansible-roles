@@ -45,8 +45,10 @@
 - name: "Some entries MUST be in the {{ repository_path }}/.gitignore file"
   lineinfile:
     dest: "{{ repository_path }}/.gitignore"
-    line: "{{ item }}"
+    line: "{{ gitignore_line }}"
   loop: "{{ gitignore_items | default([]) }}"
+  loop_control:
+    loop_var: gitignore_line
   tags:
     - etc-git
 

@@ -52,6 +52,22 @@
     insertbefore: "^exit 0$"
   when: release == 'jessie'
 
+# For some reason import_role/include_role doesn't work here.
+# Apparently ansible see some condition that end up being false.
+# So we use import_tasks and a symlink.
+- name: "Put /etc of container {{ name }} into git"
+  import_tasks: repository.yml
+  vars:
+    repository_path: "/var/lib/lxc/{{ name }}/rootfs/etc"
+    gitignore_items:
+      - "aliases.db"
+      - "*.swp"
+      - "postfix/sa-blacklist.access"
+      - "postfix/*.db"
+      - "postfix/spamd.cidr"
+      - "evobackup/.keep-*"
+      - "letsencrypt/.certbot.lock"
+
 - name: "Ensure that {{ name }} container is running"
   lxc_container:
     name: "{{ name }}"
