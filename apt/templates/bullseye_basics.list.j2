@@ -1,5 +1,5 @@
 # {{ ansible_managed }}
 
 deb http://mirror.evolix.org/debian bullseye {{ apt_basics_components | mandatory }}
-deb http://mirror.evolix.org/debian/ bullseye-updates {{ apt_basics_components | mandatory }}
-deb http://security.debian.org/ bullseye-security {{ apt_basics_components | mandatory }}
+deb http://mirror.evolix.org/debian/ bullseye-updates {{ apt_basics_components | mandatory }} 
+deb https://deb.debian.org/debian-security bullseye-security {{ apt_basics_components | mandatory }}
