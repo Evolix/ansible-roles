@@ -43,6 +43,7 @@ The **patch** part changes incrementally at each release.
 
 ### Removed
 
+* bullseye-detect: this role is obsolete, Debian 11 has been fully released
 * php: remove php-gettext for 7.4
 
 ### Security
