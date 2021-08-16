@@ -26,6 +26,7 @@ The **patch** part changes incrementally at each release.
 * Remove embedded GPG keys only if legacy keyring is present
 * certbot: silence letsencrypt deprecation warnings
 * elasticsearch: 7.x by default
+* evoadmin-web: simpler PHP packages lists
 * evocheck: upstream release 21.07
 * evolinux-base: alert5 comes after the network
 * evolinux-base: force Debian version to buster for Evolix repository (temporary)
