@@ -24,6 +24,7 @@ The **patch** part changes incrementally at each release.
 
 * Use python3 modules for Debian 11 and later
 * Remove embedded GPG keys only if legacy keyring is present
+* apt: remove workaround for Evolix public repositories with Debian 11
 * certbot: silence letsencrypt deprecation warnings
 * elasticsearch: 7.x by default
 * evoadmin-web: simpler PHP packages lists
