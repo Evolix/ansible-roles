@@ -1,0 +1,2 @@
+# Force the SWAP column to the right of the CPU one
+fields=0 48 17 18 38 39 40 119 2 46 47 49 1
