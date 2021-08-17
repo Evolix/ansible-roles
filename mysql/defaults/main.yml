@@ -48,6 +48,8 @@ mysql_evolinux_custom_file: zzz-evolinux-custom.cnf
 
 mysql_restart_if_needed: True
 
+mysql_performance_schema: True
+
 # replication variables:
 mysql_replication: false
 mysql_log_bin: null
