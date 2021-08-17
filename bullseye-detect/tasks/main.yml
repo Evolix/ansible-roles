@@ -1,0 +1,8 @@
+---
+
+# Force facts until Debian 11 is released because Ansible is dumb
+- set_fact:
+    ansible_distribution_major_version: 11
+    ansible_distribution: "Debian"
+    ansible_distribution_release: "bullseye"
+  when: "ansible_lsb.codename == 'bullseye' or ansible_lsb.release == 'testing/unstable'"
