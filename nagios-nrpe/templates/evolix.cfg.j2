@@ -51,6 +51,9 @@ command[check_ssl]=/usr/lib/nagios/plugins/check_http -f follow -I 127.0.0.1 -S 
 command[check_elasticsearch]=/usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /_cat/health?h=st -p 9200 -r 'red' --invert-regex
 command[check_memcached]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 11211
 command[check_opendkim]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 54321
+command[check_bkctld_setup]=sudo /usr/sbin/bkctld check-setup
+command[check_bkctld_jails]=sudo /usr/sbin/bkctld check-jails
+# "check_bkctld" is here as backward compatibility, but is replaced by "check_bkctld_jails"
 command[check_bkctld]=sudo /usr/sbin/bkctld check
 command[check_postgrey]=/usr/lib/nagios/plugins/check_tcp -p10023
 

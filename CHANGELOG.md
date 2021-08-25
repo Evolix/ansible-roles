@@ -18,6 +18,7 @@ The **patch** part changes incrementally at each release.
 * listupgrade: crontab is configurable
 * mongodb: create munin plugins directory if missing
 * mysql: script "mysql_connections" to display a compact list of connections
+* nagios-nrpe + evolinux-users: new checks for bkctld
 * redis: instance service for Debian 11
 
 ### Changed
