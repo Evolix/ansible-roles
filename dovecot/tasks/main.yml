@@ -10,6 +10,10 @@
   tags:
   - dovecot
 
+- name: Generate Diffie-Hellman parameters with the default size (4096 bits)
+    openssl_dhparam:
+      path: /etc/ssl/dhparams.pem
+
 - name: disable pam auth
   replace:
     dest: /etc/dovecot/conf.d/10-auth.conf
