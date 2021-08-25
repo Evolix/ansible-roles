@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 * Preliminary support for Debian 11 « Bullseye »
 * apache: new variable for mpm mode (+ updated default config accordingly)
 * certbot: add script for manual deploy hooks execution
+* evolinux-base: install molly-guard by default
 * listupgrade: crontab is configurable
 * mongodb: create munin plugins directory if missing
 * mysql: script "mysql_connections" to display a compact list of connections
