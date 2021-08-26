@@ -35,6 +35,21 @@ service login {
 }
 mail_max_userip_connections = 42
 
+# Configuration pour stats dovecot
+service stats {
+    unix_listener stats-reader {
+        user = vmail
+        group = vmail
+        mode = 0660
+    }
+
+    unix_listener stats-writer {
+        user = vmail
+        group = vmail
+        mode = 0660
+    }
+}
+
 # SSL/TLS
 ssl = yes
 ssl_prefer_server_ciphers = yes
