@@ -2,8 +2,8 @@
         weekly
         missingok
         rotate 3
-	compress
-	notifempty
+        compress
+        notifempty
         create 640 root adm
 }
 
