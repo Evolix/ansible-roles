@@ -39,8 +39,8 @@
     group: opendkim
     mode: "0640"
   loop:
-  - 'KeyTable'
-  - 'SigningTable'
+    - 'KeyTable'
+    - 'SigningTable'
   changed_when: False
   tags:
   - opendkim
