@@ -44,7 +44,7 @@ main() {
                 || error "Couldn't sync hooks on ${server}"
 
             # shellcheck disable=SC2029
-            ssh "${remote_host}" "export RENEWED_LINEAGE=\"${remote_lineage}/\" RENEWED_DOMAINS=${RENEWED_DOMAINS}; find ${remote_dir}/hooks/ -mindepth 1 -maxdepth 1 -type f -executable -exec {} \;" \
+            ssh "${remote_host}" "export RENEWED_LINEAGE=\"${remote_lineage}/\" RENEWED_DOMAINS=\"${RENEWED_DOMAINS}\"; find ${remote_dir}/hooks/ -mindepth 1 -maxdepth 1 -type f -executable -exec {} \;" \
                 || error "Something went wrong on ${server} for deploy hooks"
         done
     else
