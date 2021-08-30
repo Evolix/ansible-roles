@@ -1,0 +1,18 @@
+---
+
+- assert:
+    that:
+      - evomaintenance_api_endpoint is not none
+      - evomaintenance_api_key is not none
+    msg: evomaintenance api variables must be set
+
+- name: Configuration is installed
+  template:
+    src: evomaintenance.j2
+    dest: /etc/evomaintenance.cf
+    owner: root
+    group: root
+    mode: "0600"
+    force: "{{ evomaintenance_force_config | bool }}"
+  tags:
+    - evomaintenance
