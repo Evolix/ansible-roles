@@ -208,3 +208,12 @@
     force: no
   tags:
     - mysql
+
+- name: "Install mysql-queries-killer.sh"
+  copy:
+    src: mysql-queries-killer.sh
+    dest: "{{ _mysql_scripts_dir }}/mysql-queries-killer.sh"
+    mode: "0755"
+    force: no
+  tags:
+    - mysql
