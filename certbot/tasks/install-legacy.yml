@@ -56,5 +56,5 @@
     dest: "/etc/letsencrypt/cli.ini"
     section: null
     option: "no-self-upgrade"
-    value: 0
+    value: "no"
     state: present
