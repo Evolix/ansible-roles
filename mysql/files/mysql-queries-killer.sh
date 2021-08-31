@@ -1,12 +1,12 @@
 #!/bin/sh
 
-VERSION="21.07.1"
+VERSION="21.08"
 
 show_version() {
     cat <<END
 mysql-queries-killer version ${VERSION}
 
-Copyright 2021-2021 Evolix <info@evolix.fr>,
+Copyright 2018-2021 Evolix <info@evolix.fr>,
                Jérémy Lecour <jlecour@evolix.fr>
                and others.
 
@@ -23,32 +23,66 @@ mysql-queries-killer can list/kill SQL queries
 END
     show_usage
 }
-
 show_usage() {
     cat <<END
-Usage: mysql-queries-killer [--port <port>] --list [--time <time>]
-  or   mysql-queries-killer [--port <port>] --kill [--time <time>]
+Usage: mysql-queries-killer [--instance <instance>] --list [--time <time>]
+  or   mysql-queries-killer [--instance <instance>] --kill [--time <time>]
 
 Options
-  --port        MySQL port (default: 3306)
+  --instance    MySQL instance name (see below)
   --time        query busy time, in seconds (default: 600)
   --list        list matching queries (default action)
   --kill        kill connexions related to matching queries
   --help        Print this message and exit
   --version     Print version and exit
+
+If an instance parameter is provided, pt-kill will look for a configuration
+file at ~/.pt-kill.<instance>.cnf
+If no instance parameter is provided, pt-kill will use the conventional
+configuration files.
 END
 }
 
+error() {
+    >&2 echo "mysql-queries-killer: $1"
+    exit 
+}
+
 kill_connexions() {
-    cmd="${PTKILL_BIN} --host 127.0.0.1 --port ${port} --busy-time ${time} --kill --print"
+    cmd="${PTKILL_BIN}"
+
+    if [ -n "${config_file}" ]; then
+        cmd="${cmd} --config ${config_file}"
+    fi
+
+    cmd="${cmd} --busy-time ${time} --run-time 1 --interval 1 --print --kill"
 
     ${cmd}
 }
 
 list_queries() {
-    cmd="${PTKILL_BIN} --host 127.0.0.1 --port ${port} --busy-time ${time} --print"
+    cmd="${PTKILL_BIN}"
+
+    if [ -n "${config_file}" ]; then
+        cmd="${cmd} --config ${config_file}"
+    fi
+
+    cmd="${cmd} --busy-time ${time} --run-time 1 --interval 1 --print"
 
     ${cmd}
+}
+
+set_config_file() {
+    config_file=""
+
+    if [ -n "${instance}" ]; then
+        file="${HOME}/.pt-kill.${instance}.cnf"
+        if [ ! -f "${file}" ]; then
+            error "The config file \`${file}' doesn't exist." 2
+        else
+            config_file="${file}"
+        fi
+    fi
 }
 
 main() {
@@ -89,23 +123,23 @@ while :; do
         --list)
             action="list"
             ;;
-        --port)
+        --instance)
             # with value separated by space
             if [ -n "$2" ]; then
-                port=$2
+                instance=$2
                 shift
             else
-                printf 'ERROR: "--port" requires a non-empty option argument.\n' >&2
+                printf 'ERROR: "--instance" requires a non-empty option argument.\n' >&2
                 exit 1
             fi
             ;;
-        --port=?*)
+        --instance=?*)
             # with value speparated by =
-            port=${1#*=}
+            instance=${1#*=}
             ;;
-        --port=)
+        --instance=)
             # without value
-            printf 'ERROR: "--port" requires a non-empty option argument.\n' >&2
+            printf 'ERROR: "--instance" requires a non-empty option argument.\n' >&2
             exit 1
             ;;
         --time)
@@ -151,17 +185,12 @@ done
 # Initial values
 action=${action:-}
 time=${time:-"600"}
-port=${port:-"3306"}
+instance=${instance:-""}
+
+set_config_file
 
 set -u
 set -e
-
-if [ -z "${port}" ]; then
-    echo "You must provide an port name" >&2
-    echo "" >&2
-    show_usage >&2
-    exit 1
-fi
 
 main
 
