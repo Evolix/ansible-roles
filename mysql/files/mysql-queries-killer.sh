@@ -55,7 +55,7 @@ kill_connexions() {
         cmd="${cmd} --config ${config_file}"
     fi
 
-    cmd="${cmd} --busy-time ${time} --run-time 1 --interval 1 --print --kill"
+    cmd="${cmd} --busy-time ${time} --run-time 1 --interval 1 --victims all --print --kill"
 
     ${cmd}
 }
@@ -67,7 +67,7 @@ list_queries() {
         cmd="${cmd} --config ${config_file}"
     fi
 
-    cmd="${cmd} --busy-time ${time} --run-time 1 --interval 1 --print"
+    cmd="${cmd} --busy-time ${time} --run-time 1 --interval 1 --victims all --print"
 
     ${cmd}
 }
