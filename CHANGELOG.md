@@ -37,6 +37,7 @@ The **patch** part changes incrementally at each release.
 * evocheck: upstream release 21.07
 * evolinux-base: alert5 comes after the network
 * evolinux-base: force Debian version to buster for Evolix repository (temporary)
+* evolinux-base: split dpkg logrotate configuration
 * kibana: 7.x by default
 * listupgrade: upstream release 21.06.3
 * mysql: mariadb-client-10.5 on Debian 11
