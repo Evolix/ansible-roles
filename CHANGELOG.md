@@ -29,6 +29,7 @@ The **patch** part changes incrementally at each release.
 
 * Use python3 modules for Debian 11 and later
 * Remove embedded GPG keys only if legacy keyring is present
+* systemd files : 644 permissions and owner/group
 * apt: remove workaround for Evolix public repositories with Debian 11
 * apt: use the new security repository for Bullseye
 * certbot: silence letsencrypt deprecation warnings

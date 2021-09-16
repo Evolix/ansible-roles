@@ -168,6 +168,8 @@
     src: alert5.service
     dest: /etc/systemd/system/alert5.service
     force: yes
+    owner: root
+    group: root
     mode: "0644"
   when:
     - evolinux_system_alert5_init | bool

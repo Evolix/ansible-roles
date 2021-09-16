@@ -32,6 +32,9 @@
   copy:
     src: systemd/spawn-fcgi-munin-graph.service
     dest: /etc/systemd/system/spawn-fcgi-munin-graph.service
+    owner: root
+    group: root
+    mode: "0644"
 
 - name: Enable and start Munin-fcgi
   systemd:

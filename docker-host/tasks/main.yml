@@ -70,6 +70,8 @@
   copy:
     src: docker.conf
     dest: /etc/systemd/system/docker.service.d/
+    owner: root
+    group: root
     mode: "0644"
   notify: reload systemd
 

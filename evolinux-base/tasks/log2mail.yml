@@ -3,6 +3,8 @@
   copy:
     src: log2mail.service
     dest: /etc/systemd/system/log2mail.service
+    owner: root
+    group: root
     mode: "0644"
 
 - name: Remove log2mail sysvinit service

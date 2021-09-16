@@ -60,6 +60,9 @@
   template:
     src: elasticsearch-head.service.j2
     dest: /etc/systemd/system/elasticsearch-head.service
+    owner: root
+    group: root
+    mode: "0644"
   tags:
     - elasticsearch
     - systemd

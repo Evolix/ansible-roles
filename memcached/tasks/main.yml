@@ -28,6 +28,9 @@
   copy:
     src: memcached@.service
     dest: /etc/systemd/system/memcached@.service
+    owner: root
+    group: root
+    mode: "0644"
   tags:
     - memcached
   when: memcached_instance_name | length > 0
