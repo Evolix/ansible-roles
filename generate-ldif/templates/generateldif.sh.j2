@@ -583,9 +583,26 @@ objectClass: EvoService
 ServiceName: postgresql
 ipServicePort: 5432
 ServiceType: database
-ServiceVersion: PostgreSQL ${elasticsearch_version}
+ServiceVersion: PostgreSQL ${postgresql_version}
 EOT
 fi
+
+# mdadm
+if is_pkg_installed mdadm; then
+    mdadm_version=$(get_pkg_version mdadm)
+fi
+if [ -n "${mdadm_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=mdadm,${computer_dn}
+NagiosEnabled: TRUE
+objectClass: EvoService
+ServiceName: mdadm
+ServiceType: raid
+ServiceVersion: mdadm ${mdadm_version}
+EOT
+fi
+
 
 # test if we have a stdout
 if [ -t 1 ]; then
