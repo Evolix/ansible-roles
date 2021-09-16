@@ -12,6 +12,10 @@ nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_phpfpm_multi
 nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_phpfpm_multi /var/lib/lxc/php70/rootfs/etc/php/7.0/fpm/pool.d/
 nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_phpfpm_multi /var/lib/lxc/php73/rootfs/etc/php/7.3/fpm/pool.d/
 nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_phpfpm_multi /var/lib/lxc/php74/rootfs/etc/php/7.4/fpm/pool.d/
+nagios          ALL = NOPASSWD: /sbin/dmsetup status --noflush
+nagios          ALL = NOPASSWD: /sbin/megacli -PDList -aALL -NoLog
+nagios          ALL = NOPASSWD: /sbin/megacli -LdInfo -Lall -aALL -NoLog
+nagios          ALL = NOPASSWD: /sbin/megacli -AdpBbuCmd -GetBbuStatus -aALL -NoLog
 nagios          ALL = (clamav) NOPASSWD: /usr/bin/clamscan /tmp/safe.txt
 
 %{{ evolinux_sudo_group }}  ALL=(ALL:ALL) ALL
