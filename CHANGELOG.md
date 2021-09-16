@@ -38,6 +38,7 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: alert5 comes after the network
 * evolinux-base: force Debian version to buster for Evolix repository (temporary)
 * evolinux-base: split dpkg logrotate configuration
+* evolinux-base: install freeipmi by default on dedicated hw
 * kibana: 7.x by default
 * listupgrade: upstream release 21.06.3
 * mysql: mariadb-client-10.5 on Debian 11
