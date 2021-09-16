@@ -25,6 +25,12 @@
     force: yes
   register: _squid_systemd_override
 
+- name: Disable custom systemd unit if present
+  file:
+    path: /etc/systemd/system/squid.service
+  state: absent
+  register: _squid_systemd_etc
+
 - name: "Systemd daemon is reloaded and Squid restarted"
   systemd:
     name: squid
@@ -32,4 +38,4 @@
     daemon_reload: yes
   when:
     - _squid_systemd_active.rc == 0
-    - _squid_systemd_override is changed
+    - _squid_systemd_override is changed or _squid_systemd_etc is changed
