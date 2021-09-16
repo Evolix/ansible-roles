@@ -23,6 +23,7 @@ The **patch** part changes incrementally at each release.
 * nagios-nrpe + evolinux-users: new checks for bkctld
 * redis: instance service for Debian 11
 * squid: add *.o.lencr.org to default whitelist
+* varnish: validate configuration
 
 ### Changed
 

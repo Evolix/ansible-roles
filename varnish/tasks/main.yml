@@ -43,6 +43,9 @@
     src: varnish.conf.jessie.j2
     dest: /etc/systemd/system/varnish.service.d/evolinux.conf
     force: yes
+    owner: root
+    group: root
+    mode: "0644"
   when: ansible_distribution_major_version is version('10', '<')
   notify:
     - reload systemd
@@ -58,6 +61,9 @@
     src: varnish.conf.buster.j2
     dest: /etc/systemd/system/varnish.service.d/evolinux.conf
     force: yes
+    owner: root
+    group: root
+    mode: "0644"
   when: ansible_distribution_major_version is version('10', '>=')
   notify:
     - reload systemd
@@ -79,12 +85,39 @@
     - varnish
     - logrotate
 
+- name: Create Varnish config dir
+  file:
+    path: /etc/varnish/conf.d
+    state: directory
+    mode: "0755"
+  tags:
+    - varnish
+    - config
+    - update-config
+
+# First, copy included files
+- name: Copy included Varnish config
+  template:
+    src: "{{ item }}"
+    dest: /etc/varnish/conf.d/
+    mode: "0644"
+    force: yes
+  with_fileglob:
+    - "templates/varnish/conf.d/*.vcl"
+  notify: reload varnish
+  tags:
+    - varnish
+    - config
+    - update-config
+
+# Then, copy main configuration
 - name: Copy Varnish configuration
   template:
     src: "{{ item }}"
     dest: "{{ varnish_config_file }}"
     mode: "0644"
     force: yes
+    validate: "varnishd -Cf %s > /dev/null"
   loop: "{{ query('first_found', templates) }}"
   vars:
     templates:
@@ -96,30 +129,6 @@
       - "templates/varnish/default.default.vcl.j2"
       - "templates/varnish.vcl.j2"
       - "templates/default.vcl.j2"
-  notify: reload varnish
-  tags:
-    - varnish
-    - config
-    - update-config
-
-- name: Create Varnish config dir
-  file:
-    path: /etc/varnish/conf.d
-    state: directory
-    mode: "0755"
-  tags:
-    - varnish
-    - config
-    - update-config
-
-- name: Copy included Varnish config
-  template:
-    src: "{{ item }}"
-    dest: /etc/varnish/conf.d/
-    force: yes
-    mode: "0644"
-  with_fileglob:
-    - "templates/varnish/conf.d/*.vcl"
   notify: reload varnish
   tags:
     - varnish
