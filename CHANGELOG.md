@@ -22,6 +22,7 @@ The **patch** part changes incrementally at each release.
 * mysql: script "mysql-queries-killer.sh" to kill MySQL queries
 * nagios-nrpe + evolinux-users: new checks for bkctld
 * nagios-nrpe + evolinux-users: new check raid (soft + hard)
+* nagios-nrpe + evolinux-users: new check ipmi
 * redis: instance service for Debian 11
 * squid: add *.o.lencr.org to default whitelist
 

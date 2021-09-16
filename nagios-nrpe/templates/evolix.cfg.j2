@@ -78,6 +78,7 @@ command[check_php-fpm56]=sudo {{ nagios_plugins_directory }}/check_phpfpm_multi 
 command[check_php-fpm70]=sudo {{ nagios_plugins_directory }}/check_phpfpm_multi /var/lib/lxc/php70/rootfs/etc/php/7.0/fpm/pool.d/
 command[check_php-fpm73]=sudo {{ nagios_plugins_directory }}/check_phpfpm_multi /var/lib/lxc/php73/rootfs/etc/php/7.3/fpm/pool.d/
 command[check_php-fpm74]=sudo {{ nagios_plugins_directory }}/check_phpfpm_multi /var/lib/lxc/php74/rootfs/etc/php/7.4/fpm/pool.d/
+command[check_ipmi_sensors]=sudo /usr/lib/nagios/plugins/check_ipmi_sensor
 command[check_raid_status]=/usr/lib/nagios/plugins/check_raid
 
 # Check HTTP "many". Use this to check many websites (http, https, ports, sockets and SSL certificates).
