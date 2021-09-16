@@ -85,6 +85,17 @@
     - varnish
     - logrotate
 
+- name: Special tmp directory for config validations
+  file:
+    path: /var/tmp-vcache
+    state: directory
+    mode: "0755"
+    owner: "{{ varnish_user }}"
+    group: "{{ varnish_group }}"
+  tags:
+    - varnish
+    - config
+
 - name: Create Varnish config dir
   file:
     path: /etc/varnish/conf.d
@@ -117,7 +128,7 @@
     dest: "{{ varnish_config_file }}"
     mode: "0644"
     force: yes
-    validate: "varnishd -Cf %s > /dev/null"
+    validate: "sudo -u {{ varnish_user }} TMPDIR=/var/tmp-vcache varnishd -Cf %s > /dev/null"
   loop: "{{ query('first_found', templates) }}"
   vars:
     templates:
