@@ -42,6 +42,7 @@ The **patch** part changes incrementally at each release.
 * evolinux-base: split dpkg logrotate configuration
 * kibana: 7.x by default
 * listupgrade: upstream release 21.06.3
+* logstash: elastic_stack_version = 7.x
 * mysql: mariadb-client-10.5 on Debian 11
 * mysql: use python3 with Debian 11 and later
 * squid: improve default whitelist (more specific patterns)
