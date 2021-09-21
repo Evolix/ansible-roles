@@ -58,6 +58,7 @@ The **patch** part changes incrementally at each release.
 ### Removed
 
 * php: remove php-gettext for 7.4
+* logstash: no more dependency on Java
 
 ### Security
 
