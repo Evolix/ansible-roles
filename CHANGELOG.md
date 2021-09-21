@@ -19,6 +19,7 @@ The **patch** part changes incrementally at each release.
 * generate-ldif: detect hardware raid card
 * generate-ldif: detect mdadm
 * listupgrade: crontab is configurable
+* logstash: logging to syslog is configurable (default: True)
 * mongodb: create munin plugins directory if missing
 * mysql: script "mysql_connections" to display a compact list of connections
 * mysql: script "mysql-queries-killer.sh" to kill MySQL queries

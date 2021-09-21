@@ -16,3 +16,26 @@
     group: root
     mode: "0750"
   when: is_cron_installed.rc == 0
+
+- name: "Create a system config directory for systemd overrides"
+  file:
+    path: /etc/systemd/system/logstash.service.d
+    state: directory
+
+- name: "disable syslog"
+  ini_file:
+    path: /etc/systemd/system/logstash.service.d/override.conf
+    section: Service
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    owner: root
+    group: root
+    mode: "0644"
+    create: yes
+    no_extra_spaces: yes
+    state: "{{ logstash_log_syslog_enabled | bool | ternary('absent','present') }}"
+  loop:
+    - { option: "StandardOutput", value: "null" }
+    - { option: "StandardError",  value: "null" }
+  notify:
+    - restart logstash
