@@ -6,3 +6,5 @@ logstash_jvm_xmx: 512g
 logstash_log_rotate_days: 365
 logstash_custom_tmpdir: Null
 logstash_default_tmpdir: /var/lib/logstash/tmp
+logstash_log_syslog_enabled: True
+logstash_config_force: True
