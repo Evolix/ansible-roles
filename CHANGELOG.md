@@ -15,6 +15,7 @@ The **patch** part changes incrementally at each release.
 * Preliminary support for Debian 11 « Bullseye »
 * apache: new variable for mpm mode (+ updated default config accordingly)
 * certbot: add script for manual deploy hooks execution
+* etc-git: purge old .git/index.lock (default: True)
 * evolinux-base: install molly-guard by default
 * generate-ldif: detect hardware raid card
 * generate-ldif: detect mdadm

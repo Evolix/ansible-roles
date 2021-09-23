@@ -5,6 +5,20 @@
     name: remount-usr
   when: git_folder is match('/usr/.*')
 
+- name: "stat {{ git_folder }}/.git/index.lock"
+  stat:
+    path: "{{ git_folder }}/.git/index.lock"
+  register: _index_lock
+
+- name: index file is removed if old enough
+  file:
+    path: "{{ git_folder }}/.git/index.lock"
+    state: absent
+  when:
+    - _index_lock.stat.exists
+    - _index_lock.stat.mtime | int <= ((ansible_date_time.epoch | int) - etc_git_purge_index_lock_age | default(86400))
+    - etc_git_purge_index_lock_enabled
+
 - name: "is {{ git_folder }} clean?"
   command: git status --porcelain
   args:
