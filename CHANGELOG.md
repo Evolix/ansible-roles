@@ -4,11 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 This project does not follow semantic versioning.
-The **major** part of the version is aligned with the stable version of Debian.
-The **minor** part changes with big changes (probably incompatible).
-The **patch** part changes incrementally at each release.
+The **major** part of the version is the year
+The **minor** part changes is the month
+The **patch** part changes is incremented if multiple releases happen the same month
 
 ## [Unreleased]
+
+### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [21.09] 2021-09-29
 
 ### Added
 
@@ -32,6 +44,7 @@ The **patch** part changes incrementally at each release.
 
 ### Changed
 
+* Change version pattern
 * Use python3 modules for Debian 11 and later
 * Remove embedded GPG keys only if legacy keyring is present
 * apt: remove workaround for Evolix public repositories with Debian 11
@@ -50,6 +63,7 @@ The **patch** part changes incrementally at each release.
 * logstash: elastic_stack_version = 7.x
 * mysql: mariadb-client-10.5 on Debian 11
 * mysql: use python3 with Debian 11 and later
+* php: enforce Debian version with assert instead of fail
 * squid: improve default whitelist (more specific patterns)
 * squid: must be started in foreground mode for systemd
 * squid: remove obsolete variable on Squid 4
@@ -62,8 +76,6 @@ The **patch** part changes incrementally at each release.
 
 * php: remove php-gettext for 7.4
 * logstash: no more dependency on Java
-
-### Security
 
 ## [10.6.0] 2021-06-28
 
