@@ -20,20 +20,24 @@
     - nextcloud
 
 # dependency for mysql_user and mysql_db
-- name: python-mysqldb is installed (Ansible dependency)
+- name: python modules is installed (Ansible dependency)
   apt:
-    name: python-mysqldb
+    name:
+      - python-mysqldb
+      - python-pymysql
     state: present
   when: ansible_distribution_major_version is version('10', '<=')
   tags:
     - nextcloud
 
 # dependency for mysql_user and mysql_db
-- name: python3-mysqldb is installed (Ansible dependency)
+- name: python3 modules is installed (Ansible dependency)
   apt:
-    name: python3-mysqldb
+    name:
+      - python3-mysqldb
+      - python3-pymysql
     state: present
-  when: ansible_distribution_major_version is version('10', '>')
+  when: ansible_distribution_major_version is version('10', '>=')
   tags:
     - nextcloud
 
