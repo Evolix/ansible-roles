@@ -4,7 +4,7 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
-VERSION="21.09"
+VERSION="21.10"
 readonly VERSION
 
 # base functions
@@ -235,17 +235,17 @@ check_syslogconf() {
 check_debiansecurity() {
     if is_debian_bullseye; then
         # https://www.debian.org/releases/bullseye/amd64/release-notes/ch-information.html#security-archive
-        pattern="^deb https://deb\.debian\.org/debian-security bullseye-security main"
+        pattern="^deb https://deb\.debian\.org/debian-security/? bullseye-security main"
     elif is_debian_buster; then
-        pattern="^deb http://security\.debian\.org/debian-security buster/updates main"
+        pattern="^deb http://security\.debian\.org/debian-security/? buster/updates main"
     elif is_debian_stretch; then
-        pattern="^deb http://security\.debian\.org/debian-security stretch/updates main"
+        pattern="^deb http://security\.debian\.org/debian-security/? stretch/updates main"
     else
         pattern="^deb.*security"
     fi
 
     source_file="/etc/apt/sources.list"
-    grep -q "${pattern}" "${source_file}" || failed "IS_DEBIANSECURITY" "missing debian security repository"
+    grep -qE "${pattern}" "${source_file}" || failed "IS_DEBIANSECURITY" "missing debian security repository"
 }
 check_aptitudeonly() {
     if is_debian_squeeze || is_debian_wheezy; then
