@@ -5,21 +5,10 @@
     msg: "We can't create other users with 'debian-sys-maint' on Debian 8 with MariaDB.\nWe must give it the GRANT privilege before continuing."
   when: mysql_variant == "mariadb"
 
-# dependency for mysql_user and mysql_db
-- name: python-mysqldb is installed (Ansible dependency)
+- name: Python dependencies for Ansible are installed
   apt:
     name: python-mysqldb
     state: present
-  when: ansible_distribution_major_version is version('10', '<=')
-  tags:
-    - mysql
-
-# dependency for mysql_user and mysql_db
-- name: python3-mysqldb is installed (Ansible dependency)
-  apt:
-    name: python3-mysqldb
-    state: present
-  when: ansible_distribution_major_version is version('10', '>')
   tags:
     - mysql
 
@@ -29,7 +18,7 @@
   changed_when: False
   check_mode: no
   tags:
-  - mysql
+    - mysql
 
 - name: there is a mysqladmin user
   mysql_user:
@@ -41,7 +30,7 @@
     config_file: "/etc/mysql/debian.cnf"
   register: create_mysqladmin_user
   tags:
-  - mysql
+    - mysql
 
 - name: mysqladmin is the default user
   ini_file:
@@ -56,13 +45,13 @@
     - { option: 'password', value: '{{ mysql_admin_password.stdout }}' }
   when: create_mysqladmin_user is changed
   tags:
-  - mysql
+   - mysql
 
-- name: remove root user
+- name: root user is absent
   mysql_user:
     name: root
     host_all: yes
     config_file: "/root/.my.cnf"
     state: absent
   tags:
-  - mysql
+    - mysql

@@ -34,6 +34,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * listupgrade: crontab is configurable
 * logstash: logging to syslog is configurable (default: True)
 * mongodb: create munin plugins directory if missing
+* mysql: improve Bullseye compatibility
 * mysql: script "mysql_connections" to display a compact list of connections
 * mysql: script "mysql-queries-killer.sh" to kill MySQL queries
 * nagios-nrpe + evolinux-users: new checks for bkctld

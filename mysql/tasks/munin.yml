@@ -10,12 +10,20 @@
     - munin
 
 - block:
-  - name: Install perl libraries for Munin
+  - name: "Install perl libraries for Munin (Debian < 11)"
     apt:
       name:
         - libdbd-mysql-perl
         - libcache-cache-perl
       state: present
+    when: ansible_distribution_major_version is version('11', '<')
+
+  - name: "Install perl libraries for Munin (Debian >= 11)"
+    apt:
+      name:
+        - libcache-cache-perl
+        - libdbd-mariadb-perl
+    when: ansible_distribution_major_version is version('11', '>=')
 
   - name: Enable core Munin plugins
     file:

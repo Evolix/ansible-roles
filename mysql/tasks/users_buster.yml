@@ -5,6 +5,8 @@
     name:
       - python-mysqldb
       - python-pymysql
+      - python3-mysqldb
+      - python3-pymysql
     state: present
   tags:
     - mysql
