@@ -47,7 +47,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Changed
 
 * Change version pattern
-* Use python3 modules for Debian 11 and later
+* Install python 2 or 3 libraries according to running python version
 * Remove embedded GPG keys only if legacy keyring is present
 * apt: remove workaround for Evolix public repositories with Debian 11
 * apt: use the new security repository for Bullseye

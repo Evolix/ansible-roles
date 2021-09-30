@@ -4,13 +4,13 @@
   apt:
     name: python-requests
     state: present
-  when: ansible_distribution_major_version is version('10', '<=')
+  when: ansible_python_version is version('3', '<')
 
 - name: python3-requests is installed (check_rabbitmq dependency)
   apt:
     name: python3-requests
     state: present
-  when: ansible_distribution_major_version is version('10', '>=')
+  when: ansible_python_version is version('3', '>=')
 
 - include_role:
     name: evolix/remount-usr

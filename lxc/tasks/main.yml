@@ -10,13 +10,13 @@
   apt:
     name: python-lxc
     state: present
-  when: ansible_distribution_major_version is version('10', '<=')
+  when: ansible_python_version is version('3', '<')
 
 - name: python3-lxc is installed (Debian >= 10)
   apt:
     name: python3-lxc
     state: present
-  when: ansible_distribution_major_version is version('10', '>=')
+  when: ansible_python_version is version('3', '>=')
 
 - name: Install additional packages (Debian >= 10)
   apt:

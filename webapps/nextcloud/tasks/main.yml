@@ -26,9 +26,9 @@
       - python-mysqldb
       - python-pymysql
     state: present
-  when: ansible_distribution_major_version is version('10', '<=')
   tags:
     - nextcloud
+  when: ansible_python_version is version('3', '<)
 
 # dependency for mysql_user and mysql_db
 - name: python3 modules is installed (Ansible dependency)
@@ -37,9 +37,9 @@
       - python3-mysqldb
       - python3-pymysql
     state: present
-  when: ansible_distribution_major_version is version('10', '>=')
   tags:
     - nextcloud
+  when: ansible_python_version is version('3', '>=')
 
 - include: user.yml
 

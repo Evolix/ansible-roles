@@ -1,6 +1,6 @@
 ---
 
-- name: Python dependencies for Ansible are installed
+- name: Python2 dependencies for Ansible are installed
   apt:
     name:
       - python-mysqldb
@@ -8,6 +8,17 @@
     state: present
   tags:
     - mysql
+  when: ansible_python_version is version('3', '<')
+
+- name: Python3 dependencies for Ansible are installed
+  apt:
+    name:
+      - python3-mysqldb
+      - python3-pymysql
+    state: present
+  tags:
+    - mysql
+  when: ansible_python_version is version('3', '>=')
 
 - name: create a password for mysqladmin
   command: "apg -n 1 -m 16 -M lcN"
