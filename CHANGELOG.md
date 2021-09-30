@@ -59,6 +59,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-base: force Debian version to buster for Evolix repository (temporary)
 * evolinux-base: split dpkg logrotate configuration
 * evolinux-base: install freeipmi by default on dedicated hw
+* evolinux-base: logs are rotated with dateext by default
 * kibana: 7.x by default
 * listupgrade: upstream release 21.06.3
 * logstash: elastic_stack_version = 7.x

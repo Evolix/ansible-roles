@@ -164,8 +164,10 @@ evolinux_logs_include: True
 
 evolinux_logs_logrotate_confs: True
 evolinux_logs_default_rotate: True
+evolinux_logs_default_dateext : True
 evolinux_logs_disable_logrotate_rsyslog: True
 evolinux_logs_rsyslog_conf: True
+evolinux_logrotate_dateformat: "-%Y%m%d%H"
 
 # default www
 
