@@ -27,8 +27,6 @@
     update_password: on_create
     state: present
     config_file: "/etc/mysql/debian.cnf"
-    login_user: root
-    login_unix_socket: /var/run/mysqld/mysqld.sock
   register: create_mysqladmin_user
   tags:
     - mysql
