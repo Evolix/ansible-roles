@@ -4,7 +4,7 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
-VERSION="21.07"
+VERSION="21.09"
 readonly VERSION
 
 # base functions
@@ -233,8 +233,19 @@ check_syslogconf() {
         || failed "IS_SYSLOGCONF" "syslog evolix config file missing"
 }
 check_debiansecurity() {
-    grep -q "^deb.*security" /etc/apt/sources.list \
-        || failed "IS_DEBIANSECURITY" "missing debian security repository"
+    if is_debian_bullseye; then
+        # https://www.debian.org/releases/bullseye/amd64/release-notes/ch-information.html#security-archive
+        pattern="^deb https://deb\.debian\.org/debian-security bullseye-security main"
+    elif is_debian_buster; then
+        pattern="^deb http://security\.debian\.org/debian-security buster/updates main"
+    elif is_debian_stretch; then
+        pattern="^deb http://security\.debian\.org/debian-security stretch/updates main"
+    else
+        pattern="^deb.*security"
+    fi
+
+    source_file="/etc/apt/sources.list"
+    grep -q "${pattern}" "${source_file}" || failed "IS_DEBIANSECURITY" "missing debian security repository"
 }
 check_aptitudeonly() {
     if is_debian_squeeze || is_debian_wheezy; then
@@ -345,6 +356,13 @@ check_minifw() {
     /sbin/iptables -L -n | grep -q -E "^ACCEPT\s*all\s*--\s*31\.170\.8\.4\s*0\.0\.0\.0/0\s*$" \
         || failed "IS_MINIFW" "minifirewall seems not starded"
 }
+check_minifw_includes() {
+    if is_debian_bullseye; then
+        if grep -q -e '/sbin/iptables' -e '/sbin/ip6tables' "${MINIFW_FILE}"; then
+            failed "IS_MINIFWINCLUDES" "minifirewall has direct iptables invocations in ${MINIFW_FILE} that should go in /etc/minifirewall.d/"
+        fi
+    fi
+}
 check_nrpeperms() {
     if [ -d /etc/nagios ]; then
         nagiosDir="/etc/nagios"
@@ -405,17 +423,20 @@ check_apachemunin() {
 check_mysqlutils() {
     MYSQL_ADMIN=${MYSQL_ADMIN:-mysqladmin}
     if is_installed mysql-server; then
-        # You can configure MYSQL_ADMIN in evocheck.cf
-        if ! grep -qs "$MYSQL_ADMIN" /root/.my.cnf; then
-            failed "IS_MYSQLUTILS" "mysqladmin missing in /root/.my.cnf"
+        # With Debian 11 and later, root can connect to MariaDB with the socket
+        if is_debian_wheezy || is_debian_jessie ||  is_debian_stretch || is_debian_buster; then
+            # You can configure MYSQL_ADMIN in evocheck.cf
+            if ! grep -qs "^user *= *${MYSQL_ADMIN}" /root/.my.cnf; then
+                failed "IS_MYSQLUTILS" "${MYSQL_ADMIN} missing in /root/.my.cnf"
+            fi
         fi
         if ! test -x /usr/bin/mytop; then
             if ! test -x /usr/local/bin/mytop; then
                 failed "IS_MYSQLUTILS" "mytop binary missing"
             fi
         fi
-        if ! grep -qs debian-sys-maint /root/.mytop; then
-            failed "IS_MYSQLUTILS" "debian-sys-maint missing in /root/.mytop"
+        if ! grep -qs '^user *=' /root/.mytop; then
+            failed "IS_MYSQLUTILS" "credentials missing in /root/.mytop"
         fi
     fi
 }
@@ -457,7 +478,8 @@ check_squid() {
             && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d $host -j ACCEPT" "$MINIFW_FILE" \
             && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d 127.0.0.(1|0/8) -j ACCEPT" "$MINIFW_FILE" \
             && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port.* $http_port" "$MINIFW_FILE";
-        } || failed "IS_SQUID" "missing squid rules in minifirewall"
+        } || grep -qE "^PROXY='?on'?" "$MINIFW_FILE" \
+          || failed "IS_SQUID" "missing squid rules in minifirewall"
     fi
 }
 check_evomaintenance_fw() {
@@ -1386,6 +1408,7 @@ main() {
         test "${IS_ALERT5MINIFW:=1}" = 1 && test "${IS_MINIFW:=1}" = 1 && check_minifw
         test "${IS_NRPEPERMS:=1}" = 1 && check_nrpeperms
         test "${IS_MINIFWPERMS:=1}" = 1 && check_minifwperms
+        test "${IS_MINIFWINCLUDES:=1}" = 1 && check_minifw_includes
         test "${IS_NRPEDISKS:=0}" = 1 && check_nrpedisks
         test "${IS_NRPEPID:=1}" = 1 && check_nrpepid
         test "${IS_GRSECPROCS:=1}" = 1 && check_grsecprocs
