@@ -55,7 +55,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * elasticsearch: 7.x by default
 * evoadmin-web: simpler PHP packages lists
 * evomaintenance: extract a config.yyml tasks file
-* evocheck: upstream release 21.09
+* evocheck: upstream release 21.10
 * evolinux-base: alert5 comes after the network
 * evolinux-base: force Debian version to buster for Evolix repository (temporary)
 * evolinux-base: split dpkg logrotate configuration
