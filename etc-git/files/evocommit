@@ -1,0 +1,227 @@
+#!/bin/sh
+
+set -u
+
+VERSION="21.10"
+
+show_version() {
+    cat <<END
+evocommit version ${VERSION}
+
+Copyright 2021 Evolix <info@evolix.fr>,
+               Jérémy Lecour <jlecour@evolix.fr>
+               and others.
+
+evocommit comes with ABSOLUTELY NO WARRANTY.  This is free software,
+and you are welcome to redistribute it under certain conditions.
+See the GNU General Public Licence for details.
+END
+}
+
+show_help() {
+    cat <<END
+evocommit helps properly committing changes in a repository
+
+END
+    show_usage
+}
+show_usage() {
+    cat <<END
+Usage: evocommit --repository /path/to/repository --message "add new host"
+
+Options
+     --repository PATH   set the path for the repository
+     --message MESSAGE   set the commit message
+ -V, --version           print version number
+ -v, --verbose           increase verbosity
+ -n, --dry-run           actions are not executed
+     --help              print this message and exit
+     --version           print version and exit
+END
+}
+
+syslog() {
+    if [ -x "${LOGGER_BIN}" ]; then
+        ${LOGGER_BIN} -t "evocommit" "$1"
+    fi
+}
+get_system() {
+    uname -s
+}
+is_repository_readonly() {
+    if [ "$(get_system)" = "OpenBSD" ]; then
+        partition=$(stat -f '%Sd' $1)
+        mount | grep "${partition}" | grep -q "read-only"
+    elif command -v findmnt >/dev/null; then
+        mountpoint=$(stat -c '%m' $1)
+        findmnt "${mountpoint}" --noheadings --output OPTIONS -O ro
+    else
+        grep /usr /proc/mounts | grep -E '\bro\b'
+    fi
+}
+remount_repository_readwrite() {
+    if [ "$(get_system)" = "OpenBSD" ]; then
+        partition=$(stat -f '%Sd' $1)
+        mount -u -w /dev/${partition} 2>/dev/null
+    else
+        mountpoint=$(stat -c '%m' $1)
+        mount -o remount,rw ${mountpoint}
+        syslog "Re-mount ${mountpoint} as read-write to commit in repository $1"
+    fi
+}
+remount_repository_readonly() {
+    if [ "$(get_system)" = "OpenBSD" ]; then
+        partition=$(stat -f '%Sd' $1)
+        mount -u -r /dev/${partition} 2>/dev/null
+    else
+        mountpoint=$(stat -c '%m' $1)
+        mount -o remount,ro ${mountpoint} 2>/dev/null
+        syslog "Re-mount ${mountpoint} as read-only after commit to repository $1"
+    fi
+}
+is_dry_run() {
+    test "${DRY_RUN}" = "1"
+}
+main() {
+
+    lock="${GIT_DIR}/index.lock"
+    if [ -f "${lock}" ]; then
+        limit=$(date +"%s" -d "now - 1 hour")
+        updated_at=$(stat -c "%Y" "${lock}")
+        if [ "$updated_at" -lt "$limit" ]; then
+            rm -f "${lock}"
+        fi
+    fi
+
+    git_status=$(${GIT_BIN} status --porcelain)
+
+    if [ -n "${git_status}" ]; then
+        if is_dry_run; then
+            ${GIT_BIN} status
+        else
+            readonly_orig=0
+            # remount mount point read-write if currently readonly
+            if is_repository_readonly "${REPOSITORY}"; then
+                readonly_orig=1;
+                remount_repository_readwrite "${REPOSITORY}";
+            fi
+            author=$(logname)
+            email=$(git config --get user.email)
+            email=${email:-"${author}@evolix.net"}
+            # commit changes
+            ${GIT_BIN} add --all
+            ${GIT_BIN} commit --message "${MESSAGE}" --author "${author} <${email}>" --quiet
+            # remount mount point read-only if it was before
+            if [ ${readonly_orig} -eq 1 ]; then
+                remount_repository_readonly "${REPOSITORY}"
+            fi
+        fi
+    fi
+
+    unset GIT_DIR
+    unset GIT_WORK_TREE
+}
+# Parse options
+# based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
+while :; do
+    case ${1:-''} in
+        -h|-\?|--help)
+            show_help
+            exit 0
+            ;;
+        -V|--version)
+            show_version
+            exit 0
+            ;;
+        --message)
+            # message options, with value speparated by space
+            if [ -n "$2" ]; then
+                MESSAGE=$2
+                shift
+            else
+                printf 'ERROR: "--message" requires a non-empty option argument.\n' >&2
+                exit 1
+            fi
+            ;;
+        --message=?*)
+            # message options, with value speparated by =
+            MESSAGE=${1#*=}
+            ;;
+        --message=)
+            # message options, without value
+            printf 'ERROR: "--message" requires a non-empty option argument.\n' >&2
+            exit 1
+            ;;
+        --repository)
+            # repository options, with value speparated by space
+            if [ -n "$2" ]; then
+                REPOSITORY=$2
+                shift
+            else
+                printf 'ERROR: "--repository" requires a non-empty option argument.\n' >&2
+                exit 1
+            fi
+            ;;
+        --repository=?*)
+            # repository options, with value speparated by =
+            REPOSITORY=${1#*=}
+            ;;
+        --repository=)
+            # repository options, without value
+            printf 'ERROR: "--repository" requires a non-empty option argument.\n' >&2
+            exit 1
+            ;;
+        -n|--dry-run)
+            # disable actual commands
+            DRY_RUN=1
+            ;;
+        -v|--verbose)
+            # print verbose information
+            VERBOSE=1
+            ;;
+        --)
+            # End of all options.
+            shift
+            break
+            ;;
+        -?*|[[:alnum:]]*)
+            # ignore unknown options
+            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            ;;
+        *)
+            # Default case: If no more options then break out of the loop.
+            break
+            ;;
+    esac
+
+    shift
+done
+
+if [ -z "${MESSAGE}" ]; then
+    echo "Error: missing message parameter" >&2
+    show_usage
+    exit 1
+fi
+if [ -z "${REPOSITORY}" ]; then
+    echo "Error: missing repository parameter" >&2
+    show_usage
+    exit 1
+fi
+DRY_RUN=${DRY_RUN:-0}
+VERBOSE=${VERBOSE:-0}
+
+GIT_BIN=$(command -v git)
+readonly GIT_BIN
+
+LOGGER_BIN=$(command -v logger)
+readonly LOGGER_BIN
+
+export GIT_DIR="${REPOSITORY}/.git"
+export GIT_WORK_TREE="${REPOSITORY}"
+
+if [ -d "${GIT_DIR}" ]; then
+    main
+else
+    echo "There is no Git repository in '${REPOSITORY}'" >&2
+    exit 1
+fi

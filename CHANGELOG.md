@@ -28,7 +28,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * apache: new variable for mpm mode (+ updated default config accordingly)
 * certbot: add script for manual deploy hooks execution
 * docker-host: install additional dependencies
-* etc-git: purge old .git/index.lock (default: True)
+* etc-git: manage commits with an optimized shell script instead of many slow Ansible tasks
+* etc-git: centralize cron jobs in dedicated crontab
 * evolinux-base: install molly-guard by default
 * generate-ldif: detect hardware raid card
 * generate-ldif: detect mdadm
