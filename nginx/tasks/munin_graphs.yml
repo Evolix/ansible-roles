@@ -1,13 +1,13 @@
 ---
 
-- name: Copy Munin config for Nginx
+- name: Munin config for Nginx is present
   template:
     src: munin/evolinux.nginx
     dest: /etc/munin/plugin-conf.d/
     mode: "0644"
   notify: restart munin
 
-- name: Enable Munin plugins for Nginx
+- name: Munin plugins for Nginx are installed
   file:
     src: '/usr/share/munin/plugins/{{ item }}'
     dest: '/etc/munin/plugins/{{ item }}'
