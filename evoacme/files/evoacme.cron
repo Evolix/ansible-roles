@@ -22,5 +22,6 @@ find "${CRT_DIR}" \
     ! -path "${CRT_DIR}/keys" \
     ! -path "${CRT_DIR}/live" \
     ! -path "${CRT_DIR}/renewal" \
+    ! -path "${CRT_DIR}/renewal-hooks" \
     -printf "%f\n" \
         | xargs --max-args=1 --no-run-if-empty evoacme

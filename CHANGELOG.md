@@ -54,6 +54,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * apt: use the new security repository for Bullseye
 * certbot: silence letsencrypt deprecation warnings
 * elasticsearch: 7.x by default
+* evoacme: exclude renewal-hooks directory from cron
 * evoadmin-web: simpler PHP packages lists
 * evomaintenance: extract a config.yyml tasks file
 * evocheck: upstream release 21.10
