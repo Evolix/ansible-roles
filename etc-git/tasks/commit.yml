@@ -8,40 +8,16 @@
     force: yes
 
 # /etc
-- name: Is /etc a git repository
-  stat:
-    path: /etc/.git
-  register: _etc_git
-
 - name: "evocommit /etc"
-  command: "/usr/local/bin/evocommit --repository /etc --message \"{{ commit_message | mandatory }}\""
+  shell: "test -d /etc/.git && /usr/local/bin/evocommit --repository /etc --message \"{{ commit_message | default(etc_git_default_commit_message) }}\""
   ignore_errors: yes
-  when:
-    - _etc_git.stat.exists
-    - _etc_git.stat.isdir
 
 # /etc/bind
-- name: Is /etc/bind a git repository
-  stat:
-    path: /etc/bind/.git
-  register: _etc_bind_git
-
 - name: "evocommit /etc/bind"
-  command: "/usr/local/bin/evocommit --repository /etc/bind --message \"{{ commit_message | mandatory }}\""
+  shell: "test -d /etc/bind/.git && /usr/local/bin/evocommit --repository /etc/bind --message \"{{ commit_message | default(etc_git_default_commit_message) }}\""
   ignore_errors: yes
-  when:
-    - _etc_bind_git.stat.exists
-    - _etc_bind_git.stat.isdir
 
 # /usr/share/scripts
-- name: Is /usr/share/scripts a git repository
-  stat:
-    path: /usr/share/scripts/.git
-  register: _usr_share_scripts_git
-
 - name: "evocommit /usr/share/scripts"
-  command: "/usr/local/bin/evocommit --repository /usr/share/scripts --message \"{{ commit_message | mandatory }}\""
+  shell: "test -d /usr/share/scripts/.git && /usr/local/bin/evocommit --repository /usr/share/scripts --message \"{{ commit_message | default(etc_git_default_commit_message) }}\""
   ignore_errors: yes
-  when:
-    - _usr_share_scripts_git.stat.exists
-    - _usr_share_scripts_git.stat.isdir
