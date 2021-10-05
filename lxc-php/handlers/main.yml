@@ -1,4 +1,9 @@
 ---
+- name: Reload php80-fpm
+  lxc_container:
+    name: "{{ lxc_php_version }}"
+    container_command: "systemctl reload php8.0-fpm"
+
 - name: Reload php74-fpm
   lxc_container:
     name: "{{ lxc_php_version }}"
