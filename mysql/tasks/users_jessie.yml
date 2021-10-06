@@ -5,13 +5,6 @@
     msg: "We can't create other users with 'debian-sys-maint' on Debian 8 with MariaDB.\nWe must give it the GRANT privilege before continuing."
   when: mysql_variant == "mariadb"
 
-- name: Python dependencies for Ansible are installed
-  apt:
-    name: python-mysqldb
-    state: present
-  tags:
-    - mysql
-
 - name: create a password for mysqladmin
   command: "apg -n 1 -m 16 -M lcN"
   register: mysql_admin_password
