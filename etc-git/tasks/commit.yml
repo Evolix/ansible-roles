@@ -1,12 +1,5 @@
 ---
 
-- name: "evocommit script is installed"
-  copy:
-    src: evocommit
-    dest: /usr/local/bin/evocommit
-    mode: "0755"
-    force: yes
-
 # /etc
 - name: Is /etc a git repository
   stat:
