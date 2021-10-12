@@ -7,8 +7,10 @@
   register: _etc_git
 
 - name: "evocommit /etc"
-  command: "/usr/local/bin/evocommit --repository /etc --message \"{{ commit_message | mandatory }}\""
+  command: "/usr/local/bin/evocommit --ansible --repository /etc --message \"{{ commit_message | mandatory }}\""
+  changed_when: "'CHANGED:' in _etc_git_commit.stdout"
   ignore_errors: yes
+  register: _etc_git_commit
   when:
     - _etc_git.stat.exists
     - _etc_git.stat.isdir
@@ -20,8 +22,10 @@
   register: _etc_bind_git
 
 - name: "evocommit /etc/bind"
-  command: "/usr/local/bin/evocommit --repository /etc/bind --message \"{{ commit_message | mandatory }}\""
+  command: "/usr/local/bin/evocommit --ansible --repository /etc/bind --message \"{{ commit_message | mandatory }}\""
+  changed_when: "'CHANGED:' in _etc_bind_git_commit.stdout"
   ignore_errors: yes
+  register: _etc_bind_git_commit
   when:
     - _etc_bind_git.stat.exists
     - _etc_bind_git.stat.isdir
@@ -33,8 +37,10 @@
   register: _usr_share_scripts_git
 
 - name: "evocommit /usr/share/scripts"
-  command: "/usr/local/bin/evocommit --repository /usr/share/scripts --message \"{{ commit_message | mandatory }}\""
+  command: "/usr/local/bin/evocommit --ansible --repository /usr/share/scripts --message \"{{ commit_message | mandatory }}\""
+  changed_when: "'CHANGED:' in _usr_share_scripts_git_commit.stdout"
   ignore_errors: yes
+  register: _usr_share_scripts_git_commit
   when:
     - _usr_share_scripts_git.stat.exists
     - _usr_share_scripts_git.stat.isdir
