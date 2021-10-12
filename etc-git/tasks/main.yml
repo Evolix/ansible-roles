@@ -7,6 +7,18 @@
   tags:
     - etc-git
 
+- include_role:
+    name: evolix/remount-usr
+
+- name: "evocommit script is installed"
+  copy:
+    src: evocommit
+    dest: /usr/local/bin/evocommit
+    mode: "0755"
+    force: yes
+  tags:
+    - etc-git
+
 - include: repository.yml
   vars:
     repository_path: "/etc"
@@ -31,15 +43,6 @@
   when:
     - _usr_share_scripts.stat.isdir
     - ansible_distribution_major_version is version('10', '>=')
-
-- name: "evocommit script is installed"
-  copy:
-    src: evocommit
-    dest: /usr/local/bin/evocommit
-    mode: "0755"
-    force: yes
-  tags:
-    - etc-git
 
 - name: "etc-git-optimize script is installed"
   copy:
