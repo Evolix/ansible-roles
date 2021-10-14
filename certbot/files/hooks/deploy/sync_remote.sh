@@ -14,8 +14,15 @@ debug() {
 found_renewed_lineage() {
     test -f "${RENEWED_LINEAGE}/fullchain.pem" && test -f "${RENEWED_LINEAGE}/privkey.pem"
 }
+cert_content() {
+    openssl x509 -text -in "${RENEWED_LINEAGE}/fullchain.pem"
+}
 domain_from_cert() {
-    openssl x509 -noout -subject -in "${RENEWED_LINEAGE}/fullchain.pem" | sed 's/^.*CN\ *=\ *//'
+    if cert_content | grep -q "X509v3 Subject Alternative Name:" && cert_content | grep -q "DNS:"; then
+        cert_content | grep "DNS:" | sed -e 's/\s\+//g' -e 's/DNS://g'
+    else
+        cert_content | sed 's/^.*CN\ *=\ *//'
+    fi
 }
 main() {
     if [ -z "${RENEWED_LINEAGE}" ]; then
