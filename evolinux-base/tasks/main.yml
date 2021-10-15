@@ -98,6 +98,8 @@
 
 - include: motd.yml
 
+- include: utils.yml
+
 - name: Munin
   include_role:
     name: evolix/munin

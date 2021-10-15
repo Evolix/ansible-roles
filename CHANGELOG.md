@@ -12,6 +12,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* evolinux-base: add script backup-server-state
+
 ### Changed
 
 * mongodb: Deny the install on Debian 11 « Bullseye » when the version is unsupported
