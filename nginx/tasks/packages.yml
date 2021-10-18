@@ -1,7 +1,7 @@
 
 
 - set_fact:
-    nginx_package_name_default: nginx-light
+    nginx_default_package_name: nginx-light
   when: nginx_minimal | bool
 
 - include: packages_backports.yml

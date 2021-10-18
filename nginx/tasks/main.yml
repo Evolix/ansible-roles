@@ -2,6 +2,10 @@
 
 - debug:
     msg: "Nginx minimal mode has been removed, falling back to normal mode."
+  when: not nginx_minimal | bool
+
+- debug:
+    msg: "Nginx minimal mode has been set, using minimal mode."
   when: nginx_minimal | bool
 
 - include: packages.yml
