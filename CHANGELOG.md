@@ -23,6 +23,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Fixed
 
 * nginx : fix variable name and debug to actually use nginx-light
+* packweb-apache : Support php 8.0 
 
 ### Removed
 

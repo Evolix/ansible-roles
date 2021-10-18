@@ -37,5 +37,6 @@ dependencies:
   - { role: evolix/lxc-php, lxc_php_version: php70, lxc_php_create_mysql_link: True, when: "'php70' in packweb_multiphp_versions" }
   - { role: evolix/lxc-php, lxc_php_version: php73, lxc_php_create_mysql_link: True, when: "'php73' in packweb_multiphp_versions" }
   - { role: evolix/lxc-php, lxc_php_version: php74, lxc_php_create_mysql_link: True, when: "'php74' in packweb_multiphp_versions" }
+  - { role: evolix/lxc-php, lxc_php_version: php80, lxc_php_create_mysql_link: True, when: "'php80' in packweb_multiphp_versions" }
   - { role: evolix/webapps/evoadmin-web, evoadmin_enable_vhost: "{{ packweb_enable_evoadmin_vhost }}", evoadmin_multiphp_versions: "{{ packweb_multiphp_versions }}" }
   - { role: evolix/evoacme }
