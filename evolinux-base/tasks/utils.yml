@@ -8,3 +8,5 @@
     owner: root
     group: root
     mode: "0750"
+- include_role:
+    name: evolix/remount-usr
