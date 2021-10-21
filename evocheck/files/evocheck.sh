@@ -4,7 +4,7 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
-VERSION="21.10"
+VERSION="21.10.1"
 readonly VERSION
 
 # base functions
@@ -74,7 +74,7 @@ detect_os() {
 }
 
 is_debian() {
-  test -n "${DEBIAN_RELEASE}"
+    test -n "${DEBIAN_RELEASE}"
 }
 is_debian_lenny() {
     test "${DEBIAN_RELEASE}" = "lenny"
@@ -220,7 +220,6 @@ check_vartmpfs() {
     else
         df /var/tmp | grep -q tmpfs || failed "IS_VARTMPFS" "/var/tmp is not a tmpfs"
     fi
-    
 }
 check_serveurbase() {
     is_installed serveur-base || failed "IS_SERVEURBASE" "serveur-base package is not installed"
@@ -316,7 +315,7 @@ check_customcrontab() {
     test "$found_lines" = 4 && failed "IS_CUSTOMCRONTAB" "missing custom field in crontab"
 }
 check_sshallowusers() {
-    grep -E -qi "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config \
+    grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d \
         || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
 }
 check_diskperf() {
@@ -604,6 +603,7 @@ check_evobackup_exclude_mount() {
             failed "IS_EVOBACKUP_EXCLUDE_MOUNT" "${mount} is not excluded from ${evobackup_file} backup script"
         done
     done
+    rm -rf "${excludes_file}"
 }
 # Verification de la presence du userlogrotate
 check_userlogrotate() {
@@ -1040,7 +1040,7 @@ check_phpevolinuxconf() {
 check_squidlogrotate() {
     if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         if is_installed squid; then
-            grep -q monthly /etc/logrotate.d/squid \
+            grep -q -e monthly -e daily /etc/logrotate.d/squid \
                 || failed "IS_SQUIDLOGROTATE" "missing squid logrotate file"
         fi
     fi
@@ -1353,6 +1353,124 @@ check_lxc_container_resolv_conf() {
         done 
     fi
 }
+download_versions() {
+    local file
+    file=${1:-}
+
+    ## The file is supposed to list programs : each on a line, then its latest version number
+    ## Examples:
+    # evoacme 21.06
+    # evomaintenance 0.6.4
+
+    if is_debian; then
+        versions_url="https://upgrades.evolix.org/versions-${DEBIAN_RELEASE}"
+    elif is_openbsd; then
+        versions_url="https://upgrades.evolix.org/versions-${OPENBSD_RELEASE}"
+    else
+        failed "IS_VERSIONS_CHECK" "error determining os release"
+    fi
+
+    # fetch timeout, in seconds
+    timeout=10
+
+    if command -v curl > /dev/null; then
+        curl --max-time ${timeout} --fail --silent --output "${versions_file}" "${versions_url}"
+    elif command -v wget > /dev/null; then
+        wget --timeout=${timeout} --quiet "${versions_url}" -O "${versions_file}"
+    elif command -v GET; then
+        GET -t ${timeout}s "${versions_url}" > "${versions_file}"
+    else
+        failed "IS_VERSIONS_CHECK" "failed to find curl, wget or GET"
+    fi
+    test "$?" -eq 0 || failed "IS_VERSIONS_CHECK" "failed to download ${versions_url} to ${versions_file}"
+}
+get_command() {
+    local program
+    program=${1:-}
+
+    case "${program}" in
+        ## Special cases where the program name is different than the command name
+        evocheck) echo "${0}" ;;
+        evomaintenance) command -v "evomaintenance.sh" ;;
+        listupgrade) command -v "evolistupgrade.sh" ;;
+        old-kernel-autoremoval) command -v "old-kernel-autoremoval.sh" ;;
+        mysql-queries-killer) command -v "mysql-queries-killer.sh" ;;
+
+        ## General case, where the program name is the same as the command name
+        *) command -v "${program}" ;;
+    esac
+}
+get_version() {
+    local program
+    local command
+    program=${1:-}
+    command=${2:-}
+
+    case "${program}" in
+        ## Special case if `command --version => 'command` is not the standard way to get the version
+        # my_command)
+        #    /path/to/my_command --get-version 
+        #    ;;
+
+        ## When there is just an internal variable name
+        kvmstats | add-vm)
+            grep '^VERSION=' "${command}" | head -1 | cut -d '=' -f 2
+            ;;
+
+        ## General case to get the version
+        *) ${command} --version 2> /dev/null | head -1 | cut -d ' ' -f 3 ;;
+    esac
+}
+check_version() {
+    local program
+    local expected_version
+    program=${1:-}
+    expected_version=${2:-}
+
+    command=$(get_command "${program}")
+    if [ -n "${command}" ]; then
+        # shellcheck disable=SC2086
+        actual_version=$(get_version "${program}" "${command}")
+        # printf "program:%s expected:%s actual:%s\n" "${program}" "${expected_version}" "${actual_version}"
+        if [ -z "${actual_version}" ]; then
+            failed "IS_VERSIONS_CHECK" "failed to lookup actual version of ${program}"
+        elif dpkg --compare-versions "${actual_version}" lt "${expected_version}"; then
+            failed "IS_VERSIONS_CHECK" "${program} version ${expected_version} expected, but ${actual_version} found"
+        else
+            : # Version check OK
+        fi
+    fi
+}
+add_to_path() {
+    local new_path
+    new_path=${1:-}
+
+    echo "$PATH" | grep -qF "${new_path}" || export PATH="${PATH}:${new_path}"
+}
+check_versions() {
+    versions_file=$(mktemp --tmpdir=/tmp "evocheck-versions.XXXXX")
+    # shellcheck disable=SC2064
+    trap "rm -f ${versions_file}" 0
+    download_versions "${versions_file}"
+    add_to_path "/usr/share/scripts"
+
+    grep -v '^ *#' < "${versions_file}" | while IFS= read -r line; do
+        local program
+        local version
+        program=$(echo "${line}" | cut -d ' ' -f 1)
+        version=$(echo "${line}" | cut -d ' ' -f 2)
+
+        if [ -n "${program}" ]; then
+            if [ -n "${version}" ]; then
+                check_version "${program}" "${version}"
+            else
+                failed "IS_VERSIONS_CHECK" "failed to lookup expected version for ${program}"
+            fi
+        fi
+    done
+
+    rm -f "${versions_file}"
+}
 
 main() {
     # Default return code : 0 = no error
@@ -1483,6 +1601,7 @@ main() {
         test "${IS_CHROOTED_BINARY_UPTODATE:=1}" = 1 && check_chrooted_binary_uptodate
         test "${IS_NGINX_LETSENCRYPT_UPTODATE:=1}" = 1 && check_nginx_letsencrypt_uptodate
         test "${IS_LXC_CONTAINER_RESOLV_CONF:=1}" = 1 && check_lxc_container_resolv_conf
+        test "${IS_CHECK_VERSIONS:=1}" = 1 && check_versions
     fi
 
     #-----------------------------------------------------------

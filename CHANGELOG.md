@@ -16,6 +16,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* evocheck: upstream release 21.10.1
 * evolinux-users + nagios-nrpe: Add support for php-fpm80 in lxc
 * mongodb: Deny the install on Debian 11 « Bullseye » when the version is unsupported
 * mongodb: Support version 5.0 (for buster)
