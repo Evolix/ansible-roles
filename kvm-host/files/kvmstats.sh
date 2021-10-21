@@ -1,5 +1,7 @@
 #!/bin/sh
 
+VERSION="21.10"
+
 error () {
     echo "$0": "$@" >&2
     exit 1
