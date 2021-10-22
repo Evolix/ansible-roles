@@ -4,7 +4,7 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
-VERSION="21.10.2"
+VERSION="21.10.3"
 readonly VERSION
 
 # base functions
@@ -1412,8 +1412,11 @@ get_version() {
         #    /path/to/my_command --get-version 
         #    ;;
 
+        add-vm)
+            grep '^VERSION=' "${command}" | head -1 | cut -d '=' -f 2
+            ;;
         ## Let's try the --version flag before falling back to grep for the constant
-        kvmstats | add-vm)
+        kvmstats)
             if ${command} --version > /dev/null 2> /dev/null; then
                  ${command} --version 2> /dev/null | head -1 | cut -d ' ' -f 3
             else
@@ -1439,7 +1442,9 @@ check_version() {
         if [ -z "${actual_version}" ]; then
             failed "IS_VERSIONS_CHECK" "failed to lookup actual version of ${program}"
         elif dpkg --compare-versions "${actual_version}" lt "${expected_version}"; then
-            failed "IS_VERSIONS_CHECK" "${program} version ${expected_version} expected, but ${actual_version} found"
+            failed "IS_VERSIONS_CHECK" "${program} version ${actual_version} is older than expected version ${expected_version}"
+        elif dpkg --compare-versions "${actual_version}" gt "${expected_version}"; then
+            failed "IS_VERSIONS_CHECK" "${program} version ${actual_version} is newer than expected version ${expected_version}, you should update tour index."
         else
             : # Version check OK
         fi
