@@ -278,6 +278,48 @@ backup_sysctl() {
     fi
 }
 
+backup_virsh() {
+    debug "Backup virsh list"
+
+    virsh_bin=$(command -v virsh)
+
+    if [ -n "${virsh_bin}" ]; then
+        last_result=$(${virsh_bin} list --all > "${backup_dir}/virsh-list.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* virsh list OK"
+        else
+            debug "* virsh list ERROR"
+            debug "${last_result}"
+            rc=10
+        fi
+    else
+        debug "* virsh not installed"
+    fi
+}
+
+backup_lxc() {
+    debug "Backup lxc list"
+
+    lxc_ls_bin=$(command -v lxc-ls)
+
+    if [ -n "${lxc_ls_bin}" ]; then
+        last_result=$(${lxc_ls_bin} --fancy > "${backup_dir}/lxc-list.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* lxc list OK"
+        else
+            debug "* lxc list ERROR"
+            debug "${last_result}"
+            rc=10
+        fi
+    else
+        debug "* lxc-ls not installed"
+    fi
+}
+
 main() {
     if [ -z "${backup_dir}" ]; then
         echo "ERROR: You must provide the --backup-dir argument" >&2
@@ -320,6 +362,12 @@ main() {
     fi
     if [ "${DO_SYSCTL}" -eq 1 ]; then
         backup_sysctl
+    fi
+    if [ "${DO_VIRSH}" -eq 1 ]; then
+        backup_virsh
+    fi
+    if [ "${DO_LXC}" -eq 1 ]; then
+        backup_lxc
     fi
 
     debug "=> Your backup is available at ${backup_dir}"
@@ -407,6 +455,10 @@ done
 : "${DO_NETCFG:=1}"
 : "${DO_IPTABLES:=1}"
 : "${DO_SYSCTL:=1}"
+: "${DO_VIRSH:=1}"
+: "${DO_LXC:=1}"
+
+export LC_ALL=C
 
 set -u
 
