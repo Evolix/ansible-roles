@@ -1,0 +1,209 @@
+#!/bin/bash
+
+VERSION="21.04"
+readonly VERSION
+
+# base functions
+
+show_version() {
+    cat <<END
+check_async version ${VERSION}
+
+Copyright 2018-2021 Evolix <info@evolix.fr>,
+                    Jérémy Lecour <jlecour@evolix.fr>
+                    and others.
+
+check_async comes with ABSOLUTELY NO WARRANTY.This is free software,
+and you are welcome to redistribute it under certain conditions.
+See the GNU General Public License v3.0 for details.
+END
+}
+show_help() {
+    cat <<END
+check_async is supposed to wrap an NRPE command and overrides the return code.
+
+Usage: check_async --max-age=1d --name=check_name
+  or   check_async --name=check_name
+
+Options
+ -m, --max-age      max age of the "check file" ;
+                    can be "1d" for 1 day, "5m" for 5 minutes…
+                    or more complex expressions like "1w2d10m42s"
+ -n, --name         check name
+ -h, --help         print this message and exit
+ -V, --version      print version and exit
+END
+}
+
+time_in_seconds() {
+    if echo "${1}" | grep -E -q '^([0-9]+[wdhms])+$'; then
+        echo "${1}" | sed 's/w/ * 604800 + /g; s/d/ * 86400 + /g; s/h/ * 3600 + /g; s/m/ * 60 + /g; s/s/ + /g; s/+ $//' | xargs expr
+    elif echo "${1}" | grep -E -q '^([0-9]+$)'; then
+        echo "${1} * 3600" | xargs expr
+    else
+        return 1
+    fi
+}
+
+delay_from_check_file() {
+    last_change=$(stat -c %Z "${check_file}")
+    limit_seconds=$(time_in_seconds "${wrapper_limit}" || time_in_seconds "${wrapper_limit_default}") 
+    limit_date=$(date --date "${limit_seconds} seconds ago" +"%s")
+
+    echo $(( last_change - limit_date ))
+}
+
+enable_check() {
+    if [ "$(id -u)" -eq "0" ] ; then
+        /usr/share/scripts/alerts_switch enable "${check_name}"
+    else
+        sudo /usr/share/scripts/alerts_switch enable "${check_name}"
+    fi
+}
+
+main() {
+    ${check_command} > "${check_stdout}"
+    check_rc=$?
+    readonly check_rc
+
+    delay=0
+
+    if [ -e "${check_file}" ]; then
+        delay=$(delay_from_check_file)
+
+        if [ "${delay}" -le "0" ]; then
+            enable_check
+        fi
+    fi
+
+    if [ -e "${check_file}" ]; then
+        formatted_last_change=$(date --date "@$(stat -c %Z "${check_file}")" +'%c')
+        readonly formatted_last_change
+
+        echo "ALERTS DISABLED for ${check_name} (since ${formatted_last_change}, delay: ${delay} sec) - $(cat "${check_stdout}")"
+        if [ ${check_rc} = 0 ]; then
+            # Nagios OK
+            exit 0
+        else
+            # Nagios WARNING
+            exit 1
+        fi
+    else
+        cat "${check_stdout}"
+        exit ${check_rc}
+    fi
+}
+
+# Default: 1 day before re-enabling the check
+wrapper_limit_default="1d"
+readonly wrapper_limit_default
+
+if [[ "${1}" =~ -.* ]]; then
+    # parse options
+    # based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
+    while :; do
+        case $1 in
+            -h|-\?|--help)
+                show_help
+                exit 0
+                ;;
+            -V|--version)
+                show_version
+                exit 0
+                ;;
+
+            --limit)
+                # with value separated by space
+                if [ -n "$2" ]; then
+                    wrapper_limit=$2
+                    shift
+                else
+                    printf 'ERROR: "--limit" requires a non-empty option argument.\n' >&2
+                    exit 1
+                fi
+                ;;
+            --limit=?*)
+                # with value speparated by =
+                wrapper_limit=${1#*=}
+                ;;
+            --limit=)
+                # without value
+                printf 'ERROR: "--limit" requires a non-empty option argument.\n' >&2
+                exit 1
+                ;;
+
+            --name)
+                # with value separated by space
+                if [ -n "$2" ]; then
+                    check_name=$2
+                    shift
+                else
+                    printf 'ERROR: "--name" requires a non-empty option argument.\n' >&2
+                    exit 1
+                fi
+                ;;
+            --name=?*)
+                # with value speparated by =
+                check_name=${1#*=}
+                ;;
+            --name=)
+                # without value
+                printf 'ERROR: "--name" requires a non-empty option argument.\n' >&2
+                exit 1
+                ;;
+
+            --)
+                # End of all options.
+                shift
+                break
+                ;;
+            -?*)
+                # ignore unknown options
+                printf 'WARN: Unknown option : %s\n' "$1" >&2
+                exit 1
+                ;;
+            *)
+                # Default case: If no more options then break out of the loop.
+                break
+                ;;
+        esac
+
+        shift
+    done
+    # The rest is the command
+    check_command="$*"
+else
+    # no option is passed (backward compatibility with previous version)
+    # treat the first argument as check_name and the rest as the command
+    check_name="${1}"
+    shift
+    check_command="$*"
+fi
+
+# Default values or errors
+if [ -z "${wrapper_limit}" ]; then
+    wrapper_limit="${wrapper_limit_default}"
+fi
+if [ -z "${check_name}" ]; then
+    printf 'ERROR: You must specify a check name, with --name.\n' >&2
+    exit 1
+fi
+if [ -z "${check_command}" ]; then
+    printf 'ERROR: You must specify a command to execute.\n' >&2
+    exit 1
+fi
+
+readonly check_name
+readonly check_command
+readonly wrapper_limit
+
+check_file="/var/lib/misc/${check_name}_alerts_disabled"
+readonly check_file
+
+check_stdout=$(mktemp --tmpdir=/tmp "${check_name}_stdout.XXXX")
+readonly check_stdout
+
+# shellcheck disable=SC2064
+trap "rm ${check_stdout}" EXIT
+
+main
