@@ -56,6 +56,7 @@ command[check_bkctld_jails]=sudo /usr/sbin/bkctld check-jails
 # "check_bkctld" is here as backward compatibility, but is replaced by "check_bkctld_jails"
 command[check_bkctld]=sudo /usr/sbin/bkctld check
 command[check_postgrey]=/usr/lib/nagios/plugins/check_tcp -p10023
+command[check_influxdb]=/usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /health -p 8086 -r '"status":"pass"'
 
 # Local checks (not packaged)
 command[check_mem]={{ nagios_plugins_directory }}/check_mem -f -C -w 20 -c 10
