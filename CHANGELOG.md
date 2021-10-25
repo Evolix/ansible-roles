@@ -31,6 +31,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Removed
 
+* evocheck: package install is not supported anymore
+
 ### Security
 
 ## [21.09] 2021-09-29

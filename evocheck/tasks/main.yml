@@ -1,10 +1,11 @@
 ---
 
-- include: install_local.yml
-  when: evocheck_force_install == "local"
-
-- include: install_package.yml
+- name: Package install is not supported anymore
+  fail:
+    msg: Package install is not supported anymore
   when: evocheck_force_install == "package"
+
+- include: install.yml
 
 - include: cron.yml
   when: evocheck_update_crontab | bool

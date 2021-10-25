@@ -118,8 +118,6 @@
 - name: Evocheck
   include_role:
     name: evolix/evocheck
-  vars:
-    evocheck_force_install: "{{ evolinux_evocheck_force_install }}"
   when: evolinux_evocheck_include | bool
 
 - name: Listupgrade
