@@ -4,7 +4,7 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
-VERSION="21.10.3"
+VERSION="21.10.4"
 readonly VERSION
 
 # base functions
@@ -1750,6 +1750,7 @@ while :; do
             IS_KERNELUPTODATE=0
             IS_UPTIME=0
             IS_MELTDOWN_SPECTRE=0
+            IS_CHECK_VERSIONS=0
             ;;
         -v|--verbose)
             VERBOSE=1
