@@ -28,7 +28,7 @@
     state: present
   tags:
     - nextcloud
-  when: ansible_python_version is version('3', '<)
+  when: ansible_python_version is version('3', '<')
 
 # dependency for mysql_user and mysql_db
 - name: python3 modules is installed (Ansible dependency)
