@@ -63,6 +63,7 @@
       - sorts
       - table_locks
       - tmp_tables
+      - replication
     notify: restart munin-node
 
   - name: verify Munin configuration for mysql
