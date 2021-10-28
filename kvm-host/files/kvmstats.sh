@@ -40,7 +40,7 @@ error () {
 }
 
 main() {
-    for VM in $(virsh list --name --all)
+    for VM in $(virsh list --name --all | sed '/^$/d' | sort)
     do
         echo "$VM"
 
@@ -200,4 +200,3 @@ while :; do
 done
 
 main
-
