@@ -231,3 +231,12 @@
     force: no
   tags:
     - mysql
+
+- name: "Install evomariabackup"
+  copy:
+    src: evomariabackup.sh
+    dest: "{{ _mysql_scripts_dir }}/evomariabackup"
+    mode: "0755"
+    force: no
+  tags:
+    - mysql
