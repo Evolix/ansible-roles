@@ -1,0 +1,17 @@
+# This is the smtpd server system-wide configuration file.
+# See smtpd.conf(5) for more information.
+
+# To accept external mail, replace with: listen on all
+#listen on localhost
+
+# If you edit the file, you have to run "smtpctl update table aliases"
+table aliases file:/etc/aliases
+
+action "mbox" mbox alias <aliases>
+action "relay" relay host "smtp://127.0.0.1"
+
+# Uncomment the following to accept external mail for domain "example.org"
+#match from any for domain "example.org" action "mbox"
+
+match for local action "mbox"
+match for any action "relay"
