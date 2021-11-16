@@ -31,7 +31,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-base: fix alert5.service dependency syntax
 * mysql : Create a default ~root/.my.cnf for compatibility reasons
 * nginx : fix variable name and debug to actually use nginx-light
-* packweb-apache : Support php 8.0 
+* packweb-apache : Support php 8.0
+* nagios-nrpe: Fix check\_nfsserver for buster and bullseye
 
 ### Removed
 
