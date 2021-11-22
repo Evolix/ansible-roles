@@ -33,7 +33,7 @@
     state: present
     special_time: "hourly"
     user: root
-    job: "rsync -a --delete /etc/libvirt/qemu/ {{ hostvars[item]['ansible_pair'] }}:/root/libvirt-{{ inventory_hostname }}/"
+    job: "rsync -a --delete /etc/libvirt/qemu/*xml {{ hostvars[item]['ansible_pair'] }}:/root/libvirt-{{ inventory_hostname }}/"
   loop: "{{ groups['hypervisors'] }}"
   when: item != inventory_hostname
   tags: crontab
