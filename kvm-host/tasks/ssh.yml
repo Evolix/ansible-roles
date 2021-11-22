@@ -43,6 +43,6 @@
     state: present
     special_time: "daily"
     user: root
-    job: "virsh list --all | ssh {{ hostvars[item]['ansible_hostname'] }} 'cat >/root/libvirt-{{ inventory_hostname }}/virsh-list.txt'"
+    job: "virsh list --all | tee /root/virsh-list.txt | ssh {{ hostvars[item]['ansible_hostname'] }} 'cat >/root/libvirt-{{ inventory_hostname }}/virsh-list.txt'"
   loop: "{{ groups['hypervisors'] }}"
   when: item != inventory_hostname
