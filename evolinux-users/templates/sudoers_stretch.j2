@@ -13,6 +13,7 @@ nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_phpfpm_multi
 nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_phpfpm_multi /var/lib/lxc/php73/rootfs/etc/php/7.3/fpm/pool.d/
 nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_phpfpm_multi /var/lib/lxc/php74/rootfs/etc/php/7.4/fpm/pool.d/
 nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_phpfpm_multi /var/lib/lxc/php74/rootfs/etc/php/8.0/fpm/pool.d/
+nagios          ALL = NOPASSWD: /usr/sbin/megaclisas-status --nagios
 nagios          ALL = NOPASSWD: /usr/lib/nagios/plugins/check_ipmi_sensor
 nagios          ALL = NOPASSWD: /sbin/dmsetup status --noflush
 nagios          ALL = NOPASSWD: /sbin/megacli -PDList -aALL -NoLog
