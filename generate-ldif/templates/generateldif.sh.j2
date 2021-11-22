@@ -31,7 +31,7 @@ computerKernel=$(uname -r)
 HardwareSerial=$(dmidecode -s system-serial-number | grep -v '^#')
 
 type="baremetal"
-lscpu | grep -q KVM && type="kvm"
+lscpu | grep "Hypervisor vendor:" | grep -q KVM && type="kvm"
 lscpu | grep -q Oracle && type="virtualbox"
 
 if [ "$type" = "kvm" ]; then
