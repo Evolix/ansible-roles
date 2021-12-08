@@ -16,6 +16,7 @@
       - ssl-cert
       - ca-certificates
       - rename
+      - dmidecode
   when: evolinux_packages_system | bool
 
 - name: Install/Update diagnostic tools
