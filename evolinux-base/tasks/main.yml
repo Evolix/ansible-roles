@@ -97,6 +97,7 @@
   when: evolinux_log2mail_include | bool
 
 - include: motd.yml
+  when: evolinux_motd_include | bool
 
 - include: utils.yml
 

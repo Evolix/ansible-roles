@@ -219,3 +219,6 @@ evolinux_generateldif_include: True
 
 # Cron check_hpraid
 evolinux_cron_checkhpraid_frequency: daily
+
+# Motd
+evolinux_motd_include: True
