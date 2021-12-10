@@ -89,6 +89,7 @@ evolinux_packages_invalid_mta: True
 evolinux_packages_delete_nfs: True
 evolinux_packages_listchanges: True
 evolinux_packages_logcheck_recipient: False
+evolinux_packages_delete_aptlistchanges: True
 
 # system
 

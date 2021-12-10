@@ -145,5 +145,6 @@
   when:
     - ansible_distribution == "Debian"
     - ansible_distribution_major_version is version('9', '>=')
+    - evolinux_packages_delete_aptlistchanges
 
 - meta: flush_handlers
