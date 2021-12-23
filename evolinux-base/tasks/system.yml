@@ -182,6 +182,7 @@
     - evolinux_system_alert5_init | bool
     - evolinux_system_alert5_enable | bool
     - ansible_distribution_major_version is version('10', '>=')
+    - not ansible_check_mode
 
 ## network interfaces
 
