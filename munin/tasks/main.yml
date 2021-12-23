@@ -88,3 +88,20 @@
       [swap]
       user root
   when: ansible_kernel is search("-grs-")
+
+- name: Create override directory for munin-node unit
+  file:
+    name: /etc/systemd/system/munin-node.service.d/
+    state: directory
+    mode: "0755"
+
+- name: Override is present for protected home
+  ini_file:
+    dest: "/etc/systemd/system/munin-node.service.d/override.conf"
+    section: "Service"
+    option: "ProtectHome"
+    value: "false"
+    state: present
+    notify:
+      - systemd daemon-reload
+      - restart munin-node

@@ -13,6 +13,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Added
 
 * evolinux-base: add script backup-server-state
+* munin: systemd override to unprotect home directory
 * mysql: add evomariabackup 21.11
 * nagios-nrpe: new check influxdb
 
