@@ -26,6 +26,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * mongodb: Deny the install on Debian 11 « Bullseye » when the version is unsupported
 * mongodb: Support version 5.0 (for buster)
 * mongodb: Allow to specify a mongodb version for buster & bullseye
+* nodejs: default to version 16 LTS
 
 ### Fixed
 
