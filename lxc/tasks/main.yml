@@ -43,15 +43,11 @@
     - lxc_unprivilegied_containers | bool
     - root_subuids.rc != 0
 
-- name: /var has mount options dev and exec enabled
-  mount:
-    path: /var
-    opts: dev,exec
-    state: remounted
-  with_items: "{{ ansible_mounts }}"
-  when: "item.mount == '/var' and
-        ('nodev' in item.options.split(',') or
-        'noexec' in item.options.split(','))"
+- name: Check if /var has not mount options nodev or noexec
+  shell: findmnt | grep -E "/var[^/]" | grep -e nodev -e noexec
+  register: check_var
+  changed_when: false
+  failed_when: "check_var.rc == 0"
 
 - name: Create containers
   include: create-container.yml
