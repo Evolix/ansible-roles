@@ -2,7 +2,7 @@
 
 PROGNAME="backup-server-state"
 
-VERSION="21.10"
+VERSION="22.01"
 readonly VERSION
 
 backup_dir=
@@ -35,6 +35,30 @@ Options
      --no-etc       no backup copy of /etc (default)
      --dpkg         backup copy of /var/lib/dpkg
      --no-dpkg      no backup copy of /var/lib/dpkg (default)
+     --apt          backup copy of apt extended states (default)
+     --no-apt       no backup copy of apt extended states
+     --packages     backup copy of dpkg selections (default)
+     --no-packages  no backup copy of dpkg selections
+     --processes    backup copy of process list (default)
+     --no-processes no backup copy of process list
+     --uptime       backup of uptime value (default)
+     --no-uptime    no backup of uptime value
+     --netstat      backup copy of netstat (default)
+     --no-netstat   no backup copy of netstat
+     --netcfg       backup copy of network configuration (default)
+     --no-netcfg    no backup copy of network configuration
+     --iptables     backup copy of iptables (default)
+     --no-iptables  no backup copy of iptables
+     --sysctl       backup copy of sysctl values (default)
+     --no-sysctl    no backup copy of sysctl values
+     --virsh        backup copy of virsh list (default)
+     --no-virsh     no backup copy of virsh list
+     --lxc          backup copy of lxc list (default)
+     --no-lxc       no backup copy of lxc list
+     --mount        backup copy of mount points (default)
+     --no-mount     no backup copy of mount points
+     --df           backup copy of disk usage (default)
+     --no-df        no backup copy of disk usage
  -v, --verbose      print details about backup steps
  -V, --version      print version and exit
  -h, --help         print this message and exit
@@ -148,7 +172,7 @@ backup_packages() {
 backup_uptime() {
     debug "Backup uptime"
 
-    last_result=$(uptime > "${backup_dir}/uptime.out")
+    last_result=$(uptime > "${backup_dir}/uptime.txt")
     last_rc=$?
 
     if [ ${last_rc} -eq 0 ]; then
@@ -163,7 +187,7 @@ backup_uptime() {
 backup_processes() {
     debug "Backup process list"
 
-    last_result=$(ps fauxw > "${backup_dir}/ps.out")
+    last_result=$(ps fauxw > "${backup_dir}/ps.txt")
     last_rc=$?
 
     if [ ${last_rc} -eq 0 ]; then
@@ -177,7 +201,7 @@ backup_processes() {
     pstree_bin=$(command -v pstree)
 
     if [ -z "${pstree_bin}" ]; then
-        last_result=$(pstree -pan > "${backup_dir}/pstree.out")
+        last_result=$(pstree -pan > "${backup_dir}/pstree.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -195,7 +219,7 @@ backup_netstat() {
 
     ss_bin=$(command -v ss)
     if [ -z "${ss_bin}" ]; then
-        last_result=$(${ss_bin} -tanpul > "${backup_dir}/listen.out")
+        last_result=$(${ss_bin} -tanpul > "${backup_dir}/netstat-ss.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -209,7 +233,7 @@ backup_netstat() {
 
     netstat_bin=$(command -v netstat)
     if [ -z "${netstat_bin}" ]; then
-        last_result=$(netstat -laputen > "${backup_dir}/netstat.out")
+        last_result=$(netstat -laputen > "${backup_dir}/netstat-legacy.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -320,6 +344,60 @@ backup_lxc() {
     fi
 }
 
+backup_mount() {
+    debug "Backup mount points"
+
+    findmnt_bin=$(command -v findmnt)
+    mount_bin=$(command -v mount)
+
+    if [ -n "${findmnt_bin}" ]; then
+        last_result=$(${findmnt_bin} > "${backup_dir}/mount.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* mount points OK"
+        else
+            debug "* mount points ERROR"
+            debug "${last_result}"
+            rc=10
+        fi
+    elif [ -n "${mount_bin}" ]; then
+        last_result=$(${mount_bin} > "${backup_dir}/mount.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* mount points OK"
+        else
+            debug "* mount points ERROR"
+            debug "${last_result}"
+            rc=10
+        fi
+    else
+        debug "* findmnt and mount not installed"
+    fi
+}
+
+backup_df() {
+    debug "Backup df"
+
+    df_bin=$(command -v df)
+
+    if [ -n "${df_bin}" ]; then
+        last_result=$(${df_bin} --portability > "${backup_dir}/df.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* df OK"
+        else
+            debug "* df ERROR"
+            debug "${last_result}"
+            rc=10
+        fi
+    else
+        debug "* df not installed"
+    fi
+}
+
 main() {
     if [ -z "${backup_dir}" ]; then
         echo "ERROR: You must provide the --backup-dir argument" >&2
@@ -368,6 +446,12 @@ main() {
     fi
     if [ "${DO_LXC}" -eq 1 ]; then
         backup_lxc
+    fi
+    if [ "${DO_MOUNT}" -eq 1 ]; then
+        backup_mount
+    fi
+    if [ "${DO_DF}" -eq 1 ]; then
+        backup_df
     fi
 
     debug "=> Your backup is available at ${backup_dir}"
@@ -424,6 +508,90 @@ while :; do
             DO_DPKG=0
             ;;
 
+        --apt)
+            DO_APT=1
+            ;;
+        --no-apt)
+            DO_APT=0
+            ;;
+
+        --packages)
+            DO_PACKAGES=1
+            ;;
+        --no-packages)
+            DO_PACKAGES=0
+            ;;
+
+        --processes)
+            DO_PROCESSES=1
+            ;;
+        --no-processes)
+            DO_PROCESSES=0
+            ;;
+
+        --uptime)
+            DO_UPTIME=1
+            ;;
+        --no-uptime)
+            DO_UPTIME=0
+            ;;
+
+        --netstat)
+            DO_NETSTAT=1
+            ;;
+        --no-netstat)
+            DO_NETSTAT=0
+            ;;
+
+        --netcfg)
+            DO_NETCFG=1
+            ;;
+        --no-netcfg)
+            DO_NETCFG=0
+            ;;
+
+        --iptables)
+            DO_IPTABLES=1
+            ;;
+        --no-iptables)
+            DO_IPTABLES=0
+            ;;
+
+        --sysctl)
+            DO_SYSCTL=1
+            ;;
+        --no-sysctl)
+            DO_SYSCTL=0
+            ;;
+
+        --virsh)
+            DO_VIRSH=1
+            ;;
+        --no-virsh)
+            DO_VIRSH=0
+            ;;
+
+        --lxc)
+            DO_LXC=1
+            ;;
+        --no-lxc)
+            DO_LXC=0
+            ;;
+
+        --mount)
+            DO_MOUNT=1
+            ;;
+        --no-mount)
+            DO_MOUNT=0
+            ;;
+
+        --df)
+            DO_DF=1
+            ;;
+        --no-df)
+            DO_DF=0
+            ;;
+
         --)
             # End of all options.
             shift
@@ -457,6 +625,8 @@ done
 : "${DO_SYSCTL:=1}"
 : "${DO_VIRSH:=1}"
 : "${DO_LXC:=1}"
+: "${DO_MOUNT:=1}"
+: "${DO_DF:=1}"
 
 export LC_ALL=C
 
