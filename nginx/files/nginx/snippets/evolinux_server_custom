@@ -1,0 +1,7 @@
+# Evolinux custom configuration, to be used in all server blocks
+
+location ~ /\.(inc|git|bak|env) {
+  # We don't want to let the client know a file exist on the server,
+  # so we return 404 "Not found" instead of 403 "Forbidden".
+  return 404;
+}
