@@ -1,0 +1,31 @@
+user  nobody
+group nogroup
+
+local {{ ansible_default_ipv4.address }}
+port 1194
+proto udp
+dev tun
+mode server
+keepalive 10 120
+
+cipher AES-256-GCM # AES
+
+persist-key
+persist-tun
+
+status /var/log/openvpn-status.log
+log-append  /var/log/openvpn.log
+
+ca   /etc/shellpki/cacert.pem
+cert /etc/shellpki/certs/{{ ansible_fqdn }}.crt
+key  /etc/shellpki/private/TO_COMPLETE
+dh   /etc/shellpki/dh2048.pem
+
+crl-verify /etc/shellpki/crl.pem
+
+server {{ openvpn_lan }} {{ openvpn_netmask }}
+
+#push "route 192.0.3.0 255.255.255.0"
+
+# Management interface (used by check_openvpn for Nagios)
+management 127.0.0.1 1195 /etc/openvpn/management-pwd
