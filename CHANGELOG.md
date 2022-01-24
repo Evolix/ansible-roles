@@ -16,6 +16,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * munin: systemd override to unprotect home directory
 * mysql: add evomariabackup 21.11
 * nagios-nrpe: new check influxdb
+* openvpn: new openvpn role
 
 ### Changed
 
