@@ -18,4 +18,5 @@ lxc_php_container_releases:
   php56: "jessie"
   php70: "stretch"
   php73: "buster"
-  php74: "buster"
+  php74: "bullseye"
+  php80: "bullseye"

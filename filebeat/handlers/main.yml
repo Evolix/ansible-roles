@@ -4,3 +4,4 @@
   systemd:
     name: filebeat
     state: restarted
+  when: not ansible_check_mode

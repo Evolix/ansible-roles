@@ -38,10 +38,8 @@
     regexp: "{{ item.regexp }}"
     state: present
   loop:
-    - line: 'evoadmin: root'
-      regexp: '^evoadmin:'
-    - line: 'www-evoadmin: root'
-      regexp: '^www-evoadmin:'
+    - { line: 'evoadmin: root', regexp: '^evoadmin:' }
+    - { line: 'www-evoadmin: root', regexp: '^www-evoadmin:' }
   notify: "newaliases"
   when: etc_aliases.stat.exists
 

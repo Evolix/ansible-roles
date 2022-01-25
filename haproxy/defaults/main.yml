@@ -34,3 +34,4 @@ haproxy_deny_ips: []
 
 haproxy_backports_packages_stretch: haproxy libssl1.0.0
 haproxy_backports_packages_buster: haproxy
+haproxy_backports_packages_bullseye: haproxy

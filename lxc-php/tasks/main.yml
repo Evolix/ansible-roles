@@ -21,4 +21,7 @@
 - include: "php74.yml"
   when: lxc_php_version == "php74"
 
+- include: "php80.yml"
+  when: lxc_php_version == "php80"
+
 - include: "misc.yml"

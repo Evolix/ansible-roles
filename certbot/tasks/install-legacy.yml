@@ -8,6 +8,7 @@
 - include_role:
     name: evolix/remount-usr
 
+# copied and customized from https://raw.githubusercontent.com/certbot/certbot/v1.14.0/letsencrypt-auto
 - name: Let's Encrypt script is present
   copy:
     src: letsencrypt-auto
@@ -55,5 +56,5 @@
     dest: "/etc/letsencrypt/cli.ini"
     section: null
     option: "no-self-upgrade"
-    value: 0
+    value: "no"
     state: present

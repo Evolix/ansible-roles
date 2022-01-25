@@ -1,10 +1,16 @@
 ---
 
+- name: Look for legacy apt keyring
+  stat:
+    path: /etc/apt/trusted.gpg
+  register: _trusted_gpg_keyring
+
 - name: NewRelic embedded GPG key is absent
   apt_key:
     id: "548C16BF"
     keyring: /etc/apt/trusted.gpg
     state: absent
+  when: _trusted_gpg_keyring.stat.exists
 
 - name: Add NewRelic GPG key
   copy:

@@ -10,6 +10,8 @@
 # Bash strict mode
 set -euo pipefail
 
+VERSION="21.10"
+
 isDryRun() {
     test "${doDryRun}" = "true"
 }

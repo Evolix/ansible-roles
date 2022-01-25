@@ -1,7 +1,7 @@
 
 
 - set_fact:
-    nginx_package_name_default: nginx-light
+    nginx_default_package_name: nginx-light
   when: nginx_minimal | bool
 
 - include: packages_backports.yml
@@ -9,7 +9,7 @@
 
 # TODO: install "nginx" + only necessary modules, instead of "nginx-full"
 
-- name: Ensure Nginx is installed
+- name: Nginx is installed
   apt:
     name: "{{ nginx_package_name | default(nginx_default_package_name) }}"
     state: present
@@ -17,7 +17,7 @@
     - nginx
     - packages
 
-- name: Ensure nginx service is running as configured.
+- name: Service is running as configured.
   service:
     name: nginx
     state: "{{ nginx_service_state }}"

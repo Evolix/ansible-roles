@@ -15,36 +15,34 @@
   debug:
     msg: "{{ ssh_keys.stdout }}"
 
-- name: Autorize other kvm ssh key
-  authorized_key:
-    user: root
-    state: present
-    key: "{{ item[0] }}"
-  delegate_to: "{{ item[1] }}"
-  loop: "{{ _keys | product(_servers) | list }}"
-  vars:
-    _keys: ssh_keys.stdout
-    _servers: groups['hypervisors']
-  when: item[1] != inventory_hostname
+#- name: Autorize other kvm ssh key
+#  authorized_key:
+#    user: root
+#    state: present
+#    key: "{{ item[0] }}"
+#  delegate_to: "{{ item[1] }}"
+#  loop: "{{ _keys | product(_servers) | list }}"
+#  vars:
+#    _keys: ssh_keys.stdout
+#    _servers: groups['hypervisors']
+#  when: item[1] != inventory_hostname
 
 - name: Crontab for sync libvirt xml file
   cron:
-    name: "sync libvirt xml on {{ item }}"
+    name: "sync libvirt xml on {{ kvm_pair }}"
     state: present
     special_time: "hourly"
     user: root
-    job: "rsync -a --delete /etc/libvirt/qemu/ {{ hostvars[item]['ansible_hostname'] }}:/root/libvirt-{{ inventory_hostname }}/"
-  loop:
-    - "{{ groups['hypervisors'] }}"
-  when: item != inventory_hostname
+    job: "rsync -a --delete /etc/libvirt/qemu/*xml {{ hostvars[kvm_pair]['lan.ip'] }}:/root/libvirt-{{ inventory_hostname }}/"
+  when: kvm_pair != inventory_hostname
+  tags: crontab
 
 - name: Crontab for sync list of running vm
   cron:
-    name: "sync list of libvirt running vm on {{ item }}"
+    name: "sync list of libvirt running vm on {{ kvm_pair }}"
     state: present
     special_time: "daily"
     user: root
-    job: "virsh list --all | ssh {{ hostvars[item]['ansible_hostname'] }} 'cat >/root/libvirt-{{ inventory_hostname }}/virsh-list.txt'"
-  loop:
-    - "{{ groups['hypervisors'] }}"
-  when: item != inventory_hostname
+    job: "virsh list --all | tee /root/virsh-list.txt | ssh {{ hostvars[kvm_pair]['lan.ip'] }} 'cat >/root/libvirt-{{ inventory_hostname }}/virsh-list.txt'"
+  when: kvm_pair != inventory_hostname
+  tags: crontab

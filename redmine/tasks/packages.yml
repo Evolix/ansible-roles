@@ -1,5 +1,5 @@
 ---
-- name: Install dependancy
+- name: Install dependency
   apt:
     name:
       - libpam-systemd
@@ -14,7 +14,28 @@
       - libmagickwand-dev
       - libmagickcore-dev
       - libmariadbclient-dev
-      - python-mysqldb
     state: present
   tags:
     - redmine
+
+# dependency for mysql_user and mysql_db
+- name: python modules is installed (Ansible dependency)
+  apt:
+    name:
+      - python-mysqldb
+      - python-pymysql
+    state: present
+  tags:
+    - redmine
+  when: ansible_python_version is version('3', '<')
+
+# dependency for mysql_user and mysql_db
+- name: python3 modules is installed (Ansible dependency)
+  apt:
+    name:
+      - python3-mysqldb
+      - python3-pymysql
+    state: present
+  tags:
+    - redmine
+  when: ansible_python_version is version('3', '>=')

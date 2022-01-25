@@ -8,11 +8,20 @@
     - filebeat
     - packages
 
+- name: Look for legacy apt keyring
+  stat:
+    path: /etc/apt/trusted.gpg
+  register: _trusted_gpg_keyring
+  tags:
+    - filebeat
+    - packages
+
 - name: Elastic embedded GPG key is absent
   apt_key:
     id: "D88E42B4"
     keyring: /etc/apt/trusted.gpg
     state: absent
+  when: _trusted_gpg_keyring.stat.exists
   tags:
     - filebeat
     - packages
@@ -53,6 +62,7 @@
     name: filebeat
     enabled: yes
   notify: restart filebeat
+  when: not ansible_check_mode
 
 - name: is logstash-plugin available?
   stat:
@@ -131,7 +141,9 @@
     when:
       - filebeat_elasticsearch_auth_username | length > 0
       - filebeat_elasticsearch_auth_password | length > 0
-  when: not (filebeat_use_config_template | bool)
+  when:
+    - not (filebeat_use_config_template | bool)
+    - not ansible_check_mode
 
 - name: Filebeat api_key for Elasticsearch are configured
   lineinfile:

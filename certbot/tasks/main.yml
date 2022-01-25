@@ -7,17 +7,17 @@
       - ansible_distribution_major_version is version('8', '>=')
     msg: only compatible with Debian 9+
 
-- name: Install legacy script on Debian 8 and 9
+- name: Install legacy script on Debian 8
   include: install-legacy.yml
   when:
     - ansible_distribution == "Debian"
-    - ansible_distribution_major_version is version('10', '<')
+    - ansible_distribution_major_version is version('9', '<')
 
-- name: Install package on Debian 10+
+- name: Install package on Debian 9+
   include: install-package.yml
   when:
     - ansible_distribution == "Debian"
-    - ansible_distribution_major_version is version('10', '>=')
+    - ansible_distribution_major_version is version('9', '>=')
 
 - include: acme-challenge.yml
 
@@ -25,6 +25,14 @@
   copy:
     src: hooks/deploy/
     dest: /etc/letsencrypt/renewal-hooks/deploy/
+    mode: "0700"
+    owner: root
+    group: root
+
+- name: Manual deploy hook is present
+  copy:
+    src: hooks/manual-deploy.sh
+    dest: /etc/letsencrypt/renewal-hooks/manual-deploy.sh
     mode: "0700"
     owner: root
     group: root

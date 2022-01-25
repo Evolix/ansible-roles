@@ -7,9 +7,9 @@
     owner: "{{ redmine_user }}"
     group: "{{ redmine_user }}"
   loop:
-  - ".config"
-  - ".config/systemd"
-  - ".config/systemd/user"
+    - ".config"
+    - ".config/systemd"
+    - ".config/systemd/user"
   tags:
     - redmine
 

@@ -46,14 +46,17 @@
     group: root
 
 - name: Enable listupgrade cron
-  copy:
-    src: listupgrade_cron
-    dest: /etc/cron.d/listupgrade
-    mode: "0600"
-    owner: root
-    group: root
-    force: no
-  when: listupgrade_cron_enabled | bool
+  cron:
+    name: "lisupgrade.sh"
+    cron_file: "listupgrade"
+    user: root
+    job: "/usr/share/scripts/listupgrade.sh --cron {{ listupgrade_cron_force | bool | ternary('--force','') }}"
+    minute: "{{ listupgrade_cron_minute }}"
+    hour: "{{ listupgrade_cron_hour }}"
+    weekday: "{{ listupgrade_cron_weekday }}"
+    day: "{{ listupgrade_cron_day }}"
+    month: "{{ listupgrade_cron_month }}"
+    state: "{{ listupgrade_cron_enabled | bool | ternary('present','absent') }}"
 
 - name: old-kernel-autoremoval script is present
   copy:

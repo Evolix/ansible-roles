@@ -1,6 +1,6 @@
 ---
 
-- name: logrotate configuration
+- name: Logrotate is configured for Nginx
   copy:
     src: logrotate_nginx
     dest: /etc/logrotate.d/nginx

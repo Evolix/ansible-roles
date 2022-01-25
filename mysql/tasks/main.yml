@@ -10,8 +10,15 @@
 - include: packages_jessie.yml
   when: ansible_distribution_release == "jessie"
 
+## There is nothing to do with users on Debian 11 - yet we need a /root/.my.cnf for compatibility
+- include: users_bullseye.yml
+  when: ansible_distribution_release == "bullseye"
+
+- include: users_buster.yml
+  when: ansible_distribution_release == "buster"
+
 - include: users_stretch.yml
-  when: ansible_distribution_major_version is version('9', '>=')
+  when: ansible_distribution_release == "stretch"
 
 - include: users_jessie.yml
   when: ansible_distribution_release == "jessie"

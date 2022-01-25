@@ -14,6 +14,7 @@ galaxy_info:
         - jessie
         - stretch
         - buster
+        - bullseye
 
   galaxy_tags: []
     # List tags for your role here, one per line. A tag is

@@ -33,6 +33,7 @@
 
 - debug:
     var: apache_serverstatus_suffix
+    verbosity: 1
 
 - name: replace server-status suffix in default site index
   replace:

@@ -1,0 +1,96 @@
+---
+
+- name: "Set variables (Debian 11)"
+  set_fact:
+    php_cli_defaults_ini_file: /etc/php/7.4/cli/conf.d/z-evolinux-defaults.ini
+    php_cli_custom_ini_file: /etc/php/7.4/cli/conf.d/zzz-evolinux-custom.ini
+    php_apache_defaults_ini_file: /etc/php/7.4/apache2/conf.d/z-evolinux-defaults.ini
+    php_apache_custom_ini_file: /etc/php/7.4/apache2/conf.d/zzz-evolinux-custom.ini
+    php_fpm_defaults_ini_file: /etc/php/7.4/fpm/conf.d/z-evolinux-defaults.ini
+    php_fpm_custom_ini_file: /etc/php/7.4/fpm/conf.d/zzz-evolinux-custom.ini
+    php_fpm_debian_default_pool_file: /etc/php/7.4/fpm/pool.d/www.conf
+    php_fpm_default_pool_file: /etc/php/7.4/fpm/pool.d/www-evolinux-defaults.conf
+    php_fpm_default_pool_custom_file: /etc/php/7.4/fpm/pool.d/www-evolinux-zcustom.conf
+    php_fpm_default_pool_socket: /var/run/php/php7.4-fpm.sock
+    php_fpm_service_name: php7.4-fpm
+
+# Packages
+
+- name: "Set package list (Debian 11)"
+  set_fact:
+    php_stretch_packages:
+      - php-cli
+      - php-gd
+      - php-intl
+      - php-imap
+      - php-ldap
+      - php-mysql
+      # php-mcrypt is no longer packaged for PHP 7.2
+      - php-pgsql
+      - php-sqlite3
+      - php-curl
+      - php-ssh2
+      - php-zip
+      - composer
+      - libphp-phpmailer
+
+- include: sury_pre.yml
+  when: php_sury_enable
+
+- name: "Install PHP packages (Debian 11)"
+  apt:
+    name: '{{ php_stretch_packages }}'
+    state: present
+
+- name: "Install mod_php packages (Debian 11)"
+  apt:
+    name:
+      - libapache2-mod-php
+      - php
+    state: present
+  when: php_apache_enable
+
+- name: "Install PHP FPM packages (Debian 11)"
+  apt:
+    name:
+      - php-fpm
+      - php
+    state: present
+  when: php_fpm_enable
+
+# Configuration
+
+- name: "Enforce permissions on PHP directory (Debian 11)"
+  file:
+    dest: "{{ item }}"
+    mode: "0755"
+  with_items:
+    - /etc/php
+    - /etc/php/7.4
+
+- include: config_cli.yml
+- name: "Enforce permissions on PHP cli directory (Debian 11)"
+  file:
+    dest: /etc/php/7.4/cli
+    mode: "0755"
+
+- include: config_fpm.yml
+  when: php_fpm_enable
+
+- name: "Enforce permissions on PHP fpm directory (Debian 11)"
+  file:
+    dest: /etc/php/7.4/fpm
+    mode: "0755"
+  when: php_fpm_enable
+
+- include: config_apache.yml
+  when: php_apache_enable
+
+- name: "Enforce permissions on PHP apache2 directory (Debian 11)"
+  file:
+    dest: /etc/php/7.4/apache2
+    mode: "0755"
+  when: php_apache_enable
+
+- include: sury_post.yml
+  when: php_sury_enable

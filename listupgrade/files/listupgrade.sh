@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Repository: https://gitea.evolix.org/evolix/maj.sh/
+
 # Exit codes :
 # - 30 : $skip_releases or $skip_packages is set to "all"
 # - 40 : current release is in $skip_releases list
@@ -7,7 +9,7 @@
 # - 60 : current release is not in the $r_releases list
 # - 70 : at least an upgradable package is not in the $r_packages list
 
-VERSION="21.06.2"
+VERSION="21.06.3"
 
 show_version() {
     cat <<END
@@ -121,7 +123,7 @@ EOT
 # are executed if they are executable
 # and if their name doesn't contain a dot
 exec_hooks_in_dir() {
-    hooks=$(find "${1}" -type f -executable -not -name '*.*')
+    hooks=$(find "${1}" -type f -executable -not -name '*.* -print0 | sort --zero-terminated --dictionary-order | xargs --no-run-if-empty --null --max-args=1')
     for hook in ${hooks}; do
         if ! cron_mode; then
             printf "Running '%s\`\n" "${hook}"
@@ -178,13 +180,14 @@ main() {
         echo 'Aucun' >"${packagesHold}"
     fi
 
+    local_release=$(cut -f 1 -d . </etc/debian_version)
+
     if force_mode; then
         if ! cron_mode; then
             echo "Force mode is enabled, as if every release/package is available for upgrade."
         fi
     else
         fetch_upgrade_info
-        local_release=$(cut -f 1 -d . </etc/debian_version)
 
         # Exit if skip_releases or skip_packages in upgrade info file are set to all.
         if [ "${r_skip_releases}" = "all" ] || [ "${r_skip_packages}" = "all" ]; then

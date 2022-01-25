@@ -50,3 +50,11 @@
   tags:
   - mysql
   - packages
+
+- name: Python dependencies for Ansible are installed
+  apt:
+    name: python-mysqldb
+    state: present
+  tags:
+    - mysql
+    - packages

@@ -1,10 +1,5 @@
 ---
 
-# - fail:
-#     msg: only compatible with Debian 8
-#   when:
-#   - ansible_distribution != "Debian" or ansible_distribution_release != "jessie"
-
 - include: main_jessie.yml
   when: ansible_distribution_release == "jessie"
 
@@ -12,4 +7,7 @@
   when: ansible_distribution_release == "stretch"
 
 - include: main_buster.yml
-  when: ansible_distribution_major_version is version('10', '>=')
+  when: ansible_distribution_release == "buster"
+
+- include: main_bullseye.yml
+  when: ansible_distribution_major_version is version('11', '>=')

@@ -38,6 +38,8 @@ my $o_user=           undef;     # user for auth
 my $o_pass=           '';        # password for auth
 my $o_realm=          '';        # password for auth
 my $o_version=        undef;     # print version
+my $o_warn_a_level=   -1;        # Max number of active workers that will cause a warning
+my $o_crit_a_level=   -1;        # Max number of active workers that will cause an error
 my $o_warn_p_level=   -1;        # Min number of idle workers that will cause a warning
 my $o_crit_p_level=   -1;        # Min number of idle workersthat will cause an error
 my $o_warn_q_level=   -1;        # Number of Max Queue Reached that will cause a warning
@@ -130,17 +132,19 @@ sub help {
 -X, --cacert
    Full path to the cacert.pem certificate authority used to verify ssl certificates (use with --verifyssl).
    if not given the cacert from Mozilla::CA cpan plugin will be used.
--w, --warn=MIN_AVAILABLE_PROCESSES,PROC_MAX_REACHED,QUEUE_MAX_REACHED
+-w, --warn=MAX_ACTIVE_PROCESSES,MIN_AVAILABLE_PROCESSES,PROC_MAX_REACHED,QUEUE_MAX_REACHED
    number of available workers, or max states reached that will cause a warning
    -1 for no warning
--c, --critical=MIN_AVAILABLE_PROCESSES,PROC_MAX_REACHED,QUEUE_MAX_REACHED
+-c, --critical=MAX_ACTIVE_PROCESSES,MIN_AVAILABLE_PROCESSES,PROC_MAX_REACHED,QUEUE_MAX_REACHED
    number of available workers, or max states reached that will cause an error
    -1 for no CRITICAL
 -V, --version
    prints version number
 
 Note :
-  3 items can be managed on this check, this is why -w and -c parameters are using 3 values thresholds
+  4 items can be managed on this check, this is why -w and -c parameters are using 3 values thresholds
+  - MAX_ACTIVE_PROCESSES:  Working with the number of available (Idle) and working processes (Busy).
+    Generating WARNING and CRITICAL if you do have too many Active processes.
   - MIN_AVAILABLE_PROCESSES: Working with the number of available (Idle) and working processes (Busy).
     Generating WARNING and CRITICAL if you do not have enough Idle processes.
   - PROC_MAX_REACHED: the fpm-status report will show us how many times the max processes were reached since start,
@@ -231,12 +235,12 @@ sub check_options {
     };
 
     if (defined($o_warn_threshold)) {
-        ($o_warn_p_level,$o_warn_m_level,$o_warn_q_level) = split(',', $o_warn_threshold);
+        ($o_warn_a_level,$o_warn_p_level,$o_warn_m_level,$o_warn_q_level) = split(',', $o_warn_threshold);
     } else {
         $o_warn_threshold = 'undefined'
     }
     if (defined($o_crit_threshold)) {
-        ($o_crit_p_level,$o_crit_m_level,$o_crit_q_level) = split(',', $o_crit_threshold);
+        ($o_crit_a_level,$o_crit_p_level,$o_crit_m_level,$o_crit_q_level) = split(',', $o_crit_threshold);
     } else {
         $o_crit_threshold = 'undefined'
     }
@@ -247,20 +251,24 @@ sub check_options {
         $o_fastcgi = 1;
     }
     if (defined($o_debug)) {
-        print("\nDEBUG thresholds: \nWarning: ($o_warn_threshold) => Min Idle: $o_warn_p_level Max Reached :$o_warn_m_level MaxQueue: $o_warn_q_level");
-        print("\nCritical ($o_crit_threshold) => : Min Idle: $o_crit_p_level Max Reached: $o_crit_m_level MaxQueue : $o_crit_q_level\n");
+        print("\nDEBUG thresholds: \nWarning: ($o_warn_threshold) => Max Active: $o_warn_a_level Min Idle: $o_warn_p_level Max Reached :$o_warn_m_level MaxQueue: $o_warn_q_level");
+        print("\nCritical ($o_crit_threshold) => Max Active: $o_crit_a_level Min Idle: $o_crit_p_level Max Reached: $o_crit_m_level MaxQueue : $o_crit_q_level\n");
+    }
+    if ((defined($o_warn_a_level) && defined($o_crit_a_level)) &&
+         (($o_warn_a_level != -1) && ($o_crit_a_level != -1) && ($o_warn_a_level <= $o_crit_p_level)) ) {
+        nagios_exit($phpfpm,"UNKNOWN","Check warning and critical values for ActiveProcess (1st part of threshold), warning level must be > crit level!");
     }
     if ((defined($o_warn_p_level) && defined($o_crit_p_level)) &&
          (($o_warn_p_level != -1) && ($o_crit_p_level != -1) && ($o_warn_p_level <= $o_crit_p_level)) ) {
-        nagios_exit($phpfpm,"UNKNOWN","Check warning and critical values for IdleProcesses (1st part of threshold), warning level must be > crit level!");
+        nagios_exit($phpfpm,"UNKNOWN","Check warning and critical values for IdleProcesses (2nd part of threshold), warning level must be > crit level!");
     }
     if ((defined($o_warn_m_level) && defined($o_crit_m_level)) &&
          (($o_warn_m_level != -1) && ($o_crit_m_level != -1) && ($o_warn_m_level >= $o_crit_m_level)) ) {
-        nagios_exit($phpfpm,"UNKNOWN","Check warning and critical values for MaxProcesses (2nd part of threshold), warning level must be < crit level!");
+        nagios_exit($phpfpm,"UNKNOWN","Check warning and critical values for MaxProcesses (3rd part of threshold), warning level must be < crit level!");
     }
     if ((defined($o_warn_q_level) && defined($o_crit_q_level)) &&
          (($o_warn_q_level != -1) && ($o_crit_q_level != -1) && ($o_warn_q_level >= $o_crit_q_level)) ) {
-        nagios_exit($phpfpm,"UNKNOWN","Check warning and critical values for MaxQueue (3rd part of threshold), warning level must be < crit level!");
+        nagios_exit($phpfpm,"UNKNOWN","Check warning and critical values for MaxQueue (4th part of threshold), warning level must be < crit level!");
     }
     # Check compulsory attributes
     if (!defined($o_host)) {
@@ -654,6 +662,9 @@ if ($response->is_success) {
     if (defined($o_crit_p_level) && (-1!=$o_crit_p_level) && ($IdleProcesses <= $o_crit_p_level)) {
         nagios_exit($phpfpm,"CRITICAL", "Idle workers are critically low " . $InfoData,$PerfData);
     }
+    if (defined($o_crit_a_level) && (-1!=$o_crit_a_level) && ($ActiveProcesses >= $o_crit_a_level)) {
+        nagios_exit($phpfpm,"CRITICAL", "Active workers are critically high " . $InfoData,$PerfData);
+    }
     # Then WARNING exits by priority
     if (defined($o_warn_q_level) && (-1!=$o_warn_q_level) && ($MaxListenQueueNew >= $o_warn_q_level)) {
         nagios_exit($phpfpm,"WARNING", "Max queue reached is high " . $InfoData,$PerfData);
@@ -663,6 +674,9 @@ if ($response->is_success) {
     }
     if (defined($o_warn_p_level) && (-1!=$o_warn_p_level) && ($IdleProcesses <= $o_warn_p_level)) {
         nagios_exit($phpfpm,"WARNING", "Idle workers are low " . $InfoData,$PerfData);
+    }
+    if (defined($o_warn_a_level) && (-1!=$o_warn_a_level) && ($ActiveProcesses >= $o_warn_a_level)) {
+        nagios_exit($phpfpm,"WARNING", "Active workers are high " . $InfoData,$PerfData);
     }
 
     nagios_exit($phpfpm,"OK",$InfoData,$PerfData);
@@ -733,3 +747,5 @@ sub header() {
     }
     return 0;
 }
+
+

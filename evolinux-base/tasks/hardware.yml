@@ -3,6 +3,8 @@
   apt:
     name: pciutils
     state: present
+  tags:
+    - packages
 
 ## Broadcom NetXtreme II
 
@@ -12,6 +14,8 @@
   register: broadcom_netextreme_search
   failed_when: False
   changed_when: False
+  tags:
+    - packages
 
 # TODO: add the "non-free" part to the existing sources
 # instead of adding a new source
@@ -22,18 +26,43 @@
     tasks_from: basics.yml
   vars:
     apt_basics_components: "main contrib non-free"
+  tags:
+    - packages
   when: broadcom_netextreme_search.rc == 0
+
+
+## Dedicated hardware
+- name: Install freepmi when it's dedicated hardware
+  apt:
+    name:
+      - libipc-run-perl
+      - freeipmi
+    state: present
+  tags:
+    - packages
+  when: ansible_virtualization_role == "host"
 
 ## RAID
 # Dell and others: MegaRAID SAS
 # HP gen <10: Hewlett-Packard Company Smart Array
 # HP gen >=10: Adaptec Smart Storage PQI
 - name: Detect if RAID is installed
-  shell: "set -o pipefail && lspci -q | grep -e 'RAID bus controller' -e 'Serial Attached SCSI controller'"
+  shell:
+    cmd: "lspci -q | grep -e 'RAID bus controller' -e 'Serial Attached SCSI controller'"
+    executable: /bin/bash
   check_mode: no
   register: raidmodel
   changed_when: "'FAILED' in raidmodel.stdout"
   failed_when: "'FAILED' in raidmodel.stdout"
+  tags:
+    - packages
+
+- name: Look for legacy apt keyring
+  stat:
+    path: /etc/apt/trusted.gpg
+  register: _trusted_gpg_keyring
+  tags:
+    - packages
 
 - name: HPE Smart Storage Administrator (ssacli) is present
   block:
@@ -42,6 +71,9 @@
         id: "26C2B797"
         keyring: /etc/apt/trusted.gpg
         state: absent
+      when: _trusted_gpg_keyring.stat.exists
+      tags:
+        - packages
 
     - name: HPE GPG key is installed
       copy:
@@ -51,14 +83,21 @@
         mode: "0644"
         owner: root
         group: root
+      tags:
+        - packages
 
     - name: Add HPE repository
       apt_repository:
         repo: 'deb https://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_distribution_release }}/current non-free'
         state: present
+      tags:
+        - packages
+
     - name: Install HPE Smart Storage Administrator (ssacli)
       apt:
         name: ssacli
+      tags:
+        - packages
   when:
     - "'Hewlett-Packard Company Smart Array' in raidmodel.stdout"
     - "'Adaptec Smart Storage PQI' in raidmodel.stdout"
@@ -72,6 +111,8 @@
         src: check_hpraid.cron.sh
         dest: /etc/cron.{{ evolinux_cron_checkhpraid_frequency | mandatory }}/check_hpraid
         mode: "0755"
+      tags:
+        - config
   when: "'Adaptec Smart Storage PQI' in raidmodel.stdout"
 
 - name: Install and configure cciss-vol-status (HP gen <10)
@@ -80,12 +121,16 @@
       apt:
         name: cciss-vol-status
         state: present
+      tags:
+        - packages
 
     - name: cciss-vol-statusd init script is present (HP gen <10)
       template:
         src: hardware/cciss-vol-statusd.j2
         dest: /etc/init.d/cciss-vol-statusd
         mode: "0755"
+      tags:
+        - packages
 
     - name: Configure cciss-vol-statusd (HP gen <10)
       lineinfile:
@@ -93,12 +138,17 @@
         line: 'MAILTO="{{ raid_alert_email or general_alert_email | mandatory }}"'
         regexp: 'MAILTO='
         create: yes
+      tags:
+        - config
 
     - name: Enable cciss-vol-status in systemd (HP gen <10)
       service:
         name: cciss-vol-statusd
         enabled: true
         state: restarted
+      tags:
+        - packages
+        - config
   when: "'Hewlett-Packard Company Smart Array' in raidmodel.stdout"
 
 - name: MegaRAID SAS package is present
@@ -108,7 +158,9 @@
         id: "23B3D3B4"
         keyring: /etc/apt/trusted.gpg
         state: absent
-      when: ansible_distribution_major_version is version('9', '>=')
+      tags:
+        - packages
+      when: _trusted_gpg_keyring.stat.exists
 
     - name: HWRaid GPG key is installed
       copy:
@@ -118,12 +170,16 @@
         mode: "0644"
         owner: root
         group: root
+      tags:
+        - packages
       when: ansible_distribution_major_version is version('9', '>=')
 
     - name: Add HW tool repository
       apt_repository:
         repo: 'deb http://hwraid.le-vert.net/debian {{ ansible_distribution_release }} main'
         state: present
+      tags:
+        - packages
 
     - name: Install packages for DELL/LSI hardware
       apt:
@@ -131,18 +187,25 @@
           - megacli
           - megaclisas-status
         allow_unauthenticated: yes
+      tags:
+        - packages
 
     - name: Configure packages for DELL/LSI hardware
       template:
         src: hardware/megaclisas-statusd.j2
         dest: /etc/default/megaclisas-statusd
         mode: "0755"
+      tags:
+        - config
 
     - name: Enable DELL/LSI hardware in systemd
       service:
         name: megaclisas-statusd
         enabled: true
-        state: started
-  when: "'MegaRAID SAS' in raidmodel.stdout"
+        state: restarted
+      tags:
+        - packages
+        - config
+  when: "'MegaRAID' in raidmodel.stdout"
 
 - meta: flush_handlers

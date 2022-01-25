@@ -9,10 +9,17 @@
   register: postgresql_nrpe_password
   changed_when: False
 
-- name: Install python dependencies for postgresql_user
+- name: python-psycopg2 is installed (Ansible dependency)
   apt:
     name: python-psycopg2
     state: present
+  when: ansible_python_version is version('3', '<')
+
+- name: python3-psycopg2 is installed (Ansible dependency)
+  apt:
+    name: python3-psycopg2
+    state: present
+  when: ansible_python_version is version('3', '>=')
 
 - name: Is nrpe present ?
   stat:

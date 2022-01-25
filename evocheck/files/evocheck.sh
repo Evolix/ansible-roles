@@ -4,7 +4,8 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
-readonly VERSION="20.12"
+VERSION="21.10.4"
+readonly VERSION
 
 # base functions
 
@@ -12,7 +13,7 @@ show_version() {
     cat <<END
 evocheck version ${VERSION}
 
-Copyright 2009-2019 Evolix <info@evolix.fr>,
+Copyright 2009-2021 Evolix <info@evolix.fr>,
                     Romain Dessort <rdessort@evolix.fr>,
                     Benoit Série <bserie@evolix.fr>,
                     Gregory Colpart <reg@evolix.fr>,
@@ -62,6 +63,8 @@ detect_os() {
                 8) DEBIAN_RELEASE="jessie";;
                 9) DEBIAN_RELEASE="stretch";;
                 10) DEBIAN_RELEASE="buster";;
+                11) DEBIAN_RELEASE="bullseye";;
+                12) DEBIAN_RELEASE="bookworm";;
             esac
         fi
     elif [ "$(uname -s)" = "OpenBSD" ]; then
@@ -71,7 +74,7 @@ detect_os() {
 }
 
 is_debian() {
-  test -n "${DEBIAN_RELEASE}"
+    test -n "${DEBIAN_RELEASE}"
 }
 is_debian_lenny() {
     test "${DEBIAN_RELEASE}" = "lenny"
@@ -91,6 +94,12 @@ is_debian_stretch() {
 is_debian_buster() {
     test "${DEBIAN_RELEASE}" = "buster"
 }
+is_debian_bullseye() {
+    test "${DEBIAN_RELEASE}" = "bullseye"
+}
+is_debian_bookworm() {
+    test "${DEBIAN_RELEASE}" = "bookworm"
+}
 debian_release() {
     printf "%s" "${DEBIAN_RELEASE}"
 }
@@ -109,7 +118,7 @@ is_pack_samba(){
 }
 is_installed(){
     for pkg in "$@"; do
-        dpkg -l "$pkg" 2>/dev/null | grep -q -E '^(i|h)i' || return 1
+        dpkg -l "$pkg" 2> /dev/null | grep -q -E '^(i|h)i' || return 1
     done
 }
 minifirewall_file() {
@@ -147,7 +156,7 @@ check_lsbrelease(){
         ## only the major version matters
         lhs=$(${LSB_RELEASE_BIN} --release --short | cut -d "." -f 1)
         rhs=$(cut -d "." -f 1 < /etc/debian_version)
-        test "$lhs" = "$rhs" || failed "IS_LSBRELEASE" "release is not consistent between lsb_release and /etc/debian_version"
+        test "$lhs" = "$rhs" || failed "IS_LSBRELEASE" "release is not consistent between lsb_release (${lhs}) and /etc/debian_version (${rhs})"
     else
         failed "IS_LSBRELEASE" "lsb_release is missing or not executable"
     fi
@@ -165,7 +174,7 @@ check_dpkgwarning() {
             test -e /etc/apt/apt.conf \
                 && failed "IS_DPKGWARNING" "/etc/apt/apt.conf is missing"
         fi
-    elif is_debian_stretch || is_debian_buster; then
+    elif is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         test -e /etc/apt/apt.conf.d/z-evolinux.conf \
             || failed "IS_DPKGWARNING" "/etc/apt/apt.conf.d/z-evolinux.conf is missing"
     fi
@@ -211,7 +220,6 @@ check_vartmpfs() {
     else
         df /var/tmp | grep -q tmpfs || failed "IS_VARTMPFS" "/var/tmp is not a tmpfs"
     fi
-    
 }
 check_serveurbase() {
     is_installed serveur-base || failed "IS_SERVEURBASE" "serveur-base package is not installed"
@@ -224,8 +232,19 @@ check_syslogconf() {
         || failed "IS_SYSLOGCONF" "syslog evolix config file missing"
 }
 check_debiansecurity() {
-    grep -q "^deb.*security" /etc/apt/sources.list \
-        || failed "IS_DEBIANSECURITY" "missing debian security repository"
+    if is_debian_bullseye; then
+        # https://www.debian.org/releases/bullseye/amd64/release-notes/ch-information.html#security-archive
+        pattern="^deb https://deb\.debian\.org/debian-security/? bullseye-security main"
+    elif is_debian_buster; then
+        pattern="^deb http://security\.debian\.org/debian-security/? buster/updates main"
+    elif is_debian_stretch; then
+        pattern="^deb http://security\.debian\.org/debian-security/? stretch/updates main"
+    else
+        pattern="^deb.*security"
+    fi
+
+    source_file="/etc/apt/sources.list"
+    grep -qE "${pattern}" "${source_file}" || failed "IS_DEBIANSECURITY" "missing debian security repository"
 }
 check_aptitudeonly() {
     if is_debian_squeeze || is_debian_wheezy; then
@@ -234,13 +253,13 @@ check_aptitudeonly() {
     fi
 }
 check_aptitude() {
-    if is_debian_jessie || is_debian_stretch || is_debian_buster; then
+    if is_debian_jessie || is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         test -e /usr/bin/aptitude && failed "IS_APTITUDE" "aptitude may not be installed on Debian >=8"
     fi
 }
 check_aptgetbak() {
-    if is_debian_jessie || is_debian_stretch || is_debian_buster; then
-        test -e /usr/bin/apt-get.bak && failed "IS_APTGETBAK" "missing dpkg-divert apt-get.bak"
+    if is_debian_jessie || is_debian_stretch || is_debian_buster || is_debian_bullseye; then
+        test -e /usr/bin/apt-get.bak && failed "IS_APTGETBAK" "prohibit the installation of apt-get.bak with dpkg-divert(1)"
     fi
 }
 check_apticron() {
@@ -276,7 +295,7 @@ check_mountfstab() {
     fi
 }
 check_listchangesconf() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         if is_installed apt-listchanges; then
             failed "IS_LISTCHANGESCONF" "apt-listchanges must not be installed on Debian >=9"
         fi
@@ -296,7 +315,7 @@ check_customcrontab() {
     test "$found_lines" = 4 && failed "IS_CUSTOMCRONTAB" "missing custom field in crontab"
 }
 check_sshallowusers() {
-    grep -E -qi "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config \
+    grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d \
         || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
 }
 check_diskperf() {
@@ -307,7 +326,7 @@ check_tmoutprofile() {
     grep -sq "TMOUT=" /etc/profile /etc/profile.d/evolinux.sh || failed "IS_TMOUTPROFILE" "TMOUT is not set"
 }
 check_alert5boot() {
-    if is_debian_buster; then
+    if is_debian_buster || is_debian_bullseye; then
         grep -qs "^date" /usr/share/scripts/alert5.sh || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
         test -f /etc/systemd/system/alert5.service || failed "IS_ALERT5BOOT" "alert5 unit file is missing"
         systemctl is-enabled alert5 -q || failed "IS_ALERT5BOOT" "alert5 unit is not enabled"
@@ -320,7 +339,7 @@ check_alert5boot() {
     fi
 }
 check_alert5minifw() {
-    if is_debian_buster; then
+    if is_debian_buster || is_debian_bullseye; then
         grep -qs "^/etc/init.d/minifirewall" /usr/share/scripts/alert5.sh \
             || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 script or script is missing"
     else
@@ -335,6 +354,13 @@ check_alert5minifw() {
 check_minifw() {
     /sbin/iptables -L -n | grep -q -E "^ACCEPT\s*all\s*--\s*31\.170\.8\.4\s*0\.0\.0\.0/0\s*$" \
         || failed "IS_MINIFW" "minifirewall seems not starded"
+}
+check_minifw_includes() {
+    if is_debian_bullseye; then
+        if grep -q -e '/sbin/iptables' -e '/sbin/ip6tables' "${MINIFW_FILE}"; then
+            failed "IS_MINIFWINCLUDES" "minifirewall has direct iptables invocations in ${MINIFW_FILE} that should go in /etc/minifirewall.d/"
+        fi
+    fi
 }
 check_nrpeperms() {
     if [ -d /etc/nagios ]; then
@@ -357,7 +383,11 @@ check_nrpedisks() {
     test "$NRPEDISKS" = "$DFDISKS" || failed "IS_NRPEDISKS" "there must be $DFDISKS check_disk in nrpe.cfg"
 }
 check_nrpepid() {
-    if ! is_debian_squeeze; then
+    if is_debian_bullseye; then
+        { test -e /etc/nagios/nrpe.cfg \
+            && grep -q "^pid_file=/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
+        } || failed "IS_NRPEPID" "missing or wrong pid_file directive in nrpe.cfg"
+    elif ! is_debian_squeeze; then
         { test -e /etc/nagios/nrpe.cfg \
             && grep -q "^pid_file=/var/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
         } || failed "IS_NRPEPID" "missing or wrong pid_file directive in nrpe.cfg"
@@ -372,7 +402,7 @@ check_grsecprocs() {
 }
 check_apachemunin() {
     if test -e /etc/apache2/apache2.conf; then
-        if is_debian_stretch || is_debian_buster; then
+        if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
             { test -h /etc/apache2/mods-enabled/status.load \
                 && test -h /etc/munin/plugins/apache_accesses \
                 && test -h /etc/munin/plugins/apache_processes \
@@ -392,17 +422,20 @@ check_apachemunin() {
 check_mysqlutils() {
     MYSQL_ADMIN=${MYSQL_ADMIN:-mysqladmin}
     if is_installed mysql-server; then
-        # You can configure MYSQL_ADMIN in evocheck.cf
-        if ! grep -qs "$MYSQL_ADMIN" /root/.my.cnf; then
-            failed "IS_MYSQLUTILS" "mysqladmin missing in /root/.my.cnf"
+        # With Debian 11 and later, root can connect to MariaDB with the socket
+        if is_debian_wheezy || is_debian_jessie ||  is_debian_stretch || is_debian_buster; then
+            # You can configure MYSQL_ADMIN in evocheck.cf
+            if ! grep -qs "^user *= *${MYSQL_ADMIN}" /root/.my.cnf; then
+                failed "IS_MYSQLUTILS" "${MYSQL_ADMIN} missing in /root/.my.cnf"
+            fi
         fi
         if ! test -x /usr/bin/mytop; then
             if ! test -x /usr/local/bin/mytop; then
                 failed "IS_MYSQLUTILS" "mytop binary missing"
             fi
         fi
-        if ! grep -qs debian-sys-maint /root/.mytop; then
-            failed "IS_MYSQLUTILS" "debian-sys-maint missing in /root/.mytop"
+        if ! grep -qs '^user *=' /root/.mytop; then
+            failed "IS_MYSQLUTILS" "credentials missing in /root/.mytop"
         fi
     fi
 }
@@ -431,7 +464,7 @@ check_muninlogrotate() {
 }
 # Verification de l'activation de Squid dans le cas d'un pack mail
 check_squid() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         squidconffile="/etc/squid/evolinux-custom.conf"
     else
         squidconffile="/etc/squid*/squid.conf"
@@ -444,7 +477,8 @@ check_squid() {
             && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d $host -j ACCEPT" "$MINIFW_FILE" \
             && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d 127.0.0.(1|0/8) -j ACCEPT" "$MINIFW_FILE" \
             && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port.* $http_port" "$MINIFW_FILE";
-        } || failed "IS_SQUID" "missing squid rules in minifirewall"
+        } || grep -qE "^PROXY='?on'?" "$MINIFW_FILE" \
+          || failed "IS_SQUID" "missing squid rules in minifirewall"
     fi
 }
 check_evomaintenance_fw() {
@@ -473,7 +507,7 @@ check_log2mailrunning() {
     fi
 }
 check_log2mailapache() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         conf=/etc/log2mail/config/apache
     else
         conf=/etc/log2mail/config/default
@@ -532,10 +566,10 @@ check_network_interfaces() {
 }
 # Verify if all if are in auto
 check_autoif() {
-    if is_debian_stretch || is_debian_buster; then
-        interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep -E -v "(lo|vnet|docker|veth|tun|tap|macvtap)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
+        interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep -E -v "(lo|vnet|docker|veth|tun|tap|macvtap|vrrp)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
     else
-        interfaces=$(/sbin/ifconfig -s | tail -n +2 | grep -E -v "^(lo|vnet|docker|veth|tun|tap|macvtap)" | cut -d " " -f 1 |tr "\n" " ")
+        interfaces=$(/sbin/ifconfig -s | tail -n +2 | grep -E -v "^(lo|vnet|docker|veth|tun|tap|macvtap|vrrp)" | cut -d " " -f 1 |tr "\n" " ")
     fi
     for interface in $interfaces; do
         if ! grep -q "^auto $interface" /etc/network/interfaces; then
@@ -569,6 +603,7 @@ check_evobackup_exclude_mount() {
             failed "IS_EVOBACKUP_EXCLUDE_MOUNT" "${mount} is not excluded from ${evobackup_file} backup script"
         done
     done
+    rm -rf "${excludes_file}"
 }
 # Verification de la presence du userlogrotate
 check_userlogrotate() {
@@ -681,6 +716,7 @@ check_backupuptodate() {
     backup_dir="/home/backup"
     if [ -d "${backup_dir}" ]; then
         if [ -n "$(ls -A ${backup_dir})" ]; then
+            # shellcheck disable=SC2231
             for file in ${backup_dir}/*; do
                 limit=$(date +"%s" -d "now - 2 day")
                 updated_at=$(stat -c "%Y" "$file")
@@ -771,7 +807,7 @@ check_tune2fs_m5() {
     done
 }
 check_evolinuxsudogroup() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         if grep -q "^evolinux-sudo:" /etc/group; then
             grep -qE '^%evolinux-sudo +ALL ?= ?\(ALL:ALL\) ALL' /etc/sudoers.d/evolinux \
                 || failed "IS_EVOLINUXSUDOGROUP" "missing evolinux-sudo directive in sudoers file"
@@ -779,7 +815,7 @@ check_evolinuxsudogroup() {
     fi
 }
 check_userinadmgroup() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         users=$(grep "^evolinux-sudo:" /etc/group | awk -F: '{print $4}' | tr ',' ' ')
         for user in $users; do
             if ! groups "$user" | grep -q adm; then
@@ -790,7 +826,7 @@ check_userinadmgroup() {
     fi
 }
 check_apache2evolinuxconf() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         if test -d /etc/apache2; then
             { test -L /etc/apache2/conf-enabled/z-evolinux-defaults.conf \
                 && test -L /etc/apache2/conf-enabled/zzz-evolinux-custom.conf \
@@ -800,7 +836,7 @@ check_apache2evolinuxconf() {
     fi
 }
 check_backportsconf() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         grep -qsE "^[^#].*backports" /etc/apt/sources.list \
             && failed "IS_BACKPORTSCONF" "backports can't be in main sources list"
         if grep -qsE "^[^#].*backports" /etc/apt/sources.list.d/*.list; then
@@ -810,7 +846,7 @@ check_backportsconf() {
     fi
 }
 check_bind9munin() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         if is_installed bind9; then
             { test -L /etc/munin/plugins/bind9 \
                 && test -e /etc/munin/plugin-conf.d/bind9;
@@ -819,7 +855,7 @@ check_bind9munin() {
     fi
 }
 check_bind9logrotate() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         if is_installed bind9; then
             test -e /etc/logrotate.d/bind9 || failed "IS_BIND9LOGROTATE" "missing bind logrotate file"
         fi
@@ -840,7 +876,7 @@ check_broadcomfirmware() {
 check_hardwareraidtool() {
     LSPCI_BIN=$(command -v lspci)
     if [ -x "${LSPCI_BIN}" ]; then
-        if ${LSPCI_BIN} | grep -q 'MegaRAID SAS'; then
+        if ${LSPCI_BIN} | grep -q 'MegaRAID'; then
             # shellcheck disable=SC2015
             is_installed megacli && { is_installed megaclisas-status || is_installed megaraidsas-status; } \
                 || failed "IS_HARDWARERAIDTOOL" "Mega tools not found"
@@ -853,7 +889,7 @@ check_hardwareraidtool() {
     fi
 }
 check_log2mailsystemdunit() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         systemctl -q is-active log2mail.service \
             || failed "IS_LOG2MAILSYSTEMDUNIT" "log2mail unit not running"
         test -f /etc/systemd/system/log2mail.service \
@@ -869,7 +905,7 @@ check_listupgrade() {
         || failed "IS_LISTUPGRADE" "missing listupgrade script or not executable"
 }
 check_mariadbevolinuxconf() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         if is_installed mariadb-server; then
             { test -f /etc/mysql/mariadb.conf.d/z-evolinux-defaults.cnf \
                 && test -f /etc/mysql/mariadb.conf.d/zzz-evolinux-custom.cnf;
@@ -945,6 +981,7 @@ check_elastic_backup() {
     fi
 }
 check_mariadbsystemdunit() {
+    # TODO: check if it is still needed for bullseye
     if is_debian_stretch || is_debian_buster; then
         if is_installed mariadb-server; then
             if systemctl -q is-active mariadb.service; then
@@ -955,7 +992,7 @@ check_mariadbsystemdunit() {
     fi
 }
 check_mysqlmunin() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         if is_installed mariadb-server; then
             for file in mysql_bytes mysql_queries mysql_slowqueries \
                 mysql_threads mysql_connections mysql_files_tables \
@@ -973,7 +1010,7 @@ check_mysqlmunin() {
     fi
 }
 check_mysqlnrpe() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         if is_installed mariadb-server; then
             nagios_file=~nagios/.my.cnf
             if ! test -f ${nagios_file}; then
@@ -989,9 +1026,10 @@ check_mysqlnrpe() {
     fi
 }
 check_phpevolinuxconf() {
-    if is_debian_stretch || is_debian_buster; then
-        is_debian_stretch && phpVersion="7.0"
-        is_debian_buster && phpVersion="7.3"
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
+        is_debian_stretch  && phpVersion="7.0"
+        is_debian_buster   && phpVersion="7.3"
+        is_debian_bullseye && phpVersion="7.4"
         if is_installed php; then
             { test -f /etc/php/${phpVersion}/cli/conf.d/z-evolinux-defaults.ini \
                 && test -f /etc/php/${phpVersion}/cli/conf.d/zzz-evolinux-custom.ini
@@ -1000,15 +1038,15 @@ check_phpevolinuxconf() {
     fi
 }
 check_squidlogrotate() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         if is_installed squid; then
-            grep -q monthly /etc/logrotate.d/squid \
+            grep -q -e monthly -e daily /etc/logrotate.d/squid \
                 || failed "IS_SQUIDLOGROTATE" "missing squid logrotate file"
         fi
     fi
 }
 check_squidevolinuxconf() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         if is_installed squid; then
             { grep -qs "^CONFIG=/etc/squid/evolinux-defaults.conf$" /etc/default/squid \
                 && test -f /etc/squid/evolinux-defaults.conf \
@@ -1044,7 +1082,7 @@ check_duplicate_fs_label() {
     fi
 }
 check_evolix_user() {
-    grep -q "evolix:" /etc/passwd \
+    grep -q -E "^evolix:" /etc/passwd \
         && failed "IS_EVOLIX_USER" "evolix user should be deleted, used only for install"
 }
 check_evoacme_cron() {
@@ -1083,7 +1121,7 @@ check_apache_confenabled() {
     # Starting from Jessie and Apache 2.4, /etc/apache2/conf.d/
     # must be replaced by conf-available/ and config files symlinked
     # to conf-enabled/
-    if is_debian_jessie || is_debian_stretch || is_debian_buster; then
+    if is_debian_jessie || is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         if [ -f /etc/apache2/apache2.conf ]; then
             test -d /etc/apache2/conf.d/ \
                 && failed "IS_APACHE_CONFENABLED" "apache's conf.d directory must not exists"
@@ -1095,7 +1133,7 @@ check_apache_confenabled() {
 check_meltdown_spectre() {
     # For Stretch, detection is easy as the kernel use
     # /sys/devices/system/cpu/vulnerabilities/
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         for vuln in meltdown spectre_v1 spectre_v2; do
             test -f "/sys/devices/system/cpu/vulnerabilities/$vuln" \
                 || failed "IS_MELTDOWN_SPECTRE" "vulnerable to $vuln"
@@ -1148,7 +1186,7 @@ check_usrsharescripts() {
     test "$expected" = "$actual" || failed "IS_USRSHARESCRIPTS" "/usr/share/scripts must be $expected"
 }
 check_sshpermitrootno() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         if grep -q "^PermitRoot" /etc/ssh/sshd_config; then
             grep -E -qi "PermitRoot.*no" /etc/ssh/sshd_config \
                 || failed "IS_SSHPERMITROOTNO" "PermitRoot should be set at no"
@@ -1159,7 +1197,7 @@ check_sshpermitrootno() {
     fi
 }
 check_evomaintenanceusers() {
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         users=$(getent group evolinux-sudo | cut -d':' -f4 | tr ',' ' ')
     else
         if [ -f /etc/sudoers.d/evolinux ]; then
@@ -1295,6 +1333,154 @@ check_nginx_letsencrypt_uptodate() {
     fi
 }
 
+check_lxc_container_resolv_conf() {
+    if is_installed lxc; then
+        container_list=$(lxc-ls)
+        current_resolvers=$(grep nameserver /etc/resolv.conf | sed 's/nameserver//g' )
+
+       for container in $container_list; do
+            if [ -f "/var/lib/lxc/${container}/rootfs/etc/resolv.conf" ]; then
+
+                while read -r resolver; do
+                    if ! grep -qE "^nameserver\s+${resolver}" "/var/lib/lxc/${container}/rootfs/etc/resolv.conf"; then
+                        failed "IS_LXC_CONTAINER_RESOLV_CONF" "resolv.conf miss-match beween host and container : missing nameserver ${resolver} in container ${container} resolv.conf"
+                    fi
+                done <<< "${current_resolvers}"
+
+            else
+                failed "IS_LXC_CONTAINER_RESOLV_CONF" "resolv.conf missing in container ${container}"
+            fi
+        done 
+    fi
+}
+download_versions() {
+    local file
+    file=${1:-}
+
+    ## The file is supposed to list programs : each on a line, then its latest version number
+    ## Examples:
+    # evoacme 21.06
+    # evomaintenance 0.6.4
+
+    if is_debian; then
+        versions_url="https://upgrades.evolix.org/versions-${DEBIAN_RELEASE}"
+    elif is_openbsd; then
+        versions_url="https://upgrades.evolix.org/versions-${OPENBSD_RELEASE}"
+    else
+        failed "IS_VERSIONS_CHECK" "error determining os release"
+    fi
+
+    # fetch timeout, in seconds
+    timeout=10
+
+    if command -v curl > /dev/null; then
+        curl --max-time ${timeout} --fail --silent --output "${versions_file}" "${versions_url}"
+    elif command -v wget > /dev/null; then
+        wget --timeout=${timeout} --quiet "${versions_url}" -O "${versions_file}"
+    elif command -v GET; then
+        GET -t ${timeout}s "${versions_url}" > "${versions_file}"
+    else
+        failed "IS_VERSIONS_CHECK" "failed to find curl, wget or GET"
+    fi
+    test "$?" -eq 0 || failed "IS_VERSIONS_CHECK" "failed to download ${versions_url} to ${versions_file}"
+}
+get_command() {
+    local program
+    program=${1:-}
+
+    case "${program}" in
+        ## Special cases where the program name is different than the command name
+        evocheck) echo "${0}" ;;
+        evomaintenance) command -v "evomaintenance.sh" ;;
+        listupgrade) command -v "evolistupgrade.sh" ;;
+        old-kernel-autoremoval) command -v "old-kernel-autoremoval.sh" ;;
+        mysql-queries-killer) command -v "mysql-queries-killer.sh" ;;
+
+        ## General case, where the program name is the same as the command name
+        *) command -v "${program}" ;;
+    esac
+}
+get_version() {
+    local program
+    local command
+    program=${1:-}
+    command=${2:-}
+
+    case "${program}" in
+        ## Special case if `command --version => 'command` is not the standard way to get the version
+        # my_command)
+        #    /path/to/my_command --get-version 
+        #    ;;
+
+        add-vm)
+            grep '^VERSION=' "${command}" | head -1 | cut -d '=' -f 2
+            ;;
+        ## Let's try the --version flag before falling back to grep for the constant
+        kvmstats)
+            if ${command} --version > /dev/null 2> /dev/null; then
+                 ${command} --version 2> /dev/null | head -1 | cut -d ' ' -f 3
+            else
+                grep '^VERSION=' "${command}" | head -1 | cut -d '=' -f 2
+            fi
+            ;;
+
+        ## General case to get the version
+        *) ${command} --version 2> /dev/null | head -1 | cut -d ' ' -f 3 ;;
+    esac
+}
+check_version() {
+    local program
+    local expected_version
+    program=${1:-}
+    expected_version=${2:-}
+
+    command=$(get_command "${program}")
+    if [ -n "${command}" ]; then
+        # shellcheck disable=SC2086
+        actual_version=$(get_version "${program}" "${command}")
+        # printf "program:%s expected:%s actual:%s\n" "${program}" "${expected_version}" "${actual_version}"
+        if [ -z "${actual_version}" ]; then
+            failed "IS_VERSIONS_CHECK" "failed to lookup actual version of ${program}"
+        elif dpkg --compare-versions "${actual_version}" lt "${expected_version}"; then
+            failed "IS_VERSIONS_CHECK" "${program} version ${actual_version} is older than expected version ${expected_version}"
+        elif dpkg --compare-versions "${actual_version}" gt "${expected_version}"; then
+            failed "IS_VERSIONS_CHECK" "${program} version ${actual_version} is newer than expected version ${expected_version}, you should update tour index."
+        else
+            : # Version check OK
+        fi
+    fi
+}
+add_to_path() {
+    local new_path
+    new_path=${1:-}
+
+    echo "$PATH" | grep -qF "${new_path}" || export PATH="${PATH}:${new_path}"
+}
+check_versions() {
+    versions_file=$(mktemp --tmpdir=/tmp "evocheck-versions.XXXXX")
+    # shellcheck disable=SC2064
+    trap "rm -f ${versions_file}" 0
+    download_versions "${versions_file}"
+    add_to_path "/usr/share/scripts"
+
+    grep -v '^ *#' < "${versions_file}" | while IFS= read -r line; do
+        local program
+        local version
+        program=$(echo "${line}" | cut -d ' ' -f 1)
+        version=$(echo "${line}" | cut -d ' ' -f 2)
+
+        if [ -n "${program}" ]; then
+            if [ -n "${version}" ]; then
+                check_version "${program}" "${version}"
+            else
+                failed "IS_VERSIONS_CHECK" "failed to lookup expected version for ${program}"
+            fi
+        fi
+    done
+
+    rm -f "${versions_file}"
+}
+
 main() {
     # Default return code : 0 = no error
     RC=0
@@ -1349,6 +1535,8 @@ main() {
         test "${IS_ALERT5MINIFW:=1}" = 1 && test "${IS_MINIFW:=1}" = 1 && check_minifw
         test "${IS_NRPEPERMS:=1}" = 1 && check_nrpeperms
         test "${IS_MINIFWPERMS:=1}" = 1 && check_minifwperms
+        # Enable when minifirewall is released
+        test "${IS_MINIFWINCLUDES:=0}" = 1 && check_minifw_includes
         test "${IS_NRPEDISKS:=0}" = 1 && check_nrpedisks
         test "${IS_NRPEPID:=1}" = 1 && check_nrpepid
         test "${IS_GRSECPROCS:=1}" = 1 && check_grsecprocs
@@ -1421,6 +1609,8 @@ main() {
         test "${IS_APT_VALID_UNTIL:=1}" = 1 && check_apt_valid_until
         test "${IS_CHROOTED_BINARY_UPTODATE:=1}" = 1 && check_chrooted_binary_uptodate
         test "${IS_NGINX_LETSENCRYPT_UPTODATE:=1}" = 1 && check_nginx_letsencrypt_uptodate
+        test "${IS_LXC_CONTAINER_RESOLV_CONF:=1}" = 1 && check_lxc_container_resolv_conf
+        test "${IS_CHECK_VERSIONS:=1}" = 1 && check_versions
     fi
 
     #-----------------------------------------------------------
@@ -1528,10 +1718,13 @@ main() {
     exit ${RC}
 }
 
+PROGNAME=$(basename "$0")
 # shellcheck disable=SC2034
-readonly PROGNAME=$(basename "$0")
-# shellcheck disable=2124
-readonly ARGS=$@
+readonly PROGNAME
+
+# shellcheck disable=SC2124
+ARGS=$@
+readonly ARGS
 
 # Disable LANG*
 export LANG=C
@@ -1557,6 +1750,7 @@ while :; do
             IS_KERNELUPTODATE=0
             IS_UPTIME=0
             IS_MELTDOWN_SPECTRE=0
+            IS_CHECK_VERSIONS=0
             ;;
         -v|--verbose)
             VERBOSE=1

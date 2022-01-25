@@ -1,0 +1,12 @@
+client
+dev tun
+tls-client
+proto udp
+
+remote {{ ansible_fqdn }} 1194
+
+persist-key
+persist-tun
+
+cipher AES-256-CBC
+

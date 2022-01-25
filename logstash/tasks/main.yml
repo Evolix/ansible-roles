@@ -8,11 +8,20 @@
     - logstash
     - packages
 
+- name: Look for legacy apt keyring
+  stat:
+    path: /etc/apt/trusted.gpg
+  register: _trusted_gpg_keyring
+  tags:
+    - logstash
+    - packages
+
 - name: Elastic embedded GPG key is absent
   apt_key:
     id: "D88E42B4"
     keyring: /etc/apt/trusted.gpg
     state: absent
+  when: _trusted_gpg_keyring.stat.exists
   tags:
     - logstash
     - packages
@@ -79,7 +88,7 @@
     owner: logstash
     group: logstash
     mode: "0640"
-    force: yes
+    force: "{{ logstash_config_force | bool }}"
   loop: "{{ query('first_found', templates) }}"
   vars:
     templates:

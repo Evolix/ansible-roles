@@ -1,0 +1,6 @@
+---
+- name: Deploy htop configuration
+  copy:
+    src: htoprc
+    dest: /etc/htoprc
+    mode: "0644"

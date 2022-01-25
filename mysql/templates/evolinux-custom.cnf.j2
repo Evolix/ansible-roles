@@ -39,3 +39,9 @@ lower_case_table_names = {{ mysql_lower_case_table_names }}
 innodb_log_file_size = {{ mysql_innodb_log_file_size }}
 {% endif %}
 read_only = {{ mysql_read_only }}
+{% if mysql_performance_schema %}
+performance_schema = ON
+performance-schema-instrument='stage/%=ON'
+performance-schema-consumer-events-stages-current=ON
+performance-schema-consumer-events-stages-history=ON
+{% endif %}

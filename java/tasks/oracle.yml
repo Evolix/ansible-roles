@@ -14,9 +14,9 @@
     state: directory
     mode: "0777"
   loop:
-  - /srv/java-package
-  - /srv/java-package/src
-  - /srv/java-package/tmp
+    - /srv/java-package
+    - /srv/java-package/src
+    - /srv/java-package/tmp
   tags:
   - java
 

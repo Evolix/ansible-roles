@@ -11,3 +11,13 @@
     dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/smtpd.conf"
     mode: "0644"
   notify: "Restart opensmtpd"
+  when: lxc_php_container_releases[lxc_php_version] in ["jessie", "stretch", "buster"]
+
+
+- name: "{{ lxc_php_version }} - Configure opensmtpd (in the container)"
+  template:
+    src: smtpd.conf.bullseye.j2
+    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/smtpd.conf"
+    mode: "0644"
+  notify: "Restart opensmtpd"
+  when: not lxc_php_container_releases[lxc_php_version] in ["jessie", "stretch", "buster"]

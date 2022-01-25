@@ -4,16 +4,16 @@
 # Dependencies (all OS): git postgresql-client
 # Dependencies (Debian): sudo
 
-# Copyright 2007-2021 Evolix <info@evolix.fr>, Gregory Colpart <reg@evolix.fr>,
+# Copyright 2007-2022 Evolix <info@evolix.fr>, Gregory Colpart <reg@evolix.fr>,
 #                     Jérémy Lecour <jlecour@evolix.fr> and others.
 
-VERSION="0.6.4"
+VERSION="22.01"
 
 show_version() {
     cat <<END
 evomaintenance version ${VERSION}
 
-Copyright 2007-2021 Evolix <info@evolix.fr>,
+Copyright 2007-2022 Evolix <info@evolix.fr>,
                     Gregory Colpart <reg@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>
                     and others.
@@ -303,6 +303,9 @@ From: ${FULLFROM}
 Content-Type: text/plain; charset=UTF-8
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Evomaintenance-Version: ${VERSION}
+X-Evomaintenance-Host: ${HOSTNAME_TEXT}
+X-Evomaintenance-User: ${USER}
 To: ${EVOMAINTMAIL}
 Subject: [evomaintenance] Intervention sur ${HOSTNAME_TEXT} (${USER})
 

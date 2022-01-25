@@ -1,6 +1,6 @@
 ---
 
-ldap_listen: "ldap://127.0.0.1:389/"
+ldap_listen: "ldap://127.0.0.1:389/ ldapi:///"
 
 ldap_hostname: "{{ ansible_hostname }}"
 ldap_domain: "{{ ansible_domain }}"

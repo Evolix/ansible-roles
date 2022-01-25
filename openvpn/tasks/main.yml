@@ -1,0 +1,285 @@
+---
+
+- name: This role is only compatible with Debian
+  assert:
+    that: "ansible_distribution == 'Debian'"
+    msg: "Only compatible with Debian"
+
+- name: Install OpenVPN
+  apt:
+    name: openvpn
+
+- name: Delete unwanted OpenVPN folders
+  file:
+    state: absent
+    path: "/etc/openvpn/{{ item }}"
+  with_items:
+    - client
+    - server
+
+- name: Clone shellpki repo
+  git:
+    repo: "https://gitea.evolix.org/evolix/shellpki.git"
+    dest: /root/shellpki
+
+- name: Create the shellpki user
+  user:
+    name: shellpki
+    system: yes
+    create_home: no
+    home: "/etc/shellpki"
+    shell: "/usr/sbin/nologin"
+
+- name: Create /etc/shellpki
+  file:
+    path: "/etc/shellpki"
+    state: directory
+
+- include_role:
+    name: evolix/remount-usr
+
+- name: Copy shellpki files
+  copy:
+    src: "{{ item.source }}"
+    dest: "{{ item.destination }}"
+    remote_src: yes
+  with_items:
+     - { source: "/root/shellpki/openssl.cnf", destination: "/etc/shellpki/openssl.cnf" }
+     - { source: "/root/shellpki/shellpki", destination: "/usr/local/sbin/shellpki" }
+
+- include_role:
+    name: evolix/remount-usr
+
+- name: Change files permissions
+  file:
+    path: "{{ item.path }}"
+    mode: "{{ item.mode }}"
+  with_items:
+     - { path: "/etc/shellpki/openssl.cnf", mode: "0640" }
+     - { path: "/usr/local/sbin/shellpki", mode: "0755" }
+
+- name: Delete local shellpki repo
+  file:
+    state: absent
+    path: "/root/shellpki"
+
+- name: Change directory owner
+  file:
+    path: "/etc/shellpki"
+    owner: shellpki
+    recurse: yes
+    state: directory
+
+- name: Add sudo rights
+  lineinfile:
+    dest: "/etc/sudoers.d/shellpki"
+    regexp: '/usr/local/sbin/shellpki'
+    line: "%shellpki ALL = (root) /usr/local/sbin/shellpki"
+    create: yes
+    validate: 'visudo -cf %s'
+
+- name: Deploy OpenVPN client config template
+  template:
+    src: "ovpn.conf.j2"
+    dest: "/etc/shellpki/ovpn.conf"
+
+- name: Generate dhparam
+  command: "openssl dhparam -out /etc/shellpki/dh2048.pem 2048"
+
+- include_role:
+    name: evolix/remount-usr
+
+- name: Fix CRL rights in shellpki command
+  lineinfile:
+    path: "/usr/local/sbin/shellpki"
+    regexp: '{{ item.regexp }}'
+    insertafter: "{{ item.insertafter }}"
+    line: "{{ item.line }}"
+  with_items:
+     - { regexp: '^    chmod 644 /etc/shellpki/crl.pem$', line: "    chmod 644 /etc/shellpki/crl.pem", insertafter: '^    chmod 640 "\${CACERT}"$' }
+     - { regexp: '^    chmod 755 /etc/shellpki/$', line: "    chmod 755 /etc/shellpki/", insertafter: '^    chmod 644 /etc/shellpki/crl.pem$' }
+
+- name: Deploy OpenVPN server config
+  template:
+    src: "server.conf.j2"
+    dest: "/etc/openvpn/server.conf"
+
+- name: Is minifirewall installed ?
+  stat:
+    path: "/etc/default/minifirewall"
+  check_mode: no
+  register: minifirewall_config
+
+- name: Retrieve the default interface
+  shell: "grep '^INT=' /etc/default/minifirewall | cut -d\\' -f 2"
+  check_mode: no
+  changed_when: false
+  register: minifirewall_int
+
+- name: Add minifirewall rule in config file
+  lineinfile:
+    path: "/etc/default/minifirewall"
+    line: "{{ item }}"
+  with_items:
+     - "# OpenVPN"
+     - "/sbin/iptables -t nat -A POSTROUTING -s {{ openvpn_lan }}/{{ openvpn_netmask_cidr }} -o $INT -j MASQUERADE"
+  when: minifirewall_config.stat.exists
+
+- name: Activate minifirewall rule
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    source: "{{ openvpn_lan }}/{{ openvpn_netmask_cidr }}"
+    out_interface: "{{ minifirewall_int.stdout }}"
+    jump: MASQUERADE
+  when: minifirewall_config.stat.exists
+
+- name: Add 1194/udp OpenVPN port to public services in minifirewall
+  replace:
+    path: "/etc/default/minifirewall"
+    regexp: "^SERVICESUDP1='(.*)?'$"
+    replace: "SERVICESUDP1='\\1 1194'"
+    backup: yes
+  when: minifirewall_config.stat.exists
+
+- name: Activate minifirewall rule for IPv4
+  iptables:
+    chain: INPUT
+    protocol: udp
+    destination_port: "1194"
+    jump: ACCEPT
+    ip_version: ipv4
+  when: minifirewall_config.stat.exists
+
+- name: Activate minifirewall rule for IPv6
+  iptables:
+    chain: INPUT
+    protocol: udp
+    destination_port: "1194"
+    jump: ACCEPT
+    ip_version: ipv6
+  when: minifirewall_config.stat.exists
+
+- name: Enable forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_file: "/etc/sysctl.d/openvpn.conf"
+
+- name: Generate a password for the management interface
+  set_fact:
+    management_pwd: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
+
+- name: Set the management password
+  copy:
+    dest: "/etc/openvpn/management-pwd"
+    content: "{{ management_pwd }}"
+
+- name: Enable openvpn service
+  systemd:
+    name: "openvpn@server.service"
+    enabled: yes
+
+- name: Is NRPE installed ?
+  stat:
+    path: "/etc/nagios/nrpe.d/evolix.cfg"
+  check_mode: no
+  register: nrpe_evolix_config
+
+- name: Install NRPE check dependencies
+  apt:
+    name: libnet-telnet-perl
+  when: nrpe_evolix_config.stat.exists
+
+- include_role:
+    name: evolix/remount-usr
+
+- name: Install OpenVPN NRPE check
+  copy:
+    src: "files/check_openvpn.pl"
+    dest: "/usr/local/lib/nagios/plugins/check_openvpn"
+    mode: "0755"
+    owner: root
+    group: nagios
+  when: nrpe_evolix_config.stat.exists
+
+- name: Add NRPE check
+  lineinfile:
+    dest: "/etc/nagios/nrpe.d/evolix.cfg"
+    regexp: '^command\[check_openvpn\]='
+    line: "command[check_openvpn]=/usr/local/lib/nagios/plugins/check_openvpn -H 127.0.0.1 -p 1195 -P {{ management_pwd }}"
+  notify: restart nagios-nrpe-server
+  when: nrpe_evolix_config.stat.exists
+
+- include_role:
+    name: evolix/remount-usr
+
+- name: Install OpenVPN certificates NRPE check
+  copy:
+    src: "files/check_openvpn_certificates.sh"
+    dest: "/usr/local/lib/nagios/plugins/check_openvpn_certificates.sh"
+    mode: "0755"
+    owner: root
+    group: nagios
+  when: nrpe_evolix_config.stat.exists
+
+- name: Add sudo rights for NRPE check
+  lineinfile:
+    dest: "/etc/sudoers.d/openvpn"
+    regexp: 'check_openvpn_certificates.sh'
+    line: "nagios  ALL=NOPASSWD: /usr/local/lib/nagios/plugins/check_openvpn_certificates.sh"
+    create: yes
+    validate: 'visudo -cf %s'
+  when: nrpe_evolix_config.stat.exists
+
+- name: Add NRPE check
+  lineinfile:
+    dest: "/etc/nagios/nrpe.d/evolix.cfg"
+    regexp: '^command\[check_openvpn_certificates\]='
+    line: "command[check_openvpn_certificates]=sudo /usr/local/lib/nagios/plugins/check_openvpn_certificates.sh"
+  notify: restart nagios-nrpe-server
+  when: nrpe_evolix_config.stat.exists
+
+# BEGIN TODO : Get this script from master branch when cloning it at the beginning when dev branch is merged with master (this script is currently not available on master branch)
+- name: Clone dev branch of shellpki repo
+  git:
+    repo: "https://gitea.evolix.org/evolix/shellpki.git"
+    dest: /root/shellpki-dev
+    version: dev
+
+- include_role:
+    name: evolix/remount-usr
+
+- name: Copy shellpki script
+  copy:
+    src: "/root/shellpki-dev/cert-expirations.sh"
+    dest: "/usr/share/scripts/cert-expirations.sh"
+    mode: "0700"
+#    owner: root
+#    group: root
+    remote_src: yes
+
+- name: Delete local shellpki-dev repo
+  file:
+    state: absent
+    path: "/root/shellpki-dev"
+# END TODO
+
+- name: Install cron to warn about certificates expiration
+  cron:
+    name: "OpenVPN certificates expiration"
+    special_time: monthly
+    job: '/usr/share/scripts/cert-expirations.sh | mail -E -s "PKI VPN {{ ansible_hostname }} : recapitulatif expirations" {{ client_email }}'
+
+- name: Warn the user about command to execute manually
+  pause:
+    prompt: |
+      /!\ WARNING /!\
+      You have to manually create the CA on the server with "shellpki init {{ ansible_fqdn }}". The command will ask you to create a password, and will ask you again to give the same one several times.
+      You have to manually generate the CRL on the server with "openssl ca -gencrl -keyfile /etc/shellpki/cakey.key -cert /etc/shellpki/cacert.pem -out /etc/shellpki/crl.pem -config /etc/shellpki/openssl.cnf". The previously created password will be asked
+      You have to manually create the server's certificate with "shellpki create {{ ansible_fqdn }}"
+      You have to adjuste the config file "/etc/openvpn/server.conf" for the following parameters : local (to check), cert (to check), key (to add), server (to check), push (to complete if needed).
+      Finally, you can (re)start the OpenVPN service with "systemctl restart openvpn@server.service"
+      
+      Press enter to exit when it's done.
+

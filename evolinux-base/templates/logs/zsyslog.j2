@@ -1,8 +1,13 @@
 # Custom EvoLinux
 create 640 root adm
+{% if not evolinux_logs_default_dateext %}
+# BEGIN legacy setting
+# … when global dateext and dateformat are not enabled
 dateext
 dateyesterday
 dateformat .%Y%m%d
+# END legacy setting
+{% endif %}
 missingok
 notifempty
 delaycompress

@@ -13,11 +13,17 @@
     repo: "deb http://apt.postgresql.org/pub/repos/apt/ {{ansible_distribution_release}}-pgdg main"
     update_cache: yes
 
+- name: Look for legacy apt keyring
+  stat:
+    path: /etc/apt/trusted.gpg
+  register: _trusted_gpg_keyring
+
 - name: PGDG embedded GPG key is absent
   apt_key:
     id: "ACCC4CF8"
     keyring: /etc/apt/trusted.gpg
     state: absent
+  when: _trusted_gpg_keyring.stat.exists
 
 - name: Add PGDG GPG key
   copy:

@@ -52,6 +52,7 @@
     - config
     - update-config
 
+# TODO: verify if it's still necessary for Debian 11
 - name: Override Varnish systemd unit (Buster and later)
   template:
     src: varnish.conf.buster.j2

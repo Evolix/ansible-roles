@@ -12,6 +12,6 @@
   apt:
     name: '{{item}}'
   loop:
-  - "postgresql-{{postgresql_version}}"
-  - ptop
-  - libdbd-pg-perl
+    - "postgresql-{{postgresql_version}}"
+    - ptop
+    - libdbd-pg-perl

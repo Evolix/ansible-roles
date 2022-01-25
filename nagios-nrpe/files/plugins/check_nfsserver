@@ -1,12 +1,12 @@
 #!/bin/sh
 # Check if nfs server is running using rpcinfo
 
-rpcinfo -u localhost nfs
+rpcinfo -T udp localhost nfs 3
 if [ $? -ne 0 ]; then
     exit 2
 fi
 
-rpcinfo -t localhost nfs
+rpcinfo -T tcp localhost nfs
 if [ $? -ne 0 ]; then
     exit 2
 fi
