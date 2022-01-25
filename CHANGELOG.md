@@ -33,6 +33,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * etc-git: centralize cron jobs in dedicated crontab
 * etc-git: manage commits with an optimized shell script instead of many slow Ansible tasks
 * evolinux-base: add script backup-server-state
+* evolinux-base: configure top and htop to display the swap column
 * evolinux-base: install molly-guard by default
 * generate-ldif: detect RAID controller
 * generate-ldif: detect mdadm
@@ -58,6 +59,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * Install python 2 or 3 libraries according to running python version
 * Remove embedded GPG keys only if legacy keyring is present
 * apt: remove workaround for Evolix public repositories with Debian 11
+* apt: upgrade packages after all the configuration is done
 * apt: use the new security repository for Bullseye
 * certbot: silence letsencrypt deprecation warnings
 * elasticsearch: elastic_stack_version = 7.x
@@ -110,7 +112,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * Add Elastic GPG key to kibana, filebeat, logstash, metricbeat roles
 * apache: new variable for mpm mode (+ updated default config accordingly)
 * evolinux-base: add default motd template
-* evolinux-base: configure top and htop to display the swap column
 * kvm-host: add migrate-vm script
 * mysql: variable to disable myadd script overwrite (default: True)
 * nodejs: update apt cache before installing the package
