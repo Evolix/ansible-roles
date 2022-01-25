@@ -102,6 +102,6 @@
     option: "ProtectHome"
     value: "false"
     state: present
-    notify:
-      - systemd daemon-reload
-      - restart munin-node
+  notify:
+    - systemd daemon-reload
+    - restart munin-node
