@@ -204,13 +204,4 @@
 
 ## /sbin/deny
 
-- name: "/sbin/deny script is present"
-  copy:
-    src: deny.sh
-    dest: /sbin/deny
-    mode: "0700"
-    owner: root
-    group: root
-    force: no
-
 - meta: flush_handlers

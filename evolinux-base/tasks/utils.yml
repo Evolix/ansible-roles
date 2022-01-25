@@ -11,3 +11,12 @@
     owner: root
     group: root
     mode: "0750"
+
+- name: "/sbin/deny script is present"
+  copy:
+    src: deny.sh
+    dest: /sbin/deny
+    mode: "0700"
+    owner: root
+    group: root
+    force: no
