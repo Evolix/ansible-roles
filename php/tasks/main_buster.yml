@@ -1,6 +1,6 @@
 ---
 
-- name: "Set variables (Debian 10 or later)"
+- name: "Set variables (Debian 10)"
   set_fact:
     php_cli_defaults_ini_file: /etc/php/7.3/cli/conf.d/z-evolinux-defaults.ini
     php_cli_custom_ini_file: /etc/php/7.3/cli/conf.d/zzz-evolinux-custom.ini
@@ -16,7 +16,7 @@
 
 # Packages
 
-- name: "Set package list (Debian 9 or later)"
+- name: "Set package list (Debian 10)"
   set_fact:
     php_stretch_packages:
       - php-cli
@@ -38,12 +38,12 @@
 - include: sury_pre.yml
   when: php_sury_enable | bool
 
-- name: "Install PHP packages (Debian 9 or later)"
+- name: "Install PHP packages (Debian 10)"
   apt:
     name: '{{ php_stretch_packages }}'
     state: present
 
-- name: "Install mod_php packages (Debian 9 or later)"
+- name: "Install mod_php packages (Debian 10)"
   apt:
     name:
       - libapache2-mod-php
@@ -51,7 +51,7 @@
     state: present
   when: php_apache_enable | bool
 
-- name: "Install PHP FPM packages (Debian 9 or later)"
+- name: "Install PHP FPM packages (Debian 10)"
   apt:
     name:
       - php-fpm
@@ -61,7 +61,7 @@
 
 # Configuration
 
-- name: Enforce permissions on PHP directory
+- name: "Enforce permissions on PHP directory (Debian 10)"
   file:
     dest: "{{ item }}"
     mode: "0755"
@@ -70,7 +70,7 @@
     - /etc/php/7.3
 
 - include: config_cli.yml
-- name: Enforce permissions on PHP cli directory
+- name: "Enforce permissions on PHP cli directory (Debian 10)"
   file:
     dest: /etc/php/7.3/cli
     mode: "0755"
@@ -78,7 +78,7 @@
 - include: config_fpm.yml
   when: php_fpm_enable | bool
 
-- name: Enforce permissions on PHP fpm directory
+- name: "Enforce permissions on PHP fpm directory (Debian 10)"
   file:
     dest: /etc/php/7.3/fpm
     mode: "0755"
@@ -87,7 +87,7 @@
 - include: config_apache.yml
   when: php_apache_enable | bool
 
-- name: Enforce permissions on PHP apache2 directory
+- name: "Enforce permissions on PHP apache2 directory (Debian 10)"
   file:
     dest: /etc/php/7.3/apache2
     mode: "0755"

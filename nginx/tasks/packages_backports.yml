@@ -1,6 +1,7 @@
 ---
 
-- include_role:
+- name: Backports repository is configured
+  include_role:
     name: evolix/apt
     tasks_from: backports.yml
   tags:
@@ -18,7 +19,7 @@
     - nginx
     - packages
 
-- name: update apt
+- name: APT cache is updated
   apt:
     update_cache: yes
   when: nginx_apt_preferences is changed

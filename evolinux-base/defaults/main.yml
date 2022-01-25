@@ -89,6 +89,7 @@ evolinux_packages_invalid_mta: True
 evolinux_packages_delete_nfs: True
 evolinux_packages_listchanges: True
 evolinux_packages_logcheck_recipient: False
+evolinux_packages_delete_aptlistchanges: True
 
 # system
 
@@ -164,8 +165,10 @@ evolinux_logs_include: True
 
 evolinux_logs_logrotate_confs: True
 evolinux_logs_default_rotate: True
+evolinux_logs_default_dateext : True
 evolinux_logs_disable_logrotate_rsyslog: True
 evolinux_logs_rsyslog_conf: True
+evolinux_logrotate_dateformat: "-%Y%m%d%H"
 
 # default www
 
@@ -206,7 +209,6 @@ evolinux_fail2ban_include: False
 # Evocheck
 
 evolinux_evocheck_include: True
-evolinux_evocheck_force_install: "local"
 
 # Listupgrade
 
@@ -218,3 +220,6 @@ evolinux_generateldif_include: True
 
 # Cron check_hpraid
 evolinux_cron_checkhpraid_frequency: daily
+
+# Motd
+evolinux_motd_include: True

@@ -13,14 +13,3 @@
     allow_unauthenticated: yes
   tags:
     - evomaintenance
-
-- name: Configuration is installed
-  template:
-    src: evomaintenance.j2
-    dest: /etc/evomaintenance.cf
-    owner: root
-    group: root
-    mode: "0600"
-    force: "{{ evomaintenance_force_config | bool }}"
-  tags:
-    - evomaintenance

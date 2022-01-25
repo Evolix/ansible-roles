@@ -7,6 +7,18 @@
   tags:
     - etc-git
 
+- include_role:
+    name: evolix/remount-usr
+
+- name: "evocommit script is installed"
+  copy:
+    src: evocommit
+    dest: /usr/local/bin/evocommit
+    mode: "0755"
+    force: yes
+  tags:
+    - etc-git
+
 - include: repository.yml
   vars:
     repository_path: "/etc"
@@ -32,6 +44,24 @@
     - _usr_share_scripts.stat.isdir
     - ansible_distribution_major_version is version('10', '>=')
 
+- name: "etc-git-optimize script is installed"
+  copy:
+    src: etc-git-optimize
+    dest: /usr/share/scripts/etc-git-optimize
+    mode: "0755"
+    force: yes
+  tags:
+    - etc-git
+
+- name: "etc-git-status script is installed"
+  copy:
+    src: etc-git-status
+    dest: /usr/share/scripts/etc-git-status
+    mode: "0755"
+    force: yes
+  tags:
+    - etc-git
+
 - name: Check if cron is installed
   shell: "set -o pipefail && dpkg -l cron 2>/dev/null | grep -q -E '^(i|h)i'"
   args:
@@ -41,29 +71,44 @@
   check_mode: no
   register: is_cron_installed
 
-- name: Optimize script is installed in monthly crontab
-  copy:
-    src: optimize-etc-git
-    dest: /etc/cron.monthly/optimize-etc-git
-    mode: "0750"
-    force: no
+- block:
+  - name: Legacy cron jobs for /etc/.git status are absent 
+    file:
+      dest: "{{ item }}"
+      state: absent
+    loop:
+      - /etc/cron.monthly/optimize-etc-git
+      - /etc/cron.d/etc-git-status
+
+  - name: Cron job for monthly git optimization
+    cron:
+      name: "Monthly optimization"
+      cron_file: etc-git
+      special_time: "monthly"
+      user: root
+      job: "/usr/share/scripts/etc-git-optimize"
+
+  - name: Cron job for hourly git status
+    cron:
+      name: "Hourly warning for unclean Git repository if nobody is connected"
+      cron_file: etc-git
+      special_time: "hourly"
+      user: root
+      job: "who > /dev/null || /usr/share/scripts/etc-git-status"
+      state: "{{ etc_git_monitor_status | bool | ternary('present','absent') }}"
+
+  - name: Cron job for daily git status
+    cron:
+      name: "Daily warning for unclean Git repository"
+      cron_file: etc-git
+      user: root
+      job: "/usr/share/scripts/etc-git-status"
+      minute: "21"
+      hour: "21"
+      weekday: "*"
+      day: "*"
+      month: "*"
+      state: "{{ etc_git_monitor_status | bool | ternary('present','absent') }}"
   when: is_cron_installed.rc == 0
-  tags:
-    - etc-git
-
-- name: Cron job for /etc/.git status is installed
-  template:
-    src: etc-git-status.j2
-    dest: /etc/cron.d/etc-git-status
-    mode: "0644"
-  when: is_cron_installed.rc == 0 and etc_git_monitor_status
-  tags:
-    - etc-git
-
-- name: Cron job for /etc/.git status is removed
-  file:
-    dest: /etc/cron.d/etc-git-status
-    state: absent
-  when: is_cron_installed.rc == 0 and not etc_git_monitor_status
   tags:
     - etc-git

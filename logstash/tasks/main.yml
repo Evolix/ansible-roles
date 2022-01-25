@@ -88,7 +88,7 @@
     owner: logstash
     group: logstash
     mode: "0640"
-    force: yes
+    force: "{{ logstash_config_force | bool }}"
   loop: "{{ query('first_found', templates) }}"
   vars:
     templates:

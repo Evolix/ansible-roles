@@ -5,7 +5,7 @@
   when: kvm_install_drbd
 
 ## TODO: check why it's disabled
-#- include: ssh.yml
+- include: ssh.yml
 
 - include: packages.yml
 

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -u
+
+repositories="/etc /etc/bind/ /usr/share/scripts"
+
+for repository in ${repositories}; do
+    if [ -d "${repository}/.git" ]; then
+        git --git-dir="${repository}/.git" gc --quiet
+    fi
+done

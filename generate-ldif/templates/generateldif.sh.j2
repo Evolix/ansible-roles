@@ -31,17 +31,30 @@ computerKernel=$(uname -r)
 HardwareSerial=$(dmidecode -s system-serial-number | grep -v '^#')
 
 type="baremetal"
-lscpu | grep -q KVM && type="kvm"
+lscpu | grep "Hypervisor vendor:" | grep -q KVM && type="kvm"
+lscpu | grep "Hypervisor vendor:" | grep -q VMware && type="vmware"
 lscpu | grep -q Oracle && type="virtualbox"
 
 if [ "$type" = "kvm" ]; then
+    ComputerType="VM"
     HardwareMark="KVM"
     HardwareModel="Virtual Machine"
 
     cpuMark=$(lscpu | grep Vendor | tr -s '\t' ' ' | cut -d' ' -f3)
     cpuModel="Virtual $(lscpu | grep "Model name" | tr -s '\t' ' ' | cut -d' ' -f3-), $(nproc) vCPU"
     cpuFreq="$(lscpu | grep "CPU MHz" | tr -s '\t' ' ' | cut -d' ' -f3-)MHz"
+
+elif [ "$type" = "vmware" ]; then
+    ComputerType="VM"
+    HardwareMark="VMWare"
+    HardwareModel="Virtual Machine"
+
+    cpuMark=$(lscpu | grep Vendor | tr -s '\t' ' ' | cut -d' ' -f3)
+    cpuModel="Virtual $(lscpu | grep "Model name" | tr -s '\t' ' ' | cut -d' ' -f3-), $(nproc) vCPU"
+    cpuFreq="$(lscpu | grep "CPU MHz" | tr -s '\t' ' ' | cut -d' ' -f3-)MHz"
+
 elif [ "$type" = "virtualbox" ]; then
+    ComputerType="VM"
     HardwareMark="VirtualBox"
     HardwareModel="Virtual Machine"
 
@@ -49,6 +62,7 @@ elif [ "$type" = "virtualbox" ]; then
     cpuModel="Virtual $(lscpu | grep "Model name" | tr -s '\t' ' ' | cut -d' ' -f3-), $(nproc) vCPU"
     cpuFreq="$(lscpu | grep "CPU MHz" | tr -s '\t' ' ' | cut -d' ' -f3-)MHz"
 else
+    ComputerType="Baremetal"
     HardwareModel=$(dmidecode -s system-product-name | grep -v '^#')
 
     cpuMark=$(dmidecode -s processor-manufacturer | grep -v '^#' | head -1)
@@ -115,6 +129,7 @@ NagiosEnabled: ${NagiosEnabled}
 NagiosComments: ${monitoringType},${monitoringMode},${monitoringTimeout}
 HardwareSerial: ${HardwareSerial}
 clientNumber: ${clientNumber}
+ComputerType: ${ComputerType}
 EOT
 
 # CPU
@@ -170,6 +185,19 @@ HardwareSize: ${sdaSize}
 HardwareType: disk
 HardwareModel: ${sdaModel}
 HardwarePartitioncount: 1
+NagiosEnabled: TRUE
+EOT
+fi
+
+# raid hardware
+if [ -n "${raidModel}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: HardwareName=raid_card,${computer_dn}
+objectClass: EvoHardware
+HardwareName: raid_card
+HardwareType: disk
+HardwareModel: ${raidModel}
 NagiosEnabled: TRUE
 EOT
 fi
@@ -570,9 +598,26 @@ objectClass: EvoService
 ServiceName: postgresql
 ipServicePort: 5432
 ServiceType: database
-ServiceVersion: PostgreSQL ${elasticsearch_version}
+ServiceVersion: PostgreSQL ${postgresql_version}
 EOT
 fi
+
+# mdadm
+if is_pkg_installed mdadm; then
+    mdadm_version=$(get_pkg_version mdadm)
+fi
+if [ -n "${mdadm_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=mdadm,${computer_dn}
+NagiosEnabled: TRUE
+objectClass: EvoService
+ServiceName: mdadm
+ServiceType: raid
+ServiceVersion: mdadm ${mdadm_version}
+EOT
+fi
+
 
 # test if we have a stdout
 if [ -t 1 ]; then

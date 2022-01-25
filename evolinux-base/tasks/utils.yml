@@ -1,0 +1,13 @@
+---
+
+- include_role:
+    name: evolix/remount-usr
+
+- name: backup-server-state script is present
+  copy:
+    src: "backup-server-state.sh"
+    dest: /usr/local/sbin/backup-server-state
+    force: True
+    owner: root
+    group: root
+    mode: "0750"

@@ -1,5 +1,8 @@
 ---
 
+- set_fact:
+    minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | bool | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
+
 - name: Is minifirewall installed?
   stat:
     path: /etc/default/minifirewall

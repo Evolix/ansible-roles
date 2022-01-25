@@ -1,0 +1,15 @@
+---
+
+- name: Populate the .my.cnf of root with default user
+  ini_file:
+    dest: /root/.my.cnf
+    mode: "0600"
+    section: client
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+    create: yes
+  loop:
+    - { option: 'user',     value: 'root' }
+    - { option: 'socket',   value: '/run/mysqld/mysqld.sock' }
+  tags:
+    - mysql

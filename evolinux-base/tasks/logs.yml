@@ -30,11 +30,34 @@
     dest: /etc/logrotate.d/zsyslog
   when: evolinux_logs_logrotate_confs | bool
 
-- name: Configure logrotate.conf
+- name: Configure logrotate.conf default rotate value
   replace:
     dest: /etc/logrotate.conf
     regexp: "rotate [0-9]+"
     replace: "rotate 12"
   when: evolinux_logs_default_rotate | bool
+
+- name: Enable logrotate.conf dateext option
+  lineinfile:
+    dest: /etc/logrotate.conf
+    line: "dateext"
+    regexp: "^#?\\s*dateext"
+  when: evolinux_logs_default_dateext | bool
+
+- name: Enable logrotate.conf dateformat option
+  lineinfile:
+    dest: /etc/logrotate.conf
+    line: "dateformat {{ evolinux_logrotate_dateformat | mandatory }}"
+    regexp: "^#?\\s*dateformat.*"
+    insertafter: 'dateext'
+  when: evolinux_logs_default_dateext | bool
+
+- name: Disable logrotate.conf dateyesterday option
+  lineinfile:
+    dest: /etc/logrotate.conf
+    line: "# dateyesterday"
+    regexp: "^\\s*dateyesterday"
+    insertafter: 'dateext'
+  when: evolinux_logs_default_dateext | bool
 
 - meta: flush_handlers

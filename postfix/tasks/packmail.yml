@@ -38,17 +38,17 @@
     dest: "/etc/postfix/{{ item }}"
     force: no
   loop:
-  - virtual
-  - client.access
-  - client.access_local
-  - header_kill
-  - header_kill_local
-  - recipient.access
-  - recipient.access_local
-  - sa-blacklist.access
-  - sender.access
-  - sender.access_local
-  - spamd.cidr
+    - virtual
+    - client.access
+    - client.access_local
+    - header_kill
+    - header_kill_local
+    - recipient.access
+    - recipient.access_local
+    - sa-blacklist.access
+    - sender.access
+    - sender.access_local
+    - spamd.cidr
   register: postfix_copy_filter
   tags:
   - postfix
@@ -56,17 +56,17 @@
 - name: postmap filter files
   command: "postmap /etc/postfix/{{ item }}"
   loop:
-  - virtual
-  - client.access
-  - client.access_local
-  - header_kill
-  - header_kill_local
-  - recipient.access
-  - recipient.access_local
-  - sa-blacklist.access
-  - sender.access
-  - sender.access_local
-  - spamd.cidr
+    - virtual
+    - client.access
+    - client.access_local
+    - header_kill
+    - header_kill_local
+    - recipient.access
+    - recipient.access_local
+    - sa-blacklist.access
+    - sender.access
+    - sender.access_local
+    - spamd.cidr
   when: postfix_copy_filter is changed
   tags:
   - postfix

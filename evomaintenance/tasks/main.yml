@@ -1,14 +1,5 @@
 ---
 
-- set_fact:
-    minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | bool | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
-
-- assert:
-    that:
-      - evomaintenance_api_endpoint is not none
-      - evomaintenance_api_key is not none
-    msg: evomaintenance api variables must be set
-
 - include: install_package_debian.yml
   when:
     - not (evomaintenance_install_vendor | bool)
@@ -18,6 +9,8 @@
   when:
     - evomaintenance_install_vendor | bool
     - ansible_distribution == "Debian"
+
+- include: config.yml
 
 - include: minifirewall.yml
   when:

@@ -8,8 +8,8 @@
     state: present
     reload: yes
   loop:
-  - { name: kernel.panic_on_oops, value: 1 }
-  - { name: kernel.panic, value: 60 }
+    - { name: kernel.panic_on_oops, value: 1 }
+    - { name: kernel.panic, value: 60 }
   when: evolinux_kernel_reboot_after_panic | bool
 
 - name: Don't reboot after panic
@@ -19,8 +19,8 @@
     state: absent
     reload: yes
   loop:
-  - kernel.panic_on_oops
-  - kernel.panic
+    - kernel.panic_on_oops
+    - kernel.panic
   when: not evolinux_kernel_reboot_after_panic | bool
 
 - name: Disable net.ipv4.tcp_timestamps

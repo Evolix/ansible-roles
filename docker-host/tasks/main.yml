@@ -36,23 +36,25 @@
     owner: root
     group: root
 
-- name: Install docker and python-docker
+- name: Install Docker
   apt:
     name:
       - docker-ce
+      - docker-ce-cli
+      - containerd.io
     update_cache: yes
 
 - name: python-docker is installed
   apt:
     name: python-docker
     state: present
-  when: ansible_distribution_major_version is version('10', '<=')
+  when: ansible_python_version is version('3', '<')
 
 - name: python3-docker is installed
   apt:
     name: python3-docker
     state: present
-  when: ansible_distribution_major_version is version('10', '>')
+  when: ansible_python_version is version('3', '>=')
 
 - name: Copy Docker daemon configuration file
   template:

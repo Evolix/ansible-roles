@@ -15,11 +15,11 @@
     src: '/usr/share/munin/plugins/{{item}}'
     dest: '/etc/munin/plugins/{{item}}'
   loop:
-  - postgres_bgwriter
-  - postgres_checkpoints
-  - postgres_connections_db
-  - postgres_users
-  - postgres_xlog
+    - postgres_bgwriter
+    - postgres_checkpoints
+    - postgres_connections_db
+    - postgres_users
+    - postgres_xlog
   notify: restart munin-node
   when: etc_munin_plugins.stat.exists and usr_share_munin_plugins.stat.exists
 

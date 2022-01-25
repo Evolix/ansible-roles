@@ -1,4 +1,4 @@
 ---
-evocheck_force_install: False
+
 evocheck_update_crontab: True
 evocheck_bin_dir: /usr/share/scripts

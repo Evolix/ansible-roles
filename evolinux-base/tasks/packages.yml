@@ -16,6 +16,7 @@
       - ssl-cert
       - ca-certificates
       - rename
+      - dmidecode
   when: evolinux_packages_system | bool
 
 - name: Install/Update diagnostic tools
@@ -34,6 +35,7 @@
       - telnet
       - traceroute
       - man
+      - molly-guard
   when: evolinux_packages_diagnostic | bool
 
 - name: Install/Update hardware tools
@@ -143,5 +145,6 @@
   when:
     - ansible_distribution == "Debian"
     - ansible_distribution_major_version is version('9', '>=')
+    - evolinux_packages_delete_aptlistchanges
 
 - meta: flush_handlers

@@ -68,8 +68,7 @@
     version: '{{ item.version }}'
     accept_hostkey: yes
     force: yes
-  loop:
-  - "{{ rbenv_plugins }}"
+  loop: "{{ rbenv_plugins }}"
   become_user: "{{ username }}"
   become: yes
   tags:

@@ -12,9 +12,9 @@
     group: "{{ nextcloud_user }}"
     home: "{{ nextcloud_home | mandatory }}"
     shell: '/bin/bash'
-    createhome: True
+    create_home: True
     state: present
-    mode: "0755"
+#    mode: "0755"
   tags:
   - nextcloud
 

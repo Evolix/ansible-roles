@@ -1,5 +1,6 @@
 ---
 # TODO: trouver comment faire une copie initiale de /etc/fstab
+#   - piste : paramètre "backup" du module mount https://docs.ansible.com/ansible/latest/collections/ansible/posix/mount_module.html
 # TODO: try to use the custom mount_uuid module for a different approach
 
 - name: Fetch fstab content

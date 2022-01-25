@@ -15,12 +15,13 @@ find "${CRT_DIR}" \
     -maxdepth 1 \
     -mindepth 1 \
     -type d \
-    ! -path "*accounts" \
-    ! -path "*archive" \
-    ! -path "*csr" \
-    ! -path "*hooks" \
-    ! -path "*keys" \
-    ! -path "*live" \
-    ! -path "*renewal" \
+    ! -path "${CRT_DIR}/accounts" \
+    ! -path "${CRT_DIR}/archive" \
+    ! -path "${CRT_DIR}/csr" \
+    ! -path "${CRT_DIR}/hooks" \
+    ! -path "${CRT_DIR}/keys" \
+    ! -path "${CRT_DIR}/live" \
+    ! -path "${CRT_DIR}/renewal" \
+    ! -path "${CRT_DIR}/renewal-hooks" \
     -printf "%f\n" \
         | xargs --max-args=1 --no-run-if-empty evoacme

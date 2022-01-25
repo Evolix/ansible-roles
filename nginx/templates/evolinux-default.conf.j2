@@ -49,6 +49,8 @@ server {
         stub_status on;
         access_log off;
     }
+
+    include /etc/nginx/snippets/evolinux_server_custom;
 }
 
 server {

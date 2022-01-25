@@ -1,5 +1,0 @@
----
-- name: install evocheck from package
-  apt:
-    name: evocheck
-    state: present

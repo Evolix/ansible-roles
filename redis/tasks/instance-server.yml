@@ -87,7 +87,7 @@
 - name: "Instance '{{ redis_instance_name }}' data/log directories are present"
   file:
     dest: "{{ item }}"
-    mode: "0750"
+    mode: "0751"
     owner: "redis-{{ redis_instance_name }}"
     group: "redis-{{ redis_instance_name }}"
     follow: yes
@@ -97,6 +97,17 @@
     - "{{ redis_log_dir }}"
   tags:
     - redis
+
+- name: "Instance '{{ redis_instance_name }}' log file are present"
+  file:
+    path: "{{ redis_log_dir }}/redis-server.log"
+    mode: "660"
+    owner: "redis-{{ redis_instance_name }}"
+    group: "adm"
+    state: touch
+  tags:
+    - redis
+
 
 - name: "Instance '{{ redis_instance_name }}' configuration file is present"
   template:

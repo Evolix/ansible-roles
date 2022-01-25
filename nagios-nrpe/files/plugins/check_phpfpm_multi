@@ -33,7 +33,11 @@ for pool_file in $POOL_FILES; do
   pool_name=$(grep "^\[" "$pool_file" | sed -E 's/^\[(.*)\].*$/\1/g')
   pool_status_path=$(grep -E "^pm.status_path\s?=" "$pool_file" |  sed -E "s/.*=\s?'?([^']*)'?\s?$/\1/g")
   pool_listen=$(grep -E "^listen\s?=" "$pool_file" |  sed -E 's/.*=\s?(.*)\s?$/\1/g')
-  
+  pool_max_children=$(grep -E "^pm.max_children" "$pool_file" | sed -E 's/.*=\s?(.*)\s?$/\1/g' )
+
+  pool_crit_procs=$(expr $pool_max_children \* 85 / 100)
+  pool_warn_procs=$(expr $pool_max_children \* 55 / 100)
+
   if [[ "$pool_status_path" == '' ]]; then
       nb_unchk=$((nb_unchk + 1))
       output="${output}UNCHK - ${pool_name} (missing pm.status_path definition)\n" 
@@ -47,7 +51,7 @@ for pool_file in $POOL_FILES; do
     target=(-H "$(echo "$pool_listen" | cut -d':' -f1)" -p "$(echo "$pool_listen" | cut -d':' -f2 )")
   fi
   
-  result=$(perl /usr/local/lib/nagios/plugins/check_phpfpm_status.pl "${target[@]}" -u "$pool_status_path")
+  result=$(perl /usr/local/lib/nagios/plugins/check_phpfpm_status.pl -t 5 "${target[@]}" -u "$pool_status_path" -c "$pool_crit_procs" -w "$pool_warn_procs" )
   ret="${?}"
   
   if [ "${ret}" -ge 2 ]; then
@@ -80,3 +84,4 @@ printf "%b" "${output}" | grep -E "OK"
 printf "%b" "${output}" | grep -E "^UNCHK"
 
 exit "${return}"
+

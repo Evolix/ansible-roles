@@ -6,19 +6,19 @@
       - debootstrap
       - xz-utils
 
-- name: python-lxc is installed
+- name: python-lxc is installed (Debian <= 10)
   apt:
     name: python-lxc
     state: present
-  when: ansible_distribution_major_version is version('10', '<=')
+  when: ansible_python_version is version('3', '<')
 
-- name: python3-lxc is installed
+- name: python3-lxc is installed (Debian >= 10)
   apt:
     name: python3-lxc
     state: present
-  when: ansible_distribution_major_version is version('10', '>')
+  when: ansible_python_version is version('3', '>=')
 
-- name: Install additional packages on Buster
+- name: Install additional packages (Debian >= 10)
   apt:
     name:
       - apparmor
@@ -42,6 +42,12 @@
   when:
     - lxc_unprivilegied_containers | bool
     - root_subuids.rc != 0
+
+- name: Check if /var has not mount options nodev or noexec
+  shell: findmnt | grep -E "/var[^/]" | grep -e nodev -e noexec
+  register: check_var
+  changed_when: false
+  failed_when: "check_var.rc == 0"
 
 - name: Create containers
   include: create-container.yml

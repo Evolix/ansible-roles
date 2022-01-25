@@ -4,51 +4,104 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 This project does not follow semantic versioning.
-The **major** part of the version is aligned with the stable version of Debian.
-The **minor** part changes with big changes (probably incompatible).
-The **patch** part changes incrementally at each release.
+The **major** part of the version is the year
+The **minor** part changes is the month
+The **patch** part changes is incremented if multiple releases happen the same month
 
 ## [Unreleased]
 
 ### Added
 
-* Preliminary support for Debian 11 « Bullseye »
-* apache: new variable for mpm mode (+ updated default config accordingly)
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [22.01] 2022-01-25
+
+### Added
+
+* Support for Debian 11 « Bullseye » (with possible remaining blind spots)
+* apache: new variable for MPM mode (+ updated default config accordingly)
+* apache: prevent accessing Git or "env" related files
 * certbot: add script for manual deploy hooks execution
+* docker-host: install additional dependencies
+* dovecot: switch to TLS 1.2+ and external DH params
+* etc-git: centralize cron jobs in dedicated crontab
+* etc-git: manage commits with an optimized shell script instead of many slow Ansible tasks
+* evolinux-base: add script backup-server-state
+* evolinux-base: install molly-guard by default
+* generate-ldif: detect RAID controller
+* generate-ldif: detect mdadm
 * listupgrade: crontab is configurable
+* logstash: logging to syslog is configurable (default: True)
 * mongodb: create munin plugins directory if missing
+* munin: systemd override to unprotect home directory
+* mysql: add evomariabackup 21.11
+* mysql: improve Bullseye compatibility
 * mysql: script "mysql_connections" to display a compact list of connections
+* mysql: script "mysql-queries-killer.sh" to kill MySQL queries
+* nagios-nrpe + evolinux-users: new check for ipmi
+* nagios-nrpe + evolinux-users: new check for RAID (soft + hard)
+* nagios-nrpe + evolinux-users: new checks for bkctld
+* nagios-nrpe: new check influxdb
+* openvpn: new role (beta)
 * redis: instance service for Debian 11
+* squid: add *.o.lencr.org to default whitelist
 
 ### Changed
 
-* Use python3 modules for Debian 11 and later
+* Change version pattern
+* Install python 2 or 3 libraries according to running python version
 * Remove embedded GPG keys only if legacy keyring is present
 * apt: remove workaround for Evolix public repositories with Debian 11
 * apt: use the new security repository for Bullseye
 * certbot: silence letsencrypt deprecation warnings
-* elasticsearch: 7.x by default
+* elasticsearch: elastic_stack_version = 7.x
+* evoacme: exclude renewal-hooks directory from cron
 * evoadmin-web: simpler PHP packages lists
-* evocheck: upstream release 21.07
+* evocheck: upstream release 21.10.4
 * evolinux-base: alert5 comes after the network
 * evolinux-base: force Debian version to buster for Evolix repository (temporary)
-* kibana: 7.x by default
+* evolinux-base: install freeipmi by default on dedicated hw
+* evolinux-base: logs are rotated with dateext by default
+* evolinux-base: split dpkg logrotate configuration
+* evolinux-users + nagios-nrpe: Add support for php-fpm80 in lxc
+* evomaintenance: extract a config.yml tasks file
+* evomaintenance: upstream release 22.01
+* filebeat/metricbeat: elastic_stack_version = 7.x
+* kibana: elastic_stack_version = 7.x
+* listupgrade: old-kernel-removal version 21.10
 * listupgrade: upstream release 21.06.3
-* mysql: mariadb-client-10.5 on Debian 11
-* mysql: use python3 with Debian 11 and later
+* logstash: elastic_stack_version = 7.x
+* mongodb: Allow to specify a mongodb version for buster & bullseye
+* mongodb: Deny the install on Debian 11 « Bullseye » when the version is unsupported
+* mongodb: Support version 5.0 (for buster)
+* mysql: use python3 and mariadb-client-10.5 with Debian 11 and later
+* nodejs: default to version 16 LTS
+* php: enforce Debian version with assert instead of fail
 * squid: improve default whitelist (more specific patterns)
 * squid: must be started in foreground mode for systemd
 * squid: remove obsolete variable on Squid 4
 
 ### Fixed
 
+* evolinux-base: fix alert5.service dependency syntax
 * certbot: sync_remote excludes itself
+* lxc-php: fix config for opensmtpd on bullseye containers
+* mysql : Create a default ~root/.my.cnf for compatibility reasons
+* nginx : fix variable name and debug to actually use nginx-light
+* packweb-apache : Support php 8.0
+* nagios-nrpe: Fix check_nfsserver for buster and bullseye
 
 ### Removed
 
+* evocheck: package install is not supported anymore
+* logstash: no more dependency on Java
 * php: remove php-gettext for 7.4
-
-### Security
 
 ## [10.6.0] 2021-06-28
 

@@ -1,9 +1,11 @@
 ---
 
-- name: Look for legacy apt keyring
-  stat:
-    path: /etc/apt/trusted.gpg
-  register: _trusted_gpg_keyring
+- fail:
+    msg: Not compatible with Debian 11 (Bullseye)
+  when:
+  - ansible_distribution_release == "bullseye" 
+  - mongodb_version is version_compare('5.0', '<=')
+
 
 - name: MongoDB embedded GPG key is absent
   apt_key:
@@ -14,8 +16,8 @@
 
 - name: Add MongoDB GPG key
   copy:
-    src: server-4.4.asc
-    dest: /etc/apt/trusted.gpg.d/mongodb-server-4.4.asc
+    src: "server-{{mongodb_version}}.asc"
+    dest: "/etc/apt/trusted.gpg.d/mongodb-server-{{mongodb_version}}.asc"
     force: yes
     mode: "0644"
     owner: root
@@ -23,9 +25,9 @@
 
 - name: enable APT sources list
   apt_repository:
-    repo: deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.4 main
+    repo: "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/{{mongodb_version}} main"
     state: present
-    filename: mongodb-org-4.4
+    filename: "mongodb-org-{{mongodb_version}}"
     update_cache: yes
 
 - name: Install packages
@@ -40,30 +42,39 @@
     name: mongod
     enabled: yes
     state: started
-  when: _mongodb_install_package.changed
+  when: _mongodb_install_package is changed
 
 - name: install dependency for monitoring
   apt:
-    name: python3-pymongo
+    name: python-pymongo
     state: present
 
 - name: Custom configuration
   template:
-    src: mongodb_bullseye.conf.j2
+    src: mongodb_buster.conf.j2
     dest: "/etc/mongod.conf"
     force: "{{ mongodb_force_config | bool | ternary('yes', 'no') }}"
   notify: restart mongod
 
 - name: Configure logrotate
   template:
-    src: logrotate_bullseye.j2
+    src: logrotate_buster.j2
     dest: /etc/logrotate.d/mongodb
     force: yes
     backup: no
 
-- name: Munin plugins local directory exists
+- include_role:
+    name: evolix/remount-usr
+
+- name: Create plugin directory
   file:
-    dest: /usr/local/share/munin/plugins/
+    name: /usr/local/share/munin/
+    state: directory
+    mode: "0755"
+
+- name: Create plugin directory
+  file:
+    name: /usr/local/share/munin/plugins/
     state: directory
     mode: "0755"
 
@@ -72,7 +83,7 @@
     src: "munin/{{ item }}"
     dest: '/usr/local/share/munin/plugins/{{ item }}'
     force: yes
-  with_items:
+  loop:
     - mongo_btree
     - mongo_collections
     - mongo_conn
@@ -88,7 +99,7 @@
     src: '/usr/local/share/munin/plugins/{{ item }}'
     dest: /etc/munin/plugins/{{ item }}
     state: link
-  with_items:
+  loop:
     - mongo_btree
     - mongo_collections
     - mongo_conn

@@ -30,13 +30,25 @@
     - packages
   when: broadcom_netextreme_search.rc == 0
 
+
+## Dedicated hardware
+- name: Install freepmi when it's dedicated hardware
+  apt:
+    name:
+      - libipc-run-perl
+      - freeipmi
+    state: present
+  tags:
+    - packages
+  when: ansible_virtualization_role == "host"
+
 ## RAID
 # Dell and others: MegaRAID SAS
 # HP gen <10: Hewlett-Packard Company Smart Array
 # HP gen >=10: Adaptec Smart Storage PQI
 - name: Detect if RAID is installed
-  shell: 
-    cmd: "set -o pipefail && lspci -q | grep -e 'RAID bus controller' -e 'Serial Attached SCSI controller'"
+  shell:
+    cmd: "lspci -q | grep -e 'RAID bus controller' -e 'Serial Attached SCSI controller'"
     executable: /bin/bash
   check_mode: no
   register: raidmodel
