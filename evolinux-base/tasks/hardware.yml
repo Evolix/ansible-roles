@@ -31,11 +31,11 @@
   when: broadcom_netextreme_search.rc == 0
 
 
-## Dedicated hardware 
+## Dedicated hardware
 - name: Install freepmi when it's dedicated hardware
   apt:
-    name: 
-      - libipc-run-perl 
+    name:
+      - libipc-run-perl
       - freeipmi
     state: present
   tags:
