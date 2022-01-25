@@ -110,6 +110,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * Add Elastic GPG key to kibana, filebeat, logstash, metricbeat roles
 * apache: new variable for mpm mode (+ updated default config accordingly)
 * evolinux-base: add default motd template
+* evolinux-base: configure top and htop to display the swap column
 * kvm-host: add migrate-vm script
 * mysql: variable to disable myadd script overwrite (default: True)
 * nodejs: update apt cache before installing the package

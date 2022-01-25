@@ -130,3 +130,7 @@
   include_role:
     name: evolix/generate-ldif
   when: evolinux_generateldif_include | bool
+
+- include: top.yml
+
+- include: htop.yml
