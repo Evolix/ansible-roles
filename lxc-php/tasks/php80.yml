@@ -5,6 +5,12 @@
     name: "{{ lxc_php_version }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt install -y wget apt-transport-https gnupg"
 
+- name: "{{ lxc_php_version }} - fix bullseye repository"
+  replace:
+    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/apt/sources.list"
+    regexp: 'bullseye/updates'
+    replace: 'bullseye-security'
+
 - name: "{{ lxc_php_version }} - Add sury repo"
   lineinfile:
     dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/apt/sources.list.d/sury.list"
