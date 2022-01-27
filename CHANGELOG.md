@@ -20,7 +20,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
-## [22.01.1] 2022-01-27
+## [22.01.2] 2022-01-27
 
 ### Changed
 
