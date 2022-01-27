@@ -5,6 +5,12 @@
     name: "{{ lxc_php_version }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-zip composer libphp-phpmailer"
 
+- name: "{{ lxc_php_version }} - fix bullseye repository"
+  replace:
+    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/apt/sources.list"
+    regexp: 'bullseye/updates'
+    replace: 'bullseye-security'
+
 - name: "{{ lxc_php_version }} - Copy evolinux PHP configuration"
   template:
     src: z-evolinux-defaults.ini.j2
