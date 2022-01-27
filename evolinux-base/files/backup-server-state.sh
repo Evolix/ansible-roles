@@ -30,38 +30,40 @@ ${PROGNAME} is making backup copies of information related to the state of the s
 Usage: ${PROGNAME} --backup-dir=/path/to/backup/directory [OPTIONS]
 
 Options
- -d, --backup-dir   path to the directory where the backup will be stored
-     --etc          backup copy of /etc
-     --no-etc       no backup copy of /etc (default)
-     --dpkg         backup copy of /var/lib/dpkg
-     --no-dpkg      no backup copy of /var/lib/dpkg (default)
-     --apt          backup copy of apt extended states (default)
-     --no-apt       no backup copy of apt extended states
-     --packages     backup copy of dpkg selections (default)
-     --no-packages  no backup copy of dpkg selections
-     --processes    backup copy of process list (default)
-     --no-processes no backup copy of process list
-     --uptime       backup of uptime value (default)
-     --no-uptime    no backup of uptime value
-     --netstat      backup copy of netstat (default)
-     --no-netstat   no backup copy of netstat
-     --netcfg       backup copy of network configuration (default)
-     --no-netcfg    no backup copy of network configuration
-     --iptables     backup copy of iptables (default)
-     --no-iptables  no backup copy of iptables
-     --sysctl       backup copy of sysctl values (default)
-     --no-sysctl    no backup copy of sysctl values
-     --virsh        backup copy of virsh list (default)
-     --no-virsh     no backup copy of virsh list
-     --lxc          backup copy of lxc list (default)
-     --no-lxc       no backup copy of lxc list
-     --mount        backup copy of mount points (default)
-     --no-mount     no backup copy of mount points
-     --df           backup copy of disk usage (default)
-     --no-df        no backup copy of disk usage
- -v, --verbose      print details about backup steps
- -V, --version      print version and exit
- -h, --help         print this message and exit
+ -d, --backup-dir     path to the directory where the backup will be stored
+     --etc            backup copy of /etc
+     --no-etc         no backup copy of /etc (default)
+     --dpkg           backup copy of /var/lib/dpkg
+     --no-dpkg        no backup copy of /var/lib/dpkg (default)
+     --apt-states     backup copy of apt extended states (default)
+     --no-apt-states  no backup copy of apt extended states
+     --apt-config     backup copy of apt configuration (default)
+     --no-apt-config  no backup copy of apt configuration
+     --packages       backup copy of dpkg selections (default)
+     --no-packages    no backup copy of dpkg selections
+     --processes      backup copy of process list (default)
+     --no-processes   no backup copy of process list
+     --uptime         backup of uptime value (default)
+     --no-uptime      no backup of uptime value
+     --netstat        backup copy of netstat (default)
+     --no-netstat     no backup copy of netstat
+     --netcfg         backup copy of network configuration (default)
+     --no-netcfg      no backup copy of network configuration
+     --iptables       backup copy of iptables (default)
+     --no-iptables    no backup copy of iptables
+     --sysctl         backup copy of sysctl values (default)
+     --no-sysctl      no backup copy of sysctl values
+     --virsh          backup copy of virsh list (default)
+     --no-virsh       no backup copy of virsh list
+     --lxc            backup copy of lxc list (default)
+     --no-lxc         no backup copy of lxc list
+     --mount          backup copy of mount points (default)
+     --no-mount       no backup copy of mount points
+     --df             backup copy of disk usage (default)
+     --no-df          no backup copy of disk usage
+ -v, --verbose        print details about backup steps
+ -V, --version        print version and exit
+ -h, --help           print this message and exit
 END
 }
 debug() {
@@ -88,34 +90,10 @@ create_backup_dir() {
 backup_etc() {
     debug "Backup /etc"
 
-    last_result=$(rsync -ah --itemize-changes --exclude=.git /etc "${backup_dir}/")
-    last_rc=$?
+    rsync_bin=$(command -v rsync)
 
-    if [ ${last_rc} -eq 0 ]; then
-        debug "* rsync OK"
-    else
-        debug "* rsync ERROR :"
-        debug "${last_result}"
-        rc=10
-    fi
-}
-
-backup_apt() {
-    if [ -f /var/lib/apt/extended_states ]; then
-        debug "Backup APT states"
-
-        last_result=$(mkdir -p "${backup_dir}/var/lib/apt" && chmod -R 755 "${backup_dir}/var/lib/apt")
-        last_rc=$?
-
-        if [ ${last_rc} -eq 0 ]; then
-            debug "* mkdir/chmod OK"
-        else
-            debug "* mkdir/chmod ERROR"
-            debug "${last_result}"
-            rc=10
-        fi
-
-        last_result=$(rsync -ah /var/lib/apt/extended_states "${backup_dir}/var/lib/apt/")
+    if [ -n "${rsync_bin}" ]; then
+        last_result=$(${rsync_bin} -ah --itemize-changes --exclude=.git /etc "${backup_dir}/")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -125,13 +103,86 @@ backup_apt() {
             debug "${last_result}"
             rc=10
         fi
+    else
+        debug "* rsync not found"
+        last_result=$(cp -r /etc "${backup_dir}/ && rm -rf ${backup_dir}/etc/.git")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* cp OK"
+        else
+            debug "* cp ERROR :"
+            debug "${last_result}"
+            rc=10
+        fi
     fi
 }
 
-backup_dpkg() {
-    debug "Backup DPkg"
+backup_apt_states() {
+    apt_dir="/"
+    apt_dir_state="var/lib/apt"
+    apt_dir_state_extended_states="extended_states"
 
-    last_result=$(mkdir -p "${backup_dir}/var/lib" && chmod -R 755 "${backup_dir}/var/lib")
+    apt_config_bin=$(command -v apt-config)
+
+    if [ -n "${apt_config_bin}" ]; then
+        eval "$(${apt_config_bin} shell apt_dir Dir)"
+        eval "$(${apt_config_bin} shell apt_dir_state Dir::State)"
+        eval "$(${apt_config_bin} shell apt_dir_state_extended_states Dir::State::extended_states)"
+    fi
+    extended_states="${apt_dir}/${apt_dir_state}/${apt_dir_state_extended_states}"
+
+    if [ -f "${extended_states}" ]; then
+        debug "Backup APT states"
+
+        last_result=$(cp -r "${extended_states}" "${backup_dir}/apt-extended-states.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* cp OK"
+        else
+            debug "* cp ERROR :"
+            debug "${last_result}"
+            rc=10
+        fi
+    fi
+}
+
+backup_apt_config() {
+    debug "Backup APT config"
+
+    apt_config_bin=$(command -v apt-config)
+
+    if [ -n "${apt_config_bin}" ]; then
+        last_result=$(${apt_config_bin} dump > "${backup_dir}/apt-config.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* apt-config OK"
+        else
+            debug "* apt-config ERROR"
+            debug "${last_result}"
+            rc=10
+        fi
+    else
+        debug "* apt-config is not found"
+    fi
+}
+
+backup_dpkg_full() {
+    debug "Backup DPkg full state"
+
+    dir_state_status="/var/lib/dpkg/status"
+
+    apt_config_bin=$(command -v apt-config)
+
+    if [ -n "${apt_config_bin}" ]; then
+        eval "$(${apt_config_bin} shell dir_state_status Dir::State::status)"
+    fi
+
+    dpkg_dir=$(dirname "${dir_state_status}")
+
+    last_result=$(mkdir -p "${backup_dir}${dpkg_dir}" && chmod -R 755 "${backup_dir}${dpkg_dir}")
     last_rc=$?
 
     if [ ${last_rc} -eq 0 ]; then
@@ -142,13 +193,53 @@ backup_dpkg() {
         rc=10
     fi
 
-    last_result=$(rsync -ah --itemize-changes /var/lib/dpkg "${backup_dir}/var/lib/")
+    rsync_bin=$(command -v rsync)
+
+    if [ -n "${rsync_bin}" ]; then
+        last_result=$(${rsync_bin} -ah --itemize-changes --exclude='*-old' ${dpkg_dir}/ "${backup_dir}${dpkg_dir}/")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* rsync OK"
+        else
+            debug "* rsync ERROR :"
+            debug "${last_result}"
+            rc=10
+        fi
+    else
+        debug "* rsync not found"
+
+        last_result=$(cp -r "${dpkg_dir}/*" "${backup_dir}${dpkg_dir}/" && rm -rf "${backup_dir}${dpkg_dir}/*-old")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* cp OK"
+        else
+            debug "* cp ERROR :"
+            debug "${last_result}"
+            rc=10
+        fi
+    fi
+}
+
+backup_dpkg_status() {
+    debug "Backup DPkg status"
+
+    dir_state_status="/var/lib/dpkg/status"
+
+    apt_config_bin=$(command -v apt-config)
+
+    if [ -n "${apt_config_bin}" ]; then
+        eval "$(${apt_config_bin} shell dir_state_status Dir::State::status)"
+    fi
+
+    last_result=$(cp "${dir_state_status}" "${backup_dir}/dpkg-status.txt")
     last_rc=$?
 
     if [ ${last_rc} -eq 0 ]; then
-        debug "* rsync OK"
+        debug "* cp OK"
     else
-        debug "* rsync ERROR"
+        debug "* cp ERROR :"
         debug "${last_result}"
         rc=10
     fi
@@ -157,15 +248,21 @@ backup_dpkg() {
 backup_packages() {
     debug "Backup list of installed package"
 
-    last_result=$(dpkg --get-selections "*" > "${backup_dir}/current_packages.txt")
-    last_rc=$?
+    dpkg_bin=$(command -v dpkg)
 
-    if [ ${last_rc} -eq 0 ]; then
-        debug "* dpkg OK"
+    if [ -n "${dpkg_bin}" ]; then
+        last_result=$(${dpkg_bin} --get-selections "*" > "${backup_dir}/current_packages.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* dpkg OK"
+        else
+            debug "* dpkg ERROR :"
+            debug "${last_result}"
+            rc=10
+        fi
     else
-        debug "* dpkg ERROR :"
-        debug "${last_result}"
-        rc=10
+        debug "* dpkg not found"
     fi
 }
 
@@ -200,8 +297,8 @@ backup_processes() {
 
     pstree_bin=$(command -v pstree)
 
-    if [ -z "${pstree_bin}" ]; then
-        last_result=$(pstree -pan > "${backup_dir}/pstree.txt")
+    if [ -n "${pstree_bin}" ]; then
+        last_result=$(${pstree_bin} -pan > "${backup_dir}/pstree.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -218,7 +315,8 @@ backup_netstat() {
     debug "Backup network status"
 
     ss_bin=$(command -v ss)
-    if [ -z "${ss_bin}" ]; then
+
+    if [ -n "${ss_bin}" ]; then
         last_result=$(${ss_bin} -tanpul > "${backup_dir}/netstat-ss.txt")
         last_rc=$?
 
@@ -229,10 +327,13 @@ backup_netstat() {
             debug "${last_result}"
             rc=10
         fi
+    else
+        debug "* ss not found"
     fi
 
     netstat_bin=$(command -v netstat)
-    if [ -z "${netstat_bin}" ]; then
+
+    if [ -n "${netstat_bin}" ]; then
         last_result=$(netstat -laputen > "${backup_dir}/netstat-legacy.txt")
         last_rc=$?
 
@@ -243,62 +344,116 @@ backup_netstat() {
             debug "${last_result}"
             rc=10
         fi
+    else
+        debug "* netstat not found"
     fi
 }
 
 backup_netcfg() {
     debug "Backup network configuration"
 
-    last_result=$(ip address show > "${backup_dir}/ip-address.txt")
-    last_rc=$?
+    ip_bin=$(command -v ip)
 
-    if [ ${last_rc} -eq 0 ]; then
-        debug "* ip address OK"
+    if [ -n "${ip_bin}" ]; then
+        last_result=$(${ip_bin} address show > "${backup_dir}/ip-address.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* ip address OK"
+        else
+            debug "* ip address ERROR"
+            debug "${last_result}"
+            rc=10
+        fi
+
+        last_result=$(${ip_bin} route show > "${backup_dir}/ip-route.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* ip route OK"
+        else
+            debug "* ip route ERROR"
+            debug "${last_result}"
+            rc=10
+        fi
     else
-        debug "* ip address ERROR"
-        debug "${last_result}"
-        rc=10
-    fi
+        debug "* ip not found"
 
-    last_result=$(ip route show > "${backup_dir}/ip-route.txt")
-    last_rc=$?
+        ifconfig_bin=$(command -v ifconfig)
 
-    if [ ${last_rc} -eq 0 ]; then
-        debug "* ip route OK"
-    else
-        debug "* ip route ERROR"
-        debug "${last_result}"
-        rc=10
+        if [ -n "${ifconfig_bin}" ]; then
+            last_result=$(${ifconfig_bin} > "${backup_dir}/ifconfig.txt")
+            last_rc=$?
+
+            if [ ${last_rc} -eq 0 ]; then
+                debug "* ifconfig OK"
+            else
+                debug "* ifconfig ERROR"
+                debug "${last_result}"
+                rc=10
+            fi
+        else
+            debug "* ifconfig not found"
+        fi
     fi
 }
 
 backup_iptables() {
     debug "Backup iptables"
 
-    last_result=$({ /sbin/iptables -L -n -v; /sbin/iptables -t filter -L -n -v; } > "${backup_dir}/iptables.txt")
-    last_rc=$?
+    iptables_bin=$(command -v iptables)
 
-    if [ ${last_rc} -eq 0 ]; then
-        debug "* iptables OK"
+    if [ -n "${iptables_bin}" ]; then
+        last_result=$({ ${iptables_bin} -L -n -v; ${iptables_bin} -t filter -L -n -v; } > "${backup_dir}/iptables.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* iptables OK"
+        else
+            debug "* iptables ERROR"
+            debug "${last_result}"
+            rc=10
+        fi
     else
-        debug "* iptables ERROR"
-        debug "${last_result}"
-        rc=10
+        debug "* iptables not found"
+    fi
+
+    iptables_save_bin=$(command -v iptables-save)
+
+    if [ -n "${iptables_save_bin}" ]; then
+        last_result=$(${iptables_save_bin} > "${backup_dir}/iptables-save.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* iptables-save OK"
+        else
+            debug "* iptables-save ERROR"
+            debug "${last_result}"
+            rc=10
+        fi
+    else
+        debug "* iptables-save not found"
     fi
 }
 
 backup_sysctl() {
     debug "Backup sysctl values"
 
-    last_result=$(sysctl -a | sort -h > "${backup_dir}/sysctl.txt")
-    last_rc=$?
+    sysctl_bin=$(command -v sysctl)
 
-    if [ ${last_rc} -eq 0 ]; then
-        debug "* sysctl OK"
+    if [ -n "${sysctl_bin}" ]; then
+        last_result=$(${sysctl_bin} -a | sort -h > "${backup_dir}/sysctl.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* sysctl OK"
+        else
+            debug "* sysctl ERROR"
+            debug "${last_result}"
+            rc=10
+        fi
     else
-        debug "* sysctl ERROR"
-        debug "${last_result}"
-        rc=10
+        debug "* sysctl not found"
     fi
 }
 
@@ -319,7 +474,7 @@ backup_virsh() {
             rc=10
         fi
     else
-        debug "* virsh not installed"
+        debug "* virsh not found"
     fi
 }
 
@@ -340,7 +495,7 @@ backup_lxc() {
             rc=10
         fi
     else
-        debug "* lxc-ls not installed"
+        debug "* lxc-ls not found"
     fi
 }
 
@@ -348,7 +503,6 @@ backup_mount() {
     debug "Backup mount points"
 
     findmnt_bin=$(command -v findmnt)
-    mount_bin=$(command -v mount)
 
     if [ -n "${findmnt_bin}" ]; then
         last_result=$(${findmnt_bin} > "${backup_dir}/mount.txt")
@@ -361,19 +515,25 @@ backup_mount() {
             debug "${last_result}"
             rc=10
         fi
-    elif [ -n "${mount_bin}" ]; then
-        last_result=$(${mount_bin} > "${backup_dir}/mount.txt")
-        last_rc=$?
-
-        if [ ${last_rc} -eq 0 ]; then
-            debug "* mount points OK"
-        else
-            debug "* mount points ERROR"
-            debug "${last_result}"
-            rc=10
-        fi
     else
-        debug "* findmnt and mount not installed"
+        debug "* findmnt not found"
+
+        mount_bin=$(command -v mount)
+
+        if [ -n "${mount_bin}" ]; then
+            last_result=$(${mount_bin} > "${backup_dir}/mount.txt")
+            last_rc=$?
+
+            if [ ${last_rc} -eq 0 ]; then
+                debug "* mount points OK"
+            else
+                debug "* mount points ERROR"
+                debug "${last_result}"
+                rc=10
+            fi
+        else
+            debug "* mount not found"
+        fi
     fi
 }
 
@@ -394,7 +554,7 @@ backup_df() {
             rc=10
         fi
     else
-        debug "* df not installed"
+        debug "* df not found"
     fi
 }
 
@@ -414,11 +574,17 @@ main() {
     if [ "${DO_ETC}" -eq 1 ]; then
         backup_etc
     fi
-    if [ "${DO_DPKG}" -eq 1 ]; then
-        backup_dpkg
+    if [ "${DO_DPKG_FULL}" -eq 1 ]; then
+        backup_dpkg_full
     fi
-    if [ "${DO_APT}" -eq 1 ]; then
-        backup_apt
+    if [ "${DO_DPKG_STATUS}" -eq 1 ]; then
+        backup_dpkg_status
+    fi
+    if [ "${DO_APT_STATES}" -eq 1 ]; then
+        backup_apt_states
+    fi
+    if [ "${DO_APT_CONFIG}" -eq 1 ]; then
+        backup_apt_config
     fi
     if [ "${DO_PACKAGES}" -eq 1 ]; then
         backup_packages
@@ -501,18 +667,32 @@ while :; do
             DO_ETC=0
             ;;
 
-        --dpkg)
-            DO_DPKG=1
+        --dpkg-full)
+            DO_DPKG_FULL=1
             ;;
-        --no-dpkg)
-            DO_DPKG=0
+        --no-dpkg-full)
+            DO_DPKG_FULL=0
             ;;
 
-        --apt)
-            DO_APT=1
+        --dpkg-status)
+            DO_DPKG_STATUS=1
             ;;
-        --no-apt)
-            DO_APT=0
+        --no-dpkg-status)
+            DO_DPKG_STATUS=0
+            ;;
+
+        --apt-states)
+            DO_APT_STATES=1
+            ;;
+        --no-apt-states)
+            DO_APT_STATES=0
+            ;;
+
+        --apt-config)
+            DO_APT_CONFIG=1
+            ;;
+        --no-apt-config)
+            DO_APT_CONFIG=0
             ;;
 
         --packages)
@@ -614,8 +794,10 @@ done
 # Default values
 : "${VERBOSE:=0}"
 : "${DO_ETC:=0}"
-: "${DO_DPKG:=0}"
-: "${DO_APT:=1}"
+: "${DO_DPKG_FULL:=0}"
+: "${DO_DPKG_STATUS:=1}"
+: "${DO_APT_STATES:=1}"
+: "${DO_APT_CONFIG:=1}"
 : "${DO_PACKAGES:=1}"
 : "${DO_PROCESSES:=1}"
 : "${DO_UPTIME:=1}"

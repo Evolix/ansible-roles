@@ -14,6 +14,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* evolinux-base: many improvements for backup-server-state script
+
 ### Fixed
 
 ### Removed
