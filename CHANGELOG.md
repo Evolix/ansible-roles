@@ -15,6 +15,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Changed
 
 * evolinux-base: many improvements for backup-server-state script
+* remount-usr: use findmnt to find if usr is a readonly partition
 
 ### Fixed
 
