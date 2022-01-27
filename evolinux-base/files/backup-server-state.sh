@@ -2,7 +2,7 @@
 
 PROGNAME="backup-server-state"
 
-VERSION="22.01.1"
+VERSION="22.01.2"
 readonly VERSION
 
 backup_dir=
@@ -204,7 +204,7 @@ backup_dpkg_full() {
     rsync_bin=$(command -v rsync)
 
     if [ -n "${rsync_bin}" ]; then
-        last_result=$(${rsync_bin} -ah --itemize-changes --exclude='*-old' ${dpkg_dir}/ "${backup_dir}${dpkg_dir}/")
+        last_result=$(${rsync_bin} -ah --itemize-changes --exclude='*-old' "${dpkg_dir}/" "${backup_dir}${dpkg_dir}/")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -653,41 +653,40 @@ backup_dmesg() {
     fi
 }
 
-backup_mysql() {
+backup_mysql_processes() {
     debug "Backup mysql processes"
 
-    mysql_bin=$(command -v mysql)
+    mysqladmin_bin=$(command -v mysqladmin)
 
-    if [ -n "${mysql_bin}" ]; then
-        last_result=$(${mysql_bin} --execute 'show full processlist;' > "${backup_dir}/mysql.txt")
+    if [ -n "${mysqladmin_bin}" ]; then
+        last_result=$(${mysqladmin_bin} --verbose processlist > "${backup_dir}/mysql-processlist.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
-            debug "* mysql OK"
+            debug "* mysqladmin OK"
         else
-            debug "* mysql ERROR"
+            debug "* mysqladmin ERROR"
             debug "${last_result}"
             rc=10
         fi
     else
-        debug "* mysql not found"
+        debug "* mysqladmin not found"
     fi
 }
 
-backup_services() {
+backup_systemctl() {
     debug "Backup services"
 
     systemctl_bin=$(command -v systemctl)
 
     if [ -n "${systemctl_bin}" ]; then
-        last_result=$(${systemctl_bin} systemctl  --no-legend --state=failed \
-            --type=service > "${backup_dir}/services.txt")
+        last_result=$(${systemctl_bin} systemctl --no-legend --state=failed --type=service > "${backup_dir}/systemctl-failed-services.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
-            debug "* services OK"
+            debug "* failed services OK"
         else
-            debug "* services ERROR"
+            debug "* failed services ERROR"
             debug "${last_result}"
             rc=10
         fi
@@ -767,11 +766,11 @@ main() {
     if [ "${DO_DMESG}" -eq 1 ]; then
         backup_dmesg
     fi
-    if [ "${DO_MYSQL}" -eq 1 ]; then
-        backup_mysql
+    if [ "${DO_MYSQL_PROCESSES}" -eq 1 ]; then
+        backup_mysql_processes
     fi
-    if [ "${DO_SERVICES}" -eq 1 ]; then
-        backup_services
+    if [ "${DO_SYSTEMCTL}" -eq 1 ]; then
+        backup_systemctl
     fi
 
 
@@ -948,18 +947,18 @@ while :; do
             DO_DMESG=0
             ;;
 
-        --mysql)
-            DO_MYSQL=1
+        --mysql-processes)
+            DO_MYSQL_PROCESSES=1
             ;;
-        --no-mysql)
-            DO_MYSQL=0
+        --no-mysql-processes)
+            DO_MYSQL_PROCESSES=0
             ;;
 
-        --services)
-            DO_SERVICES=1
+        --systemctl)
+            DO_SYSTEMCTL=1
             ;;
-        --no-services)
-            DO_SERVICES=0
+        --no-systemctl)
+            DO_SYSTEMCTL=0
             ;;
 
         --)
@@ -1002,8 +1001,8 @@ done
 : "${DO_MOUNT:=1}"
 : "${DO_DF:=1}"
 : "${DO_DMESG:=1}"
-: "${DO_MYSQL:=1}"
-: "${DO_SERVICES:=1}"
+: "${DO_MYSQL_PROCESSES:=1}"
+: "${DO_SYSTEMCTL:=1}"
 
 export LC_ALL=C
 
