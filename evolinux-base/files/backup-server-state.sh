@@ -2,7 +2,7 @@
 
 PROGNAME="backup-server-state"
 
-VERSION="22.01"
+VERSION="22.01.1"
 readonly VERSION
 
 backup_dir=
@@ -57,6 +57,8 @@ Options
      --no-virsh       no backup copy of virsh list
      --lxc            backup copy of lxc list (default)
      --no-lxc         no backup copy of lxc list
+     --disks          backup copy of MBR and partitions (default)
+     --no-disks       no backup copy of MBR and partitions
      --mount          backup copy of mount points (default)
      --no-mount       no backup copy of mount points
      --df             backup copy of disk usage (default)
@@ -269,6 +271,21 @@ backup_packages() {
         fi
     else
         debug "* dpkg not found"
+    fi
+}
+
+backup_uname() {
+    debug "Backup uname"
+
+    last_result=$(uname -a > "${backup_dir}/uname.txt")
+    last_rc=$?
+
+    if [ ${last_rc} -eq 0 ]; then
+        debug "* uname OK"
+    else
+        debug "* uname ERROR"
+        debug "${last_result}"
+        rc=10
     fi
 }
 
@@ -505,6 +522,57 @@ backup_lxc() {
     fi
 }
 
+backup_disks() {
+    debug "Backup disks"
+
+    lsblk_bin=$(command -v lsblk)
+    awk_bin=$(command -v awk)
+
+    if [ -n "${lsblk_bin}" ] && [ -n "${awk_bin}" ]; then
+        disks=$(${lsblk_bin} -l | grep disk | grep -v -E '(drbd|fd[0-9]+)' | ${awk_bin} '{print $1}')
+        for disk in ${disks}; do
+            dd_bin=$(command -v dd)
+            if [ -n "${dd_bin}" ]; then
+                last_result=$(${dd_bin} if="/dev/${disk}" of="${backup_dir}/MBR-${disk}" bs=512 count=1 2>&1)
+                last_rc=$?
+
+                if [ ${last_rc} -eq 0 ]; then
+                    debug "* dd ${disk} OK"
+                else
+                    debug "* dd ${disk} ERROR"
+                    debug "${last_result}"
+                    rc=10
+                fi
+            else
+                debug "* dd not found"
+            fi
+            fdisk_bin=$(command -v fdisk)
+            if [ -n "${fdisk_bin}" ]; then
+                last_result=$(${fdisk_bin} -l "/dev/${disk}" > "${backup_dir}/partitions-${disk}" 2>&1)
+                last_rc=$?
+
+                if [ ${last_rc} -eq 0 ]; then
+                    debug "* fdisk ${disk} OK"
+                else
+                    debug "* fdisk ${disk} ERROR"
+                    debug "${last_result}"
+                    rc=10
+                fi
+            else
+                debug "* fdisk not found"
+            fi
+        done
+        cat "${backup_dir}"/partitions-* > "${backup_dir}/partitions"
+    else
+        if [ -n "${lsblk_bin}" ]; then
+            debug "* lsblk not found"
+        fi
+        if [ -n "${awk_bin}" ]; then
+            debug "* awk not found"
+        fi
+    fi
+}
+
 backup_mount() {
     debug "Backup mount points"
 
@@ -666,6 +734,9 @@ main() {
     if [ "${DO_UPTIME}" -eq 1 ]; then
         backup_uptime
     fi
+    if [ "${DO_UNAME}" -eq 1 ]; then
+        backup_uname
+    fi
     if [ "${DO_NETSTAT}" -eq 1 ]; then
         backup_netstat
     fi
@@ -683,6 +754,9 @@ main() {
     fi
     if [ "${DO_LXC}" -eq 1 ]; then
         backup_lxc
+    fi
+    if [ "${DO_DISKS}" -eq 1 ]; then
+        backup_disks
     fi
     if [ "${DO_MOUNT}" -eq 1 ]; then
         backup_mount
@@ -797,6 +871,13 @@ while :; do
             DO_UPTIME=0
             ;;
 
+        --uname)
+            DO_UNAME=1
+            ;;
+        --no-uname)
+            DO_UNAME=0
+            ;;
+
         --netstat)
             DO_NETSTAT=1
             ;;
@@ -837,6 +918,13 @@ while :; do
             ;;
         --no-lxc)
             DO_LXC=0
+            ;;
+
+        --disks)
+            DO_DISKS=1
+            ;;
+        --no-disks)
+            DO_DISKS=0
             ;;
 
         --mount)
@@ -902,6 +990,7 @@ done
 : "${DO_APT_CONFIG:=1}"
 : "${DO_PACKAGES:=1}"
 : "${DO_PROCESSES:=1}"
+: "${DO_UNAME:=1}"
 : "${DO_UPTIME:=1}"
 : "${DO_NETSTAT:=1}"
 : "${DO_NETCFG:=1}"
@@ -909,6 +998,7 @@ done
 : "${DO_SYSCTL:=1}"
 : "${DO_VIRSH:=1}"
 : "${DO_LXC:=1}"
+: "${DO_DISKS:=1}"
 : "${DO_MOUNT:=1}"
 : "${DO_DF:=1}"
 : "${DO_DMESG:=1}"
