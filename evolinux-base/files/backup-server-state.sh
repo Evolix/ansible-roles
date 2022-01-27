@@ -61,6 +61,12 @@ Options
      --no-mount       no backup copy of mount points
      --df             backup copy of disk usage (default)
      --no-df          no backup copy of disk usage
+     --dmesg          backup copy of dmesg (default)
+     --no-dmesg       no backup copy of dmesg
+     --mysql          backup copy of mysql processes (default)
+     --no-mysql       no backup copy of mysql processes
+     --services       backup copy of services states (default)
+     --no-services    no backup copy of services states
  -v, --verbose        print details about backup steps
  -V, --version        print version and exit
  -h, --help           print this message and exit
@@ -558,6 +564,71 @@ backup_df() {
     fi
 }
 
+backup_dmesg() {
+    debug "Backup dmesg"
+
+    dmesg_bin=$(command -v dmesg)
+
+    if [ -n "${dmesg_bin}" ]; then
+        last_result=$(${dmesg_bin} > "${backup_dir}/dmesg.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* dmesg OK"
+        else
+            debug "* dmesg ERROR"
+            debug "${last_result}"
+            rc=10
+        fi
+    else
+        debug "* dmesg not found"
+    fi
+}
+
+backup_mysql() {
+    debug "Backup mysql processes"
+
+    mysql_bin=$(command -v mysql)
+
+    if [ -n "${mysql_bin}" ]; then
+        last_result=$(${mysql_bin} --execute 'show full processlist;' > "${backup_dir}/mysql.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* mysql OK"
+        else
+            debug "* mysql ERROR"
+            debug "${last_result}"
+            rc=10
+        fi
+    else
+        debug "* mysql not found"
+    fi
+}
+
+backup_services() {
+    debug "Backup services"
+
+    systemctl_bin=$(command -v systemctl)
+
+    if [ -n "${systemctl_bin}" ]; then
+        last_result=$(${systemctl_bin} systemctl  --no-legend --state=failed \
+            --type=service > "${backup_dir}/services.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* services OK"
+        else
+            debug "* services ERROR"
+            debug "${last_result}"
+            rc=10
+        fi
+    else
+        debug "* systemctl not found"
+    fi
+}
+
+
 main() {
     if [ -z "${backup_dir}" ]; then
         echo "ERROR: You must provide the --backup-dir argument" >&2
@@ -619,6 +690,16 @@ main() {
     if [ "${DO_DF}" -eq 1 ]; then
         backup_df
     fi
+    if [ "${DO_DMESG}" -eq 1 ]; then
+        backup_dmesg
+    fi
+    if [ "${DO_MYSQL}" -eq 1 ]; then
+        backup_mysql
+    fi
+    if [ "${DO_SERVICES}" -eq 1 ]; then
+        backup_services
+    fi
+
 
     debug "=> Your backup is available at ${backup_dir}"
     exit ${rc}
@@ -772,6 +853,27 @@ while :; do
             DO_DF=0
             ;;
 
+        --dmesg)
+            DO_DMESG=1
+            ;;
+        --no-dmesg)
+            DO_DMESG=0
+            ;;
+
+        --mysql)
+            DO_MYSQL=1
+            ;;
+        --no-mysql)
+            DO_MYSQL=0
+            ;;
+
+        --services)
+            DO_SERVICES=1
+            ;;
+        --no-services)
+            DO_SERVICES=0
+            ;;
+
         --)
             # End of all options.
             shift
@@ -809,6 +911,9 @@ done
 : "${DO_LXC:=1}"
 : "${DO_MOUNT:=1}"
 : "${DO_DF:=1}"
+: "${DO_DMESG:=1}"
+: "${DO_MYSQL:=1}"
+: "${DO_SERVICES:=1}"
 
 export LC_ALL=C
 
