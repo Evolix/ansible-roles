@@ -15,7 +15,10 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Changed
 
 * rbenv: install Ruby 3.1.0 by default
+* evolinux-base: backup-server-state: add "force" mode
 ### Fixed
+
+* evolinux-base: backup-server-state: fix systemctl invocation
 
 ### Removed
 

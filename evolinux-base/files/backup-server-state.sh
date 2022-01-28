@@ -2,7 +2,7 @@
 
 PROGNAME="backup-server-state"
 
-VERSION="22.01.2"
+VERSION="22.01.3"
 readonly VERSION
 
 backup_dir=
@@ -14,7 +14,7 @@ show_version() {
     cat <<END
 ${PROGNAME} version ${VERSION}
 
-Copyright 2018-2021 Evolix <info@evolix.fr>,
+Copyright 2018-2022 Evolix <info@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>
                     and others.
 
