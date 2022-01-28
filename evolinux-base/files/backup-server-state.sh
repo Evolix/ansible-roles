@@ -31,6 +31,7 @@ Usage: ${PROGNAME} --backup-dir=/path/to/backup/directory [OPTIONS]
 
 Options
  -d, --backup-dir     path to the directory where the backup will be stored
+ -f, --force          keep existing backup directory and its content
      --etc            backup copy of /etc
      --no-etc         no backup copy of /etc (default)
      --dpkg           backup copy of /var/lib/dpkg
@@ -703,8 +704,10 @@ main() {
     fi
 
     if [ -d "${backup_dir}" ]; then
-        echo "ERROR: The backup directory ${backup_dir} already exists. Delete it first." >&2
-        exit 2
+        if [ "${FORCE}" != "1" ]; then
+            echo "ERROR: The backup directory ${backup_dir} already exists. Delete it first." >&2
+            exit 2
+        fi
     else
         create_backup_dir
     fi
@@ -792,6 +795,10 @@ while :; do
             ;;
         -v|--verbose)
             VERBOSE=1
+            ;;
+
+        -f|--force)
+            FORCE=1
             ;;
 
         -d|--backup-dir)
@@ -982,6 +989,7 @@ done
 
 # Default values
 : "${VERBOSE:=0}"
+: "${FORCE:=0}"
 : "${DO_ETC:=0}"
 : "${DO_DPKG_FULL:=0}"
 : "${DO_DPKG_STATUS:=1}"
