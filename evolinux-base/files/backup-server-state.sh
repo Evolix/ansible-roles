@@ -681,7 +681,7 @@ backup_systemctl() {
     systemctl_bin=$(command -v systemctl)
 
     if [ -n "${systemctl_bin}" ]; then
-        last_result=$(${systemctl_bin} systemctl --no-legend --state=failed --type=service > "${backup_dir}/systemctl-failed-services.txt")
+        last_result=$(${systemctl_bin} --no-legend --state=failed --type=service > "${backup_dir}/systemctl-failed-services.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
