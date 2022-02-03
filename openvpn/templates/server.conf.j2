@@ -7,11 +7,14 @@ proto udp
 dev tun
 mode server
 keepalive 10 120
+tls-exit
 
 cipher AES-256-GCM # AES
 
 persist-key
 persist-tun
+
+ifconfig-pool-persist /etc/openvpn/ipp.txt
 
 status /var/log/openvpn-status.log
 log-append  /var/log/openvpn.log

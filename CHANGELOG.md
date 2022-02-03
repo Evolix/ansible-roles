@@ -18,6 +18,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* openvpn: make it compatible with OpenBSD and add some improvements
+
 ### Fixed
 
 ### Removed
