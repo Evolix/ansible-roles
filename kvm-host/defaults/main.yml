@@ -2,3 +2,5 @@
 kvm_custom_libvirt_images_path: ''
 kvm_install_drbd: True
 kvm_scripts_dir: /usr/local/sbin
+
+kvm_pair: null

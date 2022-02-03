@@ -13,6 +13,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Added
 
 * evolinux-base: option to bypass raid-related tasks
+* kvm-host: add missing default value
 
 ### Changed
 
