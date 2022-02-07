@@ -26,10 +26,13 @@
 
     - name: change JVM tmpdir (< 6.x)
       lineinfile:
-        dest: /etc/elasticsearch/jvm.options
+        dest: /etc/elasticsearch/jvm.options.d/evolinux
         line: "-Djava.io.tmpdir={{ _elasticsearch_custom_tmpdir }}"
         regexp: "^-Djava.io.tmpdir="
-        insertafter: "## JVM configuration"
+        create: yes
+        owner: root
+        group: elasticsearch
+        mode: 0640
       notify:
         - restart elasticsearch
       tags:
@@ -48,6 +51,7 @@
         - elasticsearch
       when: elastic_stack_version is version('6', '>=')
 
+    # Note : Should not do any changes as -Djava.io.tmpdir=${ES_TMPDIR} is already here in the default config.
     - name: change JVM tmpdir (>= 6.x)
       lineinfile:
         dest: /etc/elasticsearch/jvm.options

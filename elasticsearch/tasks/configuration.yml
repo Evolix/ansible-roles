@@ -96,17 +96,25 @@
 
 - name: JVM Heap size (min) is set
   lineinfile:
-    dest: /etc/elasticsearch/jvm.options
+    dest: /etc/elasticsearch/jvm.options.d/evolinux
     regexp: "^-Xms"
     line: "-Xms{{ elasticsearch_jvm_xms }}"
+    create: yes
+    owner: root
+    group: elasticsearch
+    mode: 0640
   tags:
     - config
 
 - name: JVM Heap size (max) is set
   lineinfile:
-    dest: /etc/elasticsearch/jvm.options
+    dest: /etc/elasticsearch/jvm.options.d/evolinux
     regexp: "^-Xmx"
     line: "-Xmx{{ elasticsearch_jvm_xmx }}"
+    create: yes
+    owner: root
+    group: elasticsearch
+    mode: 0640
   tags:
     - config
 
