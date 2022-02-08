@@ -33,10 +33,11 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * rbenv: install Ruby 3.1.0 by default
 * evolinux-base: backup-server-state: add "force" mode
+
 ### Fixed
 
 * evolinux-base: backup-server-state: fix systemctl invocation
-
+* varnish: update munin plugin to work with recent varnish versions
 
 ## [22.01.2] 2022-01-27
 
