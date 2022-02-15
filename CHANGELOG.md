@@ -15,6 +15,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * Explicit permissions for systemd overrides
 * evolinux-base: option to bypass raid-related tasks
 * kvm-host: add missing default value
+* openvpn: now check that openvpn has been restarted since last certificates renewal
 
 ### Changed
 
