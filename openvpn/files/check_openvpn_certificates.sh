@@ -63,7 +63,7 @@ else
 fi
 
 # Get the date of last OpenVPN restart
-last_openvpn_restart_date=$(ps awwwx -O lstart | grep openvpn | grep -vE "grep|check_openvpn_certificates.sh" | awk '{print $3,$4,$5,$6}')
+last_openvpn_restart_date=$(ps awwwx -O lstart | grep openvpn | grep -- --daemon | grep -- --config | head -1 | awk '{print $3,$4,$5,$6}')
 
 test_cert_expiration() {
     # Already expired - Cert file
