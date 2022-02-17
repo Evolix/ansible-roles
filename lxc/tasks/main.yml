@@ -43,8 +43,8 @@
     - lxc_unprivilegied_containers | bool
     - root_subuids.rc != 0
 
-- name: Check if /var has not mount options nodev or noexec
-  shell: findmnt | grep -E "/var[^/]" | grep -e nodev -e noexec
+- name: Check if /var has not mount options or nosuid or nodev or noexec
+  shell: findmnt | grep -E "/var[^/]" | grep -e nodev -e noexec -e nosuid
   register: check_var
   changed_when: false
   failed_when: "check_var.rc == 0"
