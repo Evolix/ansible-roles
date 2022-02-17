@@ -16,6 +16,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-base: option to bypass raid-related tasks
 * kvm-host: add missing default value
 * openvpn: now check that openvpn has been restarted since last certificates renewal
+* lxc-php: preliminary support for PHP 8.1 container
 
 ### Changed
 
