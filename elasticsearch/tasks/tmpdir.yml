@@ -26,7 +26,7 @@
 
     - name: change JVM tmpdir (< 6.x)
       lineinfile:
-        dest: /etc/elasticsearch/jvm.options.d/evolinux
+        dest: /etc/elasticsearch/jvm.options.d/evolinux.options
         line: "-Djava.io.tmpdir={{ _elasticsearch_custom_tmpdir }}"
         regexp: "^-Djava.io.tmpdir="
         create: yes
