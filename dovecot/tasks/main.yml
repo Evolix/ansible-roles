@@ -69,6 +69,15 @@
   tags:
   - dovecot
 
+- name: deploy file for custom configuration
+  template:
+    src: zzz-evolinux-custom.conf.j2
+    dest: /etc/dovecot/conf.d/zzz-evolinux-custom.conf
+    mode: "0644"
+  notify: reload dovecot
+  tags:
+  - dovecot
+
 - include: munin.yml
   tags:
   - dovecot
