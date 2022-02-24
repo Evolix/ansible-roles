@@ -12,6 +12,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* apt: apt_hold_packages: broadcast message with wall, if present
 * Explicit permissions for systemd overrides
 * evolinux-base: option to bypass raid-related tasks
 * generate-ldif: Add support for php-fpm in containers

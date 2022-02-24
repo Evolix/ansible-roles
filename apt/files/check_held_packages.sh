@@ -21,7 +21,12 @@ if [ -f ${config_file} ]; then
             if [ -n "${package}" ]; then
                 if is_installed ${package} && ! is_held ${package}; then
                     apt-mark hold ${package}
-                    >&2 echo "Package \`${package}' has been marked \`hold'."
+                    msg="Package \`${package}' has been marked \`hold'."
+                    >&2 echo "${msg}"
+                    wall_bin=$(command -v wall)
+                    if [ -n "${wall_bin}" ]; then
+                        "${wall_bin}" --timeout 5 "${msg}"
+                    fi
                     return_code=1
                 fi
             fi
