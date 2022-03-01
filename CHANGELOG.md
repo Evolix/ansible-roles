@@ -13,12 +13,13 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Added
 
 * apt: apt_hold_packages: broadcast message with wall, if present
-* Explicit permissions for systemd overrides
 * evolinux-base: option to bypass raid-related tasks
+* Explicit permissions for systemd overrides
 * generate-ldif: Add support for php-fpm in containers
 * kvm-host: add missing default value
-* openvpn: now check that openvpn has been restarted since last certificates renewal
 * lxc-php: preliminary support for PHP 8.1 container
+* openvpn: now check that openvpn has been restarted since last certificates renewal
+* redis: check_redis_instances tolerates absence of instances
 
 ### Changed
 
