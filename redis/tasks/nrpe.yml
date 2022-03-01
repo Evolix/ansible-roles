@@ -87,7 +87,6 @@
     mode: "0755"
     owner: root
     group: root
-  when: redis_instance_name is defined
   tags:
     - redis
     - nrpe

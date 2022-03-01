@@ -19,6 +19,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * kvm-host: add missing default value
 * lxc-php: preliminary support for PHP 8.1 container
 * openvpn: now check that openvpn has been restarted since last certificates renewal
+* redis: always install check_redis_instances
 * redis: check_redis_instances tolerates absence of instances
 
 ### Changed
