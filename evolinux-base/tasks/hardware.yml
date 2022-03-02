@@ -101,6 +101,7 @@
   when:
     - "'Hewlett-Packard Company Smart Array' in raidmodel.stdout"
     - "'Adaptec Smart Storage PQI' in raidmodel.stdout"
+    - evolinux_packages_hardware_raid | bool
 
 # NOTE: check_hpraid cron use check_hpraid from nagios-nrpe role
 # So, if nagios-nrpe role is not installed it will not work
@@ -149,9 +150,11 @@
       tags:
         - packages
         - config
-  when: "'Hewlett-Packard Company Smart Array' in raidmodel.stdout"
+  when:
+    - "'Hewlett-Packard Company Smart Array' in raidmodel.stdout"
+    - evolinux_packages_hardware_raid | bool
 
-- name: MegaRAID SAS package is present
+- name: MegaCLI SAS package is present
   block:
     - name: HWRaid embedded GPG key is absent
       apt_key:
@@ -206,6 +209,8 @@
       tags:
         - packages
         - config
-  when: "'MegaRAID' in raidmodel.stdout"
+  when:
+    - "'MegaRAID' in raidmodel.stdout"
+    - evolinux_packages_hardware_raid | bool
 
 - meta: flush_handlers

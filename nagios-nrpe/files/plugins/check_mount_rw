@@ -1,0 +1,30 @@
+#!/bin/sh
+
+output=$(mktemp --tmpdir $(basename $0).XXXXXXXXXX)
+critical_count=0
+ok_count=0
+
+trap "rm -f $output" EXIT
+
+for mountpoint in $@; do
+    if findmnt -O ro --noheadings "$mountpoint" 1>/dev/null 2>&1; then
+        echo "CRITICAL - $mountpoint" >> "$output"
+	critical_count=$(( critical_count + 1))
+    else
+        echo "OK - $mountpoint" >> "$output"
+	ok_count=$(( ok_count + 1))
+    fi
+done
+
+total_count=$(( ok_count + critical_count ))
+
+if [ $ok_count -eq  $total_count ]; then
+     printf "OK - %d/%d no read-only mountpoint\n\n" "$ok_count" "$total_count"
+     cat "$output"
+     exit 0
+else
+    printf "CRITICAL - %d/%d read-only mountpoint\n\n" "$critical_count" "$total_count"
+    cat "$output"
+    exit 2 
+fi
+

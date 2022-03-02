@@ -20,16 +20,41 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [22.03] 2022-03-02
+
+### Added
+
+* apt: apt_hold_packages: broadcast message with wall, if present
+* evolinux-base: option to bypass raid-related tasks
+* Explicit permissions for systemd overrides
+* generate-ldif: Add support for php-fpm in containers
+* kvm-host: add missing default value
+* lxc-php: preliminary support for PHP 8.1 container
+* openvpn: now check that openvpn has been restarted since last certificates renewal
+* redis: always install check_redis_instances
+* redis: check_redis_instances tolerates absence of instances
+
+### Changed
+
+* elasticsearch: Use `/etc/elasticsearch/jvm.options.d/evolinux` instead of default `/etc/elasticsearch/jvm.options`
+* evolinux-users: check permissions for /etc/sudoers.d
+* evolinux-users: optimize sudo configuration
+* lxc: Fail if /var is nosuid
+* openvpn: make it compatible with OpenBSD and add some improvements
+
+
+
 ## [22.01.3] 2022-01-31
 
 ### Changed
 
 * rbenv: install Ruby 3.1.0 by default
 * evolinux-base: backup-server-state: add "force" mode
+
 ### Fixed
 
 * evolinux-base: backup-server-state: fix systemctl invocation
-
+* varnish: update munin plugin to work with recent varnish versions
 
 ## [22.01.2] 2022-01-27
 

@@ -34,7 +34,11 @@
     special_time: "hourly"
     user: root
     job: "rsync -a --delete /etc/libvirt/qemu/*xml {{ hostvars[kvm_pair]['lan.ip'] }}:/root/libvirt-{{ inventory_hostname }}/"
-  when: kvm_pair != inventory_hostname
+  when:
+    - kvm_pair is defined
+    - kvm_pair is not none
+    - kvm_pair | length > 0
+    - kvm_pair != inventory_hostname
   tags: crontab
 
 - name: Crontab for sync list of running vm
@@ -44,5 +48,9 @@
     special_time: "daily"
     user: root
     job: "virsh list --all | tee /root/virsh-list.txt | ssh {{ hostvars[kvm_pair]['lan.ip'] }} 'cat >/root/libvirt-{{ inventory_hostname }}/virsh-list.txt'"
-  when: kvm_pair != inventory_hostname
+  when:
+    - kvm_pair is defined
+    - kvm_pair is not none
+    - kvm_pair | length > 0
+    - kvm_pair != inventory_hostname
   tags: crontab

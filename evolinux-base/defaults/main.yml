@@ -78,6 +78,7 @@ evolinux_packages_include: True
 evolinux_packages_system: True
 evolinux_packages_diagnostic: True
 evolinux_packages_hardware: True
+evolinux_packages_hardware_raid: True
 evolinux_packages_common: True
 evolinux_packages_stretch: True
 evolinux_packages_buster: True

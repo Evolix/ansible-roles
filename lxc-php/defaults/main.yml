@@ -20,3 +20,4 @@ lxc_php_container_releases:
   php73: "buster"
   php74: "bullseye"
   php80: "bullseye"
+  php81: "bullseye"

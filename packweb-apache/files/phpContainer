@@ -8,6 +8,23 @@ fi;
 
 PHPVersion=$(grep SetHandler /etc/apache2/sites-enabled/$LOGNAME.conf 2>/dev/null | grep -m 1 -o 'fpm[0-9][0-9]' | head -n 1 | sed 's/php//g' | sed 's/fpm//g')
 
+# If $PHPVersion is empty, look for "SetHandler" in the includes.
+if [ "$PHPVersion" == "" ]; then
+    includes=$(grep -w "Include" /etc/apache2/sites-enabled/$LOGNAME.conf | uniq | awk '{print $2}')
+    for f in "$includes"; do
+        # Relative path -> absolute
+        if [ ${f:0:1} != "/" ]; then
+            f="/etc/apache2/${f}"
+        fi
+
+        # Grep again
+        PHPVersion=$(grep SetHandler "${f}" 2>/dev/null | grep -m 1 -o 'fpm[0-9][0-9]' | head -n 1 | sed 's/php//g' | sed 's/fpm//g')
+        if [ "$PHPVersion" != "" ]; then
+            break
+        fi
+    done
+fi
+
 if [ "$PHPVersion" != "" ]; then
     lxc-attach -n php$PHPVersion -- su - $LOGNAME -c "cd \"${PWD@E}\" && php ${*@Q}"
 else

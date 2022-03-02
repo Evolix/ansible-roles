@@ -602,6 +602,96 @@ ServiceVersion: PostgreSQL ${postgresql_version}
 EOT
 fi
 
+# LXC (multiphp)
+if is_pkg_installed lxc; then
+
+if lxc-ls | grep -q php56 ; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=ServiceName=php-fpm56,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: PHP-FPM (multiphp)
+ipServicePort: 443
+ServiceType: web
+ServiceVersion: PHP-FPM 5.6 (multiphp)
+EOT
+fi
+
+if lxc-ls | grep -q php70 ; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=ServiceName=php-fpm70,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: PHP-FPM (multiphp)
+ipServicePort: 443
+ServiceType: web
+ServiceVersion: PHP-FPM 7.0 (multiphp)
+EOT
+fi
+
+if lxc-ls | grep -q php73 ; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=ServiceName=php-fpm73,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: PHP-FPM (multiphp)
+ipServicePort: 443
+ServiceType: web
+ServiceVersion: PHP-FPM 7.3 (multiphp)
+EOT
+fi
+
+if lxc-ls | grep -q php74 ; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=ServiceName=php-fpm74,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: PHP-FPM (multiphp)
+ipServicePort: 443
+ServiceType: web
+ServiceVersion: PHP-FPM 7.4 (multiphp)
+EOT
+fi
+
+if lxc-ls | grep -q php80 ; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=ServiceName=php-fpm80,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: PHP-FPM (multiphp)
+ipServicePort: 443
+ServiceType: web
+ServiceVersion: PHP-FPM 8.0 (multiphp)
+EOT
+fi
+
+if lxc-ls | grep -q php81 ; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=ServiceName=php-fpm81,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: PHP-FPM (multiphp)
+ipServicePort: 443
+ServiceType: web
+ServiceVersion: PHP-FPM 8.1 (multiphp)
+EOT
+fi
+
+fi
+# END - LXC (multiphp)
+
 # mdadm
 if is_pkg_installed mdadm; then
     mdadm_version=$(get_pkg_version mdadm)

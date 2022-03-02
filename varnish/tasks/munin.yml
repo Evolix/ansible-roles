@@ -22,29 +22,38 @@
     mode: "0755"
   tags: varnish
 
-- name: Copy varnish4 munin plugin
+- name: Copy varnish5 munin plugin
   copy:
-    src: munin/varnish4_
+    src: munin/varnish5_
     dest: /usr/local/share/munin/plugins/
     mode: "0755"
   notify: restart munin-node
   tags: varnish
 
-- name: Enable varnish4 munin plugin
+- name: Enable varnish5 munin plugin
   file:
-    src: /usr/local/share/munin/plugins/varnish4_
-    dest: "/etc/munin/plugins/varnish4_{{item}}"
+    src: /usr/local/share/munin/plugins/varnish5_
+    dest: "/etc/munin/plugins/varnish5_{{item}}"
     state: link
   loop:
-    - backend_traffic
-    - bad
-    - expunge
-    - hit_rate
     - memory_usage
+    - expunge
     - objects
     - request_rate
+    - mgt_uptime
     - threads
+    - backend_traffic
+    - hit_rate
+    - main_uptime
     - transfer_rates
-    - uptime
+    - bad
+  notify: restart munin-node
+  tags: varnish
+
+- name: Copy varnish5 munin plugin config
+  copy:
+    src: munin/varnish5.conf
+    dest: /etc/munin/plugin-conf.d/varnish5
+    mode: "0644"
   notify: restart munin-node
   tags: varnish

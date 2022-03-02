@@ -10,6 +10,7 @@
     src: postgresql.service.override.conf
     dest: /etc/systemd/system/postgresql@.service.d/override.conf
     force: yes
+    mode: "0644"
   notify:
     - reload systemd
     - restart postgresql
