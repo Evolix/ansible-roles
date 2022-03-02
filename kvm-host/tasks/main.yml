@@ -5,12 +5,12 @@
   when: kvm_install_drbd
 
 ## TODO: check why it's disabled
-- include: ssh.yml
+- import_tasks: ssh.yml
 
-- include: packages.yml
+- import_tasks: packages.yml
 
-- include: munin.yml
+- import_tasks: munin.yml
 
-- include: images.yml
+- import_tasks: images.yml
 
-- include: tools.yml
+- import_tasks: tools.yml

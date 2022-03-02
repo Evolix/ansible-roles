@@ -7,17 +7,17 @@
       - ansible_distribution_major_version is version('12', '<=')
     msg: This is only compatible with Debian 8 → 12
 
-- include_tasks: main_jessie.yml
+- import_tasks: main_jessie.yml
   when: ansible_distribution_release == "jessie"
 
-- include_tasks: main_stretch.yml
+- import_tasks: main_stretch.yml
   when: ansible_distribution_release == "stretch"
 
-- include_tasks: main_buster.yml
+- import_tasks: main_buster.yml
   when: ansible_distribution_release == "buster"
 
-- include_tasks: main_bullseye.yml
+- import_tasks: main_bullseye.yml
   when: ansible_distribution_release == "bullseye"
 
-- include_tasks: main_bookworm.yml
+- import_tasks: main_bookworm.yml
   when: ansible_distribution_release == "bookworm"

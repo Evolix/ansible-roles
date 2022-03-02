@@ -1,6 +1,6 @@
 ---
-- include: check.yml
-- include: user.yml
-- include: systemd.yml
-- include: alias.yml
-- include: bootstrap.yml
+- import_tasks: check.yml
+- import_tasks: user.yml
+- import_tasks: systemd.yml
+- import_tasks: alias.yml
+- import_tasks: bootstrap.yml

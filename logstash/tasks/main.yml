@@ -115,6 +115,6 @@
     var: logstash_template
     verbosity: 1
 
-- include: logs.yml
+- import_tasks: logs.yml
 
-- include: tmpdir.yml
+- import_tasks: tmpdir.yml

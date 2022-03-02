@@ -1,21 +1,21 @@
 ---
 
-- include: packages.yml
+- import_tasks: packages.yml
 
-- include: configuration.yml
+- import_tasks: configuration.yml
 
-- include: bootstrap_checks.yml
+- import_tasks: bootstrap_checks.yml
 
-- include: tmpdir.yml
+- import_tasks: tmpdir.yml
 
-- include: datadir.yml
+- import_tasks: datadir.yml
 
-- include: logs.yml
+- import_tasks: logs.yml
 
-- include: additional_scripts.yml
+- import_tasks: additional_scripts.yml
 
-- include: plugin_head.yml
+- import_tasks: plugin_head.yml
   when: elasticsearch_plugin_head | bool
 
-- include: curator.yml
+- import_tasks: curator.yml
   when: elasticsearch_curator | bool

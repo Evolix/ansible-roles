@@ -57,14 +57,14 @@
     dest: /etc/php5
     mode: "0755"
 
-- include: config_cli.yml
+- import_tasks: config_cli.yml
 
 - name: Enforce permissions on PHP cli directory (Debian 8)
   file:
     dest: /etc/php5/cli
     mode: "0755"
 
-- include: config_fpm.yml
+- import_tasks: config_fpm.yml
   when: php_fpm_enable | bool
 
 - name: Enforce permissions on PHP fpm directory (Debian 8)
@@ -73,7 +73,7 @@
     mode: "0755"
   when: php_fpm_enable | bool
 
-- include: config_apache.yml
+- import_tasks: config_apache.yml
   when: php_apache_enable | bool
 
 - name: Enforce permissions on PHP apache2 directory (Debian 8)

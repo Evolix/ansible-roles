@@ -8,16 +8,16 @@
     msg: only compatible with Debian >= 9
   when: not (evoacme_disable_debian_check | bool)
 
-- include: certbot.yml
+- import_tasks: certbot.yml
 
-- include: permissions.yml
+- import_tasks: permissions.yml
 
 # Enable this task if you want to deploy hooks
-# - include: evoacme_hook.yml
+# - include_tasks: evoacme_hook.yml
 #   vars:
 #     hook_name: "{{ item }}"
 #   loop: []
 
-- include: conf.yml
+- import_tasks: conf.yml
 
-- include: scripts.yml
+- import_tasks: scripts.yml

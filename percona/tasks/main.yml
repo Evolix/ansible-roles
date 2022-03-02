@@ -61,5 +61,5 @@
     update_cache: yes
   when: percona__apt_config_deb is changed
 
-- include: xtrabackup.yml
+- import_tasks: xtrabackup.yml
   when: percona__install_xtrabackup | bool

@@ -93,5 +93,5 @@
   tags:
     - proftpd
 
-- include: accounts.yml
+- import_tasks: accounts.yml
   when: proftpd_accounts | length > 0

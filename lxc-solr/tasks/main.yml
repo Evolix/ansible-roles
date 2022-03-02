@@ -1,6 +1,6 @@
 ---
 - name: LXC configuration
-  include_role:
+  import_role:
     name: evolix/lxc
 
 - name: Ensure containers root directory is 755
@@ -10,7 +10,7 @@
     mode: '0755'
   loop: "{{ lxc_containers }}"
 
-- include: solr.yml
+- import_tasks: solr.yml
   args:
     name: "{{ item.name }}"
     solr_version: "{{ item.solr_version }}"

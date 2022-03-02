@@ -39,5 +39,5 @@
   tags:
     - ssl
 
-- include: haproxy.yml
+- import_tasks: haproxy.yml
   when: haproxy_check.rc == 0

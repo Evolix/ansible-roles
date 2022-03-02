@@ -109,7 +109,7 @@
   tags:
     - apache
 
-- include: auth.yml
+- import_tasks: auth.yml
   tags:
   - apache
 
@@ -134,7 +134,7 @@
   tags:
     - apache
 
-- include: server_status.yml
+- import_tasks: server_status.yml
   tags:
     - apache
 
@@ -199,12 +199,12 @@
   tags:
     - apache
 
-- include: log2mail.yml
+- import_tasks: log2mail.yml
   when: apache_log2mail_include
   tags:
     - apache
 
-- include: munin.yml
+- import_tasks: munin.yml
   when: apache_munin_include | bool
   tags:
     - apache

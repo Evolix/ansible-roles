@@ -1,9 +1,9 @@
 ---
 
-- include: sources.yml
+- import_tasks: sources.yml
 
-- include: php.yml
+- import_tasks: php.yml
   when: newrelic_php | bool
 
-- include: sysmond.yml
+- import_tasks: sysmond.yml
   when: newrelic_sysmond | bool

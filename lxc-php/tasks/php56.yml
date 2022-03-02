@@ -17,4 +17,4 @@
   loop_control:
     loop_var: line_item
 
-- include: "mail_ssmtp.yml"
+- import_tasks: "mail_ssmtp.yml"

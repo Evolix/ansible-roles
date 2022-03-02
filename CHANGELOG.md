@@ -24,6 +24,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * Proper jinja spacing
 * evolinux-base: ensure dbus is started and enabled (not by default in the case of an offline netinst)
 * elasticsearch : use logrotate for garbage collector logs instead of breaking compression cron
+* Replace use of the `include` module with the `import_tasks` or `include_tasks` module to prevent bug due to faulty behaviour choice on the part of ansible
 
 ### Removed
 

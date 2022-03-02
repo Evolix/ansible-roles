@@ -1,6 +1,6 @@
 ---
 - name: Install Evolix public repositry
-  include_role:
+  import_role:
     name: evolix/apt
     tasks_from: evolix_public.yml
   tags:
@@ -58,7 +58,7 @@
     - vrrpd
 
 - name: Create VRRP address
-  include: ip.yml
+  include_tasks: ip.yml
   loop: "{{ vrrp_addresses }}"
   loop_control:
     loop_var: "vrrp_address"

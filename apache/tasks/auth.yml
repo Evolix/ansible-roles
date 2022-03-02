@@ -12,7 +12,7 @@
     - apache
 
 - name: Load IP whitelist task
-  include: ip_whitelist.yml
+  import_tasks: ip_whitelist.yml
 
 - name: include private IP whitelist for server-status
   lineinfile:

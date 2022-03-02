@@ -1,6 +1,6 @@
 ---
 
-- include: repository.yml
+- import_tasks: repository.yml
   vars:
     repository_path: "/etc"
     gitignore_items:
@@ -21,12 +21,12 @@
   tags:
     - etc-git
 
-- include_role:
+- import_role:
     name: evolix/remount-usr
   when:
     - _usr_share_scripts.stat.isdir
 
-- include: repository.yml
+- import_tasks: repository.yml
   vars:
     repository_path: "/usr/share/scripts"
     gitignore_items: []

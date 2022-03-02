@@ -189,4 +189,4 @@
     group: varnish
     mode: "0750"
 
-- include: munin.yml
+- import_tasks: munin.yml

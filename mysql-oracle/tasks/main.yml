@@ -3,20 +3,20 @@
 - set_fact:
     mysql_restart_handler_name: "{{ mysql_restart_if_needed | bool | ternary('restart mysql', 'restart mysql (noop)') }}"
 
-- include: packages.yml
+- import_tasks: packages.yml
 
-- include: users.yml
+- import_tasks: users.yml
 
-- include: config.yml
+- import_tasks: config.yml
 
-- include: datadir.yml
+- import_tasks: datadir.yml
 
-- include: tmpdir.yml
+- import_tasks: tmpdir.yml
 
-- include: nrpe.yml
+- import_tasks: nrpe.yml
 
-- include: munin.yml
+- import_tasks: munin.yml
 
-- include: log2mail.yml
+- import_tasks: log2mail.yml
 
-- include: utils.yml
+- import_tasks: utils.yml

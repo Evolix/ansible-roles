@@ -144,7 +144,7 @@
 #       - optimize
 #       - data
 
-- include: proxy_nginx.yml
+- import_tasks: proxy_nginx.yml
   when: kibana_proxy_nginx | bool
   tags:
     - kibana

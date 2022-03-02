@@ -83,7 +83,7 @@
     - config
     - update-config
 
-- include: packages_backports.yml
+- import_tasks: packages_backports.yml
   when: haproxy_backports | bool
 
 - name: Install HAProxy package
@@ -147,4 +147,4 @@
     - haproxy_allow_ip_nonlocal_bind is defined
     - haproxy_allow_ip_nonlocal_bind is not none
 
-- include: munin.yml
+- import_tasks: munin.yml

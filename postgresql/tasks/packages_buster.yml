@@ -5,7 +5,7 @@
     postgresql_version: '11'
   when: postgresql_version is none or postgresql_version | length == 0
 
-- include: pgdg-repo.yml
+- import_tasks: pgdg-repo.yml
   when: postgresql_version != '11'
 
 - name: Install postgresql package

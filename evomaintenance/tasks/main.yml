@@ -1,24 +1,24 @@
 ---
 
-- include: install_package_debian.yml
+- import_tasks: install_package_debian.yml
   when:
     - not (evomaintenance_install_vendor | bool)
     - ansible_distribution == "Debian"
 
-- include: install_vendor_debian.yml
+- import_tasks: install_vendor_debian.yml
   when:
     - evomaintenance_install_vendor | bool
     - ansible_distribution == "Debian"
 
-- include: install_vendor_other.yml
+- import_tasks: install_vendor_other.yml
   when:
     - evomaintenance_install_vendor | bool
     - ansible_distribution != "Debian"
 
 
-- include: config.yml
+- import_tasks: config.yml
 
-- include: minifirewall.yml
+- import_tasks: minifirewall.yml
   when:
     - evomaintenance_hook_db | bool
     - ansible_distribution == "Debian"

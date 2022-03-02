@@ -43,14 +43,14 @@
     - nextcloud
   when: ansible_python_version is version('3', '>=')
 
-- include: apache-system.yml
+- import_tasks: apache-system.yml
 
-- include: user.yml
+- import_tasks: user.yml
 
-- include: archive.yml
+- import_tasks: archive.yml
 
-- include: apache-vhost.yml
+- import_tasks: apache-vhost.yml
 
-- include: mysql-user.yml
+- import_tasks: mysql-user.yml
 
-- include: config.yml
+- import_tasks: config.yml

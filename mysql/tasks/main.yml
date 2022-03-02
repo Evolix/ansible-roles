@@ -4,46 +4,46 @@
   set_fact:
     mysql_restart_handler_name: "{{ mysql_restart_if_needed | bool | ternary('restart mysql', 'restart mysql (noop)') }}"
 
-- include_tasks: packages_stretch.yml
+- import_tasks: packages_stretch.yml
   when: ansible_distribution_major_version is version('9', '>=')
 
-- include_tasks: packages_jessie.yml
+- import_tasks: packages_jessie.yml
   when: ansible_distribution_release == "jessie"
 
 ## There is nothing to do with users on Debian 11+ - yet we need a /root/.my.cnf for compatibility
-- include_tasks: users_bullseye.yml
+- import_tasks: users_bullseye.yml
   when: ansible_distribution_major_version is version('11', '>=')
 
-- include_tasks: users_buster.yml
+- import_tasks: users_buster.yml
   when: ansible_distribution_release == "buster"
 
-- include_tasks: users_stretch.yml
+- import_tasks: users_stretch.yml
   when: ansible_distribution_release == "stretch"
 
-- include_tasks: users_jessie.yml
+- import_tasks: users_jessie.yml
   when: ansible_distribution_release == "jessie"
 
-- include_tasks: config_stretch.yml
+- import_tasks: config_stretch.yml
   when: ansible_distribution_major_version is version('9', '>=')
 
-- include_tasks: config_jessie.yml
+- import_tasks: config_jessie.yml
   when: ansible_distribution_release == "jessie"
 
-- include_tasks: replication.yml
+- import_tasks: replication.yml
   when: mysql_replication | bool
 
-- include_tasks: datadir.yml
+- import_tasks: datadir.yml
 
-- include_tasks: logdir.yml
+- import_tasks: logdir.yml
 
-- include_tasks: tmpdir.yml
+- import_tasks: tmpdir.yml
 
-- include_tasks: nrpe.yml
+- import_tasks: nrpe.yml
 
-- include_tasks: munin.yml
+- import_tasks: munin.yml
 
-- include_tasks: log2mail.yml
+- import_tasks: log2mail.yml
 
-- include_tasks: utils.yml
+- import_tasks: utils.yml
 
-- include_tasks: mysql_skip.yml
+- import_tasks: mysql_skip.yml

@@ -1,9 +1,9 @@
 ---
 
-- include_role:
+- import_role:
     name: evolix/remount-usr
 
-- include_tasks:
+- import_tasks:
     file: dump-server-state.yml
 
 - name: "/sbin/deny script is present"

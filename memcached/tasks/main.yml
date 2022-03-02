@@ -5,12 +5,12 @@
   tags:
     - memcached
 
-- include: instance-default.yml
+- import_tasks: instance-default.yml
   when: memcached_instance_name is undefined
 
-- include: instance-multi.yml
+- import_tasks: instance-multi.yml
   when: memcached_instance_name is defined
 
-- include: munin.yml
+- import_tasks: munin.yml
 
-- include: nrpe.yml
+- import_tasks: nrpe.yml

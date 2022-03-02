@@ -6,10 +6,10 @@
     msg: "Only compatible with Debian and OpenBSD"
 
 - name: Include Debian version
-  include: debian.yml
+  import_tasks: debian.yml
   when: ansible_distribution == "Debian"
 
 - name: Include OpenBSD version
-  include: openbsd.yml
+  import_tasks: openbsd.yml
   when: ansible_distribution == "OpenBSD"
 

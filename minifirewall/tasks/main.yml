@@ -64,11 +64,11 @@
     - minifirewall_main_file is defined
 
 - name: Install tasks (modern mode)
-  include: install.yml
+  import_tasks: install.yml
   when: minifirewall_install_mode != 'legacy'
 
 - name: Install tasks (legacy mode)
-  include: install.legacy.yml
+  import_tasks: install.legacy.yml
   when: minifirewall_install_mode == 'legacy'
 
 - name: Debug minifirewall_update_config
@@ -77,25 +77,25 @@
     verbosity: 1
 
 - name: Config tasks (modern mode)
-  include: config.yml
+  import_tasks: config.yml
   when:
     - minifirewall_install_mode != 'legacy'
     - minifirewall_update_config | bool
 
 - name: Config tasks (legacy mode)
-  include: config.legacy.yml
+  import_tasks: config.legacy.yml
   when:
     - minifirewall_install_mode == 'legacy'
     - minifirewall_update_config | bool
 
 - name: Utils tasks
-  include: utils.yml
+  import_tasks: utils.yml
 
 - name: NRPE tasks
-  include: nrpe.yml
+  import_tasks: nrpe.yml
 
 - name: Activation tasks
-  include: activate.yml
+  import_tasks: activate.yml
 
 - name: Debug minifirewall_tail_included
   debug:
@@ -103,13 +103,13 @@
     verbosity: 1
 
 - name: Tail tasks (modern mode)
-  include: tail.yml
+  import_tasks: tail.yml
   when:
     - minifirewall_install_mode != 'legacy'
     - minifirewall_tail_included | bool
 
 - name: Tail tasks (legacy mode)
-  include: tail.legacy.yml
+  import_tasks: tail.legacy.yml
   when:
     - minifirewall_install_mode == 'legacy'
     - minifirewall_tail_included | bool

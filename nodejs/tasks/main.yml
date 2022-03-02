@@ -72,5 +72,5 @@
     - packages
     - nodejs
 
-- include: yarn.yml
+- import_tasks: yarn.yml
   when: nodejs_install_yarn | bool

@@ -152,15 +152,15 @@
   notify: "reload squid"
   when: ansible_distribution_major_version is version('9', '>=')
 
-- include: systemd.yml
+- import_tasks: systemd.yml
   when: ansible_distribution_major_version is version('10', '>=')
 
-- include: logrotate_jessie.yml
+- import_tasks: logrotate_jessie.yml
   when: ansible_distribution_release == "jessie"
 
-- include: logrotate_stretch.yml
+- import_tasks: logrotate_stretch.yml
   when: ansible_distribution_major_version is version('9', '>=')
 
-- include: minifirewall.yml
+- import_tasks: minifirewall.yml
 
-- include: log2mail.yml
+- import_tasks: log2mail.yml

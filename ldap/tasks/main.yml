@@ -16,11 +16,11 @@
   notify: restart slapd
 
 - name: ldapvirc file
-  include: ldapvirc.yml
+  import_tasks: ldapvirc.yml
 
 - name: nagios config file for LDAP
-  include: nagios.yml
+  import_tasks: nagios.yml
 
 - name: initialize database
-  include: init.yml
+  import_tasks: init.yml
   when: not root_ldapvirc_path.stat.exists

@@ -1,6 +1,6 @@
 ---
 
-- include: install.yml
+- import_tasks: install.yml
 
-- include: cron.yml
+- import_tasks: cron.yml
   when: evocheck_update_crontab | bool

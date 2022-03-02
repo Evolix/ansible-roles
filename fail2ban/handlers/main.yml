@@ -3,8 +3,11 @@
   service:
     name: fail2ban
     state: restarted
+  tags:
+    - fail2ban
 
 - name: restart munin-node
   service:
     name: munin-node
     state: restarted
+  tags: fail2ban

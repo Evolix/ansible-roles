@@ -1,13 +1,13 @@
 ---
 
-- include: main_jessie.yml
+- import_tasks: main_jessie.yml
   when: ansible_distribution_release == "jessie"
 
-- include: main_stretch.yml
+- import_tasks: main_stretch.yml
   when: ansible_distribution_release == "stretch"
 
-- include: main_buster.yml
+- import_tasks: main_buster.yml
   when: ansible_distribution_release == "buster"
 
-- include: main_bullseye.yml
+- import_tasks: main_bullseye.yml
   when: ansible_distribution_major_version is version('11', '>=')

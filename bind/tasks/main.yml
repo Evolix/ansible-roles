@@ -126,4 +126,4 @@
     force: yes
   notify: restart bind
 
-- include: munin.yml
+- import_tasks: munin.yml

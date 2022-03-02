@@ -46,7 +46,7 @@
       - composer
       - libphp-phpmailer
 
-- include: sury_pre.yml
+- import_tasks: sury_pre.yml
   when: php_sury_enable
 
 - name: "Install PHP packages (Debian 12)"
@@ -80,13 +80,13 @@
     - /etc/php
     - /etc/php/{{ php_version }}
 
-- include: config_cli.yml
+- import_tasks: config_cli.yml
 - name: "Enforce permissions on PHP cli directory (Debian 12)"
   file:
     dest: /etc/php/{{ php_version }}/cli
     mode: "0755"
 
-- include: config_fpm.yml
+- import_tasks: config_fpm.yml
   when: php_fpm_enable
 
 - name: "Enforce permissions on PHP fpm directory (Debian 12)"
@@ -95,7 +95,7 @@
     mode: "0755"
   when: php_fpm_enable
 
-- include: config_apache.yml
+- import_tasks: config_apache.yml
   when: php_apache_enable
 
 - name: "Enforce permissions on PHP apache2 directory (Debian 12)"
@@ -104,5 +104,5 @@
     mode: "0755"
   when: php_apache_enable
 
-- include: sury_post.yml
+- import_tasks: sury_post.yml
   when: php_sury_enable

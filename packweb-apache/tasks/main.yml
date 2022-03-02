@@ -1,7 +1,7 @@
 ---
 
 - name: Dependencies are satisfied
-  include_tasks: dependencies.yml
+  import_tasks: dependencies.yml
 
 - fail:
     msg: only compatible with Debian >= 8
@@ -85,13 +85,13 @@
     regexp: '^DIR_MODE='
     line: 'DIR_MODE=0750'
 
-- include: apache.yml
+- import_tasks: apache.yml
 
-- include: phpmyadmin.yml
+- import_tasks: phpmyadmin.yml
 
-- include: awstats.yml
+- import_tasks: awstats.yml
 
-- include: fhs_retrictions.yml
+- import_tasks: fhs_retrictions.yml
   when: packweb_fhs_retrictions | bool
 
 - name: Periodically cache ftp directory sizes for ftpadmin.sh
@@ -100,5 +100,5 @@
     special_time: daily
     job: "/usr/share/scripts/evoadmin/stats.sh"
 
-- include: multiphp.yml
+- import_tasks: multiphp.yml
   when: packweb_multiphp_versions | length > 0

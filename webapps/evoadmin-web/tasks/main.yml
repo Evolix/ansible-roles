@@ -5,17 +5,17 @@
     msg: Please configure var evoadmin_contact_email
   when: evoadmin_contact_email is none or evoadmin_contact_email | length == 0
 
-- include: packages.yml
+- import_tasks: packages.yml
 
-- include: user.yml
+- import_tasks: user.yml
 
-- include: config.yml
+- import_tasks: config.yml
 
-- include: ssl.yml
+- import_tasks: ssl.yml
 
-- include: web.yml
+- import_tasks: web.yml
 
-- include: ftp.yml
+- import_tasks: ftp.yml
 
 - name: enable evoadmin-web link in default site index
   blockinfile:

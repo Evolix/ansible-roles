@@ -40,12 +40,12 @@
     var: ssh_allowusers
     verbosity: 1
 
-- include: ssh_allowgroups.yml
+- import_tasks: ssh_allowgroups.yml
   when:
     - ssh_allowgroups
     - not ssh_allowusers
 
-- include: ssh_allowusers.yml
+- include_tasks: ssh_allowusers.yml
   vars:
     user: "{{ item.value }}"
   loop: "{{ evolinux_users | dict2items }}"

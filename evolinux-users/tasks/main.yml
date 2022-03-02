@@ -12,7 +12,7 @@
   when: evolinux_users | length == 0
 
 - name: Create user accounts
-  include: user.yml
+  include_tasks: user.yml
   vars:
     user: "{{ item.value }}"
   loop: "{{ evolinux_users | dict2items }}"
@@ -21,8 +21,8 @@
     - evolinux_users | length > 0
 
 - name: Configure sudo
-  include: sudo.yml
+  import_tasks: sudo.yml
 
 - name: Configure SSH
-  include: ssh.yml
+  import_tasks: ssh.yml
   when: evolinux_users | length > 0

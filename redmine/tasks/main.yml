@@ -1,13 +1,13 @@
 ---
-- include: packages.yml
-- include: syslog.yml
-- include: user.yml
+- import_tasks: packages.yml
+- import_tasks: syslog.yml
+- import_tasks: user.yml
 - include_role:
     name: evolix/rbenv
   vars:
     - username: "{{ redmine_user }}"
-- include: config.yml
-- include: mysql.yml
-- include: source.yml
-- include: release.yml
-- include: nginx.yml
+- import_tasks: config.yml
+- import_tasks: mysql.yml
+- import_tasks: source.yml
+- import_tasks: release.yml
+- import_tasks: nginx.yml

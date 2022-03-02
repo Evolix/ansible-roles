@@ -1,4 +1,4 @@
 ---
-- include: packages.yml
+- import_tasks: packages.yml
 
-- include: nagios.yml
+- import_tasks: nagios.yml

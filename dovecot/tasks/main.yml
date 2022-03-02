@@ -78,7 +78,7 @@
   tags:
   - dovecot
 
-- include: munin.yml
+- import_tasks: munin.yml
   tags:
   - dovecot
 

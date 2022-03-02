@@ -60,4 +60,4 @@
   loop_control:
     loop_var: line_item
 
-- include: "mail_opensmtpd.yml"
+- import_tasks: "mail_opensmtpd.yml"

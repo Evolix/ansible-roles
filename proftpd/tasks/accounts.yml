@@ -1,5 +1,5 @@
 ---
-- include: accounts_password.yml
+- import_tasks: accounts_password.yml
   when: item.password is undefined
   loop: "{{ proftpd_accounts }}"
   tags:

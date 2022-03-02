@@ -9,24 +9,24 @@
     name: "{{ lxc_php_version }}"
     container_command: "apt-get update"
 
-- include: "php56.yml"
+- import_tasks: "php56.yml"
   when: lxc_php_version == "php56"
 
-- include: "php70.yml"
+- import_tasks: "php70.yml"
   when: lxc_php_version == "php70"
 
-- include: "php73.yml"
+- import_tasks: "php73.yml"
   when: lxc_php_version == "php73"
 
-- include: "php74.yml"
+- import_tasks: "php74.yml"
   when: lxc_php_version == "php74"
 
-- include: "php80.yml"
+- import_tasks: "php80.yml"
   when: lxc_php_version == "php80"
 
-- include: "php81.yml"
+- import_tasks: "php81.yml"
   when: lxc_php_version == "php81"
 
-- include: "umask.yml"
+- import_tasks: "umask.yml"
 
-- include: "misc.yml"
+- import_tasks: "misc.yml"

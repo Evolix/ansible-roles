@@ -10,12 +10,12 @@
     - ansible_distribution == "Debian"
 
 - name: Install and configure utilities
-  include: utils.yml
+  import_tasks: utils.yml
   tags:
     - etc-git
 
 - name: Configure repositories
-  include: repositories.yml
+  import_tasks: repositories.yml
   tags:
     - etc-git
   when: etc_git_config_repositories | bool

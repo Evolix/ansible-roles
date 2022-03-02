@@ -21,10 +21,10 @@
     set_fact:
       eni_interface_name: "{{ ansible_default_ipv4.interface }}"
 
-  - include: set_facts_from_systemd.yml
+  - import_tasks: set_facts_from_systemd.yml
     when: systemd_network_file.stat.exists
 
-  - include: set_facts_from_ansible.yml
+  - import_tasks: set_facts_from_ansible.yml
     when: not systemd_network_file.stat.exists
 
   - name: Check config (IPv4)
