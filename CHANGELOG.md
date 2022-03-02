@@ -25,6 +25,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Changed
 
 * elasticsearch: Use `/etc/elasticsearch/jvm.options.d/evolinux` instead of default `/etc/elasticsearch/jvm.options`
+* evolinux-users: check permissions for /etc/sudoers.d
+* evolinux-users: optimize sudo configuration
 * lxc: Fail if /var is nosuid
 * openvpn: make it compatible with OpenBSD and add some improvements
 

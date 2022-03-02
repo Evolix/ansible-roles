@@ -1,0 +1,13 @@
+---
+
+- name: "Add user to '{{ evolinux_sudo_group }}' group (Debian 9 or later)"
+  user:
+    name: '{{ user.name }}'
+    groups: "{{ evolinux_sudo_group }}"
+    append: yes
+
+- name: "Add user to 'adm' group (Debian 9 or later)"
+  user:
+    name: '{{ user.name }}'
+    groups: "adm"
+    append: yes

@@ -1,5 +1,13 @@
 ---
 
+- name: "/etc/sudoers.d presence and permissions"
+  file:
+    path: /etc/sudoers.d
+    owner: root
+    group: root
+    mode: "0750"
+    state: directory
+
 - name: "Verify 'evolinux' sudoers file presence (Debian 9 or later)"
   template:
     src: sudoers_stretch.j2
@@ -13,15 +21,3 @@
   group:
     name: "{{ evolinux_sudo_group }}"
     system: yes
-
-- name: "Add user to '{{ evolinux_sudo_group }}' group (Debian 9 or later)"
-  user:
-    name: '{{ user.name }}'
-    groups: "{{ evolinux_sudo_group }}"
-    append: yes
-
-- name: "Add user to 'adm' group (Debian 9 or later)"
-  user:
-    name: '{{ user.name }}'
-    groups: "adm"
-    append: yes

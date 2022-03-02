@@ -20,10 +20,6 @@
 
 - name: Configure sudo
   include: sudo.yml
-  vars:
-    user: "{{ item.value }}"
-  loop: "{{ evolinux_users | dict2items }}"
-  when: evolinux_users | length > 0
 
 - name: Configure SSH
   include: ssh.yml
