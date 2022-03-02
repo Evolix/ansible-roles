@@ -28,7 +28,7 @@
     owner: root
     group: root
     force: yes
-   tags:
+  tags:
     - keepalived
     - nrpe
 

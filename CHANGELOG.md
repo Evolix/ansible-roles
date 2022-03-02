@@ -16,6 +16,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Fixed
 
+* Repair keepalived role
+
 ### Removed
 
 ### Security
