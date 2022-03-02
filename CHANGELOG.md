@@ -12,6 +12,18 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [22.03] 2022-03-02
+
+### Added
+
 * apt: apt_hold_packages: broadcast message with wall, if present
 * evolinux-base: option to bypass raid-related tasks
 * Explicit permissions for systemd overrides
@@ -30,11 +42,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * lxc: Fail if /var is nosuid
 * openvpn: make it compatible with OpenBSD and add some improvements
 
-### Fixed
 
-### Removed
-
-### Security
 
 ## [22.01.3] 2022-01-31
 
