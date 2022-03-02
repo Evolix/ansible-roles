@@ -82,3 +82,24 @@
   tags:
   - dovecot
 
+- name: log2mail is installed
+  apt:
+    name: log2mail
+    state: present
+  tags: dovecot
+  
+- name: dovecot is configured in log2mail
+  blockinfile:
+    path: /etc/log2mail/config/mail.conf
+    create: true
+    owner: log2mail
+    group: adm
+    mode: "0640"
+    block: |
+      file = /var/log/mail.log
+      pattern = "Out of memory"
+      mailto = {{ log2mail_alert_email or general_alert_email | mandatory }}
+      template = /etc/log2mail/mail
+  notify: restart log2mail
+  tags: dovecot
+
