@@ -1,4 +1,4 @@
-# munin
+# Redis
 
 Installation and basic configuration of Redis.
 
