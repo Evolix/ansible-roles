@@ -33,7 +33,7 @@
     state: present
     special_time: "hourly"
     user: root
-    job: "rsync -a --delete /etc/libvirt/qemu/*xml {{ hostvars[kvm_pair]['lan.ip'] }}:/root/libvirt-{{ inventory_hostname }}/"
+    job: "if ! ls /etc/libvirt/qemu/*xml > /dev/null 2> /dev/null; then rsync -a --delete /etc/libvirt/qemu/*xml {{ hostvars[kvm_pair]['lan.ip'] }}:/root/libvirt-{{ inventory_hostname }}/; fi"
   when:
     - kvm_pair is defined
     - kvm_pair is not none
