@@ -426,37 +426,42 @@ backup_iptables() {
     debug "Backup iptables"
 
     iptables_bin=$(command -v iptables)
+    nft_bin=$(command -v nft)
 
-    if [ -n "${iptables_bin}" ]; then
-        last_result=$({ ${iptables_bin} -L -n -v; ${iptables_bin} -t filter -L -n -v; } > "${backup_dir}/iptables.txt")
-        last_rc=$?
-
-        if [ ${last_rc} -eq 0 ]; then
-            debug "* iptables OK"
-        else
-            debug "* iptables ERROR"
-            debug "${last_result}"
-            rc=10
-        fi
+    if [ -n "${nft_bin}" ]; then
+        debug "* nft found, skip iptables"
     else
-        debug "* iptables not found"
-    fi
+        if [ -n "${iptables_bin}" ]; then
+            last_result=$({ ${iptables_bin} -L -n -v; ${iptables_bin} -t filter -L -n -v; } >> "${backup_dir}/iptables.txt")
+            last_rc=$?
 
-    iptables_save_bin=$(command -v iptables-save)
-
-    if [ -n "${iptables_save_bin}" ]; then
-        last_result=$(${iptables_save_bin} > "${backup_dir}/iptables-save.txt")
-        last_rc=$?
-
-        if [ ${last_rc} -eq 0 ]; then
-            debug "* iptables-save OK"
+            if [ ${last_rc} -eq 0 ]; then
+                debug "* iptables OK"
+            else
+                debug "* iptables ERROR"
+                debug "${last_result}"
+                rc=10
+            fi
         else
-            debug "* iptables-save ERROR"
-            debug "${last_result}"
-            rc=10
+            debug "* iptables not found"
         fi
-    else
-        debug "* iptables-save not found"
+
+        iptables_save_bin=$(command -v iptables-save)
+
+        if [ -n "${iptables_save_bin}" ]; then
+            last_result=$(${iptables_save_bin} > "${backup_dir}/iptables-save.txt")
+            last_rc=$?
+
+            if [ ${last_rc} -eq 0 ]; then
+                debug "* iptables-save OK"
+            else
+                debug "* iptables-save ERROR"
+                debug "${last_result}"
+                rc=10
+            fi
+        else
+            debug "* iptables-save not found"
+        fi
     fi
 }
 
