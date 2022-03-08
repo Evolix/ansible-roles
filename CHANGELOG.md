@@ -14,6 +14,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* evolinux-base: backup-server-state release 22.03
+
 ### Fixed
 
 * Repair keepalived role
