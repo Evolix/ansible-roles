@@ -10,6 +10,12 @@
     - evomaintenance_install_vendor | bool
     - ansible_distribution == "Debian"
 
+- include: install_vendor_other.yml
+  when:
+    - evomaintenance_install_vendor | bool
+    - ansible_distribution != "Debian"
+
+
 - include: config.yml
 
 - include: minifirewall.yml

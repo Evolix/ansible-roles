@@ -1,0 +1,31 @@
+---
+
+- include_role:
+    name: evolix/remount-usr
+  tags:
+    - evomaintenance
+
+- name: /usr/share/scripts exists
+  file:
+    dest: /usr/share/scripts
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+  tags:
+    - evomaintenance
+
+- name: Evomaintenance script and template are installed
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+    force: yes
+    backup: yes
+  loop:
+    - { src: 'evomaintenance.sh', dest: '/usr/share/scripts/', mode: '0700' }
+    - { src: 'evomaintenance.tpl', dest: '/usr/share/scripts/', mode: '0600' }
+  tags:
+    - evomaintenance
