@@ -6,6 +6,8 @@
     state: present
   tags:
     - etc-git
+  when: 
+    - ansible_distribution == "Debian"
 
 - include_role:
     name: evolix/remount-usr
