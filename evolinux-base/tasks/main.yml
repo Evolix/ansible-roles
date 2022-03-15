@@ -14,6 +14,7 @@
     apt_install_basics: "{{ evolinux_apt_replace_default_sources }}"
     apt_install_evolix_public: "{{ evolinux_apt_public_sources }}"
     apt_upgrade: "{{ evolinux_apt_upgrade }}"
+    apt_basics_components: "{{ 'main contrib non-free' if ansible_virtualization_role == 'host' else 'main' }}"
   when: evolinux_apt_include | bool
 
 - name: /etc versioning with Git
