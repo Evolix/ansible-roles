@@ -4,9 +4,15 @@
   set_fact:
     minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | bool | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
 
+- name: Fail if minifirewall_main_file is defined
+  fail:
+    msg: "Variable minifirewall_main_file is deprecated and not configurable anymore."
+  when: minifirewall_main_file is defined
+
 - include: install.yml
 
 - include: config.yml
+  when: minifirewall_update_config | bool
 
 - include: nrpe.yml
 

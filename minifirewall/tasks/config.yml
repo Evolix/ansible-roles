@@ -9,11 +9,12 @@
 
 - name: Stat minifirewall config file (before)
   stat:
-    path: "{{ minifirewall_main_file }}"
+    path: "/etc/default/minifirewall"
   register: minifirewall_before
 
 - name: Check if minifirewall is running
-  shell: /sbin/iptables -L -n | grep -E "^(DROP\s+udp|ACCEPT\s+icmp)\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
+  shell:
+    cmd: /sbin/iptables -L -n | grep -E "^(DROP\s+udp|ACCEPT\s+icmp)\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
   changed_when: False
   failed_when: False
   check_mode: no
@@ -25,14 +26,14 @@
 
 - name: Begin marker for IP addresses
   lineinfile:
-    dest: "{{ minifirewall_main_file }}"
+    dest: "/etc/default/minifirewall"
     line: "# BEGIN ANSIBLE MANAGED BLOCK FOR IPS"
     insertbefore: '^# Main interface'
     create: no
 
 - name: End marker for IP addresses
   lineinfile:
-    dest: "{{ minifirewall_main_file }}"
+    dest: "/etc/default/minifirewall"
     create: no
     line: "# END ANSIBLE MANAGED BLOCK FOR IPS"
     insertafter: '^PRIVILEGIEDIPS='
@@ -43,12 +44,16 @@
     msg: You must provide at least 1 trusted IP
 
 - debug:
-    msg: "Warning: minifirewall_trusted_ips='0.0.0.0/0', the firewall is useless!"
-  when: minifirewall_trusted_ips == ["0.0.0.0/0"]
+    msg: "Warning: minifirewall_trusted_ips contains '0.0.0.0/0', the firewall is useless on IPv4!"
+  when: "'0.0.0.0/0' in minifirewall_trusted_ips"
+
+- debug:
+    msg: "Warning: minifirewall_trusted_ips contains '::/0', the firewall is useless on IPv6!"
+  when: "'::/0' in minifirewall_trusted_ips"
 
 - name: Configure IP addresses
   blockinfile:
-    dest: "{{ minifirewall_main_file }}"
+    dest: "/etc/default/minifirewall"
     marker: "# {mark} ANSIBLE MANAGED BLOCK FOR IPS"
     block: |
       # Main interface
@@ -60,8 +65,12 @@
       # Docker Mode
       # Changes the behaviour of minifirewall to not break the containers' network
       # For instance, turning it on will disable nat table purge
-      # Also, we'll add the DOCKER-USER chain, in iptable
-      DOCKER='{{ minifirewall_docker }}'
+      # Also, we'll add the DOCKER-USER chain, in iptables
+      #
+      # WARNING : If the port mapping is different between the host and the container
+      # (ie: Listen on :8090 on host, but :8080 in container)
+      # then you need to give the port used inside the container
+      DOCKER='off'
 
       # Trusted IPv4 local network
       # ...will be often IP/32 if you don't trust anything
@@ -78,21 +87,21 @@
 
 - name: Begin marker for ports
   lineinfile:
-    dest: "{{ minifirewall_main_file }}"
+    dest: "/etc/default/minifirewall"
     line: "# BEGIN ANSIBLE MANAGED BLOCK FOR PORTS"
     insertbefore: '^# Protected services'
     create: no
 
 - name: End marker for ports
   lineinfile:
-    dest: "{{ minifirewall_main_file }}"
+    dest: "/etc/default/minifirewall"
     line: "# END ANSIBLE MANAGED BLOCK FOR PORTS"
     insertafter: '^SERVICESUDP3='
     create: no
 
 - name: Configure ports
   blockinfile:
-    dest: "{{ minifirewall_main_file }}"
+    dest: "/etc/default/minifirewall"
     marker: "# {mark} ANSIBLE MANAGED BLOCK FOR PORTS"
     block: |
       # Protected services
@@ -116,7 +125,7 @@
 
 - name: Configure DNSSERVEURS
   lineinfile:
-    dest: "{{ minifirewall_main_file }}"
+    dest: "/etc/default/minifirewall"
     line: "DNSSERVEURS='{{ minifirewall_dns_servers | join(' ') }}'"
     regexp: "DNSSERVEURS='.*'"
     create: no
@@ -124,7 +133,7 @@
 
 - name: Configure HTTPSITES
   lineinfile:
-    dest: "{{ minifirewall_main_file }}"
+    dest: "/etc/default/minifirewall"
     line: "HTTPSITES='{{ minifirewall_http_sites | join(' ') }}'"
     regexp: "HTTPSITES='.*'"
     create: no
@@ -132,7 +141,7 @@
 
 - name: Configure HTTPSSITES
   lineinfile:
-    dest: "{{ minifirewall_main_file }}"
+    dest: "/etc/default/minifirewall"
     line: "HTTPSSITES='{{ minifirewall_https_sites | join(' ') }}'"
     regexp: "HTTPSSITES='.*'"
     create: no
@@ -140,7 +149,7 @@
 
 - name: Configure FTPSITES
   lineinfile:
-    dest: "{{ minifirewall_main_file }}"
+    dest: "/etc/default/minifirewall"
     line: "FTPSITES='{{ minifirewall_ftp_sites | join(' ') }}'"
     regexp: "FTPSITES='.*'"
     create: no
@@ -148,7 +157,7 @@
 
 - name: Configure SSHOK
   lineinfile:
-    dest: "{{ minifirewall_main_file }}"
+    dest: "/etc/default/minifirewall"
     line: "SSHOK='{{ minifirewall_ssh_ok | join(' ') }}'"
     regexp: "SSHOK='.*'"
     create: no
@@ -156,7 +165,7 @@
 
 - name: Configure SMTPOK
   lineinfile:
-    dest: "{{ minifirewall_main_file }}"
+    dest: "/etc/default/minifirewall"
     line: "SMTPOK='{{ minifirewall_smtp_ok | join(' ') }}'"
     regexp: "SMTPOK='.*'"
     create: no
@@ -164,7 +173,7 @@
 
 - name: Configure SMTPSECUREOK
   lineinfile:
-    dest: "{{ minifirewall_main_file }}"
+    dest: "/etc/default/minifirewall"
     line: "SMTPSECUREOK='{{ minifirewall_smtp_secure_ok | join(' ') }}'"
     regexp: "SMTPSECUREOK='.*'"
     create: no
@@ -172,29 +181,15 @@
 
 - name: Configure NTPOK
   lineinfile:
-    dest: "{{ minifirewall_main_file }}"
+    dest: "/etc/default/minifirewall"
     line: "NTPOK='{{ minifirewall_ntp_ok | join(' ') }}'"
     regexp: "NTPOK='.*'"
     create: no
   when: minifirewall_ntp_ok is not none
 
-- name: evomaintenance
-  lineinfile:
-    dest: "{{ minifirewall_main_file }}"
-    line: "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s {{ item }} -m state --state ESTABLISHED,RELATED -j ACCEPT"
-    insertafter: "^# EvoMaintenance"
-  loop: "{{ evomaintenance_hosts }}"
-
-- name: remove minifirewall example rule for the evomaintenance
-  lineinfile:
-    dest: "{{ minifirewall_main_file }}"
-    regexp: '^#.*(--sport 5432).*(-s X\.X\.X\.X)'
-    state: absent
-  when: evomaintenance_hosts | length > 0
-
 - name: Stat minifirewall config file (after)
   stat:
-    path: "{{ minifirewall_main_file }}"
+    path: "/etc/default/minifirewall"
   register: minifirewall_after
 
 - name: restart minifirewall

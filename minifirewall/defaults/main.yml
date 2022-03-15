@@ -1,12 +1,18 @@
 ---
 
-minifirewall_main_file: /etc/default/minifirewall
-minifirewall_tail_file: /etc/default/minifirewall.tail
+# Deprecated variable
+# minifirewall_main_file: /etc/default/minifirewall
+
+minifirewall_tail_file: zzz-tail
 minifirewall_tail_included: False
 minifirewall_tail_force: True
 
+# Overwrite files completely
 minifirewall_force_upgrade_script: False
 minifirewall_force_upgrade_config: False
+
+# Update specific values in configuration
+minifirewall_update_config: True
 
 minifirewall_git_url: "https://forge.evolix.org/minifirewall.git"
 minifirewall_checkout_path: "/tmp/minifirewall"
@@ -31,7 +37,7 @@ minifirewall_private_ports_tcp: [5666]
 minifirewall_private_ports_udp: []
 
 # Keep a null value to leave the setting as is
-# otherwise use an Array, eg. "minifirewall_ssh_ok: ['0.0.0.0/0']"
+# otherwise use an Array, eg. "minifirewall_ssh_ok: ['0.0.0.0/0', '::/0']"
 minifirewall_dns_servers: Null
 minifirewall_http_sites: Null
 minifirewall_https_sites: Null

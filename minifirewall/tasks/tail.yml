@@ -2,7 +2,7 @@
 - name: Add some rules at the end of minifirewall file
   template:
     src: "{{ item }}"
-    dest: "{{ minifirewall_tail_file }}"
+    dest: "/etc/minifirewall.d/{{ minifirewall_tail_file }}"
     force: "{{ minifirewall_tail_force | bool }}"
   loop: "{{ query('first_found', templates) }}"
   vars:
@@ -15,18 +15,6 @@
 
 - debug:
     var: minifirewall_tail_template
-    verbosity: 1
-
-- name: source minifirewall.tail at the end of the main file
-  blockinfile:
-    dest: "{{ minifirewall_main_file }}"
-    marker: "# {mark} ANSIBLE MANAGED EXTERNAL RULES"
-    block: ". {{ minifirewall_tail_file }}"
-    insertbefore: EOF
-  register: minifirewall_tail_source
-
-- debug:
-    var: minifirewall_tail_source
     verbosity: 1
 
 - name: restart minifirewall
