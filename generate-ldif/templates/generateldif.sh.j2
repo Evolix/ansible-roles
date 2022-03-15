@@ -709,6 +709,37 @@ EOT
 fi
 
 
+# bkctld
+if is_pkg_installed bkctld; then
+    bkctld_version=$(get_pkg_version bkctld)
+fi
+if [ -n "${bkctld_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=bkctld_jails,${computer_dn}
+NagiosEnabled: TRUE
+objectClass: EvoService
+ServiceName: bkctld_jails
+ServiceType: backup
+ServiceVersion: bkctld ${bkctld_version}
+
+dn: ServiceName=bkctld_setup,${computer_dn}
+NagiosEnabled: TRUE
+objectClass: EvoService
+ServiceName: bkctld_setup
+ServiceType: backup
+ServiceVersion: bkctld ${bkctld_version}
+
+dn: ServiceName=disk-worktime,${computer_dn}
+NagiosEnabled: TRUE
+objectClass: EvoService
+ServiceName: disk-worktime
+ServiceType: disk
+ServiceVersion: Undefined
+EOT
+fi
+
+
 # test if we have a stdout
 if [ -t 1 ]; then
   echo "Output is in ${ldif_file}"
