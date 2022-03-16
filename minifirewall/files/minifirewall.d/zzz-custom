@@ -1,0 +1,11 @@
+### custom minifirewall commands
+#
+# You can add any custom command in files like this;
+# either this one, or others in the same directory.
+# They are executed as shell scripts.
+# They are automatically included in alphanumerical order.
+# 
+# Within included files, you can use those helper functions :
+# * is_ipv6_enabled: returns true if IPv6 is enabled, or false
+# * is_docker_enabled: returns true if Docker mode is eabled, or false
+# * is_proxy_enabled: returns true if Proxy mode is enabled , or false

@@ -14,7 +14,16 @@
     owner: root
     group: root
 
-- name: include directory is present
+- name: configuration is copied
+  copy:
+    src: minifirewall.conf
+    dest: "/etc/default/minifirewall"
+    force: "{{ minifirewall_force_upgrade_config | default('no') }}"
+    mode: "0600"
+    owner: root
+    group: root
+
+- name: includes directory is present
   file:
     path: /etc/minifirewall.d/
     state: directory
@@ -22,11 +31,31 @@
     group: root
     mode: "0700"
 
-- name: configuration is copied
+- name: examples for includes are present
   copy:
-    src: minifirewall.conf
-    dest: "/etc/default/minifirewall"
-    force: "{{ minifirewall_force_upgrade_config | default('no') }}"
+    src: "minifirewall.d/"
+    dest: "/etc/minifirewall.d/"
+    force: "no"
     mode: "0600"
+    owner: root
+    group: root
+
+- include_role:
+    name: evolix/remount-usr
+
+- name: /usr/share/scripts exists
+  file:
+    dest: /usr/share/scripts
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+
+- name: blacklist-countries.sh is copied
+  copy:
+    src: blacklist-countries.sh
+    dest: /usr/share/scripts/blacklist-countries.sh
+    force: "no"
+    mode: "0700"
     owner: root
     group: root

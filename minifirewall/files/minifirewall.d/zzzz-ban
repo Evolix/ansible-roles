@@ -1,0 +1,7 @@
+### ban rules
+# 
+# If you have ban rules in /root/ban.iptables
+# (either manually or with /usr/share/scripts/blacklist-countries.sh)
+# ou can automatically import them with the following command:
+#
+# cat /root/ban.iptables | iptables-restore -n
