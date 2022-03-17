@@ -15,7 +15,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Changed
 
 * evocheck: upstream release 22.03
-* evolinux-base: backup-server-state release 22.03
+* evolinux-base: backup-server-state release 22.03.2
 * evolinux-base: Add non-free repos & install non-free firmware on dedicated hardware
 * generate-ldif: Add services check for bkctld
 * minifirewall: upstream release 22.03.2 and use includes directory

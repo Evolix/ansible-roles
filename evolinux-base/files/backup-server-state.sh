@@ -2,7 +2,7 @@
 
 PROGNAME="backup-server-state"
 
-VERSION="22.03"
+VERSION="22.03.2"
 readonly VERSION
 
 backup_dir=
@@ -34,8 +34,10 @@ Options
  -f, --force          keep existing backup directory and its content
      --etc            backup copy of /etc
      --no-etc         no backup copy of /etc (default)
-     --dpkg           backup copy of /var/lib/dpkg
-     --no-dpkg        no backup copy of /var/lib/dpkg (default)
+     --dpkg-full      backup copy of /var/lib/dpkg
+     --no-dpkg-full   no backup copy of /var/lib/dpkg (default)
+     --dpkg-status    backup copy of /var/lib/dpkg/status (default)
+     --no-dpkg-status no backup copy of /var/lib/dpkg/status
      --apt-states     backup copy of apt extended states (default)
      --no-apt-states  no backup copy of apt extended states
      --apt-config     backup copy of apt configuration (default)
@@ -471,7 +473,7 @@ backup_sysctl() {
     sysctl_bin=$(command -v sysctl)
 
     if [ -n "${sysctl_bin}" ]; then
-        last_result=$(${sysctl_bin} -a | sort -h > "${backup_dir}/sysctl.txt")
+        last_result=$(${sysctl_bin} -a --ignore 2>/dev/null | sort -h > "${backup_dir}/sysctl.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
