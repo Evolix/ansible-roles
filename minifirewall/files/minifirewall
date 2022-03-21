@@ -28,7 +28,7 @@
 # Description:       Firewall designed for standalone server
 ### END INIT INFO
 
-VERSION="22.03.2"
+VERSION="22.03.3"
 
 NAME="minifirewall"
 # shellcheck disable=SC2034
@@ -297,6 +297,11 @@ start() {
         ${IPT6} -A LOG_ACCEPT -j LOG  --log-prefix '[IPTABLES ACCEPT] : '
         ${IPT6} -A LOG_ACCEPT -j ACCEPT
     fi
+
+    # Source additional rules and commands
+    # * from legacy configuration file (/etc/default/minifirewall)
+    # * from configuration directory (/etc/minifirewall.d/*)
+    source_includes
 
     # Trusted ip addresses
     ${IPT} -N ONLYTRUSTED
@@ -712,9 +717,6 @@ start() {
     if is_legacy_config; then
         source_file_or_error "${config_file}"
     fi
-
-    # Source files present in optional directory
-    source_includes
 
     trap - INT TERM EXIT
 
