@@ -2,7 +2,7 @@
 
 PROGNAME="backup-server-state"
 
-VERSION="22.03.2"
+VERSION="22.03.3"
 readonly VERSION
 
 backup_dir=
@@ -667,15 +667,20 @@ backup_mysql_processes() {
     mysqladmin_bin=$(command -v mysqladmin)
 
     if [ -n "${mysqladmin_bin}" ]; then
-        last_result=$(${mysqladmin_bin} --verbose processlist > "${backup_dir}/mysql-processlist.txt")
-        last_rc=$?
+        # Look for local MySQL or MariaDB process
+        if pgrep mysqld > /dev/null || pgrep mariadbd > /dev/null; then
+            last_result=$(${mysqladmin_bin} --verbose processlist > "${backup_dir}/mysql-processlist.txt")
+            last_rc=$?
 
-        if [ ${last_rc} -eq 0 ]; then
-            debug "* mysqladmin OK"
+            if [ ${last_rc} -eq 0 ]; then
+                debug "* mysqladmin OK"
+            else
+                debug "* mysqladmin ERROR"
+                debug "${last_result}"
+                rc=10
+            fi
         else
-            debug "* mysqladmin ERROR"
-            debug "${last_result}"
-            rc=10
+            debug "* no mysqld or mariadbd process is running"
         fi
     else
         debug "* mysqladmin not found"
