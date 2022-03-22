@@ -434,7 +434,18 @@ backup_iptables() {
         debug "* nft found, skip iptables"
     else
         if [ -n "${iptables_bin}" ]; then
-            last_result=$({ ${iptables_bin} -L -n -v; ${iptables_bin} -t filter -L -n -v; } >> "${backup_dir}/iptables.txt")
+            last_result=$({ ${iptables_bin} -L -n -v; ${iptables_bin} -t filter -L -n -v; } >> "${backup_dir}/iptables-v.txt")
+            last_rc=$?
+
+            if [ ${last_rc} -eq 0 ]; then
+                debug "* iptables -v OK"
+            else
+                debug "* iptables -v ERROR"
+                debug "${last_result}"
+                rc=10
+            fi
+
+            last_result=$({ ${iptables_bin} -L -n; ${iptables_bin} -t filter -L -n; } >> "${backup_dir}/iptables.txt")
             last_rc=$?
 
             if [ ${last_rc} -eq 0 ]; then
