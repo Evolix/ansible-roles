@@ -4,7 +4,7 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
-VERSION="22.03"
+VERSION="22.03.1"
 readonly VERSION
 
 # base functions
@@ -570,7 +570,7 @@ check_network_interfaces() {
 # Verify if all if are in auto
 check_autoif() {
     if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep -E -v "(lo|vnet|docker|veth|tun|tap|macvtap|vrrp)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
+        interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep -E -v "(lo|vnet|docker|veth|tun|tap|macvtap|vrrp|lxcbr)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
     else
         interfaces=$(/sbin/ifconfig -s | tail -n +2 | grep -E -v "^(lo|vnet|docker|veth|tun|tap|macvtap|vrrp)" | cut -d " " -f 1 |tr "\n" " ")
     fi
