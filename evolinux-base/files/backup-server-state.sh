@@ -2,7 +2,7 @@
 
 PROGNAME="backup-server-state"
 
-VERSION="22.03.3"
+VERSION="22.03.4"
 readonly VERSION
 
 backup_dir=
