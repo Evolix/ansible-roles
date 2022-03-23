@@ -19,6 +19,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-base: Add non-free repos & install non-free firmware on dedicated hardware
 * generate-ldif: Add services check for bkctld
 * minifirewall: upstream release 22.03.3 and use includes directory
+* openvpn: use a subnet topology instead of the net30 default topology
 
 ### Fixed
 
