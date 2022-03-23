@@ -79,6 +79,10 @@
     - redis
     - nrpe
 
+- name: "Remount /usr with RW for 'install check_redis instance'"
+  include_role:
+    name: evolix/remount-usr
+
 - name: install check_redis_instances
   copy:
     src: check_redis_instances.sh

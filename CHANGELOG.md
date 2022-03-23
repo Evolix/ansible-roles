@@ -25,6 +25,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * Repair keepalived role
 * generate-ldif: Correct generated entries for php-fpm in containers
+* redis: Remount /usr with RW before adding nagios plugin
 
 ### Removed
 
