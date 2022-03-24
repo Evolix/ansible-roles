@@ -2,7 +2,7 @@
 
 PROGNAME="backup-server-state"
 
-VERSION="22.03.4"
+VERSION="22.03.5"
 readonly VERSION
 
 backup_dir=
@@ -46,6 +46,8 @@ Options
      --no-packages    no backup copy of dpkg selections
      --processes      backup copy of process list (default)
      --no-processes   no backup copy of process list
+     --uname          backup copy of uname (default)
+     --no-uname       no backup copy of uname
      --uptime         backup of uptime value (default)
      --no-uptime      no backup of uptime value
      --netstat        backup copy of netstat (default)
@@ -70,8 +72,8 @@ Options
      --no-dmesg       no backup copy of dmesg
      --mysql          backup copy of mysql processes (default)
      --no-mysql       no backup copy of mysql processes
-     --services       backup copy of services states (default)
-     --no-services    no backup copy of services states
+     --systemctl      backup copy of services states (default)
+     --no-systemctl   no backup copy of services states
  -v, --verbose        print details about backup steps
  -V, --version        print version and exit
  -h, --help           print this message and exit
