@@ -15,7 +15,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Changed
 
 * evocheck: upstream release 22.03.1
-* evolinux-base: backup-server-state release 22.03.3
+* evolinux-base: backup-server-state release 22.03.5
 * evolinux-base: Add non-free repos & install non-free firmware on dedicated hardware
 * generate-ldif: Add services check for bkctld
 * minifirewall: upstream release 22.03.3 and use includes directory
@@ -26,7 +26,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * Repair keepalived role
 * generate-ldif: Correct generated entries for php-fpm in containers
 * redis: Remount /usr with RW before adding nagios plugin
-* evolinux-base: fix show_help in backup-server-state.sh
 
 ### Removed
 
