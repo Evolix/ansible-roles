@@ -14,6 +14,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* minifirewall: tail template follows symlinks
+
 ### Fixed
 
 ### Removed
