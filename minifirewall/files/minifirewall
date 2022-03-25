@@ -28,7 +28,7 @@
 # Description:       Firewall designed for standalone server
 ### END INIT INFO
 
-VERSION="22.03.3"
+VERSION="22.03.4"
 
 NAME="minifirewall"
 # shellcheck disable=SC2034
@@ -97,6 +97,21 @@ BACKUPSERVERS=''
 
 LEGACY_CONFIG='off'
 
+## pseudo dry-run :
+## Uncomment and call these functions instead of the real iptables and ip6tables commands
+# IPT="fake_iptables"
+# IPT6="fake_ip6tables"
+# fake_iptables() {
+#     printf "DRY-RUN iptables %s\n" "$*"
+# }
+# fake_ip6tables() {
+#     printf "DRY-RUN ip6tables %s\n" "$*"
+# }
+## Beware that commands executed from included files are not modified by this trick.
+
+sort_values() {
+    echo "$*" | tr ' ' '\n' | sort -h
+}
 is_ipv6_enabled() {
     test "${IPV6}" != "off"
 }
@@ -302,6 +317,31 @@ start() {
     # * from legacy configuration file (/etc/default/minifirewall)
     # * from configuration directory (/etc/minifirewall.d/*)
     source_includes
+
+    # IP/ports lists are sorted to have consistent ordering
+    # You can disable this feature by simply commenting the following lines
+    LOOPBACK=$(sort_values ${LOOPBACK})
+    INTLAN=$(sort_values ${INTLAN})
+    TRUSTEDIPS=$(sort_values ${TRUSTEDIPS})
+    PRIVILEGIEDIPS=$(sort_values ${PRIVILEGIEDIPS})
+    SERVICESTCP1p=$(sort_values ${SERVICESTCP1p})
+    SERVICESUDP1p=$(sort_values ${SERVICESUDP1p})
+    SERVICESTCP1=$(sort_values ${SERVICESTCP1})
+    SERVICESUDP1=$(sort_values ${SERVICESUDP1})
+    SERVICESTCP2=$(sort_values ${SERVICESTCP2})
+    SERVICESUDP2=$(sort_values ${SERVICESUDP2})
+    SERVICESTCP3=$(sort_values ${SERVICESTCP3})
+    SERVICESUDP3=$(sort_values ${SERVICESUDP3})
+    DNSSERVEURS=$(sort_values ${DNSSERVEURS})
+    HTTPSITES=$(sort_values ${HTTPSITES})
+    HTTPSSITES=$(sort_values ${HTTPSSITES})
+    FTPSITES=$(sort_values ${FTPSITES})
+    SSHOK=$(sort_values ${SSHOK})
+    SMTPOK=$(sort_values ${SMTPOK})
+    SMTPSECUREOK=$(sort_values ${SMTPSECUREOK})
+    NTPOK=$(sort_values ${NTPOK})
+    PROXYBYPASS=$(sort_values ${PROXYBYPASS})
+    BACKUPSERVERS=$(sort_values ${BACKUPSERVERS})
 
     # Trusted ip addresses
     ${IPT} -N ONLYTRUSTED
