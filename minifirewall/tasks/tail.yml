@@ -4,6 +4,7 @@
     src: "{{ item }}"
     dest: "/etc/minifirewall.d/{{ minifirewall_tail_file }}"
     force: "{{ minifirewall_tail_force | bool }}"
+    follow: yes
   loop: "{{ query('first_found', templates) }}"
   vars:
     templates:
