@@ -2,7 +2,7 @@
 
 PROGNAME="dump-server-state"
 
-VERSION="22.03.6"
+VERSION="22.03.7"
 readonly VERSION
 
 dump_dir=
@@ -808,24 +808,61 @@ while :; do
             FORCE=1
             ;;
 
-        -d|--dump-dir|--backup-dir)
+        -d|--dump-dir)
             # with value separated by space
             if [ -n "$2" ]; then
                 dump_dir=$2
                 shift
             else
-                printf 'ERROR: "-d|--dump-dir|--backup-dir" requires a non-empty option argument.\n' >&2
+                printf 'ERROR: "-d|--dump-dir" requires a non-empty option argument.\n' >&2
                 exit 1
             fi
             ;;
-        --dump-dir=?*|--backup-dir=?*)
+        --dump-dir=?*)
             # with value speparated by =
             dump_dir=${1#*=}
             ;;
-        --dump-dir=|--backup-dir=)
+        --dump-dir=)
             # without value
-            printf 'ERROR: "--dump-dir|--backup-dir" requires a non-empty option argument.\n' >&2
+            printf 'ERROR: "--dump-dir" requires a non-empty option argument.\n' >&2
             exit 1
+            ;;
+
+        --backup-dir)
+            printf 'WARNING: "--backup-dir" is deprecated in favor of "--dump-dir".\n'
+            if [ -n "${dump_dir}" ]; then
+                debug "Dump directory is already set, let's ignore this one."
+            else
+                debug "Dump directory is not set already, let's stay backward compatible."
+                # with value separated by space
+                if [ -n "$2" ]; then
+                    dump_dir=$2
+                    shift
+                else
+                    printf 'ERROR: "--backup-dir" requires a non-empty option argument.\n' >&2
+                    exit 1
+                fi
+            fi
+            ;;
+        --backup-dir=?*)
+            # with value speparated by =
+            printf 'WARNING: "--backup-dir" is deprecated in favor of "--dump-dir".\n'
+            if [ -n "${dump_dir}" ]; then
+                debug "Dump directory is already set, let's ignore this one."
+            else
+                debug "Dump directory is not set already, let's stay backward compatible."
+                dump_dir=${1#*=}
+            fi
+            ;;
+        --backup-dir=)
+            # without value
+            printf 'WARNING: "--backup-dir" is deprecated in favor of "--dump-dir".\n'
+            if [ -n "${dump_dir}" ]; then
+                debug "Dump directory is already set, let's ignore this one."
+            else
+                printf 'ERROR: "--backup-dir" requires a non-empty option argument.\n' >&2
+                exit 1
+            fi
             ;;
 
         --etc)
