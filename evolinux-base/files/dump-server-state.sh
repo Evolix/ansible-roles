@@ -3,7 +3,7 @@
 PROGNAME="dump-server-state"
 REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
 
-VERSION="22.03.8"
+VERSION="22.03.9"
 readonly VERSION
 
 dump_dir=
@@ -38,11 +38,13 @@ Main options
  -d, --dump-dir        path to the directory where data will be stored
      --backup-dir      legacy option for dump directory
  -f, --force           keep existing dump directory and its content
- -v, --verbose         print details about each step
+ -v, --verbose         print details about each task
  -V, --version         print version and exit
  -h, --help            print this message and exit
 
-Dump options
+Tasks options
+ --all                 reset options to execute all tasks
+ --none                reset options to execute no task
  --[no-]etc            copy of /etc (default: no)
  --[no-]dpkg-full      copy of /var/lib/dpkg (default: no)
  --[no-]dpkg-status    copy of /var/lib/dpkg/status (default: yes)
@@ -64,6 +66,12 @@ Dump options
  --[no-]dmesg          copy of dmesg (default: yes)
  --[no-]mysql          copy of mysql processes (default: yes)
  --[no-]systemctl      copy of systemd services states (default: yes)
+
+Tasks options order matters. They are evaluated from left to right.
+Examples :
+* "[…] --none --uname" will do only the uname task
+* "[…] --all --no-etc" will do everything but the etc task
+* "[…] --etc --none --mysql" will do only the mysql task
 END
 }
 debug() {
@@ -73,7 +81,7 @@ debug() {
 }
 
 create_dump_dir() {
-    debug "## Create ${dump_dir}"
+    debug "Task: Create ${dump_dir}"
 
     last_result=$(mkdir -p "${dump_dir}" && chmod -R 755 "${dump_dir}")
     last_rc=$?
@@ -87,8 +95,8 @@ create_dump_dir() {
     fi
 }
 
-do_etc() {
-    debug "## /etc"
+task_etc() {
+    debug "Task: /etc"
 
     rsync_bin=$(command -v rsync)
 
@@ -118,7 +126,7 @@ do_etc() {
     fi
 }
 
-do_apt_states() {
+task_apt_states() {
     apt_dir="/"
     apt_dir_state="var/lib/apt"
     apt_dir_state_extended_states="extended_states"
@@ -133,7 +141,7 @@ do_apt_states() {
     extended_states="${apt_dir}/${apt_dir_state}/${apt_dir_state_extended_states}"
 
     if [ -f "${extended_states}" ]; then
-        debug "## APT states"
+        debug "Task: APT states"
 
         last_result=$(cp -r "${extended_states}" "${dump_dir}/apt-extended-states.txt")
         last_rc=$?
@@ -148,8 +156,8 @@ do_apt_states() {
     fi
 }
 
-do_apt_config() {
-    debug "## APT config"
+task_apt_config() {
+    debug "Task: APT config"
 
     apt_config_bin=$(command -v apt-config)
 
@@ -169,8 +177,8 @@ do_apt_config() {
     fi
 }
 
-do_dpkg_full() {
-    debug "## DPkg full state"
+task_dpkg_full() {
+    debug "Task: DPkg full state"
 
     dir_state_status="/var/lib/dpkg/status"
 
@@ -222,8 +230,8 @@ do_dpkg_full() {
     fi
 }
 
-do_dpkg_status() {
-    debug "## DPkg status"
+task_dpkg_status() {
+    debug "Task: DPkg status"
 
     dir_state_status="/var/lib/dpkg/status"
 
@@ -245,8 +253,8 @@ do_dpkg_status() {
     fi
 }
 
-do_packages() {
-    debug "## List of installed package"
+task_packages() {
+    debug "Task: List of installed package"
 
     dpkg_bin=$(command -v dpkg)
 
@@ -266,8 +274,8 @@ do_packages() {
     fi
 }
 
-do_uname() {
-    debug "## uname"
+task_uname() {
+    debug "Task: uname"
 
     last_result=$(uname -a > "${dump_dir}/uname.txt")
     last_rc=$?
@@ -281,8 +289,8 @@ do_uname() {
     fi
 }
 
-do_uptime() {
-    debug "## uptime"
+task_uptime() {
+    debug "Task: uptime"
 
     last_result=$(uptime > "${dump_dir}/uptime.txt")
     last_rc=$?
@@ -296,8 +304,8 @@ do_uptime() {
     fi
 }
 
-do_processes() {
-    debug "## Process list"
+task_processes() {
+    debug "Task: Process list"
 
     last_result=$(ps fauxw > "${dump_dir}/ps.txt")
     last_rc=$?
@@ -326,8 +334,8 @@ do_processes() {
     fi
 }
 
-do_netstat() {
-    debug "## Network status"
+task_netstat() {
+    debug "Task: Network status"
 
     ss_bin=$(command -v ss)
 
@@ -364,8 +372,8 @@ do_netstat() {
     fi
 }
 
-do_netcfg() {
-    debug "## Network configuration"
+task_netcfg() {
+    debug "Task: Network configuration"
 
     ip_bin=$(command -v ip)
 
@@ -413,8 +421,8 @@ do_netcfg() {
     fi
 }
 
-do_iptables() {
-    debug "## iptables"
+task_iptables() {
+    debug "Task: iptables"
 
     iptables_bin=$(command -v iptables)
     nft_bin=$(command -v nft)
@@ -467,8 +475,8 @@ do_iptables() {
     fi
 }
 
-do_sysctl() {
-    debug "## sysctl values"
+task_sysctl() {
+    debug "Task: sysctl values"
 
     sysctl_bin=$(command -v sysctl)
 
@@ -488,8 +496,8 @@ do_sysctl() {
     fi
 }
 
-do_virsh() {
-    debug "## virsh list"
+task_virsh() {
+    debug "Task: virsh list"
 
     virsh_bin=$(command -v virsh)
 
@@ -509,8 +517,8 @@ do_virsh() {
     fi
 }
 
-do_lxc() {
-    debug "## lxc list"
+task_lxc() {
+    debug "Task: lxc list"
 
     lxc_ls_bin=$(command -v lxc-ls)
 
@@ -530,8 +538,8 @@ do_lxc() {
     fi
 }
 
-do_disks() {
-    debug "## Disks"
+task_disks() {
+    debug "Task: Disks"
 
     lsblk_bin=$(command -v lsblk)
     awk_bin=$(command -v awk)
@@ -581,8 +589,8 @@ do_disks() {
     fi
 }
 
-do_mount() {
-    debug "## Mount points"
+task_mount() {
+    debug "Task: Mount points"
 
     findmnt_bin=$(command -v findmnt)
 
@@ -619,8 +627,8 @@ do_mount() {
     fi
 }
 
-do_df() {
-    debug "## df"
+task_df() {
+    debug "Task: df"
 
     df_bin=$(command -v df)
 
@@ -640,8 +648,8 @@ do_df() {
     fi
 }
 
-do_dmesg() {
-    debug "## dmesg"
+task_dmesg() {
+    debug "Task: dmesg"
 
     dmesg_bin=$(command -v dmesg)
 
@@ -661,8 +669,8 @@ do_dmesg() {
     fi
 }
 
-do_mysql_processes() {
-    debug "## MySQL processes"
+task_mysql_processes() {
+    debug "Task: MySQL processes"
 
     mysqladmin_bin=$(command -v mysqladmin)
 
@@ -687,8 +695,8 @@ do_mysql_processes() {
     fi
 }
 
-do_systemctl() {
-    debug "## Systemd services"
+task_systemctl() {
+    debug "Task: Systemd services"
 
     systemctl_bin=$(command -v systemctl)
 
@@ -708,7 +716,6 @@ do_systemctl() {
     fi
 }
 
-
 main() {
     if [ -z "${dump_dir}" ]; then
         echo "ERROR: You must provide the --dump-dir argument" >&2
@@ -724,68 +731,68 @@ main() {
         create_dump_dir
     fi
 
-    if [ "${DO_ETC}" -eq 1 ]; then
-        do_etc
+    if [ "${TASK_ETC}" -eq 1 ]; then
+        task_etc
     fi
-    if [ "${DO_DPKG_FULL}" -eq 1 ]; then
-        do_dpkg_full
+    if [ "${TASK_DPKG_FULL}" -eq 1 ]; then
+        task_dpkg_full
     fi
-    if [ "${DO_DPKG_STATUS}" -eq 1 ]; then
-        do_dpkg_status
+    if [ "${TASK_DPKG_STATUS}" -eq 1 ]; then
+        task_dpkg_status
     fi
-    if [ "${DO_APT_STATES}" -eq 1 ]; then
-        do_apt_states
+    if [ "${TASK_APT_STATES}" -eq 1 ]; then
+        task_apt_states
     fi
-    if [ "${DO_APT_CONFIG}" -eq 1 ]; then
-        do_apt_config
+    if [ "${TASK_APT_CONFIG}" -eq 1 ]; then
+        task_apt_config
     fi
-    if [ "${DO_PACKAGES}" -eq 1 ]; then
-        do_packages
+    if [ "${TASK_PACKAGES}" -eq 1 ]; then
+        task_packages
     fi
-    if [ "${DO_PROCESSES}" -eq 1 ]; then
-        do_processes
+    if [ "${TASK_PROCESSES}" -eq 1 ]; then
+        task_processes
     fi
-    if [ "${DO_UPTIME}" -eq 1 ]; then
-        do_uptime
+    if [ "${TASK_UPTIME}" -eq 1 ]; then
+        task_uptime
     fi
-    if [ "${DO_UNAME}" -eq 1 ]; then
-        do_uname
+    if [ "${TASK_UNAME}" -eq 1 ]; then
+        task_uname
     fi
-    if [ "${DO_NETSTAT}" -eq 1 ]; then
-        do_netstat
+    if [ "${TASK_NETSTAT}" -eq 1 ]; then
+        task_netstat
     fi
-    if [ "${DO_NETCFG}" -eq 1 ]; then
-        do_netcfg
+    if [ "${TASK_NETCFG}" -eq 1 ]; then
+        task_netcfg
     fi
-    if [ "${DO_IPTABLES}" -eq 1 ]; then
-        do_iptables
+    if [ "${TASK_IPTABLES}" -eq 1 ]; then
+        task_iptables
     fi
-    if [ "${DO_SYSCTL}" -eq 1 ]; then
-        do_sysctl
+    if [ "${TASK_SYSCTL}" -eq 1 ]; then
+        task_sysctl
     fi
-    if [ "${DO_VIRSH}" -eq 1 ]; then
-        do_virsh
+    if [ "${TASK_VIRSH}" -eq 1 ]; then
+        task_virsh
     fi
-    if [ "${DO_LXC}" -eq 1 ]; then
-        do_lxc
+    if [ "${TASK_LXC}" -eq 1 ]; then
+        task_lxc
     fi
-    if [ "${DO_DISKS}" -eq 1 ]; then
-        do_disks
+    if [ "${TASK_DISKS}" -eq 1 ]; then
+        task_disks
     fi
-    if [ "${DO_MOUNT}" -eq 1 ]; then
-        do_mount
+    if [ "${TASK_MOUNT}" -eq 1 ]; then
+        task_mount
     fi
-    if [ "${DO_DF}" -eq 1 ]; then
-        do_df
+    if [ "${TASK_DF}" -eq 1 ]; then
+        task_df
     fi
-    if [ "${DO_DMESG}" -eq 1 ]; then
-        do_dmesg
+    if [ "${TASK_DMESG}" -eq 1 ]; then
+        task_dmesg
     fi
-    if [ "${DO_MYSQL_PROCESSES}" -eq 1 ]; then
-        do_mysql_processes
+    if [ "${TASK_MYSQL_PROCESSES}" -eq 1 ]; then
+        task_mysql_processes
     fi
-    if [ "${DO_SYSTEMCTL}" -eq 1 ]; then
-        do_systemctl
+    if [ "${TASK_SYSTEMCTL}" -eq 1 ]; then
+        task_systemctl
     fi
 
 
@@ -870,151 +877,207 @@ while :; do
             fi
             ;;
 
+        --all)
+            for option in \
+                TASK_ETC \
+                TASK_DPKG_FULL \
+                TASK_DPKG_STATUS \
+                TASK_APT_STATES \
+                TASK_APT_CONFIG \
+                TASK_PACKAGES \
+                TASK_PROCESSES \
+                TASK_UNAME \
+                TASK_UPTIME \
+                TASK_NETSTAT \
+                TASK_NETCFG \
+                TASK_IPTABLES \
+                TASK_SYSCTL \
+                TASK_VIRSH \
+                TASK_LXC \
+                TASK_DISKS \
+                TASK_MOUNT \
+                TASK_DF \
+                TASK_DMESG \
+                TASK_MYSQL_PROCESSES \
+                TASK_SYSTEMCTL
+            do
+                eval "${option}=1"
+            done
+            ;;
+
+        --none)
+            for option in \
+                TASK_ETC \
+                TASK_DPKG_FULL \
+                TASK_DPKG_STATUS \
+                TASK_APT_STATES \
+                TASK_APT_CONFIG \
+                TASK_PACKAGES \
+                TASK_PROCESSES \
+                TASK_UNAME \
+                TASK_UPTIME \
+                TASK_NETSTAT \
+                TASK_NETCFG \
+                TASK_IPTABLES \
+                TASK_SYSCTL \
+                TASK_VIRSH \
+                TASK_LXC \
+                TASK_DISKS \
+                TASK_MOUNT \
+                TASK_DF \
+                TASK_DMESG \
+                TASK_MYSQL_PROCESSES \
+                TASK_SYSTEMCTL
+            do
+                eval "${option}=0"
+            done
+            ;;
+
         --etc)
-            DO_ETC=1
+            TASK_ETC=1
             ;;
         --no-etc)
-            DO_ETC=0
+            TASK_ETC=0
             ;;
 
         --dpkg-full)
-            DO_DPKG_FULL=1
+            TASK_DPKG_FULL=1
             ;;
         --no-dpkg-full)
-            DO_DPKG_FULL=0
+            TASK_DPKG_FULL=0
             ;;
 
         --dpkg-status)
-            DO_DPKG_STATUS=1
+            TASK_DPKG_STATUS=1
             ;;
         --no-dpkg-status)
-            DO_DPKG_STATUS=0
+            TASK_DPKG_STATUS=0
             ;;
 
         --apt-states)
-            DO_APT_STATES=1
+            TASK_APT_STATES=1
             ;;
         --no-apt-states)
-            DO_APT_STATES=0
+            TASK_APT_STATES=0
             ;;
 
         --apt-config)
-            DO_APT_CONFIG=1
+            TASK_APT_CONFIG=1
             ;;
         --no-apt-config)
-            DO_APT_CONFIG=0
+            TASK_APT_CONFIG=0
             ;;
 
         --packages)
-            DO_PACKAGES=1
+            TASK_PACKAGES=1
             ;;
         --no-packages)
-            DO_PACKAGES=0
+            TASK_PACKAGES=0
             ;;
 
         --processes)
-            DO_PROCESSES=1
+            TASK_PROCESSES=1
             ;;
         --no-processes)
-            DO_PROCESSES=0
+            TASK_PROCESSES=0
             ;;
 
         --uptime)
-            DO_UPTIME=1
+            TASK_UPTIME=1
             ;;
         --no-uptime)
-            DO_UPTIME=0
+            TASK_UPTIME=0
             ;;
 
         --uname)
-            DO_UNAME=1
+            TASK_UNAME=1
             ;;
         --no-uname)
-            DO_UNAME=0
+            TASK_UNAME=0
             ;;
 
         --netstat)
-            DO_NETSTAT=1
+            TASK_NETSTAT=1
             ;;
         --no-netstat)
-            DO_NETSTAT=0
+            TASK_NETSTAT=0
             ;;
 
         --netcfg)
-            DO_NETCFG=1
+            TASK_NETCFG=1
             ;;
         --no-netcfg)
-            DO_NETCFG=0
+            TASK_NETCFG=0
             ;;
 
         --iptables)
-            DO_IPTABLES=1
+            TASK_IPTABLES=1
             ;;
         --no-iptables)
-            DO_IPTABLES=0
+            TASK_IPTABLES=0
             ;;
 
         --sysctl)
-            DO_SYSCTL=1
+            TASK_SYSCTL=1
             ;;
         --no-sysctl)
-            DO_SYSCTL=0
+            TASK_SYSCTL=0
             ;;
 
         --virsh)
-            DO_VIRSH=1
+            TASK_VIRSH=1
             ;;
         --no-virsh)
-            DO_VIRSH=0
+            TASK_VIRSH=0
             ;;
 
         --lxc)
-            DO_LXC=1
+            TASK_LXC=1
             ;;
         --no-lxc)
-            DO_LXC=0
+            TASK_LXC=0
             ;;
 
         --disks)
-            DO_DISKS=1
+            TASK_DISKS=1
             ;;
         --no-disks)
-            DO_DISKS=0
+            TASK_DISKS=0
             ;;
 
         --mount)
-            DO_MOUNT=1
+            TASK_MOUNT=1
             ;;
         --no-mount)
-            DO_MOUNT=0
+            TASK_MOUNT=0
             ;;
 
         --df)
-            DO_DF=1
+            TASK_DF=1
             ;;
         --no-df)
-            DO_DF=0
+            TASK_DF=0
             ;;
 
         --dmesg)
-            DO_DMESG=1
+            TASK_DMESG=1
             ;;
         --no-dmesg)
-            DO_DMESG=0
+            TASK_DMESG=0
             ;;
 
         --mysql-processes)
-            DO_MYSQL_PROCESSES=1
+            TASK_MYSQL_PROCESSES=1
             ;;
         --no-mysql-processes)
-            DO_MYSQL_PROCESSES=0
+            TASK_MYSQL_PROCESSES=0
             ;;
 
         --systemctl)
-            DO_SYSTEMCTL=1
+            TASK_SYSTEMCTL=1
             ;;
         --no-systemctl)
-            DO_SYSTEMCTL=0
+            TASK_SYSTEMCTL=0
             ;;
 
         --)
@@ -1039,27 +1102,27 @@ done
 # Default values
 : "${VERBOSE:=0}"
 : "${FORCE:=0}"
-: "${DO_ETC:=0}"
-: "${DO_DPKG_FULL:=0}"
-: "${DO_DPKG_STATUS:=1}"
-: "${DO_APT_STATES:=1}"
-: "${DO_APT_CONFIG:=1}"
-: "${DO_PACKAGES:=1}"
-: "${DO_PROCESSES:=1}"
-: "${DO_UNAME:=1}"
-: "${DO_UPTIME:=1}"
-: "${DO_NETSTAT:=1}"
-: "${DO_NETCFG:=1}"
-: "${DO_IPTABLES:=1}"
-: "${DO_SYSCTL:=1}"
-: "${DO_VIRSH:=1}"
-: "${DO_LXC:=1}"
-: "${DO_DISKS:=1}"
-: "${DO_MOUNT:=1}"
-: "${DO_DF:=1}"
-: "${DO_DMESG:=1}"
-: "${DO_MYSQL_PROCESSES:=1}"
-: "${DO_SYSTEMCTL:=1}"
+: "${TASK_ETC:=0}"
+: "${TASK_DPKG_FULL:=0}"
+: "${TASK_DPKG_STATUS:=1}"
+: "${TASK_APT_STATES:=1}"
+: "${TASK_APT_CONFIG:=1}"
+: "${TASK_PACKAGES:=1}"
+: "${TASK_PROCESSES:=1}"
+: "${TASK_UNAME:=1}"
+: "${TASK_UPTIME:=1}"
+: "${TASK_NETSTAT:=1}"
+: "${TASK_NETCFG:=1}"
+: "${TASK_IPTABLES:=1}"
+: "${TASK_SYSCTL:=1}"
+: "${TASK_VIRSH:=1}"
+: "${TASK_LXC:=1}"
+: "${TASK_DISKS:=1}"
+: "${TASK_MOUNT:=1}"
+: "${TASK_DF:=1}"
+: "${TASK_DMESG:=1}"
+: "${TASK_MYSQL_PROCESSES:=1}"
+: "${TASK_SYSTEMCTL:=1}"
 
 export LC_ALL=C
 
