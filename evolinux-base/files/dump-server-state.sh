@@ -1,11 +1,11 @@
 #!/bin/sh
 
-PROGNAME="backup-server-state"
+PROGNAME="dump-server-state"
 
-VERSION="22.03.5"
+VERSION="22.03.6"
 readonly VERSION
 
-backup_dir=
+dump_dir=
 rc=0
 
 # base functions
@@ -15,7 +15,9 @@ show_version() {
 ${PROGNAME} version ${VERSION}
 
 Copyright 2018-2022 Evolix <info@evolix.fr>,
-                    Jérémy Lecour <jlecour@evolix.fr>
+                    Jérémy Lecour <jlecour@evolix.fr>,
+                    Éric Morino <emorino@evolix.fr>,
+                    Brice Waegeneire <bwaegeneire@evolix.fr>
                     and others.
 
 ${PROGNAME} comes with ABSOLUTELY NO WARRANTY.This is free software,
@@ -25,58 +27,38 @@ END
 }
 show_help() {
     cat <<END
-${PROGNAME} is making backup copies of information related to the state of the server.
+${PROGNAME} is dumping information related to the state of the server.
 
-Usage: ${PROGNAME} --backup-dir=/path/to/backup/directory [OPTIONS]
+Usage: ${PROGNAME} --dump-dir=/path/to/dump/directory [OPTIONS]
 
 Options
- -d, --backup-dir     path to the directory where the backup will be stored
- -f, --force          keep existing backup directory and its content
-     --etc            backup copy of /etc
-     --no-etc         no backup copy of /etc (default)
-     --dpkg-full      backup copy of /var/lib/dpkg
-     --no-dpkg-full   no backup copy of /var/lib/dpkg (default)
-     --dpkg-status    backup copy of /var/lib/dpkg/status (default)
-     --no-dpkg-status no backup copy of /var/lib/dpkg/status
-     --apt-states     backup copy of apt extended states (default)
-     --no-apt-states  no backup copy of apt extended states
-     --apt-config     backup copy of apt configuration (default)
-     --no-apt-config  no backup copy of apt configuration
-     --packages       backup copy of dpkg selections (default)
-     --no-packages    no backup copy of dpkg selections
-     --processes      backup copy of process list (default)
-     --no-processes   no backup copy of process list
-     --uname          backup copy of uname (default)
-     --no-uname       no backup copy of uname
-     --uptime         backup of uptime value (default)
-     --no-uptime      no backup of uptime value
-     --netstat        backup copy of netstat (default)
-     --no-netstat     no backup copy of netstat
-     --netcfg         backup copy of network configuration (default)
-     --no-netcfg      no backup copy of network configuration
-     --iptables       backup copy of iptables (default)
-     --no-iptables    no backup copy of iptables
-     --sysctl         backup copy of sysctl values (default)
-     --no-sysctl      no backup copy of sysctl values
-     --virsh          backup copy of virsh list (default)
-     --no-virsh       no backup copy of virsh list
-     --lxc            backup copy of lxc list (default)
-     --no-lxc         no backup copy of lxc list
-     --disks          backup copy of MBR and partitions (default)
-     --no-disks       no backup copy of MBR and partitions
-     --mount          backup copy of mount points (default)
-     --no-mount       no backup copy of mount points
-     --df             backup copy of disk usage (default)
-     --no-df          no backup copy of disk usage
-     --dmesg          backup copy of dmesg (default)
-     --no-dmesg       no backup copy of dmesg
-     --mysql          backup copy of mysql processes (default)
-     --no-mysql       no backup copy of mysql processes
-     --systemctl      backup copy of services states (default)
-     --no-systemctl   no backup copy of services states
- -v, --verbose        print details about backup steps
- -V, --version        print version and exit
- -h, --help           print this message and exit
+ -d, --dump-dir          path to the directory where data will be stored
+     --backup-dir        legacy option for dump directory
+ -f, --force             keep existing dump directory and its content
+     --[no-]etc          copy of /etc (default: no)
+     --[no-]dpkg-full    copy of /var/lib/dpkg (default: no)
+     --[no-]dpkg-status  copy of /var/lib/dpkg/status (default: yes)
+     --[no-]apt-states   copy of apt extended states (default: yes)
+     --[no-]apt-config   copy of apt configuration (default: yes)
+     --[no-]packages     copy of dpkg selections (default: yes)
+     --[no-]processes    copy of process list (default: yes)
+     --[no-]uname        copy of uname value (default: yes)
+     --[no-]uptime       copy of uptime value (default: yes)
+     --[no-]netstat      copy of netstat (default: yes)
+     --[no-]netcfg       copy of network configuration (default: yes)
+     --[no-]iptables     copy of iptables (default: yes)
+     --[no-]sysctl       copy of sysctl values (default: yes)
+     --[no-]virsh        copy of virsh list (default: yes)
+     --[no-]lxc          copy of lxc list (default: yes)
+     --[no-]disks        copy of MBR and partitions (default: yes)
+     --[no-]mount        copy of mount points (default: yes)
+     --[no-]df           copy of disk usage (default: yes)
+     --[no-]dmesg        copy of dmesg (default: yes)
+     --[no-]mysql        copy of mysql processes (default: yes)
+     --[no-]systemctl    copy of systemd services states (default: yes)
+ -v, --verbose           print details about each step
+ -V, --version           print version and exit
+ -h, --help              print this message and exit
 END
 }
 debug() {
@@ -85,10 +67,10 @@ debug() {
     fi
 }
 
-create_backup_dir() {
-    debug "Create ${backup_dir}"
+create_dump_dir() {
+    debug "## Create ${dump_dir}"
 
-    last_result=$(mkdir -p "${backup_dir}" && chmod -R 755 "${backup_dir}")
+    last_result=$(mkdir -p "${dump_dir}" && chmod -R 755 "${dump_dir}")
     last_rc=$?
 
     if [ ${last_rc} -eq 0 ]; then
@@ -100,13 +82,13 @@ create_backup_dir() {
     fi
 }
 
-backup_etc() {
-    debug "Backup /etc"
+do_etc() {
+    debug "## /etc"
 
     rsync_bin=$(command -v rsync)
 
     if [ -n "${rsync_bin}" ]; then
-        last_result=$(${rsync_bin} -ah --itemize-changes --exclude=.git /etc "${backup_dir}/")
+        last_result=$(${rsync_bin} -ah --itemize-changes --exclude=.git /etc "${dump_dir}/")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -118,7 +100,7 @@ backup_etc() {
         fi
     else
         debug "* rsync not found"
-        last_result=$(cp -r /etc "${backup_dir}/ && rm -rf ${backup_dir}/etc/.git")
+        last_result=$(cp -r /etc "${dump_dir}/ && rm -rf ${dump_dir}/etc/.git")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -131,7 +113,7 @@ backup_etc() {
     fi
 }
 
-backup_apt_states() {
+do_apt_states() {
     apt_dir="/"
     apt_dir_state="var/lib/apt"
     apt_dir_state_extended_states="extended_states"
@@ -146,9 +128,9 @@ backup_apt_states() {
     extended_states="${apt_dir}/${apt_dir_state}/${apt_dir_state_extended_states}"
 
     if [ -f "${extended_states}" ]; then
-        debug "Backup APT states"
+        debug "## APT states"
 
-        last_result=$(cp -r "${extended_states}" "${backup_dir}/apt-extended-states.txt")
+        last_result=$(cp -r "${extended_states}" "${dump_dir}/apt-extended-states.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -161,13 +143,13 @@ backup_apt_states() {
     fi
 }
 
-backup_apt_config() {
-    debug "Backup APT config"
+do_apt_config() {
+    debug "## APT config"
 
     apt_config_bin=$(command -v apt-config)
 
     if [ -n "${apt_config_bin}" ]; then
-        last_result=$(${apt_config_bin} dump > "${backup_dir}/apt-config.txt")
+        last_result=$(${apt_config_bin} dump > "${dump_dir}/apt-config.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -182,8 +164,8 @@ backup_apt_config() {
     fi
 }
 
-backup_dpkg_full() {
-    debug "Backup DPkg full state"
+do_dpkg_full() {
+    debug "## DPkg full state"
 
     dir_state_status="/var/lib/dpkg/status"
 
@@ -195,7 +177,7 @@ backup_dpkg_full() {
 
     dpkg_dir=$(dirname "${dir_state_status}")
 
-    last_result=$(mkdir -p "${backup_dir}${dpkg_dir}" && chmod -R 755 "${backup_dir}${dpkg_dir}")
+    last_result=$(mkdir -p "${dump_dir}${dpkg_dir}" && chmod -R 755 "${dump_dir}${dpkg_dir}")
     last_rc=$?
 
     if [ ${last_rc} -eq 0 ]; then
@@ -209,7 +191,7 @@ backup_dpkg_full() {
     rsync_bin=$(command -v rsync)
 
     if [ -n "${rsync_bin}" ]; then
-        last_result=$(${rsync_bin} -ah --itemize-changes --exclude='*-old' "${dpkg_dir}/" "${backup_dir}${dpkg_dir}/")
+        last_result=$(${rsync_bin} -ah --itemize-changes --exclude='*-old' "${dpkg_dir}/" "${dump_dir}${dpkg_dir}/")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -222,7 +204,7 @@ backup_dpkg_full() {
     else
         debug "* rsync not found"
 
-        last_result=$(cp -r "${dpkg_dir}/*" "${backup_dir}${dpkg_dir}/" && rm -rf "${backup_dir}${dpkg_dir}/*-old")
+        last_result=$(cp -r "${dpkg_dir}/*" "${dump_dir}${dpkg_dir}/" && rm -rf "${dump_dir}${dpkg_dir}/*-old")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -235,8 +217,8 @@ backup_dpkg_full() {
     fi
 }
 
-backup_dpkg_status() {
-    debug "Backup DPkg status"
+do_dpkg_status() {
+    debug "## DPkg status"
 
     dir_state_status="/var/lib/dpkg/status"
 
@@ -246,7 +228,7 @@ backup_dpkg_status() {
         eval "$(${apt_config_bin} shell dir_state_status Dir::State::status)"
     fi
 
-    last_result=$(cp "${dir_state_status}" "${backup_dir}/dpkg-status.txt")
+    last_result=$(cp "${dir_state_status}" "${dump_dir}/dpkg-status.txt")
     last_rc=$?
 
     if [ ${last_rc} -eq 0 ]; then
@@ -258,13 +240,13 @@ backup_dpkg_status() {
     fi
 }
 
-backup_packages() {
-    debug "Backup list of installed package"
+do_packages() {
+    debug "## List of installed package"
 
     dpkg_bin=$(command -v dpkg)
 
     if [ -n "${dpkg_bin}" ]; then
-        last_result=$(${dpkg_bin} --get-selections "*" > "${backup_dir}/current_packages.txt")
+        last_result=$(${dpkg_bin} --get-selections "*" > "${dump_dir}/current_packages.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -279,10 +261,10 @@ backup_packages() {
     fi
 }
 
-backup_uname() {
-    debug "Backup uname"
+do_uname() {
+    debug "## uname"
 
-    last_result=$(uname -a > "${backup_dir}/uname.txt")
+    last_result=$(uname -a > "${dump_dir}/uname.txt")
     last_rc=$?
 
     if [ ${last_rc} -eq 0 ]; then
@@ -294,10 +276,10 @@ backup_uname() {
     fi
 }
 
-backup_uptime() {
-    debug "Backup uptime"
+do_uptime() {
+    debug "## uptime"
 
-    last_result=$(uptime > "${backup_dir}/uptime.txt")
+    last_result=$(uptime > "${dump_dir}/uptime.txt")
     last_rc=$?
 
     if [ ${last_rc} -eq 0 ]; then
@@ -309,10 +291,10 @@ backup_uptime() {
     fi
 }
 
-backup_processes() {
-    debug "Backup process list"
+do_processes() {
+    debug "## Process list"
 
-    last_result=$(ps fauxw > "${backup_dir}/ps.txt")
+    last_result=$(ps fauxw > "${dump_dir}/ps.txt")
     last_rc=$?
 
     if [ ${last_rc} -eq 0 ]; then
@@ -326,7 +308,7 @@ backup_processes() {
     pstree_bin=$(command -v pstree)
 
     if [ -n "${pstree_bin}" ]; then
-        last_result=$(${pstree_bin} -pan > "${backup_dir}/pstree.txt")
+        last_result=$(${pstree_bin} -pan > "${dump_dir}/pstree.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -339,13 +321,13 @@ backup_processes() {
     fi
 }
 
-backup_netstat() {
-    debug "Backup network status"
+do_netstat() {
+    debug "## Network status"
 
     ss_bin=$(command -v ss)
 
     if [ -n "${ss_bin}" ]; then
-        last_result=$(${ss_bin} -tanpul > "${backup_dir}/netstat-ss.txt")
+        last_result=$(${ss_bin} -tanpul > "${dump_dir}/netstat-ss.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -362,7 +344,7 @@ backup_netstat() {
     netstat_bin=$(command -v netstat)
 
     if [ -n "${netstat_bin}" ]; then
-        last_result=$(netstat -laputen > "${backup_dir}/netstat-legacy.txt")
+        last_result=$(netstat -laputen > "${dump_dir}/netstat-legacy.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -377,13 +359,13 @@ backup_netstat() {
     fi
 }
 
-backup_netcfg() {
-    debug "Backup network configuration"
+do_netcfg() {
+    debug "## Network configuration"
 
     ip_bin=$(command -v ip)
 
     if [ -n "${ip_bin}" ]; then
-        last_result=$(${ip_bin} address show > "${backup_dir}/ip-address.txt")
+        last_result=$(${ip_bin} address show > "${dump_dir}/ip-address.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -394,7 +376,7 @@ backup_netcfg() {
             rc=10
         fi
 
-        last_result=$(${ip_bin} route show > "${backup_dir}/ip-route.txt")
+        last_result=$(${ip_bin} route show > "${dump_dir}/ip-route.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -410,7 +392,7 @@ backup_netcfg() {
         ifconfig_bin=$(command -v ifconfig)
 
         if [ -n "${ifconfig_bin}" ]; then
-            last_result=$(${ifconfig_bin} > "${backup_dir}/ifconfig.txt")
+            last_result=$(${ifconfig_bin} > "${dump_dir}/ifconfig.txt")
             last_rc=$?
 
             if [ ${last_rc} -eq 0 ]; then
@@ -426,8 +408,8 @@ backup_netcfg() {
     fi
 }
 
-backup_iptables() {
-    debug "Backup iptables"
+do_iptables() {
+    debug "## iptables"
 
     iptables_bin=$(command -v iptables)
     nft_bin=$(command -v nft)
@@ -436,7 +418,7 @@ backup_iptables() {
         debug "* nft found, skip iptables"
     else
         if [ -n "${iptables_bin}" ]; then
-            last_result=$({ ${iptables_bin} -L -n -v; ${iptables_bin} -t filter -L -n -v; } >> "${backup_dir}/iptables-v.txt")
+            last_result=$({ ${iptables_bin} -L -n -v; ${iptables_bin} -t filter -L -n -v; } >> "${dump_dir}/iptables-v.txt")
             last_rc=$?
 
             if [ ${last_rc} -eq 0 ]; then
@@ -447,7 +429,7 @@ backup_iptables() {
                 rc=10
             fi
 
-            last_result=$({ ${iptables_bin} -L -n; ${iptables_bin} -t filter -L -n; } >> "${backup_dir}/iptables.txt")
+            last_result=$({ ${iptables_bin} -L -n; ${iptables_bin} -t filter -L -n; } >> "${dump_dir}/iptables.txt")
             last_rc=$?
 
             if [ ${last_rc} -eq 0 ]; then
@@ -464,7 +446,7 @@ backup_iptables() {
         iptables_save_bin=$(command -v iptables-save)
 
         if [ -n "${iptables_save_bin}" ]; then
-            last_result=$(${iptables_save_bin} > "${backup_dir}/iptables-save.txt")
+            last_result=$(${iptables_save_bin} > "${dump_dir}/iptables-save.txt")
             last_rc=$?
 
             if [ ${last_rc} -eq 0 ]; then
@@ -480,13 +462,13 @@ backup_iptables() {
     fi
 }
 
-backup_sysctl() {
-    debug "Backup sysctl values"
+do_sysctl() {
+    debug "## sysctl values"
 
     sysctl_bin=$(command -v sysctl)
 
     if [ -n "${sysctl_bin}" ]; then
-        last_result=$(${sysctl_bin} -a --ignore 2>/dev/null | sort -h > "${backup_dir}/sysctl.txt")
+        last_result=$(${sysctl_bin} -a --ignore 2>/dev/null | sort -h > "${dump_dir}/sysctl.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -501,13 +483,13 @@ backup_sysctl() {
     fi
 }
 
-backup_virsh() {
-    debug "Backup virsh list"
+do_virsh() {
+    debug "## virsh list"
 
     virsh_bin=$(command -v virsh)
 
     if [ -n "${virsh_bin}" ]; then
-        last_result=$(${virsh_bin} list --all > "${backup_dir}/virsh-list.txt")
+        last_result=$(${virsh_bin} list --all > "${dump_dir}/virsh-list.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -522,13 +504,13 @@ backup_virsh() {
     fi
 }
 
-backup_lxc() {
-    debug "Backup lxc list"
+do_lxc() {
+    debug "## lxc list"
 
     lxc_ls_bin=$(command -v lxc-ls)
 
     if [ -n "${lxc_ls_bin}" ]; then
-        last_result=$(${lxc_ls_bin} --fancy > "${backup_dir}/lxc-list.txt")
+        last_result=$(${lxc_ls_bin} --fancy > "${dump_dir}/lxc-list.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -543,8 +525,8 @@ backup_lxc() {
     fi
 }
 
-backup_disks() {
-    debug "Backup disks"
+do_disks() {
+    debug "## Disks"
 
     lsblk_bin=$(command -v lsblk)
     awk_bin=$(command -v awk)
@@ -554,7 +536,7 @@ backup_disks() {
         for disk in ${disks}; do
             dd_bin=$(command -v dd)
             if [ -n "${dd_bin}" ]; then
-                last_result=$(${dd_bin} if="/dev/${disk}" of="${backup_dir}/MBR-${disk}" bs=512 count=1 2>&1)
+                last_result=$(${dd_bin} if="/dev/${disk}" of="${dump_dir}/MBR-${disk}" bs=512 count=1 2>&1)
                 last_rc=$?
 
                 if [ ${last_rc} -eq 0 ]; then
@@ -569,7 +551,7 @@ backup_disks() {
             fi
             fdisk_bin=$(command -v fdisk)
             if [ -n "${fdisk_bin}" ]; then
-                last_result=$(${fdisk_bin} -l "/dev/${disk}" > "${backup_dir}/partitions-${disk}" 2>&1)
+                last_result=$(${fdisk_bin} -l "/dev/${disk}" > "${dump_dir}/partitions-${disk}" 2>&1)
                 last_rc=$?
 
                 if [ ${last_rc} -eq 0 ]; then
@@ -583,7 +565,7 @@ backup_disks() {
                 debug "* fdisk not found"
             fi
         done
-        cat "${backup_dir}"/partitions-* > "${backup_dir}/partitions"
+        cat "${dump_dir}"/partitions-* > "${dump_dir}/partitions"
     else
         if [ -n "${lsblk_bin}" ]; then
             debug "* lsblk not found"
@@ -594,13 +576,13 @@ backup_disks() {
     fi
 }
 
-backup_mount() {
-    debug "Backup mount points"
+do_mount() {
+    debug "## Mount points"
 
     findmnt_bin=$(command -v findmnt)
 
     if [ -n "${findmnt_bin}" ]; then
-        last_result=$(${findmnt_bin} > "${backup_dir}/mount.txt")
+        last_result=$(${findmnt_bin} > "${dump_dir}/mount.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -616,7 +598,7 @@ backup_mount() {
         mount_bin=$(command -v mount)
 
         if [ -n "${mount_bin}" ]; then
-            last_result=$(${mount_bin} > "${backup_dir}/mount.txt")
+            last_result=$(${mount_bin} > "${dump_dir}/mount.txt")
             last_rc=$?
 
             if [ ${last_rc} -eq 0 ]; then
@@ -632,13 +614,13 @@ backup_mount() {
     fi
 }
 
-backup_df() {
-    debug "Backup df"
+do_df() {
+    debug "## df"
 
     df_bin=$(command -v df)
 
     if [ -n "${df_bin}" ]; then
-        last_result=$(${df_bin} --portability > "${backup_dir}/df.txt")
+        last_result=$(${df_bin} --portability > "${dump_dir}/df.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -653,13 +635,13 @@ backup_df() {
     fi
 }
 
-backup_dmesg() {
-    debug "Backup dmesg"
+do_dmesg() {
+    debug "## dmesg"
 
     dmesg_bin=$(command -v dmesg)
 
     if [ -n "${dmesg_bin}" ]; then
-        last_result=$(${dmesg_bin} > "${backup_dir}/dmesg.txt")
+        last_result=$(${dmesg_bin} > "${dump_dir}/dmesg.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -674,15 +656,15 @@ backup_dmesg() {
     fi
 }
 
-backup_mysql_processes() {
-    debug "Backup mysql processes"
+do_mysql_processes() {
+    debug "## MySQL processes"
 
     mysqladmin_bin=$(command -v mysqladmin)
 
     if [ -n "${mysqladmin_bin}" ]; then
         # Look for local MySQL or MariaDB process
         if pgrep mysqld > /dev/null || pgrep mariadbd > /dev/null; then
-            last_result=$(${mysqladmin_bin} --verbose processlist > "${backup_dir}/mysql-processlist.txt")
+            last_result=$(${mysqladmin_bin} --verbose processlist > "${dump_dir}/mysql-processlist.txt")
             last_rc=$?
 
             if [ ${last_rc} -eq 0 ]; then
@@ -700,13 +682,13 @@ backup_mysql_processes() {
     fi
 }
 
-backup_systemctl() {
-    debug "Backup services"
+do_systemctl() {
+    debug "## Systemd services"
 
     systemctl_bin=$(command -v systemctl)
 
     if [ -n "${systemctl_bin}" ]; then
-        last_result=$(${systemctl_bin} --no-legend --state=failed --type=service > "${backup_dir}/systemctl-failed-services.txt")
+        last_result=$(${systemctl_bin} --no-legend --state=failed --type=service > "${dump_dir}/systemctl-failed-services.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -723,86 +705,86 @@ backup_systemctl() {
 
 
 main() {
-    if [ -z "${backup_dir}" ]; then
-        echo "ERROR: You must provide the --backup-dir argument" >&2
+    if [ -z "${dump_dir}" ]; then
+        echo "ERROR: You must provide the --dump-dir argument" >&2
         exit 1
     fi
 
-    if [ -d "${backup_dir}" ]; then
+    if [ -d "${dump_dir}" ]; then
         if [ "${FORCE}" != "1" ]; then
-            echo "ERROR: The backup directory ${backup_dir} already exists. Delete it first." >&2
+            echo "ERROR: The dump directory ${dump_dir} already exists. Delete it first." >&2
             exit 2
         fi
     else
-        create_backup_dir
+        create_dump_dir
     fi
 
     if [ "${DO_ETC}" -eq 1 ]; then
-        backup_etc
+        do_etc
     fi
     if [ "${DO_DPKG_FULL}" -eq 1 ]; then
-        backup_dpkg_full
+        do_dpkg_full
     fi
     if [ "${DO_DPKG_STATUS}" -eq 1 ]; then
-        backup_dpkg_status
+        do_dpkg_status
     fi
     if [ "${DO_APT_STATES}" -eq 1 ]; then
-        backup_apt_states
+        do_apt_states
     fi
     if [ "${DO_APT_CONFIG}" -eq 1 ]; then
-        backup_apt_config
+        do_apt_config
     fi
     if [ "${DO_PACKAGES}" -eq 1 ]; then
-        backup_packages
+        do_packages
     fi
     if [ "${DO_PROCESSES}" -eq 1 ]; then
-        backup_processes
+        do_processes
     fi
     if [ "${DO_UPTIME}" -eq 1 ]; then
-        backup_uptime
+        do_uptime
     fi
     if [ "${DO_UNAME}" -eq 1 ]; then
-        backup_uname
+        do_uname
     fi
     if [ "${DO_NETSTAT}" -eq 1 ]; then
-        backup_netstat
+        do_netstat
     fi
     if [ "${DO_NETCFG}" -eq 1 ]; then
-        backup_netcfg
+        do_netcfg
     fi
     if [ "${DO_IPTABLES}" -eq 1 ]; then
-        backup_iptables
+        do_iptables
     fi
     if [ "${DO_SYSCTL}" -eq 1 ]; then
-        backup_sysctl
+        do_sysctl
     fi
     if [ "${DO_VIRSH}" -eq 1 ]; then
-        backup_virsh
+        do_virsh
     fi
     if [ "${DO_LXC}" -eq 1 ]; then
-        backup_lxc
+        do_lxc
     fi
     if [ "${DO_DISKS}" -eq 1 ]; then
-        backup_disks
+        do_disks
     fi
     if [ "${DO_MOUNT}" -eq 1 ]; then
-        backup_mount
+        do_mount
     fi
     if [ "${DO_DF}" -eq 1 ]; then
-        backup_df
+        do_df
     fi
     if [ "${DO_DMESG}" -eq 1 ]; then
-        backup_dmesg
+        do_dmesg
     fi
     if [ "${DO_MYSQL_PROCESSES}" -eq 1 ]; then
-        backup_mysql_processes
+        do_mysql_processes
     fi
     if [ "${DO_SYSTEMCTL}" -eq 1 ]; then
-        backup_systemctl
+        do_systemctl
     fi
 
 
-    debug "=> Your backup is available at ${backup_dir}"
+    debug "=> Your dump is available at ${dump_dir}"
     exit ${rc}
 }
 
@@ -826,23 +808,23 @@ while :; do
             FORCE=1
             ;;
 
-        -d|--backup-dir)
+        -d|--dump-dir|--backup-dir)
             # with value separated by space
             if [ -n "$2" ]; then
-                backup_dir=$2
+                dump_dir=$2
                 shift
             else
-                printf 'ERROR: "-d|--backup-dir" requires a non-empty option argument.\n' >&2
+                printf 'ERROR: "-d|--dump-dir|--backup-dir" requires a non-empty option argument.\n' >&2
                 exit 1
             fi
             ;;
-        --backup-dir=?*)
+        --dump-dir=?*|--backup-dir=?*)
             # with value speparated by =
-            backup_dir=${1#*=}
+            dump_dir=${1#*=}
             ;;
-        --backup-dir=)
+        --dump-dir=|--backup-dir=)
             # without value
-            printf 'ERROR: "--backup-dir" requires a non-empty option argument.\n' >&2
+            printf 'ERROR: "--dump-dir|--backup-dir" requires a non-empty option argument.\n' >&2
             exit 1
             ;;
 
