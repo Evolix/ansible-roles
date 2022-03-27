@@ -1,8 +1,9 @@
 #!/bin/sh
 
 PROGNAME="dump-server-state"
+REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
 
-VERSION="22.03.7"
+VERSION="22.03.8"
 readonly VERSION
 
 dump_dir=
@@ -20,6 +21,8 @@ Copyright 2018-2022 Evolix <info@evolix.fr>,
                     Brice Waegeneire <bwaegeneire@evolix.fr>
                     and others.
 
+${REPOSITORY}
+
 ${PROGNAME} comes with ABSOLUTELY NO WARRANTY.This is free software,
 and you are welcome to redistribute it under certain conditions.
 See the GNU General Public License v3.0 for details.
@@ -31,34 +34,36 @@ ${PROGNAME} is dumping information related to the state of the server.
 
 Usage: ${PROGNAME} --dump-dir=/path/to/dump/directory [OPTIONS]
 
-Options
- -d, --dump-dir          path to the directory where data will be stored
-     --backup-dir        legacy option for dump directory
- -f, --force             keep existing dump directory and its content
-     --[no-]etc          copy of /etc (default: no)
-     --[no-]dpkg-full    copy of /var/lib/dpkg (default: no)
-     --[no-]dpkg-status  copy of /var/lib/dpkg/status (default: yes)
-     --[no-]apt-states   copy of apt extended states (default: yes)
-     --[no-]apt-config   copy of apt configuration (default: yes)
-     --[no-]packages     copy of dpkg selections (default: yes)
-     --[no-]processes    copy of process list (default: yes)
-     --[no-]uname        copy of uname value (default: yes)
-     --[no-]uptime       copy of uptime value (default: yes)
-     --[no-]netstat      copy of netstat (default: yes)
-     --[no-]netcfg       copy of network configuration (default: yes)
-     --[no-]iptables     copy of iptables (default: yes)
-     --[no-]sysctl       copy of sysctl values (default: yes)
-     --[no-]virsh        copy of virsh list (default: yes)
-     --[no-]lxc          copy of lxc list (default: yes)
-     --[no-]disks        copy of MBR and partitions (default: yes)
-     --[no-]mount        copy of mount points (default: yes)
-     --[no-]df           copy of disk usage (default: yes)
-     --[no-]dmesg        copy of dmesg (default: yes)
-     --[no-]mysql        copy of mysql processes (default: yes)
-     --[no-]systemctl    copy of systemd services states (default: yes)
- -v, --verbose           print details about each step
- -V, --version           print version and exit
- -h, --help              print this message and exit
+Main options
+ -d, --dump-dir        path to the directory where data will be stored
+     --backup-dir      legacy option for dump directory
+ -f, --force           keep existing dump directory and its content
+ -v, --verbose         print details about each step
+ -V, --version         print version and exit
+ -h, --help            print this message and exit
+
+Dump options
+ --[no-]etc            copy of /etc (default: no)
+ --[no-]dpkg-full      copy of /var/lib/dpkg (default: no)
+ --[no-]dpkg-status    copy of /var/lib/dpkg/status (default: yes)
+ --[no-]apt-states     copy of apt extended states (default: yes)
+ --[no-]apt-config     copy of apt configuration (default: yes)
+ --[no-]packages       copy of dpkg selections (default: yes)
+ --[no-]processes      copy of process list (default: yes)
+ --[no-]uname          copy of uname value (default: yes)
+ --[no-]uptime         copy of uptime value (default: yes)
+ --[no-]netstat        copy of netstat (default: yes)
+ --[no-]netcfg         copy of network configuration (default: yes)
+ --[no-]iptables       copy of iptables (default: yes)
+ --[no-]sysctl         copy of sysctl values (default: yes)
+ --[no-]virsh          copy of virsh list (default: yes)
+ --[no-]lxc            copy of lxc list (default: yes)
+ --[no-]disks          copy of MBR and partitions (default: yes)
+ --[no-]mount          copy of mount points (default: yes)
+ --[no-]df             copy of disk usage (default: yes)
+ --[no-]dmesg          copy of dmesg (default: yes)
+ --[no-]mysql          copy of mysql processes (default: yes)
+ --[no-]systemctl      copy of systemd services states (default: yes)
 END
 }
 debug() {
