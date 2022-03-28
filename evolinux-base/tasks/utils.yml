@@ -3,18 +3,6 @@
 - include_role:
     name: evolix/remount-usr
 
-- name: move backup-server-state to dump-server-state if present
-  command: mv /usr/local/sbin/backup-server-state /usr/local/sbin/dump-server-state
-  args:
-    creates: /usr/local/sbin/dump-server-state
-
-- name: symlink backup-server-state to dump-server-state
-  file:
-    src: /usr/local/sbin/dump-server-state
-    dest: /usr/local/sbin/backup-server-state
-    state: link
-    force: yes
-
 - name: dump-server-state script is present
   copy:
     src: "dump-server-state.sh"
@@ -23,6 +11,13 @@
     owner: root
     group: root
     mode: "0750"
+
+- name: symlink backup-server-state to dump-server-state
+  file:
+    src: /usr/local/sbin/dump-server-state
+    dest: /usr/local/sbin/backup-server-state
+    state: link
+    force: yes
 
 - name: "/sbin/deny script is present"
   copy:
