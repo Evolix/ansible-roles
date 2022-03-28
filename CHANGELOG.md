@@ -15,11 +15,12 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Changed
 
 * evocheck: upstream release 22.03.1
-* evolinux-base: rename backup-server-state to dump-server-state
 * evolinux-base: Add non-free repos & install non-free firmware on dedicated hardware
+* evolinux-base: rename backup-server-state to dump-server-state
 * generate-ldif: Add services check for bkctld
-* minifirewall: upstream release 22.03.4
+* minifirewall: restore "force-restart" and fix "restart-if-needed"
 * minifirewall: tail template follows symlinks
+* minifirewall: upstream release 22.03.4
 * openvpn: use a subnet topology instead of the net30 default topology
 
 ### Fixed
