@@ -13,6 +13,7 @@
     mode: "0700"
     owner: root
     group: root
+  register: minifirewall_upgrade_script
 
 - name: configuration is copied
   copy:
@@ -22,6 +23,7 @@
     mode: "0600"
     owner: root
     group: root
+  register: minifirewall_upgrade_config
 
 - name: includes directory is present
   file:

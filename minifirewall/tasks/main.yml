@@ -22,7 +22,7 @@
   when: minifirewall_tail_included | bool
 
 - name: Force restart minifirewall
-  command: /bin/true
-  notify: restart minifirewall
-  changed_when: False
+  command: /etc/init.d/minifirewall restart
+  register: minifirewall_init_restart
+  failed_when: "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
   when: minifirewall_restart_force | bool
