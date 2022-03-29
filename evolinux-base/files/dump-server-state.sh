@@ -3,7 +3,7 @@
 PROGNAME="dump-server-state"
 REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
 
-VERSION="22.03.9"
+VERSION="22.03.10"
 readonly VERSION
 
 dump_dir=
@@ -425,52 +425,65 @@ task_iptables() {
     debug "Task: iptables"
 
     iptables_bin=$(command -v iptables)
+
+    if [ -n "${iptables_bin}" ]; then
+        last_result=$({ ${iptables_bin} -L -n -v; ${iptables_bin} -t filter -L -n -v; } > "${dump_dir}/iptables-v.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* iptables -v OK"
+        else
+            debug "* iptables -v ERROR"
+            debug "${last_result}"
+            # Ignore errors because we don't know if this is nft related or a real error
+            # rc=10
+        fi
+
+        last_result=$({ ${iptables_bin} -L -n; ${iptables_bin} -t filter -L -n; } > "${dump_dir}/iptables.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* iptables OK"
+        else
+            debug "* iptables ERROR"
+            debug "${last_result}"
+            # Ignore errors because we don't know if this is nft related or a real error
+            # rc=10
+        fi
+    else
+        debug "* iptables not found"
+    fi
+
+    iptables_save_bin=$(command -v iptables-save)
+
+    if [ -n "${iptables_save_bin}" ]; then
+        last_result=$(${iptables_save_bin} > "${dump_dir}/iptables-save.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* iptables-save OK"
+        else
+            debug "* iptables-save ERROR"
+            debug "${last_result}"
+            # Ignore errors because we don't know if this is nft related or a real error
+            # rc=10
+        fi
+    else
+        debug "* iptables-save not found"
+    fi
+
     nft_bin=$(command -v nft)
 
     if [ -n "${nft_bin}" ]; then
-        debug "* nft found, skip iptables"
-    else
-        if [ -n "${iptables_bin}" ]; then
-            last_result=$({ ${iptables_bin} -L -n -v; ${iptables_bin} -t filter -L -n -v; } >> "${dump_dir}/iptables-v.txt")
-            last_rc=$?
+        last_result=$(${nft_bin} list ruleset > "${dump_dir}/nft-ruleset.txt")
+        last_rc=$?
 
-            if [ ${last_rc} -eq 0 ]; then
-                debug "* iptables -v OK"
-            else
-                debug "* iptables -v ERROR"
-                debug "${last_result}"
-                rc=10
-            fi
-
-            last_result=$({ ${iptables_bin} -L -n; ${iptables_bin} -t filter -L -n; } >> "${dump_dir}/iptables.txt")
-            last_rc=$?
-
-            if [ ${last_rc} -eq 0 ]; then
-                debug "* iptables OK"
-            else
-                debug "* iptables ERROR"
-                debug "${last_result}"
-                rc=10
-            fi
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* nft ruleset OK"
         else
-            debug "* iptables not found"
-        fi
-
-        iptables_save_bin=$(command -v iptables-save)
-
-        if [ -n "${iptables_save_bin}" ]; then
-            last_result=$(${iptables_save_bin} > "${dump_dir}/iptables-save.txt")
-            last_rc=$?
-
-            if [ ${last_rc} -eq 0 ]; then
-                debug "* iptables-save OK"
-            else
-                debug "* iptables-save ERROR"
-                debug "${last_result}"
-                rc=10
-            fi
-        else
-            debug "* iptables-save not found"
+            debug "* nft ruleset ERROR"
+            debug "${last_result}"
+            rc=10
         fi
     fi
 }
