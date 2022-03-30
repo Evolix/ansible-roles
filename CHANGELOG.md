@@ -12,6 +12,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* minifirewall: configure proxy/backup/sysctl values
+
 ### Changed
 
 * evocheck: upstream release 22.03.1

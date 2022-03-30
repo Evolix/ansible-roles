@@ -47,6 +47,22 @@ minifirewall_smtp_ok: Null
 minifirewall_smtp_secure_ok: Null
 minifirewall_ntp_ok: Null
 
+minifirewall_proxy: "off"
+minifirewall_proxyport: 8888
+minifirewall_proxybypass:
+  - "${INTLAN}"
+  - "127.0.0.0/8"
+  - "::1/128"
+minifirewall_backupservers: Null
+
+minifirewall_sysctl_icmp_echo_ignore_broadcasts : Null
+minifirewall_sysctl_icmp_ignore_bogus_error_responses : Null
+minifirewall_sysctl_accept_source_route : Null
+minifirewall_sysctl_tcp_syncookies : Null
+minifirewall_sysctl_icmp_redirects : Null
+minifirewall_sysctl_rp_filter : Null
+minifirewall_sysctl_log_martians : Null
+
 minifirewall_autostart: False
 minifirewall_restart_if_needed: True
 minifirewall_restart_force: False
