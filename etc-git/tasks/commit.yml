@@ -50,3 +50,30 @@
   when:
     - _usr_share_scripts_git.stat.exists
     - _usr_share_scripts_git.stat.isdir
+
+- name: Check if there are lxc containers
+  stat:
+    path: /var/lib/lxc
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: _var_lib_lxc
+
+- name: Get lxc containers and commit their /etc when needed
+  block:
+    - name: Get all lxc containers
+      find:
+        paths: /var/lib/lxc
+        recurse: no
+        file_type: directory
+      register: _lxc_containers
+
+    - name: "Commit /etc in all containers"
+      include_tasks:
+        file: lxc_commit.yml
+      loop: "{{ _lxc_containers.files | map(attribute='path') | map('basename') }}"
+      loop_control:
+        loop_var: container
+  when:
+    - _var_lib_lxc.stat.exists
+    - _var_lib_lxc.stat.isdir or _var_lib_lxc.stat.islnk

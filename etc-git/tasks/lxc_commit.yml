@@ -1,0 +1,35 @@
+---
+- name: "Assert that we have been called with `container` defined"
+  assert:
+    that:
+      - container is defined
+
+- name: "Define path to /etc in {{ container }} container"
+  set_fact:
+    container_etc: "{{ ('/var/lib/lxc', container, 'rootfs/etc') | path_join }}"
+
+- name: "Check if /etc is a git repository in {{ container }}"
+  stat:
+    path: "{{ (container_etc, '.git') | path_join }}"
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: "container_etc_git"
+
+- name: "Evocommit /etc of {{ container }}"
+  command:
+    argv:
+      - /usr/local/bin/evocommit
+      - '--ansible'
+      - '--repository'
+      - "{{ container_etc }}"
+      - '--message'
+      - "{{ commit_message | mandatory }}"
+  changed_when:
+    - "container_etc_git_commit.stdout"
+    - "'CHANGED:' in container_etc_git_commit.stdout"
+  ignore_errors: yes
+  register: "container_etc_git_commit"
+  when:
+    - "container_etc_git.stat.exists"
+    - "container_etc_git.stat.isdir"
