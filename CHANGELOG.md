@@ -24,7 +24,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * generate-ldif: Add services check for bkctld
 * minifirewall: restore "force-restart" and fix "restart-if-needed"
 * minifirewall: tail template follows symlinks
-* minifirewall: upstream release 22.03.4
+* minifirewall: upstream release 22.03.5
 * openvpn: use a subnet topology instead of the net30 default topology
 
 ### Fixed

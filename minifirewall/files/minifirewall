@@ -28,7 +28,7 @@
 # Description:       Firewall designed for standalone server
 ### END INIT INFO
 
-VERSION="22.03.4"
+VERSION="22.03.5"
 
 NAME="minifirewall"
 # shellcheck disable=SC2034
@@ -251,7 +251,7 @@ start() {
 
     if [ "${SYSCTL_ACCEPT_SOURCE_ROUTE}" = "1" ] || [ "${SYSCTL_ACCEPT_SOURCE_ROUTE}" = "0" ]; then
         for proc_sys_file in /proc/sys/net/ipv4/conf/*/accept_source_route; do
-            echo "${SYSCTL_ACCEPT_SOURCE_ROUTE}" = > "${proc_sys_file}"
+            echo "${SYSCTL_ACCEPT_SOURCE_ROUTE}" > "${proc_sys_file}"
         done
     else
         echo "Invalid SYSCTL_ACCEPT_SOURCE_ROUTE value '${SYSCTL_ACCEPT_SOURCE_ROUTE}', must be '0' or '1'." >&2
