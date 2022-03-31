@@ -57,6 +57,7 @@ command[check_bkctld_jails]=sudo /usr/sbin/bkctld check-jails
 command[check_bkctld]=sudo /usr/sbin/bkctld check
 command[check_postgrey]=/usr/lib/nagios/plugins/check_tcp -p10023
 command[check_influxdb]=/usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /health -p 8086 -r '"status":"pass"'
+command[check_dhcpd]=/usr/lib/nagios/plugins/check_procs -c1:1 -C dhcpd -t 60
 
 # Local checks (not packaged)
 command[check_mem]={{ nagios_plugins_directory }}/check_mem -f -C -w 20 -c 10
@@ -82,7 +83,7 @@ command[check_php-fpm74]=sudo {{ nagios_plugins_directory }}/check_phpfpm_multi 
 command[check_php-fpm80]=sudo {{ nagios_plugins_directory }}/check_phpfpm_multi /var/lib/lxc/php80/rootfs/etc/php/8.0/fpm/pool.d/
 command[check_php-fpm81]=sudo {{ nagios_plugins_directory }}/check_phpfpm_multi /var/lib/lxc/php81/rootfs/etc/php/8.1/fpm/pool.d/
 command[check_ipmi_sensors]=sudo /usr/lib/nagios/plugins/check_ipmi_sensor
-command[check_raid_status]=/usr/lib/nagios/plugins/check_raid
+command[check_raid_status]={{ nagios_plugins_directory }}/check_dhcp_pool
 
 # Check HTTP "many". Use this to check many websites (http, https, ports, sockets and SSL certificates).
 # Beware! All checks must not take more than 10s!
