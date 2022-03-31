@@ -23,8 +23,8 @@ minifirewall_docker: "off"
 
 minifirewall_default_trusted_ips: []
 minifirewall_additional_trusted_ips: []
-# and default to ['0.0.0.0/0'] if the result is still empty
-minifirewall_trusted_ips: "{{ minifirewall_default_trusted_ips | union(minifirewall_additional_trusted_ips) | unique | default(['0.0.0.0/0'], true) }}"
+# and default to ['0.0.0.0/0', '::/0'] if the result is still empty
+minifirewall_trusted_ips: "{{ minifirewall_default_trusted_ips | union(minifirewall_additional_trusted_ips) | unique | default(['0.0.0.0/0', '::/0'], true) }}"
 minifirewall_privilegied_ips: []
 
 minifirewall_protected_ports_tcp: [22]
