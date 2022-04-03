@@ -3,7 +3,7 @@
 PROGNAME="dump-server-state"
 REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
 
-VERSION="22.03.10"
+VERSION="22.04"
 readonly VERSION
 
 dump_dir=
@@ -425,9 +425,23 @@ task_iptables() {
     debug "Task: iptables"
 
     iptables_bin=$(command -v iptables)
+    ip6tables_bin=$(command -v ip6tables)
 
     if [ -n "${iptables_bin}" ]; then
-        last_result=$({ ${iptables_bin} -L -n -v; ${iptables_bin} -t filter -L -n -v; } > "${dump_dir}/iptables-v.txt")
+        last_result=$({
+            printf "#### iptables --list ###############################\n"
+            ${iptables_bin} --list --numeric --verbose --line-numbers
+            printf "\n### iptables --table nat --list ####################\n"
+            ${iptables_bin} --table nat --list --numeric --verbose --line-numbers
+            printf "\n#### iptables --table mangle --list ################\n"
+            ${iptables_bin} --table mangle --list --numeric --verbose --line-numbers
+            if [ -n "${ip6tables_bin}" ]; then
+                printf "\n#### ip6tables --list ##############################\n"
+                ${ip6tables_bin} --list --numeric --verbose --line-numbers
+                printf "\n#### ip6tables --table mangle --list ###############\n"
+                ${ip6tables_bin} --table mangle --list --numeric --verbose --line-numbers
+            fi
+        } > "${dump_dir}/iptables-v.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -439,7 +453,20 @@ task_iptables() {
             # rc=10
         fi
 
-        last_result=$({ ${iptables_bin} -L -n; ${iptables_bin} -t filter -L -n; } > "${dump_dir}/iptables.txt")
+        last_result=$({
+            printf "#### iptables --list ###############################\n"
+            ${iptables_bin} --list --numeric
+            printf "\n### iptables --table nat --list ####################\n"
+            ${iptables_bin} --table nat --list --numeric
+            printf "\n#### iptables --table mangle --list ################\n"
+            ${iptables_bin} --table mangle --list --numeric
+            if [ -n "${ip6tables_bin}" ]; then
+                printf "\n#### ip6tables --list ##############################\n"
+                ${ip6tables_bin} --list --numeric
+                printf "\n#### ip6tables --table mangle --list ###############\n"
+                ${ip6tables_bin} --table mangle --list --numeric
+            fi
+        } > "${dump_dir}/iptables.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
