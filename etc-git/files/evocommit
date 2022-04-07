@@ -2,7 +2,7 @@
 
 set -u
 
-VERSION="21.10"
+VERSION="22.04"
 
 show_version() {
     cat <<END
@@ -63,6 +63,7 @@ remount_repository_readwrite() {
     if [ "$(get_system)" = "OpenBSD" ]; then
         partition=$(stat -f '%Sd' $1)
         mount -u -w /dev/${partition} 2>/dev/null
+        syslog "Re-mount ${mountpoint} as read-write to commit in repository $1"
     else
         mountpoint=$(stat -c '%m' $1)
         mount -o remount,rw ${mountpoint}
@@ -73,6 +74,7 @@ remount_repository_readonly() {
     if [ "$(get_system)" = "OpenBSD" ]; then
         partition=$(stat -f '%Sd' $1)
         mount -u -r /dev/${partition} 2>/dev/null
+        syslog "Re-mount ${mountpoint} as read-only after commit to repository $1"
     else
         mountpoint=$(stat -c '%m' $1)
         mount -o remount,ro ${mountpoint} 2>/dev/null
@@ -92,8 +94,12 @@ main() {
     rc=0
     lock="${GIT_DIR}/index.lock"
     if [ -f "${lock}" ]; then
-        limit=$(date +"%s" -d "now - 1 hour")
-        updated_at=$(stat -c "%Y" "${lock}")
+        limit=$(($(date +"%s") - (1 * 60 * 60)))
+        if [ "$(get_system)" = "OpenBSD" ]; then
+            updated_at=$(stat -f "%m" "${lock}")
+        else
+            updated_at=$(stat -c "%Y" "${lock}")
+        fi
         if [ "$updated_at" -lt "$limit" ]; then
             rm -f "${lock}"
         fi

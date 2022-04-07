@@ -35,6 +35,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * redis: Remount /usr with RW before adding nagios plugin
 * postfix: Do not send mails through milters a second time after amavis (in packmail)
 * etc-git : Remount /usr in rw for git gc in in /usr/share/scripts/
+* etc-git: Make evocommit fully compatible with OpenBSD
 
 ### Removed
 
