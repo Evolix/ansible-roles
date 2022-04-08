@@ -21,9 +21,9 @@
     - ansible_distribution_release == "buster"
     - tomcat_version is not defined
 
-- name: Set Tomcat version to 10 on Debian 11 if missing
+- name: Set Tomcat version to 9 on Debian 11 if missing
   set_fact:
-    tomcat_version: 10
+    tomcat_version: 9
   when:
     - ansible_distribution_release == "bullseye"
     - tomcat_version is not defined

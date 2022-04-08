@@ -27,6 +27,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * minifirewall: tail template follows symlinks
 * minifirewall: upstream release 22.03.5
 * openvpn: use a subnet topology instead of the net30 default topology
+* tomcat: Tomcat 9 by default with Debian 11
 
 ### Fixed
 
