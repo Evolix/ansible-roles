@@ -72,3 +72,8 @@
     name: postfix
     state: reloaded
 
+- name: restart log2mail
+  service:
+    name: log2mail
+    state: restarted
+
