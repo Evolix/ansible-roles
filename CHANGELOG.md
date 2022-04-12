@@ -12,9 +12,10 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
-* minifirewall: configure proxy/backup/sysctl values
 * etc-git: Commit /etc in lxc containers when they are git repositories
+* minifirewall: configure proxy/backup/sysctl values
 * nagios-nrpe: Add a check dhcp_pool
+* redis : Activate overcommit sysctl
 
 ### Changed
 
