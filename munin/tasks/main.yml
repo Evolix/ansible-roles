@@ -31,6 +31,15 @@
   tags:
     - munin
 
+- name: Install some Munin plugins (disabled)
+  copy:
+    src: 'plugins/{{ item }}'
+    dest: '/usr/share/munin/plugins/{{ item }}'
+  loop:
+    - dhcp_pool
+  tags:
+    - munin
+
 - name: Ensure some Munin plugins are disabled
   file:
     path: '/etc/munin/plugins/{{ item }}'

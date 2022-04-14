@@ -16,6 +16,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * minifirewall: configure proxy/backup/sysctl values
 * nagios-nrpe: Add a check dhcp_pool
 * redis : Activate overcommit sysctl
+* munin: Add possibility to install local plugins, and install dhcp_pool plugin
 
 ### Changed
 
