@@ -1,0 +1,1106 @@
+#!/bin/sh
+#
+# shellpki is a wrapper around OpenSSL to manage a small PKI
+#
+
+set -u
+
+VERSION="22.04"
+
+show_version() {
+    cat <<END
+shellpki version ${VERSION}
+
+Copyright 2010-2022 Evolix <info@evolix.fr>,
+                    Thomas Martin <tmartin@evolix.fr>,
+                    Gregory Colpart <reg@evolix.fr>,
+                    Romain Dessort <rdessort@evolix.fr>,
+                    Benoit Série <bserie@evolix.fr>,
+                    Victor Laborie <vlaborie@evolix.fr>,
+                    Daniel Jakots <djakots@evolix.fr>,
+                    Patrick Marchand <pmarchand@evolix.fr>,
+                    Jérémy Lecour <jlecour@evolix.fr>,
+                    Jérémy Dubois <jdubois@evolix.fr>
+                    and others.
+
+shellpki comes with ABSOLUTELY NO WARRANTY.  This is free software,
+and you are welcome to redistribute it under certain conditions.
+See the MIT Licence for details.
+END
+}
+
+show_usage() {
+    cat <<EOF
+Usage: ${0} <subcommand> [options] [CommonName]
+Warning: [options] always must be before [CommonName] and after <subcommand>
+
+EOF
+show_usage_init
+show_usage_create
+show_usage_revoke
+show_usage_list
+show_usage_check
+show_usage_ocsp
+
+    cat <<EOF
+Show version :
+
+    ${0} --version
+
+Show help :
+
+    ${0} --help
+EOF
+}
+
+show_usage_init() {
+    cat <<EOF
+Initialize PKI (create CA key and self-signed certificate) :
+
+    ${0} init [options] <commonName_for_CA>
+
+    Options
+        --non-interactive           do not prompt the user, and exit if an error occurs
+
+EOF
+}
+
+show_usage_create() {
+    cat <<EOF
+Create a client certificate with key and CSR directly generated on server :
+
+    ${0} create [options] <commonName>
+
+    Options
+        -f, --file, --csr-file      create a client certificate from a CSR (doesn't need key)
+        -p, --password              prompt the user for a password to set on the client key
+            --password-file         if provided with a path to a readable file, the first line is read and set as password on the client key
+            --days                  specify how many days the certificate should be valid
+            --end-date              specify until which date the certificate should be valid, in "YYYY/MM/DD hh:mm:ss" format, UTC +0
+            --non-interactive       do not prompt the user, and exit if an error occurs
+            --replace-existing      if the certificate already exists, revoke it before creating a new one
+
+EOF
+}
+
+show_usage_revoke() {
+    cat <<EOF
+Revoke a client certificate :
+
+    ${0} revoke [options] <commonName>
+
+    Options
+        --non-interactive           do not prompt the user, and exit if an error occurs
+
+EOF
+}
+
+show_usage_list() {
+    cat <<EOF
+List certificates :
+
+    ${0} list <options>
+
+    Options
+        -a, --all                   list all certificates: valid and revoked ones
+        -v, --valid                 list all valid certificates
+        -r, --revoked               list all revoked certificates
+
+EOF
+}
+
+show_usage_check() {
+    cat <<EOF
+Check expiration date of valid certificates :
+
+    ${0} check
+
+EOF
+}
+
+show_usage_ocsp() {
+    cat <<EOF
+Run OCSP_D server :
+
+    ${0} ocsp <ocsp_uri:ocsp_port>
+
+EOF
+}
+
+error() {
+    echo "${1}" >&2
+    exit 1
+}
+
+warning() {
+    echo "${1}" >&2
+}
+
+verify_ca_password() {
+    "${OPENSSL_BIN}" rsa \
+        -in "${CA_KEY}"    \
+        -passin pass:"${CA_PASSWORD}" \
+        >/dev/null 2>&1
+}
+get_real_path() {
+    # --canonicalize is supported on Linux
+    # -f is supported on Linux and OpenBSD 
+    readlink -f -- "${1}"
+}
+
+ask_ca_password() {
+    attempt=${1:-0}
+    max_attempts=3
+
+    trap 'unset CA_PASSWORD' 0
+
+    if [ ! -f "${CA_KEY}" ]; then
+        error "You must initialize your PKI with \`shellpki init' !"
+    fi
+    if [ "${attempt}" -gt 0 ]; then
+        warning "Invalid password, retry."
+    fi
+    if [ "${attempt}" -ge "${max_attempts}" ]; then
+        error "Maximum number of attempts reached (${max_attempts})."
+    fi
+    if [ -z "${CA_PASSWORD:-}" ]; then
+        if [ "${non_interactive}" -eq 1 ]; then
+            error "In non-interactive mode, you must pass CA_PASSWORD as environment variable"
+        fi
+        stty -echo
+        printf "Password for CA key: "
+        read -r CA_PASSWORD
+        stty echo
+        printf "\n"
+    fi
+    if [ -z "${CA_PASSWORD:-}" ] || ! verify_ca_password; then
+        unset CA_PASSWORD
+        attempt=$(( attempt + 1 ))
+        ask_ca_password "${attempt}"
+    fi
+}
+ask_user_password() {
+    trap 'unset PASSWORD' 0
+
+    if [ -z "${PASSWORD:-}" ]; then
+        if [ "${non_interactive}" -eq 1 ]; then
+            error "In non-interactive mode, you must pass PASSWORD as environment variable or use --password-file"
+        fi
+        stty -echo
+        printf "Password for user key: "
+        read -r PASSWORD
+        stty echo
+        printf "\n"
+    fi
+    if [ -z "${PASSWORD:-}" ]; then
+        warning "Warning: empty password from input"
+    fi
+}
+replace_existing_or_abort() {
+    cn=${1:?}
+    if [ "${non_interactive}" -eq 1 ]; then
+        if [ "${replace_existing}" -eq 1 ]; then
+            revoke --non-interactive "${cn}"
+        else
+            error "${cn} already exists, use \`--replace-existing' to force"
+        fi
+    else
+        if [ "${replace_existing}" -eq 1 ]; then
+            revoke "${cn}"
+        else
+            printf "%s already exists, do you want to revoke and recreate it ? [y/N] " "${cn}"
+            read -r REPLY
+            resp=$(echo "${REPLY}" | tr 'Y' 'y')
+
+            if [ "${resp}" = "y" ]; then
+                revoke "${cn}"
+            else
+                error "Aborted"
+            fi
+        fi
+    fi
+}
+
+init() {
+    umask 0177
+
+    [ -d "${CA_DIR}" ] || mkdir -m 0750 "${CA_DIR}"
+    [ -d "${CRT_DIR}" ] || mkdir -m 0750 "${CRT_DIR}"
+    [ -f "${INDEX_FILE}" ] || touch "${INDEX_FILE}"
+    [ -f "${CRL}" ] || touch "${CRL}"
+    [ -f "${SERIAL}" ] || echo "01" > "${SERIAL}"
+
+    non_interactive=0
+
+    # Parse options
+    # based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
+    while :; do
+        case ${1:-} in
+            --non-interactive)
+                non_interactive=1
+                ;;
+            --)
+                # End of all options.
+                shift
+                break
+                ;;
+            -?*)
+                # ignore unknown options
+                warning "Warning: unknown option (ignored): \`$1'"
+                ;;
+            *)
+                # Default case: If no more options then break out of the loop.
+                break
+                ;;
+        esac
+
+        shift
+    done
+
+    cn="${1:-}"
+    if [ -z "${cn}" ]; then
+        show_usage_init >&2
+        exit 1
+    fi
+
+    if [ -f "${CA_KEY}" ]; then
+        if [ "${non_interactive}" -eq 1 ]; then
+            error "${CA_KEY} already exists, erase it manually if you want to start over."
+        else
+            printf "%s already exists, do you really want to erase it ? [y/N] " "${CA_KEY}"
+            read -r REPLY
+            resp=$(echo "${REPLY}" | tr 'Y' 'y')
+            if [ "${resp}" = "y" ]; then
+                rm -f "${CA_KEY}" "${CA_CERT}"
+            fi
+        fi
+    fi
+
+    passout_arg=""
+    if [ -n "${CA_PASSWORD:-}" ]; then
+        passout_arg="-passout pass:${CA_PASSWORD}"
+    elif [ "${non_interactive}" -eq 1 ]; then
+        error "In non-interactive mode, you must pass CA_PASSWORD as environment variable."
+    fi
+
+    if [ ! -f "${CA_KEY}" ]; then
+        "${OPENSSL_BIN}" genrsa \
+            -out "${CA_KEY}" \
+            ${passout_arg} \
+            -aes256 \
+            "${CA_KEY_LENGTH}" \
+            >/dev/null 2>&1
+        # shellcheck disable=SC2181
+        if [ "$?" -ne 0 ]; then
+            error "Error generating the CA key"
+        fi
+    fi
+
+    if [ -f "${CA_CERT}" ]; then
+        if [ "${non_interactive}" -eq 1 ]; then
+            error "${CA_CERT} already exists, erase it manually if you want to start over."
+        else
+            printf "%s already exists, do you really want to erase it ? [y/N] " "${CA_CERT}"
+            read -r REPLY
+            resp=$(echo "${REPLY}" | tr 'Y' 'y')
+            if [ "${resp}" = "y" ]; then
+                rm "${CA_CERT}"
+            fi
+        fi
+    fi
+
+    if [ ! -f "${CA_CERT}" ]; then
+        ask_ca_password 0
+    fi
+
+    if [ ! -f "${CA_CERT}" ]; then
+        "${OPENSSL_BIN}" req \
+            -new \
+            -batch \
+            -sha512 \
+            -x509 \
+            -days 3650 \
+            -extensions v3_ca \
+            -passin pass:"${CA_PASSWORD}" \
+            -key "${CA_KEY}" \
+            -out "${CA_CERT}" \
+            -config /dev/stdin <<EOF
+$(cat "${CONF_FILE}")
+commonName_default = ${cn}
+EOF
+        # shellcheck disable=SC2181
+        if [ "$?" -ne 0 ]; then
+            error "Error generating the CA certificate"
+        fi
+    
+        "${OPENSSL_BIN}" ca \
+            -config "${CONF_FILE}" \
+            -passin pass:${CA_PASSWORD} \
+            -gencrl \
+            -out "${CRL}"
+    fi
+}
+
+ocsp() {
+    umask 0177
+
+    ocsp_uri="${1:-}"
+    if [ -z "${ocsp_uri}" ]; then
+        show_usage_ocsp >&2
+        exit 1
+    fi
+    ocsp_csr_file="${CSR_DIR}/ocsp.csr"
+
+    url=$(echo "${ocsp_uri}" | cut -d':' -f1)
+    port=$(echo "${ocsp_uri}" | cut -d':' -f2)
+
+    if [ ! -f "${OCSP_KEY}" ]; then
+        "${OPENSSL_BIN}" genrsa \
+            -out "${OCSP_KEY}" \
+            "${KEY_LENGTH}" \
+            >/dev/null 2>&1
+        # shellcheck disable=SC2181
+        if [ "$?" -ne 0 ]; then
+            error "Error generating the OCSP key"
+        fi
+    fi
+
+    "${OPENSSL_BIN}" req \
+        -batch \
+        -new \
+        -key "${OCSP_KEY}" \
+        -out "${ocsp_csr_file}" \
+        -config /dev/stdin <<EOF
+$(cat "${CONF_FILE}")
+commonName_default = ${url}
+[ usr_cert ]
+authorityInfoAccess = OCSP;URI:http://${ocsp_uri}
+EOF
+    # shellcheck disable=SC2181
+    if [ "$?" -ne 0 ]; then
+        error "Error generating the OCSP request"
+    fi
+
+    if [ ! -f "${OCSP_CERT}" ]; then
+        ask_ca_password 0
+    fi
+
+    if [ ! -f "${OCSP_CERT}" ]; then
+        "${OPENSSL_BIN}" ca \
+            -extensions v3_ocsp \
+            -in "${ocsp_csr_file}" \
+            -out "${OCSP_CERT}" \
+            -passin pass:"${CA_PASSWORD}" \
+            -config "${CONF_FILE}"
+        # shellcheck disable=SC2181
+        if [ "$?" -ne 0 ]; then
+            error "Error generating the OCSP certificate"
+        fi
+    fi
+
+    exec "${OPENSSL_BIN}" ocsp \
+        -ignore_err \
+        -index "${INDEX_FILE}" \
+        -port "${port}" \
+        -rsigner "${OCSP_CERT}" \
+        -rkey "${OCSP_KEY}" \
+        -CA "${CA_CERT}" \
+        -text
+}
+
+create() {
+    from_csr=0
+    ask_pass=0
+    non_interactive=0
+    replace_existing=0
+    days=""
+    end_date=""
+    days_set=0
+    end_date_set=0
+    password_set=0
+    password_file_set=0
+
+    # Parse options
+    # based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
+    while :; do
+        case ${1:-} in
+            -f|--file|--csr-file)
+                # csr-file option, with value separated by space
+                if [ -n "$2" ]; then
+                    from_csr=1
+                    csr_file=$(get_real_path "${2}")
+                    # shellcheck disable=SC2181
+                    if [ "$?" -ne 0 ]; then
+                        error "Error accessing file \`${2}'"
+                    fi
+                    shift
+                else
+                    error "Argument error: \`--csr-file' requires a value"
+                fi
+                ;;
+            --file=?*|--csr-file=?*)
+                from_csr=1
+                # csr-file option, with value separated by =
+                csr_file=$(get_real_path "${1#*=}")
+                # shellcheck disable=SC2181
+                if [ "$?" -ne 0 ]; then
+                    error "Error accessing file \`${1#*=}'"
+                fi
+                ;;
+            --file=|--csr-file=)
+                # csr-file options, without value
+                error "Argument error: \`--csr-file' requires a value"
+                ;;
+            -p|--password)
+                ask_pass=1
+                password_set=1
+                ;;
+            --password-file)
+                # password-file option, with value separated by space
+                if [ -n "$2" ]; then
+                    password_file=$(get_real_path "${2}")
+                    # shellcheck disable=SC2181
+                    if [ "$?" -ne 0 ]; then
+                        error "Error accessing file \`${2}'"
+                    fi
+                    password_file_set=1
+                    shift
+                else
+                    error "Argument error: \`--password-file' requires a value"
+                fi
+                ;;
+            --password-file=?*)
+                # password-file option, with value separated by =
+                password_file=$(get_real_path "${1#*=}")
+                # shellcheck disable=SC2181
+                if [ "$?" -ne 0 ]; then
+                    error "Error accessing file \`${1#*=}'"
+                fi
+                password_file_set=1
+                ;;
+            --password-file=)
+                # password-file options, without value
+                error "Argument error: \`--password-file' requires a value"
+                ;;
+            --days)
+                # days option, with value separated by space
+                if [ -n "$2" ]; then
+                    days=${2}
+                    days_set=1
+                    shift
+                else
+                    error "Argument error: \`--days' requires a value"
+                fi
+                ;;
+            --days=?*)
+                # days option, with value separated by =
+                days=${1#*=}
+                days_set=1
+                ;;
+            --days=)
+                # days options, without value
+                error "Argument error: \`--days' requires a value"
+                ;;
+            --end-date)
+                # end-date option, with value separated by space
+                if [ -n "$2" ]; then
+                    end_date=${2}
+                    end_date_set=1
+                    shift
+                else
+                    error "Argument error: \`--end-date' requires a value"
+                fi
+                ;;
+            --end-date=?*)
+                # end-date option, with value separated by =
+                end_date=${1#*=}
+                end_date_set=1
+                ;;
+            --end-date=)
+                # end-date options, without value
+                error "Argument error: \`--end-date' requires a value"
+                ;;
+            --non-interactive)
+                non_interactive=1
+                ;;
+            --replace-existing)
+                replace_existing=1
+                ;;
+            --)
+                # End of all options.
+                shift
+                break
+                ;;
+            -?*)
+                # ignore unknown options
+                warning "Warning: unknown option (ignored): \`$1'"
+                ;;
+            *)
+                # Default case: If no more options then break out of the loop.
+                break
+                ;;
+        esac
+
+        shift
+    done
+
+    if [ "${days_set}" -eq 1 ] && [ "${end_date_set}" -eq 1 ]; then
+        error "Argument error: \`--end-date' and \`--days' cannot be used together."
+    fi
+
+    if [ "${password_set}" -eq 1 ] && [ "${password_file_set}" -eq 1 ]; then
+        error "Argument error: \`--password' and \`--password-file' cannot be used together."
+    fi
+
+    # The name of the certificate
+    cn="${1:-}"
+
+    # Set expiration argument
+    crt_expiration_arg=""
+    if [ -n "${days}" ]; then
+        if [ "${days}" -gt 0 ]; then
+            crt_expiration_arg="-days ${days}"
+        else
+            error "Argument error: \"${days}\" is not a valid value for \`--days'."
+        fi
+    fi
+    if [ -n "${end_date}" ]; then
+        if [ "${SYSTEM}" = "linux" ]; then
+            cert_end_date=$(TZ=:Zulu date --date "${end_date}" +"%Y%m%d%H%M%SZ" 2> /dev/null)
+            # shellcheck disable=SC2181
+            if [ "$?" -ne 0 ]; then
+                error "Invalid end date format: \`${end_date}' can't be parsed by date(1). Expected format: YYYY/MM/DD [hh[:mm[:ss]]]."
+            else
+                crt_expiration_arg="-enddate ${cert_end_date}"
+            fi
+        elif [ "${SYSTEM}" = "openbsd" ]; then
+            cert_end_date=$(TZ=:Zulu date -f "%C%y/%m/%d %H:%M:%S" -j "${end_date}" +"%Y%m%d%H%M%SZ" 2> /dev/null)
+            # shellcheck disable=SC2181
+            if [ "$?" -ne 0 ]; then
+                error "Invalid end date format: \`${end_date}' can't be parsed by date(1). Expected format: YYYY/MM/DD hh:mm:ss."
+            else
+                crt_expiration_arg="-enddate ${cert_end_date}"
+            fi
+        else
+            error "System ${SYSTEM} not supported."
+        fi
+    fi
+    if [ "${non_interactive}" -eq 1 ]; then
+        batch_arg="-batch"
+    else
+        batch_arg=""
+    fi
+
+    if [ "${from_csr}" -eq 1 ]; then
+        if [ "${ask_pass}" -eq 1 ]; then
+            warning "Warning: -p|--password is ignored with -f|--file|--crt-file"
+        fi
+        if [ -n "${password_file:-}" ]; then
+            warning "Warning: --password-file is ignored with -f|--file|--crt-file"
+        fi
+
+        crt_file="${CRT_DIR}/${cn}.crt"
+
+        # ask for CA passphrase
+        ask_ca_password 0
+
+        # check if csr_file is a CSR
+        "${OPENSSL_BIN}" req \
+            -noout \
+            -subject \
+            -in "${csr_file}" \
+            >/dev/null 2>&1
+        # shellcheck disable=SC2181
+        if [ "$?" -ne 0 ]; then
+            error "${csr_file} is not a valid CSR !"
+        fi
+
+        # check if csr_file contain a CN
+         "${OPENSSL_BIN}" req \
+            -noout \
+            -subject         \
+            -in "${csr_file}" \
+            | grep -Eo "CN\s*=[^,/]*" \
+            >/dev/null 2>&1
+        # shellcheck disable=SC2181
+        if [ "$?" -ne 0 ]; then
+            error "${csr_file} doesn't contain a CommonName !"
+        fi
+
+        # get CN from CSR
+        cn=$("${OPENSSL_BIN}" req -noout -subject -in "${csr_file}" | grep -Eo "CN\s*=[^,/]*" | cut -d'=' -f2 | xargs)
+
+        # check if CN already exists
+        if [ -f "${crt_file}" ]; then
+            replace_existing_or_abort "${cn}"
+        fi
+
+        # ca sign and generate cert
+        if [ "${non_interactive}" -eq 1 ]; then
+            batch_arg="-batch"
+        else
+            batch_arg=""
+        fi
+        "${OPENSSL_BIN}" ca \
+            ${batch_arg} \
+            -config "${CONF_FILE}" \
+            -in "${csr_file}" \
+            -passin pass:"${CA_PASSWORD}" \
+            -out "${crt_file}" \
+            ${crt_expiration_arg}
+        # shellcheck disable=SC2181
+        if [ "$?" -ne 0 ]; then
+            error "Error generating the certificate"
+        else
+            echo "The certificate file is available at \`${crt_file}'"
+        fi
+    else
+        if [ -z "${cn}" ]; then
+            show_usage_create >&2
+            exit 1
+        fi
+        csr_file="${CSR_DIR}/${cn}-${SUFFIX}.csr"
+        crt_file="${CRT_DIR}/${cn}.crt"
+        key_file="${KEY_DIR}/${cn}-${SUFFIX}.key"
+        ovpn_file="${OVPN_DIR}/${cn}-${SUFFIX}.ovpn"
+        pkcs12_file="${PKCS12_DIR}/${cn}-${SUFFIX}.p12"
+
+        # ask for CA passphrase
+        ask_ca_password 0
+
+        if [ "${ask_pass}" -eq 1 ]; then
+            ask_user_password
+        fi
+
+        # check if CN already exists
+        if [ -f "${crt_file}" ]; then
+            replace_existing_or_abort "${cn}"
+        fi
+
+        # generate private key
+        pass_args=""
+        if [ -n "${password_file:-}" ]; then
+            pass_args="-aes256 -passout file:${password_file}"
+        elif [ -n "${PASSWORD:-}" ]; then
+            pass_args="-aes256 -passout pass:${PASSWORD}"
+        fi
+        "${OPENSSL_BIN}" genrsa \
+            -out "${key_file}" \
+            ${pass_args} \
+            "${KEY_LENGTH}" \
+            >/dev/null 2>&1
+        # shellcheck disable=SC2181
+        if [ "$?" -eq 0 ]; then
+            echo "The KEY file is available at \`${key_file}'"
+        else
+            error "Error generating the private key"
+        fi
+
+        # generate csr req
+        pass_args=""
+        if [ -n "${password_file:-}" ]; then
+            pass_args="-passin file:${password_file}"
+        elif [ -n "${PASSWORD:-}" ]; then
+            pass_args="-passin pass:${PASSWORD}"
+        fi
+        "${OPENSSL_BIN}" req \
+            -batch \
+            -new \
+            -key "${key_file}" \
+            -out "${csr_file}" \
+            ${pass_args} \
+            -config /dev/stdin <<EOF
+$(cat "${CONF_FILE}")
+commonName_default = ${cn}
+EOF
+        # shellcheck disable=SC2181
+        if [ "$?" -ne 0 ]; then
+            error "Error generating the CSR"
+        fi
+
+        # ca sign and generate cert
+        "${OPENSSL_BIN}" ca \
+            ${batch_arg} \
+            -config "${CONF_FILE}" \
+            -passin pass:${CA_PASSWORD} \
+            -in "${csr_file}" \
+            -out "${crt_file}" \
+            ${crt_expiration_arg}
+        # shellcheck disable=SC2181
+        if [ "$?" -ne 0 ]; then
+            error "Error generating the certificate"
+        fi
+
+        # check if CRT is a valid
+        "${OPENSSL_BIN}" x509 \
+            -noout \
+            -subject \
+            -in "${crt_file}" \
+            >/dev/null 2>&1
+        # shellcheck disable=SC2181
+        if [ "$?" -ne 0 ]; then
+            rm -f "${crt_file}"
+        fi
+        if [ ! -f "${crt_file}" ]; then
+            error "Error in CSR creation"
+        fi
+
+        chmod 640 "${crt_file}"
+
+        echo "The CRT file is available in ${crt_file}"
+
+        # generate pkcs12 format
+        pass_args=""
+        if [ -n "${password_file:-}" ]; then
+            # Hack for pkcs12 :
+            # If passin and passout files are the same path, it expects 2 lines
+            # so we make a temporary copy of the password file
+            password_file_out=$(mktemp)
+            cp "${password_file}" "${password_file_out}"
+            pass_args="-passin file:${password_file} -passout file:${password_file_out}"
+        elif [ -n "${PASSWORD:-}" ]; then
+            pass_args="-passin pass:${PASSWORD} -passout pass:${PASSWORD}"
+        else
+            pass_args="-passout pass:"
+        fi
+        "${OPENSSL_BIN}" pkcs12 \
+            -export \
+            -nodes \
+            -inkey "${key_file}" \
+            -in "${crt_file}" \
+            -out "${pkcs12_file}" \
+            ${pass_args}
+        # shellcheck disable=SC2181
+        if [ "$?" -ne 0 ]; then
+            error "Error generating the pkcs12 file"
+        fi
+
+        if [ -n "${password_file_out:-}" ]; then
+            # Hack for pkcs12 :
+            # Destroy the temporary file
+            rm -f "${password_file_out}"
+        fi
+
+        chmod 640 "${pkcs12_file}"
+        echo "The PKCS12 config file is available at \`${pkcs12_file}'"
+
+        # generate openvpn format
+        if [ -e "${CA_DIR}/ovpn.conf" ]; then
+            cat "${CA_DIR}/ovpn.conf" - > "${ovpn_file}" <<EOF
+<ca>
+$(cat "${CA_CERT}")
+</ca>
+
+<cert>
+$(cat "${crt_file}")
+</cert>
+
+<key>
+$(cat "${key_file}")
+</key>
+EOF
+            chmod 640 "${ovpn_file}"
+            echo "The OpenVPN config file is available at \`${ovpn_file}'"
+        fi
+
+        # Copy files if destination exists
+        if [ -d "${COPY_DIR}" ]; then
+            for file in "${crt_file}" "${key_file}" "${pkcs12_file}" "${ovpn_file}"; do
+                if [ -f "${file}" ]; then
+                    new_file="${COPY_DIR}/$(basename "${file}")"
+                    if [ "${replace_existing}" -eq 1 ]; then
+                        cp -f "${file}" "${COPY_DIR}/"
+                    else
+                        if [ "${non_interactive}" -eq 1 ]; then
+                            if [ -f "${new_file}" ]; then
+                                echo "File \`${file}' has not been copied to \`${new_file}', it already exists" >&2
+                                continue
+                            else
+                                cp "${file}" "${COPY_DIR}/"
+                            fi
+                        else
+                            cp -i "${file}" "${COPY_DIR}/"
+                        fi
+                    fi
+                    echo "File \`${file}' has been copied to \`${new_file}'"
+                fi
+            done
+
+            # shellcheck disable=SC2086
+            chown -R ${PKI_USER}:${PKI_USER} "${COPY_DIR}/"
+            chmod -R u=rwX,g=rwX,o= "${COPY_DIR}/"
+        fi
+    fi
+}
+
+revoke() {
+    non_interactive=0
+
+    # Parse options
+    # based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
+    while :; do
+        case ${1:-} in
+            --non-interactive)
+                non_interactive=1
+                ;;
+            --)
+                # End of all options.
+                shift
+                break
+                ;;
+            -?*)
+                # ignore unknown options
+                warning "Warning: unknown option (ignored): \`$1'"
+                ;;
+            *)
+                # Default case: If no more options then break out of the loop.
+                break
+                ;;
+        esac
+
+        shift
+    done
+
+    # The name of the certificate
+    cn="${1:-}"
+
+    if [ -z "${cn}" ]; then
+        show_usage_revoke >&2
+        exit 1
+    fi
+
+    crt_file="${CRT_DIR}/${cn}.crt"
+    # check if CRT exists
+    if [ ! -f "${crt_file}" ]; then
+        error "Unknow CN: ${cn} (\`${crt_file}' not found)"
+    fi
+
+    # check if CRT is a valid
+    "${OPENSSL_BIN}" x509 \
+        -noout \
+        -subject \
+        -in "${crt_file}" \
+        >/dev/null 2>&1
+    # shellcheck disable=SC2181
+    if [ "$?" -ne 0 ]; then
+        error "${crt_file} is not a valid CRT, you must delete it !"
+    fi
+
+    # ask for CA passphrase
+    ask_ca_password 0
+
+    echo "Revoke certificate ${crt_file} :"
+    "${OPENSSL_BIN}" ca \
+        -config "${CONF_FILE}" \
+        -passin pass:"${CA_PASSWORD}" \
+        -revoke "${crt_file}"
+    # shellcheck disable=SC2181
+    if [ "$?" -eq 0 ]; then
+        rm "${crt_file}"
+    fi
+
+    "${OPENSSL_BIN}" ca \
+        -config "${CONF_FILE}" \
+        -passin pass:"${CA_PASSWORD}" \
+        -gencrl \
+        -out "${CRL}"
+}
+
+list() {
+    if [ ! -f "${INDEX_FILE}" ]; then
+        exit 0
+    fi
+
+    if [ -z "${1:-}" ]; then
+        show_usage_list >&2
+        exit 1
+    fi
+
+    while :; do
+        case "${1:-}" in
+            -a|--all)
+                list_valid=0
+                list_revoked=0
+                ;;
+            -v|--valid)
+                list_valid=0
+                list_revoked=1
+                ;;
+            -r|--revoked)
+                list_valid=1
+                list_revoked=0
+                ;;
+            -?*)
+                warning "unknow option ${1} (ignored)"
+                ;;
+            *)
+                break
+                ;;
+        esac
+        shift
+    done
+
+    if [ "${list_valid}" -eq 0 ]; then
+        certs=$(grep "^V" "${INDEX_FILE}")
+    fi
+
+    if [ "${list_revoked}" -eq 0 ]; then
+        certs=$(grep "^R" "${INDEX_FILE}")
+    fi
+
+    if [ "${list_valid}" -eq 0 ] && [ "${list_revoked}" -eq 0 ]; then
+        certs=$(cat "${INDEX_FILE}")
+    fi
+
+    echo "${certs}" | grep -Eo "CN\s*=[^,/]*" | cut -d'=' -f2 | xargs -n1
+}
+
+cert_end_date() {
+    "${OPENSSL_BIN}" x509 -noout -enddate -in "${1}" | cut -d'=' -f2
+}
+
+check() {
+    # default expiration alert
+    # TODO: permit override with parameters
+    min_day=90
+    cur_epoch=$(date -u +'%s')
+
+    for cert in "${CRT_DIR}"/*; do
+        end_date=$(cert_end_date "${cert}")
+        end_epoch=$(date -ud "${end_date}" +'%s')
+        diff_epoch=$(( end_epoch - cur_epoch ))
+        diff_day=$(( diff_epoch / 60 / 60 / 24 ))
+        if [ "${diff_day}" -lt "${min_day}" ]; then
+            if [ "${diff_day}" -le 0 ]; then
+                echo "${cert} has expired"
+            else
+                echo "${cert} expire in ${diff_day} days"
+            fi
+        fi
+    done
+}
+
+is_user() {
+    getent passwd "${1}" >/dev/null
+}
+is_group() {
+    getent group "${1}" >/dev/null
+}
+
+main() {
+    # Know what system we are on, because OpenBSD and Linux do not implement date(1) in the same way
+    SYSTEM=$(uname | tr '[:upper:]' '[:lower:]')
+
+    # default config
+    # TODO: override with /etc/default/shellpki
+    CONF_FILE="/etc/shellpki/openssl.cnf"
+
+    if [ "$(uname)" = "OpenBSD" ]; then
+        PKI_USER="_shellpki"
+    else
+        PKI_USER="shellpki"
+    fi
+
+    if [ "${USER}" != "root" ] && [ "${USER}" != "${PKI_USER}" ]; then
+        error "Please become root before running ${0} !"
+    fi
+
+    # retrieve CA path from config file
+    CA_DIR=$(grep -E "^dir" "${CONF_FILE}" | cut -d'=' -f2 | xargs -n1)
+    CA_KEY=$(grep -E "^private_key" "${CONF_FILE}" | cut -d'=' -f2 | xargs -n1 | sed "s~\$dir~${CA_DIR}~")
+    CA_CERT=$(grep -E "^certificate" "${CONF_FILE}" | cut -d'=' -f2 | xargs -n1 | sed "s~\$dir~${CA_DIR}~")
+    OCSP_KEY="${CA_DIR}/ocsp.key"
+    OCSP_CERT="${CA_DIR}/ocsp.pem"
+    CRT_DIR=$(grep -E "^certs" "${CONF_FILE}" | cut -d'=' -f2 | xargs -n1 | sed "s~\$dir~${CA_DIR}~")
+    TMP_DIR=$(grep -E "^new_certs_dir" "${CONF_FILE}" | cut -d'=' -f2 | xargs -n1 | sed "s~\$dir~${CA_DIR}~")
+    INDEX_FILE=$(grep -E "^database" "${CONF_FILE}" | cut -d'=' -f2 | xargs -n1 | sed "s~\$dir~${CA_DIR}~")
+    SERIAL=$(grep -E "^serial" "${CONF_FILE}" | cut -d'=' -f2 | xargs -n1 | sed "s~\$dir~${CA_DIR}~")
+    CRL=$(grep -E "^crl" "${CONF_FILE}" | cut -d'=' -f2 | xargs -n1 | sed "s~\$dir~${CA_DIR}~")
+
+    # directories for clients key, csr, crt
+    KEY_DIR="${CA_DIR}/private"
+    CSR_DIR="${CA_DIR}/requests"
+    PKCS12_DIR="${CA_DIR}/pkcs12"
+    OVPN_DIR="${CA_DIR}/openvpn"
+
+    COPY_DIR="$(dirname "${CONF_FILE}")/copy_output"
+
+    CA_KEY_LENGTH=4096
+    if [ "${CA_KEY_LENGTH}" -lt 4096 ]; then
+        error "CA key must be at least 4096 bits long."
+    fi
+    KEY_LENGTH=2048
+    if [ "${KEY_LENGTH}" -lt 2048 ]; then
+        error "User key must be at least 2048 bits long."
+    fi
+
+    OPENSSL_BIN=$(command -v openssl)
+    SUFFIX=$(TZ=:Zulu /bin/date +"%Y%m%d%H%M%SZ")
+
+    if ! is_user "${PKI_USER}" || ! is_group "${PKI_USER}"; then
+        error "You must create ${PKI_USER} user and group !"
+    fi
+
+    if [ ! -e "${CONF_FILE}" ]; then
+        error "${CONF_FILE} is missing"
+    fi
+
+    mkdir -p "${CA_DIR}" "${CRT_DIR}" "${KEY_DIR}" "${CSR_DIR}" "${PKCS12_DIR}" "${OVPN_DIR}" "${TMP_DIR}"
+
+    command=${1:-help}
+
+    case "${command}" in
+        init)
+            shift
+            init "$@"
+        ;;
+
+        ocsp)
+            shift
+            ocsp "$@"
+        ;;
+
+        create)
+            shift
+            create "$@"
+        ;;
+
+        revoke)
+            shift
+            revoke "$@"
+        ;;
+
+        list)
+            shift
+            list "$@"
+        ;;
+
+        check)
+            shift
+            check "$@"
+        ;;
+
+        version|--version)
+            show_version
+            exit 0
+        ;;
+
+        help|--help)
+            show_usage
+            exit 0
+        ;;
+
+        *)
+            show_usage >&2
+            exit 1
+        ;;
+    esac
+
+    # fix right
+    chown -R "${PKI_USER}":"${PKI_USER}" "${CA_DIR}"
+    chmod 750 "${CA_DIR}" "${CRT_DIR}" "${KEY_DIR}" "${CSR_DIR}" "${PKCS12_DIR}" "${OVPN_DIR}" "${TMP_DIR}"
+    chmod 600 "${INDEX_FILE}"* "${SERIAL}"* "${CA_KEY}" "${CRL}"
+    chmod 640 "${CA_CERT}"
+}
+
+main "$@"
