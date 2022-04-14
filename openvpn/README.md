@@ -23,6 +23,6 @@ Then, you can use `shellpki` to generate client certificates.
 * `openvpn_netmask`: netmask of the network to use for OpenVPN
 * `openvpn_netmask_cidr`: automatically generated prefix length of the netmask, in CIDR notation
 
-## TODO
+## Dependencies
 
-* See TODO tasks in tasks/*.yml
+* Files in `files/shellpki/*` are gotten from the upstream [shellpki](https://gitea.evolix.org/evolix/shellpki) and must be updated when the upstream is.
