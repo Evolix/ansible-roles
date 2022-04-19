@@ -12,6 +12,10 @@
     - munin
     - packages
 
+- name: Ensure /usr is still writable
+  include_role:
+    name: evolix/remount-usr
+
 - block:
   - name: Replace localdomain in Munin config
     replace:
