@@ -673,7 +673,7 @@ task_df() {
     df_bin=$(command -v df)
 
     if [ -n "${df_bin}" ]; then
-        last_result=$(${df_bin} --portability > "${dump_dir}/df.txt 2>&1")
+        last_result=$(${df_bin} --portability > "${dump_dir}/df.txt" 2>&1)
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
