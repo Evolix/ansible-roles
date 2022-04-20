@@ -3,7 +3,7 @@
 PROGNAME="dump-server-state"
 REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
 
-VERSION="22.04"
+VERSION="22.04.1"
 readonly VERSION
 
 dump_dir=
@@ -673,7 +673,7 @@ task_df() {
     df_bin=$(command -v df)
 
     if [ -n "${df_bin}" ]; then
-        last_result=$(${df_bin} --portability > "${dump_dir}/df.txt")
+        last_result=$(${df_bin} --portability > "${dump_dir}/df.txt 2>&1")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
