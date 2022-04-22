@@ -3,6 +3,8 @@
   include_role:
     name: evolix/apt
     tasks_from: evolix_public.yml
+  tags:
+    - vrrpd
 
 - name: Install vrrpd packages
   apt:
@@ -10,12 +12,13 @@
     allow_unauthenticated: yes
     state: present
   tags:
-  - vrrpd
+    - vrrpd
 
 - name: Adjust sysctl config
   sysctl:
     name: "{{ item.name }}"
     value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/vrrpd.conf
     sysctl_set: yes
     state: present
   loop:
@@ -26,4 +29,4 @@
     - { name: 'net.ipv4.conf.all.arp_announce', value: 2 }
     - { name: 'net.ipv4.ip_nonlocal_bind', value: 1 }
   tags:
-  - vrrpd
+    - vrrpd
