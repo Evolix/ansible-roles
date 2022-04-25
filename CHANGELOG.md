@@ -20,7 +20,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
-* evocheck: upstream release 22.04
+* evocheck: upstream release 22.04.1
 * evolinux-base: Add non-free repos & install non-free firmware on dedicated hardware
 * evolinux-base: rename backup-server-state to dump-server-state
 * dump-server-state: upstream release 22.04.1
