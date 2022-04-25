@@ -4,7 +4,7 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
-VERSION="22.03.1"
+VERSION="22.04"
 readonly VERSION
 
 # base functions
@@ -234,7 +234,8 @@ check_syslogconf() {
 check_debiansecurity() {
     if is_debian_bullseye; then
         # https://www.debian.org/releases/bullseye/amd64/release-notes/ch-information.html#security-archive
-        pattern="^deb https://deb\.debian\.org/debian-security/? bullseye-security main"
+        # https://www.debian.org/security/
+        pattern="^deb https://(deb|security)\.debian\.org/debian-security/? bullseye-security main"
     elif is_debian_buster; then
         pattern="^deb http://security\.debian\.org/debian-security/? buster/updates main"
     elif is_debian_stretch; then
@@ -600,7 +601,11 @@ check_evobackup_exclude_mount() {
 
     # shellcheck disable=SC2044
     for evobackup_file in $(find /etc/cron* -name '*evobackup*' | grep -v -E ".disabled$"); do
-        grep -- "--exclude " "${evobackup_file}" | grep -E -o "\"[^\"]+\"" | tr -d '"' > "${excludes_file}"
+        # If rsync is not limited by "one-file-system"
+        # then we verify that every mount is excluded
+        grep -q -- "^\s*--one-file-system" "${evobackup_file}" \
+            || grep -- "--exclude " "${evobackup_file}" | grep -E -o "\"[^\"]+\"" | tr -d '"' \
+            > "${excludes_file}"
         not_excluded=$(findmnt --type nfs,nfs4,fuse.sshfs, -o target --noheadings | grep -v -f "${excludes_file}")
         for mount in ${not_excluded}; do
             failed "IS_EVOBACKUP_EXCLUDE_MOUNT" "${mount} is not excluded from ${evobackup_file} backup script"
@@ -1374,7 +1379,7 @@ download_versions() {
     elif is_openbsd; then
         versions_url="https://upgrades.evolix.org/versions-${OPENBSD_RELEASE}"
     else
-        failed "IS_VERSIONS_CHECK" "error determining os release"
+        failed "IS_CHECK_VERSIONS" "error determining os release"
     fi
 
     # fetch timeout, in seconds
@@ -1387,9 +1392,9 @@ download_versions() {
     elif command -v GET; then
         GET -t ${timeout}s "${versions_url}" > "${versions_file}"
     else
-        failed "IS_VERSIONS_CHECK" "failed to find curl, wget or GET"
+        failed "IS_CHECK_VERSIONS" "failed to find curl, wget or GET"
     fi
-    test "$?" -eq 0 || failed "IS_VERSIONS_CHECK" "failed to download ${versions_url} to ${versions_file}"
+    test "$?" -eq 0 || failed "IS_CHECK_VERSIONS" "failed to download ${versions_url} to ${versions_file}"
 }
 get_command() {
     local program
@@ -1451,11 +1456,11 @@ check_version() {
         actual_version=$(get_version "${program}" "${command}")
         # printf "program:%s expected:%s actual:%s\n" "${program}" "${expected_version}" "${actual_version}"
         if [ -z "${actual_version}" ]; then
-            failed "IS_VERSIONS_CHECK" "failed to lookup actual version of ${program}"
+            failed "IS_CHECK_VERSIONS" "failed to lookup actual version of ${program}"
         elif dpkg --compare-versions "${actual_version}" lt "${expected_version}"; then
-            failed "IS_VERSIONS_CHECK" "${program} version ${actual_version} is older than expected version ${expected_version}"
+            failed "IS_CHECK_VERSIONS" "${program} version ${actual_version} is older than expected version ${expected_version}"
         elif dpkg --compare-versions "${actual_version}" gt "${expected_version}"; then
-            failed "IS_VERSIONS_CHECK" "${program} version ${actual_version} is newer than expected version ${expected_version}, you should update tour index."
+            failed "IS_CHECK_VERSIONS" "${program} version ${actual_version} is newer than expected version ${expected_version}, you should update your index."
         else
             : # Version check OK
         fi
@@ -1484,7 +1489,7 @@ check_versions() {
             if [ -n "${version}" ]; then
                 check_version "${program}" "${version}"
             else
-                failed "IS_VERSIONS_CHECK" "failed to lookup expected version for ${program}"
+                failed "IS_CHECK_VERSIONS" "failed to lookup expected version for ${program}"
             fi
         fi
     done
