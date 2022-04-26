@@ -3,7 +3,7 @@
 PROGNAME="dump-server-state"
 REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
 
-VERSION="22.04.1"
+VERSION="22.04.2"
 readonly VERSION
 
 dump_dir=
@@ -725,7 +725,8 @@ task_mysql_processes() {
             else
                 debug "* mysqladmin ERROR"
                 debug "${last_result}"
-                rc=10
+                # Ignore errors because we don't know how to deal with multiple instances
+                # rc=10
             fi
         else
             debug "* no mysqld or mariadbd process is running"
