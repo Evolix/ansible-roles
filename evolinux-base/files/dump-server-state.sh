@@ -3,7 +3,7 @@
 PROGNAME="dump-server-state"
 REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
 
-VERSION="22.04.2"
+VERSION="22.04.3"
 readonly VERSION
 
 dump_dir=
@@ -76,7 +76,8 @@ END
 }
 debug() {
     if [ "${VERBOSE}" = "1" ]; then
-        echo "$1"
+        msg="${1:-$(cat /dev/stdin)}"
+        echo "${msg}"
     fi
 }
 
@@ -717,16 +718,20 @@ task_mysql_processes() {
     if [ -n "${mysqladmin_bin}" ]; then
         # Look for local MySQL or MariaDB process
         if pgrep mysqld > /dev/null || pgrep mariadbd > /dev/null; then
-            last_result=$(${mysqladmin_bin} --verbose processlist > "${dump_dir}/mysql-processlist.txt")
-            last_rc=$?
+            if ${mysqladmin_bin} ping > /dev/null 2>&1; then
+                ${mysqladmin_bin} --verbose processlist > "${dump_dir}/mysql-processlist.txt" 2> "${dump_dir}/mysql-processlist.err"
+                last_rc=$?
 
-            if [ ${last_rc} -eq 0 ]; then
-                debug "* mysqladmin OK"
+                if [ ${last_rc} -eq 0 ]; then
+                    debug "* mysqladmin OK"
+                else
+                    debug "* mysqladmin ERROR"
+                    debug < "${dump_dir}/mysql-processlist.err"
+                    rm "${dump_dir}/mysql-processlist.err"
+                    rc=10
+                fi
             else
-                debug "* mysqladmin ERROR"
-                debug "${last_result}"
-                # Ignore errors because we don't know how to deal with multiple instances
-                # rc=10
+                debug "* unable to ping with mysqladmin"
             fi
         else
             debug "* no mysqld or mariadbd process is running"
