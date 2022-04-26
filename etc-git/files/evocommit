@@ -8,7 +8,7 @@ show_version() {
     cat <<END
 evocommit version ${VERSION}
 
-Copyright 2021 Evolix <info@evolix.fr>,
+Copyright 2022 Evolix <info@evolix.fr>,
                Jérémy Lecour <jlecour@evolix.fr>
                and others.
 
