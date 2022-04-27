@@ -35,6 +35,9 @@
   tags:
     - munin
 
+- include_role:
+    name: evolix/remount-usr
+
 - name: Install some Munin plugins (disabled)
   copy:
     src: 'plugins/{{ item }}'
