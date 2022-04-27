@@ -2,7 +2,7 @@
 
 set -u
 
-VERSION="22.04"
+VERSION="22.04.1"
 
 show_version() {
     cat <<END
@@ -34,8 +34,7 @@ Options
  -V, --version           print version number
  -v, --verbose           increase verbosity
  -n, --dry-run           actions are not executed
-     --help              print this message and exit
-     --version           print version and exit
+ -h, --help              print this message and exit
 END
 }
 
