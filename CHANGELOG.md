@@ -12,7 +12,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
-* etc-git: Commit /etc in lxc containers when they are git repositories
+* etc-git: use "ansible-commit" to efficiently commit all available repositories (including /etc inside LXC) from Ansible
 * minifirewall: configure proxy/backup/sysctl values
 * nagios-nrpe: Add a check dhcp_pool
 * redis : Activate overcommit sysctl

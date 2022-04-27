@@ -1,0 +1,37 @@
+---
+
+- include: repository.yml
+  vars:
+    repository_path: "/etc"
+    gitignore_items:
+      - "aliases.db"
+      - "*.swp"
+      - "postfix/sa-blacklist.access"
+      - "postfix/*.db"
+      - "postfix/spamd.cidr"
+      - "evobackup/.keep-*"
+      - "letsencrypt/.certbot.lock"
+  tags:
+    - etc-git
+
+- name: verify /usr/share/scripts presence
+  stat:
+    path: /usr/share/scripts
+  register: _usr_share_scripts
+  tags:
+    - etc-git
+
+- include_role:
+    name: evolix/remount-usr
+  when:
+    - _usr_share_scripts.stat.isdir
+
+- include: repository.yml
+  vars:
+    repository_path: "/usr/share/scripts"
+    gitignore_items: []
+  when:
+    - _usr_share_scripts.stat.isdir
+    - ansible_distribution_major_version is version('10', '>=')
+  tags:
+    - etc-git
