@@ -1,9 +1,14 @@
 ---
 
-# Deprecated variable
-# minifirewall_main_file: /etc/default/minifirewall
+# possible values: Null (default), modern or legacy
+minifirewall_install_mode: Null
 
-minifirewall_tail_file: zzz-tail
+# BEGIN legacy variables
+minifirewall_legacy_main_file: /etc/default/minifirewall
+minifirewall_legacy_tail_file: /etc/default/minifirewall.tail
+# END legacy variabes
+
+minifirewall_tail_file: /etc/minifirewall.d/zzz-tail
 minifirewall_tail_included: False
 minifirewall_tail_force: True
 
@@ -14,17 +19,17 @@ minifirewall_force_upgrade_config: False
 # Update specific values in configuration
 minifirewall_update_config: True
 
-minifirewall_git_url: "https://forge.evolix.org/minifirewall.git"
-minifirewall_checkout_path: "/tmp/minifirewall"
 minifirewall_int: "{{ ansible_default_ipv4.interface }}"
 minifirewall_ipv6: "on"
 minifirewall_intlan: "{{ ansible_default_ipv4.address }}/32"
 minifirewall_docker: "off"
 
 minifirewall_default_trusted_ips: []
+minifirewall_legacy_fallback_trusted_ips: ['0.0.0.0/0']
+minifirewall_fallback_trusted_ips: ['0.0.0.0/0', '::/0']
 minifirewall_additional_trusted_ips: []
 # and default to ['0.0.0.0/0', '::/0'] if the result is still empty
-minifirewall_trusted_ips: "{{ minifirewall_default_trusted_ips | union(minifirewall_additional_trusted_ips) | unique | default(['0.0.0.0/0', '::/0'], true) }}"
+minifirewall_trusted_ips: "{{ minifirewall_default_trusted_ips | union(minifirewall_additional_trusted_ips) | unique }}"
 minifirewall_privilegied_ips: []
 
 minifirewall_protected_ports_tcp: [22]

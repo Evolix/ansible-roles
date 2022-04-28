@@ -14,6 +14,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * etc-git: use "ansible-commit" to efficiently commit all available repositories (including /etc inside LXC) from Ansible
 * minifirewall: configure proxy/backup/sysctl values
+* minifirewall: compatibility with "legacy" version of minifirewall
 * nagios-nrpe: Add a check dhcp_pool
 * redis : Activate overcommit sysctl
 * munin: Add possibility to install local plugins, and install dhcp_pool plugin

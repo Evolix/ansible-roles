@@ -4,25 +4,107 @@
   set_fact:
     minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | bool | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
 
-- name: Fail if minifirewall_main_file is defined
+# Legacy or modern mode? ##############################################
+
+- name: Check minifirewall
+  stat:
+    path: /etc/init.d/minifirewall
+  register: _minifirewall_check
+
+# Legacy versions of minifirewall don't define the VERSION variable
+- name: Look for minifirewall version
+  shell: "grep -E '^\\s*VERSION=' /etc/init.d/minifirewall"
+  failed_when: False
+  changed_when: False
+  check_mode: False
+  register: _minifirewall_version_check
+
+- name: Set install mode to legacy if needed
+  set_fact:
+    minifirewall_install_mode: legacy
+    minifirewall_main_file: "{{ minifirewall_legacy_main_file }}"
+    minifirewall_tail_file: "{{ minifirewall_legacy_tail_file }}"
+  when:
+    - minifirewall_install_mode != 'modern'
+    - not (minifirewall_force_upgrade_script | bool)
+    - _minifirewall_version_check.rc == 1 # grep didn't find but the file exists
+
+- name: Set install mode to modern if not legacy
+  set_fact:
+    minifirewall_install_mode: modern
+  when: minifirewall_install_mode != 'legacy'
+
+- name: Debug install mode
+  debug:
+    var: minifirewall_install_mode
+    verbosity: 1
+
+#######################################################################
+
+- name: Fail if minifirewall_main_file is defined (legacy mode)
   fail:
     msg: "Variable minifirewall_main_file is deprecated and not configurable anymore."
-  when: minifirewall_main_file is defined
+  when:
+    - minifirewall_install_mode != 'legacy'
+    - minifirewall_main_file is defined
 
-- include: install.yml
+- name: Install tasks (modern mode)
+  include: install.yml
+  when: minifirewall_install_mode != 'legacy'
 
-- include: config.yml
-  when: minifirewall_update_config | bool
+- name: Install tasks (legacy mode)
+  include: install.legacy.yml
+  when: minifirewall_install_mode == 'legacy'
 
-- include: nrpe.yml
+- name: Config tasks (modern mode)
+  include: config.yml
+  when:
+    - minifirewall_install_mode != 'legacy'
+    - minifirewall_update_config | bool
 
-- include: activate.yml
+- name: Config tasks (legacy mode)
+  include: config.legacy.yml
+  when:
+    - minifirewall_install_mode == 'legacy'
+    - minifirewall_update_config | bool
 
-- include: tail.yml
-  when: minifirewall_tail_included | bool
+- name: Utils tasks
+  include: utils.yml
 
-- name: Force restart minifirewall
+- name: NRPE tasks
+  include: nrpe.yml
+
+- name: Activation tasks
+  include: activate.yml
+
+- name: Tail tasks (modern mode)
+  include: tail.yml
+  when:
+    - minifirewall_install_mode != 'legacy'
+    - minifirewall_tail_included | bool
+
+- name: Tail tasks (legacy mode)
+  include: tail.legacy.yml
+  when:
+    - minifirewall_install_mode == 'legacy'
+    - minifirewall_tail_included | bool
+
+# Restart?
+
+- name: Force restart minifirewall (modern mode)
   command: /etc/init.d/minifirewall restart
   register: minifirewall_init_restart
   failed_when: "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
-  when: minifirewall_restart_force | bool
+  changed_when: "'starting IPTables rules is now finish : OK' in minifirewall_init_restart.stdout"
+  when:
+    - minifirewall_install_mode != 'legacy'
+    - minifirewall_restart_force | bool
+
+- name: Force restart minifirewall (legacy mode)
+  command: /etc/init.d/minifirewall restart
+  register: minifirewall_init_restart
+  failed_when: "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
+  changed_when: "'starting IPTables rules is now finish : OK' in minifirewall_init_restart.stdout"
+  when:
+    - minifirewall_install_mode == 'legacy'
+    - minifirewall_restart_force | bool

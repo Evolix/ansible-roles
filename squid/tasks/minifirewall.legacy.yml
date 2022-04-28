@@ -21,15 +21,7 @@
       insertafter: "^#HTTPSITES="
     notify: restart minifirewall
 
-  # The PROXY variable means that minifirewall is "modern"
-  - name: Look for PROXY variable
-    shell: "grep -E '^\\s*PROXY=' /etc/default/minifirewall"
-    failed_when: False
-    changed_when: False
-    check_mode: False
-    register: _minifirewall_proxy_var_check
-
-  - name: Set proxy configuration for minifirewall (legacy mode)
+  - name: add iptables rules for the proxy
     lineinfile:
       dest: "/etc/default/minifirewall"
       regexp: "^#? *{{ item }}"
@@ -41,21 +33,11 @@
       - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -d 127.0.0.0/8 -j ACCEPT"
       - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port 8888"
     notify: restart minifirewall
-    when: _minifirewall_proxy_var_check.rc == 1
 
-  - name: remove minifirewall example rule for the proxy (legacy mode)
+  - name: remove minifirewall example rule for the proxy
     lineinfile:
       dest: "/etc/default/minifirewall"
       regexp: '^#.*(-t nat).*(-d X\.X\.X\.X)'
       state: absent
     notify: restart minifirewall
-    when: _minifirewall_proxy_var_check.rc == 1
-
-  - name: Set proxy configuration for minifirewall (modern mode)
-    replace:
-      dest: "/etc/default/minifirewall"
-      replace: "PROXY='on'"
-      regexp: "PROXY='.*'"
-    notify: restart minifirewall
-    when: _minifirewall_proxy_var_check.rc == 0
   when: minifirewall_test.stat.exists
