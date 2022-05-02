@@ -12,7 +12,7 @@ pipeline {
             }
             steps {
                 script {
-                    def im = docker.build("evolix/ansible-roles:build${env.BUILD_ID}", "gbp")
+                    def im = docker.build("evolix/ansible-roles:build${env.BUILD_ID}")
                     im.inside {
                         sh 'echo Test needed'
                     }
@@ -36,7 +36,7 @@ pipeline {
             }
             steps {
                 script {
-                    def im = docker.build("evolix/ansible-roles:build${env.BUILD_ID}", "gbp")
+                    def im = docker.build("evolix/ansible-roles:build${env.BUILD_ID}")
                     im.inside {
                         sh 'echo Test needed'
                     }
