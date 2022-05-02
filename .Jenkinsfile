@@ -2,7 +2,7 @@ pipeline {
     agent { label 'docker' }
 
     environment {
-        ROLES_VERSION = build.getEnvironment(listener).get('GIT_COMMIT')
+        ROLES_VERSION = ${env.GIT_COMMIT}
     }
 
     stages {
