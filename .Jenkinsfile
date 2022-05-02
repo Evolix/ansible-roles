@@ -30,7 +30,7 @@ pipeline {
             }
         }
 
-        stage('Build tagged docker image') {
+        stage('Build latest docker image') {
             when {
                 branch 'unstable'
             }
