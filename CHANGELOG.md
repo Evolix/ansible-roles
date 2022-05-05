@@ -16,7 +16,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * minifirewall: configure proxy/backup/sysctl values
 * minifirewall: compatibility with "legacy" version of minifirewall
 * nagios-nrpe: Add a check dhcp_pool
-* redis : Activate overcommit sysctl
+* redis: Activate overcommit sysctl
+* redis: Add log2mail user to redis group
 * munin: Add possibility to install local plugins, and install dhcp_pool plugin
 
 ### Changed

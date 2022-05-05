@@ -17,3 +17,14 @@
   tags:
     - redis
     - log2mail
+
+- name: log2mail user is in redis group
+  user:
+    name: log2mail
+    groups: redis
+    append: yes
+    state: present
+  notify: restart log2mail
+  tags:
+    - redis
+    - log2mail
