@@ -49,6 +49,7 @@
     - used_keys
     - used_memory
   notify: restart munin-node
+  when: not ansible_check_mode
   tags:
     - redis
 
