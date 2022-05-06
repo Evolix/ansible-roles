@@ -31,6 +31,7 @@ Usage: ansible-commit --message "add new host"
 
 Options
      --message MESSAGE   set the commit message
+     --no-lxc            disable commit inside LXC containers
  -V, --version           print version number
  -v, --verbose           increase verbosity
  -n, --dry-run           actions are not executed
@@ -81,7 +82,7 @@ main() {
         fi
     fi
 
-    if [ -n "${lxc_ls_bin}" ]; then
+    if [ "${LXC}" = "1" ] && [ -n "${lxc_ls_bin}" ]; then
         for container in $(${lxc_ls_bin} -1); do
             if [ -n "${lxc_config_bin}" ]; then
                 # discovered path
@@ -136,6 +137,9 @@ while :; do
             printf 'FAILED: "--message" requires a non-empty option argument.\n' >&2
             exit 1
             ;;
+        --no-lxc)
+            LXC=0
+            ;;
         -n|--dry-run)
             # disable actual commands
             DRY_RUN=1
@@ -169,6 +173,7 @@ if [ -z "${MESSAGE}" ]; then
 fi
 DRY_RUN=${DRY_RUN:-0}
 VERBOSE=${VERBOSE:-0}
+LXC=${LXC:-1}
 
 evocommit_bin=$(command -v evocommit)
 if [ -z "${evocommit_bin}" ]; then
