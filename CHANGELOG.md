@@ -34,6 +34,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * tomcat: Tomcat 9 by default with Debian 11
 * openvpn: use a local copy of files instead of cloning an external git repository
 * vrrpd: Store sysctl values in specific file
+* opendkim : add generate opendkim-genkey in sha256 and key 4096 
 
 ### Fixed
 
