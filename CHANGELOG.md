@@ -12,6 +12,9 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* docker : Introduce new default settings + allow to change the docker data directory 
+* docker : Introduce new variables to tweak daemon settings
+
 ### Changed
 
 ### Fixed
@@ -19,7 +22,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Removed
 
 * docker : Removed Debian Jessie support
-* docker : Introduce new default settings + allow to change the docker data directory 
 
 ### Security
 

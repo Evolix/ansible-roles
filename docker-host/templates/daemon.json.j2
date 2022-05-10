@@ -10,6 +10,21 @@
   {# Turn on user namespace remaping #}
   "userns-remap": "default",
 
+  {% if docker_conf_use_iptables %}
+  {# Use iptables instead of docker-proxy #}
+  "userland-proxy": false,
+  "iptables": true,
+  {% endif %}
+
+  {# Disable the possibility for containers processes to gain new privileges #}
+  "no-new-privileges": {{ docker_conf_no_newprivileges | to_json }},
+
+  {% if docker_conf_disable_default_networking %}
+  {# Disable all default network connectivity #}
+  "bridge": "none",
+  "icc": false,
+  {% endif %}
+
   {% if docker_tls_enabled %}
   "tls": true,
   "tlscert": "{{ docker_tls_path }}/{{ docker_tls_cert }}",

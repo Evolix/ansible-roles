@@ -1,13 +1,23 @@
 ---
-# If docher_home sets to /home/, the partition should be mounted with exec
-# option.
+# If docher_home sets to /home/, the partition should be mounted with exec option.
 docker_home: /var/lib/docker
 docker_tmpdir: "{{docker_home}}/tmp"
 
-docker_remote_access_enabled: True
+# Chose to use iptables instead of docker-proxy userland process
+docker_conf_use_iptables: False
+
+# Disable the possibility for containers processes to gain new privileges
+docker_conf_no_newprivileges: False
+
+# Disable all default network connectivity
+docker_conf_disable_default_networking: False
+
+# Remote access
+docker_remote_access_enabled: False
 docker_daemon_port: 2376
 docker_daemon_listening_ip: 0.0.0.0
 
+# TLS 
 docker_tls_enabled: False
 docker_tls_path: "{{docker_home}}/tls"
 docker_tls_ca: ca/ca.pem
