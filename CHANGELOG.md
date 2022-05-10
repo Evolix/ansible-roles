@@ -12,43 +12,51 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
-* etc-git: use "ansible-commit" to efficiently commit all available repositories (including /etc inside LXC) from Ansible
-* minifirewall: configure proxy/backup/sysctl values
-* minifirewall: compatibility with "legacy" version of minifirewall
-* nagios-nrpe: Add a check dhcp_pool
-* redis: Activate overcommit sysctl
-* redis: Add log2mail user to redis group
-* munin: Add possibility to install local plugins, and install dhcp_pool plugin
-
 ### Changed
 
-* evocheck: upstream release 22.04.1
-* evolinux-base: Add non-free repos & install non-free firmware on dedicated hardware
-* evolinux-base: rename backup-server-state to dump-server-state
-* dump-server-state: upstream release 22.04.3
-* generate-ldif: Add services check for bkctld
-* minifirewall: restore "force-restart" and fix "restart-if-needed"
-* minifirewall: tail template follows symlinks
-* minifirewall: upstream release 22.05
-* openvpn: use a subnet topology instead of the net30 default topology
-* tomcat: Tomcat 9 by default with Debian 11
-* openvpn: use a local copy of files instead of cloning an external git repository
-* vrrpd: Store sysctl values in specific file
-* opendkim : add generate opendkim-genkey in sha256 and key 4096 
-
 ### Fixed
-
-* Repair keepalived role
-* generate-ldif: Correct generated entries for php-fpm in containers
-* redis: Remount /usr with RW before adding nagios plugin
-* postfix: Do not send mails through milters a second time after amavis (in packmail)
-* etc-git : Remount /usr in rw for git gc in in /usr/share/scripts/
-* etc-git: Make evocommit fully compatible with OpenBSD
-* minifirewall: fix `failed_when` condition on restart
 
 ### Removed
 
 ### Security
+
+## [22.05] 2022-05-10
+
+### Added
+
+* etc-git: use "ansible-commit" to efficiently commit all available repositories (including /etc inside LXC) from Ansible
+* minifirewall: compatibility with "legacy" version of minifirewall
+* minifirewall: configure proxy/backup/sysctl values
+* munin: Add possibility to install local plugins, and install dhcp_pool plugin
+* nagios-nrpe: Add a check dhcp_pool
+* redis: Activate overcommit sysctl
+* redis: Add log2mail user to redis group
+
+### Changed
+
+* dump-server-state: upstream release 22.04.3
+* evocheck: upstream release 22.04.1
+* evolinux-base: Add non-free repos & install non-free firmware on dedicated hardware
+* evolinux-base: rename backup-server-state to dump-server-state
+* generate-ldif: Add services check for bkctld
+* minifirewall: restore "force-restart" and fix "restart-if-needed"
+* minifirewall: tail template follows symlinks
+* minifirewall: upstream release 22.05
+* opendkim : add generate opendkim-genkey in sha256 and key 4096 
+* openvpn: use a local copy of files instead of cloning an external git repository
+* openvpn: use a subnet topology instead of the net30 default topology
+* tomcat: Tomcat 9 by default with Debian 11
+* vrrpd: Store sysctl values in specific file
+
+### Fixed
+
+* etc-git : Remount /usr in rw for git gc in in /usr/share/scripts/
+* etc-git: Make evocommit fully compatible with OpenBSD
+* generate-ldif: Correct generated entries for php-fpm in containers
+* keepalived: repair broken role
+* minifirewall: fix `failed_when` condition on restart
+* postfix: Do not send mails through milters a second time after amavis (in packmail)
+* redis: Remount /usr with RW before adding nagios plugin
 
 ## [22.03] 2022-03-02
 
@@ -71,8 +79,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-users: optimize sudo configuration
 * lxc: Fail if /var is nosuid
 * openvpn: make it compatible with OpenBSD and add some improvements
-
-
 
 ## [22.01.3] 2022-01-31
 
