@@ -608,11 +608,11 @@ if is_pkg_installed lxc; then
 if lxc-ls | grep -q php56 ; then
     cat <<EOT >> "${ldif_file}"
 
-dn: ServiceName=ServiceName=php-fpm56,${computer_dn}
+dn: ServiceName=php-fpm56,${computer_dn}
 NagiosEnabled: TRUE
 ipServiceProtocol: tcp
 objectClass: EvoService
-ServiceName: PHP-FPM (multiphp)
+ServiceName: php-fpm56
 ipServicePort: 443
 ServiceType: web
 ServiceVersion: PHP-FPM 5.6 (multiphp)
@@ -622,11 +622,11 @@ fi
 if lxc-ls | grep -q php70 ; then
     cat <<EOT >> "${ldif_file}"
 
-dn: ServiceName=ServiceName=php-fpm70,${computer_dn}
+dn: ServiceName=php-fpm70,${computer_dn}
 NagiosEnabled: TRUE
 ipServiceProtocol: tcp
 objectClass: EvoService
-ServiceName: PHP-FPM (multiphp)
+ServiceName: php-fpm70
 ipServicePort: 443
 ServiceType: web
 ServiceVersion: PHP-FPM 7.0 (multiphp)
@@ -636,11 +636,11 @@ fi
 if lxc-ls | grep -q php73 ; then
     cat <<EOT >> "${ldif_file}"
 
-dn: ServiceName=ServiceName=php-fpm73,${computer_dn}
+dn: ServiceName=php-fpm73,${computer_dn}
 NagiosEnabled: TRUE
 ipServiceProtocol: tcp
 objectClass: EvoService
-ServiceName: PHP-FPM (multiphp)
+ServiceName: php-fpm73
 ipServicePort: 443
 ServiceType: web
 ServiceVersion: PHP-FPM 7.3 (multiphp)
@@ -650,11 +650,11 @@ fi
 if lxc-ls | grep -q php74 ; then
     cat <<EOT >> "${ldif_file}"
 
-dn: ServiceName=ServiceName=php-fpm74,${computer_dn}
+dn: ServiceName=php-fpm74,${computer_dn}
 NagiosEnabled: TRUE
 ipServiceProtocol: tcp
 objectClass: EvoService
-ServiceName: PHP-FPM (multiphp)
+ServiceName: php-fpm74
 ipServicePort: 443
 ServiceType: web
 ServiceVersion: PHP-FPM 7.4 (multiphp)
@@ -664,11 +664,11 @@ fi
 if lxc-ls | grep -q php80 ; then
     cat <<EOT >> "${ldif_file}"
 
-dn: ServiceName=ServiceName=php-fpm80,${computer_dn}
+dn: ServiceName=php-fpm80,${computer_dn}
 NagiosEnabled: TRUE
 ipServiceProtocol: tcp
 objectClass: EvoService
-ServiceName: PHP-FPM (multiphp)
+ServiceName: php-fpm80
 ipServicePort: 443
 ServiceType: web
 ServiceVersion: PHP-FPM 8.0 (multiphp)
@@ -678,11 +678,11 @@ fi
 if lxc-ls | grep -q php81 ; then
     cat <<EOT >> "${ldif_file}"
 
-dn: ServiceName=ServiceName=php-fpm81,${computer_dn}
+dn: ServiceName=php-fpm81,${computer_dn}
 NagiosEnabled: TRUE
 ipServiceProtocol: tcp
 objectClass: EvoService
-ServiceName: PHP-FPM (multiphp)
+ServiceName: php-fpm81
 ipServicePort: 443
 ServiceType: web
 ServiceVersion: PHP-FPM 8.1 (multiphp)
@@ -705,6 +705,37 @@ objectClass: EvoService
 ServiceName: mdadm
 ServiceType: raid
 ServiceVersion: mdadm ${mdadm_version}
+EOT
+fi
+
+
+# bkctld
+if is_pkg_installed bkctld; then
+    bkctld_version=$(get_pkg_version bkctld)
+fi
+if [ -n "${bkctld_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=bkctld_jails,${computer_dn}
+NagiosEnabled: TRUE
+objectClass: EvoService
+ServiceName: bkctld_jails
+ServiceType: backup
+ServiceVersion: bkctld ${bkctld_version}
+
+dn: ServiceName=bkctld_setup,${computer_dn}
+NagiosEnabled: TRUE
+objectClass: EvoService
+ServiceName: bkctld_setup
+ServiceType: backup
+ServiceVersion: bkctld ${bkctld_version}
+
+dn: ServiceName=disk-worktime,${computer_dn}
+NagiosEnabled: TRUE
+objectClass: EvoService
+ServiceName: disk-worktime
+ServiceType: disk
+ServiceVersion: Undefined
 EOT
 fi
 

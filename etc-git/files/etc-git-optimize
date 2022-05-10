@@ -6,6 +6,12 @@ repositories="/etc /etc/bind/ /usr/share/scripts"
 
 for repository in ${repositories}; do
     if [ -d "${repository}/.git" ]; then
+        if [ ${repository} = "/usr/share/scripts" ]; then
+            mount -o remount,rw /usr
+        fi
         git --git-dir="${repository}/.git" gc --quiet
+        if [ ${repository} = "/usr/share/scripts" ]; then
+            mount -o remount /usr
+        fi
     fi
 done

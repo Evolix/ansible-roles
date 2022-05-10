@@ -10,7 +10,7 @@ domain="$(echo "$1"|xargs)"
 
 if [ ! -f "/etc/ssl/private/dkim-${servername}.private" ]; then
     echo "Generate DKIM keys ..."
-    opendkim-genkey -D /etc/ssl/private/ -r -d "${domain}" -s "dkim-${servername}"
+    opendkim-genkey -h sha256 -b 4096 -D /etc/ssl/private/ -r -d "${domain}" -s "dkim-${servername}"
     chown opendkim:opendkim "/etc/ssl/private/dkim-${servername}.private"
     chmod 640 "/etc/ssl/private/dkim-${servername}.private"
     mv "/etc/ssl/private/dkim-${servername}.txt" "/etc/ssl/certs/"

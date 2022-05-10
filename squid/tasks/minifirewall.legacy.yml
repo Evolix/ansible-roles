@@ -1,0 +1,43 @@
+---
+- name: Check if Minifirewall is present
+  stat:
+    path: "/etc/default/minifirewall"
+  check_mode: no
+  register: minifirewall_test
+
+- block:
+  - name: HTTPSITES list is commented in minifirewall
+    replace:
+      dest: "/etc/default/minifirewall"
+      regexp: "^(HTTPSITES='[^0-9])"
+      replace: '#\1'
+    notify: restart minifirewall
+
+  - name: all HTTPSITES are authorized in minifirewall
+    lineinfile:
+      dest: "/etc/default/minifirewall"
+      line: "HTTPSITES='0.0.0.0/0'"
+      regexp: "HTTPSITES='.*'"
+      insertafter: "^#HTTPSITES="
+    notify: restart minifirewall
+
+  - name: add iptables rules for the proxy
+    lineinfile:
+      dest: "/etc/default/minifirewall"
+      regexp: "^#? *{{ item }}"
+      line: "{{ item }}"
+      insertafter: "^# Proxy"
+    loop:
+      - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -m owner --uid-owner proxy -j ACCEPT"
+      - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -d {{ squid_address }} -j ACCEPT"
+      - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -d 127.0.0.0/8 -j ACCEPT"
+      - "/sbin/iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port 8888"
+    notify: restart minifirewall
+
+  - name: remove minifirewall example rule for the proxy
+    lineinfile:
+      dest: "/etc/default/minifirewall"
+      regexp: '^#.*(-t nat).*(-d X\.X\.X\.X)'
+      state: absent
+    notify: restart minifirewall
+  when: minifirewall_test.stat.exists

@@ -1,0 +1,24 @@
+---
+
+- name: dependencies are satisfied
+  apt:
+    name: iptables
+    state: present
+
+- name: init script is copied
+  template:
+    src: minifirewall.legacy.j2
+    dest: /etc/init.d/minifirewall
+    force: "{{ minifirewall_force_upgrade_script | default('no') }}"
+    mode: "0700"
+    owner: root
+    group: root
+
+- name: configuration is copied
+  copy:
+    src: minifirewall.legacy.conf
+    dest: "{{ minifirewall_main_file }}"
+    force: "{{ minifirewall_force_upgrade_config | default('no') }}"
+    mode: "0600"
+    owner: root
+    group: root

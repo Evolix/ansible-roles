@@ -6,19 +6,38 @@
     state: present
 
 - name: init script is copied
-  template:
-    src: minifirewall.j2
+  copy:
+    src: minifirewall
     dest: /etc/init.d/minifirewall
     force: "{{ minifirewall_force_upgrade_script | default('no') }}"
     mode: "0700"
     owner: root
     group: root
+  register: minifirewall_upgrade_script
 
 - name: configuration is copied
   copy:
     src: minifirewall.conf
-    dest: "{{ minifirewall_main_file }}"
+    dest: "/etc/default/minifirewall"
     force: "{{ minifirewall_force_upgrade_config | default('no') }}"
+    mode: "0600"
+    owner: root
+    group: root
+  register: minifirewall_upgrade_config
+
+- name: includes directory is present
+  file:
+    path: /etc/minifirewall.d/
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: examples for includes are present
+  copy:
+    src: "minifirewall.d/"
+    dest: "/etc/minifirewall.d/"
+    force: "no"
     mode: "0600"
     owner: root
     group: root

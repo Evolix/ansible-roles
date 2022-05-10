@@ -32,11 +32,14 @@
 
 
 ## Dedicated hardware
-- name: Install freepmi when it's dedicated hardware
+- name: Install some additionnals tools when it dedicated hardware
   apt:
     name:
       - libipc-run-perl
       - freeipmi
+      - ipmitool
+      - firmware-linux-nonfree
+      - intel-microcode
     state: present
   tags:
     - packages

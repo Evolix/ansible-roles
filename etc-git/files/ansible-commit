@@ -1,0 +1,187 @@
+#!/bin/sh
+
+set -u
+
+VERSION="22.05"
+
+show_version() {
+    cat <<END
+ansible-commit version ${VERSION}
+
+Copyright 2022 Evolix <info@evolix.fr>,
+               Jérémy Lecour <jlecour@evolix.fr>
+               and others.
+
+ansible-commit comes with ABSOLUTELY NO WARRANTY. This is free software,
+and you are welcome to redistribute it under certain conditions.
+See the GNU General Public Licence for details.
+END
+}
+
+show_help() {
+    cat <<END
+ansible-commit is a wrapper for evocommit, to be used with Ansible
+
+END
+    show_usage
+}
+show_usage() {
+    cat <<END
+Usage: ansible-commit --message "add new host"
+
+Options
+     --message MESSAGE   set the commit message
+     --no-lxc            disable commit inside LXC containers
+ -V, --version           print version number
+ -v, --verbose           increase verbosity
+ -n, --dry-run           actions are not executed
+ -h, --help              print this message and exit
+END
+}
+
+is_dry_run() {
+    test "${DRY_RUN}" = "1"
+}
+is_verbose() {
+    test "${VERBOSE}" = "1"
+}
+main() {
+    rc=0
+    common_args="--ansible"
+    if is_verbose; then
+        common_args="${common_args} --verbose"
+    fi
+    if is_dry_run; then
+        common_args="${common_args} --dry-run"
+    fi
+
+    if [ -d "/etc/.git" ]; then
+        # shellcheck disable=SC2086,SC2090
+        ${evocommit_bin} ${common_args} --repository /etc --message "${MESSAGE}"
+        last_rc=$?
+        if [ ${last_rc} -ne 0 ]; then
+            rc=${last_rc}
+        fi
+    fi
+
+    if [ -d "/etc/bind/.git" ]; then
+        # shellcheck disable=SC2086,SC2090
+        ${evocommit_bin} ${common_args} --repository /etc/bind --message "${MESSAGE}"
+        last_rc=$?
+        if [ ${last_rc} -ne 0 ]; then
+            rc=${last_rc}
+        fi
+    fi
+
+    if [ -d "/usr/share/scripts/.git" ]; then
+        # shellcheck disable=SC2086,SC2090
+        ${evocommit_bin} ${common_args} --repository /usr/share/scripts --message "${MESSAGE}"
+        last_rc=$?
+        if [ ${last_rc} -ne 0 ]; then
+            rc=${last_rc}
+        fi
+    fi
+
+    if [ "${LXC}" = "1" ] && [ -n "${lxc_ls_bin}" ]; then
+        for container in $(${lxc_ls_bin} -1); do
+            if [ -n "${lxc_config_bin}" ]; then
+                # discovered path
+                etc_path="$(${lxc_config_bin} lxc.lxcpath)/${container}/rootfs/etc"
+            else
+                # fallback to default path
+                etc_path="/var/lib/lxc/${container}/rootfs/etc"
+            fi
+
+            if [ -d "${etc_path}/.git" ]; then
+                # shellcheck disable=SC2086,SC2090
+                ${evocommit_bin} ${common_args} --repository "${etc_path}" --message "${MESSAGE}"
+                last_rc=$?
+                if [ ${last_rc} -ne 0 ]; then
+                    rc=${last_rc}
+                fi
+            fi
+        done
+    fi
+
+    exit ${rc}
+}
+
+# Parse options
+# based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
+while :; do
+    case ${1:-''} in
+        -h|-\?|--help)
+            show_help
+            exit 0
+            ;;
+        -V|--version)
+            show_version
+            exit 0
+            ;;
+        --message)
+            # message options, with value speparated by space
+            if [ -n "$2" ]; then
+                MESSAGE=$2
+                shift
+            else
+                printf 'FAILED: "--message" requires a non-empty option argument.\n' >&2
+                exit 1
+            fi
+            ;;
+        --message=?*)
+            # message options, with value speparated by =
+            MESSAGE=${1#*=}
+            ;;
+        --message=)
+            # message options, without value
+            printf 'FAILED: "--message" requires a non-empty option argument.\n' >&2
+            exit 1
+            ;;
+        --no-lxc)
+            LXC=0
+            ;;
+        -n|--dry-run)
+            # disable actual commands
+            DRY_RUN=1
+            ;;
+        -v|--verbose)
+            # print verbose information
+            VERBOSE=1
+            ;;
+        --)
+            # End of all options.
+            shift
+            break
+            ;;
+        -?*|[[:alnum:]]*)
+            # ignore unknown options
+            printf 'FAILED: Unknown option (ignored): %s\n' "$1" >&2
+            ;;
+        *)
+            # Default case: If no more options then break out of the loop.
+            break
+            ;;
+    esac
+
+    shift
+done
+
+if [ -z "${MESSAGE}" ]; then
+    echo "FAILED: missing message parameter" >&2
+    show_usage
+    exit 1
+fi
+DRY_RUN=${DRY_RUN:-0}
+VERBOSE=${VERBOSE:-0}
+LXC=${LXC:-1}
+
+evocommit_bin=$(command -v evocommit)
+if [ -z "${evocommit_bin}" ]; then
+    echo "FAILED: evocommit not found" >&2
+    exit 1
+fi
+
+lxc_ls_bin=$(command -v lxc-ls)
+lxc_config_bin=$(command -v lxc-config)
+
+main

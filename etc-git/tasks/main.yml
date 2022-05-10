@@ -6,109 +6,16 @@
     state: present
   tags:
     - etc-git
+  when: 
+    - ansible_distribution == "Debian"
 
-- include_role:
-    name: evolix/remount-usr
-
-- name: "evocommit script is installed"
-  copy:
-    src: evocommit
-    dest: /usr/local/bin/evocommit
-    mode: "0755"
-    force: yes
+- name: Install and configure utilities
+  include: utils.yml
   tags:
     - etc-git
 
-- include: repository.yml
-  vars:
-    repository_path: "/etc"
-    gitignore_items:
-      - "aliases.db"
-      - "*.swp"
-      - "postfix/sa-blacklist.access"
-      - "postfix/*.db"
-      - "postfix/spamd.cidr"
-      - "evobackup/.keep-*"
-      - "letsencrypt/.certbot.lock"
-
-- name: verify /usr/share/scripts presence
-  stat:
-    path: /usr/share/scripts
-  register: _usr_share_scripts
-
-- include: repository.yml
-  vars:
-    repository_path: "/usr/share/scripts"
-    gitignore_items: []
-  when:
-    - _usr_share_scripts.stat.isdir
-    - ansible_distribution_major_version is version('10', '>=')
-
-- name: "etc-git-optimize script is installed"
-  copy:
-    src: etc-git-optimize
-    dest: /usr/share/scripts/etc-git-optimize
-    mode: "0755"
-    force: yes
+- name: Configure repositories
+  include: repositories.yml
   tags:
     - etc-git
-
-- name: "etc-git-status script is installed"
-  copy:
-    src: etc-git-status
-    dest: /usr/share/scripts/etc-git-status
-    mode: "0755"
-    force: yes
-  tags:
-    - etc-git
-
-- name: Check if cron is installed
-  shell: "set -o pipefail && dpkg -l cron 2>/dev/null | grep -q -E '^(i|h)i'"
-  args:
-    executable: /bin/bash
-  failed_when: False
-  changed_when: False
-  check_mode: no
-  register: is_cron_installed
-
-- block:
-  - name: Legacy cron jobs for /etc/.git status are absent 
-    file:
-      dest: "{{ item }}"
-      state: absent
-    loop:
-      - /etc/cron.monthly/optimize-etc-git
-      - /etc/cron.d/etc-git-status
-
-  - name: Cron job for monthly git optimization
-    cron:
-      name: "Monthly optimization"
-      cron_file: etc-git
-      special_time: "monthly"
-      user: root
-      job: "/usr/share/scripts/etc-git-optimize"
-
-  - name: Cron job for hourly git status
-    cron:
-      name: "Hourly warning for unclean Git repository if nobody is connected"
-      cron_file: etc-git
-      special_time: "hourly"
-      user: root
-      job: "who > /dev/null || /usr/share/scripts/etc-git-status"
-      state: "{{ etc_git_monitor_status | bool | ternary('present','absent') }}"
-
-  - name: Cron job for daily git status
-    cron:
-      name: "Daily warning for unclean Git repository"
-      cron_file: etc-git
-      user: root
-      job: "/usr/share/scripts/etc-git-status"
-      minute: "21"
-      hour: "21"
-      weekday: "*"
-      day: "*"
-      month: "*"
-      state: "{{ etc_git_monitor_status | bool | ternary('present','absent') }}"
-  when: is_cron_installed.rc == 0
-  tags:
-    - etc-git
+  when: etc_git_config_repositories | bool

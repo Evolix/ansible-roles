@@ -2,6 +2,6 @@
 - name: Deploy top configuration file
   copy:
     # The config format is unredable; ATM it only add the SWAP column
-    src: htoprc
+    src: topdefaultrc
     dest: /etc/topdefaultrc
     mode: "0644"

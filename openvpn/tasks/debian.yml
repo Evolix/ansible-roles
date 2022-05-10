@@ -12,11 +12,6 @@
     - client
     - server
 
-- name: Clone shellpki repo
-  git:
-    repo: "https://gitea.evolix.org/evolix/shellpki.git"
-    dest: /root/shellpki
-
 - name: Create the shellpki user
   user:
     name: shellpki
@@ -38,30 +33,14 @@
 
 - name: Copy shellpki files
   copy:
-    src: "{{ item.source }}"
+    src: "shellpki/{{ item.source }}"
     dest: "{{ item.destination }}"
-    remote_src: yes
-  with_items:
-     - { source: "/root/shellpki/openssl.cnf", destination: "/etc/shellpki/openssl.cnf" }
-     - { source: "/root/shellpki/shellpki", destination: "/usr/local/sbin/shellpki" }
-
-- include_role:
-    name: evolix/remount-usr
-
-- name: Change files permissions
-  file:
-    dest: "{{ item.dest }}"
     mode: "{{ item.mode }}"
     owner: "{{ item.owner }}"
     group: "{{ item.group }}"
   with_items:
-     - { dest: "/etc/shellpki/openssl.cnf", mode: "0640", owner: "shellpki", group: "shellpki" }
-     - { dest: "/usr/local/sbin/shellpki", mode: "0755", owner: "root", group: "root" }
-
-- name: Delete local shellpki repo
-  file:
-    state: absent
-    dest: "/root/shellpki"
+     - { source: "openssl.cnf", destination: "/etc/shellpki/openssl.cnf", mode: "0640", owner: "shellpki", group: "shellpki" }
+     - { source: "shellpki", destination: "/usr/local/sbin/shellpki", mode: "0755", owner: "root", group: "root" }
 
 - name: Add sudo rights
   lineinfile:
@@ -251,30 +230,16 @@
   notify: restart nagios-nrpe-server
   when: nrpe_evolix_config.stat.exists
 
-# BEGIN TODO : Get this script from master branch when cloning it at the beginning when dev branch is merged with master (this script is currently not available on master branch)
-- name: Clone dev branch of shellpki repo
-  git:
-    repo: "https://gitea.evolix.org/evolix/shellpki.git"
-    dest: /root/shellpki-dev
-    version: dev
-
 - include_role:
     name: evolix/remount-usr
 
 - name: Copy shellpki script
   copy:
-    src: "/root/shellpki-dev/cert-expirations.sh"
+    src: "shellpki/cert-expirations.sh"
     dest: "/usr/share/scripts/cert-expirations.sh"
     mode: "0700"
     owner: root
     group: root
-    remote_src: yes
-
-- name: Delete local shellpki-dev repo
-  file:
-    state: absent
-    dest: "/root/shellpki-dev"
-# END TODO
 
 - name: Install cron to warn about certificates expiration
   cron:

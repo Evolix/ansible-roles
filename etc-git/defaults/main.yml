@@ -4,3 +4,4 @@ etc_git_default_commit_message: Ansible run
 etc_git_monitor_status: True
 etc_git_purge_index_lock_enabled: True
 etc_git_purge_index_lock_age: 86400
+etc_git_config_repositories: True

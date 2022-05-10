@@ -1,0 +1,21 @@
+---
+
+- include_role:
+    name: evolix/remount-usr
+
+- name: /usr/share/scripts exists
+  file:
+    dest: /usr/share/scripts
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+
+- name: blacklist-countries.sh is copied
+  copy:
+    src: blacklist-countries.sh
+    dest: /usr/share/scripts/blacklist-countries.sh
+    force: "no"
+    mode: "0700"
+    owner: root
+    group: root

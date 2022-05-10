@@ -22,6 +22,14 @@
     - packages
   when: redis_sentinel_install | bool
 
+- name: Linux kernel overcommit memory setting is enabled
+  sysctl:
+    name: "vm.overcommit_memory"
+    value: "1"
+    sysctl_file: "/etc/sysctl.d/evolinux-redis.conf"
+    state: present
+    reload: yes
+
 - name: Get Redis version
   shell: "redis-server -v | grep -Eo '(v=\\S+)' | cut -d'=' -f 2 | grep -E '^([0-9]|\\.)+$'"
   changed_when: false

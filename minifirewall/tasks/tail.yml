@@ -18,26 +18,10 @@
     var: minifirewall_tail_template
     verbosity: 1
 
-- name: source minifirewall.tail at the end of the main file
-  blockinfile:
-    dest: "{{ minifirewall_main_file }}"
-    marker: "# {mark} ANSIBLE MANAGED EXTERNAL RULES"
-    block: ". {{ minifirewall_tail_file }}"
-    insertbefore: EOF
-  register: minifirewall_tail_source
-
-- debug:
-    var: minifirewall_tail_source
-    verbosity: 1
-
 - name: restart minifirewall
-  # service:
-  #   name: minifirewall
-  #   state: restarted
   command: /etc/init.d/minifirewall restart
   register: minifirewall_init_restart
-  failed_when: "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
-  changed_when: "'starting IPTables rules is now finish : OK' in minifirewall_init_restart.stdout"
+  failed_when: "'minifirewall failed' in minifirewall_init_restart.stdout"
   when:
     - minifirewall_tail_template is changed
     - minifirewall_restart_if_needed | bool

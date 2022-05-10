@@ -4,7 +4,7 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
-VERSION="21.10.4"
+VERSION="22.04.1"
 readonly VERSION
 
 # base functions
@@ -13,7 +13,7 @@ show_version() {
     cat <<END
 evocheck version ${VERSION}
 
-Copyright 2009-2021 Evolix <info@evolix.fr>,
+Copyright 2009-2022 Evolix <info@evolix.fr>,
                     Romain Dessort <rdessort@evolix.fr>,
                     Benoit Série <bserie@evolix.fr>,
                     Gregory Colpart <reg@evolix.fr>,
@@ -142,9 +142,9 @@ failed() {
     RC=1
     if [ "${QUIET}" != 1 ]; then
         if [ -n "${check_comments}" ] && [ "${VERBOSE}" = 1 ]; then
-            printf "%s FAILED! %s\n" "${check_name}" "${check_comments}" 2>&1
+            printf "%s FAILED! %s\n" "${check_name}" "${check_comments}" >> "${main_output_file}"
         else
-            printf "%s FAILED!\n" "${check_name}" 2>&1
+            printf "%s FAILED!\n" "${check_name}" >> "${main_output_file}"
         fi
     fi
 }
@@ -234,7 +234,8 @@ check_syslogconf() {
 check_debiansecurity() {
     if is_debian_bullseye; then
         # https://www.debian.org/releases/bullseye/amd64/release-notes/ch-information.html#security-archive
-        pattern="^deb https://deb\.debian\.org/debian-security/? bullseye-security main"
+        # https://www.debian.org/security/
+        pattern="^deb https://(deb|security)\.debian\.org/debian-security/? bullseye-security main"
     elif is_debian_buster; then
         pattern="^deb http://security\.debian\.org/debian-security/? buster/updates main"
     elif is_debian_stretch; then
@@ -328,8 +329,11 @@ check_tmoutprofile() {
 check_alert5boot() {
     if is_debian_buster || is_debian_bullseye; then
         grep -qs "^date" /usr/share/scripts/alert5.sh || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
-        test -f /etc/systemd/system/alert5.service || failed "IS_ALERT5BOOT" "alert5 unit file is missing"
-        systemctl is-enabled alert5 -q || failed "IS_ALERT5BOOT" "alert5 unit is not enabled"
+        if [ -f /etc/systemd/system/alert5.service ]; then
+            systemctl is-enabled alert5.service -q || failed "IS_ALERT5BOOT" "alert5 unit is not enabled"
+        else
+            failed "IS_ALERT5BOOT" "alert5 unit file is missing"
+        fi
     else
         if [ -n "$(find /etc/rc2.d/ -name 'S*alert5')" ]; then
             grep -q "^date" /etc/rc2.d/S*alert5 || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
@@ -567,7 +571,7 @@ check_network_interfaces() {
 # Verify if all if are in auto
 check_autoif() {
     if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep -E -v "(lo|vnet|docker|veth|tun|tap|macvtap|vrrp)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
+        interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep -E -v "(lo|vnet|docker|veth|tun|tap|macvtap|vrrp|lxcbr)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
     else
         interfaces=$(/sbin/ifconfig -s | tail -n +2 | grep -E -v "^(lo|vnet|docker|veth|tun|tap|macvtap|vrrp)" | cut -d " " -f 1 |tr "\n" " ")
     fi
@@ -592,18 +596,21 @@ check_evobackup() {
 }
 # Vérification de l'exclusion des montages (NFS) dans les sauvegardes
 check_evobackup_exclude_mount() {
-    excludes_file=$(mktemp)
-    # shellcheck disable=SC2064
-    trap "rm -f ${excludes_file}" 0
+    excludes_file=$(mktemp --tmpdir="${TMPDIR:-/tmp}" "evocheck.evobackup_exclude_mount.XXXXX")
+    files_to_cleanup="${files_to_cleanup} ${excludes_file}"
+
     # shellcheck disable=SC2044
     for evobackup_file in $(find /etc/cron* -name '*evobackup*' | grep -v -E ".disabled$"); do
-        grep -- "--exclude " "${evobackup_file}" | grep -E -o "\"[^\"]+\"" | tr -d '"' > "${excludes_file}"
-        not_excluded=$(findmnt --type nfs,nfs4,fuse.sshfs, -o target --noheadings | grep -v -f "${excludes_file}")
-        for mount in ${not_excluded}; do
-            failed "IS_EVOBACKUP_EXCLUDE_MOUNT" "${mount} is not excluded from ${evobackup_file} backup script"
-        done
+        # If rsync is not limited by "one-file-system"
+        # then we verify that every mount is excluded
+        if ! grep -q -- "^\s*--one-file-system" "${evobackup_file}"; then
+            grep -- "--exclude " "${evobackup_file}" | grep -E -o "\"[^\"]+\"" | tr -d '"' > "${excludes_file}"
+            not_excluded=$(findmnt --type nfs,nfs4,fuse.sshfs, -o target --noheadings | grep -v -f "${excludes_file}")
+            for mount in ${not_excluded}; do
+                failed "IS_EVOBACKUP_EXCLUDE_MOUNT" "${mount} is not excluded from ${evobackup_file} backup script"
+            done
+        fi
     done
-    rm -rf "${excludes_file}"
 }
 # Verification de la presence du userlogrotate
 check_userlogrotate() {
@@ -809,8 +816,10 @@ check_tune2fs_m5() {
 check_evolinuxsudogroup() {
     if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
         if grep -q "^evolinux-sudo:" /etc/group; then
-            grep -qE '^%evolinux-sudo +ALL ?= ?\(ALL:ALL\) ALL' /etc/sudoers.d/evolinux \
-                || failed "IS_EVOLINUXSUDOGROUP" "missing evolinux-sudo directive in sudoers file"
+            if [ -f /etc/sudoers.d/evolinux ]; then
+                grep -qE '^%evolinux-sudo +ALL ?= ?\(ALL:ALL\) ALL' /etc/sudoers.d/evolinux \
+                    || failed "IS_EVOLINUXSUDOGROUP" "missing evolinux-sudo directive in sudoers file"
+            fi
         fi
     fi
 }
@@ -827,7 +836,7 @@ check_userinadmgroup() {
 }
 check_apache2evolinuxconf() {
     if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        if test -d /etc/apache2; then
+        if is_installed apache2; then
             { test -L /etc/apache2/conf-enabled/z-evolinux-defaults.conf \
                 && test -L /etc/apache2/conf-enabled/zzz-evolinux-custom.conf \
                 && test -f /etc/apache2/ipaddr_whitelist.conf;
@@ -1006,6 +1015,8 @@ check_mysqlmunin() {
                     test "${VERBOSE}" = 1 || break
                 fi
             done
+            munin-run mysql_commands 2> /dev/null > /dev/null
+            test $? -eq 0 || failed "IS_MYSQLMUNIN" "Munin plugin mysql_commands returned an error"
         fi
     fi
 }
@@ -1062,8 +1073,10 @@ check_squidevolinuxconf() {
 check_duplicate_fs_label() {
     # Do it only if thereis blkid binary
     BLKID_BIN=$(command -v blkid)
-    if [ -x "$BLKID_BIN" ]; then
-        tmpFile=$(mktemp -p /tmp)
+    if [ -n "$BLKID_BIN" ]; then
+        tmpFile=$(mktemp --tmpdir="${TMPDIR:-/tmp}" "evocheck.duplicate_fs_label.XXXXX")
+        files_to_cleanup="${files_to_cleanup} ${tmpFile}"
+
         parts=$($BLKID_BIN -c /dev/null | grep -ve raid_member -e EFI_SYSPART | grep -Eo ' LABEL=".*"' | cut -d'"' -f2)
         for part in $parts; do
             echo "$part" >> "$tmpFile"
@@ -1076,7 +1089,6 @@ check_duplicate_fs_label() {
             labels=$(echo -n $tmpOutput | tr '\n' ' ')
             failed "IS_DUPLICATE_FS_LABEL" "Duplicate labels: $labels"
         fi
-        rm "$tmpFile"
     else
         failed "IS_DUPLICATE_FS_LABEL" "blkid not found in ${PATH}"
     fi
@@ -1367,7 +1379,7 @@ download_versions() {
     elif is_openbsd; then
         versions_url="https://upgrades.evolix.org/versions-${OPENBSD_RELEASE}"
     else
-        failed "IS_VERSIONS_CHECK" "error determining os release"
+        failed "IS_CHECK_VERSIONS" "error determining os release"
     fi
 
     # fetch timeout, in seconds
@@ -1380,9 +1392,9 @@ download_versions() {
     elif command -v GET; then
         GET -t ${timeout}s "${versions_url}" > "${versions_file}"
     else
-        failed "IS_VERSIONS_CHECK" "failed to find curl, wget or GET"
+        failed "IS_CHECK_VERSIONS" "failed to find curl, wget or GET"
     fi
-    test "$?" -eq 0 || failed "IS_VERSIONS_CHECK" "failed to download ${versions_url} to ${versions_file}"
+    test "$?" -eq 0 || failed "IS_CHECK_VERSIONS" "failed to download ${versions_url} to ${versions_file}"
 }
 get_command() {
     local program
@@ -1395,6 +1407,7 @@ get_command() {
         listupgrade) command -v "evolistupgrade.sh" ;;
         old-kernel-autoremoval) command -v "old-kernel-autoremoval.sh" ;;
         mysql-queries-killer) command -v "mysql-queries-killer.sh" ;;
+        minifirewall) echo "/etc/init.d/minifirewall" ;;
 
         ## General case, where the program name is the same as the command name
         *) command -v "${program}" ;;
@@ -1414,6 +1427,9 @@ get_version() {
 
         add-vm)
             grep '^VERSION=' "${command}" | head -1 | cut -d '=' -f 2
+            ;;
+        minifirewall)
+            ${command} status | head -1 | cut -d ' ' -f 3
             ;;
         ## Let's try the --version flag before falling back to grep for the constant
         kvmstats)
@@ -1440,11 +1456,11 @@ check_version() {
         actual_version=$(get_version "${program}" "${command}")
         # printf "program:%s expected:%s actual:%s\n" "${program}" "${expected_version}" "${actual_version}"
         if [ -z "${actual_version}" ]; then
-            failed "IS_VERSIONS_CHECK" "failed to lookup actual version of ${program}"
+            failed "IS_CHECK_VERSIONS" "failed to lookup actual version of ${program}"
         elif dpkg --compare-versions "${actual_version}" lt "${expected_version}"; then
-            failed "IS_VERSIONS_CHECK" "${program} version ${actual_version} is older than expected version ${expected_version}"
+            failed "IS_CHECK_VERSIONS" "${program} version ${actual_version} is older than expected version ${expected_version}"
         elif dpkg --compare-versions "${actual_version}" gt "${expected_version}"; then
-            failed "IS_VERSIONS_CHECK" "${program} version ${actual_version} is newer than expected version ${expected_version}, you should update tour index."
+            failed "IS_CHECK_VERSIONS" "${program} version ${actual_version} is newer than expected version ${expected_version}, you should update your index."
         else
             : # Version check OK
         fi
@@ -1457,9 +1473,9 @@ add_to_path() {
     echo "$PATH" | grep -qF "${new_path}" || export PATH="${PATH}:${new_path}"
 }
 check_versions() {
-    versions_file=$(mktemp --tmpdir=/tmp "evocheck-versions.XXXXX")
-    # shellcheck disable=SC2064
-    trap "rm -f ${versions_file}" 0
+    versions_file=$(mktemp --tmpdir="${TMPDIR:-/tmp}" "evocheck.versions.XXXXX")
+    files_to_cleanup="${files_to_cleanup} ${versions_file}"
+
     download_versions "${versions_file}"
     add_to_path "/usr/share/scripts"
 
@@ -1473,12 +1489,10 @@ check_versions() {
             if [ -n "${version}" ]; then
                 check_version "${program}" "${version}"
             else
-                failed "IS_VERSIONS_CHECK" "failed to lookup expected version for ${program}"
+                failed "IS_CHECK_VERSIONS" "failed to lookup expected version for ${program}"
             fi
         fi
     done
-
-    rm -f "${versions_file}"
 }
 
 main() {
@@ -1486,6 +1500,9 @@ main() {
     RC=0
     # Detect operating system name, version and release
     detect_os
+
+    main_output_file=$(mktemp --tmpdir="${TMPDIR:-/tmp}" "evocheck.main.XXXXX")
+    files_to_cleanup="${files_to_cleanup} ${main_output_file}"
 
     #-----------------------------------------------------------
     # Tests communs à tous les systèmes
@@ -1715,7 +1732,20 @@ main() {
         # - NRPEDISK et NRPEPOSTFIX
     fi
 
+    if [ -f "${main_output_file}" ]; then
+        lines_found=$(wc -l < "${main_output_file}")
+        # shellcheck disable=SC2086
+        if [ ${lines_found} -gt 0 ]; then
+
+            cat "${main_output_file}" 2>&1
+        fi
+    fi
+
     exit ${RC}
+}
+cleanup_temp_files() {
+    # shellcheck disable=SC2086
+    rm -f ${files_to_cleanup}
 }
 
 PROGNAME=$(basename "$0")
@@ -1729,6 +1759,10 @@ readonly ARGS
 # Disable LANG*
 export LANG=C
 export LANGUAGE=C
+
+files_to_cleanup=""
+# shellcheck disable=SC2064
+trap cleanup_temp_files 0
 
 # Source configuration file
 # shellcheck disable=SC1091

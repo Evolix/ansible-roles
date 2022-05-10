@@ -12,6 +12,10 @@
     - munin
     - packages
 
+- name: Ensure /usr is still writable
+  include_role:
+    name: evolix/remount-usr
+
 - block:
   - name: Replace localdomain in Munin config
     replace:
@@ -28,6 +32,18 @@
     notify: restart munin-node
 
   when: not ansible_hostname == "localdomain"
+  tags:
+    - munin
+
+- include_role:
+    name: evolix/remount-usr
+
+- name: Install some Munin plugins (disabled)
+  copy:
+    src: 'plugins/{{ item }}'
+    dest: '/usr/share/munin/plugins/{{ item }}'
+  loop:
+    - dhcp_pool
   tags:
     - munin
 
