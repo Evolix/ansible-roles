@@ -1,14 +1,14 @@
 ---
 # If docher_home sets to /home/, the partition should be mounted with exec
 # option.
-docker_home: /srv/docker
+docker_home: /var/lib/docker
 docker_tmpdir: "{{docker_home}}/tmp"
 
 docker_remote_access_enabled: True
 docker_daemon_port: 2376
 docker_daemon_listening_ip: 0.0.0.0
 
-docker_tls_enabled: True
+docker_tls_enabled: False
 docker_tls_path: "{{docker_home}}/tls"
 docker_tls_ca: ca/ca.pem
 docker_tls_ca_key: ca/ca-key.pem

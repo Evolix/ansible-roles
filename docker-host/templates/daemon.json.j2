@@ -1,13 +1,22 @@
 {
-  "debug": false
+  "debug": false,
+
+  {# Docker data-dir (default to /var/lib/docker) #}
+  "data-root": "{{ docker_home }}",
+
+  {# Keep containers running while docker daemon downtime #}
+  "live-restore": true,
+
+  {# Turn on user namespace remaping #}
+  "userns-remap": "default",
+
   {% if docker_tls_enabled %}
-  ,
   "tls": true,
   "tlscert": "{{ docker_tls_path }}/{{ docker_tls_cert }}",
   "tlscacert": "{{ docker_tls_path }}/{{ docker_tls_ca }}",
-  "tlskey": "{{ docker_tls_path }}/{{ docker_tls_key }}"
+  "tlskey": "{{ docker_tls_path }}/{{ docker_tls_key }}",
   {% endif %}
-  ,
+
   {% if docker_remote_access_enabled %}
   "hosts": ["tcp://{{ docker_daemon_listening_ip }}:{{ docker_daemon_port }}", "fd://"]
   {% else %}
