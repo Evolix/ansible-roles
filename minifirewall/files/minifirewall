@@ -29,7 +29,7 @@
 # Description:       Firewall designed for standalone server
 ### END INIT INFO
 
-VERSION="22.04"
+VERSION="22.05"
 
 NAME="minifirewall"
 # shellcheck disable=SC2034
@@ -989,7 +989,7 @@ stop() {
 status() {
     printf "${BLUE}#### iptables --list ###############################${RESET}\n"
     ${IPT} --list --numeric --verbose --line-numbers
-    printf "\n${BLUE}### iptables --table nat --list ####################${RESET}\n"
+    printf "\n${BLUE}#### iptables --table nat --list ###################${RESET}\n"
     ${IPT} --table nat --list --numeric --verbose --line-numbers
     printf "\n${BLUE}#### iptables --table mangle --list ################${RESET}\n"
     ${IPT} --table mangle --list --numeric --verbose --line-numbers
@@ -1004,7 +1004,7 @@ status() {
 status_without_numbers() {
     printf "${BLUE}#### iptables --list ###############################${RESET}\n"
     ${IPT} --list --numeric
-    printf "\n${BLUE}### iptables --table nat --list ####################${RESET}\n"
+    printf "\n${BLUE}#### iptables --table nat --list ###################${RESET}\n"
     ${IPT} --table nat --list --numeric
     printf "\n${BLUE}#### iptables --table mangle --list ################${RESET}\n"
     ${IPT} --table mangle --list --numeric

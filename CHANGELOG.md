@@ -29,7 +29,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * generate-ldif: Add services check for bkctld
 * minifirewall: restore "force-restart" and fix "restart-if-needed"
 * minifirewall: tail template follows symlinks
-* minifirewall: upstream release 22.04
+* minifirewall: upstream release 22.05
 * openvpn: use a subnet topology instead of the net30 default topology
 * tomcat: Tomcat 9 by default with Debian 11
 * openvpn: use a local copy of files instead of cloning an external git repository
