@@ -44,6 +44,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * postfix: Do not send mails through milters a second time after amavis (in packmail)
 * etc-git : Remount /usr in rw for git gc in in /usr/share/scripts/
 * etc-git: Make evocommit fully compatible with OpenBSD
+* minifirewall: fix `failed_when` condition on restart
 
 ### Removed
 

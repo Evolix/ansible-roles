@@ -95,7 +95,6 @@
   command: /etc/init.d/minifirewall restart
   register: minifirewall_init_restart
   failed_when: "'minifirewall failed' in minifirewall_init_restart.stdout"
-  changed_when: "'minifirewall started' in minifirewall_init_restart.stdout"
   when:
     - minifirewall_install_mode != 'legacy'
     - minifirewall_restart_force | bool
@@ -104,7 +103,6 @@
   command: /etc/init.d/minifirewall restart
   register: minifirewall_init_restart
   failed_when: "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
-  changed_when: "'starting IPTables rules is now finish : OK' in minifirewall_init_restart.stdout"
   when:
     - minifirewall_install_mode == 'legacy'
     - minifirewall_restart_force | bool
