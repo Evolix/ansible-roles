@@ -18,6 +18,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Removed
 
+* docker : Removed Debian Jessie support
+
 ### Security
 
 ## [22.05] 2022-05-10

@@ -1,3 +1,0 @@
-Package: python-docker
-Pin: release a=jessie-backports
-Pin-Priority: 999

@@ -24,9 +24,6 @@
     update_cache: no
     filename: docker.list
 
-- include: jessie_backports.yml
-  when: ansible_distribution_release == 'jessie'
-
 - name: Add Docker's official GPG key
   copy:
     src: docker-debian.asc
