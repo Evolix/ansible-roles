@@ -12,6 +12,18 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [22.05.1] 2022-05-12
+
+### Added
+
 * docker : Introduce new default settings + allow to change the docker data directory 
 * docker : Introduce new variables to tweak daemon settings
 
@@ -19,13 +31,9 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * evocheck: upstream release 22.05
 
-### Fixed
-
 ### Removed
 
 * docker : Removed Debian Jessie support
-
-### Security
 
 ## [22.05] 2022-05-10
 
