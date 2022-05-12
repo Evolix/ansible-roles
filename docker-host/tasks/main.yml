@@ -15,17 +15,6 @@
       - ca-certificates
       - gnupg2
     state: present
-    update_cache: yes
-
-- name: Add Docker repository
-  apt_repository:
-    repo: 'deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable'
-    state: present
-    update_cache: no
-    filename: docker.list
-
-- include: jessie_backports.yml
-  when: ansible_distribution_release == 'jessie'
 
 - name: Add Docker's official GPG key
   copy:
@@ -35,6 +24,12 @@
     mode: "0644"
     owner: root
     group: root
+
+- name: Add Docker repository
+  apt_repository:
+    repo: 'deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable'
+    state: present
+    filename: docker.list
 
 - name: Install Docker
   apt:
@@ -61,19 +56,6 @@
     src: daemon.json.j2
     dest: /etc/docker/daemon.json
   notify: restart docker
-
-- name: Create override directory for docker unit
-  file:
-    name: /etc/systemd/system/docker.service.d/
-    state: directory
-    mode: "0755"
-
-- name: Remove options in ExecStart from docker unit
-  copy:
-    src: docker.conf
-    dest: /etc/systemd/system/docker.service.d/
-    mode: "0644"
-  notify: reload systemd
 
 - name: Creating Docker tmp directory
   file:

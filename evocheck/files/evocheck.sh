@@ -4,7 +4,7 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
-VERSION="22.04.1"
+VERSION="22.05"
 readonly VERSION
 
 # base functions
@@ -601,14 +601,17 @@ check_evobackup_exclude_mount() {
 
     # shellcheck disable=SC2044
     for evobackup_file in $(find /etc/cron* -name '*evobackup*' | grep -v -E ".disabled$"); do
-        # If rsync is not limited by "one-file-system"
-        # then we verify that every mount is excluded
-        if ! grep -q -- "^\s*--one-file-system" "${evobackup_file}"; then
-            grep -- "--exclude " "${evobackup_file}" | grep -E -o "\"[^\"]+\"" | tr -d '"' > "${excludes_file}"
-            not_excluded=$(findmnt --type nfs,nfs4,fuse.sshfs, -o target --noheadings | grep -v -f "${excludes_file}")
-            for mount in ${not_excluded}; do
-                failed "IS_EVOBACKUP_EXCLUDE_MOUNT" "${mount} is not excluded from ${evobackup_file} backup script"
-            done
+        # if the file seems to be a backup script, with an Rsync invocation
+        if grep -q "^\s*rsync" "${evobackup_file}"; then
+            # If rsync is not limited by "one-file-system"
+            # then we verify that every mount is excluded
+            if ! grep -q -- "^\s*--one-file-system" "${evobackup_file}"; then
+                grep -- "--exclude " "${evobackup_file}" | grep -E -o "\"[^\"]+\"" | tr -d '"' > "${excludes_file}"
+                not_excluded=$(findmnt --type nfs,nfs4,fuse.sshfs, -o target --noheadings | grep -v -f "${excludes_file}")
+                for mount in ${not_excluded}; do
+                    failed "IS_EVOBACKUP_EXCLUDE_MOUNT" "${mount} is not excluded from ${evobackup_file} backup script"
+                done
+            fi
         fi
     done
 }
@@ -1429,7 +1432,7 @@ get_version() {
             grep '^VERSION=' "${command}" | head -1 | cut -d '=' -f 2
             ;;
         minifirewall)
-            ${command} status | head -1 | cut -d ' ' -f 3
+            ${command} version | head -1 | cut -d ' ' -f 3
             ;;
         ## Let's try the --version flag before falling back to grep for the constant
         kvmstats)
