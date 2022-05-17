@@ -14,4 +14,4 @@
     name: open-vm-tools
   tags:
     - packages
-  when: vmware_provider == 0
+  when: vmware_provider.rc == 0
