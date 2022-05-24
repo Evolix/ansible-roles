@@ -14,6 +14,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* docker: Allow "live-restore" to be toggled with docker_conf_live_restore
+
 ### Fixed
 
 ### Removed

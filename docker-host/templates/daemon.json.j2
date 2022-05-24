@@ -5,7 +5,7 @@
   "data-root": "{{ docker_home }}",
 
   {# Keep containers running while docker daemon downtime #}
-  "live-restore": true,
+  "live-restore": {{ docker_conf_live_restore | to_json }},,
 
   {# Turn on user namespace remaping #}
   "userns-remap": "default",
