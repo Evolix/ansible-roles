@@ -74,7 +74,7 @@ myhostname = {{ ansible_fqdn }}
 
 # Liste des noms de domaine (ou IP) consideres comme local
 #par defaut, = $myhostname, localhost.$mydomain, localhost
-mydestination = $myhostname
+mydestination = $myhostname localhost.localdomain localhost
 
 # Indique le domaine apparaissant dans le courrier envoye
 #par defaut, = $myhostname
