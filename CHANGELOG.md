@@ -12,6 +12,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+certbot: add hapee (HAProxy Enterprise Edition) deploy hook
+
 ### Changed
 
 * docker: Allow "live-restore" to be toggled with docker_conf_live_restore
