@@ -131,11 +131,11 @@ check_metadata() {
         "${checksum_bin}" --status --check "${checksum_file}"
         last_rc=$?
         if [ ${last_rc} -ne 0 ]; then
-            log_error "Verification failed with checksum file ${checksum_file}."
+            log_error "Verification failed with checksum file \`${checksum_file}' (inside \`${parent_dir}')."
             exit 1
         fi
     else
-        log_warning "Couldn't find checksum file ${checksum_file}. Skip verification."
+        log_warning "Couldn't find checksum file \`${checksum_file}' (inside \`${parent_dir}'). Skip verification."
     fi
     if [ -f "${metadata_file}" ]; then
         while read metadata_line; do
@@ -146,19 +146,19 @@ check_metadata() {
                 actual_size=$($(metadata_algorithm) "${file}" | cut -f1)
 
                 if [ "${actual_size}" != "${expected_size}" ]; then
-                    log_error "File ${file} has actual size of ${actual_size} instead of ${expected_size}."
+                    log_error "File ${file}' has actual size of ${actual_size} instead of ${expected_size}."
                     rc=1
                 fi
             else
-                log_error "Couldn't find file ${file}."
+                log_error "Couldn't find file \`${file}'."
                 rc=1
             fi
         done < "${metadata_file}"
         if [ ${rc} -eq 0 ]; then
-            log_info "Directory is consistent with metadata stored in metadata file ${metadata_file}."
+            log_info "Directory \`${final_dir}' is consistent with metadata stored in \`${metadata_file}' (inside \`${parent_dir}')."
         fi
     else
-        log_fatal "Couldn't find metadata file ${metadata_file}."
+        log_fatal "Couldn't find metadata file \`${metadata_file}' (inside \`${parent_dir}')."
         exit 1
     fi
 }
@@ -168,14 +168,14 @@ main() {
         log_fatal "dir option is empty"
         exit 1
     elif [ -e "${dir}" ] && [ ! -d "${dir}" ]; then
-        log_fatal "directory '${dir}' exists but is not a directory"
+        log_fatal "Directory \`${dir}' exists but is not a directory"
         exit 1
     fi
 
     checksum_cmd="sha256sum"
     checksum_bin=$(command -v ${checksum_cmd})
     if [ -z "${checksum_bin}" ]; then
-        log_fatal "Couldn't find ${checksum_cmd}.\nUse 'apt install ${checksum_cmd}'."
+        log_fatal "Couldn't find \`${checksum_cmd}'.\nUse 'apt install ${checksum_cmd}'."
         exit 1
     fi
 
@@ -186,7 +186,7 @@ main() {
     checksum_file="${metadata_file}.${checksum_cmd}"
 
     cwd=${PWD}
-    cd "${parent_dir}" || log_error "Impossible to change to ${parent_dir}"
+    cd "${parent_dir}" || log_error "Impossible to change to \`${parent_dir}'"
 
     case ${action} in
         check)
@@ -196,12 +196,12 @@ main() {
             prepare_metadata
             ;;
         *)
-            log_fatal "Unknown action ${action}."
+            log_fatal "Unknown action \`${action}'."
             rc=1
             ;;
     esac
 
-    cd "${cwd}" || log_error "Impossible to change back to ${cwd}"
+    cd "${cwd}" || log_error "Impossible to change back to \`${cwd}'"
 }
 
 # Declare variables
