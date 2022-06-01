@@ -44,7 +44,7 @@ Bien à vous,
 --
 Rapport automatique Evolix
 EOT
-    mutt -x -e 'set send_charset="utf-8"' -H $template \
+    mutt -x -e 'set send_charset="utf-8"' -e "set crypt_use_gpgme=no" -H $template \
       -a /var/www/mysqlreport_${instance}.html < $body
 done
 chmod 644 /var/www/mysqlreport*html
