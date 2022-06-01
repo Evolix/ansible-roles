@@ -13,6 +13,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Added
 
 certbot: add hapee (HAProxy Enterprise Edition) deploy hook
+evolinux-base: add update-evobackup-canary script
 
 ### Changed
 
