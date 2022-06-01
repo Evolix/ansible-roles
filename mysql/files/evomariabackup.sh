@@ -301,6 +301,38 @@ backup() {
         log_info "END mariabackup prepare phase"
     fi
 }
+list_files_with_size() {
+    path=$1
+    find "${path}" -type f -exec du --bytes {} \; | sort -k2
+}
+dircheck_prepare() {
+    if [ -z "${backup_dir}" ]; then
+        log_fatal "backup-dir option is empty"
+        exit 1
+    elif [ -e "${backup_dir}" ] && [ ! -d "${backup_dir}" ]; then
+        log_fatal "backup directory '${backup_dir}' exists but is not a directory"
+        exit 1
+    fi
+
+    dircheck_cmd="dir-check"
+    dircheck_bin=$(command -v ${dircheck_cmd})
+    if [ -z "${dircheck_bin}" ]; then
+        log_fatal "Couldn't find ${dircheck_cmd}."
+        exit 1
+    fi
+
+    backup_parent_dir=$(dirname "${backup_dir}")
+    backup_final_dir=$(basename "${backup_dir}")
+
+    log_info "BEGIN dir-check phase"
+    cwd=${PWD}
+    cd "${backup_parent_dir}" || log_fatal "Impossible to change to ${backup_parent_dir}"
+
+    "${dircheck_bin}" --prepare --dir "${backup_final_dir}"
+
+    cd ${cwd} || log_fatal "Impossible to change back to ${cwd}"
+    log_info "END dir-check phase"
+}
 compress() {
     compress_dir=$(dirname "${compress_file}")
 
@@ -362,11 +394,15 @@ main() {
     new_lock_file "${lock_file}"
 
     if [ "${do_backup}" = "1" ] && [ -n "${backup_dir}" ]; then
-        backup "${backup_dir}"
+        backup
+    fi
+
+    if [ "${do_dircheck}" = "1" ] && [ -n "${backup_dir}" ]; then
+        dircheck_prepare
     fi
 
     if [ "${do_compress}" = "1" ] && [ -n "${compress_file}" ]; then
-        compress "${backup_dir}" "${compress_file}"
+        compress
     fi
 }
 
@@ -380,6 +416,7 @@ max_age=""
 max_age=""
 do_backup=""
 backup_dir=""
+do_dircheck=""
 do_compress=""
 compress_file=""
 
@@ -438,6 +475,14 @@ while :; do
         --backup-dir=)
             # without value
             log_fatal '"--backup-dir" requires a non-empty option argument.'
+            ;;
+
+        --dir-check)
+            do_dircheck=1
+            ;;
+
+        --no-dir-check)
+            do_dircheck=0
             ;;
 
         --compress)
@@ -549,6 +594,7 @@ verbose=${verbose:-0}
 quiet=${quiet:-0}
 max_age="${max_age:-86400}"
 do_backup="${do_backup:-1}"
+do_dircheck="${do_dircheck:-0}"
 do_compress="${do_compress:-0}"
 
 main

@@ -15,6 +15,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * certbot: add hapee (HAProxy Enterprise Edition) deploy hook
 * evolinux-base: add dir-check script
 * evolinux-base: add update-evobackup-canary script
+* mysql: use dir-check inside evomariabackup
 
 ### Changed
 
