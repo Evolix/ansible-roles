@@ -35,10 +35,19 @@
     force: True
     owner: root
     group: root
-    mode: "0750"
+    mode: "0755"
 
 # TODO: delete when this has been run once on all our servers
 - name: update-evobackup-canary is removed from sbin
   file:
     path: /usr/local/sbin/update-evobackup-canary
     state: absent
+
+- name: dir-check script is present
+  copy:
+    src: "dir-check.sh"
+    dest: /usr/local/bin/dir-check
+    force: True
+    owner: root
+    group: root
+    mode: "0755"
