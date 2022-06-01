@@ -22,13 +22,16 @@ END
 }
 show_help() {
     cat <<EOF
-Usage: ${PROGNAME} [OPTIONS] --dir /path/to/directory-to-check
+Usage: ${PROGNAME} [ACTION] [OPTIONS] --dir /path/to/directory-to-check
 
-Without --check, it creates the metadata files
-With --check, it checks the data against the metadata previously stored
+Action
+    --prepare        Create the metadata files
+    --check          Checks the data against the metadata previously stored
 
 Options
     -h|--help|-?     Display help
+    -v|--verbose     Display more informatrion
+    -q|--quiet       Do not display anything on stderr/stdout
     -V|--version     Display version, authors and license
 EOF
 }
@@ -187,6 +190,13 @@ main() {
 
     cwd=${PWD}
     cd "${parent_dir}" || log_error "Impossible to change to \`${parent_dir}'"
+
+    if [ -z "${action}" ]; then
+        log_fatal "Missing --check or --prepare option."
+        echo "" >&2
+        show_help >&2
+        exit 1
+    fi
 
     case ${action} in
         check)
