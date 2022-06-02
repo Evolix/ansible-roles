@@ -1,12 +1,12 @@
 #!/bin/sh
 
-VERSION="21.11"
+VERSION="22.06"
 
 show_version() {
     cat <<END
 evomariabackup version ${VERSION}
 
-Copyright 2004-2021 Evolix <info@evolix.fr>,
+Copyright 2004-2022 Evolix <info@evolix.fr>,
                     Éric Morino <emorino@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>
                     and others.
@@ -20,19 +20,20 @@ show_help() {
     cat <<EOF
 Usage: evomariabackup --backup-dir /path/to/mariabackup-target --compress-file /path/to/compressed.tgz
 Options
-    --backup-dir     mariabackup target directory
-    --compress-file  File name for the compressed version
-    --backup         Force backup phase
-    --no-backup      Skip backup phase
-    --compress       Force compress phase
-    --no-compress    Skip compress phase
-    --log-file       Log file to send messages
-    --verbose        Output much more information (to stdout/stderr or the log file)
-    --quiet          Ouput only the most critical information
-    --lock-file      Specify which lock file to use (default: /run/lock/mariabackup.lock)
-    --max-age        Lock file is ignored if older than this (default: 1d)
-    -h|--help|-?     Display help
-    -V|--version     Display version, authors and license
+    --backup-dir        mariabackup target directory
+    --compress-file     File name for the compressed version
+    --backup            Force backup phase
+    --no-backup         Skip backup phase
+    --compress          Force compress phase
+    --no-compress       Skip compress phase
+    --log-file          Log file to send messages
+    --post-backup-hook  Script to execute after other tasks
+    --verbose           Output much more information (to stdout/stderr or the log file)
+    --quiet             Ouput only the most critical information
+    --lock-file         Specify which lock file to use (default: /run/lock/mariabackup.lock)
+    --max-age           Lock file is ignored if older than this (default: 1d)
+    -h|--help|-?        Display help
+    -V|--version        Display version, authors and license
 
 Example usage for a backup then compress :
     # /usr/local/bin/evomariabackup --verbose \
