@@ -386,6 +386,35 @@ compress() {
         log_info "END compression phase"
     fi
 }
+post_backup_hook() {
+    if [ -x "${post_backup_hook}" ]; then
+
+        if ! is_quiet; then
+            log_debug "Execution of \`${post_backup_hook}'"
+            log_info "BEGIN hook phase"
+        fi
+
+        (
+            export BACKUP_DIR="${backup_dir}"
+            if is_log_file; then
+                export LOG_FILE="${log_file}"
+            fi
+            "${post_backup_hook}"
+        )
+        hook_rc=$?
+
+        if [ ${hook_rc} -ne 0 ]; then
+            log_fatal "An error occured while executing post backup hook \`${post_backup_hook}'"
+            exit 1
+        elif ! is_quiet; then
+            log_info "END hook phase"
+        fi
+    else
+        log_fatal "Post backup hook \`${post_backup_hook}' is missing or not executable"
+        exit 1
+    fi
+}
+
 main() {
     kill_or_clean_lockfile "${lock_file}"
     # shellcheck disable=SC2064
@@ -403,6 +432,10 @@ main() {
     if [ "${do_compress}" = "1" ] && [ -n "${compress_file}" ]; then
         compress
     fi
+
+    if [ -n "${post_backup_hook}" ]; then
+        post_backup_hook
+    fi
 }
 
 # Declare variables
@@ -412,12 +445,12 @@ log_file=""
 verbose=""
 quiet=""
 max_age=""
-max_age=""
 do_backup=""
 backup_dir=""
 do_dircheck=""
 do_compress=""
 compress_file=""
+post_backup_hook=""
 
 # Parse options
 # based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
@@ -550,6 +583,24 @@ while :; do
         --log-file=)
             # without value
             log_fatal '"--log-file" requires a non-empty option argument.'
+            ;;
+
+        --post-backup-hook)
+            # with value separated by space
+            if [ -n "$2" ]; then
+                post_backup_hook="$2"
+                shift
+            else
+                log_fatal '"--post-backup-hook" requires a non-empty option argument.'
+            fi
+            ;;
+        --post-backup-hook=?*)
+            # with value speparated by =
+            post_backup_hook=${1#*=}
+            ;;
+        --post-backup-hook=)
+            # without value
+            log_fatal '"--post-backup-hook" requires a non-empty option argument.'
             ;;
 
         -v|--verbose)
