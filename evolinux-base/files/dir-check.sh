@@ -3,7 +3,7 @@
 PROGNAME="dir-check"
 REPOSITORY="https://gitea.evolix.org/evolix/ansible-roles"
 
-VERSION="22.06"
+VERSION="22.06.1"
 readonly VERSION
 
 show_version() {
@@ -47,9 +47,6 @@ is_verbose() {
 }
 is_quiet() {
     test "${quiet}" = "1"
-}
-is_check() {
-    test "${check}" = "1"
 }
 log_line() {
     level=$1
@@ -117,18 +114,19 @@ log_fatal() {
     fi
 }
 
-metadata_algorithm() {
+data_command() {
     echo "du --bytes"
 }
 list_files_with_size() {
     path=$1
-    find "${path}" -type f -exec $(metadata_algorithm) {} \; | sort -k2
+    # shellcheck disable=SC2014,SC2046
+    find "${path}" -type f -exec $(data_command) {} \; | sort -k2
 }
-prepare_metadata() {
-    list_files_with_size "${final_dir}" > "${metadata_file}"
-    "${checksum_bin}" "${metadata_file}" > "${checksum_file}"
+prepare_data() {
+    list_files_with_size "${final_dir}" > "${data_file}"
+    "${checksum_bin}" "${data_file}" > "${checksum_file}"
 }
-check_metadata() {
+check_data() {
     if [ -f "${checksum_file}" ]; then
         # subshell to scope the commands to "parent_dir"
         "${checksum_bin}" --status --check "${checksum_file}"
@@ -140,28 +138,28 @@ check_metadata() {
     else
         log_warning "Couldn't find checksum file \`${checksum_file}' (inside \`${parent_dir}'). Skip verification."
     fi
-    if [ -f "${metadata_file}" ]; then
-        while read metadata_line; do
-            expected_size=$(echo "${metadata_line}" | cut -f1)
-            file=$(echo "${metadata_line}" | cut -f2)
+    if [ -f "${data_file}" ]; then
+        while read -r data_line; do
+            expected_size=$(echo "${data_line}" | cut -f1)
+            file=$(echo "${data_line}" | cut -f2)
 
             if [ -f "${file}"  ]; then
-                actual_size=$($(metadata_algorithm) "${file}" | cut -f1)
+                actual_size=$($(data_command) "${file}" | cut -f1)
 
                 if [ "${actual_size}" != "${expected_size}" ]; then
-                    log_error "File ${file}' has actual size of ${actual_size} instead of ${expected_size}."
+                    log_error "File \`${file}' has actual size of ${actual_size} instead of ${expected_size}."
                     rc=1
                 fi
             else
                 log_error "Couldn't find file \`${file}'."
                 rc=1
             fi
-        done < "${metadata_file}"
+        done < "${data_file}"
         if [ ${rc} -eq 0 ]; then
-            log_info "Directory \`${final_dir}' is consistent with metadata stored in \`${metadata_file}' (inside \`${parent_dir}')."
+            log_info "Directory \`${final_dir}' is consistent with data stored in \`${data_file}' (inside \`${parent_dir}')."
         fi
     else
-        log_fatal "Couldn't find metadata file \`${metadata_file}' (inside \`${parent_dir}')."
+        log_fatal "Couldn't find data file \`${data_file}' (inside \`${parent_dir}')."
         exit 1
     fi
 }
@@ -185,8 +183,8 @@ main() {
     parent_dir=$(dirname "${dir}")
     final_dir=$(basename "${dir}")
 
-    metadata_file="${final_dir}.metadata"
-    checksum_file="${metadata_file}.${checksum_cmd}"
+    data_file="${PROGNAME}.db"
+    checksum_file="${data_file}.${checksum_cmd}"
 
     cwd=${PWD}
     cd "${parent_dir}" || log_error "Impossible to change to \`${parent_dir}'"
@@ -200,10 +198,10 @@ main() {
 
     case ${action} in
         check)
-            check_metadata
+            check_data
             ;;
         prepare)
-            prepare_metadata
+            prepare_data
             ;;
         *)
             log_fatal "Unknown action \`${action}'."
@@ -211,7 +209,11 @@ main() {
             ;;
     esac
 
-    cd "${cwd}" || log_error "Impossible to change back to \`${cwd}'"
+    if [ -d "${cwd}" ]; then
+        cd "${cwd}" || log_error "Impossible to change back to \`${cwd}'"
+    else
+        log_error "Previous working directory \`${cwd}' is not a directory."
+    fi
 }
 
 # Declare variables
@@ -235,7 +237,7 @@ while :; do
             exit 0
             ;;
 
-        --dir)
+        -d|--dir)
             # with value separated by space
             if [ -n "$2" ]; then
                 dir="$2"
@@ -251,6 +253,24 @@ while :; do
         --dir=)
             # without value
             log_fatal '"--dir" requires a non-empty option argument.'
+            ;;
+
+        -l|--log)
+            # with value separated by space
+            if [ -n "$2" ]; then
+                log_file="$2"
+                shift
+            else
+                log_fatal 'ERROR: "--log" requires a non-empty option argument.'
+            fi
+            ;;
+        --log=?*)
+            # with value speparated by =
+            log_file=${1#*=}
+            ;;
+        --log=)
+            # without value
+            log_fatal '"--log" requires a non-empty option argument.'
             ;;
 
         --prepare)
