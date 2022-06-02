@@ -248,10 +248,9 @@ backup() {
 
     backup_command="${mariabackup_bin} --backup --slave-info --target-dir=${backup_dir:?}"
 
-
     if ! is_quiet; then
-        log_debug "${backup_command}"
         log_info "BEGIN mariabackup backup phase"
+        log_debug "${backup_command}"
     fi
 
     if is_quiet || ! is_verbose ; then
@@ -277,8 +276,8 @@ backup() {
     prepare_command="${mariabackup_bin} --prepare --target-dir=${backup_dir:?}"
 
     if ! is_quiet; then
-        log_debug "${prepare_command}"
         log_info "BEGIN mariabackup prepare phase"
+        log_debug "${prepare_command}"
     fi
 
     if is_quiet || ! is_verbose ; then
@@ -364,8 +363,8 @@ compress() {
     fi
 
     if ! is_quiet; then
-        log_debug "Compression of ${backup_dir} to ${compress_file} using \`${compress_program}'"
         log_info "BEGIN compression phase"
+        log_debug "Compression of ${backup_dir} to ${compress_file} using \`${compress_program}'"
     fi
     if is_quiet || ! is_verbose ; then
         tar --use-compress-program="${compress_program}" -cf "${compress_file}" "${backup_dir}" >/dev/null 2>&1
