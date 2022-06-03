@@ -651,7 +651,7 @@ done
 lock_file="${lock_file:-/run/lock/evomariabackup.lock}"
 verbose=${verbose:-0}
 quiet=${quiet:-0}
-max_age="${max_age:-86400}"
+max_age="${max_age:-1d}"
 do_backup="${do_backup:-1}"
 do_dircheck="${do_dircheck:-0}"
 do_compress="${do_compress:-0}"
