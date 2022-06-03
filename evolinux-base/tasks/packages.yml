@@ -44,7 +44,7 @@
       - hdparm
       - smartmontools
       - lm-sensors
-  when: evolinux_packages_hardware | bool
+  when: ansible_virtualization_role == "host"
 
 - name: Install/Update common tools
   apt:
