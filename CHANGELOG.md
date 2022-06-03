@@ -12,6 +12,18 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [22.06] 2022-06-03
+
+### Added
+
 * certbot: add hapee (HAProxy Enterprise Edition) deploy hook
 * evolinux-base: add dir-check script
 * evolinux-base: add update-evobackup-canary script
@@ -23,12 +35,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * docker: Allow "live-restore" to be toggled with docker_conf_live_restore
 * evocheck: upstream release 22.06
 * mysql: add "set crypt_use_gpgme=no" Mutt option, for mysqltuner
-
-### Fixed
-
-### Removed
-
-### Security
 
 ## [22.05.1] 2022-05-12
 
