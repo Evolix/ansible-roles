@@ -38,7 +38,7 @@ Options
 Example usage for a backup then compress :
     # /usr/local/bin/evomariabackup --verbose \
         --backup-dir /backup/mariabackup/current \
-        --compress-file /backup/mariabackup/compressed/$(date +%H).tgz \
+        --compress-file /backup/mariabackup/compressed/$(date +\%H).tgz \
         --log-file /var/log/evomariabackup.log
 
 max-age possible values:
