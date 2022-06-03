@@ -4,7 +4,7 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
-VERSION="22.05"
+VERSION="22.06"
 readonly VERSION
 
 # base functions
@@ -19,7 +19,8 @@ Copyright 2009-2022 Evolix <info@evolix.fr>,
                     Gregory Colpart <reg@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>,
                     Tristan Pilat <tpilat@evolix.fr>,
-                    Victor Laborie <vlaborie@evolix.fr>
+                    Victor Laborie <vlaborie@evolix.fr>,
+                    Alexis Ben Miloud--Josselin <abenmiloud@evolix.fr>,
                     and others.
 
 evocheck comes with ABSOLUTELY NO WARRANTY.  This is free software,
@@ -235,7 +236,7 @@ check_debiansecurity() {
     if is_debian_bullseye; then
         # https://www.debian.org/releases/bullseye/amd64/release-notes/ch-information.html#security-archive
         # https://www.debian.org/security/
-        pattern="^deb https://(deb|security)\.debian\.org/debian-security/? bullseye-security main"
+        pattern="^deb http://security\.debian\.org/debian-security/? bullseye-security main"
     elif is_debian_buster; then
         pattern="^deb http://security\.debian\.org/debian-security/? buster/updates main"
     elif is_debian_stretch; then
@@ -337,6 +338,8 @@ check_alert5boot() {
     else
         if [ -n "$(find /etc/rc2.d/ -name 'S*alert5')" ]; then
             grep -q "^date" /etc/rc2.d/S*alert5 || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
+        elif [ -n "$(find /etc/init.d/ -name 'alert5')" ]; then
+            grep -q "^date" /etc/init.d/alert5 || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 int script"
         else
             failed "IS_ALERT5BOOT" "alert5 init script is missing"
         fi
@@ -349,6 +352,9 @@ check_alert5minifw() {
     else
         if [ -n "$(find /etc/rc2.d/ -name 'S*alert5')" ]; then
             grep -q "^/etc/init.d/minifirewall" /etc/rc2.d/S*alert5 \
+                || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 init script"
+        elif [ -n "$(find /etc/init.d/ -name 'alert5')" ]; then
+            grep -q "^/etc/init.d/minifirewall" /etc/init.d/alert5 \
                 || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 init script"
         else
             failed "IS_ALERT5MINIFW" "alert5 init script is missing"
@@ -571,7 +577,7 @@ check_network_interfaces() {
 # Verify if all if are in auto
 check_autoif() {
     if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep -E -v "(lo|vnet|docker|veth|tun|tap|macvtap|vrrp|lxcbr)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
+        interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep -E -v "(lo|vnet|docker|veth|tun|tap|macvtap|vrrp|lxcbr|wg)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
     else
         interfaces=$(/sbin/ifconfig -s | tail -n +2 | grep -E -v "^(lo|vnet|docker|veth|tun|tap|macvtap|vrrp)" | cut -d " " -f 1 |tr "\n" " ")
     fi
@@ -588,6 +594,16 @@ check_interfacesgw() {
     test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv4 gateway"
     number=$(grep -Ec "^[^#]*gateway [0-9a-fA-F]+:" /etc/network/interfaces)
     test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv6 gateway"
+}
+# Verification de l’état du service networking
+check_networking_service() {
+    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
+        if systemctl is-enabled networking.service > /dev/null; then
+            if ! systemctl is-active networking.service > /dev/null; then
+                failed "IS_NETWORKING_SERVICE" "networking.service is not active"
+            fi
+        fi
+    fi
 }
 # Verification de la mise en place d'evobackup
 check_evobackup() {
@@ -955,7 +971,7 @@ check_mongo_backup() {
         # You could change the default path in /etc/evocheck.cf
         MONGO_BACKUP_PATH=${MONGO_BACKUP_PATH:-"/home/backup/mongodump"}
         if [ -d "$MONGO_BACKUP_PATH" ]; then
-            for file in "${MONGO_BACKUP_PATH}"/*/*.{json,bson}; do
+            for file in "${MONGO_BACKUP_PATH}"/*/*.{json,bson}.*; do
                 # Skip indexes file.
                 if ! [[ "$file" =~ indexes ]]; then
                     limit=$(date +"%s" -d "now - 2 day")
@@ -1577,6 +1593,7 @@ main() {
         test "${IS_NETWORK_INTERFACES:=1}" = 1 && check_network_interfaces
         test "${IS_AUTOIF:=1}" = 1 && check_autoif
         test "${IS_INTERFACESGW:=1}" = 1 && check_interfacesgw
+        test "${IS_NETWORKING_SERVICE:=1}" = 1 && check_networking_service
         test "${IS_EVOBACKUP:=1}" = 1 && check_evobackup
         test "${IS_EVOBACKUP_EXCLUDE_MOUNT:=1}" = 1 && check_evobackup_exclude_mount
         test "${IS_USERLOGROTATE:=1}" = 1 && check_userlogrotate

@@ -1,0 +1,129 @@
+#!/bin/sh
+
+PROGNAME="update-evobackup-canary"
+REPOSITORY="https://gitea.evolix.org/evolix/evobackup"
+
+VERSION="22.05"
+readonly VERSION
+
+# base functions
+
+show_version() {
+    cat <<END
+${PROGNAME} version ${VERSION}
+
+Copyright 2022 Evolix <info@evolix.fr>,
+               Jérémy Lecour <jlecour@evolix.fr>,
+               and others.
+
+${REPOSITORY} 
+
+${PROGNAME} comes with ABSOLUTELY NO WARRANTY. This is free software,
+and you are welcome to redistribute it under certain conditions.
+See the GNU General Public License v3.0 for details.
+END
+}
+show_help() {
+    cat <<END
+${PROGNAME} is updating a canary file for evobackup.
+
+Usage: ${PROGNAME} [OPTIONS]
+
+Main options
+ -w, --who      who has updated the file (default: logname())
+ -f, --file     path of the canary file (default: /zzz_evobackup_canary)
+ -V, --version  print version and exit
+ -h, --help     print this message and exit
+END
+}
+
+main() {
+    if [ -z "${who:-}" ]; then
+        who=$(logname)
+    fi
+    if [ -z "${canary_file:-}" ]; then
+        canary_file="/zzz_evobackup_canary"
+    fi
+    # This option is supported since (at least) Debian 8
+    date=$(date --iso-8601=seconds)
+
+    printf "%s %s\n" "${date}" "${who}" >> "${canary_file}"
+}
+
+# parse options
+# based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            show_help
+            exit 0
+            ;;
+        -V|--version)
+            show_version
+            exit 0
+            ;;
+
+        -w|--who)
+            # with value separated by space
+            if [ -n "$2" ]; then
+                who=$2
+                shift
+            else
+                printf 'ERROR: "-w|--who" requires a non-empty option argument.\n' >&2
+                exit 1
+            fi
+            ;;
+        --who=?*)
+            # with value speparated by =
+            who=${1#*=}
+            ;;
+        --who=)
+            # without value
+            printf 'ERROR: "--who" requires a non-empty option argument.\n' >&2
+            exit 1
+            ;;
+
+        -f|--file)
+            # with value separated by space
+            if [ -n "$2" ]; then
+                canary_file=$2
+                shift
+            else
+                printf 'ERROR: "-f|--file" requires a non-empty option argument.\n' >&2
+                exit 1
+            fi
+            ;;
+        --file=?*)
+            # with value speparated by =
+            canary_file=${1#*=}
+            ;;
+        --file=)
+            # without value
+            printf 'ERROR: "--file" requires a non-empty option argument.\n' >&2
+            exit 1
+            ;;
+
+        --)
+            # End of all options.
+            shift
+            break
+            ;;
+        -?*)
+            # ignore unknown options
+            printf 'WARN: Unknown option : %s\n' "$1" >&2
+            exit 1
+            ;;
+        *)
+            # Default case: If no more options then break out of the loop.
+            break
+            ;;
+    esac
+
+    shift
+done
+
+export LC_ALL=C
+
+set -u
+
+main

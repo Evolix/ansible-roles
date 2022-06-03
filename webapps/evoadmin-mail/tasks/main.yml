@@ -1,7 +1,7 @@
 ---
 - name: Install evoadmin-mail package
   apt:
-    name: evoadmin-mail
+    deb: /tmp/evoadmin-mail.deb
     state: present
   tags:
     - evoadmin-mail

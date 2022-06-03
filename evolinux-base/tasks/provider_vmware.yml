@@ -1,0 +1,17 @@
+---
+- name: Check if the virtual machine on VMWare Host
+  shell: "dmidecode | grep -q 'VMware'"
+  check_mode: no
+  register: vmware_provider
+  failed_when: False
+  changed_when: False
+  tags:
+    - packages
+
+- name: OpenVM Tools are installed for vmware
+  apt:
+    state: present
+    name: open-vm-tools
+  tags:
+    - packages
+  when: vmware_provider.rc == 0

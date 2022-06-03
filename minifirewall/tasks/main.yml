@@ -56,6 +56,11 @@
   include: install.legacy.yml
   when: minifirewall_install_mode == 'legacy'
 
+- name: Debug minifirewall_update_config
+  debug:
+    var: minifirewall_update_config | bool
+    verbosity: 1
+
 - name: Config tasks (modern mode)
   include: config.yml
   when:
@@ -77,6 +82,11 @@
 - name: Activation tasks
   include: activate.yml
 
+- name: Debug minifirewall_tail_included
+  debug:
+    var: minifirewall_tail_included | bool
+    verbosity: 1
+
 - name: Tail tasks (modern mode)
   include: tail.yml
   when:
@@ -90,6 +100,11 @@
     - minifirewall_tail_included | bool
 
 # Restart?
+
+- name: Debug minifirewall_restart_force
+  debug:
+    var: minifirewall_restart_force | bool
+    verbosity: 1
 
 - name: Force restart minifirewall (modern mode)
   command: /etc/init.d/minifirewall restart

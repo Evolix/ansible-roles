@@ -1,12 +1,12 @@
 #!/bin/sh
 
-VERSION="21.11"
+VERSION="22.06"
 
 show_version() {
     cat <<END
 evomariabackup version ${VERSION}
 
-Copyright 2004-2021 Evolix <info@evolix.fr>,
+Copyright 2004-2022 Evolix <info@evolix.fr>,
                     Éric Morino <emorino@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>
                     and others.
@@ -20,19 +20,20 @@ show_help() {
     cat <<EOF
 Usage: evomariabackup --backup-dir /path/to/mariabackup-target --compress-file /path/to/compressed.tgz
 Options
-    --backup-dir     mariabackup target directory
-    --compress-file  File name for the compressed version
-    --backup         Force backup phase
-    --no-backup      Skip backup phase
-    --compress       Force compress phase
-    --no-compress    Skip compress phase
-    --log-file       Log file to send messages
-    --verbose        Output much more information (to stdout/stderr or the log file)
-    --quiet          Ouput only the most critical information
-    --lock-file      Specify which lock file to use (default: /run/lock/mariabackup.lock)
-    --max-age        Lock file is ignored if older than this (default: 1d)
-    -h|--help|-?     Display help
-    -V|--version     Display version, authors and license
+    --backup-dir        mariabackup target directory
+    --compress-file     File name for the compressed version
+    --backup            Force backup phase
+    --no-backup         Skip backup phase
+    --compress          Force compress phase
+    --no-compress       Skip compress phase
+    --log-file          Log file to send messages
+    --post-backup-hook  Script to execute after other tasks
+    --verbose           Output much more information (to stdout/stderr or the log file)
+    --quiet             Ouput only the most critical information
+    --lock-file         Specify which lock file to use (default: /run/lock/mariabackup.lock)
+    --max-age           Lock file is ignored if older than this (default: 1d)
+    -h|--help|-?        Display help
+    -V|--version        Display version, authors and license
 
 Example usage for a backup then compress :
     # /usr/local/bin/evomariabackup --verbose \
@@ -248,10 +249,9 @@ backup() {
 
     backup_command="${mariabackup_bin} --backup --slave-info --target-dir=${backup_dir:?}"
 
-
     if ! is_quiet; then
-        log_debug "${backup_command}"
         log_info "BEGIN mariabackup backup phase"
+        log_debug "${backup_command}"
     fi
 
     if is_quiet || ! is_verbose ; then
@@ -277,8 +277,8 @@ backup() {
     prepare_command="${mariabackup_bin} --prepare --target-dir=${backup_dir:?}"
 
     if ! is_quiet; then
-        log_debug "${prepare_command}"
         log_info "BEGIN mariabackup prepare phase"
+        log_debug "${prepare_command}"
     fi
 
     if is_quiet || ! is_verbose ; then
@@ -300,6 +300,38 @@ backup() {
     elif ! is_quiet; then
         log_info "END mariabackup prepare phase"
     fi
+}
+list_files_with_size() {
+    path=$1
+    find "${path}" -type f -exec du --bytes {} \; | sort -k2
+}
+dircheck_prepare() {
+    if [ -z "${backup_dir}" ]; then
+        log_fatal "backup-dir option is empty"
+        exit 1
+    elif [ -e "${backup_dir}" ] && [ ! -d "${backup_dir}" ]; then
+        log_fatal "backup directory '${backup_dir}' exists but is not a directory"
+        exit 1
+    fi
+
+    dircheck_cmd="dir-check"
+    dircheck_bin=$(command -v ${dircheck_cmd})
+    if [ -z "${dircheck_bin}" ]; then
+        log_fatal "Couldn't find ${dircheck_cmd}."
+        exit 1
+    fi
+
+    backup_parent_dir=$(dirname "${backup_dir}")
+    backup_final_dir=$(basename "${backup_dir}")
+
+    log_info "BEGIN dir-check phase"
+    cwd=${PWD}
+    cd "${backup_parent_dir}" || log_fatal "Impossible to change to ${backup_parent_dir}"
+
+    "${dircheck_bin}" --prepare --dir "${backup_final_dir}"
+
+    cd ${cwd} || log_fatal "Impossible to change back to ${cwd}"
+    log_info "END dir-check phase"
 }
 compress() {
     compress_dir=$(dirname "${compress_file}")
@@ -332,8 +364,8 @@ compress() {
     fi
 
     if ! is_quiet; then
-        log_debug "Compression of ${backup_dir} to ${compress_file} using \`${compress_program}'"
         log_info "BEGIN compression phase"
+        log_debug "Compression of ${backup_dir} to ${compress_file} using \`${compress_program}'"
     fi
     if is_quiet || ! is_verbose ; then
         tar --use-compress-program="${compress_program}" -cf "${compress_file}" "${backup_dir}" >/dev/null 2>&1
@@ -355,6 +387,35 @@ compress() {
         log_info "END compression phase"
     fi
 }
+post_backup_hook() {
+    if [ -x "${post_backup_hook}" ]; then
+
+        if ! is_quiet; then
+            log_debug "Execution of \`${post_backup_hook}'"
+            log_info "BEGIN hook phase"
+        fi
+
+        (
+            export BACKUP_DIR="${backup_dir}"
+            if is_log_file; then
+                export LOG_FILE="${log_file}"
+            fi
+            "${post_backup_hook}"
+        )
+        hook_rc=$?
+
+        if [ ${hook_rc} -ne 0 ]; then
+            log_fatal "An error occured while executing post backup hook \`${post_backup_hook}'"
+            exit 1
+        elif ! is_quiet; then
+            log_info "END hook phase"
+        fi
+    else
+        log_fatal "Post backup hook \`${post_backup_hook}' is missing or not executable"
+        exit 1
+    fi
+}
+
 main() {
     kill_or_clean_lockfile "${lock_file}"
     # shellcheck disable=SC2064
@@ -362,11 +423,19 @@ main() {
     new_lock_file "${lock_file}"
 
     if [ "${do_backup}" = "1" ] && [ -n "${backup_dir}" ]; then
-        backup "${backup_dir}"
+        backup
+    fi
+
+    if [ "${do_dircheck}" = "1" ] && [ -n "${backup_dir}" ]; then
+        dircheck_prepare
     fi
 
     if [ "${do_compress}" = "1" ] && [ -n "${compress_file}" ]; then
-        compress "${backup_dir}" "${compress_file}"
+        compress
+    fi
+
+    if [ -n "${post_backup_hook}" ]; then
+        post_backup_hook
     fi
 }
 
@@ -377,11 +446,12 @@ log_file=""
 verbose=""
 quiet=""
 max_age=""
-max_age=""
 do_backup=""
 backup_dir=""
+do_dircheck=""
 do_compress=""
 compress_file=""
+post_backup_hook=""
 
 # Parse options
 # based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
@@ -438,6 +508,14 @@ while :; do
         --backup-dir=)
             # without value
             log_fatal '"--backup-dir" requires a non-empty option argument.'
+            ;;
+
+        --dir-check)
+            do_dircheck=1
+            ;;
+
+        --no-dir-check)
+            do_dircheck=0
             ;;
 
         --compress)
@@ -508,6 +586,24 @@ while :; do
             log_fatal '"--log-file" requires a non-empty option argument.'
             ;;
 
+        --post-backup-hook)
+            # with value separated by space
+            if [ -n "$2" ]; then
+                post_backup_hook="$2"
+                shift
+            else
+                log_fatal '"--post-backup-hook" requires a non-empty option argument.'
+            fi
+            ;;
+        --post-backup-hook=?*)
+            # with value speparated by =
+            post_backup_hook=${1#*=}
+            ;;
+        --post-backup-hook=)
+            # without value
+            log_fatal '"--post-backup-hook" requires a non-empty option argument.'
+            ;;
+
         -v|--verbose)
             verbose=1
             ;;
@@ -549,6 +645,7 @@ verbose=${verbose:-0}
 quiet=${quiet:-0}
 max_age="${max_age:-86400}"
 do_backup="${do_backup:-1}"
+do_dircheck="${do_dircheck:-0}"
 do_compress="${do_compress:-0}"
 
 main
