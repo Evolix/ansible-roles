@@ -417,6 +417,10 @@ post_backup_hook() {
 }
 
 main() {
+    if ! is_quiet; then
+        log_info "BEGIN evomariabackup"
+    fi
+
     kill_or_clean_lockfile "${lock_file}"
     # shellcheck disable=SC2064
     trap "rm -f ${lock_file};" 0
@@ -436,6 +440,10 @@ main() {
 
     if [ -n "${post_backup_hook}" ]; then
         post_backup_hook
+    fi
+
+    if ! is_quiet; then
+        log_info "END evomariabackup"
     fi
 }
 
