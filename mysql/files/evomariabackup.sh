@@ -32,6 +32,7 @@ Options
     --quiet             Ouput only the most critical information
     --lock-file         Specify which lock file to use (default: /run/lock/mariabackup.lock)
     --max-age           Lock file is ignored if older than this (default: 1d)
+    --force-unlock      If a lock is present, do as if it has expired
     -h|--help|-?        Display help
     -V|--version        Display version, authors and license
 
@@ -152,6 +153,9 @@ lock_file_age() {
 
     echo "${created_at}"
 }
+is_force_unlock() {
+    test "${force_unlock}" = "1"
+}
 is_lock_file_too_old() {
     test "$(lock_file_age)" -ge "${max_age}"
 }
@@ -168,13 +172,20 @@ kill_or_clean_lockfile() {
                 log_debug "Found process with pid ${pid}"
 
                 lock_file_created_at_human=$(date --date "@$(lock_file_created_at)" +"%Y-%m-%d %H:%M:%S")
-                if is_lock_file_too_old ; then
+                if is_lock_file_too_old || is_force_unlock ; then
                     # Kill the children
                     pkill -9 --parent "${pid}"
                     # Kill the parent
                     kill -9 "${pid}"
                     # Only one process can run in parallel
-                    log_warning "Process \`${pid}' (started at ${lock_file_created_at_human}) has been killed by \`$$'"
+                    if is_lock_file_too_old; then
+                        unlock_reason="lock is older than ${max_age}"
+                    elif is_force_unlock; then
+                        unlock_reason="--force-unlock was used"
+                    else
+                        unlock_reason="unknown reason"
+                    fi
+                    log_warning "Process \`${pid}' (started at ${lock_file_created_at_human}) has been killed by \`$$' (${unlock_reason})."
                 else
                     log_info "Process \`${pid}' (started at ${lock_file_created_at_human}) has precedence. Let's leave it work."
                     # make sure that this exit doesn't remove the existing lockfile !!
@@ -454,6 +465,7 @@ log_file=""
 verbose=""
 quiet=""
 max_age=""
+force_unlock=""
 do_backup=""
 backup_dir=""
 do_dircheck=""
@@ -576,6 +588,10 @@ while :; do
             log_fatal '"--lock-file" requires a non-empty option argument.'
             ;;
 
+        --force-unlock)
+            force_unlock=1
+            ;;
+
         --log-file)
             # with value separated by space
             if [ -n "$2" ]; then
@@ -652,6 +668,7 @@ lock_file="${lock_file:-/run/lock/evomariabackup.lock}"
 verbose=${verbose:-0}
 quiet=${quiet:-0}
 max_age="${max_age:-1d}"
+force_unlock=${force_unlock:-0}
 do_backup="${do_backup:-1}"
 do_dircheck="${do_dircheck:-0}"
 do_compress="${do_compress:-0}"
