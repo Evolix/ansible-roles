@@ -14,6 +14,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* mysql: evomariabackup release 22.06.1
 * mysql: reorganize evomariabackup to use mtree instead of our own dir-check
 
 ### Fixed
