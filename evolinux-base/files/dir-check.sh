@@ -189,7 +189,7 @@ main() {
     parent_dir=$(dirname "${dir}")
     final_dir=$(basename "${dir}")
 
-    data_file="${PROGNAME}.db"
+    data_file="${final_dir}.${PROGNAME}.db"
     checksum_file="${data_file}.${checksum_cmd}"
 
     cwd=${PWD}
