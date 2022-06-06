@@ -14,16 +14,20 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
-* evocheck: upstream release 22.06.1
-* minifirewall: upstream release 22.06
-* mysql: evomariabackup release 22.06.1
-* mysql: reorganize evomariabackup to use mtree instead of our own dir-check
-
 ### Fixed
 
 ### Removed
 
 ### Security
+
+## [22.06.1] 2022-06-06
+
+### Changed
+
+* evocheck: upstream release 22.06.1
+* minifirewall: upstream release 22.06
+* mysql: evomariabackup release 22.06.1
+* mysql: reorganize evomariabackup to use mtree instead of our own dir-check
 
 ## [22.06] 2022-06-03
 
