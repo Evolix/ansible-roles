@@ -131,7 +131,9 @@ check_data() {
         # subshell to scope the commands to "parent_dir"
         "${checksum_bin}" --status --check "${checksum_file}"
         last_rc=$?
-        if [ ${last_rc} -ne 0 ]; then
+        if [ ${last_rc} -eq 0 ]; then
+            log_debug "Verification succeeded with checksum file \`${checksum_file}' (inside \`${parent_dir}')."
+        else
             log_error "Verification failed with checksum file \`${checksum_file}' (inside \`${parent_dir}')."
             exit 1
         fi
@@ -146,8 +148,10 @@ check_data() {
             if [ -f "${file}"  ]; then
                 actual_size=$($(data_command) "${file}" | cut -f1)
 
-                if [ "${actual_size}" != "${expected_size}" ]; then
-                    log_error "File \`${file}' has actual size of ${actual_size} instead of ${expected_size}."
+                if [ "${actual_size}" = "${expected_size}" ]; then
+                    log_debug "File \`${file}' has a consistent size of ${actual_size}."
+                else
+                    log_error "File \`${file}' has an actual size of ${actual_size} instead of ${expected_size}."
                     rc=1
                 fi
             else
@@ -157,6 +161,8 @@ check_data() {
         done < "${data_file}"
         if [ ${rc} -eq 0 ]; then
             log_info "Directory \`${final_dir}' is consistent with data stored in \`${data_file}' (inside \`${parent_dir}')."
+        else
+            log_error "Directory \`${final_dir}' is not consistent with data stored in \`${data_file}' (inside \`${parent_dir}')."
         fi
     else
         log_fatal "Couldn't find data file \`${data_file}' (inside \`${parent_dir}')."
@@ -183,7 +189,7 @@ main() {
     parent_dir=$(dirname "${dir}")
     final_dir=$(basename "${dir}")
 
-    data_file="${PROGNAME}.db"
+    data_file="${final_dir}.${PROGNAME}.db"
     checksum_file="${data_file}.${checksum_cmd}"
 
     cwd=${PWD}

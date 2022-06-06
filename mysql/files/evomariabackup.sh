@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION="22.06"
+VERSION="22.06.1"
 
 show_version() {
     cat <<END
@@ -20,25 +20,33 @@ show_help() {
     cat <<EOF
 Usage: evomariabackup --backup-dir /path/to/mariabackup-target --compress-file /path/to/compressed.tgz
 Options
-    --backup-dir        mariabackup target directory
-    --compress-file     File name for the compressed version
     --backup            Force backup phase
     --no-backup         Skip backup phase
+    --backup-dir        mariabackup target directory
+                        it enables backup phase if not explicitly disabled
     --compress          Force compress phase
     --no-compress       Skip compress phase
+    --compress-file     File name for the compressed version
+                        it enables backup phase if not explicitly disabled
+    --mtree             Force mtree phase
+    --no-mtree          Skip mtree phase
+    --mtree-file        File name for the mtree specification
+                        it enables mtree phase if not explicitly disabled
     --log-file          Log file to send messages
     --post-backup-hook  Script to execute after other tasks
     --verbose           Output much more information (to stdout/stderr or the log file)
     --quiet             Ouput only the most critical information
     --lock-file         Specify which lock file to use (default: /run/lock/mariabackup.lock)
     --max-age           Lock file is ignored if older than this (default: 1d)
+    --force-unlock      If a lock is present, do as if it has expired
     -h|--help|-?        Display help
     -V|--version        Display version, authors and license
 
-Example usage for a backup then compress :
+Example usage for a backup, mtree then compress :
     # /usr/local/bin/evomariabackup --verbose \
-        --backup-dir /backup/mariabackup/current \
-        --compress-file /backup/mariabackup/compressed/$(date +%H).tgz \
+        --backup --backup-dir /backup/mariabackup/current \
+        --mtree --mtree-file /backup/mariabackup/current.mtree \
+        --compress --compress-file /backup/mariabackup/compressed/$(date +\%H).tgz \
         --log-file /var/log/evomariabackup.log
 
 max-age possible values:
@@ -139,7 +147,7 @@ duration_in_seconds() {
 }
 lock_file_created_at() {
     created_at=$(stat -c %Z "${lock_file}")
-    log_debug "Lock file ${lock_file} created at ${created_at}"
+    log_debug "Lock file \`${lock_file}' created at ${created_at}"
 
     echo "${created_at}"
 }
@@ -148,9 +156,12 @@ lock_file_age() {
     now=$(date +"%s")
 
     age=$(( now - last_change ))
-    log_debug "Lock file ${lock_file} is ${age} seconds old"
+    log_debug "Lock file \`${lock_file}' is ${age} seconds old"
 
     echo "${created_at}"
+}
+is_force_unlock() {
+    test "${force_unlock}" = "1"
 }
 is_lock_file_too_old() {
     test "$(lock_file_age)" -ge "${max_age}"
@@ -168,13 +179,20 @@ kill_or_clean_lockfile() {
                 log_debug "Found process with pid ${pid}"
 
                 lock_file_created_at_human=$(date --date "@$(lock_file_created_at)" +"%Y-%m-%d %H:%M:%S")
-                if is_lock_file_too_old ; then
+                if is_lock_file_too_old || is_force_unlock ; then
                     # Kill the children
                     pkill -9 --parent "${pid}"
                     # Kill the parent
                     kill -9 "${pid}"
                     # Only one process can run in parallel
-                    log_warning "Process \`${pid}' (started at ${lock_file_created_at_human}) has been killed by \`$$'"
+                    if is_lock_file_too_old; then
+                        unlock_reason="lock is older than ${max_age}"
+                    elif is_force_unlock; then
+                        unlock_reason="--force-unlock was used"
+                    else
+                        unlock_reason="unknown reason"
+                    fi
+                    log_warning "Process \`${pid}' (started at ${lock_file_created_at_human}) has been killed by \`$$' (${unlock_reason})."
                 else
                     log_info "Process \`${pid}' (started at ${lock_file_created_at_human}) has precedence. Let's leave it work."
                     # make sure that this exit doesn't remove the existing lockfile !!
@@ -188,7 +206,7 @@ kill_or_clean_lockfile() {
         fi
         # Remove the lock file
         rm -f "${lock_file}"
-        log_debug "Lock file ${lock_file} has been removed"
+        log_debug "Lock file \`${lock_file}' has been removed"
     fi
 }
 new_lock_file() {
@@ -197,9 +215,9 @@ new_lock_file() {
 
     if mkdir --parents "${lock_dir}"; then
         echo $$ > "${lock_file}"
-        log_debug "Lock file '${lock_file}' has been created"
+        log_debug "Lock file \`${lock_file}' has been created"
     else
-        log_fatal "Failed to acquire lock file '${lock_file}'. Abort."
+        log_fatal "Failed to acquire lock file \`${lock_file}'. Abort."
         exit 1
     fi
 }
@@ -211,30 +229,30 @@ check_backup_dir() {
     if [ -d "${backup_dir:?}" ]; then
         if [ "$(ls -A "${backup_dir:?}")" ]; then
             if is_mariabackup_directory "${backup_dir:?}"; then
-                log_debug "The backup directory ${backup_dir:?} is not empty but looks like a mariabackup target. Let's clear it."
+                log_debug "The backup directory \`${backup_dir:?}' is not empty but looks like a mariabackup target. Let's clear it."
                 rm -rf "${backup_dir:?}"
             else
-                log_fatal "The backup directory ${backup_dir:?} is not empty and doesn't look like a mariabackup target. Please verify and clear the directory if you are sure."
+                log_fatal "The backup directory \`${backup_dir:?}' is not empty and doesn't look like a mariabackup target. Please verify and clear the directory if you are sure."
                 exit 1
             fi
         else
-            log_debug "The backup directory ${backup_dir:?} exists but is empty. Let's proceed."
+            log_debug "The backup directory \`${backup_dir:?}' exists but is empty. Let's proceed."
         fi
     else
-        log_debug "The backup directory ${backup_dir:?} doesn't exist. Let's proceed."
+        log_debug "The backup directory \`${backup_dir:?}' doesn't exist. Let's proceed."
     fi
     mkdir -p "${backup_dir:?}"
 }
 check_compress_dir() {
     if [ -d "${compress_dir:?}" ]; then
-        log_debug "The compress_dir directory ${compress_dir:?} exists. Let's proceed."
+        log_debug "The compress_dir directory \`${compress_dir:?}' exists. Let's proceed."
     else
-        log_debug "The compress_dir directory ${compress_dir:?} doesn't exist. Let's proceed."
+        log_debug "The compress_dir directory \`${compress_dir:?}' doesn't exist. Let's proceed."
     fi
     mkdir -p "${compress_dir:?}"
 }
 
-backup() {
+backup_phase() {
     if [ -z "${backup_dir}" ]; then
         log_fatal "backup-dir option is empty"
     else
@@ -243,7 +261,7 @@ backup() {
 
     mariabackup_bin=$(command -v mariabackup)
     if [ -z "${mariabackup_bin}" ]; then
-        log_fatal "Couldn't find mariabackup.\nUse 'apt install mariadb-backup'."
+        log_fatal "Couldn't find mariabackup.\nYou can install it with 'apt install mariadb-backup'."
         exit 1
     fi
 
@@ -301,46 +319,44 @@ backup() {
         log_info "END mariabackup prepare phase"
     fi
 }
-list_files_with_size() {
-    path=$1
-    find "${path}" -type f -exec du --bytes {} \; | sort -k2
-}
-dircheck_prepare() {
+mtree_phase() {
     if [ -z "${backup_dir}" ]; then
         log_fatal "backup-dir option is empty"
         exit 1
     elif [ -e "${backup_dir}" ] && [ ! -d "${backup_dir}" ]; then
-        log_fatal "backup directory '${backup_dir}' exists but is not a directory"
+        log_fatal "backup directory \`${backup_dir}' exists but is not a directory"
         exit 1
     fi
 
-    dircheck_cmd="dir-check"
-    dircheck_bin=$(command -v ${dircheck_cmd})
-    if [ -z "${dircheck_bin}" ]; then
-        log_fatal "Couldn't find ${dircheck_cmd}."
+    if [ -z "${mtree_file}" ]; then
+        mtree_file="${backup_dir}.mtree"
+    fi
+
+    mtree_cmd="mtree"
+    mtree_bin=$(command -v ${mtree_cmd})
+    if [ -z "${mtree_bin}" ]; then
+        log_fatal "Couldn't find ${mtree_cmd}.\nYou can install it with 'apt install mtree-netbsd'."
         exit 1
     fi
 
     backup_parent_dir=$(dirname "${backup_dir}")
     backup_final_dir=$(basename "${backup_dir}")
 
-    log_info "BEGIN dir-check phase"
-    cwd=${PWD}
-    cd "${backup_parent_dir}" || log_fatal "Impossible to change to ${backup_parent_dir}"
+    log_info "BEGIN mtree phase"
+    log_debug "Store mtree specification of \`${backup_dir}' to \`${mtree_file}' using \`${mtree_bin}'"
 
-    "${dircheck_bin}" --prepare --dir "${backup_final_dir}"
+    "${mtree_bin}" -x -c -p "${backup_dir}" > "${mtree_file}"
 
-    cd ${cwd} || log_fatal "Impossible to change back to ${cwd}"
-    log_info "END dir-check phase"
+    log_info "END mtree phase"
 }
-compress() {
+compress_phase() {
     compress_dir=$(dirname "${compress_file}")
 
     if [ -z "${backup_dir}" ]; then
         log_fatal "backup-dir option is empty"
         exit 1
     elif [ -e "${backup_dir}" ] && [ ! -d "${backup_dir}" ]; then
-        log_fatal "backup directory '${backup_dir}' exists but is not a directory"
+        log_fatal "backup directory \`${backup_dir}' exists but is not a directory"
         exit 1
     fi
     if [ -z "${compress_file}" ]; then
@@ -359,13 +375,13 @@ compress() {
     elif [ -n "${gzip_bin}" ]; then
         compress_program="${gzip_bin} -6"
     else
-        log_fatal "Couldn't find pigz nor gzip.\nUse 'apt install pigz' or 'apt install gzip'."
+        log_fatal "Couldn't find pigz nor gzip.\nYou can install it with 'apt install pigz' or 'apt install gzip'."
         exit 1
     fi
 
     if ! is_quiet; then
         log_info "BEGIN compression phase"
-        log_debug "Compression of ${backup_dir} to ${compress_file} using \`${compress_program}'"
+        log_debug "Compression of \`${backup_dir}' to \`${compress_file}' using \`${compress_program}'"
     fi
     if is_quiet || ! is_verbose ; then
         tar --use-compress-program="${compress_program}" -cf "${compress_file}" "${backup_dir}" >/dev/null 2>&1
@@ -381,13 +397,13 @@ compress() {
     fi
 
     if [ ${tar_rc} -ne 0 ]; then
-        log_fatal "An error occured while compressing ${backup_dir} to ${compress_file}"
+        log_fatal "An error occured while compressing \`${backup_dir}' to \`${compress_file}'"
         exit 1
     elif ! is_quiet; then
         log_info "END compression phase"
     fi
 }
-post_backup_hook() {
+post_backup_hook_phase() {
     if [ -x "${post_backup_hook}" ]; then
 
         if ! is_quiet; then
@@ -417,25 +433,33 @@ post_backup_hook() {
 }
 
 main() {
+    if ! is_quiet; then
+        log_info "BEGIN evomariabackup"
+    fi
+
     kill_or_clean_lockfile "${lock_file}"
     # shellcheck disable=SC2064
     trap "rm -f ${lock_file};" 0
     new_lock_file "${lock_file}"
 
     if [ "${do_backup}" = "1" ] && [ -n "${backup_dir}" ]; then
-        backup
+        backup_phase
     fi
 
-    if [ "${do_dircheck}" = "1" ] && [ -n "${backup_dir}" ]; then
-        dircheck_prepare
+    if [ "${do_mtree}" = "1" ] && [ -n "${backup_dir}" ]; then
+        mtree_phase
     fi
 
     if [ "${do_compress}" = "1" ] && [ -n "${compress_file}" ]; then
-        compress
+        compress_phase
     fi
 
     if [ -n "${post_backup_hook}" ]; then
-        post_backup_hook
+        post_backup_hook_phase
+    fi
+
+    if ! is_quiet; then
+        log_info "END evomariabackup"
     fi
 }
 
@@ -446,9 +470,11 @@ log_file=""
 verbose=""
 quiet=""
 max_age=""
+force_unlock=""
 do_backup=""
 backup_dir=""
-do_dircheck=""
+do_mtree=""
+mtree_file=""
 do_compress=""
 compress_file=""
 post_backup_hook=""
@@ -510,14 +536,6 @@ while :; do
             log_fatal '"--backup-dir" requires a non-empty option argument.'
             ;;
 
-        --dir-check)
-            do_dircheck=1
-            ;;
-
-        --no-dir-check)
-            do_dircheck=0
-            ;;
-
         --compress)
             do_compress=1
             ;;
@@ -550,6 +568,38 @@ while :; do
             log_fatal '"--compress-file" requires a non-empty option argument.'
             ;;
 
+        --mtree)
+            do_mtree=1
+            ;;
+
+        --no-mtree)
+            do_mtree=0
+            ;;
+
+        --mtree-file)
+            # with value separated by space
+            if [ -n "$2" ]; then
+                mtree_file="$2"
+                if [ -z "${do_mtree}" ]; then
+                    do_mtree=1
+                fi
+                shift
+            else
+                log_fatal '"--mtree-file" requires a non-empty option argument.'
+            fi
+            ;;
+        --mtree-file=?*)
+            # with value speparated by =
+            mtree_file=${1#*=}
+            if [ -z "${do_mtree}" ]; then
+                do_mtree=1
+            fi
+            ;;
+        --mtree-file=)
+            # without value
+            log_fatal '"--mtree-file" requires a non-empty option argument.'
+            ;;
+
         --lock-file)
             # with value separated by space
             if [ -n "$2" ]; then
@@ -566,6 +616,10 @@ while :; do
         --lock-file=)
             # without value
             log_fatal '"--lock-file" requires a non-empty option argument.'
+            ;;
+
+        --force-unlock)
+            force_unlock=1
             ;;
 
         --log-file)
@@ -623,7 +677,7 @@ while :; do
             if tty -s; then
                printf 'Unknown option : %s\n' "$1" >&2
                 echo "" >&2
-                show_usage >&2
+                show_help >&2
                 exit 1
             else
                 log_fatal 'Unknown option : %s\n' "$1" >&2
@@ -643,9 +697,19 @@ done
 lock_file="${lock_file:-/run/lock/evomariabackup.lock}"
 verbose=${verbose:-0}
 quiet=${quiet:-0}
-max_age="${max_age:-86400}"
-do_backup="${do_backup:-1}"
-do_dircheck="${do_dircheck:-0}"
-do_compress="${do_compress:-0}"
+max_age="${max_age:-1d}"
+force_unlock=${force_unlock:-0}
+# Enable backup phase if not disabled and backup_dir is set
+if [ -z "${do_backup}" ] && [ -n "${backup_dir}" ]; then
+    do_backup="1"
+fi
+# Enable mtree phase if not disabled and mtree_file is set
+if [ -z "${do_mtree}" ] && [ -n "${mtree_file}" ]; then
+    do_mtree="1"
+fi
+# Enable compress phase if not disabled and compress_file is set
+if [ -z "${do_compress}" ] && [ -n "${compress_file}" ]; then
+    do_compress="1"
+fi
 
 main

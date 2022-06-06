@@ -4,7 +4,7 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
-VERSION="22.06"
+VERSION="22.06.1"
 readonly VERSION
 
 # base functions
@@ -236,11 +236,11 @@ check_debiansecurity() {
     if is_debian_bullseye; then
         # https://www.debian.org/releases/bullseye/amd64/release-notes/ch-information.html#security-archive
         # https://www.debian.org/security/
-        pattern="^deb http://security\.debian\.org/debian-security/? bullseye-security main"
+        pattern="^deb  ?(\[.*\])? ?http://security\.debian\.org/debian-security/? bullseye-security main"
     elif is_debian_buster; then
-        pattern="^deb http://security\.debian\.org/debian-security/? buster/updates main"
+        pattern="^deb  ?(\[.*\])? ?http://security\.debian\.org/debian-security/? buster/updates main"
     elif is_debian_stretch; then
-        pattern="^deb http://security\.debian\.org/debian-security/? stretch/updates main"
+        pattern="^deb  ?(\[.*\])? ?http://security\.debian\.org/debian-security/? stretch/updates main"
     else
         pattern="^deb.*security"
     fi
@@ -363,7 +363,7 @@ check_alert5minifw() {
 }
 check_minifw() {
     /sbin/iptables -L -n | grep -q -E "^ACCEPT\s*all\s*--\s*31\.170\.8\.4\s*0\.0\.0\.0/0\s*$" \
-        || failed "IS_MINIFW" "minifirewall seems not starded"
+        || failed "IS_MINIFW" "minifirewall seems not started"
 }
 check_minifw_includes() {
     if is_debian_bullseye; then
@@ -742,12 +742,13 @@ check_backupuptodate() {
     backup_dir="/home/backup"
     if [ -d "${backup_dir}" ]; then
         if [ -n "$(ls -A ${backup_dir})" ]; then
-            # shellcheck disable=SC2231
-            for file in ${backup_dir}/*; do
+            # Look for all files, including subdirectories.
+            # If this turns out to be problematic, we can go back to first level only, with --max-depth=1
+            find "${backup_dir}" -type f | while read -r file; do
                 limit=$(date +"%s" -d "now - 2 day")
                 updated_at=$(stat -c "%Y" "$file")
 
-                if [ -f "$file" ] && [ "$limit" -gt "$updated_at" ]; then
+                if [ "$limit" -gt "$updated_at" ]; then
                     failed "IS_BACKUPUPTODATE" "$file has not been backed up"
                     test "${VERBOSE}" = 1 || break;
                 fi
@@ -1217,14 +1218,20 @@ check_usrsharescripts() {
     test "$expected" = "$actual" || failed "IS_USRSHARESCRIPTS" "/usr/share/scripts must be $expected"
 }
 check_sshpermitrootno() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        if grep -q "^PermitRoot" /etc/ssh/sshd_config; then
-            grep -E -qi "PermitRoot.*no" /etc/ssh/sshd_config \
-                || failed "IS_SSHPERMITROOTNO" "PermitRoot should be set at no"
-        fi
+    sshd_args="-C addr=,user=,host=,laddr=,lport=0"
+    if is_debian_jessie || is_debian_stretch; then
+	# Noop, we'll use the default $sshd_args
+        :
+    elif is_debian_buster; then
+	sshd_args="${sshd_args},rdomain="
     else
-        grep -E -qi "PermitRoot.*no" /etc/ssh/sshd_config \
-            || failed "IS_SSHPERMITROOTNO" "PermitRoot should be set at no"
+	# NOTE: From Debian Bullseye 11 onward, with OpenSSH 8.1, the argument
+        # -T doesn't require the additional -C.
+	sshd_args=
+    fi
+    # XXX: We want parameter expension here
+    if ! (sshd -T $sshd_args | grep -q 'permitrootlogin no'); then
+       failed "IS_SSHPERMITROOTNO" "PermitRoot should be set to no"
     fi
 }
 check_evomaintenanceusers() {
