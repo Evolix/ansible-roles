@@ -29,7 +29,7 @@
 # Description:       Firewall designed for standalone server
 ### END INIT INFO
 
-VERSION="22.05"
+VERSION="22.06"
 
 NAME="minifirewall"
 # shellcheck disable=SC2034
@@ -121,6 +121,7 @@ if [ -t 1 ]; then
     # see if it supports colors...
     ncolors=$(tput colors)
 
+    # shellcheck disable=SC2086
     if [ -n "${ncolors}" ] && [ ${ncolors} -ge 8 ]; then
         RED=$(tput setaf 1)
         GREEN=$(tput setaf 2)
@@ -363,6 +364,7 @@ start() {
 
     if [ "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" = "1" ] || [ "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" = "0" ]; then
         echo "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
+        # Apparently not applicable to IPv6
     else
         printf "${RED}ERROR: invalid %s value '%s', must be '0' or '1'.\n" "SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS" "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" >&2
         exit 1
@@ -370,6 +372,7 @@ start() {
 
     if [ "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" = "1" ] || [ "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" = "0" ]; then
         echo "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
+        # Apparently not applicable to IPv6
     else
         printf "${RED}ERROR: invalid %s value '%s', must be '0' or '1'.\n" "SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES" "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" >&2
         exit 1
@@ -379,6 +382,11 @@ start() {
         for proc_sys_file in /proc/sys/net/ipv4/conf/*/accept_source_route; do
             echo "${SYSCTL_ACCEPT_SOURCE_ROUTE}" > "${proc_sys_file}"
         done
+        if is_ipv6_enabled; then
+            for proc_sys_file in /proc/sys/net/ipv6/conf/*/accept_source_route; do
+                echo "${SYSCTL_ACCEPT_SOURCE_ROUTE}" > "${proc_sys_file}"
+            done
+        fi
     else
         printf "${RED}ERROR: invalid %s value '%s', must be '0' or '1'.\n" "SYSCTL_ACCEPT_SOURCE_ROUTE" "${SYSCTL_ACCEPT_SOURCE_ROUTE}" >&2
         exit 1
@@ -386,6 +394,7 @@ start() {
 
     if [ "${SYSCTL_TCP_SYNCOOKIES}" = "1" ] || [ "${SYSCTL_TCP_SYNCOOKIES}" = "0" ]; then
         echo "${SYSCTL_TCP_SYNCOOKIES}" > /proc/sys/net/ipv4/tcp_syncookies
+        # Apparently not applicable to IPv6
     else
         printf "${RED}ERROR: invalid %s value '%s', must be '0' or '1'.\n" "SYSCTL_TCP_SYNCOOKIES" "${SYSCTL_TCP_SYNCOOKIES}" >&2
         exit 1
@@ -398,6 +407,11 @@ start() {
         for proc_sys_file in /proc/sys/net/ipv4/conf/*/send_redirects; do
             echo "${SYSCTL_ICMP_REDIRECTS}" > "${proc_sys_file}"
         done
+        if is_ipv6_enabled; then
+            for proc_sys_file in /proc/sys/net/ipv6/conf/*/accept_redirects; do
+                echo "${SYSCTL_ICMP_REDIRECTS}" > "${proc_sys_file}"
+            done
+        fi
     else
         printf "${RED}ERROR: invalid %s value '%s', must be '0' or '1'.\n" "SYSCTL_ICMP_REDIRECTS" "${SYSCTL_ICMP_REDIRECTS}" >&2
         exit 1
@@ -407,6 +421,7 @@ start() {
         for proc_sys_file in /proc/sys/net/ipv4/conf/*/rp_filter; do
             echo "${SYSCTL_RP_FILTER}" > "${proc_sys_file}"
         done
+        # Apparently not applicable to IPv6
     else
         printf "${RED}ERROR: invalid %s value '%s', must be '0' or '1'.\n" "SYSCTL_RP_FILTER" "${SYSCTL_RP_FILTER}" >&2
         exit 1
@@ -416,6 +431,7 @@ start() {
         for proc_sys_file in /proc/sys/net/ipv4/conf/*/log_martians; do
             echo "${SYSCTL_LOG_MARTIANS}" > "${proc_sys_file}"
         done
+        # Apparently not applicable to IPv6
     else
         printf "${RED}ERROR: invalid %s value '%s', must be '0' or '1'.\n" "SYSCTL_LOG_MARTIANS" "${SYSCTL_LOG_MARTIANS}" >&2
         exit 1
