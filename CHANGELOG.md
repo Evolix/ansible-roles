@@ -12,6 +12,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* postgresql: add variable to configure binding addresses (default: 127.0.0.1)
+
 ### Changed
 
 * fail2ban: Give the possibility to override jail.local (with fail2ban_override_jaillocal)
