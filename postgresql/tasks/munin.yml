@@ -30,7 +30,15 @@
     dest: '/etc/munin/plugins/{{item[0]}}{{item[1]}}'
   loop: "{{ _plugins | product(_databases) | list }}"
   vars:
-    _plugins: ['postgres_cache_', 'postgres_connections_', 'postgres_locks_', 'postgres_querylength_', 'postgres_scans_', 'postgres_size_', 'postgres_transactions_', 'postgres_tuples_']
-    _databases: postgresql_databases
+    _plugins:
+      - 'postgres_cache_'
+      - 'postgres_connections_'
+      - 'postgres_locks_'
+      - 'postgres_querylength_'
+      - 'postgres_scans_'
+      - 'postgres_size_'
+      - 'postgres_transactions_'
+      - 'postgres_tuples_'
+    _databases: "{{ postgresql_databases }}"
   notify: restart munin-node
   when: etc_munin_plugins.stat.exists and usr_share_munin_plugins.stat.exists
