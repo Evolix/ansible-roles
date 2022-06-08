@@ -14,6 +14,12 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* fail2ban: Give the possibility to override jail.local (with fail2ban_override_jaillocal)
+* fail2ban: If jail.local was overriden, add a warning
+* fail2ban: Allow to tune some jail settings (maxretry, bantime, findtime) with ansible
+* fail2ban: Allow to tune the default action with ansible
+* fail2ban: Change default action to ban only (instead of ban + mail with whois report)
+* fail2ban: Configure recidive jail (off by default) + extend dbpurgeage
 * redis: binding is possible on multiple interfaces (breaking change)
 
 ### Fixed

@@ -6,10 +6,43 @@ fail2ban_alert_email: Null
 # "127.0.0.1/8" is always added to the list, even if the following lists are empty.
 fail2ban_default_ignore_ips: []
 fail2ban_additional_ignore_ips: []
+
 # WARN: setting this to True will overwrite the list of ignored IP
 fail2ban_force_update_ignore_ips: False
 
-fail2ban_wordpress: False
-fail2ban_roundcube: False
+fail2ban_override_jaillocal: False
 
-fail2ban_disable_ssh: False
+fail2ban_default_maxretry: 5
+fail2ban_default_bantime: 10m
+fail2ban_default_findtime: 10m
+
+# Default fail2ban action. Chose beetween :
+# - "action_" : (default) - ban only (following banaction)
+# - "action_mw" : ban & send an email with whois report
+# - "action_mwl" : ban & send an email with whois and log lines
+fail2ban_default_action: "action_"
+
+fail2ban_sshd: True
+fail2ban_sshd_maxretry: 10
+fail2ban_sshd_bantime: "{{ fail2ban_default_bantime }}"
+fail2ban_sshd_findtime: "{{ fail2ban_default_findtime }}"
+
+fail2ban_recidive: False
+fail2ban_recidive_maxretry: 3
+fail2ban_recidive_bantime: 1w
+fail2ban_recidive_findtime: 1d
+
+fail2ban_wordpress_hard: False
+fail2ban_wordpress_hard_maxretry: 1
+fail2ban_wordpress_hard_bantime: "{{ fail2ban_default_bantime }}"
+fail2ban_wordpress_hard_findtime: "{{ fail2ban_default_findtime }}"
+
+fail2ban_wordpress_soft: False
+fail2ban_wordpress_soft_maxretry: 5
+fail2ban_wordpress_soft_bantime: "{{ fail2ban_default_bantime }}"
+fail2ban_wordpress_soft_findtime: "{{ fail2ban_default_findtime }}"
+
+fail2ban_roundcube: False
+fail2ban_roundcube_maxretry: 5
+fail2ban_roundcube_bantime: "{{ fail2ban_default_bantime }}"
+fail2ban_roundcube_findtime: "{{ fail2ban_default_findtime }}"

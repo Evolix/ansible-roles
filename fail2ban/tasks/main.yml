@@ -12,6 +12,7 @@
   loop:
     - "/etc/fail2ban"
     - "/etc/fail2ban/filter.d"
+    - "/etc/fail2ban/fail2ban.d"
   tags:
     - fail2ban
 
@@ -25,7 +26,7 @@
     src: jail.local.j2
     dest: /etc/fail2ban/jail.local
     mode: "0644"
-    force: no
+    force: "{{ fail2ban_override_jaillocal }}"
   notify: restart fail2ban
   tags:
     - fail2ban
@@ -33,17 +34,6 @@
 - name: Include ignoredips update task
   include: ip_whitelist.yml
   when: fail2ban_force_update_ignore_ips | bool
-  tags:
-    - fail2ban
-
-- name: Disable SSH filter
-  ini_file:
-    dest: /etc/fail2ban/jail.local
-    section: sshd
-    option: enabled
-    value: false
-  notify: restart fail2ban
-  when: fail2ban_disable_ssh | bool
   tags:
     - fail2ban
 
@@ -62,7 +52,7 @@
   tags:
     - fail2ban
 
-- name: package is installed
+- name: package fail2ban is installed
   apt:
     name: fail2ban
     state: present
@@ -100,3 +90,17 @@
   tags:
     - fail2ban
     - munin
+
+- name: "Extend dbpurgeage if recidive jail is enabled"
+  blockinfile:
+    dest: /etc/fail2ban/fail2ban.d/recidive_dbpurgeage
+    marker: "# ANSIBLE MANAGED"
+    block: |
+      [DEFAULT]
+      dbpurgeage = {{ fail2ban_recidive_bantime}}
+    insertafter: EOF
+    create: yes
+    mode: "0644"
+  notify: restart fail2ban
+  when:
+    - fail2ban_recidive
