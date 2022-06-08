@@ -32,7 +32,7 @@
         create: yes
         owner: root
         group: elasticsearch
-        mode: 0640
+        mode: "0640"
       notify:
         - restart elasticsearch
       tags:

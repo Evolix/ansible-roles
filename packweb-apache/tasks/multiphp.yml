@@ -13,13 +13,13 @@
   copy:
     src: phpContainer
     dest: /usr/local/bin/phpContainer
-    mode: 0755
+    mode: "0755"
 
 # - name: Copy php shim to call phpContainer when the user is a web user
 #   copy:
 #     src: multiphp-shim
 #     dest: /usr/local/bin/php
-#     mode: 0755
+#     mode: "0755"
 
 # - name: Modify bashrc skel file
 #   lineinfile:

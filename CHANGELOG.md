@@ -18,6 +18,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Fixed
 
+* Enforce String notation for mode
+
 ### Removed
 
 ### Security

@@ -5,7 +5,7 @@
     src: "{{ item }}"
     dest: "{{ evobackup_client__cron_path }}"
     force: true
-    mode: 0755
+    mode: "0755"
   loop: "{{ query('first_found', templates) }}"
   vars:
     templates:
