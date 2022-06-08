@@ -1,7 +1,7 @@
 daemonize yes
 pidfile {{ redis_pid_dir }}/redis-server.pid
 port {{ redis_port }}
-bind {{ redis_bind_interface }}
+bind {{ redis_bind_interfaces | join(' ') }}
 
 {% if redis_socket_enabled %}
 unixsocket {{ redis_socket_dir }}/redis.sock

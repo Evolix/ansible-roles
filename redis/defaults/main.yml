@@ -6,7 +6,8 @@ redis_conf_dir_prefix: /etc/redis
 redis_force_instance_port: False
 
 redis_port: 6379
-redis_bind_interface: 127.0.0.1
+redis_bind_interfaces:
+  - 127.0.0.1
 
 redis_socket_enabled: True
 redis_socket_dir_prefix: '/run/redis'
