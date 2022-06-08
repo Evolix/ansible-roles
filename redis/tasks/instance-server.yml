@@ -38,7 +38,7 @@
 
 - name: "Instance '{{ redis_instance_name }}' config hooks directories are present"
   file:
-    dest: "{{ item }}"
+    dest: "{{ _dir }}"
     mode: "0755"
     owner: "root"
     group: "root"
@@ -49,6 +49,8 @@
     - "{{ redis_conf_dir }}/redis-server.post-up.d"
     - "{{ redis_conf_dir }}/redis-server.pre-down.d"
     - "{{ redis_conf_dir }}/redis-server.post-down.d"
+  loop_control:
+    loop_var: _dir
   when:
     - ansible_distribution == "Debian"
     - ansible_distribution_major_version is version('9', '=')
@@ -56,14 +58,16 @@
     - redis
 
 - name: "Instance '{{ redis_instance_name }}' hooks examples are present"
-  command: "cp -a /etc/redis/{{ item }}/00_example {{ redis_conf_dir }}/{{ item }}"
+  command: "cp -a /etc/redis/{{ _dir }}/00_example {{ redis_conf_dir }}/{{ _dir }}"
   args:
-    creates: "{{ redis_conf_dir }}/{{ item }}/00_example"
+    creates: "{{ redis_conf_dir }}/{{ _dir }}/00_example"
   loop:
     - "redis-server.pre-up.d"
     - "redis-server.post-up.d"
     - "redis-server.pre-down.d"
     - "redis-server.post-down.d"
+  loop_control:
+    loop_var: _dir
   when:
     - ansible_distribution == "Debian"
     - ansible_distribution_major_version is version('9', '=')
@@ -72,7 +76,7 @@
 
 - name: "Instance '{{ redis_instance_name }}' socket/pid directories are present"
   file:
-    dest: "{{ item }}"
+    dest: "{{ _dir }}"
     mode: "0755"
     owner: "redis-{{ redis_instance_name }}"
     group: "redis-{{ redis_instance_name }}"
@@ -81,12 +85,14 @@
   loop:
     - "{{ redis_pid_dir }}"
     - "{{ redis_socket_dir }}"
+  loop_control:
+    loop_var: _dir
   tags:
     - redis
 
 - name: "Instance '{{ redis_instance_name }}' data/log directories are present"
   file:
-    dest: "{{ item }}"
+    dest: "{{ _dir }}"
     mode: "0751"
     owner: "redis-{{ redis_instance_name }}"
     group: "redis-{{ redis_instance_name }}"
@@ -95,6 +101,8 @@
   loop:
     - "{{ redis_data_dir }}"
     - "{{ redis_log_dir }}"
+  loop_control:
+    loop_var: _dir
   tags:
     - redis
 
