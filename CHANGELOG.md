@@ -16,6 +16,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* evocheck: upstream release 22.06.2
 * fail2ban: Give the possibility to override jail.local (with fail2ban_override_jaillocal)
 * fail2ban: If jail.local was overriden, add a warning
 * fail2ban: Allow to tune some jail settings (maxretry, bantime, findtime) with ansible
