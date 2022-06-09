@@ -11,6 +11,6 @@
 - name: Install postgresql package
   apt:
     name:
-      - postgresql
+      - "postgresql-{{postgresql_version}}"
       - pgtop
       - libdbd-pg-perl

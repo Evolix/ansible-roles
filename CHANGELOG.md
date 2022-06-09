@@ -29,6 +29,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * Enforce String notation for mode
 * postgresql: fix nested loop for Munin plugins
+* postgresql: Fix task order when using pgdg repo
+* postgresql: Install the right pg version
 
 ### Removed
 
