@@ -742,9 +742,7 @@ check_backupuptodate() {
     backup_dir="/home/backup"
     if [ -d "${backup_dir}" ]; then
         if [ -n "$(ls -A ${backup_dir})" ]; then
-            # Look for all files, including subdirectories.
-            # If this turns out to be problematic, we can go back to first level only, with --max-depth=1
-            find "${backup_dir}" -type f --max-depth=1 | while read -r file; do
+            find "${backup_dir}" -type f -maxdepth 1 | while read -r file; do
                 limit=$(date +"%s" -d "now - 2 day")
                 updated_at=$(stat -c "%Y" "$file")
 
