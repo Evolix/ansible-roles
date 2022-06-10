@@ -12,6 +12,18 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [22.06.2] 2022-06-10
+
+### Added
+
 * postgresql: add variable to configure binding addresses (default: 127.0.0.1)
 
 ### Changed
@@ -31,10 +43,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * postgresql: fix nested loop for Munin plugins
 * postgresql: Fix task order when using pgdg repo
 * postgresql: Install the right pg version
-
-### Removed
-
-### Security
 
 ## [22.06.1] 2022-06-06
 
