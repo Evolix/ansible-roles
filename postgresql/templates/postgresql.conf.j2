@@ -1,6 +1,7 @@
 # Tuning
 shared_buffers = {{ postgresql_shared_buffers }}
 work_mem = {{ postgresql_work_mem }}
+listen_addresses = '{{ postgresql_listen_addresses | join(',') }}'
 #shared_preload_libraries = 'pg_stat_statements'
 #synchronous_commit = off
 {% if postgresql_version is version('9.5', '<') %}
@@ -13,7 +14,7 @@ checkpoint_completion_target = 0.9
 random_page_cost = {{ postgresql_random_page_cost }}
 effective_cache_size = {{ postgresql_effective_cache_size }}
 
-# Loging
+# Logging
 log_min_duration_statement = 1s
 log_checkpoints = on
 log_lock_waits = on

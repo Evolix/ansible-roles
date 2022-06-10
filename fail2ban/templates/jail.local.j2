@@ -1,61 +1,65 @@
 # EvoLinux Fail2Ban config.
 
+{% if fail2ban_override_jaillocal %}
+# WARNING : THIS FILE IS (PROBABLY) ANSIBLE MANAGED AS IT WAS OVERWRITTEN BY ANSIBLE
+{% endif %}
+
 [DEFAULT]
 
 # "ignoreip" can be an IP address, a CIDR mask or a DNS host
 ignoreip = {{ ['127.0.0.1/8'] | union(fail2ban_ignore_ips) | unique | join(' ') }}
 
-bantime  = 600
-maxretry = 3
-
-# "backend" specifies the backend used to get files modification. Available
-# options are "gamin", "polling" and "auto".
-# yoh: For some reason Debian shipped python-gamin didn't work as expected
-#      This issue left ToDo, so polling is default backend for now
-backend = auto
+bantime  = {{ fail2ban_default_bantime }}
+maxretry = {{ fail2ban_default_maxretry }}
 
 destemail = {{ fail2ban_alert_email or general_alert_email | mandatory }}
 
 # ACTIONS
-
 banaction = iptables-multiport
-mta = sendmail
-protocol = tcp
-chain = INPUT
-action_mwl = %(banaction)s[name=%(__name__)s, port="%(port)s", protocol="%(protocol)s", chain="%(chain)s"]
-               %(mta)s-whois-lines[name=%(__name__)s, dest="%(destemail)s", logpath=%(logpath)s, chain="%(chain)s"]
+action = %({{fail2ban_default_action}})s
 
-action = %(action_mwl)s
 
 [sshd]
+enabled = {{ fail2ban_sshd }}
 port    = ssh,2222,22222
-logpath = %(sshd_log)s
-backend = %(sshd_backend)s
-maxretry = 10
 
-{% if fail2ban_wordpress %}
+maxretry = {{ fail2ban_sshd_maxretry }}
+findtime = {{ fail2ban_sshd_findtime }}
+bantime = {{ fail2ban_sshd_bantime }}
+
+[recidive]
+enabled = {{ fail2ban_recidive }}
+
+maxretry = {{ fail2ban_recidive_maxretry }}
+findtime = {{ fail2ban_recidive_findtime }}
+bantime = {{ fail2ban_recidive_bantime }}
+
+
+# Evolix custom jails 
+
 [wordpress-hard]
-enabled = true
-port = http,https
+enabled = {{ fail2ban_wordpress_hard }}
+port = http, https
 filter = wordpress-hard
 logpath = /var/log/auth.log
-maxretry = 1
-findtime = 300
+maxretry = {{ fail2ban_wordpress_hard_maxretry }}
+findtime = {{ fail2ban_wordpress_hard_findtime }}
+bantime = {{ fail2ban_wordpress_hard_bantime }}
 
 [wordpress-soft]
-enabled = true
-port = http,https
+enabled = {{ fail2ban_wordpress_soft }}
+port = http, https
 filter = wordpress-soft
 logpath = /var/log/auth.log
-maxretry = 5
-findtime = 300
-{% endif %}
+maxretry = {{ fail2ban_wordpress_soft_maxretry }}
+findtime = {{ fail2ban_wordpress_soft_findtime }}
+bantime = {{ fail2ban_wordpress_soft_bantime }}
 
-{% if fail2ban_roundcube %}
 [roundcube]
-enabled  = true
-port     = http,https
+enabled  = {{ fail2ban_roundcube }}
+port     = http, https
 filter   = roundcube
 logpath  = /var/lib/roundcube/logs/errors
-maxretry = 5
-{% endif %}
+maxretry = {{ fail2ban_roundcube_maxretry }}
+findtime = {{ fail2ban_roundcube_findtime }}
+bantime = {{ fail2ban_roundcube_bantime }}

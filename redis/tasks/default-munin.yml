@@ -39,7 +39,7 @@
 - name: Enable redis munin plugin
   file:
     src: /usr/local/share/munin/plugins/redis_
-    dest: "/etc/munin/plugins/redis_{{item}}"
+    dest: "/etc/munin/plugins/redis_{{ plugin_name }}"
     state: link
   loop:
     - connected_clients
@@ -48,6 +48,8 @@
     - per_sec
     - used_keys
     - used_memory
+  loop_control:
+    loop_var: plugin_name
   notify: restart munin-node
   when: not ansible_check_mode
   tags:

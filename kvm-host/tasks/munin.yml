@@ -27,16 +27,18 @@
     - kvm_mem
   notify: restart munin-node
 
-- name: Enable redis munin plugin
+- name: Enable Munin plugins
   file:
-    src: "/usr/local/share/munin/plugins/{{item}}"
-    dest: "/etc/munin/plugins/{{item}}"
+    src: "/usr/local/share/munin/plugins/{{ plugin_name }}"
+    dest: "/etc/munin/plugins/{{ plugin_name }}"
     state: link
     force: yes
   loop:
     - kvm_cpu
     - kvm_io
     - kvm_mem
+  loop_control:
+    loop_var: plugin_name
   notify: restart munin-node
 
 - name: Copy Munin plugins conf

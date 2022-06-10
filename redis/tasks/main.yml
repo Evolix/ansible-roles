@@ -63,6 +63,14 @@
     redis_data_dir: "{{ redis_data_dir_prefix }}-{{ redis_instance_name }}"
   when: redis_instance_name is defined
 
+- name: Fail if redis_bind_interface is set
+  fail:
+    msg: "Please change 'redis_bind_interface' (String) to 'redis_bind_interfaces' (List)"
+  when:
+    - redis_bind_interface is defined
+    - redis_bind_interface is not none
+    - redis_bind_interface | length > 0
+
 - name: configure Redis for default mode
   include: default-server.yml
   when: redis_instance_name is not defined
