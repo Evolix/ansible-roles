@@ -67,8 +67,13 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * docker: Allow "live-restore" to be toggled with docker_conf_live_restore
 * evocheck: upstream release 22.06
+* evolinux-base: Replacement of variable `evolinux_packages_hardware` by `ansible_virtualization_role == "host"` automatize host type detection and avoids installing smartd & other on VM.
 * minifirewall: tail template follows symlinks
 * mysql: add "set crypt_use_gpgme=no" Mutt option, for mysqltuner
+
+### Fixed
+
+* Role `postfix`: Add missing `localhost.localdomain localhost` to `mydestination` variable which caused undelivered of some local mails.
 
 ## [22.05.1] 2022-05-12
 
