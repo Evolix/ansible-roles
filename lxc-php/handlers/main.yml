@@ -1,4 +1,10 @@
 ---
+
+- name: Reload PHP-FPM
+  lxc_container:
+    name: "{{ lxc_php_version }}"
+    container_command: "systemctl reload {{ lxc_php_services[lxc_php_version] }}"
+
 - name: Reload php81-fpm
   lxc_container:
     name: "{{ lxc_php_version }}"
@@ -33,6 +39,11 @@
   lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "systemctl restart opensmtpd"
+
+- name: Daemon reload
+  lxc_container:
+    name: "{{ lxc_php_version }}"
+    container_command: "systemctl daemon-reload"
 
 - name: Restart container
   lxc_container:

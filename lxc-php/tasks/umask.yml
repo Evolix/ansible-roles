@@ -1,0 +1,31 @@
+# Ajoute UMask=0007 à l'unité systemd PHP-FPM du conteneur LXC
+# dans /etc/systemd/system/phpX.X-fpm.service.d/evolinux.conf
+---
+
+- name: "Définis le chemin du système de fichiers du conteneur LXC."
+  set_fact:
+    lxc_rootfs_path: "/var/lib/lxc/{{ lxc_php_version }}/rootfs"
+
+- name: "Crée des répertoires (si absents) pour surcharger la config des services PHP dans les conteneurs LXC."
+  ansible.builtin.file:
+    path: "{{ lxc_rootfs_path }}/etc/systemd/system/{{ lxc_php_services[lxc_php_version] }}.d"
+    register: systemd_path
+    state: directory
+    
+- name: "[Service] est présent dans la surchage des services PHP-FPM des conteneurs LXC."
+  ansible.builtin.lineinfile:
+    path: "{{ systemd_path.path }}/evolinux.conf"
+    regex: "\\[Service\\]"
+    line: "[Service]"
+    create: yes
+
+- name: "UMask=0007 est présent dans la surchage des services PHP-FPM des conteneurs LXC."
+  ansible.builtin.lineinfile:
+    path: "{{ systemd_path.path }}/evolinux.conf"
+    regex: "^UMask="
+    line: "UMask=0007"
+    insertafter: "\\[Service\\]"
+  notify:
+    - "Daemon reload"
+    - "Reload PHP-FPM"
+
