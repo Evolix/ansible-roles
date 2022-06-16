@@ -178,6 +178,7 @@
     - name: blacklist mageclisas-status package
       blockinfile:
         dest: /etc/apt/preferences.d/0-blacklist
+        create: yes
         marker: "## {mark} MEGACLISAS-STATUS BLACKLIST"
         block: |
           # DO NOT INSTALL THESE PACKAGES ON THIS SERVER
