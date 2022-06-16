@@ -157,6 +157,42 @@
     - "'Hewlett-Packard Company Smart Array' in raidmodel.stdout"
     - evolinux_packages_hardware_raid | bool
 
+## LSI MegaRAID 12GSAS/PCIe Secure SAS39xx
+# This is still incompatible with Debian
+
+- name: Check if PERC HBA11 device is present
+  shell: "lspci | grep -qE 'MegaRAID.*SAS39xx'"
+  check_mode: no
+  register: perc_hba11_search
+  failed_when: False
+  changed_when: False
+  tags:
+    - packages
+
+- name: MegaCLI SAS package must not be installed if PERC HBA11 is present
+  block:
+    - name: Disable harware RAID tasks
+      set_fact:
+        evolinux_packages_hardware_raid: False
+
+    - name: blacklist mageclisas-status package
+      blockinfile:
+        dest: /etc/apt/preferences.d/0-blacklist
+        marker: "## {mark} MEGACLISAS-STATUS BLACKLIST"
+        block: |
+          # DO NOT INSTALL THESE PACKAGES ON THIS SERVER
+          Package: megacli megaclisas-status
+          Pin: version *
+          Pin-Priority: -100
+
+    - name: Remove MegaCLI packages
+      apt:
+        name:
+          - megacli
+          - megaclisas-status
+        state: absent
+  when: perc_hba11_search.rc == 0
+
 - name: MegaCLI SAS package is present
   block:
     - name: HWRaid embedded GPG key is absent

@@ -14,6 +14,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* evolinux-base: blacklist and do not install megaclisas-status package on incompatible servers
+
 ### Fixed
 
 ### Removed
