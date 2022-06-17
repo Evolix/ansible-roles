@@ -1,0 +1,13 @@
+---
+
+vrrp_addresses: []
+# - {
+#     interface: Null         # the interface name to run on
+#     delay: 10               # the advertisement interval (in sec) (default: 1)
+#     id: Null                # the id of the virtual server [1-255]
+#     priority: Null          # the priority of this host in the virtual server (default: 100)
+#     authentication: Null    # authentification type: auth=(none|pw/hexkey|ah/hexkey) hexkey=0x[0-9a-fA-F]+
+#     label: Null             # use this name is syslog messages (helps when several vrid are running)
+#     ip: Null                # the ip address(es) (and optionnaly subnet mask) of the virtual server
+#     state: Null             # 'started' or 'stopped'
+#   }

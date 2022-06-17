@@ -1,0 +1,20 @@
+---
+
+- name: set unit name
+  set_fact:
+    vrrp_systemd_unit_name: "vrrp-{{ vrrp_address.id }}.service"
+
+- name: add systemd unit
+  template:
+    src: vrrp.service.j2
+    dest: "/etc/systemd/system/vrrp-{{ vrrp_systemd_unit_name }}"
+    force: yes
+  register: vrrp_systemd_unit
+
+- name: enable and start systemd unit
+  systemd:
+    name: "{{ vrrp_systemd_unit_name }}"
+    daemon_reload: yes
+    enabled: yes
+    state: "{{ vrrp_address.state }}"
+  when: vrrp_systemd_unit is changed

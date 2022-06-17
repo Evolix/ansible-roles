@@ -1,0 +1,11 @@
+[Unit]
+Description=VRRP Daemon for IP {{ vrrp_address.ip }} on {{ vrrp_address.interface }}
+After=network.target
+
+[Service]
+ExecStart=/usr/sbin/vrrpd -i {{ vrrp_address.interface | mandatory }} -x -D -d {{ vrrp_address.delay | mandatory }} -v {{ vrrp_address.id | mandatory }} -p {{ vrrp_address.priority | mandatory }} -a {{ vrrp_address.authentication | mandatory }} -l {{ vrrp_address.label | mandatory }} {{ vrrp_address.ip | mandatory }}
+
+Type=forking
+
+[Install]
+WantedBy=default.target
