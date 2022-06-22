@@ -70,7 +70,7 @@
       # WARNING : If the port mapping is different between the host and the container
       # (ie: Listen on :8090 on host, but :8080 in container)
       # then you need to give the port used inside the container
-      DOCKER='off'
+      DOCKER='{{ minifirewall_docker }}'
 
       # Trusted IPv4 local network
       # ...will be often IP/32 if you don't trust anything

@@ -18,8 +18,9 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Fixed
 
-* evolinux-base : Update PermitRootLogin task to work on Debian 11
-* evolinux-user : Update PermitRootLogin task to work on Debian 11
+* evolinux-base: Update PermitRootLogin task to work on Debian 11
+* evolinux-user: Update PermitRootLogin task to work on Debian 11
+* minifirewall: docker mode is configurable
 
 ### Removed
 
