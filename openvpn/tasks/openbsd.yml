@@ -65,8 +65,8 @@
     insertafter: "{{ item.insertafter }}"
     line: "{{ item.line }}"
   with_items:
-     - { regexp: '^    chmod 644 /etc/shellpki/crl.pem$', line: "    chmod 644 /etc/shellpki/crl.pem", insertafter: '^    chmod 640 "\${CACERT}"$' }
-     - { regexp: '^    chmod 755 /etc/shellpki/$', line: "    chmod 755 /etc/shellpki/", insertafter: '^    chmod 644 /etc/shellpki/crl.pem$' }
+     - { regexp: '^    chmod 604 /etc/shellpki/crl.pem$', line: "    chmod 604 /etc/shellpki/crl.pem", insertafter: '^    chmod 640 "\${CACERT}"$' }
+     - { regexp: '^    chmod 751 /etc/shellpki/$', line: "    chmod 751 /etc/shellpki/", insertafter: '^    chmod 604 /etc/shellpki/crl.pem$' }
 
 - name: Deploy OpenVPN server config
   template:

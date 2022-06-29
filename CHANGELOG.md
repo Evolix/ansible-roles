@@ -16,6 +16,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* openvpn: minimal rights on /etc/shellpki/ and crl.pem
+
 ### Fixed
 
 * evolinux-base: Update PermitRootLogin task to work on Debian 11
