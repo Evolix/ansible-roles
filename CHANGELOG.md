@@ -13,6 +13,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Added
 
 * haproxy: add haproxy_allow_ip_nonlocal_bind to set sysctl value (optional)
+* openvpn: configure logrotate
 
 ### Changed
 
