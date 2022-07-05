@@ -219,7 +219,7 @@ ${drbdadm} -- --overwrite-data-of-peer primary "${vmName}"
 
 if ! isDryRun; then
     sleep 5
-    drbd-overview | tail -4
+    drbdadm status | tail -4
 
     drbdDiskPath="/dev/drbd/by-res/${vmName}/0"
     if ! [ -b "${drbdDiskPath}" ]; then
