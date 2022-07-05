@@ -6,11 +6,11 @@ $localconf['debug'] = FALSE;
 $localconf['superadmin'] = array();
 $localconf['script_path'] = '{{ evoadmin_scripts_dir }}';
 $localconf['cluster'] = FALSE;
-// auth (sha256 hashs) / echo -n YourPass | sha256sum
 
-$oriconf['logins'] = array();
-//$oriconf['logins']['foo'] = 'd5d3c723fb82cb0078f399888af78204234535ec2ef3da56710fdd51f90d2477';
-//$oriconf['logins']['bar'] = '7938c84d6e43d1659612a7ea7c1101ed02e52751bb64597a8c20ebaba8ba4303';
+// Generate password hashes : mkpasswd --method=sha-512 (cli) or with PHP's password_hash()
+$localconf['logins'] = array();
+//$localconf['logins']['foo'] = '$6$X0jqa/ausLSBkj4m$dLMMcPGVxak.aDPo4V/GJLm2d8vU8/QA5LbGTuqXCdxSNYU0kRKBgDl16GAyp0GqXXZ5wwDEJKQ1npgFwiuV81';
+//$localconf['logins']['bar'] = '$6$Q6233S6mlWAF6p.j$LtzwG02YucozwqjAgSpeldh24Mnz7lBuVSbOQYbKKh9FiUx3tMVl6kJZkmrNdPqeadFXKAYXrqn.gy8KposF5.';
 
 {% if evoadmin_multiphp_versions != [] %}
 $localconf['php_versions'] = array( {{ evoadmin_multiphp_versions | join(', ') | replace('php', '') }} );
