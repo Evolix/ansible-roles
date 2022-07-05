@@ -14,6 +14,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * haproxy: add haproxy_allow_ip_nonlocal_bind to set sysctl value (optional)
 * openvpn: configure logrotate
+* kvm-host: fix depreciation of "drbd-overview" by "drbdadm status" in add-vm.sh
 
 ### Changed
 
