@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# Verify mounted filesystems are readable and writable.
+
+filesystems=$*
+
+exit_code=0
+for filesystem in $filesystems; do
+    if findmnt --options ro --noheadings "${filesystem}"; then
+	exit_code=2
+    fi
+done
+
+if [ $exit_code != 0 ]; then
+	echo "CRITICAL - Above filesystems aren't monted in read and write mode"
+else
+	echo "OK - All fine"
+fi
+
+exit "${exit_code}"
