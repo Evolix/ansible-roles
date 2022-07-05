@@ -1,0 +1,15 @@
+- name: dump-server-state script is present
+  copy:
+    src: "dump-server-state.sh"
+    dest: /usr/local/sbin/dump-server-state
+    force: True
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: symlink backup-server-state to dump-server-state
+  file:
+    src: /usr/local/sbin/dump-server-state
+    dest: /usr/local/sbin/backup-server-state
+    state: link
+    force: yes
