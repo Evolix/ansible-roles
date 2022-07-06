@@ -16,12 +16,3 @@
   tags:
     - nginx
     - packages
-
-- name: Service is running as configured.
-  service:
-    name: nginx
-    state: "{{ nginx_service_state }}"
-    enabled: "{{ nginx_service_enabled }}"
-  tags:
-    - nginx
-    - packages

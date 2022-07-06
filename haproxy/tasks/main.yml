@@ -134,4 +134,17 @@
     - haproxy
     - logrotate
 
+- name: Set net.ipv4.ip_nonlocal_bind
+  sysctl:
+    name: net.ipv4.ip_nonlocal_bind
+    value: "{{ haproxy_allow_ip_nonlocal_bind | ternary('1','0') }}"
+    sysctl_file: "{{ evolinux_kernel_sysctl_path | default('/etc/sysctl.d/evolinux.conf') }}"
+    state: present
+    reload: yes
+  tags:
+    - haproxy
+  when:
+    - haproxy_allow_ip_nonlocal_bind is defined
+    - haproxy_allow_ip_nonlocal_bind is not none
+
 - include: munin.yml

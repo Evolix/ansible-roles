@@ -56,7 +56,7 @@
 - name: disable root login
   replace:
     dest: /etc/ssh/sshd_config
-    regexp: '^PermitRootLogin (yes|without-password|prohibit-password)'
+    regexp: '^#PermitRootLogin (yes|without-password|prohibit-password)'
     replace: "PermitRootLogin no"
   notify: reload sshd
   when: evolinux_root_disable_ssh | bool
