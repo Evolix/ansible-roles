@@ -77,7 +77,8 @@
 - name: Setting TMOUT to disconnect inactive users
   lineinfile:
     dest: /etc/profile.d/evolinux.sh
-    line: "export TMOUT=36000"
+    line: "export TMOUT={{ evolinux_system_timeout }}"
+    regexp: "^export TMOUT="
     create: yes
     state: present
   when: evolinux_system_set_timeout | bool

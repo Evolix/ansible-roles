@@ -12,6 +12,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* evolinux-base: session timeout is configurable (default: 36000 seconds = 10 hours)
 * haproxy: add haproxy_allow_ip_nonlocal_bind to set sysctl value (optional)
 * openvpn: configure logrotate
 * kvm-host: fix depreciation of "drbd-overview" by "drbdadm status" in add-vm.sh
