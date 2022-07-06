@@ -12,6 +12,18 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [22.07] 2022-07-06
+
+### Added
+
 * evolinux-base: session timeout is configurable (default: 36000 seconds = 10 hours)
 * haproxy: add haproxy_allow_ip_nonlocal_bind to set sysctl value (optional)
 * kvm-host: fix depreciation of "drbd-overview" by "drbdadm status" in add-vm.sh
@@ -26,10 +38,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-base: Update PermitRootLogin task to work on Debian 11
 * evolinux-user: Update PermitRootLogin task to work on Debian 11
 * minifirewall: docker mode is configurable
-
-### Removed
-
-### Security
 
 ## [22.06.3] 2022-06-17
 
