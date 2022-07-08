@@ -1,0 +1,19 @@
+- name: Sqlite needed
+  ansible.builtin.apt:
+    name:
+      - sqlite3
+    state: present
+
+- name: Register bantime from default config from package
+  shell: "grep -R -E 'dbpurgeage[[:blank:]]*=[[:blank:]]*[0-9]+' /etc/fail2ban/fail2ban.conf |awk '{print $3}'|head -n1"
+  register: default_dbpurgeage
+  changed_when: false
+  check_mode: false
+
+- name: Add crontab
+  template:
+    src: fail2ban_dbpurge.j2
+    dest: /etc/cron.daily/fail2ban_dbpurge
+    mode: 0700
+    owner: root
+    group: root

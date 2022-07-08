@@ -104,3 +104,10 @@
   notify: restart fail2ban
   when:
     - fail2ban_recidive
+
+- name: Fix dbpurgeage for stretch and buster
+  include: fix-dbpurgeage.yml
+  when:
+    - ansible_distribution_release == "stretch" or ansible_distribution_release == "buster"
+  tags:
+    - fail2ban

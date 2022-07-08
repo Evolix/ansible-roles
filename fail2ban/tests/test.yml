@@ -1,4 +1,6 @@
 ---
-- hosts: test-kitchen
+- hosts: all
+  become: yes
+#  gather_facts: no
   roles:
     - role: fail2ban
