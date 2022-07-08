@@ -20,6 +20,12 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [22.07] 2022-07-08
+
+### Added
+
+* fail2ban: Ensure apply dbpurgeage from stretch and buster
+
 ## [22.07] 2022-07-06
 
 ### Added
