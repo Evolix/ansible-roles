@@ -14,6 +14,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* mongodb: replace version_compare() with version()
+
 ### Fixed
 
 ### Removed
