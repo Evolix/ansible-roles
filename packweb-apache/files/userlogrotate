@@ -35,8 +35,8 @@ fi;
 
 test -x /usr/sbin/nginx && invoke-rc.d nginx rotate >/dev/null 2>&1
 
-# Zipping is done after web serveur reload, so that the file descriptor is released.
-# Else, an error is raised (gzip file size changed while zipping)
+# Zipping is done after web serveur reload, so that the file descriptor is released.
+# Else, an error is raised (gzip file size changed while zipping)
 # and logs written buring the zipping process might be lost.
 
 for log in access.log access-*.log error.log; do
