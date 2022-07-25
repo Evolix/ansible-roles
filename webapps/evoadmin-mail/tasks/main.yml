@@ -1,4 +1,9 @@
 ---
+
+- name: Remount /usr RW
+  include_role:
+    name: evolix/remount-usr
+
 - name: Install evoadmin-mail package
   apt:
     deb: /tmp/evoadmin-mail.deb
