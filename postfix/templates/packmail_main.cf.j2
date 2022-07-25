@@ -412,8 +412,8 @@ smtpd_sasl_path = private/auth-client
 
 # Amavis and OpenDKIM
 content_filter = smtp-amavis:[127.0.0.1]:10024
-smtpd_milters = inet:[127.0.0.1]:54321
-non_smtpd_milters = inet:[127.0.0.1]:54321
+smtpd_milters = inet:[127.0.0.1]:8891
+non_smtpd_milters = inet:[127.0.0.1]:8891
 
 {% if postfix_slow_transport_include == True %}
 # Slow transports configuration
