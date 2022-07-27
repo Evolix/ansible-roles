@@ -488,8 +488,8 @@ EOT
 fi
 
 # Dovecot
-if is_pkg_installed dovecot-common; then
-    dovecot_version=$(get_pkg_version dovecot-common)
+if is_pkg_installed dovecot-core; then
+    dovecot_version=$(get_pkg_version dovecot-core)
 fi
 if [ -n "${dovecot_version}" ]; then
     cat <<EOT >> "${ldif_file}"
