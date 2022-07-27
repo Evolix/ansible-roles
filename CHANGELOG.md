@@ -15,6 +15,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Changed
 
 * mongodb: replace version_compare() with version()
+* nagios-nrpe: exclude /run/shm and /run/lock from check_disk1
 
 ### Fixed
 
