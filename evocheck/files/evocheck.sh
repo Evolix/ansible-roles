@@ -1226,18 +1226,18 @@ check_usrsharescripts() {
 check_sshpermitrootno() {
     sshd_args="-C addr=,user=,host=,laddr=,lport=0"
     if is_debian_jessie || is_debian_stretch; then
-	# Noop, we'll use the default $sshd_args
+	    # Noop, we'll use the default $sshd_args
         :
     elif is_debian_buster; then
-	sshd_args="${sshd_args},rdomain="
+	    sshd_args="${sshd_args},rdomain="
     else
-	# NOTE: From Debian Bullseye 11 onward, with OpenSSH 8.1, the argument
+	    # NOTE: From Debian Bullseye 11 onward, with OpenSSH 8.1, the argument
         # -T doesn't require the additional -C.
-	sshd_args=
+	    sshd_args=
     fi
     # shellcheck disable=SC2086
-    if ! (sshd -T ${sshd_args} | grep -q 'permitrootlogin no'); then
-       failed "IS_SSHPERMITROOTNO" "PermitRoot should be set to no"
+    if ! (sshd -T ${sshd_args} 2> /dev/null | grep -qi 'permitrootlogin no'); then
+        failed "IS_SSHPERMITROOTNO" "PermitRoot should be set to no"
     fi
 }
 check_evomaintenanceusers() {
