@@ -14,6 +14,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* evocheck: upstream release 22.07
 * evomaintenance: upstream release 22.07
 * mongodb: replace version_compare() with version()
 * nagios-nrpe: check_disk1 returns only alerts
