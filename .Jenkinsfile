@@ -21,11 +21,9 @@ pipeline {
                     def major = versions[0]
                     def minor = versions[0] + '.' + versions[1]
                     def patch = version.trim()
-                 /* No crendentials yet
                     im.push(major)
                     im.push(minor)
                     im.push(patch)
-                  */
                 }
             }
         }
@@ -40,9 +38,7 @@ pipeline {
                     im.inside {
                         sh 'echo Test needed'
                     }
-                 /* No crendentials yet
                     im.push('latest')
-                  */
                 }
             }
         }
