@@ -1,0 +1,16 @@
+---
+
+- name: "Cherche l'emplacement de userlogrotate"
+  ansible.builtin.find:
+    path: /etc
+    patterns: userlogrotate
+  register: find_logrotate
+
+- name: "Met-à-jour userlogrotate"
+  ansible.builtin.copy:
+    src: userlogrotate
+    dest: "{{ item }}"
+    mode: "0755"
+  loop: "{{ find_logrotate.files }}"
+  when: find_logrotate.files | length>0
+

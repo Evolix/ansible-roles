@@ -7,7 +7,7 @@
 # Copyright 2007-2022 Evolix <info@evolix.fr>, Gregory Colpart <reg@evolix.fr>,
 #                     Jérémy Lecour <jlecour@evolix.fr> and others.
 
-VERSION="22.01"
+VERSION="22.07"
 
 show_version() {
     cat <<END
@@ -47,6 +47,7 @@ Options
      --no-evocheck           disable evocheck execution
      --auto                  use "auto" mode
      --no-auto               use "manual" mode (default)
+     --autosysadmin          author change as autosysadmin
  -v, --verbose               increase verbosity
  -n, --dry-run               actions are not executed
      --help                  print this message and exit
@@ -97,13 +98,22 @@ get_who() {
 }
 
 get_begin_date() {
-    printf "%s %s" "$(date "+%Y")" "$(get_who | cut -d" " -f3,4,5)"
+    # XXX A begin date isn't applicable when used in autosysadmin, so we
+    # use the same date as the end date.
+    if is_autosysadmin; then
+	    get_end_date
+    else
+	    printf "%s %s" "$(date "+%Y")" "$(get_who | cut -d" " -f3,4,5)"
+    fi
 }
 
 get_ip() {
     ip=$(get_who | cut -d" " -f6 | sed -e "s/^(// ; s/)$//")
-    [ -z "${ip}" ] && ip="unknown (no tty)"
-    [ "${ip}" = ":0" ] && ip="localhost"
+    if  is_autosysadmin || [ "${ip}" = ":0" ]; then
+	    ip="localhost"
+    elif [ -z "${ip}" ]; then
+	    ip="unknown (no tty)"
+    fi
 
     echo "${ip}"
 }
@@ -114,6 +124,14 @@ get_end_date() {
 
 get_now() {
     date +"%Y-%m-%dT%H:%M:%S%z"
+}
+
+get_user() {
+    if is_autosysadmin; then
+	    echo autosysadmin
+    else
+	    logname
+    fi
 }
 
 get_complete_hostname() {
@@ -172,6 +190,10 @@ print_session_data() {
     printf "Begin     : %s\n" "${BEGIN_DATE}"
     printf "End       : %s\n" "${END_DATE}"
     printf "Message   : %s\n" "${MESSAGE}"
+}
+
+is_autosysadmin() {
+    test "${AUTOSYSADMIN}" -eq 1
 }
 
 is_repository_readonly() {
@@ -382,6 +404,7 @@ AUTO=${AUTO:-"0"}
 EVOCHECK=${EVOCHECK:-"0"}
 GIT_STATUS_MAX_LINES=${GIT_STATUS_MAX_LINES:-20}
 API_ENDPOINT=${API_ENDPOINT:-""}
+AUTOSYSADMIN=${AUTOSYSADMIN:-0}
 
 # initialize variables
 MESSAGE=""
@@ -497,7 +520,7 @@ HOSTNAME_TEXT=$(get_complete_hostname)
 IP=$(get_ip)
 BEGIN_DATE=$(get_begin_date)
 END_DATE=$(get_end_date)
-USER=$(logname)
+USER=$(get_user)
 
 PATH=${PATH}:/usr/sbin
 
@@ -535,6 +558,11 @@ fi
 EVOCHECK_BIN="/usr/share/scripts/evocheck.sh"
 
 GIT_REPOSITORIES="/etc /etc/bind /usr/share/scripts"
+
+# Add /etc directories from lxc containers if they are git directories
+if [ -d /var/lib/lxc ]; then
+    GIT_REPOSITORIES="${GIT_REPOSITORIES} $(find /var/lib/lxc/ -maxdepth 3 -name 'etc' | tr '\n' ' ' | sed 's/[[:space:]]\+$//')"
+fi
 
 # initialize variable
 GIT_STATUSES=""

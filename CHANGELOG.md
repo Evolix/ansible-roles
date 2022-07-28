@@ -20,6 +20,22 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [22.07.1] 2022-07-28
+
+### Changed
+
+* evocheck: upstream release 22.07
+* evomaintenance: upstream release 22.07
+* mongodb: replace version_compare() with version()
+* nagios-nrpe: check_disk1 returns only alerts
+* nagios-nrpe: use regexp to exclude paths/devices in check_disk1
+
+## [22.07] 2022-07-08
+
+### Added
+
+* fail2ban: Ensure apply dbpurgeage from stretch and buster
+
 ## [22.07] 2022-07-06
 
 ### Added

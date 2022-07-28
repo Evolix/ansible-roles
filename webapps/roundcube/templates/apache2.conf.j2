@@ -9,7 +9,7 @@
     ServerName {{ roundcube_host }}
 
     # Repertoire principal
-    DocumentRoot /var/lib/roundcube/
+    DocumentRoot /var/lib/roundcube/public_html
 
     # Return 503 if imapproxy doesn't run
     <If "! -f '/run/imapproxy.pid'">

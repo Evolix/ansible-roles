@@ -10,7 +10,7 @@ server {
         access_log /var/log/nginx/.{{ roundcube_host }}.access.log;
 	error_log  /var/log/nginx/.{{ roundcube_host }}.error.log;
 
-        root /var/lib/roundcube/;
+        root /var/lib/roundcube/public_html;
         index index.php;
 
         location / {

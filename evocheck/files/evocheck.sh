@@ -4,7 +4,7 @@
 # Script to verify compliance of a Debian/OpenBSD server
 # powered by Evolix
 
-VERSION="22.06.2"
+VERSION="22.07"
 readonly VERSION
 
 # base functions
@@ -610,6 +610,14 @@ check_evobackup() {
     evobackup_found=$(find /etc/cron* -name '*evobackup*' | wc -l)
     test "$evobackup_found" -gt 0 || failed "IS_EVOBACKUP" "missing evobackup cron"
 }
+# Vérification de la mise en place de la purge pour fail2ban
+check_purge_fail2ban() {
+    if is_debian_stretch || is_debian_buster; then
+      if is_installed fail2ban; then
+        test -f /etc/cron.daily/fail2ban_dbpurge || failed "IS_FAIL2BAN_PURGE" "missing script fail2ban_dbpurge cron"
+      fi
+    fi
+}
 # Vérification de l'exclusion des montages (NFS) dans les sauvegardes
 check_evobackup_exclude_mount() {
     excludes_file=$(mktemp --tmpdir="${TMPDIR:-/tmp}" "evocheck.evobackup_exclude_mount.XXXXX")
@@ -742,7 +750,7 @@ check_backupuptodate() {
     backup_dir="/home/backup"
     if [ -d "${backup_dir}" ]; then
         if [ -n "$(ls -A ${backup_dir})" ]; then
-            find "${backup_dir}" -type f -maxdepth 1 | while read -r file; do
+            find "${backup_dir}" -maxdepth 1 -type f | while read -r file; do
                 limit=$(date +"%s" -d "now - 2 day")
                 updated_at=$(stat -c "%Y" "$file")
 
@@ -970,7 +978,7 @@ check_mongo_backup() {
         # You could change the default path in /etc/evocheck.cf
         MONGO_BACKUP_PATH=${MONGO_BACKUP_PATH:-"/home/backup/mongodump"}
         if [ -d "$MONGO_BACKUP_PATH" ]; then
-            for file in "${MONGO_BACKUP_PATH}"/*/*.{json,bson}.*; do
+            for file in "${MONGO_BACKUP_PATH}"/*/*.{json,bson}*; do
                 # Skip indexes file.
                 if ! [[ "$file" =~ indexes ]]; then
                     limit=$(date +"%s" -d "now - 2 day")
@@ -1227,8 +1235,8 @@ check_sshpermitrootno() {
         # -T doesn't require the additional -C.
 	sshd_args=
     fi
-    # XXX: We want parameter expension here
-    if ! (sshd -T $sshd_args | grep -q 'permitrootlogin no'); then
+    # shellcheck disable=SC2086
+    if ! (sshd -T ${sshd_args} | grep -q 'permitrootlogin no'); then
        failed "IS_SSHPERMITROOTNO" "PermitRoot should be set to no"
     fi
 }
@@ -1810,6 +1818,7 @@ while :; do
             IS_UPTIME=0
             IS_MELTDOWN_SPECTRE=0
             IS_CHECK_VERSIONS=0
+            IS_NETWORKING_SERVICE=0
             ;;
         -v|--verbose)
             VERBOSE=1

@@ -40,3 +40,4 @@
       - php-ssh2
       - composer
       - libphp-phpmailer
+  when: ansible_distribution_release != "bullseye"
