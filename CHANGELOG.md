@@ -18,6 +18,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Removed
 
+* evocheck: remove failure if deprecated variable is used
+
 ### Security
 
 ## [22.07.1] 2022-07-28
