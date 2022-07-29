@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# Check permettant de monitorer une liste de certificats
+# /etc/nagios/ssl_local.cfg
+#
+# Développé par Will (2022)
+#
+
+certs_list_path=/etc/nagios/check_ssl_local_list.cfg
+
+# Dates in seconds
+_10_days="864000"
+_15_days="1296000"
+
+critical=0
+warning=0
+
+
+if [[ ! -f "$certs_list_path" ]]; then
+    touch "$certs_list_path" 
+fi
+
+certs_list=$(cat "$certs_list_path" | sed -E 's/(.*)#.*/\1/g' | grep -v -E '^$')
+
+for cert_path in $certs_list; do
+    
+    if [ ! -f "$cert_path" ]; then
+        >&2 echo "Warning: Cert file '$cert_path' does not exist."
+        warning=1
+        continue
+    fi
+
+    enddate=$(openssl x509 -noout -enddate -in "$cert_path" | cut -d'=' -f2)
+    
+    # Check cert expiré (critique)
+    if ! openssl x509 -checkend 0 -in "$cert_path" &> /dev/null; then
+        critical=1
+        >&2 echo "Critical: Cert '$cert_path' has expired on $enddate."
+        continue
+    fi
+
+    # Check cert expire < 10 jours (critique)
+    if ! openssl x509 -checkend "$_10_days" -in "$cert_path" &> /dev/null; then
+        critical=1
+        >&2 echo "Critical: Cert '$cert_path' will expire on $enddate."
+        continue
+    fi
+
+    # Check cert expire < 15 jours (warning)
+    if ! openssl x509 -checkend "$_15_days" -in "$cert_path" &> /dev/null; then
+        warning=1
+        >&2 echo "Warning: Cert '$cert_path' will expire on $enddate."
+        continue
+    fi
+
+    # Cert expire > 15 jours (OK)
+    echo "Cert '$cert_path' OK."
+
+done
+
+if [ $critical -eq 1 ]; then
+    exit 2
+elif [ $warning -eq 1 ]; then
+    exit 1
+else
+    exit 0
+fi
+   
+
