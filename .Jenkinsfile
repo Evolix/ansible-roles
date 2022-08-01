@@ -6,6 +6,12 @@ pipeline {
     }
 
     stages {
+        stage('Check commit message') {
+            steps {
+                scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
+            }
+        }
+
         stage('Build tagged docker image') {
             when {
                 buildingTag()
