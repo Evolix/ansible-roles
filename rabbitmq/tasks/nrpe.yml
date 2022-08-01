@@ -24,6 +24,17 @@
     group: root
     mode: "0755"
     force: yes
+  when: ansible_distribution_major_version is version('11', '<=')
+
+- name: check_rabbitmq (Python 3 version) is installed
+  copy:
+    src: check_rabbitmq.python3
+    dest: /usr/local/lib/nagios/plugins/check_rabbitmq
+    owner: root
+    group: root
+    mode: "0755"
+    force: yes
+  when: ansible_distribution_major_version is version('11', '==')
 
 - name: check_rabbitmq is available for NRPE
   lineinfile:
