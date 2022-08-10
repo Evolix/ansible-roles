@@ -19,6 +19,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Fixed
 
 * haproxy: make it so that munin doesn't break if there is a non default `haproxy_stats_path`
+* varnish: make `-j <jail_config>` the first argument on jessie/stretch as it has to be the first argument there.
 
 ### Removed
 
