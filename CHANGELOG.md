@@ -18,6 +18,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Fixed
 
+* haproxy: make it so that munin doesn't break if there is a non default `haproxy_stats_path`
+
 ### Removed
 
 * evocheck: remove failure if deprecated variable is used
