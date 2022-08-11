@@ -24,8 +24,8 @@ certs_list=$(cat "$certs_list_path" | sed -E 's/(.*)#.*/\1/g' | grep -v -E '^$')
 
 for cert_path in $certs_list; do
     
-    if [ ! -f "$cert_path" ]; then
-        >&2 echo "Warning: Cert file '$cert_path' does not exist."
+    if [ ! -f "$cert_path" ] && [ ! -d "$cert_path" ]; then
+        >&2 echo "Warning: path '$cert_path' is not a file or a directory."
         warning=1
         continue
     fi
