@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Check permettant de monitorer une liste de certificats
+# Check permettant de monitorer une liste de certificats se trouvant dans
 # /etc/nagios/ssl_local.cfg
 #
 # Développé par Will (2022)
 #
 
-certs_list_path=/etc/nagios/check_ssl_local_list.cfg
+certs_list_path="/etc/nagios/check_ssl_local_list.cfg"
 
 # Dates in seconds
 _10_days="864000"
