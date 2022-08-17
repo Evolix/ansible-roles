@@ -30,6 +30,7 @@
       - php-sqlite3
       - php-curl
       - php-ssh2
+      - php-xml
       - php-zip
       - composer
       - libphp-phpmailer
