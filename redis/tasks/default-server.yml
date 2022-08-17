@@ -11,6 +11,15 @@
   tags:
     - redis
 
+- name: Config directory permissions are set
+  file:
+    dest: "{{ redis_conf_dir }}"
+    mode: "0750"
+    owner: redis
+    group: redis
+  tags:
+    - redis
+
 - name: Redis is running and enabled on boot.
   systemd:
     name: "{{ redis_systemd_name }}"

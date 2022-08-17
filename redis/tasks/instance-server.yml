@@ -28,9 +28,9 @@
 - name: "Instance '{{ redis_instance_name }}' config directory is present"
   file:
     dest: "{{ redis_conf_dir }}"
-    mode: "0755"
-    owner: "root"
-    group: "root"
+    mode: "0750"
+    owner: "redis-{{ redis_instance_name }}"
+    group: "redis-{{ redis_instance_name }}"
     follow: yes
     state: directory
   tags:
@@ -39,9 +39,9 @@
 - name: "Instance '{{ redis_instance_name }}' config hooks directories are present"
   file:
     dest: "{{ _dir }}"
-    mode: "0755"
-    owner: "root"
-    group: "root"
+    mode: "0750"
+    owner: "redis-{{ redis_instance_name }}"
+    group: "redis-{{ redis_instance_name }}"
     follow: yes
     state: directory
   loop:
