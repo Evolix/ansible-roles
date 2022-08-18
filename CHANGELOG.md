@@ -12,6 +12,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* php: install php-xml with recent PHP versions
+
 ### Changed
 
 * evocheck: upstream release 22.07.1
