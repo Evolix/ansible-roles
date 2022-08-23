@@ -16,7 +16,9 @@
   vars:
     user: "{{ item.value }}"
   loop: "{{ evolinux_users | dict2items }}"
-  when: evolinux_users | length > 0
+  when: 
+    - user.create | intersect(evolinux_users_create) | length > 0
+    - evolinux_users | length > 0
 
 - name: Configure sudo
   include: sudo.yml
