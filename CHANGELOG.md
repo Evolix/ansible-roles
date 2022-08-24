@@ -13,7 +13,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Added
 
 * php: install php-xml with recent PHP versions
-* evolinux_user_create variable for evolinux-users that allows creating only a subset of users, defaults to active
+* evolinux_user_create variable for evolinux-users that allows creating only a subset of users, defaults to always
 
 ### Changed
 

@@ -6,7 +6,7 @@
   loop: "{{ evolinux_users | dict2items }}"
   when:
     - evolinux_users | length > 0
-    - user.create | intersect(evolinux_users_create) | length > 0
+    - user.create == evolinux_users_create
     - ansible_distribution_release == "jessie"
 
 
@@ -19,7 +19,7 @@
     loop: "{{ evolinux_users | dict2items }}"
     when:
       - evolinux_users | length > 0
-      - user.create | intersect(evolinux_users_create) | length > 0
+      - user.create == evolinux_users_create
   when:
     - ansible_distribution_major_version is defined
     - ansible_distribution_major_version is version('9', '>=')
