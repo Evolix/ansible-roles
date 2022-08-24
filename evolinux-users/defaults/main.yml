@@ -6,3 +6,6 @@ evolinux_ssh_group: "evolinux-ssh"
 evolinux_internal_group: ""
 
 evolinux_root_disable_ssh: True
+
+# Defines which groups of users are created
+evolinux_users_create: always

@@ -19,6 +19,7 @@ evolinux_users:
     groups: "baz"
     password_hash: 'sdfgsdfgsdfgsdfg'
     ssh_key: 'ssh-rsa AZERTYXYZ'
+    create: always
   bar:
     name: bar
     uid: 1002
@@ -30,6 +31,7 @@ evolinux_users:
     ssh_keys:
       - 'ssh-rsa QWERTYUIOP'
       - 'ssh-ed25519 QWERTYUIOP'
+    create: on_demand
 ```
 
 * `evolinux_sudo_group`: which group to use for sudo (default: `evolinux-sudo`)
