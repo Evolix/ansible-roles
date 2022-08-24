@@ -12,8 +12,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* evolinux_users: create only users who have a certain value for the `create` key (default: `always`).
 * php: install php-xml with recent PHP versions
-* evolinux_user_create variable for evolinux-users that allows creating only a subset of users, defaults to always
 
 ### Changed
 
