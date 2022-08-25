@@ -1,0 +1,44 @@
+<VirtualHost *:80>
+  ServerName {{ nextcloud_domains | join(' ') }}
+
+  DocumentRoot {{ nextcloud_webroot }}/
+
+  <Directory {{ nextcloud_webroot }}/>
+    Require all granted
+    AllowOverride All
+    Options FollowSymLinks MultiViews
+
+    <IfModule mod_dav.c>
+      Dav off
+    </IfModule>
+  </Directory>
+
+    # user - group (thanks to sesse@debian.org)
+    AssignUserID {{ nextcloud_instance_name }} {{ nextcloud_instance_name }}
+
+    # LOG
+    CustomLog /var/log/apache2/access.log vhost_combined
+    CustomLog /home/{{ nextcloud_instance_name }}/log/access.log combined
+    ErrorLog  /home/{{ nextcloud_instance_name }}/log/error.log
+
+    # REWRITE
+    UseCanonicalName On
+    RewriteEngine On
+    RewriteCond %{HTTP_HOST} !^{{ nextcloud_domains | join(' ') }}$
+    RewriteRule ^/(.*) http://%{SERVER_NAME}/$1 [L,R]
+
+    # PHP
+    #php_admin_flag engine off
+    #AddType text/html .html
+    #php_admin_flag display_errors On
+    #php_flag short_open_tag On
+    #php_flag register_globals On
+    #php_admin_value memory_limit 256M
+    #php_admin_value max_execution_time 60
+    #php_admin_value upload_max_filesize 8M
+    #php_admin_flag allow_url_fopen Off
+    #php_value default_charset ISO-8859-15
+    php_admin_value sendmail_path "/usr/sbin/sendmail -t -i -f {{ nextcloud_instance_name }}"
+    php_admin_value open_basedir "/usr/share/php:/home/{{ nextcloud_instance_name }}:/tmp"
+    
+</VirtualHost>
