@@ -17,6 +17,30 @@
     notify: reload apache
     tags:
       - nextcloud
+  
+  - name: Enable apache2 php configuration
+    copy:
+      src: "zzz-apache2-evolinux-custom.ini"
+      dest: "/etc/php/7.4/apache2/conf.d/zzz-evolinux-custom.ini"
+      mode: "0644"
+      owner: root
+      group: root
+      force: yes
+    notify: reload apache
+    tags:
+      - nextcloud
+  
+  - name: Enable cli php configuration
+    copy:
+      src: "zzz-cli-evolinux-custom.ini"
+      dest: "/etc/php/7.4/cli/conf.d/zzz-evolinux-custom.ini"
+      mode: "0644"
+      owner: root
+      group: root
+      force: yes
+    notify: reload apache
+    tags:
+      - nextcloud
 
   # - name: Generate ssl config
   #   shell:
