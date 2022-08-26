@@ -15,6 +15,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux_users: create only users who have a certain value for the `create` key (default: `always`).
 * php: install php-xml with recent PHP versions
 * vrrp: add an `ip.yml` task file to help create VRRP addresses
+* webapps/nextcloud: Add compatibility with apache2, and apache2 mod_php.
 
 ### Changed
 
