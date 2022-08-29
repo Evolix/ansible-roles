@@ -20,6 +20,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Changed
 
 * evocheck: upstream release 22.08.1
+* generate-ldif: Support any MariaDB version
 * openvpn: automate the initialization of the CA and the creation of the server certificate ; use openssl_dhparam module instead of a command
 
 ### Fixed
