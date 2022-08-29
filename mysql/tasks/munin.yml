@@ -66,13 +66,42 @@
       - replication
     notify: restart munin-node
 
-  - name: verify Munin configuration for mysql
+  - name: verify Munin configuration for mysql < Debian 11
     replace:
       dest: /etc/munin/plugin-conf.d/munin-node
       after: '\[mysql\*\]'
       regexp: '^env.mysqluser (.+)$'
       replace: 'env.mysqluser debian-sys-maint'
     notify: restart munin-node
+    when: ansible_distribution_major_version is version_compare('11', '<')
+
+  - name: set Munin env.mysqluser option for mysql >= Debian 11
+    replace:
+      dest: /etc/munin/plugin-conf.d/munin-node
+      after: '\[mysql\*\]'
+      regexp: '^env.mysqluser (.+)$'
+      replace: 'env.mysqluser root'
+    notify: restart munin-node
+    when: ansible_distribution_major_version is version_compare('11', '>=')
+
+  - name: set Munin env.mysqlopts option for mysql >= Debian 11
+    replace:
+      dest: /etc/munin/plugin-conf.d/munin-node
+      after: '\[mysql\*\]'
+      regexp: '^env.mysqlopts (.+)$'
+      replace: 'env.mysqlopts --defaults-file=/root/.my.cnf'
+    notify: restart munin-node
+    when: ansible_distribution_major_version is version_compare('11', '>=')
+
+  - name: set Munin env.mysqlconnection option for mysql >= Debian 11
+    replace:
+      dest: /etc/munin/plugin-conf.d/munin-node
+      after: '\[mysql\*\]'
+      regexp: '^env.mysqlconnection (.+)$'
+      replace: 'env.mysqlconnection DBI:mysql:mysql;mysql_read_default_file=/root/.my.cnf'
+    notify: restart munin-node
+    when: ansible_distribution_major_version is version_compare('11', '>=')
+
 
   when: munin_node_plugins_config.stat.exists
   tags:
