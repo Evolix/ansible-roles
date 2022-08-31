@@ -2,7 +2,7 @@
     LoadModule mod_tls.c
 </IfModule>
 
-<VirtualHost 0.0.0.0>
+<VirtualHost {{ proftpd_default_address | join(' ') }}>
     TLSEngine                               on
     TLSLog                                  /var/log/proftpd/ftps.log
     TLSProtocol                             TLSv1

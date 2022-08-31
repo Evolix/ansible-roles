@@ -6,7 +6,7 @@
     LoadModule mod_sftp.c
 </IfModule>
 
-<VirtualHost 0.0.0.0>
+<VirtualHost {{ proftpd_default_address | join(' ') }}>
     SFTPEngine   on
     Port         {{ proftpd_sftp_port }}
     DefaultRoot  ~
