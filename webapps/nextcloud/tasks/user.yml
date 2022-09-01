@@ -1,12 +1,12 @@
 ---
-- name: Create Nextcloud group
+- name: Create {{ nextcloud_user }} unix group
   group:
     name: "{{ nextcloud_user | mandatory }}"
     state: present
   tags:
     - nextcloud
 
-- name: Create Nextcloud user
+- name: Create {{ nextcloud_user | mandatory }} unix user
   user:
     name: "{{ nextcloud_user | mandatory }}"
     group: "{{ nextcloud_user | mandatory }}"
@@ -28,7 +28,7 @@
   file:
     dest: "{{ item }}"
     state: directory
-    mode: "0770"
+    mode: "0700"
     owner: "{{ nextcloud_user }}"
     group: "{{ nextcloud_user }}"
   loop:
