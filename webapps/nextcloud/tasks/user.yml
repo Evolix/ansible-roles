@@ -1,7 +1,7 @@
 ---
 - name: Create Nextcloud group
   group:
-    name: "{{ nextcloud_instance_name | mandatory }}"
+    name: "{{ nextcloud_user | mandatory }}"
     state: present
   tags:
     - nextcloud
@@ -9,7 +9,7 @@
 - name: Create Nextcloud user
   user:
     name: "{{ nextcloud_user | mandatory }}"
-    group: "{{ nextcloud_user }}"
+    group: "{{ nextcloud_user | mandatory }}"
     home: "{{ nextcloud_home | mandatory }}"
     shell: '/bin/bash'
     create_home: True
