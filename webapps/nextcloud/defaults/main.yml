@@ -1,5 +1,4 @@
 ---
-nextcloud_webserver: 'nginx'
 nextcloud_version: "21.0.0"
 nextcloud_archive_name: "nextcloud-{{ nextcloud_version }}.tar.bz2"
 nextcloud_releases_baseurl: "https://download.nextcloud.com/server/releases/"

@@ -47,14 +47,7 @@
 
 - include: archive.yml
 
-- name: Check if Apache or Nginx
-  service_facts:
-
-- include: vhost-nginx.yml
-  when: "'nginx.service' in services"
-
 - include: vhost-apache.yml
-  when: "'apache2.service' in services"
 
 - include: mysql.yml
 

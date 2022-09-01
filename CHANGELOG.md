@@ -35,6 +35,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Removed
 
 * evocheck: remove failure if deprecated variable is used
+* webapps/nextcloud: Drop support for Nginx
 
 ### Security
 
