@@ -28,6 +28,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * haproxy: make it so that munin doesn't break if there is a non default `haproxy_stats_path`
 * varnish: make `-j <jail_config>` the first argument on jessie/stretch as it has to be the first argument there.
 * redis: config directory must be owned by the user that runs the service (to be able to write tmp config files in it)
+* webapps/nextcloud: Add missing dependencies for imagick
 
 ### Removed
 

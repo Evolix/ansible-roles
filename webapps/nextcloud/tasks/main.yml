@@ -16,6 +16,8 @@
     - php-apcu
     - php-redis
     - php-bcmath
+    - php-imagick
+    - libmagickcore-6.q16-6-extra
   tags:
     - nextcloud
 
