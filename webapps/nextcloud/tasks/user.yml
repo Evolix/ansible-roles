@@ -18,12 +18,6 @@
   tags:
   - nextcloud
 
-- name: Add the user 'www-data' to Nextcloud group
-  user:
-    name: www-data
-    groups: "{{ nextcloud_user | mandatory }}"
-    append: yes
-
 - name: Create top-level directories
   file:
     dest: "{{ item }}"
