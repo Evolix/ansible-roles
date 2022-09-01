@@ -1,5 +1,9 @@
 <VirtualHost *:80>
-  ServerName {{ nextcloud_domains | join(' ') }}
+  ServerName {{ nextcloud_domains[0] }}
+  
+  {% for domain_alias in nextcloud_domains[1:] %}
+  ServerAlias {{  domain_alias }}
+  {% endfor %}
 
   DocumentRoot {{ nextcloud_webroot }}/
 
@@ -13,22 +17,16 @@
     </IfModule>
   </Directory>
 
-    # user - group (thanks to sesse@debian.org)
-    AssignUserID {{ nextcloud_instance_name }} {{ nextcloud_instance_name }}
+  # user - group (thanks to sesse@debian.org)
+  AssignUserID {{ nextcloud_user }} {{ nextcloud_user }}
 
-    # LOG
-    CustomLog /var/log/apache2/access.log vhost_combined
-    CustomLog /home/{{ nextcloud_instance_name }}/log/access.log combined
-    ErrorLog  /home/{{ nextcloud_instance_name }}/log/error.log
+  # LOG
+  CustomLog /var/log/apache2/access.log vhost_combined
+  CustomLog /home/{{ nextcloud_instance_name }}/log/access.log combined
+  ErrorLog  /home/{{ nextcloud_instance_name }}/log/error.log
 
-    # REWRITE
-    UseCanonicalName On
-    RewriteEngine On
-    RewriteCond %{HTTP_HOST} !^{{ nextcloud_domains | join(' ') }}$
-    RewriteRule ^/(.*) http://%{SERVER_NAME}/$1 [L,R]
-
-    # PHP
-    php_admin_value sendmail_path "/usr/sbin/sendmail -t -i -f {{ nextcloud_instance_name }}"
-    php_admin_value open_basedir "/usr/share/php:/home/{{ nextcloud_instance_name }}:/tmp"
+  # PHP
+  php_admin_value sendmail_path "/usr/sbin/sendmail -t -i -f {{ nextcloud_user }}"
+  php_admin_value open_basedir "/usr/share/php:{{ nextcloud_home }}:/tmp"
     
 </VirtualHost>
