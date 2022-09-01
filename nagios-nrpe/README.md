@@ -12,3 +12,9 @@ Everything is in the `tasks/main.yml` file.
 * `nagios_nrpe_force_update_allowed_hosts` : force update list of allowed hosts (default: `False`)
 
 The full list of variables (with default values) can be found in `defaults/main.yml`.
+
+## Available tags
+
+* `nagios-nrpe` : install Nagios and plugins (idempotent)
+* `nagios-plugins` : install only plugins (idempotent)
+
