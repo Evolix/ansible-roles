@@ -1,6 +1,4 @@
 ---
-- include_role:
-    name: evolix/remount-usr
 
 - name: Is nrpe present ?
   stat:
@@ -10,7 +8,12 @@
 - block:
   - name: Install dependencies
     apt:
-      name: libcache-memcached-perl
+      name: 
+      - libcache-memcached-perl
+      - libmemcached11
+
+  - include_role:
+      name: evolix/remount-usr
 
   - name: Copy Nagios check for memcached
     copy:
@@ -18,13 +21,29 @@
       dest: /usr/local/lib/nagios/plugins/
       mode: "0755"
 
-  # TODO: install a "multi-instances" check if the memcached_instance_name variable is not null
+  - name: install check_memcached_instances
+    copy:
+      src: check_memcached_instances.sh
+      dest: /usr/local/lib/nagios/plugins/check_memcached_instances
+      force: yes
+      mode: "0755"
+      owner: root
+      group: root
 
-  - name: Add NRPE check
+  - name: Add NRPE check (single instance)
     lineinfile:
       name: /etc/nagios/nrpe.d/evolix.cfg
       regexp: '^command\[check_memcached\]='
       line: 'command[check_memcached]=/usr/local/lib/nagios/plugins/check_memcached.pl -H 127.0.0.1 -p {{ memcached_port }}'
     notify: restart nagios-nrpe-server
+    when: memcached_instance_name is undefined
+
+  - name: Add NRPE check (multi instance)
+    lineinfile:
+      name: /etc/nagios/nrpe.d/evolix.cfg
+      regexp: '^command\[check_memcached\]='
+      line: 'command[check_memcached]=/usr/local/lib/nagios/plugins/check_memcached_instances'
+    notify: restart nagios-nrpe-server
+    when: memcached_instance_name is defined
 
   when: nrpe_evolix_config.stat.exists

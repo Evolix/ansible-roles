@@ -1,73 +1,15 @@
-- name: ensure packages are installed
+- name: Ensure memcached is installed
   apt:
     name: memcached
     state: present
   tags:
     - memcached
 
-- name: Memcached is configured.
-  template:
-    src: memcached.conf.j2
-    dest: /etc/memcached.conf
-    mode: "0644"
-  notify: restart memcached
-  tags:
-    - memcached
-  when: memcached_instance_name | length == 0
+- include: instance-default.yml
+  when: memcached_instance_name is undefined
 
-- name: Memcached is running and enabled on boot.
-  service:
-    name: memcached
-    enabled: yes
-    state: started
-  tags:
-    - memcached
-  when: memcached_instance_name | length == 0
-
-- name: Add systemd template
-  copy:
-    src: memcached@.service
-    dest: /etc/systemd/system/memcached@.service
-  tags:
-    - memcached
-  when: memcached_instance_name | length > 0
-
-- name: Delete default memcached systemd configuration file
-  systemd:
-    name: memcached
-    enabled: false
-    state: stopped
-  tags:
-    - memcached
-  when: memcached_instance_name | length > 0
-
-- name: Make sure memcached.conf is absent
-  file:
-    path: /etc/memcached.conf
-    state: absent
-  tags:
-    - memcached
-  when: memcached_instance_name | length > 0
-
-- name: Create a configuration file
-  template:
-    src: memcached.conf.j2
-    dest: /etc/memcached_{{ memcached_instance_name }}.conf
-    mode: "0644"
-  tags:
-    - memcached
-  when: memcached_instance_name | length > 0
-
-- name: Enable and start the memcached instance
-  systemd:
-    name: memcached@{{ memcached_instance_name }}
-    enabled: yes
-    state: started
-    daemon_reload: yes
-    masked: no
-  tags:
-    - memcached
-  when: memcached_instance_name | length > 0
+- include: instance-multi.yml
+  when: memcached_instance_name is defined
 
 - include: munin.yml
 

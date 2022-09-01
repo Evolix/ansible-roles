@@ -17,6 +17,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * vrrp: add an `ip.yml` task file to help create VRRP addresses
 * webapps/nextcloud: Add compatibility with apache2, and apache2 mod_php.
 * inspect-domains: Add role
+* memcached: NRPE check for multi-instance setup
 
 ### Changed
 
