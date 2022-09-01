@@ -220,14 +220,14 @@ def main(argv):
         print('Domains not specified, looking for all domains (default).')
         args.all_domains = True
 
-    doms = []
+    doms = {}
    
     if args.all_domains:
-        doms.extend(list_apache_domains())
+        doms.update(list_apache_domains())
     
     else:
         if args.apache_domains:
-            doms.extend(list_apache_domains())
+            doms.update(list_apache_domains())
         if args.nginx_domains:
             print("Option --nginx-domains not supported yet.")
         if args.haproxy_domains:
@@ -243,7 +243,7 @@ def main(argv):
     
     timeout_domains, none_domains, outside_ips, ok_domains = run_check_domains(doms.keys())
     
-    if args.check:
+    if args.output_style == 'nrpe':
         output_check_mode(timeout_domains, none_domains, outside_ips, ok_domains)
     
     else:
