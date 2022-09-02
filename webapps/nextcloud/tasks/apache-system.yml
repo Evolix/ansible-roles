@@ -1,30 +1,33 @@
 ---
 
-- name: Enable apache2 php configuration
-  copy:
-    src: "zzz-apache2-evolinux-custom.ini"
-    dest: "/etc/php/7.4/apache2/conf.d/zzz-evolinux-custom.ini"
-    mode: "0644"
-    owner: root
-    group: root
-    force: yes
-  notify: reload apache
-  tags:
-    - nextcloud
+- name: "Get PHP Version"
+  shell: 'php -v | grep "PHP [0-9]." | sed -E "s/PHP ([0-9]\.[0-9]).*/\1/g;"'
+  register: shell_php
+  check_mode: no
 
-- name: Enable cli php configuration
-  copy:
-    src: "zzz-cli-evolinux-custom.ini"
-    dest: "/etc/php/7.4/cli/conf.d/zzz-evolinux-custom.ini"
-    mode: "0644"
-    owner: root
-    group: root
-    force: yes
-  notify: reload apache
-  tags:
-    - nextcloud
+- name: "Set variables"
+  set_fact:
+    php_version: "{{ shell_php.stdout }}"
 
-# - name: Generate ssl config
-#   shell:
-#     cmd: "/usr/local/sbin/vhost-domains {{ nextcloud_instance_name }} | /usr/local/sbin/make-csr {{ nextcloud_instance_name }}"
-#     creates: "/etc/nginx/ssl/{{ nextcloud_instance_name }}.conf"
+- name: Apply specific PHP settings (apache)
+  ini_file:
+    path: "/etc/php/{{ php_version }}/apache2/conf.d/zzz-evolinux-custom.ini"
+    section: ''
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  notify: reload apache
+  with_items:
+  - {option: 'allow_url_fopen',   value: 'On'}
+  - {option: 'disable_functions', value: ''}
+  - {option: 'max_execution_time', value: '300'}
+  - {option: 'memory_limit', value: '512M'}
+
+- name: Apply specific PHP settings (cli)
+  ini_file:
+    path: "/etc/php/{{ php_version }}/cli/conf.d/zzz-evolinux-custom.ini"
+    section: ''
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+  - {option: 'allow_url_fopen',   value: 'On'}
+  - {option: 'apc.enable_cli', value: 'On'}
