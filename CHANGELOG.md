@@ -25,6 +25,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * generate-ldif: Support any MariaDB version
 * openvpn: automate the initialization of the CA and the creation of the server certificate ; use openssl_dhparam module instead of a command
 * nagios-nrpe: Add check_domains
+* generate-ldif: support any version of MariaDB (instead of only 10.0, 10.1 and 10.3) 
 
 ### Fixed
 
@@ -32,6 +33,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * varnish: make `-j <jail_config>` the first argument on jessie/stretch as it has to be the first argument there.
 * redis: config directory must be owned by the user that runs the service (to be able to write tmp config files in it)
 * webapps/nextcloud: Add missing dependencies for imagick
+* mysql: Add missing Munin conf for Debian 11
 
 ### Removed
 
