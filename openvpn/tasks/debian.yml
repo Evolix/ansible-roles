@@ -12,6 +12,14 @@
     - client
     - server
 
+- name: Create the _openvpn user
+  user:
+    name: _openvpn
+    system: yes
+    create_home: no
+    home: "/nonexistent"
+    shell: "/usr/sbin/nologin"
+
 - name: Create the shellpki user
   user:
     name: shellpki
