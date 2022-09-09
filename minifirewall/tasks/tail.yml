@@ -1,4 +1,22 @@
 ---
+
+- name: Stat minifirewall config file (before)
+  stat:
+    path: "/etc/default/minifirewall"
+  register: minifirewall_before
+
+- name: Check if minifirewall is running
+  shell:
+    cmd: /sbin/iptables -L -n | grep -E "^(DROP\s+udp|ACCEPT\s+icmp)\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: minifirewall_is_running
+
+- debug:
+    var: minifirewall_is_running
+    verbosity: 1
+
 - name: Add some rules at the end of minifirewall file
   template:
     src: "{{ item }}"
@@ -18,20 +36,14 @@
     var: minifirewall_tail_template
     verbosity: 1
 
-- name: restart minifirewall
-  command: /etc/init.d/minifirewall restart
-  register: minifirewall_init_restart
-  failed_when: "'minifirewall failed' in minifirewall_init_restart.stdout"
+- name: Schedule minifirewall restart (modern)
+  command: /bin/true
+  notify: "restart minifirewall (modern)"
   when:
-    - minifirewall_tail_template is changed
+    - minifirewall_install_mode != 'legacy'
     - minifirewall_restart_if_needed | bool
-
-- name: restart minifirewall (noop)
-  meta: noop
-  register: minifirewall_init_restart
-  failed_when: False
-  changed_when: False
-  when: not (minifirewall_restart_if_needed | bool)
+    - minifirewall_is_running.rc == 0
+    - minifirewall_tail_template is changed
 
 - debug:
     var: minifirewall_init_restart

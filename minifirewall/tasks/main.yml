@@ -1,9 +1,5 @@
 ---
 
-- name: Compose minifirewall_restart_handler_name variable
-  set_fact:
-    minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | bool | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
-
 # Legacy or modern mode? ##############################################
 
 - name: Check minifirewall
@@ -38,6 +34,25 @@
   debug:
     var: minifirewall_install_mode
     verbosity: 1
+
+- name: 'Set minifirewall_restart_handler_name to "noop"'
+  set_fact:
+    minifirewall_restart_handler_name: "restart minifirewall (noop)"
+  when: not (minifirewall_restart_if_needed | bool)
+
+- name: 'Set minifirewall_restart_handler_name to "legacy"'
+  set_fact:
+    minifirewall_restart_handler_name: "restart minifirewall (legacy)"
+  when:
+    - minifirewall_restart_if_needed | bool
+    - minifirewall_install_mode == 'legacy'
+
+- name: 'Set minifirewall_restart_handler_name to "modern"'
+  set_fact:
+    minifirewall_restart_handler_name: "restart minifirewall (modern)"
+  when:
+    - minifirewall_restart_if_needed | bool
+    - minifirewall_install_mode != 'legacy'
 
 #######################################################################
 
@@ -106,18 +121,16 @@
     var: minifirewall_restart_force | bool
     verbosity: 1
 
-- name: Force restart minifirewall (modern mode)
-  command: /etc/init.d/minifirewall restart
-  register: minifirewall_init_restart
-  failed_when: "'minifirewall failed' in minifirewall_init_restart.stdout"
-  when:
-    - minifirewall_install_mode != 'legacy'
-    - minifirewall_restart_force | bool
-
-- name: Force restart minifirewall (legacy mode)
-  command: /etc/init.d/minifirewall restart
-  register: minifirewall_init_restart
-  failed_when: "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
+- name: Force restart minifirewall (legacy)
+  command: /bin/true
+  notify: "restart minifirewall (legacy)"
   when:
     - minifirewall_install_mode == 'legacy'
+    - minifirewall_restart_force | bool
+
+- name: Force restart minifirewall (modern)
+  command: /bin/true
+  notify: "restart minifirewall (modern)"
+  when:
+    - minifirewall_install_mode != 'legacy'
     - minifirewall_restart_force | bool
