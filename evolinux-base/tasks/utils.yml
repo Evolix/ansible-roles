@@ -17,7 +17,7 @@
 
 - name: update-evobackup-canary script is present
   copy:
-    src: "update-evobackup-canary.sh"
+    src: update-evobackup-canary
     dest: /usr/local/bin/update-evobackup-canary
     force: True
     owner: root
@@ -30,11 +30,11 @@
     path: /usr/local/sbin/update-evobackup-canary
     state: absent
 
-- name: dir-check script is present
-  copy:
-    src: "dir-check.sh"
-    dest: /usr/local/bin/dir-check
-    force: True
-    owner: root
-    group: root
-    mode: "0755"
+# - name: dir-check script is present
+#   copy:
+#     src: "dir-check.sh"
+#     dest: /usr/local/bin/dir-check
+#     force: True
+#     owner: root
+#     group: root
+#     mode: "0755"
