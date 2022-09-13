@@ -18,6 +18,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: Add compatibility with apache2, and apache2 mod_php.
 * inspect-domains: Add role
 * memcached: NRPE check for multi-instance setup
+* proftpd: Add options to override configs
 
 ### Changed
 

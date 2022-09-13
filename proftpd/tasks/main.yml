@@ -20,7 +20,7 @@
     src: evolinux.conf.j2
     dest: /etc/proftpd/conf.d/z-evolinux.conf
     mode: "0644"
-    force: no
+    force: "{{ proftpd_ftp_override }}"
   notify: restart proftpd
   when: proftpd_ftp_enable | bool
   tags:
@@ -31,7 +31,7 @@
     src: ftps.conf.j2
     dest: /etc/proftpd/conf.d/ftps.conf
     mode: "0644"
-    force: no
+    force: "{{ proftpd_ftps_override }}"
   notify: restart proftpd
   when: proftpd_ftps_enable | bool
   tags:
@@ -42,7 +42,7 @@
     src: sftp.conf.j2
     dest: /etc/proftpd/conf.d/sftp.conf
     mode: "0644"
-    force: no
+    force: "{{ proftpd_sftp_override }}"
   notify: restart proftpd
   when: proftpd_sftp_enable | bool
   tags:
