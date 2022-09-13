@@ -12,6 +12,7 @@ proftpd_ftps_cert: "/etc/ssl/certs/ssl-cert-snakeoil.pem"
 proftpd_ftps_key: "/etc/ssl/private/ssl-cert-snakeoil.key"
 proftpd_sftp_enable: False
 proftpd_sftp_override: False
+proftpd_sftp_use_publickeys: False
 proftpd_sftp_port: 22222
 proftpd_accounts: []
 proftpd_accounts_final: []

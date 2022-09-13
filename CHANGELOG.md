@@ -19,6 +19,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * inspect-domains: Add role
 * memcached: NRPE check for multi-instance setup
 * proftpd: Add options to override configs
+* proftpd: Allow user auth with ssh keys
 
 ### Changed
 

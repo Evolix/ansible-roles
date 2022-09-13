@@ -13,8 +13,14 @@
     
     SFTPLog      /var/log/proftpd/sftp.log
     TransferLog  /var/log/proftpd/xferlog
-    
+
+{% if proftpd_sftp_use_publickeys %}
+    SFTPAuthMethods publickey password
+    SFTPAuthorizedUserKeys file:/etc/proftpd/sftp.authorized_keys/%u
+{% else %}
     SFTPAuthMethods password
+{% endif %}
+
     SFTPHostKey /etc/ssh/ssh_host_ecdsa_key
     SFTPHostKey /etc/ssh/ssh_host_rsa_key
     

@@ -48,6 +48,20 @@
   tags:
     - proftpd
 
+- name: SFTP key folder exists if needed
+  file:
+    path: /etc/proftpd/sftp.authorized_keys/
+    state: directory
+    mode: "0700"
+    owner: root
+    group: root
+  notify: restart proftpd
+  when: 
+    - proftpd_sftp_enable | bool
+    - proftpd_sftp_use_publickeys | bool
+  tags:
+    - proftpd
+
 - name: mod_tls_memcache is disabled
   replace:
     dest: /etc/proftpd/modules.conf

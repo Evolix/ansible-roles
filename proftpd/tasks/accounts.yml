@@ -60,3 +60,18 @@
   when: proftpd_sftp_enable | bool
   tags:
     - proftpd
+
+- name: Allow keys for SFTP account
+  blockinfile:
+    dest: "/etc/proftpd/sftp.authorized_keys/{{ item.name }}"
+    state: present
+    block: "{{ item.sshkeys }}"
+    create: yes
+    mode: 0600
+  loop: "{{ proftpd_accounts_final }}"
+  notify: restart proftpd
+  when: 
+    - proftpd_sftp_enable | bool
+    - proftpd_sftp_use_publickeys | bool
+  tags:
+    - proftpd
