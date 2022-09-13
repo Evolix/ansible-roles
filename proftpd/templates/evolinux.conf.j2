@@ -1,5 +1,9 @@
 # Evolix's specific configuration
 
+{% if proftpd_ftp_override %}
+# WARNING : **Probably** ansible managed
+{% endif %}
+
 <IfModule !mod_ident.c>
     LoadModule  mod_ident.c
 </IfModule>

@@ -1,3 +1,7 @@
+{% if proftpd_ftps_override %}
+# WARNING : **Probably** ansible managed
+{% endif %}
+
 <IfModule !mod_tls.c>
     LoadModule mod_tls.c
 </IfModule>
