@@ -236,7 +236,7 @@ def output_check_mode(timeout_domains, none_domains, outside_ips, ok_domains):
     sys.exit(1) if n_warnings else sys.exit(0)
 
 
-def output_friendly_mode(doms, timeout_domains, none_domains, outside_ips):
+def output_human_mode(doms, timeout_domains, none_domains, outside_ips):
     if timeout_domains or none_domains or outside_ips:
         if timeout_domains: print('\nTimeouts:')
         for d in timeout_domains:
@@ -256,23 +256,23 @@ def output_friendly_mode(doms, timeout_domains, none_domains, outside_ips):
 def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('action', metavar='ACTION', help='Values: check-dns, list')
-    parser.add_argument('-o', '--output-style', help='Values: stdout (default), nrpe')
+    parser.add_argument('-o', '--output-style', help='Values: json (default for action list), human (default for action check-dns), nrpe')
     parser.add_argument('-a', '--all-domains', action='store_true', help='Include all domains (default).')
     parser.add_argument('-ap', '--apache-domains', action='store_true', help='Include Apache domains.')
     parser.add_argument('-ng', '--nginx-domains', action='store_true', help='Include Nginx domains.')
-    parser.add_argument('-ha', '--haproxy-domains', action='store_true', help='Include HaProxy domains.')
+    parser.add_argument('-ha', '--haproxy-domains', action='store_true', help='Include HaProxy domains (not supported yet).')
     args = parser.parse_args()
     
     if args.action not in ['check-dns', 'list']:
         if args.output_style == 'nrpe':
-            print('UNKNOWN - unkown {} action, use -h option for help.'.format(args.action))
+            print('UNKNOWN - unknown {} action, use -h option for help.'.format(args.action))
             sys.exit(3)
         else:
-            print('Unkown {} action, use -h option for help.'.format(args.action))
+            print('Unknown {} action, use -h option for help.'.format(args.action))
             sys.exit(1)
    
     if not (args.all_domains or args.apache_domains or args.nginx_domains or args.haproxy_domains):
-        print('Domains scope not specified, looking for all domains (default).')
+        print('Domains scope not specified, looking for all domains.')
         args.all_domains = True
 
     doms = {}
@@ -292,7 +292,7 @@ def main(argv):
         if args.output_style == 'nrpe':
             print('UNKNOWN - No domain found on this server.')
             sys.exit(3)
-        else:
+        else: # == 'json' or 'human'
             print('No domain found on this server.')
             sys.exit(1)
     
@@ -302,11 +302,23 @@ def main(argv):
         if args.output_style == 'nrpe':
             output_check_mode(timeout_domains, none_domains, outside_ips, ok_domains)
     
-        else:
-            output_friendly_mode(doms, timeout_domains, none_domains, outside_ips)
+        elif args.output_style == 'json':
+            print('Option --output-style json not implemented yet for action check-dns.')
+
+        else:  # args.output_style == 'human'
+            output_human_mode(doms, timeout_domains, none_domains, outside_ips)
 
     elif args.action == 'list':
-        print(json.dumps(doms, sort_keys=True, indent=4))
+
+        if args.output_style == 'nrpe':
+            print('Action list is not for --output-style nrpe.')
+
+        elif args.output_style == 'json':
+            print(json.dumps(doms, sort_keys=True, indent=4))
+
+        else:
+            print('Option --output-style human not implemented yet for action list, fallback to --output-style json.')
+            print(json.dumps(doms, sort_keys=True, indent=4))
         
 
 if __name__ == '__main__':
