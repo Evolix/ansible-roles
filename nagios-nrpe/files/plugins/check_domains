@@ -1,14 +1,14 @@
 #!/bin/bash
 #
-# Check domains using script inspect-domains.
+# Check domains using script domains.
 #
 # Written by Will
 #
 
-if ! command -v inspect-domains >/dev/null; then
-    echo 'UNKNOWN - Missing dependency inspect-domains.'
+if ! command -v domains >/dev/null; then
+    echo 'UNKNOWN - Missing dependency domains.'
     exit 3
 fi
 
-inspect-domains -o nrpe -a check-dns
+domains -o nrpe -a check-dns
 

@@ -1,6 +1,6 @@
 - name: Install check_domains dependency
   include_role:
-    name: inspect-domains
+    name: domains
 
 - name: Configure check_domains in /etc/nagios/nrpe.d/evolix.cfg
   ansible.builtin.lineinfile:
