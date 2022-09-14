@@ -23,7 +23,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
-* evocheck: upstream release 22.08.1
+* evocheck: upstream release 22.09
 * evolinux-base: update-evobackup-canary upstream release 22.06
 * generate-ldif: Support any MariaDB version
 * minifirewall: use handlers to restart minifirewall

@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian) server
 # powered by Evolix
 
-VERSION="22.08.1"
+VERSION="22.09"
 readonly VERSION
 
 # base functions
@@ -1526,6 +1526,8 @@ main() {
 
     main_output_file=$(mktemp --tmpdir="${TMPDIR:-/tmp}" "evocheck.main.XXXXX")
     files_to_cleanup="${files_to_cleanup} ${main_output_file}"
+
+    MINIFW_FILE=$(minifirewall_file)
 
     test "${IS_TMP_1777:=1}" = 1 && check_tmp_1777
     test "${IS_ROOT_0700:=1}" = 1 && check_root_0700
