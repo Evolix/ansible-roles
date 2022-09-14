@@ -31,6 +31,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios-nrpe: Add check_domains
 * generate-ldif: support any version of MariaDB (instead of only 10.0, 10.1 and 10.3) 
 * openvpn: Run OpenVPN with the \_openvpn user and group instead of nobody which is originally for NFS
+* nagios-nrpe: Upgrade check_mongo
 
 ### Fixed
 
