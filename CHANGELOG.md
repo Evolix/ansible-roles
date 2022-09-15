@@ -17,8 +17,10 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * vrrp: add an `ip.yml` task file to help create VRRP addresses
 * webapps/nextcloud: Add compatibility with apache2, and apache2 mod_php.
 * memcached: NRPE check for multi-instance setup
+* munin: Add ipmi_ plugins on dedicated hardware
 * proftpd: Add options to override configs (and add a warning if file was overriden)
 * proftpd: Allow user auth with ssh keys
+
 
 ### Changed
 
