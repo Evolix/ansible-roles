@@ -16,7 +16,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * php: install php-xml with recent PHP versions
 * vrrp: add an `ip.yml` task file to help create VRRP addresses
 * webapps/nextcloud: Add compatibility with apache2, and apache2 mod_php.
-* inspect-domains: Add role
 * memcached: NRPE check for multi-instance setup
 * proftpd: Add options to override configs (and add a warning if file was overriden)
 * proftpd: Allow user auth with ssh keys
@@ -28,7 +27,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * generate-ldif: Support any MariaDB version
 * minifirewall: use handlers to restart minifirewall
 * openvpn: automate the initialization of the CA and the creation of the server certificate ; use openssl_dhparam module instead of a command
-* nagios-nrpe: Add check_domains
 * generate-ldif: support any version of MariaDB (instead of only 10.0, 10.1 and 10.3) 
 * openvpn: Run OpenVPN with the \_openvpn user and group instead of nobody which is originally for NFS
 * nagios-nrpe: Upgrade check_mongo
