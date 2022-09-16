@@ -11,9 +11,9 @@
 # Developped by Will & Brice
 # 
 
-list_domains_path = '/usr/local/sbin/list_domains.py'
 excludes_path = '/etc/evolinux/evodomains_exclude.list'
 includes_path = '/etc/evolinux/evodomains_include.list'
+allowed_ips_path = '/etc/evolinux/evodomains_allowed_ips.list'
 
 import os
 import sys
@@ -23,9 +23,6 @@ import threading
 import time
 import argparse
 import json
-
-#import importlib.machinery
-#list_domains = importlib.machinery.SourceFileLoader('list_domains.py', list_domains_path).load_module()
 
 
 def execute(cmd):
@@ -41,12 +38,20 @@ def execute(cmd):
     return stdout_lines, stderr_lines
 
 
-def get_my_ips():
-    """Return localhost IPs."""
+def get_allowed_ips():
+    """Return allowed IPs."""
+    
     stdout, stderr = execute('hostname -I')
     if not stdout:
         return []
-    return stdout[0].strip(' \t').split()
+    ips = stdout[0].strip(' \t\n').split()
+
+    # Other allowed IPs
+    with open(allowed_ips_path, encoding='utf-8') as f:
+        for line in f:
+            ip = strip_comments(line).strip(' \t;')
+            ips.append(ip)
+    return ips
 
 
 def dig(domain):
@@ -144,7 +149,7 @@ def list_nginx_domains():
     return domains
 
 
-class ResolutionThread(threading.Thread):
+class DNSResolutionThread(threading.Thread):
     
     def __init__(self, domain):
         threading.Thread.__init__(self, daemon=True)
@@ -177,24 +182,31 @@ def run_check_domains(domains):
     excludes = ['_']
     timeout = 5
 
-    my_ips = get_my_ips()
+    allowed_ips = get_allowed_ips()
 
-    domains_noexcludes = [dom for dom in domains if dom not in excludes]
-
-    jobs = []
-    for dom in domains_noexcludes:
-        #print(d)
-        t = ResolutionThread(dom)
-        t.start()
-        jobs.append(t)
+    with open(excludes_path, encoding='utf-8') as f:
+        for line in f:
+            domain = strip_comments(line).strip(' \t\n')
+            if not domain: continue
+            excludes.append(domain)
     
-    # Let <timeout> secs to DNS servers to answer in jobs threads
-    time.sleep(timeout)
-
+    jobs = []
     timeout_domains = []
     none_domains = []
     outside_ips = {}
     ok_domains = []
+
+    for d in domains:
+        if d in excludes:
+            ok_domains.append(d)
+            continue
+
+        t = DNSResolutionThread(d)
+        t.start()
+        jobs.append(t)
+    
+    # Let <timeout> secs to DNS servers to reply to jobs threads queries
+    time.sleep(timeout)
 
     for j in jobs:
         if j.is_alive():
@@ -207,7 +219,7 @@ def run_check_domains(domains):
         
         is_outside = False
         for ip in j.ips:
-            if ip not in my_ips:
+            if ip not in allowed_ips:
                 is_outside = True
                 break
         if is_outside:
@@ -218,7 +230,7 @@ def run_check_domains(domains):
     return timeout_domains, none_domains, outside_ips, ok_domains
    
 
-def output_check_mode(timeout_domains, none_domains, outside_ips, ok_domains):
+def output_nrpe_mode(timeout_domains, none_domains, outside_ips, ok_domains):
     """Output result for check mode.
     For now, consider everyting as warnings to avoid too much alerts.
     """
@@ -302,10 +314,22 @@ def main(argv):
             sys.exit(1)
     
     if args.action == 'check-dns':
+
+        # Add included domains to domains dict
+        with open(includes_path, encoding='utf-8') as f:
+            line_number = 0
+            for line in f:
+                line_number += 1
+                domain = strip_comments(line).strip(' \t\n') 
+                if not domain: continue
+                if domain not in doms:
+                    doms[domain] = []
+                doms[domain].append('evodomains:{}:{}'.format(includes_path, line_number))
+
         timeout_domains, none_domains, outside_ips, ok_domains = run_check_domains(doms.keys())
         
         if args.output_style == 'nrpe':
-            output_check_mode(timeout_domains, none_domains, outside_ips, ok_domains)
+            output_nrpe_mode(timeout_domains, none_domains, outside_ips, ok_domains)
     
         elif args.output_style == 'json':
             print('Option --output-style json not implemented yet for action check-dns.')
@@ -314,6 +338,7 @@ def main(argv):
             output_human_mode(doms, timeout_domains, none_domains, outside_ips)
 
     elif args.action == 'list':
+        # Note: do not use evodomains include and exclude lists for listing.
 
         if args.output_style == 'nrpe':
             print('Action list is not for --output-style nrpe.')
@@ -324,7 +349,14 @@ def main(argv):
         else:
             print('Option --output-style human not implemented yet for action list, fallback to --output-style json.')
             print(json.dumps(doms, sort_keys=True, indent=4))
-        
+    
+    #elif args.action == 'brice_action':
+    #    #doms est un dict avec le nom de domaine comme clé, pour voir la structure de données :
+    #    # evodomains --output-style json list
+    #    
+    #    print(doms)
+    #    brice_function(doms)
+    #
 
 if __name__ == '__main__':
     main(sys.argv[1:])
