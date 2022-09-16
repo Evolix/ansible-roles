@@ -1,8 +1,0 @@
-- name: Copy inspect-domains script to local sbin
-  ansible.builtin.copy:
-    src: domains.py
-    dest: /usr/local/sbin/domains
-    mode: '0700'
-
-
-

@@ -5,10 +5,10 @@
 # Written by Will
 #
 
-if ! command -v domains >/dev/null; then
-    echo 'UNKNOWN - Missing dependency domains.'
+if ! command -v evodomains >/dev/null; then
+    echo 'UNKNOWN - Missing dependency evodomains.'
     exit 3
 fi
 
-domains -o nrpe -a check-dns
+evodomains -o nrpe -a check-dns
 
