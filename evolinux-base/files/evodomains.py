@@ -1,14 +1,19 @@
 #!/usr/bin/python3
+#
+# Execute 'evodomains --help' for usage.
 # 
-# Vérifie si les domaines listés dans les configurations de Apache,
-# Nginx et Haproxy pointent bien sur le serveur.
+# Evodomains is a Python script to facilitate the management
+# of a server's domains.
+# It's scope is Apache, Nginx, HaProxy and SSL certificates domains.
+# It can list domains, check domains records, and will permit (in the future)
+# to remove domains from vhosts configuration and remove certificate files.
 # 
-# Développé par Will
+# Developped by Will & Brice
 # 
 
 list_domains_path = '/usr/local/sbin/list_domains.py'
-excludes_path = '/etc/nagios/domains_exclude.list'
-includes_path = '/etc/nagios/domains_include.list'
+excludes_path = '/etc/evolinux/evodomains_exclude.list'
+includes_path = '/etc/evolinux/evodomains_include.list'
 
 import os
 import sys
