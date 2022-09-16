@@ -1,0 +1,8 @@
+- name: Copy evodomains script to local sbin
+  ansible.builtin.copy:
+    src: evodomains.py
+    dest: /usr/local/sbin/evodomains
+    mode: '0700'
+
+
+

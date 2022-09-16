@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# Check domains using script domains.
+#
+# Written by Will
+#
+
+if ! command -v evodomains >/dev/null; then
+    echo 'UNKNOWN - Missing dependency evodomains.'
+    exit 3
+fi
+
+evodomains -o nrpe -a check-dns
+

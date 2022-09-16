@@ -1,0 +1,26 @@
+- name: Install check_domains dependency
+  include_role:
+    name: evolinux-base
+    tasks_from: evodomains
+
+- name: Configure check_domains in /etc/nagios/nrpe.d/evolix.cfg
+  ansible.builtin.lineinfile:
+    path: /etc/nagios/nrpe.d/evolix.cfg
+    regexp: '^command\[check_domains\]='
+    line: command[check_domains]=sudo {{ nagios_plugins_directory }}/check_domains
+  notify: restart nagios-nrpe-server
+
+- name: Is evolinux sudoers installed?
+  ansible.builtin.stat:
+    path: /etc/sudoers.d/evolinux
+  register: sudoers_evolinux
+
+- name: Allow nagios user to execute check_domains without sudo password 
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers.d/evolinux
+    regexp: 'check_domains'
+    line: 'nagios          ALL = NOPASSWD: {{ nagios_plugins_directory }}/check_domains'
+    insertafter: '^nagios'
+    validate: "visudo -cf %s"
+  when: sudoers_evolinux.stat.exists 
+
