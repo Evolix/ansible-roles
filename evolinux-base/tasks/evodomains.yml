@@ -4,5 +4,40 @@
     dest: /usr/local/sbin/evodomains
     mode: '0700'
 
+- name: Create config file 'evodomains_exclude.list'
+  ansible.builtin.blockinfile:
+    path: /etc/evolinux/evodomains_exclude.list
+    create: true
+    marker: "### {mark} ANSIBLE MANAGED HEADER"
+    insertbefore: BOF
+    block: |
+      # Domains present in vhosts or SSL certificates whose DNS records should
+      # not be checked by 'evodomains --check-dns'.
+      # Note: custom record IPs can also be added to /etc/evolinux/evodomains_allowed_ips.list,
+      # this is useful for load-balanced domains or NAT.
+      # Format: one domain per line, regex and wildcards not supported.
 
+- name: Create config file 'evodomains_include.list'
+  ansible.builtin.blockinfile:
+    path: /etc/evolinux/evodomains_include.list
+    create: true
+    marker: "### {mark} ANSIBLE MANAGED HEADER"
+    insertbefore: BOF
+    block: |
+      # Domains absent from vhosts or SSL certificates whose DNS records must
+      # be checked by 'evodomains --check-dns'.
+      # Format: one domain per line, regex and wildcards not supported.
+
+- name: Create config file 'evodomains_allowed_ips.list'
+  ansible.builtin.blockinfile:
+    path: /etc/evolinux/evodomains_allowed_ips.list
+    create: true
+    marker: "### {mark} ANSIBLE MANAGED HEADER"
+    insertbefore: BOF
+    block: |
+      # External IPs the domains of this server are allowed to point for
+      # 'evodomains --check-dns'.
+      # This is useful for load-balanced domains or NAT.
+      # Note: the network interfaces IPs of the server are allowed by default.
+      # Format: one IP per line, regex and wildcards not supported.
 
