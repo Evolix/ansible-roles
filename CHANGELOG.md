@@ -12,6 +12,18 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [22.09] 2022-09-19
+
+### Added
+
 * evolinux_users: create only users who have a certain value for the `create` key (default: `always`).
 * php: install php-xml with recent PHP versions
 * vrrp: add an `ip.yml` task file to help create VRRP addresses
@@ -46,8 +58,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * evocheck: remove failure if deprecated variable is used
 * webapps/nextcloud: Drop support for Nginx
-
-### Security
 
 ## [22.07.1] 2022-07-28
 
