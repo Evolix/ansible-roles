@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # EvoCheck
-# Script to verify compliance of a Debian/OpenBSD server
+# Script to verify compliance of a Linux (Debian) server
 # powered by Evolix
 
-VERSION="22.07"
+VERSION="22.09"
 readonly VERSION
 
 # base functions
@@ -30,7 +30,7 @@ END
 }
 show_help() {
     cat <<END
-evocheck is a script that verifies Evolix conventions on Debian/OpenBSD servers.
+evocheck is a script that verifies Evolix conventions on Linux (Debian) servers.
 
 Usage: evocheck
   or   evocheck --cron
@@ -50,7 +50,6 @@ detect_os() {
     # OS detection
     DEBIAN_RELEASE=""
     LSB_RELEASE_BIN=$(command -v lsb_release)
-    OPENBSD_RELEASE=""
 
     if [ -e /etc/debian_version ]; then
         DEBIAN_VERSION=$(cut -d "." -f 1 < /etc/debian_version)
@@ -68,9 +67,6 @@ detect_os() {
                 12) DEBIAN_RELEASE="bookworm";;
             esac
         fi
-    elif [ "$(uname -s)" = "OpenBSD" ]; then
-        # use a better release name
-        OPENBSD_RELEASE=$(uname -r)
     fi
 }
 
@@ -106,9 +102,6 @@ debian_release() {
 }
 debian_version() {
     printf "%s" "${DEBIAN_VERSION}"
-}
-is_openbsd() {
-  test -n "${OPENBSD_RELEASE}"
 }
 
 is_pack_web(){
@@ -582,8 +575,8 @@ check_autoif() {
         interfaces=$(/sbin/ifconfig -s | tail -n +2 | grep -E -v "^(lo|vnet|docker|veth|tun|tap|macvtap|vrrp)" | cut -d " " -f 1 |tr "\n" " ")
     fi
     for interface in $interfaces; do
-        if ! grep -q "^auto $interface" /etc/network/interfaces; then
-            failed "IS_AUTOIF" "Network interface \`${interface}' is not set to auto"
+        if grep -Rq "^iface $interface" /etc/network/interfaces* && ! grep -Rq "^auto $interface" /etc/network/interfaces*; then
+            failed "IS_AUTOIF" "Network interface \`${interface}' is statically defined but not set to auto"
             test "${VERBOSE}" = 1 || break
         fi
     done
@@ -1226,18 +1219,18 @@ check_usrsharescripts() {
 check_sshpermitrootno() {
     sshd_args="-C addr=,user=,host=,laddr=,lport=0"
     if is_debian_jessie || is_debian_stretch; then
-	# Noop, we'll use the default $sshd_args
+	    # Noop, we'll use the default $sshd_args
         :
     elif is_debian_buster; then
-	sshd_args="${sshd_args},rdomain="
+	    sshd_args="${sshd_args},rdomain="
     else
-	# NOTE: From Debian Bullseye 11 onward, with OpenSSH 8.1, the argument
+	    # NOTE: From Debian Bullseye 11 onward, with OpenSSH 8.1, the argument
         # -T doesn't require the additional -C.
-	sshd_args=
+	    sshd_args=
     fi
     # shellcheck disable=SC2086
-    if ! (sshd -T ${sshd_args} | grep -q 'permitrootlogin no'); then
-       failed "IS_SSHPERMITROOTNO" "PermitRoot should be set to no"
+    if ! (sshd -T ${sshd_args} 2> /dev/null | grep -qi 'permitrootlogin no'); then
+        failed "IS_SSHPERMITROOTNO" "PermitRoot should be set to no"
     fi
 }
 check_evomaintenanceusers() {
@@ -1408,8 +1401,6 @@ download_versions() {
 
     if is_debian; then
         versions_url="https://upgrades.evolix.org/versions-${DEBIAN_RELEASE}"
-    elif is_openbsd; then
-        versions_url="https://upgrades.evolix.org/versions-${OPENBSD_RELEASE}"
     else
         failed "IS_CHECK_VERSIONS" "error determining os release"
     fi
@@ -1536,9 +1527,7 @@ main() {
     main_output_file=$(mktemp --tmpdir="${TMPDIR:-/tmp}" "evocheck.main.XXXXX")
     files_to_cleanup="${files_to_cleanup} ${main_output_file}"
 
-    #-----------------------------------------------------------
-    # Tests communs à tous les systèmes
-    #-----------------------------------------------------------
+    MINIFW_FILE=$(minifirewall_file)
 
     test "${IS_TMP_1777:=1}" = 1 && check_tmp_1777
     test "${IS_ROOT_0700:=1}" = 1 && check_root_0700
@@ -1549,221 +1538,111 @@ main() {
     test "${IS_EVOMAINTENANCECONF:=1}" = 1 && check_evomaintenanceconf
     test "${IS_PRIVKEYWOLRDREADABLE:=1}" = 1 && check_privatekeyworldreadable
 
-    #-----------------------------------------------------------
-    # Vérifie si c'est une debian et fait les tests appropriés.
-    #-----------------------------------------------------------
-
-    if is_debian; then
-        MINIFW_FILE=$(minifirewall_file)
-
-        test "${IS_LSBRELEASE:=1}" = 1 && check_lsbrelease
-        test "${IS_DPKGWARNING:=1}" = 1 && check_dpkgwarning
-        test "${IS_UMASKSUDOERS:=1}" = 1 && check_umasksudoers
-        test "${IS_NRPEPOSTFIX:=1}" = 1 && check_nrpepostfix
-        test "${IS_MODSECURITY:=1}" = 1 && check_modsecurity
-        test "${IS_CUSTOMSUDOERS:=1}" = 1 && check_customsudoers
-        test "${IS_VARTMPFS:=1}" = 1 && check_vartmpfs
-        test "${IS_SERVEURBASE:=1}" = 1 && check_serveurbase
-        test "${IS_LOGROTATECONF:=1}" = 1 && check_logrotateconf
-        test "${IS_SYSLOGCONF:=1}" = 1 && check_syslogconf
-        test "${IS_DEBIANSECURITY:=1}" = 1 && check_debiansecurity
-        test "${IS_APTITUDEONLY:=1}" = 1 && check_aptitudeonly
-        test "${IS_APTITUDE:=1}" = 1 && check_aptitude
-        test "${IS_APTGETBAK:=1}" = 1 && check_aptgetbak
-        test "${IS_APTICRON:=0}" = 1 && check_apticron
-        test "${IS_USRRO:=1}" = 1 && check_usrro
-        test "${IS_TMPNOEXEC:=1}" = 1 && check_tmpnoexec
-        test "${IS_MOUNT_FSTAB:=1}" = 1 && check_mountfstab
-        test "${IS_LISTCHANGESCONF:=1}" = 1 && check_listchangesconf
-        test "${IS_CUSTOMCRONTAB:=1}" = 1 && check_customcrontab
-        test "${IS_SSHALLOWUSERS:=1}" = 1 && check_sshallowusers
-        test "${IS_DISKPERF:=0}" = 1 && check_diskperf
-        test "${IS_TMOUTPROFILE:=1}" = 1 && check_tmoutprofile
-        test "${IS_ALERT5BOOT:=1}" = 1 && check_alert5boot
-        test "${IS_ALERT5MINIFW:=1}" = 1 && check_alert5minifw
-        test "${IS_ALERT5MINIFW:=1}" = 1 && test "${IS_MINIFW:=1}" = 1 && check_minifw
-        test "${IS_NRPEPERMS:=1}" = 1 && check_nrpeperms
-        test "${IS_MINIFWPERMS:=1}" = 1 && check_minifwperms
-        # Enable when minifirewall is released
-        test "${IS_MINIFWINCLUDES:=0}" = 1 && check_minifw_includes
-        test "${IS_NRPEDISKS:=0}" = 1 && check_nrpedisks
-        test "${IS_NRPEPID:=1}" = 1 && check_nrpepid
-        test "${IS_GRSECPROCS:=1}" = 1 && check_grsecprocs
-        test "${IS_APACHEMUNIN:=1}" = 1 && check_apachemunin
-        test "${IS_MYSQLUTILS:=1}" = 1 && check_mysqlutils
-        test "${IS_RAIDSOFT:=1}" = 1 && check_raidsoft
-        test "${IS_AWSTATSLOGFORMAT:=1}" = 1 && check_awstatslogformat
-        test "${IS_MUNINLOGROTATE:=1}" = 1 && check_muninlogrotate
-        test "${IS_SQUID:=1}" = 1 && check_squid
-        test "${IS_EVOMAINTENANCE_FW:=1}" = 1 && check_evomaintenance_fw
-        test "${IS_MODDEFLATE:=1}" = 1 && check_moddeflate
-        test "${IS_LOG2MAILRUNNING:=1}" = 1 && check_log2mailrunning
-        test "${IS_LOG2MAILAPACHE:=1}" = 1 && check_log2mailapache
-        test "${IS_LOG2MAILMYSQL:=1}" = 1 && check_log2mailmysql
-        test "${IS_LOG2MAILSQUID:=1}" = 1 && check_log2mailsquid
-        test "${IS_BINDCHROOT:=1}" = 1 && check_bindchroot
-        test "${IS_REPVOLATILE:=1}" = 1 && check_repvolatile
-        test "${IS_NETWORK_INTERFACES:=1}" = 1 && check_network_interfaces
-        test "${IS_AUTOIF:=1}" = 1 && check_autoif
-        test "${IS_INTERFACESGW:=1}" = 1 && check_interfacesgw
-        test "${IS_NETWORKING_SERVICE:=1}" = 1 && check_networking_service
-        test "${IS_EVOBACKUP:=1}" = 1 && check_evobackup
-        test "${IS_EVOBACKUP_EXCLUDE_MOUNT:=1}" = 1 && check_evobackup_exclude_mount
-        test "${IS_USERLOGROTATE:=1}" = 1 && check_userlogrotate
-        test "${IS_APACHECTL:=1}" = 1 && check_apachectl
-        test "${IS_APACHESYMLINK:=1}" = 1 && check_apachesymlink
-        test "${IS_APACHEIPINALLOW:=1}" = 1 && check_apacheipinallow
-        test "${IS_MUNINAPACHECONF:=1}" = 1 && check_muninapacheconf
-        test "${IS_SAMBAPINPRIORITY:=1}" = 1 && check_sambainpriority
-        test "${IS_KERNELUPTODATE:=1}" = 1 && check_kerneluptodate
-        test "${IS_UPTIME:=1}" = 1 && check_uptime
-        test "${IS_MUNINRUNNING:=1}" = 1 && check_muninrunning
-        test "${IS_BACKUPUPTODATE:=1}" = 1 && check_backupuptodate
-        test "${IS_ETCGIT:=1}" = 1 && check_etcgit
-        test "${IS_GITPERMS:=1}" = 1 && check_gitperms
-        test "${IS_NOTUPGRADED:=1}" = 1 && check_notupgraded
-        test "${IS_TUNE2FS_M5:=1}" = 1 && check_tune2fs_m5
-        test "${IS_EVOLINUXSUDOGROUP:=1}" = 1 && check_evolinuxsudogroup
-        test "${IS_USERINADMGROUP:=1}" = 1 && check_userinadmgroup
-        test "${IS_APACHE2EVOLINUXCONF:=1}" = 1 && check_apache2evolinuxconf
-        test "${IS_BACKPORTSCONF:=1}" = 1 && check_backportsconf
-        test "${IS_BIND9MUNIN:=1}" = 1 && check_bind9munin
-        test "${IS_BIND9LOGROTATE:=1}" = 1 && check_bind9logrotate
-        test "${IS_BROADCOMFIRMWARE:=1}" = 1 && check_broadcomfirmware
-        test "${IS_HARDWARERAIDTOOL:=1}" = 1 && check_hardwareraidtool
-        test "${IS_LOG2MAILSYSTEMDUNIT:=1}" = 1 && check_log2mailsystemdunit
-        test "${IS_LISTUPGRADE:=1}" = 1 && check_listupgrade
-        test "${IS_MARIADBEVOLINUXCONF:=0}" = 1 && check_mariadbevolinuxconf
-        test "${IS_SQL_BACKUP:=1}" = 1 && check_sql_backup
-        test "${IS_POSTGRES_BACKUP:=1}" = 1 && check_postgres_backup
-        test "${IS_MONGO_BACKUP:=1}" = 1 && check_mongo_backup
-        test "${IS_LDAP_BACKUP:=1}" = 1 && check_ldap_backup
-        test "${IS_REDIS_BACKUP:=1}" = 1 && check_redis_backup
-        test "${IS_ELASTIC_BACKUP:=1}" = 1 && check_elastic_backup
-        test "${IS_MARIADBSYSTEMDUNIT:=1}" = 1 && check_mariadbsystemdunit
-        test "${IS_MYSQLMUNIN:=1}" = 1 && check_mysqlmunin
-        test "${IS_MYSQLNRPE:=1}" = 1 && check_mysqlnrpe
-        test "${IS_PHPEVOLINUXCONF:=0}" = 1 && check_phpevolinuxconf
-        test "${IS_SQUIDLOGROTATE:=1}" = 1 && check_squidlogrotate
-        test "${IS_SQUIDEVOLINUXCONF:=1}" = 1 && check_squidevolinuxconf
-        test "${IS_DUPLICATE_FS_LABEL:=1}" = 1 && check_duplicate_fs_label
-        test "${IS_EVOLIX_USER:=1}" = 1 && check_evolix_user
-        test "${IS_EVOACME_CRON:=1}" = 1 && check_evoacme_cron
-        test "${IS_EVOACME_LIVELINKS:=1}" = 1 && check_evoacme_livelinks
-        test "${IS_APACHE_CONFENABLED:=1}" = 1 && check_apache_confenabled
-        test "${IS_MELTDOWN_SPECTRE:=1}" = 1 && check_meltdown_spectre
-        test "${IS_OLD_HOME_DIR:=0}" = 1 && check_old_home_dir
-        test "${IS_EVOBACKUP_INCS:=1}" = 1 && check_evobackup_incs
-        test "${IS_OSPROBER:=1}" = 1 && check_osprober
-        test "${IS_JESSIE_BACKPORTS:=1}" = 1 && check_jessie_backports
-        test "${IS_APT_VALID_UNTIL:=1}" = 1 && check_apt_valid_until
-        test "${IS_CHROOTED_BINARY_UPTODATE:=1}" = 1 && check_chrooted_binary_uptodate
-        test "${IS_NGINX_LETSENCRYPT_UPTODATE:=1}" = 1 && check_nginx_letsencrypt_uptodate
-        test "${IS_LXC_CONTAINER_RESOLV_CONF:=1}" = 1 && check_lxc_container_resolv_conf
-        test "${IS_CHECK_VERSIONS:=1}" = 1 && check_versions
-    fi
-
-    #-----------------------------------------------------------
-    # Tests spécifiques à OpenBSD
-    #-----------------------------------------------------------
-
-    if is_openbsd; then
-
-        if [ "${IS_SOFTDEP:=1}" = 1 ]; then
-            grep -q "softdep" /etc/fstab || failed "IS_SOFTDEP"
-        fi
-
-        if [ "${IS_WHEEL:=1}" = 1 ]; then
-            grep -qE "^%wheel.*$" /etc/sudoers || failed "IS_WHEEL"
-        fi
-
-        if [ "${IS_SUDOADMIN:=1}" = 1 ]; then
-            grep -qE "^User_Alias ADMIN=.*$" /etc/sudoers || failed "IS_SUDOADMIN"
-        fi
-
-        if [ "${IS_PKGMIRROR:=1}" = 1 ]; then
-            grep -qE "^export PKG_PATH=http://ftp\.fr\.openbsd\.org/pub/OpenBSD/[0-9.]+/packages/[a-z0-9]+/$" /root/.profile \
-                || failed "IS_PKGMIRROR"
-        fi
-
-        if [ "${IS_HISTORY:=1}" = 1 ]; then
-            f=/root/.profile
-            { grep -q "^HISTFILE=\$HOME/.histfile" $f \
-                && grep -q "^export HISTFILE" $f \
-                && grep -q "^HISTSIZE=1000" $f \
-                && grep -q "^export HISTSIZE" $f;
-            } || failed "IS_HISTORY"
-        fi
-
-        if [ "${IS_VIM:=1}" = 1 ]; then
-            command -v vim > /dev/null 2>&1 || failed "IS_VIM"
-        fi
-
-        if [ "${IS_TTYC0SECURE:=1}" = 1 ]; then
-            grep -Eqv "^ttyC0.*secure$" /etc/ttys || failed "IS_TTYC0SECURE"
-        fi
-
-        if [ "${IS_CUSTOMSYSLOG:=1}" = 1 ]; then
-            grep -q "Evolix" /etc/newsyslog.conf || failed "IS_CUSTOMSYSLOG"
-        fi
-
-        if [ "${IS_NOINETD:=1}" = 1 ]; then
-            grep -q "inetd=NO" /etc/rc.conf.local 2>/dev/null || failed "IS_NOINETD"
-        fi
-
-        if [ "${IS_SUDOMAINT:=1}" = 1 ]; then
-            f=/etc/sudoers
-            { grep -q "Cmnd_Alias MAINT = /usr/share/scripts/evomaintenance.sh" $f \
-                && grep -q "ADMIN ALL=NOPASSWD: MAINT" $f;
-            } || failed "IS_SUDOMAINT"
-        fi
-
-        if [ "${IS_POSTGRESQL:=1}" = 1 ]; then
-            pkg info | grep -q postgresql-client || failed "IS_POSTGRESQL" "postgresql-client is not installed"
-        fi
-
-        if [ "${IS_NRPE:=1}" = 1 ]; then
-            { pkg info | grep -qE "nagios-plugins-[0-9.]" \
-                && pkg info | grep -q nagios-plugins-ntp \
-                && pkg info | grep -q nrpe;
-            } || failed "IS_NRPE" "NRPE is not installed"
-        fi
-
-    # if [ "${IS_NRPEDISKS:=1}" = 1 ]; then
-    #     NRPEDISKS=$(grep command.check_disk /etc/nrpe.cfg 2>/dev/null | grep "^command.check_disk[0-9]" | sed -e "s/^command.check_disk\([0-9]\+\).*/\1/" | sort -n | tail -1)
-    #     DFDISKS=$(df -Pl | grep -E -v "(^Filesystem|/lib/init/rw|/dev/shm|udev|rpc_pipefs)" | wc -l)
-    #     [ "$NRPEDISKS" = "$DFDISKS" ] || failed "IS_NRPEDISKS"
-    # fi
-
-    # Verification du check_mailq dans nrpe.cfg (celui-ci doit avoir l'option "-M postfix" si le MTA est Postfix)
-    #
-    # if [ "${IS_NRPEPOSTFIX:=1}" = 1 ]; then
-    #     pkg info | grep -q postfix && ( grep -q "^command.*check_mailq -M postfix" /etc/nrpe.cfg 2>/dev/null || failed "IS_NRPEPOSTFIX" )
-    # fi
-
-        if [ "${IS_NRPEDAEMON:=1}" = 1 ]; then
-            grep -q "echo -n ' nrpe';        /usr/local/sbin/nrpe -d" /etc/rc.local \
-                || failed "IS_NREPEDAEMON"
-        fi
-
-        if [ "${IS_ALERTBOOT:=1}" = 1 ]; then
-            grep -qE "^date \| mail -sboot/reboot .*evolix.fr$" /etc/rc.local \
-                || failed "IS_ALERTBOOT"
-        fi
-
-        if [ "${IS_RSYNC:=1}" = 1 ]; then
-            pkg info | grep -q rsync || failed "IS_RSYNC"
-        fi
-
-        if [ "${IS_CRONPATH:=1}" = 1 ]; then
-            grep -q "PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin" /var/cron/tabs/root \
-                || failed "IS_CRONPATH"
-        fi
-
-        #TODO
-        # - Check en profondeur de postfix
-        # - NRPEDISK et NRPEPOSTFIX
-    fi
+    test "${IS_LSBRELEASE:=1}" = 1 && check_lsbrelease
+    test "${IS_DPKGWARNING:=1}" = 1 && check_dpkgwarning
+    test "${IS_UMASKSUDOERS:=1}" = 1 && check_umasksudoers
+    test "${IS_NRPEPOSTFIX:=1}" = 1 && check_nrpepostfix
+    test "${IS_MODSECURITY:=1}" = 1 && check_modsecurity
+    test "${IS_CUSTOMSUDOERS:=1}" = 1 && check_customsudoers
+    test "${IS_VARTMPFS:=1}" = 1 && check_vartmpfs
+    test "${IS_SERVEURBASE:=1}" = 1 && check_serveurbase
+    test "${IS_LOGROTATECONF:=1}" = 1 && check_logrotateconf
+    test "${IS_SYSLOGCONF:=1}" = 1 && check_syslogconf
+    test "${IS_DEBIANSECURITY:=1}" = 1 && check_debiansecurity
+    test "${IS_APTITUDEONLY:=1}" = 1 && check_aptitudeonly
+    test "${IS_APTITUDE:=1}" = 1 && check_aptitude
+    test "${IS_APTGETBAK:=1}" = 1 && check_aptgetbak
+    test "${IS_APTICRON:=0}" = 1 && check_apticron
+    test "${IS_USRRO:=1}" = 1 && check_usrro
+    test "${IS_TMPNOEXEC:=1}" = 1 && check_tmpnoexec
+    test "${IS_MOUNT_FSTAB:=1}" = 1 && check_mountfstab
+    test "${IS_LISTCHANGESCONF:=1}" = 1 && check_listchangesconf
+    test "${IS_CUSTOMCRONTAB:=1}" = 1 && check_customcrontab
+    test "${IS_SSHALLOWUSERS:=1}" = 1 && check_sshallowusers
+    test "${IS_DISKPERF:=0}" = 1 && check_diskperf
+    test "${IS_TMOUTPROFILE:=1}" = 1 && check_tmoutprofile
+    test "${IS_ALERT5BOOT:=1}" = 1 && check_alert5boot
+    test "${IS_ALERT5MINIFW:=1}" = 1 && check_alert5minifw
+    test "${IS_ALERT5MINIFW:=1}" = 1 && test "${IS_MINIFW:=1}" = 1 && check_minifw
+    test "${IS_NRPEPERMS:=1}" = 1 && check_nrpeperms
+    test "${IS_MINIFWPERMS:=1}" = 1 && check_minifwperms
+    # Enable when minifirewall is released
+    test "${IS_MINIFWINCLUDES:=0}" = 1 && check_minifw_includes
+    test "${IS_NRPEDISKS:=0}" = 1 && check_nrpedisks
+    test "${IS_NRPEPID:=1}" = 1 && check_nrpepid
+    test "${IS_GRSECPROCS:=1}" = 1 && check_grsecprocs
+    test "${IS_APACHEMUNIN:=1}" = 1 && check_apachemunin
+    test "${IS_MYSQLUTILS:=1}" = 1 && check_mysqlutils
+    test "${IS_RAIDSOFT:=1}" = 1 && check_raidsoft
+    test "${IS_AWSTATSLOGFORMAT:=1}" = 1 && check_awstatslogformat
+    test "${IS_MUNINLOGROTATE:=1}" = 1 && check_muninlogrotate
+    test "${IS_SQUID:=1}" = 1 && check_squid
+    test "${IS_EVOMAINTENANCE_FW:=1}" = 1 && check_evomaintenance_fw
+    test "${IS_MODDEFLATE:=1}" = 1 && check_moddeflate
+    test "${IS_LOG2MAILRUNNING:=1}" = 1 && check_log2mailrunning
+    test "${IS_LOG2MAILAPACHE:=1}" = 1 && check_log2mailapache
+    test "${IS_LOG2MAILMYSQL:=1}" = 1 && check_log2mailmysql
+    test "${IS_LOG2MAILSQUID:=1}" = 1 && check_log2mailsquid
+    test "${IS_BINDCHROOT:=1}" = 1 && check_bindchroot
+    test "${IS_REPVOLATILE:=1}" = 1 && check_repvolatile
+    test "${IS_NETWORK_INTERFACES:=1}" = 1 && check_network_interfaces
+    test "${IS_AUTOIF:=1}" = 1 && check_autoif
+    test "${IS_INTERFACESGW:=1}" = 1 && check_interfacesgw
+    test "${IS_NETWORKING_SERVICE:=1}" = 1 && check_networking_service
+    test "${IS_EVOBACKUP:=1}" = 1 && check_evobackup
+    test "${IS_EVOBACKUP_EXCLUDE_MOUNT:=1}" = 1 && check_evobackup_exclude_mount
+    test "${IS_USERLOGROTATE:=1}" = 1 && check_userlogrotate
+    test "${IS_APACHECTL:=1}" = 1 && check_apachectl
+    test "${IS_APACHESYMLINK:=1}" = 1 && check_apachesymlink
+    test "${IS_APACHEIPINALLOW:=1}" = 1 && check_apacheipinallow
+    test "${IS_MUNINAPACHECONF:=1}" = 1 && check_muninapacheconf
+    test "${IS_SAMBAPINPRIORITY:=1}" = 1 && check_sambainpriority
+    test "${IS_KERNELUPTODATE:=1}" = 1 && check_kerneluptodate
+    test "${IS_UPTIME:=1}" = 1 && check_uptime
+    test "${IS_MUNINRUNNING:=1}" = 1 && check_muninrunning
+    test "${IS_BACKUPUPTODATE:=1}" = 1 && check_backupuptodate
+    test "${IS_ETCGIT:=1}" = 1 && check_etcgit
+    test "${IS_GITPERMS:=1}" = 1 && check_gitperms
+    test "${IS_NOTUPGRADED:=1}" = 1 && check_notupgraded
+    test "${IS_TUNE2FS_M5:=1}" = 1 && check_tune2fs_m5
+    test "${IS_EVOLINUXSUDOGROUP:=1}" = 1 && check_evolinuxsudogroup
+    test "${IS_USERINADMGROUP:=1}" = 1 && check_userinadmgroup
+    test "${IS_APACHE2EVOLINUXCONF:=1}" = 1 && check_apache2evolinuxconf
+    test "${IS_BACKPORTSCONF:=1}" = 1 && check_backportsconf
+    test "${IS_BIND9MUNIN:=1}" = 1 && check_bind9munin
+    test "${IS_BIND9LOGROTATE:=1}" = 1 && check_bind9logrotate
+    test "${IS_BROADCOMFIRMWARE:=1}" = 1 && check_broadcomfirmware
+    test "${IS_HARDWARERAIDTOOL:=1}" = 1 && check_hardwareraidtool
+    test "${IS_LOG2MAILSYSTEMDUNIT:=1}" = 1 && check_log2mailsystemdunit
+    test "${IS_LISTUPGRADE:=1}" = 1 && check_listupgrade
+    test "${IS_MARIADBEVOLINUXCONF:=0}" = 1 && check_mariadbevolinuxconf
+    test "${IS_SQL_BACKUP:=1}" = 1 && check_sql_backup
+    test "${IS_POSTGRES_BACKUP:=1}" = 1 && check_postgres_backup
+    test "${IS_MONGO_BACKUP:=1}" = 1 && check_mongo_backup
+    test "${IS_LDAP_BACKUP:=1}" = 1 && check_ldap_backup
+    test "${IS_REDIS_BACKUP:=1}" = 1 && check_redis_backup
+    test "${IS_ELASTIC_BACKUP:=1}" = 1 && check_elastic_backup
+    test "${IS_MARIADBSYSTEMDUNIT:=1}" = 1 && check_mariadbsystemdunit
+    test "${IS_MYSQLMUNIN:=1}" = 1 && check_mysqlmunin
+    test "${IS_MYSQLNRPE:=1}" = 1 && check_mysqlnrpe
+    test "${IS_PHPEVOLINUXCONF:=0}" = 1 && check_phpevolinuxconf
+    test "${IS_SQUIDLOGROTATE:=1}" = 1 && check_squidlogrotate
+    test "${IS_SQUIDEVOLINUXCONF:=1}" = 1 && check_squidevolinuxconf
+    test "${IS_DUPLICATE_FS_LABEL:=1}" = 1 && check_duplicate_fs_label
+    test "${IS_EVOLIX_USER:=1}" = 1 && check_evolix_user
+    test "${IS_EVOACME_CRON:=1}" = 1 && check_evoacme_cron
+    test "${IS_EVOACME_LIVELINKS:=1}" = 1 && check_evoacme_livelinks
+    test "${IS_APACHE_CONFENABLED:=1}" = 1 && check_apache_confenabled
+    test "${IS_MELTDOWN_SPECTRE:=1}" = 1 && check_meltdown_spectre
+    test "${IS_OLD_HOME_DIR:=0}" = 1 && check_old_home_dir
+    test "${IS_EVOBACKUP_INCS:=1}" = 1 && check_evobackup_incs
+    test "${IS_OSPROBER:=1}" = 1 && check_osprober
+    test "${IS_JESSIE_BACKPORTS:=1}" = 1 && check_jessie_backports
+    test "${IS_APT_VALID_UNTIL:=1}" = 1 && check_apt_valid_until
+    test "${IS_CHROOTED_BINARY_UPTODATE:=1}" = 1 && check_chrooted_binary_uptodate
+    test "${IS_NGINX_LETSENCRYPT_UPTODATE:=1}" = 1 && check_nginx_letsencrypt_uptodate
+    test "${IS_LXC_CONTAINER_RESOLV_CONF:=1}" = 1 && check_lxc_container_resolv_conf
+    test "${IS_CHECK_VERSIONS:=1}" = 1 && check_versions
 
     if [ -f "${main_output_file}" ]; then
         lines_found=$(wc -l < "${main_output_file}")

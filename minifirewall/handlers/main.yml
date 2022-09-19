@@ -4,3 +4,19 @@
   service:
     name: nagios-nrpe-server
     state: restarted
+
+- name: restart minifirewall (modern)
+  command: /etc/init.d/minifirewall restart
+  register: minifirewall_init_restart
+  failed_when: "'minifirewall failed' in minifirewall_init_restart.stdout"
+
+- name: restart minifirewall (legacy)
+  command: /etc/init.d/minifirewall restart
+  register: minifirewall_init_restart
+  failed_when: "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
+
+- name: restart minifirewall (noop)
+  meta: noop
+  register: minifirewall_init_restart
+  failed_when: False
+  changed_when: False

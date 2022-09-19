@@ -282,11 +282,11 @@
     path: "/etc/default/minifirewall"
   register: minifirewall_after
 
-- name: restart minifirewall
-  command: /etc/init.d/minifirewall restart
-  register: minifirewall_init_restart
-  failed_when: "'minifirewall failed' in minifirewall_init_restart.stdout"
+- name: Schedule minifirewall restart (modern)
+  command: /bin/true
+  notify: "restart minifirewall (modern)"
   when:
+    - minifirewall_install_mode != 'legacy'
     - minifirewall_restart_if_needed | bool
     - minifirewall_is_running.rc == 0
     - minifirewall_before.stat.checksum != minifirewall_after.stat.checksum or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed

@@ -1,0 +1,41 @@
+---
+
+- name: Add systemd unit template
+  copy:
+    src: memcached@.service
+    dest: /etc/systemd/system/memcached@.service
+  tags:
+    - memcached
+
+- name: Disable default memcached systemd unit
+  systemd:
+    name: memcached
+    enabled: false
+    state: stopped
+  tags:
+    - memcached
+
+- name: Make sure memcached.conf is absent
+  file:
+    path: /etc/memcached.conf
+    state: absent
+  tags:
+    - memcached
+
+- name: "Create a configuration file for instance ({{ memcached_instance_name }})"
+  template:
+    src: memcached.conf.j2
+    dest: /etc/memcached_{{ memcached_instance_name }}.conf
+    mode: "0644"
+  tags:
+    - memcached
+
+- name: "Enable and start the memcached instance ({{ memcached_instance_name }})"
+  systemd:
+    name: memcached@{{ memcached_instance_name }}
+    enabled: yes
+    state: started
+    daemon_reload: yes
+    masked: no
+  tags:
+    - memcached

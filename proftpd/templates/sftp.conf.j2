@@ -1,3 +1,7 @@
+{% if proftpd_sftp_override %}
+# WARNING : **Probably** ansible managed
+{% endif %}
+
 <IfModule !mod_tls.c>
     LoadModule mod_tls.c
 </IfModule>
@@ -6,15 +10,21 @@
     LoadModule mod_sftp.c
 </IfModule>
 
-<VirtualHost 0.0.0.0>
+<VirtualHost {{ proftpd_default_address | join(' ') }}>
     SFTPEngine   on
     Port         {{ proftpd_sftp_port }}
     DefaultRoot  ~
     
     SFTPLog      /var/log/proftpd/sftp.log
     TransferLog  /var/log/proftpd/xferlog
-    
+
+{% if proftpd_sftp_use_publickeys %}
+    SFTPAuthMethods publickey password
+    SFTPAuthorizedUserKeys file:/etc/proftpd/sftp.authorized_keys/%u
+{% else %}
     SFTPAuthMethods password
+{% endif %}
+
     SFTPHostKey /etc/ssh/ssh_host_ecdsa_key
     SFTPHostKey /etc/ssh/ssh_host_rsa_key
     

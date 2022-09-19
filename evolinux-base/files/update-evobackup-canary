@@ -3,7 +3,7 @@
 PROGNAME="update-evobackup-canary"
 REPOSITORY="https://gitea.evolix.org/evolix/evobackup"
 
-VERSION="22.05"
+VERSION="22.06"
 readonly VERSION
 
 # base functions
@@ -44,8 +44,8 @@ main() {
     if [ -z "${canary_file:-}" ]; then
         canary_file="/zzz_evobackup_canary"
     fi
-    # This option is supported since (at least) Debian 8
-    date=$(date --iso-8601=seconds)
+    # This option is supported both on OpenBSD which does not use GNU date and on Debian
+    date=$(date "+%FT%T%z")
 
     printf "%s %s\n" "${date}" "${who}" >> "${canary_file}"
 }

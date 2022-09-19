@@ -1,12 +1,5 @@
 ---
 
-- name: Package install is not supported anymore
-  fail:
-    msg: Package install is not supported anymore
-  when: 
-    - evocheck_force_install is defined
-    - evocheck_force_install == "package"
-
 - include: install.yml
 
 - include: cron.yml

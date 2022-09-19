@@ -34,7 +34,7 @@ command[check_pop]=/usr/lib/nagios/plugins/check_pop -H localhost
 command[check_pops]=/usr/lib/nagios/plugins/check_pop -S -H localhost -p 995
 command[check_ftp]=/usr/lib/nagios/plugins/check_ftp -H localhost
 command[check_http]=/usr/lib/nagios/plugins/check_http -e 301 -I 127.0.0.1 -H localhost
-command[check_https]=/usr/lib/nagios/plugins/check_http -e 403 -I 127.0.0.1 -S -p 443 --sni -H ssl.evolix.net
+command[check_https]=/usr/lib/nagios/plugins/check_http -e 401,403 -I 127.0.0.1 -S -p 443 --sni -H ssl.evolix.net
 command[check_bind]=/usr/lib/nagios/plugins/check_dig -l evolix.net -H localhost
 command[check_unbound]=/usr/lib/nagios/plugins/check_dig -l evolix.net -H localhost
 command[check_smb]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 445
@@ -48,6 +48,7 @@ command[check_redis]=/usr/lib/nagios/plugins/check_tcp -p 6379
 command[check_clamd]=/usr/lib/nagios/plugins/check_clamd -H /var/run/clamav/clamd.ctl -v
 command[check_clamav_db]=/usr/lib/nagios/plugins/check_file_age -w 86400 -c 172800 -f /var/lib/clamav/evolix.ndb
 command[check_ssl]=/usr/lib/nagios/plugins/check_http -f follow -I 127.0.0.1 -S -p 443 -H ssl.evolix.net -C 15,5
+command[check_ssl_local]={{ nagios_plugins_directory }}/check_ssl_local
 command[check_elasticsearch]=/usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /_cat/health?h=st -p 9200 -r 'red' --invert-regex
 command[check_memcached]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 11211
 command[check_opendkim]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 54321

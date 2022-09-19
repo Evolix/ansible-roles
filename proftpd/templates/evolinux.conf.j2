@@ -1,5 +1,13 @@
 # Evolix's specific configuration
 
+{% if proftpd_ftp_override %}
+# WARNING : **Probably** ansible managed
+{% endif %}
+
+<IfModule !mod_ident.c>
+    LoadModule  mod_ident.c
+</IfModule>
+
 ServerName        "{{ proftpd_hostname }} FTP Server"
 ServerIdent    on "FTP Server Ready"
 AccessGrantMsg    "Hey, bienvenue %u sur le serveur FTP {{ proftpd_fqdn }} !"

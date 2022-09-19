@@ -56,7 +56,9 @@
     group: _shellpki
 
 - name: Generate dhparam
-  command: "openssl dhparam -out /etc/shellpki/dh2048.pem 2048"
+  openssl_dhparam:
+    path: /etc/shellpki/dh2048.pem
+    size: 2048
 
 - name: Fix CRL rights in shellpki command
   lineinfile:
@@ -175,7 +177,7 @@
   notify: restart nrpe
   when: nrpe_evolix_config.stat.exists
 
-- name: Copy shellpki script
+- name: Copy script to check expirations
   copy:
     src: "shellpki/cert-expirations.sh"
     dest: "/usr/share/scripts/cert-expirations.sh"
@@ -189,15 +191,43 @@
     special_time: monthly
     job: '/usr/share/scripts/cert-expirations.sh | mail -E -s "PKI VPN {{ ansible_hostname }} : recapitulatif expirations" {{ client_email }}'
 
-- name: Warn the user about command to execute manually
+- name: Generate the CA password
+  set_fact:
+    ca_pwd: "{{ lookup('password', '/dev/null length=25 chars=ascii_letters,digits') }}"
+  check_mode: no
+  changed_when: no
+
+- name: Initialization of the CA
+  shell: 'CA_PASSWORD="{{ ca_pwd }}" shellpki init --non-interactive {{ ansible_fqdn }}'
+
+- name: Creation of the server's certificate
+  shell: 'CA_PASSWORD="{{ ca_pwd }}" shellpki create --days 3650 --non-interactive {{ ansible_fqdn }}'
+
+- name: Get the server key
+  shell: 'ls -tr /etc/shellpki/private/ | tail -1'
+  register: ca_key
+  check_mode: no
+  changed_when: no
+
+- name: Configure the server key
+  replace:
+    path: /etc/openvpn/server.conf
+    regexp: 'key  /etc/shellpki/private/TO_COMPLETE'
+    replace: 'key  /etc/shellpki/private/{{ ca_key.stdout }}'
+
+- name: Restart OpenVPN
+  service:
+    name: openvpn
+    state: restarted
+
+- name: Warn the user about manual checks
   pause:
     prompt: |
       /!\ WARNING /!\
-      You have to manually create the CA on the server with "shellpki init {{ ansible_fqdn }}". The command will ask you to create a password, and will ask you again to give the same one several times.
-      You have to manually generate the CRL on the server with "openssl ca -gencrl -keyfile /etc/shellpki/cakey.key -cert /etc/shellpki/cacert.pem -out /etc/shellpki/crl.pem -config /etc/shellpki/openssl.cnf". The previously created password will be asked.
-      You have to manually create the server's certificate with "shellpki create {{ ansible_fqdn }}".
-      You have to adjust the config file "/etc/openvpn/server.conf" for the following parameters : local (to check), cert (to check), key (to add), server (to check), push (to complete if needed).
-      Finally, you can (re)start the OpenVPN service with "rcctl restart openvpn".
+      You must check and adjust if necessary the configuration file "/etc/openvpn/server.conf", and then restart the OpenVPN service with "rcctl restart openvpn".
+      The "push" parameter may be needed to push a route to the client, so that the client can access that route through OpenVPN.
+
+      Take note of the generated CA password and store it in your password manager : {{ ca_pwd }}
       
       Press enter to exit when it's done.
 

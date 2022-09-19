@@ -50,6 +50,7 @@
     user: "{{ item.value }}"
   loop: "{{ evolinux_users | dict2items }}"
   when:
+    - user.create == evolinux_users_create
     - ssh_allowusers
     - not ssh_allowgroups
 

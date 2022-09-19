@@ -1,15 +1,15 @@
 ---
-- name: Create Nextcloud group
+- name: Create {{ nextcloud_user }} unix group
   group:
-    name: "{{ nextcloud_instance_name | mandatory }}"
+    name: "{{ nextcloud_user | mandatory }}"
     state: present
   tags:
     - nextcloud
 
-- name: Create Nextcloud user
+- name: Create {{ nextcloud_user | mandatory }} unix user
   user:
     name: "{{ nextcloud_user | mandatory }}"
-    group: "{{ nextcloud_user }}"
+    group: "{{ nextcloud_user | mandatory }}"
     home: "{{ nextcloud_home | mandatory }}"
     shell: '/bin/bash'
     create_home: True
@@ -18,17 +18,11 @@
   tags:
   - nextcloud
 
-- name: Add the user 'www-data' to Nextcloud group
-  user:
-    name: www-data
-    groups: "{{ nextcloud_user | mandatory }}"
-    append: yes
-
 - name: Create top-level directories
   file:
     dest: "{{ item }}"
     state: directory
-    mode: "0770"
+    mode: "0700"
     owner: "{{ nextcloud_user }}"
     group: "{{ nextcloud_user }}"
   loop:

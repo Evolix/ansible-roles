@@ -41,5 +41,5 @@ proftpd_accounts:
 For generate the sha512 version of yours password :
 
 ~~~
-echo "test" | mkpasswd --method=sha-512 -
+printf "test" | mkpasswd --stdin --method=sha-512
 ~~~

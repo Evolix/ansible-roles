@@ -20,6 +20,45 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [22.09] 2022-09-19
+
+### Added
+
+* evolinux_users: create only users who have a certain value for the `create` key (default: `always`).
+* php: install php-xml with recent PHP versions
+* vrrp: add an `ip.yml` task file to help create VRRP addresses
+* webapps/nextcloud: Add compatibility with apache2, and apache2 mod_php.
+* memcached: NRPE check for multi-instance setup
+* munin: Add ipmi_ plugins on dedicated hardware
+* proftpd: Add options to override configs (and add a warning if file was overriden)
+* proftpd: Allow user auth with ssh keys
+
+
+### Changed
+
+* evocheck: upstream release 22.09
+* evolinux-base: update-evobackup-canary upstream release 22.06
+* generate-ldif: Support any MariaDB version
+* minifirewall: use handlers to restart minifirewall
+* openvpn: automate the initialization of the CA and the creation of the server certificate ; use openssl_dhparam module instead of a command
+* generate-ldif: support any version of MariaDB (instead of only 10.0, 10.1 and 10.3) 
+* openvpn: Run OpenVPN with the \_openvpn user and group instead of nobody which is originally for NFS
+* nagios-nrpe: Upgrade check_mongo
+
+### Fixed
+
+* fail2ban: fix dovecot-evolix regex syntax
+* haproxy: make it so that munin doesn't break if there is a non default `haproxy_stats_path`
+* mysql: Add missing Munin conf for Debian 11
+* redis: config directory must be owned by the user that runs the service (to be able to write tmp config files in it)
+* varnish: make `-j <jail_config>` the first argument on jessie/stretch as it has to be the first argument there.
+* webapps/nextcloud: Add missing dependencies for imagick
+
+### Removed
+
+* evocheck: remove failure if deprecated variable is used
+* webapps/nextcloud: Drop support for Nginx
+
 ## [22.07.1] 2022-07-28
 
 ### Changed

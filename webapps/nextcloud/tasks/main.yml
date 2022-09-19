@@ -16,10 +16,12 @@
     - php-apcu
     - php-redis
     - php-bcmath
+    - php-imagick
+    - libmagickcore-6.q16-6-extra
   tags:
     - nextcloud
 
-# dependency for mysql_user and mysql_db
+# dependency for mysql_user and mysql_db - python2
 - name: python modules is installed (Ansible dependency)
   apt:
     name:
@@ -30,7 +32,7 @@
     - nextcloud
   when: ansible_python_version is version('3', '<')
 
-# dependency for mysql_user and mysql_db
+# dependency for mysql_user and mysql_db - python3
 - name: python3 modules is installed (Ansible dependency)
   apt:
     name:
@@ -41,12 +43,14 @@
     - nextcloud
   when: ansible_python_version is version('3', '>=')
 
+- include: apache-system.yml
+
 - include: user.yml
 
 - include: archive.yml
 
-- include: vhost.yml
+- include: apache-vhost.yml
 
-- include: mysql.yml
+- include: mysql-user.yml
 
 - include: config.yml

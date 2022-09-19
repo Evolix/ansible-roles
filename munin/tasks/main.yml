@@ -1,12 +1,13 @@
 ---
 
-- name: Ensure that Munin is installed
+- name: Ensure that Munin (and useful dependencies) is installed
   apt:
     name:
       - munin
       - munin-node
       - munin-plugins-core
       - munin-plugins-extra
+      - gawk
     state: present
   tags:
     - munin
@@ -79,15 +80,31 @@
   tags:
     - munin
 
-- name: Enable sensors plugin unless VM detected
+- name: Enable sensors_ plugin on dedicated hardware
   file:
     src: /usr/share/munin/plugins/sensors_
-    dest: /etc/munin/plugins/sensors_temp
+    dest: "/etc/munin/plugins/sensors_{{ item }}"
     state: link
-  when: ansible_virtualization_role != "guest"
+  with_items: 
+    - fan
+    - temp
+  when: ansible_virtualization_role == "host"
   notify: restart munin-node
   tags:
     - munin
+
+- name: Enable ipmi_ plugin on dedicated hardware
+  file:
+    src: /usr/share/munin/plugins/ipmi_
+    dest: "/etc/munin/plugins/ipmi_{{ item }}"
+    state: link
+  when: ansible_virtualization_role == "host"
+  notify: restart munin-node
+  with_items:
+    - fans
+    - temp
+    - power
+    - volts
 
 - name: adjustments for grsec kernel
   blockinfile:
