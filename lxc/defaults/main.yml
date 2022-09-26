@@ -15,4 +15,6 @@ lxc_mount_part: "/home"
 #     release: jessie
 #   - name: php70
 #     release: stretch
+#   - name: php81
+#     release: bullseye
 lxc_containers: []
