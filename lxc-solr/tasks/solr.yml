@@ -1,16 +1,31 @@
 ---
-- name: Install openjdk-8-jre-headless and lsof packages
-  command: "lxc-attach -n {{name}} -- apt-get install -y openjdk-8-jre-headless lsof"
+
+- name: "Set values for Solr < 9.0.0"
+  set_fact:
+    java_package: openjdk-8-jre-headless
+    tarball_url: https://archive.apache.org/dist/lucene/solr/{{ solr_version }}/solr-{{ solr_version }}.tgz
+    tarball_path: /var/lib/lxc/{{ name }}/rootfs/root/solr-{{ solr_version }}.tgz
+  when: "solr_version is version('9.0.0', '<')"
+
+- name: "Set values for Solr >= 9.0.0"
+  set_fact:
+    java_package: openjdk-11-jre-headless
+    tarball_url: https://archive.apache.org/dist/solr/solr/{{ solr_version }}/solr-{{ solr_version }}.tgz
+    tarball_path: /var/lib/lxc/{{ name }}/rootfs/root/solr-{{ solr_version }}.tgz
+  when: "solr_version is version('9.0.0', '>=')"
+
+- name: Install java and lsof packages
+  command: "lxc-attach -n {{ name }} -- apt-get install -y {{ java_package }} lsof"
 
 - name: "Download Solr {{ solr_version }}"
   get_url:
-    url: "https://archive.apache.org/dist/lucene/solr/{{ solr_version }}/solr-{{ solr_version }}.tgz"
-    dest: "/var/lib/lxc/{{ name }}/rootfs/root/solr-{{ solr_version }}.tgz"
+    url: "{{ tarball_url }}"
+    dest: "{{ tarball_path }}"
     mode: '0644'
 
 - name: "Extract solr-{{ solr_version }}.tgz"
   unarchive:
-    src: /var/lib/lxc/{{ name }}/rootfs/root/solr-{{ solr_version }}.tgz
+    src: "{{ tarball_path }}"
     dest: /var/lib/lxc/{{ name }}/rootfs/root/
     remote_src: yes
 
@@ -36,7 +51,8 @@
 - name: "Set Solr port to {{ solr_port }}"
   lineinfile:
     dest: /var/lib/lxc/{{ name }}/rootfs/etc/default/solr.in.sh
-    line: "SOLR_PORT={{ solr_port }}"
+    line: "SOLR_PORT=\"{{ solr_port }}\""
+    regexp: "^SOLR_PORT="
 
 - name: "Start Solr"
   command: "lxc-attach -n {{name}} -- /etc/init.d/solr start"
