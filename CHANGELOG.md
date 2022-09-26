@@ -14,6 +14,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* lxc-solr: detect the real partition options
+
 ### Fixed
 
 ### Removed
