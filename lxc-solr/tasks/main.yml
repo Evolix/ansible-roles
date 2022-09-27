@@ -10,5 +10,9 @@
     mode: '0755'
   loop: "{{ lxc_containers }}"
 
-- include: "solr.yml name={{item.name}} solr_version={{item.solr_version}} solr_port={{item.solr_port}}"
+- include: solr.yml
+  args:
+    name: "{{ item.name }}"
+    solr_version: "{{ item.solr_version }}"
+    solr_port: "{{ item.solr_port }}"
   loop: "{{ lxc_containers }}"
