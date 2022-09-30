@@ -2,7 +2,6 @@
 
 - name: "Set values for Solr < 9.0.0"
   set_fact:
-    java_package: openjdk-8-jre-headless
     tarball_url: https://archive.apache.org/dist/lucene/solr/{{ solr_version }}/solr-{{ solr_version }}.tgz
     tarball_path: /var/lib/lxc/{{ name }}/rootfs/root/solr-{{ solr_version }}.tgz
     start_command: "/etc/init.d/solr start"
@@ -11,7 +10,6 @@
 
 - name: "Set values for Solr >= 9.0.0"
   set_fact:
-    java_package: openjdk-11-jre-headless
     tarball_url: https://archive.apache.org/dist/solr/solr/{{ solr_version }}/solr-{{ solr_version }}.tgz
     tarball_path: /var/lib/lxc/{{ name }}/rootfs/root/solr-{{ solr_version }}.tgz
     start_command: "systemctl start solr"
@@ -19,7 +17,7 @@
   when: "solr_version is version('9.0.0', '>=')"
 
 - name: Install java and lsof packages
-  command: "lxc-attach -n {{ name }} -- apt-get install -y {{ java_package }} lsof"
+  command: "lxc-attach -n {{ name }} -- apt-get install -y default-jre-headless lsof"
 
 - name: "Download Solr {{ solr_version }}"
   get_url:
