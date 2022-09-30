@@ -14,6 +14,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* java: use default JRE package when version is not specified
 * lxc-solr: choose java package and download URL according to Solr Version
 * lxc-solr: detect the real partition options
 * lxc-solr: set homedir and port at install

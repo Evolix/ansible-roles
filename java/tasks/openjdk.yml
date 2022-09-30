@@ -13,7 +13,17 @@
   tags:
     - java
 
-- name: Install openjdk package
+- name: Install default openjdk package
+  apt:
+    name: "default-jre-headless"
+    default_release: "{{ java_apt_release }}"
+    state: present
+  tags:
+    - java
+    - packages
+  when: java_version is none
+
+- name: Install specific openjdk package
   apt:
     name: "openjdk-{{ java_version}}-jre-headless"
     default_release: "{{ java_apt_release }}"
@@ -21,11 +31,14 @@
   tags:
     - java
     - packages
+  when: java_version is not none
 
 - name: This openjdk version is the default alternative
   alternatives:
     name: java
     path: "{{ java_bin_path[java_version] }}"
-  when: java_default_alternative | bool
   tags:
     - java
+  when:
+    - java_default_alternative | bool
+    - java_version is not none
