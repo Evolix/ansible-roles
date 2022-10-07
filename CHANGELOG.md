@@ -14,6 +14,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* evolinux-user: Add sudoers privilege for chck php\_fpm81
 * java: use default JRE package when version is not specified
 * lxc-solr: download URL according to Solr Version
 * lxc-solr: detect the real partition options
@@ -22,6 +23,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * squid: whitelist deb.freexian.com
 
 ### Fixed
+
+* evolinux-user: Fix sudoers privilege for chck php\_fpm80
 
 ### Removed
 
