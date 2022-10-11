@@ -14,6 +14,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* evolinux-base: utils.yml can be excluded
 * evolinux-user: Add sudoers privilege for chck php\_fpm81
 * java: use default JRE package when version is not specified
 * lxc-solr: download URL according to Solr Version

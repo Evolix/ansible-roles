@@ -102,6 +102,7 @@
   when: evolinux_motd_include | bool
 
 - include: utils.yml
+  when: evolinux_utils_include | bool
 
 - name: Munin
   include_role:
@@ -132,7 +133,3 @@
   include_role:
     name: evolix/generate-ldif
   when: evolinux_generateldif_include | bool
-
-- include: top.yml
-
-- include: htop.yml

@@ -38,3 +38,14 @@
 #     owner: root
 #     group: root
 #     mode: "0755"
+
+- name: Deploy htop configuration
+  copy:
+    src: htoprc
+    dest: /etc/htoprc
+    mode: "0644"
+
+- name: Deploy top configuration file
+  file:
+    path: /etc/topdefaultrc
+    state: absent

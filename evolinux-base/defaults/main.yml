@@ -224,3 +224,6 @@ evolinux_cron_checkhpraid_frequency: daily
 
 # Motd
 evolinux_motd_include: True
+
+# Utils
+evolinux_utils_include: True
