@@ -22,6 +22,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * lxc-solr: set homedir and port at install
 * minifirewall: whitelist deb.freexian.com
 * squid: whitelist deb.freexian.com
+* evolinux-todo: execute tasks only for Debian distribution (because this task is a dependency for others roles used on different distributions)
 
 ### Fixed
 
