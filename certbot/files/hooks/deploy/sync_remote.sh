@@ -28,10 +28,6 @@ main() {
     if [ -z "${RENEWED_LINEAGE}" ]; then
         error "Missing RENEWED_LINEAGE environment variable (usually provided by certbot)."
     fi
-    if [ -z "${servers}" ]; then
-        debug "Empty server list, skip."
-        exit 0
-    fi
 
     if found_renewed_lineage; then
         RENEWED_DOMAINS=${RENEWED_DOMAINS:-$(domain_from_cert)}
