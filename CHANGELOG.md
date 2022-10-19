@@ -12,6 +12,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* evolinux-base: replace regular kernel by cloud kernel on virtual servers
+
 ### Changed
 
 * evolinux-base: utils.yml can be excluded

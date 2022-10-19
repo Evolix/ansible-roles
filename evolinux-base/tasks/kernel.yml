@@ -1,5 +1,23 @@
 ---
 
+- name: "Use Cloud kernel on virtual servers"
+  apt:
+    name: "linux-image-cloud-amd64"
+    state: present
+  when:
+    - ansible_machine == "x86_64"
+    - ansible_virtualization_role == "guest"
+    - evolinux_kernel_cloud_auto | bool
+
+- name: "Remove non-Cloud kernel on virtual servers"
+  apt:
+    name: "linux-image-amd64"
+    state: absent
+  when:
+    - ansible_machine == "x86_64"
+    - ansible_virtualization_role == "guest"
+    - evolinux_kernel_cloud_auto | bool
+
 - name: Reboot after panic
   sysctl:
     name: "{{ item.name }}"
