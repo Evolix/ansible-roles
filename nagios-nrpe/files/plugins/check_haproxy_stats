@@ -5,6 +5,7 @@
 # Copyright (C) 2012, Giacomo Montagner <giacomo@entirelyunlike.net>
 #               2015, Yann Fertat, Romain Dessort, Jeff Palmer,
 #                     Christophe Drevet-Droguet <dr4ke@dr4ke.net>
+#               2022, Jérémy Lecour <jlecour@evolix.fr>
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the same terms as Perl 5.10.1.
@@ -15,7 +16,7 @@
 # warranty of merchantability or fitness for a particular purpose.
 #
 
-our $VERSION = "1.2.0";
+our $VERSION = "1.3.1";
 
 open(STDERR, ">&STDOUT");
 
@@ -29,6 +30,8 @@ open(STDERR, ">&STDOUT");
 #   1.1.0   - support for HTTP interface
 #   1.1.1   - drop perl 5.10 requirement
 #   1.2.0   - add an option for ignore NOLB
+#   1.3.0   - add an option for ignore DRAIN
+#   1.3.1   - support DRAIN/MAINT when set by agent
 
 use strict;
 use warnings;
@@ -64,6 +67,8 @@ DESCRIPTION
         Assume servers in MAINT state to be ok.
     -n, --ignore-nolb
         Assume servers in NOLB state to be ok.
+        --ignore-drain
+        Assume servers in DRAIN state to be ok.
     -p, --proxy
         Check only named proxies, not every one. Use comma to separate proxies
         in list.
@@ -132,6 +137,7 @@ my $pass = '';
 my $dump;
 my $ignore_maint;
 my $ignore_nolb;
+my $ignore_drain;
 my $proxy;
 my $no_proxy;
 my $help;
@@ -143,7 +149,8 @@ GetOptions (
     "d|dump"            => \$dump,
     "h|help"            => \$help,
     "m|ignore-maint"    => \$ignore_maint,
-    "n|ignore-nolb"	=> \$ignore_nolb,
+    "n|ignore-nolb"	    => \$ignore_nolb,
+    "ignore-drain"	    => \$ignore_drain,
     "p|proxy=s"         => \$proxy,
     "P|no-proxy=s"      => \$no_proxy,
     "s|sock|socket=s"   => \$sock,
@@ -267,8 +274,9 @@ foreach (@hastats) {
     # Check of servers
     } else {
         if ($data[$status] ne 'UP') {
-            next if ($ignore_maint && $data[$status] eq 'MAINT');
+            next if ($ignore_maint && ($data[$status] eq 'MAINT' || $data[$status] eq 'MAINT (agent)'));
             next if ($ignore_nolb && $data[$status] eq 'NOLB');
+            next if ($ignore_drain && ($data[$status] eq 'DRAIN' || $data[$status] eq 'DRAIN (agent)'));
             next if $data[$status] eq 'no check';   # Ignore server if no check is configured to be run
             next if $data[$svname] eq 'sock-1';
             $exitcode = 2;
