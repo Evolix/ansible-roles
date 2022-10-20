@@ -25,6 +25,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * lxc-solr: set homedir and port at install
 * minifirewall: whitelist deb.freexian.com
 * redis: some values should be quoted
+* redis: variable to disable transparent hugepage (default: do nothing)
 * squid: whitelist deb.freexian.com
 
 ### Fixed

@@ -1,0 +1,34 @@
+---
+
+- name: sysfsutils is installed
+  apt:
+    name:
+      - sysfsutils
+    state: present
+  tags:
+    - redis
+    - packages
+    - kernel
+
+- name: Check possible values for THP
+  assert:
+    that: redis_sysctl_transparent_hugepage_enabled is in ['always', 'madvise', 'never']
+    msg: "redis_sysctl_transparent_hugepage_enabled has incorrect value : '{{ redis_sysctl_transparent_hugepage_enabled }}' not in ['always', 'madvise', 'never']"
+  tags:
+    - redis
+    - kernel
+
+- name: "Set THP to {{ redis_sysctl_transparent_hugepage_enabled }} at boot"
+  lineinfile:
+    path: /etc/sysfs.conf
+    line: kernel/mm/transparent_hugepage/enabled = {{ redis_sysctl_transparent_hugepage_enabled }}
+    regexp: "kernel/mm/transparent_hugepage/enabled"
+  tags:
+    - redis
+    - kernel
+
+- name: "Set THP to {{ redis_sysctl_transparent_hugepage_enabled }} for this boot"
+  shell: "echo '{{ redis_sysctl_transparent_hugepage_enabled }}' >> /sys/kernel/mm/transparent_hugepage/enabled"
+  tags:
+    - redis
+    - kernel

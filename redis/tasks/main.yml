@@ -3,7 +3,19 @@
 - set_fact:
     redis_restart_handler_name: "{{ redis_restart_if_needed | bool | ternary('restart redis', 'restart redis (noop)') }}"
 
-- name: Redis is installed.
+- name: Linux kernel overcommit memory setting is enabled
+  sysctl:
+    name: "vm.overcommit_memory"
+    value: "1"
+    sysctl_file: "/etc/sysctl.d/evolinux-redis.conf"
+    state: present
+    reload: yes
+
+- name: Customize Kernel Transparent Huge Page
+  include: thp.yml
+  when: redis_sysctl_transparent_hugepage_enabled is not none
+
+- name: Redis is installed
   apt:
     name:
       - redis-server
@@ -13,7 +25,7 @@
     - redis
     - packages
 
-- name: Redis Sentinel is installed.
+- name: Redis Sentinel is installed
   apt:
     name: "redis-sentinel"
     state: present
@@ -21,14 +33,6 @@
     - redis
     - packages
   when: redis_sentinel_install | bool
-
-- name: Linux kernel overcommit memory setting is enabled
-  sysctl:
-    name: "vm.overcommit_memory"
-    value: "1"
-    sysctl_file: "/etc/sysctl.d/evolinux-redis.conf"
-    state: present
-    reload: yes
 
 - name: Get Redis version
   shell: "redis-server -v | grep -Eo '(v=\\S+)' | cut -d'=' -f 2 | grep -E '^([0-9]|\\.)+$'"

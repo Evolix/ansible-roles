@@ -23,3 +23,8 @@
   service:
     name: log2mail
     state: restarted
+
+- name: restart sysfsutils
+  service:
+    name: sysfsutils
+    state: restarted
