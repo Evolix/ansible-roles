@@ -17,14 +17,15 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Changed
 
 * evolinux-base: utils.yml can be excluded
+* evolinux-todo: execute tasks only for Debian distribution (because this task is a dependency for others roles used on different distributions)
 * evolinux-user: Add sudoers privilege for chck php\_fpm81
 * java: use default JRE package when version is not specified
-* lxc-solr: download URL according to Solr Version
 * lxc-solr: detect the real partition options
+* lxc-solr: download URL according to Solr Version
 * lxc-solr: set homedir and port at install
 * minifirewall: whitelist deb.freexian.com
+* redis: some values should be quoted
 * squid: whitelist deb.freexian.com
-* evolinux-todo: execute tasks only for Debian distribution (because this task is a dependency for others roles used on different distributions)
 
 ### Fixed
 
