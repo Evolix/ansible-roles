@@ -14,6 +14,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * evolinux-base: replace regular kernel by cloud kernel on virtual servers
 * nagios-nrpe: check_haproxy_stats supports DRAIN status
+* lxc-php: set php-fpm umask to 007
+
 ### Changed
 
 * evolinux-base: utils.yml can be excluded
