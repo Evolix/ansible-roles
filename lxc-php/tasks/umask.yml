@@ -27,5 +27,5 @@
     insertafter: "\\[Service\\]"
   notify:
     - "Daemon reload"
-    - "Reload PHP-FPM"
+    - "Restart PHP-FPM"
 
