@@ -29,10 +29,11 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * redis: some values should be quoted
 * redis: variable to disable transparent hugepage (default: do nothing)
 * squid: whitelist deb.freexian.com
+* varnish: systemd override depends on Varnish version instead of Debian version
 
 ### Fixed
 
-* evolinux-user: Fix sudoers privilege for chck php\_fpm80
+* evolinux-user: Fix sudoers privilege for check php\_fpm80
 
 ### Removed
 
