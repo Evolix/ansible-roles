@@ -12,7 +12,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
-* Use proper keyrings directory for APT version
+* all: Use proper keyrings directory for APT version
+* all: Add signed-by option for additional APT sources
 * evolinux-base: replace regular kernel by cloud kernel on virtual servers
 * nagios-nrpe: check_haproxy_stats supports DRAIN status
 * lxc-php: set php-fpm umask to 007

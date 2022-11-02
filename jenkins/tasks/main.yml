@@ -28,7 +28,7 @@
 
 - name: Add jenkins APT repository
   apt_repository:
-    repo: deb http://pkg.jenkins-ci.org/debian-stable binary/
+    repo: deb [signed-by={{ apt_keyring_dir }}/jenkins.asc] http://pkg.jenkins-ci.org/debian-stable binary/
     filename: jenkins
     update_cache: yes
 

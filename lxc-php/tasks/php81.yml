@@ -19,8 +19,8 @@
     create: yes
     mode: "0644"
   loop:
-    - "deb https://packages.sury.org/php/ bullseye main"
-    - "deb http://pub.evolix.net/ bullseye-php81/"
+    - "deb [signed-by={{ apt_keyring_dir }}/sury.gpg] https://packages.sury.org/php/ bullseye main"
+    - "deb [signed-by={{ apt_keyring_dir }}/reg.asc] http://pub.evolix.net/ bullseye-php81/"
 
 - name: copy pub.evolix.net GPG key
   copy:

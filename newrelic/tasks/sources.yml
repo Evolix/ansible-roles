@@ -23,7 +23,7 @@
 
 - name: Install NewRelic repository
   apt_repository:
-    repo: "deb http://apt.newrelic.com/debian/ newrelic non-free"
+    repo: "deb [signed-by={{ apt_keyring_dir }}/newrelic.asc] http://apt.newrelic.com/debian/ newrelic non-free"
     state: present
     filename: newrelic
     update_cache: yes

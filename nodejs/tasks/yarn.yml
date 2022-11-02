@@ -37,7 +37,7 @@
 
 - name: Yarn sources list is available
   apt_repository:
-    repo: "deb https://dl.yarnpkg.com/debian/ stable main"
+    repo: "deb [signed-by={{ apt_keyring_dir }}/yarn.asc] https://dl.yarnpkg.com/debian/ stable main"
     filename: yarn
     update_cache: yes
     state: present
