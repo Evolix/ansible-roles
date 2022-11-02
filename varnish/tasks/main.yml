@@ -48,16 +48,16 @@
     state: directory
   tags:
     - varnish
+    - config
 
-- name: Rename legacy systemd override
-  command: mv /etc/systemd/system/varnish.service.d/evolinux.conf /etc/systemd/system/varnish.service.d/override.conf
-  args:
-    removes: /etc/systemd/system/varnish.service.d/evolinux.conf
-    creates: /etc/systemd/system/varnish.service.d/override.conf
+- name: Remove legacy systemd override
+  file:
+    dest: /etc/systemd/system/varnish.service.d/evolinux.conf
   notify:
     - reload systemd
   tags:
     - varnish
+    - config
 
 - name: Varnish systemd override template (Varnish 4 and 5)
   set_fact:
@@ -65,6 +65,10 @@
   when:
     - varnish_package_facts['version'] is version('4', '>=')
     - varnish_package_facts['version'] is version('6', '<')
+  tags:
+    - varnish
+    - config
+    - update-config
 
 - name: Varnish systemd override template (Varnish 6)
   set_fact:
@@ -72,12 +76,20 @@
   when:
     - varnish_package_facts['version'] is version('6', '>=')
     - varnish_package_facts['version'] is version('7', '<')
+  tags:
+    - varnish
+    - config
+    - update-config
 
 - name: Varnish systemd override template (Varnish 7 and later)
   set_fact:
     varnish_systemd_override_template: override.conf.varnish7.j2
   when:
     - varnish_package_facts['version'] is version('7', '>=')
+  tags:
+    - varnish
+    - config
+    - update-config
 
 - name: Override Varnish systemd unit
   template:

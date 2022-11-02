@@ -18,3 +18,5 @@ varnish_additional_options: ""
 
 varnish_config_file: /etc/varnish/default.vcl
 varnish_secret_file: /etc/varnish/secret
+
+varnish_tmp_dir: /var/tmp-vcache
