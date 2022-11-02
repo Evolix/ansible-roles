@@ -151,4 +151,15 @@
     - config
     - update-config
 
+# To validate the configuration, we must use a tmp directory that is mounted as exec
+# We usually use /vat/tmp-cache then validate the syntax with this command:
+# sudo -u vcache TMPDIR=/var/tmp-vcache varnishd -Cf /etc/varnish/default.vcl > /dev/null
+- name: Special tmp directory
+  file:
+    path: "{{ varnish_tmp_dir }}"
+    state: directory
+    owner: vcache
+    group: varnish
+    mode: "0750"
+
 - include: munin.yml
