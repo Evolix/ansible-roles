@@ -3,7 +3,7 @@
 - name: Setup deb.sury.org repository - Add GPG key
   copy:
     src: sury.gpg
-    dest: /etc/apt/trusted.gpg.d/sury.gpg
+    dest: "{{ apt_keyring_dir }}/sury.gpg"
     mode: "0644"
     owner: root
     group: root

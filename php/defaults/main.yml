@@ -8,3 +8,5 @@ php_symfony_requirements: False
 php_modules_mysqlnd: False
 
 php_fpm_remove_default_pool: False
+
+apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"

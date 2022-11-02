@@ -30,4 +30,4 @@ lxc_php_services:
   php80: 'php8.0-fpm.service'
   php81: 'php8.1-fpm.service'
 
-
+apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"

@@ -21,7 +21,7 @@
 - name: Add MongoDB GPG key
   copy:
     src: "server-{{mongodb_version}}.asc"
-    dest: "/etc/apt/trusted.gpg.d/mongodb-server-{{mongodb_version}}.asc"
+    dest: "{{ apt_keyring_dir }}/mongodb-server-{{mongodb_version}}.asc"
     force: yes
     mode: "0644"
     owner: root

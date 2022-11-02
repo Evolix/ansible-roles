@@ -23,7 +23,7 @@
 - name: Add PGDG GPG key
   copy:
     src: postgresql.asc
-    dest: /etc/apt/trusted.gpg.d/postgresql.asc
+    dest: "{{ apt_keyring_dir }}/postgresql.asc"
     force: yes
     mode: "0644"
     owner: root

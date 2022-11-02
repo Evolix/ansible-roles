@@ -21,7 +21,7 @@
 - name: Add Fluentd GPG key
   copy:
     src: fluentd.asc
-    dest: /etc/apt/trusted.gpg.d/fluentd.asc
+    dest: "{{ apt_keyring_dir }}/fluentd.asc"
     force: yes
     mode: "0644"
     owner: root
@@ -32,7 +32,7 @@
 
 - name: Fluentd sources list is available
   apt_repository:
-    repo: "deb http://packages.treasuredata.com/3/debian/{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} contrib"
+    repo: "deb [signed-by={{ apt_keyring_dir }}/fluentd.asc] http://packages.treasuredata.com/3/debian/{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} contrib"
     filename: treasuredata
     update_cache: yes
     state: present

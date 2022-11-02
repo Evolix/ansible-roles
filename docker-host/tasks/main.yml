@@ -19,7 +19,7 @@
 - name: Add Docker's official GPG key
   copy:
     src: docker-debian.asc
-    dest: /etc/apt/trusted.gpg.d/docker-debian.asc
+    dest: "{{ apt_keyring_dir }}/docker-debian.asc"
     force: yes
     mode: "0644"
     owner: root

@@ -15,7 +15,7 @@
 - name: Add NewRelic GPG key
   copy:
     src: newrelic.asc
-    dest: /etc/apt/trusted.gpg.d/newrelic.asc
+    dest: "{{ apt_keyring_dir }}/newrelic.asc"
     force: yes
     mode: "0644"
     owner: root

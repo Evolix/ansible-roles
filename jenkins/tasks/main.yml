@@ -20,7 +20,7 @@
 - name: Add Jenkins GPG key
   copy:
     src: jenkins.asc
-    dest: /etc/apt/trusted.gpg.d/jenkins.asc
+    dest: "{{ apt_keyring_dir }}/jenkins.asc"
     force: yes
     mode: "0644"
     owner: root

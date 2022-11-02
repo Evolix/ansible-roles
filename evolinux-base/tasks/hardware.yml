@@ -81,7 +81,7 @@
     - name: HPE GPG key is installed
       copy:
         src: hpePublicKey2048_key1.asc
-        dest: /etc/apt/trusted.gpg.d/hpePublicKey2048_key1.asc
+        dest: "{{ apt_keyring_dir }}/hpePublicKey2048_key1.asc"
         force: yes
         mode: "0644"
         owner: root
@@ -208,7 +208,7 @@
     - name: HWRaid GPG key is installed
       copy:
         src: hwraid.le-vert.net.asc
-        dest: /etc/apt/trusted.gpg.d/hwraid.le-vert.net.asc
+        dest: "{{ apt_keyring_dir }}/hwraid.le-vert.net.asc"
         force: yes
         mode: "0644"
         owner: root

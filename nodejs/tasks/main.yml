@@ -32,7 +32,7 @@
 - name: NodeJS GPG key is installed
   copy:
     src: nodesource.asc
-    dest: /etc/apt/trusted.gpg.d/nodesource.asc
+    dest: "{{ apt_keyring_dir }}/nodesource.asc"
     mode: "0644"
     owner: root
     group: root

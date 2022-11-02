@@ -1,6 +1,3 @@
 ---
 
-percona__install_xtrabackup: True
-percona__xtrabackup_package_name: percona-xtrabackup-24
-
 apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"

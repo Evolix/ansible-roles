@@ -25,3 +25,5 @@ apt_check_hold_cron_hour: "*/4"
 apt_check_hold_cron_weekday: "*"
 apt_check_hold_cron_day: "*"
 apt_check_hold_cron_month: "*"
+
+apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"
