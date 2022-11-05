@@ -1,0 +1,11 @@
+---
+
+- debug:
+    var: ansible_lsb
+
+# Force facts until Debian 12 is released because Ansible is dumb
+- set_fact:
+    ansible_distribution_major_version: 12
+    ansible_distribution: "Debian"
+    ansible_distribution_release: "bookworm"
+  when: "ansible_lsb.codename == 'bookworm'"
