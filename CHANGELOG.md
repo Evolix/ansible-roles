@@ -16,8 +16,9 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * all: Add signed-by option for additional APT sources
 * all: preliminary work to support Debian 12
 * evolinux-base: replace regular kernel by cloud kernel on virtual servers
-* nagios-nrpe: check_haproxy_stats supports DRAIN status
 * lxc-php: set php-fpm umask to 007
+* nagios-nrpe: check_haproxy_stats supports DRAIN status
+* packweb-apache: enable log_forensic module
 * varnish: create special tmp directory for syntax validation
 
 ### Changed
