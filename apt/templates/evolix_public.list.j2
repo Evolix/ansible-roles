@@ -1,3 +1,7 @@
 # {{ ansible_managed }}
 
+{% if ansible_distribution_release == "bookworm" %}
+deb [signed-by={{ apt_keyring_dir }}/reg.asc] http://pub.evolix.net/ bullseye/
+{% else %}
 deb [signed-by={{ apt_keyring_dir }}/reg.asc] http://pub.evolix.net/ {{ ansible_distribution_release }}/
+{% endif %}
