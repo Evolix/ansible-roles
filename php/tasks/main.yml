@@ -4,17 +4,20 @@
     that:
       - ansible_distribution == "Debian"
       - ansible_distribution_major_version is version('8', '>=')
-      - ansible_distribution_major_version is version('11', '<=')
-    msg: This is only compatible with Debian 8 → 11
+      - ansible_distribution_major_version is version('12', '<=')
+    msg: This is only compatible with Debian 8 → 12
 
-- include: main_jessie.yml
+- include_tasks: main_jessie.yml
   when: ansible_distribution_release == "jessie"
 
-- include: main_stretch.yml
+- include_tasks: main_stretch.yml
   when: ansible_distribution_release == "stretch"
 
-- include: main_buster.yml
+- include_tasks: main_buster.yml
   when: ansible_distribution_release == "buster"
 
-- include: main_bullseye.yml
+- include_tasks: main_bullseye.yml
   when: ansible_distribution_release == "bullseye"
+
+- include_tasks: main_bookworm.yml
+  when: ansible_distribution_release == "bookworm"

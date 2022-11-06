@@ -16,7 +16,7 @@
     option: "disable_functions"
     value: "shell-exec,system,passthru,putenv,popen"
   notify: reload apache2
-  when: ansible_distribution_major_version is version('9', '=')
+  when: ansible_distribution_release == "stretch"
 
 - name: "Set custom values for PHP config (Debian 10)"
   ini_file:
@@ -25,7 +25,7 @@
     option: "disable_functions"
     value: "shell-exec,system,passthru,putenv,popen"
   notify: reload apache2
-  when: ansible_distribution_major_version is version('10', '=')
+  when: ansible_distribution_release == "buster"
 
 - name: "Set custom values for PHP config (Debian 11)"
   ini_file:
@@ -34,7 +34,16 @@
     option: "disable_functions"
     value: "shell-exec,system,passthru,putenv,popen"
   notify: reload apache2
-  when: ansible_distribution_major_version is version('11', '=')
+  when: ansible_distribution_release == "bullseye"
+
+- name: "Set custom values for PHP config (Debian 11)"
+  ini_file:
+    dest: /etc/php/8.1/apache2/conf.d/zzz-evolinux-custom.ini
+    section: PHP
+    option: "disable_functions"
+    value: "shell-exec,system,passthru,putenv,popen"
+  notify: reload apache2
+  when: ansible_distribution_release == "bookworm"
 
 - name: Install evoadmin VHost
   template:

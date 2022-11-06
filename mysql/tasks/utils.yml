@@ -17,7 +17,7 @@
 
 # mytop
 
-- name: "Install mytop (Debian 9)"
+- name: "Install mytop (Debian 8)"
   apt:
     name: mytop
     state: present
@@ -43,14 +43,23 @@
       - libterm-readkey-perl
   when: ansible_distribution_release == "buster"
 
-- name: "Install dependencies for mytop (Debian 11 or later)"
+- name: "Install dependencies for mytop (Debian 11)"
   apt:
     name:
       - mariadb-client-10.5
       - libconfig-inifiles-perl
       - libterm-readkey-perl
       - libdbd-mariadb-perl
-  when: ansible_distribution_major_version is version('11', '>=')
+  when: ansible_distribution_release == "bullseye"
+
+- name: "Install dependencies for mytop (Debian 12 or later)"
+  apt:
+    name:
+      - mariadb-client-10.6
+      - libconfig-inifiles-perl
+      - libterm-readkey-perl
+      - libdbd-mariadb-perl
+  when: ansible_distribution_major_version is version('12', '=')
 
 - name: Read debian-sys-maint password (Debian < 11)
   shell: 'cat /etc/mysql/debian.cnf | grep -m1 "password = .*" | cut -d" " -f3'
