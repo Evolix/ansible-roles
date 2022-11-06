@@ -465,6 +465,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* bookworm-detect: transitional role to help dealing with unreleased bookworm version
 * dovecot: Update munin plugin & configure it
 * dovecot: vmail uid/gid are configurable
 * evoacme: variable to disable Debian version check (default: False)
