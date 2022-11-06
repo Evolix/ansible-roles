@@ -1,5 +1,8 @@
 ---
 
+- name: Dependencies are satisfied
+  include_tasks: dependencies.yml
+
 - fail:
     msg: only compatible with Debian >= 8
   when:

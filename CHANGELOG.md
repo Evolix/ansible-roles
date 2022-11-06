@@ -31,6 +31,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * lxc-solr: download URL according to Solr Version
 * lxc-solr: set homedir and port at install
 * minifirewall: whitelist deb.freexian.com
+* packweb-apache: manual dependencies resolution
 * redis: some values should be quoted
 * redis: variable to disable transparent hugepage (default: do nothing)
 * squid: whitelist deb.freexian.com
