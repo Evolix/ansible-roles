@@ -14,6 +14,7 @@
 excludes_path = '/etc/evolinux/evodomains_exclude.list'
 includes_path = '/etc/evolinux/evodomains_include.list'
 allowed_ips_path = '/etc/evolinux/evodomains_allowed_ips.list'
+haproxy_conf_path = '/etc/haproxy/haproxy.conf'
 
 import os
 import sys
@@ -39,23 +40,25 @@ def execute(cmd):
 
 
 def get_allowed_ips():
-    """Return allowed IPs."""
+    """Return the list of IPs the domains are allowed to point to."""
     
+    # Server IPs
     stdout, stderr = execute('hostname -I')
     if not stdout:
         return []
     ips = stdout[0].strip(' \t\n').split()
 
-    # Other allowed IPs
+    # Custom allowed IPs from config file
     with open(allowed_ips_path, encoding='utf-8') as f:
         for line in f:
             ip = strip_comments(line).strip(' \t;')
             ips.append(ip)
+
     return ips
 
 
 def dig(domain):
-    """Return dig +short result on domain as a list."""
+    """Return "dig +short $domain", as a list of lines."""
     stdout, stderr = execute('dig +short {}'.format(domain))
     return stdout
 
@@ -149,8 +152,44 @@ def list_nginx_domains():
     return domains
 
 
+def list_haproxy_domains():
+    """Return a dict containing :
+    - key: HaProxy domains (from ACLs in /etc/haproxy/haproxy.conf).
+    - value: a list of strings "haproxy:/etc/haproxy/haproxy.conf:<LINE_IN_CONF>"
+    """
+    domains = {}
+
+    if not os.path.exists(haproxy_conf_path):
+        # HaProxy is not installed
+        return domains
+
+    with open(haproxy_conf_path, encoding='utf-8') as f:
+        line_number = 0
+        for line in f.readlines():
+            line_number += 1
+
+            line = strip_comments(line).strip(' \t')
+            if 'acl' != line[0:3] or 'hdr(host)' not in line:
+                continue
+            # line format:
+            #    acl <ACL_NAME> hdr(host) [-i] <DOMAIN_REGEX> [|| hdr(host) [-i] <DOMAIN_REGEX> [...]]
+            #    acl <ACL_NAME> hdr(host) -f <FILE>
+            for s in ['acl', 'hdr(host)', '||', '-i']:
+                line.replace(s, '').strip()
+            words = line.split()
+            
+            #TODO ici
+            for w in words:
+                if w
+
+            domain_info = 'haproxy:{}:{}'.format(haproxy_conf_path, line_number)
+
+    return domains
+
+
 class DNSResolutionThread(threading.Thread):
-    
+    """Thread that executes a dig."""
+
     def __init__(self, domain):
         threading.Thread.__init__(self, daemon=True)
         self.domain = domain
@@ -288,14 +327,12 @@ def main(argv):
             print('Unknown {} action, use -h option for help.'.format(args.action))
             sys.exit(1)
    
-    if not (args.all_domains or args.apache_domains or args.nginx_domains or args.haproxy_domains):
-        print('Domains scope not specified, looking for all domains.')
-        args.all_domains = True
-
     doms = {}
    
     if args.all_domains:
         doms.update(list_apache_domains())
+        doms.update(list_nginx_domains())
+        doms.update(list_haproxy_domains())
     
     else:
         if args.apache_domains:
@@ -303,7 +340,7 @@ def main(argv):
         if args.nginx_domains:
             doms.update(list_nginx_domains())
         if args.haproxy_domains:
-            print('Option --haproxy-domains not supported yet.')
+            doms.update(list_haproxy_domains())
     
     if not doms:
         if args.output_style == 'nrpe':
