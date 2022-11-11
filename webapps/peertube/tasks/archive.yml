@@ -1,0 +1,37 @@
+---
+
+- name: Retrieve Nextcloud archive
+  get_url:
+    url: "{{ nextcloud_releases_baseurl }}{{ nextcloud_archive_name }}"
+    dest: "{{ nextcloud_home }}/{{ nextcloud_archive_name }}"
+    force: no
+  tags:
+    - nextcloud
+
+- name: Retrieve Nextcloud sha256 checksum
+  get_url:
+    url: "{{ nextcloud_releases_baseurl }}{{ nextcloud_archive_name }}.sha256"
+    dest: "{{ nextcloud_home }}/{{ nextcloud_archive_name }}.sha256"
+    force: no
+  tags:
+    - nextcloud
+
+- name: Verify Nextcloud sha256 checksum
+  command: "sha256sum -c {{ nextcloud_archive_name }}.sha256"
+  changed_when: "False"
+  args:
+    chdir: "{{ nextcloud_home }}"
+  tags:
+    - nextcloud
+
+- name: Extract Nextcloud archive
+  unarchive:
+    src: "{{ nextcloud_home }}/{{ nextcloud_archive_name }}"
+    dest: "{{ nextcloud_home }}"
+    creates: "{{ nextcloud_home }}/nextcloud"
+    remote_src: True
+    mode: "0750"
+    owner: "{{ nextcloud_user }}"
+    group: "{{ nextcloud_user }}"
+  tags:
+    - nextcloud

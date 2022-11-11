@@ -1,0 +1,24 @@
+---
+- name: Install dependencies
+  apt:
+    state: present
+    name:
+    - ffmpeg
+    - python3-dev
+    - python-is-python3
+    - g++
+    - make
+  tags:
+    - peertube
+
+- include: apache-system.yml
+
+- include: user.yml
+
+- include: archive.yml
+
+- include: apache-vhost.yml
+
+- include: mysql-user.yml
+
+- include: config.yml

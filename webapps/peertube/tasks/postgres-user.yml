@@ -1,0 +1,40 @@
+---
+
+- name: Create a new database
+  community.postgresql.postgresql_db:
+    name: "{{ peertube_db_name }}"
+  tags:
+    - peertube
+
+- name: Generate Postgres password
+  command: 'apg -n 1 -m 16 -M lcN'
+  register: peertube_db_pass_apg
+  check_mode: no
+  changed_when: False
+  tags:
+    - peertube
+
+- name: Connect to peertube database, create peertube user, and grant access to database
+  community.postgresql.postgresql_user:
+    db: "{{ peertube_db_name }}"
+    name: "{{ peertube_db_user }}"
+    password: "{{ peertube_db_pass_apg.stdout }}"
+    priv: "ALL"
+  tags:
+    - peertube
+
+- name: Store credentials in my.cnf
+  ini_file:
+    dest: "{{ nextcloud_home }}/.my.cnf"
+    owner: "{{ nextcloud_user }}"
+    group: "{{ nextcloud_user }}"
+    mode: "0600"
+    section: client
+    option: "{{ item.option }}"
+    value:  "{{ item.value }}"
+  loop:
+    - { option: "user",     value: "{{ nextcloud_db_user }}" }
+    - { option: "database", value: "{{ nextcloud_db_name }}" }
+    - { option: "password", value: "{{ nextcloud_db_pass }}" }
+  tags:
+    - nextcloud
