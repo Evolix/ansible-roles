@@ -1,0 +1,18 @@
+---
+peertube_version: "latest-24"
+peertube_archive_name: "{{ peertube_version }}.tar.bz2"
+peertube_releases_baseurl: ""
+
+peertube_instance_name: "peertube"
+peertube_user: "{{ peertube_instance_name }}"
+peertube_domains: []
+
+peertube_home: "/home/{{ peertube_user }}"
+peertube_webroot: "{{ peertube_home }}/peertube"
+peertube_data: "{{ peertube_webroot }}/data"
+
+peertube_db_user: "{{ peertube_user }}"
+peertube_db_name: "{{ peertube_instance_name }}"
+
+peertube_admin_login: "admin"
+peertube_admin_password: ""
