@@ -16,6 +16,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios-nrpe: check_haproxy_stats supports DRAIN status
 * lxc-php: set php-fpm umask to 007
 * varnish: create special tmp directory for syntax validation
+* nagios-nrpe: check_ceph_*
 
 ### Changed
 
