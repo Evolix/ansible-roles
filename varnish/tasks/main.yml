@@ -9,13 +9,27 @@
 - name: Fetch packages
   package_facts:
     manager: auto
+  check_mode: no
   tags:
     - varnish
+    - config
+    - update-config
 
 - set_fact:
-    varnish_package_facts: ansible_facts.packages['varnish'] | first
+    varnish_package_facts: "{{ ansible_facts.packages['varnish'] | first }}"
+  check_mode: no
   tags:
     - varnish
+    - config
+    - update-config
+
+# - debug:
+#     var: varnish_package_facts
+#   check_mode: no
+#   tags:
+#     - varnish
+#     - config
+#     - update-config
 
 - name: Remove default varnish configuration files
   file:
@@ -53,6 +67,7 @@
 - name: Remove legacy systemd override
   file:
     dest: /etc/systemd/system/varnish.service.d/evolinux.conf
+    state: absent
   notify:
     - reload systemd
   tags:
