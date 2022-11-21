@@ -31,6 +31,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * redis: some values should be quoted
 * redis: variable to disable transparent hugepage (default: do nothing)
 * squid: whitelist deb.freexian.com
+* varnish: better package facts usage with check mode and tags
 * varnish: systemd override depends on Varnish version instead of Debian version
 
 ### Fixed
