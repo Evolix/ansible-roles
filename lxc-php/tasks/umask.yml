@@ -25,6 +25,7 @@
     regex: "^UMask="
     line: "UMask=0007"
     insertafter: "\\[Service\\]"
+  when: not ansible_check_mode
   notify:
     - "Daemon reload"
     - "Restart PHP-FPM"
