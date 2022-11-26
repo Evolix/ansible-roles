@@ -1,0 +1,59 @@
+server {
+    listen {{ boost_nginx_proxy_port | mandatory }} proxy_protocol default_server;
+
+    set_real_ip_from 127.0.0.1;
+    real_ip_header proxy_protocol;
+
+    server_name {{ ansible_fqdn }};
+    index index.htm index.html;
+
+    access_log  /var/log/nginx/access.log;
+    error_log  /var/log/nginx/error.log;
+    error_page 403 {{ nginx_default_redirect_url }};
+
+    root /var/www;
+
+    # Auth.
+    satisfy any;
+    include /etc/nginx/snippets/ipaddr_whitelist;
+    deny all;
+
+    auth_basic "Reserved {{ ansible_fqdn }}";
+    auth_basic_user_file /etc/nginx/snippets/private_htpasswd;
+
+    location / {
+        index  index.html index.htm;
+    }
+
+    location /munin/ {
+        alias   /var/cache/munin/www/;
+        add_header X-Frame-Options "SAMEORIGIN";
+    }
+
+    location = {{ boost_nginx_check_url | mandatory }} {
+        echo_status 200;
+        echo 'OK';
+    }
+
+    location ^~ /munin-cgi/munin-cgi-graph/ {
+        fastcgi_split_path_info ^(/munin-cgi/munin-cgi-graph)(.*);
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+        fastcgi_pass unix:/var/run/munin/spawn-fcgi-munin-graph.sock;
+        include fastcgi_params;
+    }
+
+    include /etc/nginx/snippets/letsencrypt.conf;
+}
+
+server {
+    listen {{ boost_nginx_proxy_port | mandatory }} proxy_protocol;
+    server_name munin;
+
+    set_real_ip_from 127.0.0.1;
+    real_ip_header proxy_protocol;
+
+    location /server-status-{{ nginx_serverstatus_suffix | mandatory }} {
+        stub_status on;
+        access_log off;
+    }
+}

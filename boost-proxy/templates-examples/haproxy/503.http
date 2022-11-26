@@ -1,0 +1,15 @@
+HTTP/1.0 503 Service Unavailable
+Cache-Control: no-cache, no-store
+Connection: close
+Content-Type: text/html
+
+<!doctype html>
+<html lang="fr">
+<head>
+    <title>503 Service Unavailable</title>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <h1>503 Service Unavailable</h1>
+</body>

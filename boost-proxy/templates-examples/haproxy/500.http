@@ -1,0 +1,15 @@
+HTTP/1.0 500 Internal Server Error
+Cache-Control: no-cache, no-store
+Connection: close
+Content-Type: text/html
+
+<!doctype html>
+<html lang="fr">
+<head>
+    <title>500 Internal Server Error</title>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <h1>500 Internal Server Error</h1>
+</body>

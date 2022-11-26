@@ -1,0 +1,15 @@
+HTTP/1.0 404 Not found
+Cache-Control: no-cache, no-store
+Connection: close
+Content-Type: text/html
+
+<!doctype html>
+<html lang="fr">
+<head>
+    <title>404 Not found</title>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <h1>404 Not found</h1>
+</body>

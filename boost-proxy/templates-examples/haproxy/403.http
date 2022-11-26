@@ -1,0 +1,15 @@
+HTTP/1.0 403 Forbidden
+Cache-Control: no-cache, no-store
+Connection: close
+Content-Type: text/html
+
+<!doctype html>
+<html lang="fr">
+<head>
+    <title>403 Forbidden</title>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <h1>403 Forbidden</h1>
+</body>

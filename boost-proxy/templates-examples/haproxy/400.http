@@ -1,0 +1,15 @@
+HTTP/1.0 400 Bad Request
+Cache-Control: no-cache, no-store
+Connection: close
+Content-Type: text/html
+
+<!doctype html>
+<html lang="fr">
+<head>
+    <title>400 Bad Request</title>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <h1>400 Bad Request</h1>
+</body>

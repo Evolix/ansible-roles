@@ -1,17 +1,34 @@
 ---
-boost_sysctl_config: []
+
 boost_sysctl_file_path: /etc/sysctl.d/boost.conf
+boost_sysctl_config:
+  - { key: "net.ipv4.ip_local_port_range",        value: "20000 65023" }
+  - { key: "net.ipv4.tcp_max_syn_backlog",        value: "60000" }
+  - { key: "net.ipv4.tcp_fin_timeout",            value: "30" }
+  - { key: "net.ipv4.ip_nonlocal_bind",           value: "1" }
+  - { key: "net.core.somaxconn",                  value: "60000" }
+  - { key: "net.nf_conntrack_max",                value: "524288" }
+  - { key: "net.unix.max_dgram_qlen",             value: "100" }
+  - { key: "net.ipv4.conf.default.rp_filter",     value: "0" }
+  - { key: "net.ipv4.conf.all.rp_filter",         value: "0" }
+  - { key: "net.ipv4.conf.all.arp_ignore",        value: "1" }
+  - { key: "net.ipv4.conf.all.arp_announce",      value: "2" }
+
 boost_allow_root_ssh_between_servers: False
+other_servers_from_group_ips: []
 
 boost_sites_enabled: []
 boost_sites_enabled_for_all: []
 boost_sites_enabled_for_group: []
 boost_sites_enabled_for_host: []
 
-other_servers_from_group_ips: []
-
 boost_validate_haproxy: True
 boost_validate_varnish: True
 
+boost_nginx_check_url:   "/nginxcheck"
 boost_haproxy_check_url: "/haproxycheck"
 boost_varnish_check_url: "/varnishcheck"
+
+boost_nginx_proxy_port: 81
+boost_haproxy_proxy_socket: /run/haproxy-frontend-default.sock
+boost_varnish_proxy_socket: "/run/varnish.sock"

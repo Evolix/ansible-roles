@@ -1,0 +1,293 @@
+# {{ ansible_managed }}
+# 
+# Inspired by https://gist.github.com/haproxytechblog/dc5c3b5e2801d36b79e00f07b2309c14
+#
+# This is an example HAProxy config for a Boost Proxy.
+# You should copy it into your projetct and customize it.
+######################################################################################
+
+global
+    log /dev/log    local0
+    log /dev/log    local1 notice
+    chroot {{ haproxy_chroot }}
+    stats socket {{ haproxy_socket }} mode 660 level admin
+    stats timeout 30s
+    user haproxy
+    group haproxy
+    daemon
+
+    node {{ ansible_hostname }}
+
+    server-state-file {{ haproxy_server_state_file }}
+
+    maxconn 60000
+
+    # Default SSL material locations
+    ca-base /etc/ssl/certs
+    crt-base /etc/ssl/private
+
+    # generated 2021-05-03, Mozilla Guideline v5.6, HAProxy 2.2, OpenSSL 1.1.1d, intermediate configuration
+    # https://ssl-config.mozilla.org/#server=haproxy&version=2.2&config=intermediate&openssl=1.1.1d&guideline=5.6
+    ssl-default-bind-ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
+    ssl-default-bind-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256
+    ssl-default-bind-options prefer-client-ciphers no-sslv3 no-tlsv10 no-tlsv11 no-tls-tickets
+
+    ssl-default-server-ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
+    ssl-default-server-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256
+    ssl-default-server-options no-sslv3 no-tlsv10 no-tlsv11 no-tls-tickets
+
+    # curl https://ssl-config.mozilla.org/ffdhe2048.txt > /etc/ssl/dhparam-haproxy
+    ssl-dh-param-file /etc/ssl/dhparam-haproxy
+
+defaults
+    log global
+
+    mode http
+
+    option httplog
+    option dontlognull
+    option log-separate-errors
+    option httpclose
+    option abortonclose
+    option http-server-close
+    option redispatch
+
+    timeout connect 5s
+
+    timeout client  300s
+    timeout server  300s
+
+    timeout queue      60s
+    timeout http-request 15s
+
+    load-server-state-from-file global
+
+    maxconn 50000
+
+    # Default options for "server" directive in backends
+    default-server maxconn 2000 on-error fail-check slowstart 60s inter 5s fastinter 1s downinter 1s weight 100 fall 3 rise 2
+
+http-errors boost-default-errors
+    errorfile 400 /etc/haproxy/errors/400.http
+    errorfile 403 /etc/haproxy/errors/403.http
+    errorfile 408 /etc/haproxy/errors/408.http
+    errorfile 500 /etc/haproxy/errors/500.http
+    errorfile 502 /etc/haproxy/errors/502.http
+    errorfile 503 /etc/haproxy/errors/503.http
+    errorfile 504 /etc/haproxy/errors/504.http
+
+resolvers local_dns
+    parse-resolv-conf
+    resolve_retries       3
+    timeout resolve       1s
+    timeout retry         1s
+    hold other           30s
+    hold refused         30s
+    hold nx              30s
+    hold timeout         30s
+    hold valid           10s
+    hold obsolete        30s
+
+
+{% if haproxy_stats_enable %}
+# BEGIN Stats section
+{% if haproxy_stats_users %}
+userlist stats_users
+{% for user in haproxy_stats_users | default([]) %}
+    user {{ user.login }} password {{ user.password }}
+{% endfor %}
+
+{% endif %}
+listen stats
+    mode http
+    bind {{ haproxy_stats_bind_directive }}
+{% if haproxy_stats_internal_enable %}
+    bind {{ haproxy_stats_internal_host }}:{{ haproxy_stats_internal_port }}
+{% endif %}
+
+    acl stats_access_ips src -f /etc/haproxy/stats_access_ips
+    acl stats_admin_ips  src -f /etc/haproxy/stats_admin_ips
+
+    stats enable
+    stats refresh 10s
+    stats uri {{ haproxy_stats_path }}
+    stats show-legends
+    stats show-node
+    stats admin if stats_admin_ips
+
+{% if haproxy_stats_users %}
+    acl stats_users http_auth(stats_users)
+    stats http-request auth realm "HAProxy admin" if !stats_access_ips !stats_users
+{% else %}
+    stats http-request deny if !stats_access_ips
+{% endif %}
+
+    http-request set-log-level silent
+# END Stats section
+{% endif %}
+
+# This frontend is the main entry point from "origin" http clients
+frontend external
+    bind 0.0.0.0:80,:::80
+    bind 0.0.0.0:443,:::443 ssl strict-sni alpn h2,http/1.1 crt /etc/haproxy/ssl
+
+    option forwardfor
+
+    errorfiles boost-default-errors
+
+    # Reject the request at the TCP level if source is in the denylist
+    tcp-request connection reject if { src -f /etc/haproxy/deny_ips }
+
+    # Remove a possible x-forwarded-for header already present
+    http-request del-header x-forwarded-for if { req.hdr(x-forwarded-for) -m found }
+
+    # Store the Host header in lowercase, to speedup ACL later
+    http-request set-var(req.hdr_host) req.hdr(host),lower
+    # Capture host header in logs
+    http-request capture var(req.hdr_host) len 32
+
+    # Is the request coming for the server itself (stats…)
+    acl server_hostname var(req.hdr_host) -m str {{ ansible_fqdn }} {{ ansible_hostname }}
+    acl munin           var(req.hdr_host) -m str munin
+
+    # List of IP that will not go the maintenance backend
+    acl maintenance_ips src -f /etc/haproxy/maintenance_ips
+
+    # Detect Let's Encrypt challenge requests
+    acl letsencrypt path_dir -i /.well-known/acme-challenge
+
+    # Determine if the request is routable to Varnish
+    acl varnish_available   nbsrv(varnish) gt 0
+    acl varnish_detected    res.hdr(x-varnish) -m found
+    acl varnish_http_verb   method GET HEAD PURGE
+
+    # Reject the request at the TCP level if source is in the denylist
+    tcp-request connection reject if { src -f /etc/haproxy/deny_ips }
+
+    http-request set-header x-forwarded-port  %[dst_port]
+
+    http-request set-header x-forwarded-proto http  if !{ ssl_fc }
+    http-request set-header x-forwarded-proto https if  { ssl_fc }
+
+    # BEGIN marquage HTTP
+    acl xid_req_exists req.hdr(x-request-id) -m found
+    http-request set-var(txn.xid) req.hdr(x-request-id)  if     xid_req_exists
+    http-request set-var(txn.xid) uuid()                 unless xid_req_exists
+    http-request capture var(txn.xid) len 64
+    http-request set-header x-request-id %[var(txn.xid)] unless xid_req_exists
+    
+    acl xid_res_exists res.hdr(x-request-id) -m found
+    http-after-response set-header x-request-id %[var(txn.xid)] unless xid_res_exists
+
+    http-request set-header x-boost-step1 "haproxy-external"
+    
+    http-response set-header x-boost-step1 "haproxy-external; ssl-frontend"    if  { ssl_fc }
+    http-response set-header x-boost-step1 "haproxy-external; no-ssl-frontend" if !{ ssl_fc }
+ 
+    http-response set-header x-boost-server {{ ansible_hostname }}
+
+    # Full log line added in header to help debug
+{% if 'preprod' in group_names %}
+    http-response set-header x-haproxy-log-external "%ci:%cp [%tr] %ft %b/%s %TR/%Tw/%Tc/%Tr/%Ta %ST %B %CC %CS %tsc %ac/%fc/%bc/%sc/%rc %sq/%bq %hr %hs %{+Q}r"
+{% else %}
+    # Uncomment to enable
+    ### http-response set-header x-haproxy-log-external "%ci:%cp [%tr] %ft %b/%s %TR/%Tw/%Tc/%Tr/%Ta %ST %B %CC %CS %tsc %ac/%fc/%bc/%sc/%rc %sq/%bq %hr %hs %{+Q}r"
+{% endif %}
+    # END marquage HTTP
+
+    # Global maintenance mode
+    # Uncomment to enable
+    ### use_backend maintenance unless maintenance_ips
+
+    use_backend local       if server_hostname
+    use_backend local       if munin
+    # "letsencrypt" must stay after "local"
+    use_backend letsencrypt if letsencrypt
+
+{% for site in boost_sites_enabled %}
+# BEGIN frontend_external section for site '{{ site }}'
+{% include "templates/boost-sites/" + site + "/haproxy/frontend_external.j2" %}
+{# Ne pas enlever la ligne vide ci-dessous #}
+
+# END frontend_external section for site '{{ site }}'
+{% endfor %}
+
+    default_backend goto_internal
+
+# This is used as a fallback to go to the internal frontend
+# This is not supposed to happen
+backend goto_internal
+    server haproxy-internal {{ boost_haproxy_proxy_socket }} send-proxy-v2
+
+# This frontend is only used when returning from varnish
+frontend internal
+    bind {{ boost_haproxy_proxy_socket }} user root mode 666 accept-proxy
+
+    capture request header Host len 32
+
+    option forwardfor
+
+    # Check URL (used by Varnish)
+    monitor-uri {{ boost_haproxy_check_url | mandatory }}
+
+    # Store the Host header in lowercase, to speedup ACL later
+    http-request set-var(req.hdr_host) req.hdr(host),lower
+    # Capture host header in logs
+    http-request capture var(req.hdr_host) len 32
+
+    acl varnish_from        req.hdr(x-varnish) -m found
+    acl forwarded_proto     req.hdr(x-forwarded-proto) -m found
+
+    # Keep header if present and coming from Varnish
+    http-request set-header x-forwarded-proto %[req.hdr(x-forwarded-proto)] if forwarded_proto varnish_from
+
+    # BEGIN marquage HTTP
+    http-request set-header x-boost-step3 "haproxy-internal"
+
+    http-response set-header x-boost-step3 "haproxy-internal; ssl-backend"    if  { ssl_bc }
+    http-response set-header x-boost-step3 "haproxy-internal; no-ssl-backend" if !{ ssl_bc }
+
+    # Full log line added in header to help debug
+{% if 'preprod' in group_names %}
+    http-response set-header x-haproxy-log-internal "%ci:%cp [%tr] %ft %b/%s %TR/%Tw/%Tc/%Tr/%Ta %ST %B %CC %CS %tsc %ac/%fc/%bc/%sc/%rc %sq/%bq %hr %hs %{+Q}r"
+{% else %}
+    # Uncomment to enable
+    ### http-response set-header x-haproxy-log-internal "%ci:%cp [%tr] %ft %b/%s %TR/%Tw/%Tc/%Tr/%Ta %ST %B %CC %CS %tsc %ac/%fc/%bc/%sc/%rc %sq/%bq %hr %hs %{+Q}r"
+{% endif %}
+    # END marquage HTTP
+
+{% for site in boost_sites_enabled %}
+# BEGIN frontend_internal section for site '{{ site }}'
+{% include "templates/boost-sites/" + site + "/haproxy/frontend_internal.j2" %}
+{# Ne pas enlever la ligne vide ci-dessous #}
+
+# END frontend_internal section for site '{{ site }}'
+{% endfor %}
+
+
+backend varnish
+    option httpchk HEAD {{ boost_varnish_check_url | mandatory }}
+    server varnish_sock {{ boost_varnish_proxy_socket }} check observe layer7 maxconn 3000 inter 1s send-proxy-v2
+
+{% for site in boost_sites_enabled %}
+# BEGIN backend section for site '{{ site }}'
+{% include "templates/boost-sites/" + site + "/haproxy/backend.j2" %}
+{# Ne pas enlever la ligne vide ci-dessous #}
+
+# END backend section for site '{{ site }}'
+{% endfor %}
+
+backend letsencrypt
+{% if boost_certificates_server is not defined or boost_certificates_server == inventory_hostname %}
+    server localhost 127.0.0.1:{{ boost_nginx_port }} send-proxy-v2 maxconn 10
+{% else %}
+    server {{ boost_certificates_server }} {{ hostvars[boost_certificates_server].ansible_host }}:80 maxconn 10
+{% endif %}
+
+backend local
+    option httpchk HEAD {{ boost_nginx_check_url | mandatory }}
+    server localhost 127.0.0.1:81 send-proxy-v2 maxconn 10
+
+backend maintenance
+    http-request set-log-level silent
+    errorfile 503 /etc/haproxy/errors/maintenance.http

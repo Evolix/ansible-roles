@@ -1,0 +1,150 @@
+sub vcl_recv {
+    # Happens before we check if we have this in cache already.
+    #
+    # Typically you clean up the request here, removing cookies you don't need,
+    # rewriting the request, etc.
+    if (req.http.host == "example.com" || req.http.host == "www.example.com") {
+
+        # Accept PURGE requests from whitelisted IPs
+        # Uncomment to enable
+        ### if (req.method == "PURGE") {
+        ###     # Allow from monitoring & hosting08
+        ###     if (client.ip == "31.170.9.129" || client.ip == "31.170.11.159") {
+        ###         if (req.url == "/_purge_all") {
+        ###             ban("req.http.host == "+req.http.host+" && req.url ~ .");
+        ###             return (synth(200, "ALL purge cache done"));
+        ###         }
+        ###         ban("req.http.host == "+req.http.host+" && req.url ~ "+req.url);
+        ###         return (synth(200, "purge cache done"));
+        ###     } else {
+        ###         return (synth(403, "permission denied"));
+        ###     }
+        ### }
+
+        # return (pass) when Cache-Control: no-cache, private etc. from client
+        include "/etc/varnish/conf.d/respect_cache_request_headers.recv.vcl";
+
+        # unset cookie and auth headers for static files (jpg, png, pdf...)
+        include "/etc/varnish/conf.d/cleanup_requests_static.recv.vcl";
+
+        # Wordpress : return (pass) when WP cookie or "^/wp-(login|admin)" url
+        ### include "/etc/varnish/conf.d/wordpress.recv.vcl";
+
+        # Uncomment if your site uses Prestashop
+        ### include "/etc/varnish/conf.d/prestashop.recv.vcl";
+
+        # Uncomment to use devide detection
+        ### call devicedetect;
+
+        # builtin configuration
+        ### include "/etc/varnish/conf.d/builtin.recv.vcl";
+        if (req.method == "PRI") {
+            /* This will never happen in properly formed traffic (see: RFC7540) */
+            return (synth(405));
+        }
+        if (!req.http.host &&
+            req.esi_level == 0 &&
+            req.proto ~ "^(?i)HTTP/1.1") {
+            /* In HTTP/1.1, Host is required. */
+            return (synth(400));
+        }
+        if (req.method != "GET" &&
+            req.method != "HEAD" &&
+            req.method != "PUT" &&
+            req.method != "POST" &&
+            req.method != "TRACE" &&
+            req.method != "OPTIONS" &&
+            req.method != "DELETE" &&
+            req.method != "PATCH") {
+            /* Non-RFC2616 or CONNECT which is weird. */
+            return (pipe);
+        }
+        if (req.method != "GET" && req.method != "HEAD") {
+            /* We only deal with GET and HEAD by default */
+            return (pass);
+        }
+        if (req.http.Authorization || req.http.Cookie) {
+            /* Not cacheable by default */
+            return (pass);
+        }
+
+        return (hash);
+    }
+}
+
+sub vcl_backend_response {
+    # Happens after we have read the response headers from the backend.
+    #
+    # Here you clean the response headers, removing silly Set-Cookie headers
+    # and other mistakes your backend does..
+    if (bereq.http.host == "example.com" || bereq.http.host == "www.example.com") {
+
+        # Low TTL for objects with an error response code.
+        if (beresp.status == 403 || beresp.status == 404 || beresp.status >= 500) {
+            set beresp.ttl = 10s;
+            # mark as "hit_for_pass" for 10s
+            ### set beresp.uncacheable = false;
+            return (deliver);
+        }
+
+        # Default TTL if the backend does not send Expires or max-age/s-max-age headers
+        if (!beresp.http.expires && beresp.http.cache-control !~ "max-age=") {
+            set beresp.ttl = 4h;
+        }
+        # grace time
+        ### set beresp.grace = 1d;
+
+        # Exceptions
+        if (bereq.url ~ "\.(rss|xml|atom)(\?.*|)$") {
+            set beresp.ttl = 2h;
+        }
+
+        # Wordpress : no cache when WP cookie or "^/wp-(login|admin)" url
+        ### include "/etc/varnish/conf.d/wordpress.backend_response.vcl";
+
+        # Uncomment if your site uses Prestashop
+        ### include "/etc/varnish/conf.d/prestashop.backend_response.vcl";
+
+        # Uncomment if you want to do device detection
+        ### include "/etc/varnish/conf.d/devicedetect.backend_response.vcl";
+
+        # builtin configuration
+        ### include "/etc/varnish/conf.d/builtin.backend_response.vcl";
+        if (bereq.uncacheable) {
+            return (deliver);
+        } else if (beresp.ttl <= 0s ||
+            beresp.http.Set-Cookie ||
+            beresp.http.Surrogate-control ~ "no-store" ||
+            (!beresp.http.Surrogate-Control &&
+                beresp.http.Cache-Control ~ "no-cache|no-store|private") ||
+            beresp.http.Vary == "*") {
+                # Mark as "Hit-For-Miss" for the next 2 minutes
+                set beresp.ttl = 120s;
+                set beresp.uncacheable = true;
+        }
+
+        return (deliver);
+    }
+}
+
+sub vcl_deliver {
+    # Happens when we have all the pieces we need, and are about to send the
+    # response to the client.
+    #
+    # You can do accounting or modifying the final object here.
+    if (req.http.host == "example.com" || req.http.host == "www.example.com") {
+
+        # Uncomment if you want to do device detection
+        ### include "/etc/varnish/conf.d/devicedetect.deliver.vcl";
+
+        # Tell wich config file has been used
+{% if 'preprod' in group_names %}
+        set resp.http.X-Varnish-Config = "{{ site }}";
+{% else %}
+        # Uncomment to enable
+        ### set resp.http.X-Varnish-Config = "{{ site }}";
+{% endif %}
+
+        return (deliver);
+    }
+}

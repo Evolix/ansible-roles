@@ -1,0 +1,5 @@
+    acl example_domains var(req.hdr_host) -m str example.com
+
+    # routing directives, all conditionned by (at least) the "example_domains" ACL
+    use_backend example if example_domains
+

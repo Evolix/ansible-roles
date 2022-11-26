@@ -1,0 +1,15 @@
+HTTP/1.0 503 Service Unavailable
+Cache-Control: no-cache
+Connection: close
+Content-Type: text/html
+
+<!doctype html>
+<html lang="fr">
+<head>
+    <title>Site Maintenance</title>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+<h1>Maintenance en cours</h1>
+</body>

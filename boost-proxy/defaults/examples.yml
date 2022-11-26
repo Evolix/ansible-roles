@@ -1,0 +1,45 @@
+###
+# This is list of variables that should copy to your inventory when using this role
+# Those values are sensible, for a dedicated Boost Proxy server.
+#
+---
+
+# minifirewall_protected_ports_tcp: []
+# minifirewall_protected_ports_udp: []
+# minifirewall_public_ports_tcp: [80, 443]
+# minifirewall_public_ports_udp: []
+# minifirewall_semipublic_ports_tcp: [22, "{{ haproxy_stats_port }}"]
+# minifirewall_semipublic_ports_udp: []
+# minifirewall_private_ports_tcp: [5666]
+# minifirewall_private_ports_udp: []
+# minifirewall_http_sites: ['0.0.0.0/0']
+# minifirewall_https_sites: ['0.0.0.0/0']
+
+# haproxy_socket: /run/haproxy/admin.sock
+# haproxy_chroot: /var/lib/haproxy
+
+# haproxy_server_state_file: /var/lib/haproxy/server_state.txt
+
+# haproxy_stats_access_ips: "{{ trusted_ips | union(['127.0.0.1']) }}"
+# haproxy_stats_admin_ips: "{{ trusted_ips }}"
+# haproxy_maintenance_ips: []
+# haproxy_deny_ips: []
+
+# haproxy_stats_enable: True
+# haproxy_stats_port: "8080"
+
+
+# nginx_package_name: "nginx-light"
+# nginx_force_default_template: True
+# nginx_default_template_regular: "nginx/evolinux-default.conf.j2"
+
+# varnish_addresses:
+#   - "{{ haproxy_chroot }}{{ boost_varnish_proxy_socket }},user=vcache,group=varnish,mode=666,PROXY"
+#   - 127.0.0.1:82
+# varnish_tmp_dir: /var/tmp-vcache
+
+# boost_sites_enabled_for_all:
+#   - 000-example
+
+# Set this to Tur if you have multiple servers that need to communicate with a root SSH access
+# boost_allow_root_ssh_between_servers: False

@@ -1,0 +1,176 @@
+vcl 4.1;
+
+probe haproxycheck {
+    .request =
+      "HEAD {{ boost_haproxy_check_url | mandatory }} HTTP/1.1"
+      "Connection: close";
+    .timeout = 1s;
+    .interval = 3s;
+    .window = 3;
+    .threshold = 2;
+}
+
+backend default {
+    .path = "{{ boost_haproxy_proxy_socket }}";
+    .proxy_header = 1;
+    .connect_timeout = 3s;
+    .first_byte_timeout = 300s;
+    .between_bytes_timeout = 300s;
+    .probe = haproxycheck;
+}
+
+# Uncomment if you want to do device detection
+# cf. https://varnish-cache.org/docs/6.0/users-guide/devicedetection.html
+### include "/etc/varnish/conf.d/devicedetect.functions.vcl";
+
+# Routines appliquées dans tous les cas
+# A modifier avec précaution
+# Ne pas mettre de "return" dans ces routines communes
+
+sub vcl_recv {
+    # Health check from HAProxy
+    if (req.url == "{{ boost_varnish_check_url | mandatory }}") {
+        return (synth(200, "Hi HAProxy, I'm fine!"));
+    }
+
+    # Normalize encoding, and unset it on yet-compressed formats.
+    if (req.http.Accept-Encoding) {
+        if (req.url ~ "\.(jpg|jpeg|png|gif|gz|tgz|bz2|lzma|tbz|zip|rar)(\?.*|)$") {
+            unset req.http.Accept-Encoding;
+        }
+        # use gzip when possible, otherwise use deflate
+        if (req.http.Accept-Encoding ~ "gzip") {
+            set req.http.Accept-Encoding = "gzip";
+        }
+        elsif (req.http.Accept-Encoding ~ "deflate") {
+            set req.http.Accept-Encoding = "deflate";
+        }
+        else {
+            # unknown algorithm, unset accept-encoding header
+            unset req.http.Accept-Encoding;
+        }
+    }
+
+    # Remove known cookies used only on client side (by JavaScript).
+    if (req.http.cookie) {
+        set req.http.Cookie = regsuball(req.http.Cookie, "_gat=[^;]+(; )?", "");        # Google Analytics
+        set req.http.Cookie = regsuball(req.http.Cookie, "_ga=[^;]+(; )?", "");         # Google Analytics
+        set req.http.Cookie = regsuball(req.http.Cookie, "_gaq=[^;]+(; )?", "");        # Google Analytics
+        set req.http.Cookie = regsuball(req.http.Cookie, "__utm[^=]*=[^;]+(; )?", "");  # Google Analytics
+        set req.http.Cookie = regsuball(req.http.Cookie, "__gads=[^;]+(; )?", "");      # Google Doubleclick
+        set req.http.Cookie = regsuball(req.http.Cookie, "__auc=[^;]+(; )?", "");       # Alexa Analytics
+
+        if (req.http.cookie ~ "^ *$") {
+            unset req.http.cookie;
+        }
+    }
+
+    # BEGIN marquage HTTP
+    # TODO: ajouter un en-tête pour marquer le passage dans les 3 composants
+    # avec une artie permanente et une partie optionnelle commentée par défaut
+    set req.http.X-Boost-Layer = "varnish";
+    # END marquage HTTP
+}
+
+sub vcl_backend_response {
+    if (beresp.uncacheable) {
+        set beresp.http.X-Cacheable = "FALSE";
+    } else {
+        set beresp.http.X-Cacheable = "TRUE";
+    }
+
+    # our default TTL is 60s instead of 86400s
+    if (beresp.http.cache-control !~ "max-age=") {
+        set beresp.ttl = 60s;
+    }
+
+    # Grace mode (Stale content delivery)
+    # abandon when 5xx errors to keep grace mode even 503 from HAProxy
+    if (beresp.status >= 500 && bereq.is_bgfetch) {
+         return (abandon);
+    }
+    set beresp.grace = 4h;
+}
+
+sub vcl_deliver {
+
+    unset resp.http.Via;
+
+    # BEGIN marquage HTTP
+    # TODO: ajouter un en-tête pour marquer le passage dans les 3 composants
+    # avec une partie permanente et une partie optionnelle commentée par défaut
+    if (resp.http.Set-Cookie && resp.http.Cache-Control) {
+      set resp.http.X-Boost-Step2 = "varnish; set-cookie; cache-control";
+    } elseif (resp.http.Set-Cookie) {
+      set resp.http.X-Boost-Step2 = "varnish; set-cookie; no-cache-control";
+    } elseif (resp.http.Cache-Control) {
+      set resp.http.X-Boost-Step2 = "varnish; no-set-cookie; cache-control";
+    } else {
+      set resp.http.X-Boost-Step2 = "varnish; no-set-cookie; no-cache-control";
+    }
+    # END marquage HTTP
+
+    if (resp.http.X-Varnish ~ "[0-9]+ +[0-9]+") {
+      set resp.http.X-Cache = "HIT";
+      unset resp.http.X-Boost-Step3;
+    } else {
+      set resp.http.X-Cache = "MISS";
+    }
+
+    # DEBUG infos
+    ## désactivation pour test
+    ## https://github.com/varnishcache/varnish-cache/issues/3765
+    # set resp.http.X-Varnish-Client-Ip = client.ip;
+    set resp.http.X-Varnish-Client-Method = req.method;
+    set resp.http.X-Varnish-Client-Url = req.url;
+    set resp.http.X-Varnish-Client-Proto = req.proto;
+    set resp.http.X-Varnish-Object-Ttl = obj.ttl;
+{% if 'preprod' in group_names %}
+    set resp.http.X-Varnish-Client-Cache-Control = req.http.cache-control;
+    set resp.http.X-Varnish-Client-Cookie = req.http.cookie;
+    set resp.http.X-Varnish-Client-Ua = req.http.user-agent;
+    set resp.http.X-Varnish-Object-Grace = obj.grace;
+    set resp.http.X-Varnish-Object-Keep = obj.keep;
+    set resp.http.X-Varnish-Object-Storage = obj.storage;
+{% else %}
+    ### set resp.http.X-Varnish-Client-Cache-Control = req.http.cache-control;
+    ### set resp.http.X-Varnish-Client-Cookie = req.http.cookie;
+    ### set resp.http.X-Varnish-Client-Ua = req.http.user-agent;
+    ### set resp.http.X-Varnish-Object-Grace = obj.grace;
+    ### set resp.http.X-Varnish-Object-Keep = obj.keep;
+    ### set resp.http.X-Varnish-Object-Storage = obj.storage;
+{% endif %}
+}
+
+# BEGIN sites
+{% for site_name in boost_sites_enabled %}
+include "/etc/varnish/sites/{{ site_name }}.vcl";
+{% endfor %}
+# END sites
+
+# Routines personnalisées, appliquées en "fallback"
+# TODO: mieux expliquer !
+
+sub vcl_backend_error {
+    set beresp.http.Content-Type = "text/html; charset=utf-8";
+    set beresp.http.Retry-After = "5";
+    set beresp.body = {"<!DOCTYPE html>
+<html>
+  <head>
+    <title>"} + beresp.status + " " + beresp.reason + {"</title>
+  </head>
+  <body>
+    <h1>Error "} + beresp.status + " " + beresp.reason + {"</h1>
+    <p>"} + beresp.reason + {"</p>
+    <h3>EvoGuru Meditation:</h3>
+    <p>XID: "} + bereq.xid + {"</p>
+    <hr>
+    <p>Varnish cache server</p>
+  </body>
+</html>
+"};
+    return (deliver);
+}
+
+# Les routines internes de Varnish sont visibles avec la commande
+# varnishd -x builtin

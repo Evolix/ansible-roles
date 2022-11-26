@@ -1,0 +1,15 @@
+HTTP/1.0 502 Bad Gateway
+Cache-Control: no-cache, no-store
+Connection: close
+Content-Type: text/html
+
+<!doctype html>
+<html lang="fr">
+<head>
+    <title>502 Bad Gateway</title>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <h1>502 Bad Gateway</h1>
+</body>

@@ -1,0 +1,15 @@
+HTTP/1.0 504 Gateway Timeout
+Cache-Control: no-cache, no-store
+Connection: close
+Content-Type: text/html
+
+<!doctype html>
+<html lang="fr">
+<head>
+    <title>504 Gateway Timeout</title>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <h1>504 Gateway Timeout</h1>
+</body>

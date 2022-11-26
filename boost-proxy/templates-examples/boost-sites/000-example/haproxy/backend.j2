@@ -1,0 +1,7 @@
+backend example
+    errorfile 503 /etc/haproxy/sites/000-example/maintenance.http
+    server example-hostmane 1.2.3.4:443 check observe layer4 ssl verify none
+
+backend example_maintenance
+    http-request set-log-level silent
+    errorfile 503 /etc/haproxy/sites/000-example/maintenance.http
