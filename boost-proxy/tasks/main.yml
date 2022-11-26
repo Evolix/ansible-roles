@@ -23,7 +23,7 @@
 # Sites configuration
 ######################
 
-- include_tasks: sites.yml
+- import_tasks: sites.yml
 
 #################
 # external roles
@@ -45,4 +45,4 @@
 # validations
 ##############
 
-- include_tasks: validate.yml
+- include: validate.yml

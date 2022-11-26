@@ -1,0 +1,33 @@
+---
+
+# HAProxy
+
+- name: "Copy custom error pages for {{ site }}"
+  template:
+    src: "{{ template }}"
+    dest: "/etc/haproxy/sites/{{ site }}/"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ query('fileglob', 'templates/boost-sites/{{ site }}/haproxy/*.http') }}"
+  loop_control:
+    loop_var: template
+  tags:
+    - haproxy
+    - config
+    - update-config
+
+# Varnish
+
+- name: "Copy sites custom VCL config for {{ site }}"
+  template:
+    src: "templates/boost-sites/{{ site }}/varnish/default.vcl.j2"
+    dest: "/etc/varnish/sites/{{ site }}.vcl"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload varnish
+  tags:
+    - varnish
+    - config
+    - update-config
