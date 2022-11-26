@@ -39,6 +39,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * evolinux-user: Fix sudoers privilege for check php\_fpm80
 * nagios-nrpe: Fix check opendkim for recent change in listening port
+* varnish: fix missing state, that blocked the task
 
 ### Removed
 
