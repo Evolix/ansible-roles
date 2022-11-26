@@ -23,6 +23,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-base: utils.yml can be excluded
 * evolinux-todo: execute tasks only for Debian distribution (because this task is a dependency for others roles used on different distributions)
 * evolinux-user: Add sudoers privilege for chck php\_fpm81
+* evomaintenance: allow missing API endpoint if APi is disabled
 * java: use default JRE package when version is not specified
 * lxc-solr: detect the real partition options
 * lxc-solr: download URL according to Solr Version
