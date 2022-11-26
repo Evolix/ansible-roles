@@ -46,6 +46,25 @@
     - config
     - update-config
 
+- name: Copy 504 page
+  template:
+    src: "{{ lookup('first_found', file, errors='ignore') }}"
+    dest: "/etc/haproxy/sites/{{ site }}/504.http"
+    owner: root
+    group: root
+    mode: "0644"
+  vars:
+    file:
+      - "templates/boost-sites/{{ site }}/haproxy/504.http"
+      - "templates/haproxy/504.http"
+  loop: "{{ boost_sites_enabled }}"
+  loop_control:
+    loop_var: site
+  tags:
+    - haproxy
+    - config
+    - update-config
+
 - name: Copy 503 page
   template:
     src: "{{ lookup('first_found', file, errors='ignore') }}"
@@ -75,7 +94,7 @@
   vars:
     file:
       - "templates/boost-sites/{{ site }}/haproxy/502.http"
-      - "templates/haproxy/503.http"
+      - "templates/haproxy/502.http"
   loop: "{{ boost_sites_enabled }}"
   loop_control:
     loop_var: site
@@ -95,6 +114,25 @@
     file:
       - "templates/boost-sites/{{ site }}/haproxy/500.http"
       - "templates/haproxy/500.http"
+  loop: "{{ boost_sites_enabled }}"
+  loop_control:
+    loop_var: site
+  tags:
+    - haproxy
+    - config
+    - update-config
+
+- name: Copy 400 page
+  template:
+    src: "{{ lookup('first_found', file) }}"
+    dest: "/etc/haproxy/sites/{{ site }}/400.http"
+    owner: root
+    group: root
+    mode: "0644"
+  vars:
+    file:
+      - "templates/boost-sites/{{ site }}/haproxy/400.http"
+      - "templates/haproxy/400.http"
   loop: "{{ boost_sites_enabled }}"
   loop_control:
     loop_var: site
