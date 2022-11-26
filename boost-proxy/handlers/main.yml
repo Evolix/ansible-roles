@@ -1,6 +1,31 @@
 ---
 
 - name: reload sshd
-  service:
+  systemd:
     name: ssh
     state: reloaded
+
+- name: reload systemd
+  command: systemctl daemon-reload
+
+- name: reload varnish
+  systemd:
+    name: varnish
+    state: reloaded
+    daemon_reload: yes
+
+- name: restart varnish
+  systemd:
+    name: varnish
+    state: restarted
+    daemon_reload: yes
+
+- name: reload haproxy
+  systemd:
+    name: haproxy
+    state: reloaded
+
+- name: restart haproxy
+  systemd:
+    name: haproxy
+    state: restarted
