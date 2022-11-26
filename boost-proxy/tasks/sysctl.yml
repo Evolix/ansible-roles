@@ -1,0 +1,12 @@
+---
+
+- name: Boost optimization for sysctl
+  sysctl:
+    sysctl_file: "{{ boost_sysctl_file_path }}"
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    reload: yes
+    sysctl_set: yes
+  loop: "{{ boost_sysctl_config }}"
+  tags:
+    - sysctl

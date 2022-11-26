@@ -1,0 +1,57 @@
+---
+
+- name: URL for HAProxy admin page is on default page
+  lineinfile:
+    path: "/var/www/index.html"
+    line: '            <li><a href="{{ haproxy_stats_external_url }}">HAProxy</a></li>'
+    regexp: '>HAProxy<'
+    insertafter: ">Stats système<"
+  tags:
+    - haproxy
+    - config
+
+- name: HAproxy run directory in chroot
+  file:
+    dest: "/var/lib/haproxy/run"
+    owner: root
+    group: root
+    mode: "0755"
+    state: directory
+  tags:
+    - haproxy
+    - config
+
+- name: HAproxy errors directory is present
+  file:
+    dest: "/etc/haproxy/errors"
+    owner: root
+    group: root
+    mode: "0755"
+    state: directory
+  tags:
+    - haproxy
+    - config
+    - update-config
+
+- name: Maintenance file is present
+  copy:
+    src: "templates/haproxy/maintenance.http"
+    dest: /etc/haproxy/errors/maintenance.http
+    mode: "0644"
+  notify: reload haproxy
+  tags:
+    - haproxy
+    - config
+    - update-config
+
+- name: 2048 bits DHparam file is present
+  get_url:
+    url: https://ssl-config.mozilla.org/ffdhe2048.txt
+    dest: /etc/ssl/dhparam-haproxy
+    mode: '0600'
+    owner: root
+    group: root
+    force: no
+  tags:
+    - haproxy
+    - config

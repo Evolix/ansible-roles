@@ -1,0 +1,27 @@
+---
+
+- name: "root can connect over SSH from other servers"
+  blockinfile:
+    dest: /etc/ssh/sshd_config
+    marker: "# {mark} ROOT AUTHORIZATION"
+    block: |
+      Match User root Address {{ other_servers_from_group_ips | join(',') }}
+          AllowGroups root
+          PubkeyAuthentication yes
+          PasswordAuthentication no
+          PermitRootLogin without-password
+    state: present
+  notify: reload sshd
+  when: (boost_allow_root_ssh_between_servers | bool) and (other_servers_from_group_ips | length > 0)
+  tags:
+    - ssh
+
+- name: "root can connect over SSH from other servers"
+  blockinfile:
+    dest: /etc/ssh/sshd_config
+    marker: "# {mark} ROOT AUTHORIZATION"
+    state: absent
+  notify: reload sshd
+  when: not (boost_allow_root_ssh_between_servers | bool) or (other_servers_from_group_ips | length <= 0)
+  tags:
+    - ssh

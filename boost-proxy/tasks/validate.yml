@@ -1,0 +1,24 @@
+---
+
+
+- name: check if HAProxy configuration is valid
+  shell:
+    cmd: "haproxy -c -f /etc/haproxy/haproxy.cfg"
+  changed_when: false
+  check_mode: no
+  register: haproxy_validate
+  when: boost_validate_haproxy
+  tags:
+    - always
+
+- name: check if Varnish configuration is valid
+  shell:
+    cmd: "sudo -u vcache TMPDIR={{ varnish_tmp_dir }} varnishd -C -f /etc/varnish/default.vcl > /dev/null"
+  args:
+    warn: False
+  changed_when: false
+  check_mode: no
+  register: varnish_validate
+  when: boost_validate_varnish
+  tags:
+    - always

@@ -12,6 +12,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* boost-proxy: new role, extracted from internal use, to make a Boost server
 * evolinux-base: replace regular kernel by cloud kernel on virtual servers
 * nagios-nrpe: check_haproxy_stats supports DRAIN status
 * lxc-php: set php-fpm umask to 007

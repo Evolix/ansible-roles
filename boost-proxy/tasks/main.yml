@@ -1,0 +1,48 @@
+---
+
+#######################
+# System configuration
+#######################
+
+# Merge variables from group_vars and host_vars
+- set_fact:
+    boost_sites_enabled: "{{ boost_sites_enabled_for_all | union(boost_sites_enabled_for_group) | union(boost_sites_enabled_for_host) | unique }}"
+  tags: always
+
+- debug:
+    var: boost_sites_enabled
+  tags: always
+
+- include: haproxy.yml
+
+- include: sshd.yml
+
+- include: sysctl.yml
+
+######################
+# Sites configuration
+######################
+
+- include_tasks: sites.yml
+
+#################
+# external roles
+#################
+
+- import_role:
+    name: haproxy
+
+- import_role:
+    name: varnish
+
+- import_role:
+    name: nginx
+
+- import_role:
+    name: certbot
+
+##############
+# validations
+##############
+
+- include_tasks: validate.yml

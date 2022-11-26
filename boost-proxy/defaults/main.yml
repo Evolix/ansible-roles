@@ -1,0 +1,17 @@
+---
+boost_sysctl_config: []
+boost_sysctl_file_path: /etc/sysctl.d/boost.conf
+boost_allow_root_ssh_between_servers: False
+
+boost_sites_enabled: []
+boost_sites_enabled_for_all: []
+boost_sites_enabled_for_group: []
+boost_sites_enabled_for_host: []
+
+other_servers_from_group_ips: []
+
+boost_validate_haproxy: True
+boost_validate_varnish: True
+
+boost_haproxy_check_url: "/haproxycheck"
+boost_varnish_check_url: "/varnishcheck"
