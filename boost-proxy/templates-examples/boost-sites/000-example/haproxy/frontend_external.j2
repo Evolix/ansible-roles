@@ -1,6 +1,6 @@
     acl example_domains var(req.hdr_host) -m str example.com
     acl example_domains2 var(req.hdr_host) -m str example.org www.example.org
-    ### acl example_maintenance_ips src -f /etc/haproxy/example/maintenance_ips
+    ### acl example_maintenance_ips src -f /etc/haproxy/sites/{{ site }}/maintenance_ips
 
     # Redirect to HTTPS without Let's Encrypt certificate
     ### http-request redirect scheme https code 301 if example_domains !{ ssl_fc }

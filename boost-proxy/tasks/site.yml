@@ -2,16 +2,13 @@
 
 # HAProxy
 
-- name: "Copy custom error pages for {{ site }}"
-  template:
-    src: "{{ template }}"
+- name: "Copy HAProxy static elements for {{ site }}"
+  copy:
+    src: "templates/boost-sites/{{ site }}/haproxy/static/"
     dest: "/etc/haproxy/sites/{{ site }}/"
     owner: root
     group: root
     mode: "0644"
-  loop: "{{ query('fileglob', 'templates/boost-sites/{{ site }}/haproxy/*.http') }}"
-  loop_control:
-    loop_var: template
   tags:
     - haproxy
     - config
@@ -19,7 +16,7 @@
 
 # Varnish
 
-- name: "Copy sites custom VCL config for {{ site }}"
+- name: "Copy Varnish custom VCL for {{ site }}"
   template:
     src: "templates/boost-sites/{{ site }}/varnish/default.vcl.j2"
     dest: "/etc/varnish/sites/{{ site }}.vcl"

@@ -32,10 +32,12 @@
     - haproxy
     - config
 
-- name: Maintenance file is present
+- name: "Copy error pages"
   copy:
-    src: "templates/haproxy/maintenance.http"
-    dest: /etc/haproxy/errors/maintenance.http
+    src: "templates/haproxy/static/"
+    dest: "/etc/haproxy/errors/"
+    owner: root
+    group: root
     mode: "0644"
   notify: reload haproxy
   tags:
