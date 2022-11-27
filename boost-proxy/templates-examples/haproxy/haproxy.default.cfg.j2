@@ -169,7 +169,7 @@ frontend external
     http-request set-header x-forwarded-proto http  if !{ ssl_fc }
     http-request set-header x-forwarded-proto https if  { ssl_fc }
 
-    # BEGIN marquage HTTP
+    # BEGIN HTTP tagging
     acl xid_req_exists req.hdr(x-request-id) -m found
     http-request set-var(txn.xid) req.hdr(x-request-id)  if     xid_req_exists
     http-request set-var(txn.xid) uuid()                 unless xid_req_exists
@@ -193,7 +193,7 @@ frontend external
     # Uncomment to enable
     ### http-response set-header x-haproxy-log-external "%ci:%cp [%tr] %ft %b/%s %TR/%Tw/%Tc/%Tr/%Ta %ST %B %CC %CS %tsc %ac/%fc/%bc/%sc/%rc %sq/%bq %hr %hs %{+Q}r"
 {% endif %}
-    # END marquage HTTP
+    # END HTTP tagging
 
     # Global maintenance mode
     # Uncomment to enable
@@ -207,7 +207,7 @@ frontend external
 {% for site in boost_sites_enabled %}
 # BEGIN frontend_external section for site '{{ site }}'
 {% include "templates/boost-sites/" + site + "/haproxy/frontend_external.j2" %}
-{# Ne pas enlever la ligne vide ci-dessous #}
+{# Do not remove the blank line below #}
 
 # END frontend_external section for site '{{ site }}'
 {% endfor %}
@@ -241,7 +241,7 @@ frontend internal
     # Keep header if present and coming from Varnish
     http-request set-header x-forwarded-proto %[req.hdr(x-forwarded-proto)] if forwarded_proto varnish_from
 
-    # BEGIN marquage HTTP
+    # BEGIN HTTP tagging
     http-request set-header x-boost-step3 "haproxy-internal"
 
     http-response set-header x-boost-step3 "haproxy-internal; ssl-backend"    if  { ssl_bc }
@@ -254,12 +254,12 @@ frontend internal
     # Uncomment to enable
     ### http-response set-header x-haproxy-log-internal "%ci:%cp [%tr] %ft %b/%s %TR/%Tw/%Tc/%Tr/%Ta %ST %B %CC %CS %tsc %ac/%fc/%bc/%sc/%rc %sq/%bq %hr %hs %{+Q}r"
 {% endif %}
-    # END marquage HTTP
+    # END HTTP tagging
 
 {% for site in boost_sites_enabled %}
 # BEGIN frontend_internal section for site '{{ site }}'
 {% include "templates/boost-sites/" + site + "/haproxy/frontend_internal.j2" %}
-{# Ne pas enlever la ligne vide ci-dessous #}
+{# Do not remove the blank line below #}
 
 # END frontend_internal section for site '{{ site }}'
 {% endfor %}
@@ -272,21 +272,21 @@ backend varnish
 {% for site in boost_sites_enabled %}
 # BEGIN backend section for site '{{ site }}'
 {% include "templates/boost-sites/" + site + "/haproxy/backend.j2" %}
-{# Ne pas enlever la ligne vide ci-dessous #}
+{# Do not remove the blank line below #}
 
 # END backend section for site '{{ site }}'
 {% endfor %}
 
 backend letsencrypt
 {% if boost_certificates_server is not defined or boost_certificates_server == inventory_hostname %}
-    server localhost 127.0.0.1:{{ boost_nginx_port }} send-proxy-v2 maxconn 10
+    server localhost 127.0.0.1:{{ boost_nginx_proxy_port | mandatory }} send-proxy-v2 maxconn 10
 {% else %}
-    server {{ boost_certificates_server }} {{ hostvars[boost_certificates_server].ansible_host }}:80 maxconn 10
+    server {{ boost_certificates_server }} {{ hostvars[boost_certificates_server].ansible_host }}:{{ boost_nginx_proxy_port | mandatory }} maxconn 10
 {% endif %}
 
 backend local
     option httpchk HEAD {{ boost_nginx_check_url | mandatory }}
-    server localhost 127.0.0.1:81 send-proxy-v2 maxconn 10
+    server localhost 127.0.0.1:{{ boost_nginx_proxy_port | mandatory }} send-proxy-v2 maxconn 10
 
 backend maintenance
     http-request set-log-level silent

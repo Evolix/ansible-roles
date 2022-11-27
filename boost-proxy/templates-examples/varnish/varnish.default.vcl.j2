@@ -65,11 +65,11 @@ sub vcl_recv {
         }
     }
 
-    # BEGIN marquage HTTP
+    # BEGIN HTTP tagging
     # TODO: ajouter un en-tête pour marquer le passage dans les 3 composants
     # avec une artie permanente et une partie optionnelle commentée par défaut
     set req.http.X-Boost-Layer = "varnish";
-    # END marquage HTTP
+    # END HTTP tagging
 }
 
 sub vcl_backend_response {
@@ -96,7 +96,7 @@ sub vcl_deliver {
 
     unset resp.http.Via;
 
-    # BEGIN marquage HTTP
+    # BEGIN HTTP tagging
     # TODO: ajouter un en-tête pour marquer le passage dans les 3 composants
     # avec une partie permanente et une partie optionnelle commentée par défaut
     if (resp.http.Set-Cookie && resp.http.Cache-Control) {
@@ -108,7 +108,7 @@ sub vcl_deliver {
     } else {
       set resp.http.X-Boost-Step2 = "varnish; no-set-cookie; no-cache-control";
     }
-    # END marquage HTTP
+    # END HTTP tagging
 
     if (resp.http.X-Varnish ~ "[0-9]+ +[0-9]+") {
       set resp.http.X-Cache = "HIT";
