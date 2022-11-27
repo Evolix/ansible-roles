@@ -17,8 +17,9 @@
     # HSTS (31536000 seconds = 1 year)
     ### http-response set-header Strict-Transport-Security max-age=31536000 if example_domains
 
-    # custom directives, all conditionned by at least the "example_domains" ACL
-    ### http-request deny if example_domains { src 31.170.9.129 }
+    # Custom directives, all conditionned by at least the "example_domains" ACL
+    # Example: reject request from a specific IP
+    ### http-request deny if example_domains { src 1.2.3.4 }
 
     # routing directives, all conditionned by (at least) the "example_domains" ACL
     # Maintenance mode (### -> uncomment BUT define example_maintenance_ips acl before)
