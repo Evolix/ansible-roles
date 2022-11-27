@@ -23,7 +23,7 @@
 - name: Add PGDG GPG key
   copy:
     src: postgresql.asc
-    dest: /etc/apt/trusted.gpg.d/postgresql.asc
+    dest: "{{ apt_keyring_dir }}/postgresql.asc"
     force: yes
     mode: "0644"
     owner: root
@@ -31,7 +31,7 @@
 
 - name: Add PGDG repository
   apt_repository:
-    repo: "deb http://apt.postgresql.org/pub/repos/apt/ {{ansible_distribution_release}}-pgdg main"
+    repo: "deb [signed-by={{ apt_keyring_dir }}/postgresql.asc] http://apt.postgresql.org/pub/repos/apt/ {{ansible_distribution_release}}-pgdg main"
     update_cache: yes
 
 - name: Add APT preference file

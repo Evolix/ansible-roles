@@ -20,7 +20,7 @@
 - name: Add Jenkins GPG key
   copy:
     src: jenkins.asc
-    dest: /etc/apt/trusted.gpg.d/jenkins.asc
+    dest: "{{ apt_keyring_dir }}/jenkins.asc"
     force: yes
     mode: "0644"
     owner: root
@@ -28,7 +28,7 @@
 
 - name: Add jenkins APT repository
   apt_repository:
-    repo: deb http://pkg.jenkins-ci.org/debian-stable binary/
+    repo: deb [signed-by={{ apt_keyring_dir }}/jenkins.asc] http://pkg.jenkins-ci.org/debian-stable binary/
     filename: jenkins
     update_cache: yes
 

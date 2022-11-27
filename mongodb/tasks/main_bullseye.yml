@@ -21,7 +21,7 @@
 - name: Add MongoDB GPG key
   copy:
     src: "server-{{mongodb_version}}.asc"
-    dest: "/etc/apt/trusted.gpg.d/mongodb-server-{{mongodb_version}}.asc"
+    dest: "{{ apt_keyring_dir }}/mongodb-server-{{mongodb_version}}.asc"
     force: yes
     mode: "0644"
     owner: root
@@ -29,7 +29,7 @@
 
 - name: enable APT sources list
   apt_repository:
-    repo: "deb http://repo.mongodb.org/apt/debian bullseye/mongodb-org/{{mongodb_version}} main"
+    repo: "deb [signed-by={{ apt_keyring_dir }}/mongodb-server-{{mongodb_version}}.asc] http://repo.mongodb.org/apt/debian bullseye/mongodb-org/{{mongodb_version}} main"
     state: present
     filename: "mongodb-org-{{mongodb_version}}"
     update_cache: yes

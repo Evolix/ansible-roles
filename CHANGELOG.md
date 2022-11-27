@@ -12,11 +12,15 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* all: Use proper keyrings directory for APT version
+* all: Add signed-by option for additional APT sources
+* all: preliminary work to support Debian 12
 * evolinux-base: replace regular kernel by cloud kernel on virtual servers
-* nagios-nrpe: check_haproxy_stats supports DRAIN status
 * lxc-php: set php-fpm umask to 007
-* varnish: create special tmp directory for syntax validation
 * nagios-nrpe: check_ceph_*
+* nagios-nrpe: check_haproxy_stats supports DRAIN status
+* packweb-apache: enable log_forensic module
+* varnish: create special tmp directory for syntax validation
 
 ### Changed
 
@@ -29,6 +33,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * lxc-solr: download URL according to Solr Version
 * lxc-solr: set homedir and port at install
 * minifirewall: whitelist deb.freexian.com
+* packweb-apache: manual dependencies resolution
 * redis: some values should be quoted
 * redis: variable to disable transparent hugepage (default: do nothing)
 * squid: whitelist deb.freexian.com

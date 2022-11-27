@@ -3,7 +3,7 @@
 - name: Setup deb.sury.org repository - Add GPG key
   copy:
     src: sury.gpg
-    dest: /etc/apt/trusted.gpg.d/sury.gpg
+    dest: "{{ apt_keyring_dir }}/sury.gpg"
     mode: "0644"
     owner: root
     group: root
@@ -20,7 +20,7 @@
 
 - name: Setup deb.sury.org repository - Add source list
   apt_repository:
-    repo: "deb https://packages.sury.org/php/ {{ ansible_distribution_release }} main"
+    repo: "deb [signed-by={{ apt_keyring_dir }}/sury.gpg] https://packages.sury.org/php/ {{ ansible_distribution_release }} main"
     filename: sury
     state: present
 

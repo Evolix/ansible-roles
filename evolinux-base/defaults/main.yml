@@ -21,6 +21,8 @@ evolinux_apt_public_sources: True
 evolinux_apt_upgrade: True
 evolinux_apt_remove_aptitude: True
 
+apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"
+
 # etc-evolinux
 
 evolinux_etcevolinux_include: True

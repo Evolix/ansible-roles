@@ -33,6 +33,7 @@
     - include
     - negotiation
     - alias
+    - log_forensic
 
 - name: Copy Apache settings for modules
   copy:

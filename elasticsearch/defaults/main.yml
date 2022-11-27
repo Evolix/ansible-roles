@@ -29,3 +29,5 @@ elasticsearch_plugin_head_clone_dir: "{{ elasticsearch_plugin_head_home }}/www"
 elasticsearch_plugin_head_tmp_dir: "{{ elasticsearch_plugin_head_home }}/tmp"
 
 elasticsearch_additional_scripts_dir: /usr/share/scripts
+
+apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"

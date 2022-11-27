@@ -26,18 +26,5 @@ galaxy_info:
 
 allow_duplicates: true
 
-dependencies:
-  - { role: evolix/apache }
-  - { role: evolix/php, php_apache_enable: True, when: packweb_apache_modphp }
-  - { role: evolix/php, php_fpm_enable: True, when: packweb_apache_fpm }
-  - { role: evolix/squid, squid_localproxy_enable: True }
-  - { role: evolix/mysql,        when: packweb_mysql_variant == "debian" }
-  - { role: evolix/mysql-oracle, when: packweb_mysql_variant == "oracle" }
-  - { role: evolix/lxc-php, lxc_php_version: php56, lxc_php_create_mysql_link: True, when: "'php56' in packweb_multiphp_versions" }
-  - { role: evolix/lxc-php, lxc_php_version: php70, lxc_php_create_mysql_link: True, when: "'php70' in packweb_multiphp_versions" }
-  - { role: evolix/lxc-php, lxc_php_version: php73, lxc_php_create_mysql_link: True, when: "'php73' in packweb_multiphp_versions" }
-  - { role: evolix/lxc-php, lxc_php_version: php74, lxc_php_create_mysql_link: True, when: "'php74' in packweb_multiphp_versions" }
-  - { role: evolix/lxc-php, lxc_php_version: php80, lxc_php_create_mysql_link: True, when: "'php80' in packweb_multiphp_versions" }
-  - { role: evolix/lxc-php, lxc_php_version: php81, lxc_php_create_mysql_link: True, when: "'php81' in packweb_multiphp_versions" }
-  - { role: evolix/webapps/evoadmin-web, evoadmin_enable_vhost: "{{ packweb_enable_evoadmin_vhost }}", evoadmin_multiphp_versions: "{{ packweb_multiphp_versions }}" }
-  - { role: evolix/evoacme }
+dependencies: []
+

@@ -25,7 +25,7 @@
 - name: Yarn GPG key is installed
   copy:
     src: yarn.asc
-    dest: /etc/apt/trusted.gpg.d/yarn.asc
+    dest: "{{ apt_keyring_dir }}/yarn.asc"
     mode: "0644"
     owner: root
     group: root
@@ -37,7 +37,7 @@
 
 - name: Yarn sources list is available
   apt_repository:
-    repo: "deb https://dl.yarnpkg.com/debian/ stable main"
+    repo: "deb [signed-by={{ apt_keyring_dir }}/yarn.asc] https://dl.yarnpkg.com/debian/ stable main"
     filename: yarn
     update_cache: yes
     state: present

@@ -28,3 +28,5 @@ metricbeat_tags: Null
 # metricbeat_fields:
 #   - "env: staging"
 metricbeat_fields: Null
+
+apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"
