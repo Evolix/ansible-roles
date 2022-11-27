@@ -24,6 +24,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* evocheck: install script according to Debian version
 * evolinux-base: utils.yml can be excluded
 * evolinux-todo: execute tasks only for Debian distribution (because this task is a dependency for others roles used on different distributions)
 * evolinux-user: Add sudoers privilege for chck php\_fpm81

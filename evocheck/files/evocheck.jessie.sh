@@ -11,7 +11,7 @@ readonly VERSION
 
 show_version() {
     cat <<END
-evocheck version ${VERSION}
+evocheck version ${VERSION} (Jessie)
 
 Copyright 2009-2022 Evolix <info@evolix.fr>,
                     Romain Dessort <rdessort@evolix.fr>,
@@ -54,36 +54,14 @@ detect_os() {
     if [ -e /etc/debian_version ]; then
         DEBIAN_MAIN_VERSION=$(cut -d "." -f 1 < /etc/debian_version)
 
-        if [ "${DEBIAN_MAIN_VERSION}" -lt "9" ]; then
+        if [ "${DEBIAN_MAIN_VERSION}" -ne "8" ]; then
             echo "Debian ${DEBIAN_MAIN_VERSION} is incompatible with this version of evocheck." >&2 
-            echo "This version is built for Debian 9 and later." >&2
+            echo "This version is built for Debian 8 only." >&2
             exit
         fi
 
-        if [ -x "${LSB_RELEASE_BIN}" ]; then
-            DEBIAN_RELEASE=$(${LSB_RELEASE_BIN} --codename --short)
-        else
-            case ${DEBIAN_MAIN_VERSION} in
-                9)  DEBIAN_RELEASE="stretch";;
-                10) DEBIAN_RELEASE="buster";;
-                11) DEBIAN_RELEASE="bullseye";;
-                12) DEBIAN_RELEASE="bookworm";;
-            esac
-        fi
+        DEBIAN_RELEASE="jessie"
     fi
-}
-
-is_debian_stretch() {
-    test "${DEBIAN_RELEASE}" = "stretch"
-}
-is_debian_buster() {
-    test "${DEBIAN_RELEASE}" = "buster"
-}
-is_debian_bullseye() {
-    test "${DEBIAN_RELEASE}" = "bullseye"
-}
-is_debian_bookworm() {
-    test "${DEBIAN_RELEASE}" = "bookworm"
 }
 
 is_pack_web(){
@@ -127,10 +105,7 @@ check_lsbrelease(){
         failed "IS_LSBRELEASE" "lsb_release is missing or not executable"
     fi
 }
-check_dpkgwarning() {
-    test -e /etc/apt/apt.conf.d/z-evolinux.conf \
-        || failed "IS_DPKGWARNING" "/etc/apt/apt.conf.d/z-evolinux.conf is missing"
-}
+
 # Verifying check_mailq in Nagios NRPE config file. (Option "-M postfix" need to be set if the MTA is Postfix)
 check_nrpepostfix() {
     if is_installed postfix; then
@@ -195,8 +170,13 @@ check_mountfstab() {
     fi
 }
 check_listchangesconf() {
-    if is_installed apt-listchanges; then
-        failed "IS_LISTCHANGESCONF" "apt-listchanges must not be installed on Debian >=9"
+    if [ -e "/etc/apt/listchanges.conf" ]; then
+        lines=$(grep -cE "(which=both|confirm=1)" /etc/apt/listchanges.conf)
+        if [ "$lines" != 2 ]; then
+            failed "IS_LISTCHANGESCONF" "apt-listchanges config is incorrect"
+        fi
+    else
+        failed "IS_LISTCHANGESCONF" "apt-listchanges config is missing"
     fi
 }
 check_customcrontab() {
@@ -215,49 +195,28 @@ check_tmoutprofile() {
     grep -sq "TMOUT=" /etc/profile /etc/profile.d/evolinux.sh || failed "IS_TMOUTPROFILE" "TMOUT is not set"
 }
 check_alert5boot() {
-    if is_debian_stretch; then
-        if [ -n "$(find /etc/rc2.d/ -name 'S*alert5')" ]; then
-            grep -q "^date" /etc/rc2.d/S*alert5 || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
-        elif [ -n "$(find /etc/init.d/ -name 'alert5')" ]; then
-            grep -q "^date" /etc/init.d/alert5 || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 int script"
-        else
-            failed "IS_ALERT5BOOT" "alert5 init script is missing"
-        fi
+    if [ -n "$(find /etc/rc2.d/ -name 'S*alert5')" ]; then
+        grep -q "^date" /etc/rc2.d/S*alert5 || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
+    elif [ -n "$(find /etc/init.d/ -name 'alert5')" ]; then
+        grep -q "^date" /etc/init.d/alert5 || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 int script"
     else
-        grep -qs "^date" /usr/share/scripts/alert5.sh || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
-        if [ -f /etc/systemd/system/alert5.service ]; then
-            systemctl is-enabled alert5.service -q || failed "IS_ALERT5BOOT" "alert5 unit is not enabled"
-        else
-            failed "IS_ALERT5BOOT" "alert5 unit file is missing"
-        fi
+        failed "IS_ALERT5BOOT" "alert5 init script is missing"
     fi
 }
 check_alert5minifw() {
-    if is_debian_stretch; then
-        if [ -n "$(find /etc/rc2.d/ -name 'S*alert5')" ]; then
-            grep -q "^/etc/init.d/minifirewall" /etc/rc2.d/S*alert5 \
-                || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 init script"
-        elif [ -n "$(find /etc/init.d/ -name 'alert5')" ]; then
-            grep -q "^/etc/init.d/minifirewall" /etc/init.d/alert5 \
-                || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 init script"
-        else
-            failed "IS_ALERT5MINIFW" "alert5 init script is missing"
-        fi
+    if [ -n "$(find /etc/rc2.d/ -name 'S*alert5')" ]; then
+        grep -q "^/etc/init.d/minifirewall" /etc/rc2.d/S*alert5 \
+            || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 init script"
+    elif [ -n "$(find /etc/init.d/ -name 'alert5')" ]; then
+        grep -q "^/etc/init.d/minifirewall" /etc/init.d/alert5 \
+            || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 init script"
     else
-        grep -qs "^/etc/init.d/minifirewall" /usr/share/scripts/alert5.sh \
-            || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 script or script is missing"
+        failed "IS_ALERT5MINIFW" "alert5 init script is missing"
     fi
 }
 check_minifw() {
     /sbin/iptables -L -n | grep -q -E "^ACCEPT\s*all\s*--\s*31\.170\.8\.4\s*0\.0\.0\.0/0\s*$" \
         || failed "IS_MINIFW" "minifirewall seems not started"
-}
-check_minifw_includes() {
-    if is_debian_bullseye; then
-        if grep -q -e '/sbin/iptables' -e '/sbin/ip6tables' "/etc/default/minifirewall"; then
-            failed "IS_MINIFWINCLUDES" "minifirewall has direct iptables invocations in /etc/default/minifirewall that should go in /etc/minifirewall.d/"
-        fi
-    fi
 }
 check_nrpeperms() {
     if [ -d /etc/nagios ]; then
@@ -280,15 +239,9 @@ check_nrpedisks() {
     test "$NRPEDISKS" = "$DFDISKS" || failed "IS_NRPEDISKS" "there must be $DFDISKS check_disk in nrpe.cfg"
 }
 check_nrpepid() {
-    if is_debian_bullseye; then
-        { test -e /etc/nagios/nrpe.cfg \
-            && grep -q "^pid_file=/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
-        } || failed "IS_NRPEPID" "missing or wrong pid_file directive in nrpe.cfg"
-    else
-        { test -e /etc/nagios/nrpe.cfg \
-            && grep -q "^pid_file=/var/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
-        } || failed "IS_NRPEPID" "missing or wrong pid_file directive in nrpe.cfg"
-    fi
+    { test -e /etc/nagios/nrpe.cfg \
+        && grep -q "^pid_file=/var/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
+    } || failed "IS_NRPEPID" "missing or wrong pid_file directive in nrpe.cfg"
 }
 check_grsecprocs() {
     if uname -a | grep -q grsec; then
@@ -299,23 +252,21 @@ check_grsecprocs() {
 }
 check_apachemunin() {
     if test -e /etc/apache2/apache2.conf; then
-        { test -h /etc/apache2/mods-enabled/status.load \
-            && test -h /etc/munin/plugins/apache_accesses \
-            && test -h /etc/munin/plugins/apache_processes \
-            && test -h /etc/munin/plugins/apache_volume;
-        } || failed "IS_APACHEMUNIN" "missing munin plugins for Apache"
+        pattern="/server-status-[[:alnum:]]{4,}"
+        { grep -r -q -s -E "^env.url.*${pattern}" /etc/munin/plugin-conf.d \
+            && { grep -q -s -E "${pattern}" /etc/apache2/apache2.conf \
+                || grep -q -s -E "${pattern}" /etc/apache2/mods-enabled/status.conf;
+            };
+        } || failed "IS_APACHEMUNIN" "server status is not properly configured"
     fi
 }
 # Verification mytop + Munin si MySQL
 check_mysqlutils() {
     MYSQL_ADMIN=${MYSQL_ADMIN:-mysqladmin}
     if is_installed mysql-server; then
-        # With Debian 11 and later, root can connect to MariaDB with the socket
-        if is_debian_stretch || is_debian_buster; then
-            # You can configure MYSQL_ADMIN in evocheck.cf
-            if ! grep -qs "^user *= *${MYSQL_ADMIN}" /root/.my.cnf; then
-                failed "IS_MYSQLUTILS" "${MYSQL_ADMIN} missing in /root/.my.cnf"
-            fi
+        # You can configure MYSQL_ADMIN in evocheck.cf
+        if ! grep -qs "^user *= *${MYSQL_ADMIN}" /root/.my.cnf; then
+            failed "IS_MYSQLUTILS" "${MYSQL_ADMIN} missing in /root/.my.cnf"
         fi
         if ! test -x /usr/bin/mytop; then
             if ! test -x /usr/local/bin/mytop; then
@@ -352,7 +303,7 @@ check_muninlogrotate() {
 }
 # Verification de l'activation de Squid dans le cas d'un pack mail
 check_squid() {
-    squidconffile="/etc/squid/evolinux-custom.conf"
+    squidconffile="/etc/squid*/squid.conf"
     if is_pack_web && (is_installed squid || is_installed squid3); then
         host=$(hostname -i)
         # shellcheck disable=SC2086
@@ -391,7 +342,7 @@ check_log2mailrunning() {
     fi
 }
 check_log2mailapache() {
-    conf=/etc/log2mail/config/Apache
+    conf=/etc/log2mail/config/default
     if is_pack_web && is_installed log2mail; then
         grep -s -q "^file = /var/log/apache2/error.log" $conf \
             || failed "IS_LOG2MAILAPACHE" "missing log2mail directive for apache"
@@ -435,7 +386,7 @@ check_network_interfaces() {
 }
 # Verify if all if are in auto
 check_autoif() {
-    interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep -E -v "(lo|vnet|docker|veth|tun|tap|macvtap|vrrp|lxcbr|wg)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
+    interfaces=$(/sbin/ifconfig -s | tail -n +2 | grep -E -v "^(lo|vnet|docker|veth|tun|tap|macvtap|vrrp)" | cut -d " " -f 1 |tr "\n" " ")
     for interface in $interfaces; do
         if grep -Rq "^iface $interface" /etc/network/interfaces* && ! grep -Rq "^auto $interface" /etc/network/interfaces*; then
             failed "IS_AUTOIF" "Network interface \`${interface}' is statically defined but not set to auto"
@@ -450,26 +401,10 @@ check_interfacesgw() {
     number=$(grep -Ec "^[^#]*gateway [0-9a-fA-F]+:" /etc/network/interfaces)
     test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv6 gateway"
 }
-# Verification de l’état du service networking
-check_networking_service() {
-    if systemctl is-enabled networking.service > /dev/null; then
-        if ! systemctl is-active networking.service > /dev/null; then
-            failed "IS_NETWORKING_SERVICE" "networking.service is not active"
-        fi
-    fi
-}
 # Verification de la mise en place d'evobackup
 check_evobackup() {
     evobackup_found=$(find /etc/cron* -name '*evobackup*' | wc -l)
     test "$evobackup_found" -gt 0 || failed "IS_EVOBACKUP" "missing evobackup cron"
-}
-# Vérification de la mise en place de la purge pour fail2ban
-check_purge_fail2ban() {
-    if is_debian_stretch || is_debian_buster; then
-      if is_installed fail2ban; then
-        test -f /etc/cron.daily/fail2ban_dbpurge || failed "IS_FAIL2BAN_PURGE" "missing script fail2ban_dbpurge cron"
-      fi
-    fi
 }
 # Vérification de l'exclusion des montages (NFS) dans les sauvegardes
 check_evobackup_exclude_mount() {
@@ -690,51 +625,6 @@ check_tune2fs_m5() {
         fi
     done
 }
-check_evolinuxsudogroup() {
-    if grep -q "^evolinux-sudo:" /etc/group; then
-        if [ -f /etc/sudoers.d/evolinux ]; then
-            grep -qE '^%evolinux-sudo +ALL ?= ?\(ALL:ALL\) ALL' /etc/sudoers.d/evolinux \
-                || failed "IS_EVOLINUXSUDOGROUP" "missing evolinux-sudo directive in sudoers file"
-        fi
-    fi
-}
-check_userinadmgroup() {
-    users=$(grep "^evolinux-sudo:" /etc/group | awk -F: '{print $4}' | tr ',' ' ')
-    for user in $users; do
-        if ! groups "$user" | grep -q adm; then
-            failed "IS_USERINADMGROUP" "User $user doesn't belong to \`adm' group"
-            test "${VERBOSE}" = 1 || break
-        fi
-    done
-}
-check_apache2evolinuxconf() {
-    if is_installed apache2; then
-        { test -L /etc/apache2/conf-enabled/z-evolinux-defaults.conf \
-            && test -L /etc/apache2/conf-enabled/zzz-evolinux-custom.conf \
-            && test -f /etc/apache2/ipaddr_whitelist.conf;
-        } || failed "IS_APACHE2EVOLINUXCONF" "missing custom evolinux apache config"
-    fi
-}
-check_backportsconf() {
-    grep -qsE "^[^#].*backports" /etc/apt/sources.list \
-        && failed "IS_BACKPORTSCONF" "backports can't be in main sources list"
-    if grep -qsE "^[^#].*backports" /etc/apt/sources.list.d/*.list; then
-        grep -qsE "^[^#].*backports" /etc/apt/preferences.d/* \
-            || failed "IS_BACKPORTSCONF" "backports must have preferences"
-    fi
-}
-check_bind9munin() {
-    if is_installed bind9; then
-        { test -L /etc/munin/plugins/bind9 \
-            && test -e /etc/munin/plugin-conf.d/bind9;
-        } || failed "IS_BIND9MUNIN" "missing bind plugin for munin"
-    fi
-}
-check_bind9logrotate() {
-    if is_installed bind9; then
-        test -e /etc/logrotate.d/bind9 || failed "IS_BIND9LOGROTATE" "missing bind logrotate file"
-    fi
-}
 check_broadcomfirmware() {
     LSPCI_BIN=$(command -v lspci)
     if [ -x "${LSPCI_BIN}" ]; then
@@ -762,26 +652,11 @@ check_hardwareraidtool() {
         failed "IS_HARDWARERAIDTOOL" "lspci not found in ${PATH}"
     fi
 }
-check_log2mailsystemdunit() {
-    systemctl -q is-active log2mail.service \
-        || failed "IS_LOG2MAILSYSTEMDUNIT" "log2mail unit not running"
-    test -f /etc/systemd/system/log2mail.service \
-        || failed "IS_LOG2MAILSYSTEMDUNIT" "missing log2mail unit file"
-    test -f /etc/init.d/log2mail \
-        && failed "IS_LOG2MAILSYSTEMDUNIT" "/etc/init.d/log2mail may be deleted (use systemd unit)"
-}
 check_listupgrade() {
     test -f /etc/cron.d/listupgrade \
         || failed "IS_LISTUPGRADE" "missing listupgrade cron"
     test -x /usr/share/scripts/listupgrade.sh \
         || failed "IS_LISTUPGRADE" "missing listupgrade script or not executable"
-}
-check_mariadbevolinuxconf() {
-    if is_installed mariadb-server; then
-        { test -f /etc/mysql/mariadb.conf.d/z-evolinux-defaults.cnf \
-            && test -f /etc/mysql/mariadb.conf.d/zzz-evolinux-custom.cnf;
-        } || failed "IS_MARIADBEVOLINUXCONF" "missing mariadb custom config"
-        fi
 }
 check_sql_backup() {
     if (is_installed "mysql-server" || is_installed "mariadb-server"); then
@@ -852,77 +727,6 @@ check_elastic_backup() {
         # You could change the default path in /etc/evocheck.cf
         ELASTIC_BACKUP_PATH=${ELASTIC_BACKUP_PATH:-"/home/backup-elasticsearch"}
         test -d "$ELASTIC_BACKUP_PATH" || failed "IS_ELASTIC_BACKUP" "Elastic snapshot is missing (${ELASTIC_BACKUP_PATH})"
-    fi
-}
-check_mariadbsystemdunit() {
-    # TODO: check if it is still needed for bullseye
-    if is_debian_stretch || is_debian_buster; then
-        if is_installed mariadb-server; then
-            if systemctl -q is-active mariadb.service; then
-                test -f /etc/systemd/system/mariadb.service.d/evolinux.conf \
-                    || failed "IS_MARIADBSYSTEMDUNIT" "missing systemd override for mariadb unit"
-            fi
-        fi
-    fi
-}
-check_mysqlmunin() {
-    if is_installed mariadb-server; then
-        for file in mysql_bytes mysql_queries mysql_slowqueries \
-            mysql_threads mysql_connections mysql_files_tables \
-            mysql_innodb_bpool mysql_innodb_bpool_act mysql_innodb_io \
-            mysql_innodb_log mysql_innodb_rows mysql_innodb_semaphores \
-            mysql_myisam_indexes mysql_qcache mysql_qcache_mem \
-            mysql_sorts mysql_tmp_tables; do
-
-            if [[ ! -L /etc/munin/plugins/$file ]]; then
-                failed "IS_MYSQLMUNIN" "missing munin plugin '$file'"
-                test "${VERBOSE}" = 1 || break
-            fi
-        done
-        munin-run mysql_commands 2> /dev/null > /dev/null
-        test $? -eq 0 || failed "IS_MYSQLMUNIN" "Munin plugin mysql_commands returned an error"
-    fi
-}
-check_mysqlnrpe() {
-    if is_installed mariadb-server; then
-        nagios_file=~nagios/.my.cnf
-        if ! test -f ${nagios_file}; then
-            failed "IS_MYSQLNRPE" "${nagios_file} is missing"
-        elif [ "$(stat -c %U ${nagios_file})" != "nagios" ] \
-            || [ "$(stat -c %a ${nagios_file})" != "600" ]; then
-            failed "IS_MYSQLNRPE" "${nagios_file} has wrong permissions"
-        else
-            grep -q -F "command[check_mysql]=/usr/lib/nagios/plugins/check_mysql" /etc/nagios/nrpe.d/evolix.cfg \
-            || failed "IS_MYSQLNRPE" "check_mysql is missing"
-        fi
-        fi
-}
-check_phpevolinuxconf() {
-    is_debian_stretch  && phpVersion="7.0"
-    is_debian_buster   && phpVersion="7.3"
-    is_debian_bullseye && phpVersion="7.4"
-    if is_installed php; then
-        { test -f /etc/php/${phpVersion}/cli/conf.d/z-evolinux-defaults.ini \
-            && test -f /etc/php/${phpVersion}/cli/conf.d/zzz-evolinux-custom.ini
-        } || failed "IS_PHPEVOLINUXCONF" "missing php evolinux config"
-    fi
-}
-check_squidlogrotate() {
-    if is_installed squid; then
-        grep -q -e monthly -e daily /etc/logrotate.d/squid \
-            || failed "IS_SQUIDLOGROTATE" "missing squid logrotate file"
-    fi
-}
-check_squidevolinuxconf() {
-    if is_installed squid; then
-        { grep -qs "^CONFIG=/etc/squid/evolinux-defaults.conf$" /etc/default/squid \
-            && test -f /etc/squid/evolinux-defaults.conf \
-            && test -f /etc/squid/evolinux-whitelist-defaults.conf \
-            && test -f /etc/squid/evolinux-whitelist-custom.conf \
-            && test -f /etc/squid/evolinux-acl.conf \
-            && test -f /etc/squid/evolinux-httpaccess.conf \
-            && test -f /etc/squid/evolinux-custom.conf;
-        } || failed "IS_SQUIDEVOLINUXCONF" "missing squid evolinux config"
     fi
 }
 check_duplicate_fs_label() {
@@ -996,12 +800,21 @@ check_apache_confenabled() {
     fi
 }
 check_meltdown_spectre() {
-    # /sys/devices/system/cpu/vulnerabilities/
-    for vuln in meltdown spectre_v1 spectre_v2; do
-        test -f "/sys/devices/system/cpu/vulnerabilities/$vuln" \
-            || failed "IS_MELTDOWN_SPECTRE" "vulnerable to $vuln"
-        test "${VERBOSE}" = 1 || break
-    done
+    # For Jessie this is quite complicated to verify and we need to use kernel config file
+    if grep -q "BOOT_IMAGE=" /proc/cmdline; then
+        kernelPath=$(grep -Eo 'BOOT_IMAGE=[^ ]+' /proc/cmdline | cut -d= -f2)
+        kernelVer=${kernelPath##*/vmlinuz-}
+        kernelConfig="config-${kernelVer}"
+        # Sometimes autodetection of kernel config file fail, so we test if the file really exists.
+        if [ -f "/boot/${kernelConfig}" ]; then
+            grep -Eq '^CONFIG_PAGE_TABLE_ISOLATION=y' "/boot/$kernelConfig" \
+                || failed "IS_MELTDOWN_SPECTRE" \
+                "PAGE_TABLE_ISOLATION must be enabled in kernel, outdated kernel?"
+            grep -Eq '^CONFIG_RETPOLINE=y' "/boot/$kernelConfig" \
+                || failed "IS_MELTDOWN_SPECTRE" \
+                "RETPOLINE must be enabled in kernel, outdated kernel?"
+        fi
+    fi
 }
 check_old_home_dir() {
     homeDir=${homeDir:-/home}
@@ -1033,23 +846,19 @@ check_usrsharescripts() {
 }
 check_sshpermitrootno() {
     sshd_args="-C addr=,user=,host=,laddr=,lport=0"
-    if is_debian_stretch; then
-	    # Noop, we'll use the default $sshd_args
-        :
-    elif is_debian_buster; then
-	    sshd_args="${sshd_args},rdomain="
-    else
-	    # NOTE: From Debian Bullseye 11 onward, with OpenSSH 8.1, the argument
-        # -T doesn't require the additional -C.
-	    sshd_args=
-    fi
     # shellcheck disable=SC2086
     if ! (sshd -T ${sshd_args} 2> /dev/null | grep -qi 'permitrootlogin no'); then
         failed "IS_SSHPERMITROOTNO" "PermitRoot should be set to no"
     fi
 }
 check_evomaintenanceusers() {
-    users=$(getent group evolinux-sudo | cut -d':' -f4 | tr ',' ' ')
+    if [ -f /etc/sudoers.d/evolinux ]; then
+        sudoers="/etc/sudoers.d/evolinux"
+    else
+        sudoers="/etc/sudoers"
+    fi
+    # combine users from User_Alias and sudo group
+    users=$({ grep "^User_Alias *ADMIN" $sudoers | cut -d= -f2 | tr -d " "; grep "^sudo" /etc/group | cut -d: -f 4; } | tr "," "\n" | sort -u)
     for user in $users; do
         user_home=$(getent passwd "$user" | cut -d: -f6)
         if [ -n "$user_home" ] && [ -d "$user_home" ]; then
@@ -1112,6 +921,15 @@ check_osprober() {
     fi
 }
 
+check_jessie_backports() {
+    jessieBackports=$(grep -hs "jessie-backports" /etc/apt/sources.list /etc/apt/sources.list.d/*)
+    if test -n "$jessieBackports"; then
+        if ! grep -q "archive.debian.org" <<< "$jessieBackports"; then
+            failed "IS_JESSIE_BACKPORTS" "You must use deb http://archive.debian.org/debian/ jessie-backports main"
+        fi
+    fi
+}
+
 check_apt_valid_until() {
     aptvalidFile="/etc/apt/apt.conf.d/99no-check-valid-until"
     aptvalidText="Acquire::Check-Valid-Until no;"
@@ -1150,8 +968,8 @@ check_nginx_letsencrypt_uptodate() {
         snippets=$(find /etc/nginx -type f -name "letsencrypt.conf")
         if [ -n "${snippets}" ]; then
             while read -r snippet; do
-                if grep -qE "^\s*alias\s+/.+/\.well-known/acme-challenge" "${snippet}"; then
-                    failed "IS_NGINX_LETSENCRYPT_UPTODATE" "Nginx snippet ${snippet} is not compatible with Nginx on Debian 9+."
+                if ! grep -qE "^\s*alias\s+/.+/\.well-known/acme-challenge" "${snippet}"; then
+                    failed "IS_NGINX_LETSENCRYPT_UPTODATE" "Nginx snippet ${snippet} is not compatible with Nginx on Debian 8."
                 fi
             done <<< "${snippets}"
         fi
@@ -1321,7 +1139,6 @@ main() {
     test "${IS_PRIVKEYWOLRDREADABLE:=1}" = 1 && check_privatekeyworldreadable
 
     test "${IS_LSBRELEASE:=1}" = 1 && check_lsbrelease
-    test "${IS_DPKGWARNING:=1}" = 1 && check_dpkgwarning
     test "${IS_NRPEPOSTFIX:=1}" = 1 && check_nrpepostfix
     test "${IS_CUSTOMSUDOERS:=1}" = 1 && check_customsudoers
     test "${IS_VARTMPFS:=1}" = 1 && check_vartmpfs
@@ -1344,8 +1161,6 @@ main() {
     test "${IS_ALERT5MINIFW:=1}" = 1 && test "${IS_MINIFW:=1}" = 1 && check_minifw
     test "${IS_NRPEPERMS:=1}" = 1 && check_nrpeperms
     test "${IS_MINIFWPERMS:=1}" = 1 && check_minifwperms
-    # Enable when minifirewall is released
-    test "${IS_MINIFWINCLUDES:=0}" = 1 && check_minifw_includes
     test "${IS_NRPEDISKS:=0}" = 1 && check_nrpedisks
     test "${IS_NRPEPID:=1}" = 1 && check_nrpepid
     test "${IS_GRSECPROCS:=1}" = 1 && check_grsecprocs
@@ -1365,7 +1180,6 @@ main() {
     test "${IS_NETWORK_INTERFACES:=1}" = 1 && check_network_interfaces
     test "${IS_AUTOIF:=1}" = 1 && check_autoif
     test "${IS_INTERFACESGW:=1}" = 1 && check_interfacesgw
-    test "${IS_NETWORKING_SERVICE:=1}" = 1 && check_networking_service
     test "${IS_EVOBACKUP:=1}" = 1 && check_evobackup
     test "${IS_EVOBACKUP_EXCLUDE_MOUNT:=1}" = 1 && check_evobackup_exclude_mount
     test "${IS_USERLOGROTATE:=1}" = 1 && check_userlogrotate
@@ -1382,29 +1196,15 @@ main() {
     test "${IS_GITPERMS:=1}" = 1 && check_gitperms
     test "${IS_NOTUPGRADED:=1}" = 1 && check_notupgraded
     test "${IS_TUNE2FS_M5:=1}" = 1 && check_tune2fs_m5
-    test "${IS_EVOLINUXSUDOGROUP:=1}" = 1 && check_evolinuxsudogroup
-    test "${IS_USERINADMGROUP:=1}" = 1 && check_userinadmgroup
-    test "${IS_APACHE2EVOLINUXCONF:=1}" = 1 && check_apache2evolinuxconf
-    test "${IS_BACKPORTSCONF:=1}" = 1 && check_backportsconf
-    test "${IS_BIND9MUNIN:=1}" = 1 && check_bind9munin
-    test "${IS_BIND9LOGROTATE:=1}" = 1 && check_bind9logrotate
     test "${IS_BROADCOMFIRMWARE:=1}" = 1 && check_broadcomfirmware
     test "${IS_HARDWARERAIDTOOL:=1}" = 1 && check_hardwareraidtool
-    test "${IS_LOG2MAILSYSTEMDUNIT:=1}" = 1 && check_log2mailsystemdunit
     test "${IS_LISTUPGRADE:=1}" = 1 && check_listupgrade
-    test "${IS_MARIADBEVOLINUXCONF:=0}" = 1 && check_mariadbevolinuxconf
     test "${IS_SQL_BACKUP:=1}" = 1 && check_sql_backup
     test "${IS_POSTGRES_BACKUP:=1}" = 1 && check_postgres_backup
     test "${IS_MONGO_BACKUP:=1}" = 1 && check_mongo_backup
     test "${IS_LDAP_BACKUP:=1}" = 1 && check_ldap_backup
     test "${IS_REDIS_BACKUP:=1}" = 1 && check_redis_backup
     test "${IS_ELASTIC_BACKUP:=1}" = 1 && check_elastic_backup
-    test "${IS_MARIADBSYSTEMDUNIT:=1}" = 1 && check_mariadbsystemdunit
-    test "${IS_MYSQLMUNIN:=1}" = 1 && check_mysqlmunin
-    test "${IS_MYSQLNRPE:=1}" = 1 && check_mysqlnrpe
-    test "${IS_PHPEVOLINUXCONF:=0}" = 1 && check_phpevolinuxconf
-    test "${IS_SQUIDLOGROTATE:=1}" = 1 && check_squidlogrotate
-    test "${IS_SQUIDEVOLINUXCONF:=1}" = 1 && check_squidevolinuxconf
     test "${IS_DUPLICATE_FS_LABEL:=1}" = 1 && check_duplicate_fs_label
     test "${IS_EVOLIX_USER:=1}" = 1 && check_evolix_user
     test "${IS_EVOACME_CRON:=1}" = 1 && check_evoacme_cron
@@ -1414,6 +1214,7 @@ main() {
     test "${IS_OLD_HOME_DIR:=0}" = 1 && check_old_home_dir
     test "${IS_EVOBACKUP_INCS:=1}" = 1 && check_evobackup_incs
     test "${IS_OSPROBER:=1}" = 1 && check_osprober
+    test "${IS_JESSIE_BACKPORTS:=1}" = 1 && check_jessie_backports
     test "${IS_APT_VALID_UNTIL:=1}" = 1 && check_apt_valid_until
     test "${IS_CHROOTED_BINARY_UPTODATE:=1}" = 1 && check_chrooted_binary_uptodate
     test "${IS_NGINX_LETSENCRYPT_UPTODATE:=1}" = 1 && check_nginx_letsencrypt_uptodate
