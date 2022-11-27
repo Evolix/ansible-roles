@@ -31,7 +31,6 @@
   tags:
     - haproxy
     - config
-    - update-config
 
 - name: Maintenance file is present
   copy:

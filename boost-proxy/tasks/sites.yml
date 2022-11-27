@@ -2,7 +2,7 @@
 
 # HAProxy
 
-- name: Create sites parent directory
+- name: Create HAProxy sites parent directory
   file:
     dest: "/etc/haproxy/sites"
     owner: root
@@ -12,11 +12,10 @@
   tags:
     - haproxy
     - config
-    - update-config
 
 # Varnish
 
-- name: Create sites parent directory
+- name: Create Varnish sites parent directory
   file:
     dest: "/etc/varnish/sites"
     owner: root
@@ -26,7 +25,6 @@
   tags:
     - varnish
     - config
-    - update-config
 
 # Each site
 
