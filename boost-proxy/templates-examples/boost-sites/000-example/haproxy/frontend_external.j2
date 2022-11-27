@@ -19,7 +19,7 @@
 
     # Custom directives, all conditionned by at least the "example_domains" ACL
     # Example: reject request from a specific IP
-    ### http-request deny if example_domains { src 1.2.3.4 }
+    ### http-request deny if example_domains { src 203.0.113.1 }
 
     # routing directives, all conditionned by (at least) the "example_domains" ACL
     # Maintenance mode (### -> uncomment BUT define example_maintenance_ips acl before)
@@ -29,4 +29,3 @@
 
     # … or use normal backend
     use_backend example if example_domains
-
