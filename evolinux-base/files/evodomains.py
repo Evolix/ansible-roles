@@ -14,7 +14,7 @@
 excludes_path = '/etc/evolinux/evodomains_exclude.list'
 includes_path = '/etc/evolinux/evodomains_include.list'
 allowed_ips_path = '/etc/evolinux/evodomains_allowed_ips.list'
-haproxy_conf_path = '/etc/haproxy/haproxy.conf'
+haproxy_conf_path = '/etc/haproxy/haproxy.cfg'
 
 import os
 import sys
@@ -46,7 +46,7 @@ def get_allowed_ips():
     stdout, stderr = execute('hostname -I')
     if not stdout:
         return []
-    ips = stdout[0].strip(' \t\n').split()
+    ips = stdout[0].strip().split()
 
     # Custom allowed IPs from config file
     with open(allowed_ips_path, encoding='utf-8') as f:
@@ -69,7 +69,8 @@ def strip_comments(string):
 
 
 def list_apache_domains():
-    """Return a dict containing :
+    """Parse Apache dynamic config in search of domains.
+    Return a dict containing :
     - key: Apache domain (from command "apache2ctl -D DUMP_VHOSTS").
     - value: a list of strings "apache:<VHOST_PATH>:<LINE_IN_BLOCK>"
     """
@@ -84,7 +85,7 @@ def list_apache_domains():
     vhost_infos = ''
     for line in stdout:
         dom = ''
-        words = line.strip(' \t').split()
+        words = line.strip().split()
 
         if 'namevhost' in line and len(words) >= 5:
             # line format: port <PORT> namevhost <DOMAIN> (<VHOST_PATH>:<LINE_IN_BLOCK>)
@@ -105,7 +106,8 @@ def list_apache_domains():
 
 
 def list_nginx_domains():
-    """Return a dict containing :
+    """Parse Nginx dynamic config in search of domains.
+    Return a dict containing :
     - key: Nginx domain (from command "nginx -T").
     - value: a list of strings "nginx:<VHOST_PATH>:<LINE_IN_BLOCK>"
     """
@@ -136,10 +138,9 @@ def list_nginx_domains():
             for d in words[1:]:
                 dom = d.strip()
                 vhost_infos = 'nginx:{}:{}'.format(config_file_path, line_number)
-
                 if dom not in domains:
                     domains[dom] = []
-                if vhost_infos not in domains[d]:
+                if vhost_infos not in domains[dom]:
                     domains[dom].append(vhost_infos)
 
         line_number += 1  # increment line number for next round
@@ -153,14 +154,16 @@ def list_nginx_domains():
 
 
 def list_haproxy_domains():
-    """Return a dict containing :
-    - key: HaProxy domains (from ACLs in /etc/haproxy/haproxy.conf).
-    - value: a list of strings "haproxy:/etc/haproxy/haproxy.conf:<LINE_IN_CONF>"
+    """Parse HaProxy config file in search of domains.
+    Return a dict containing :
+    - key: HaProxy domains (from ACLs in /etc/haproxy/haproxy.cgf).
+    - value: a list of strings "haproxy:/etc/haproxy/haproxy.cfg:<LINE_IN_CONF>"
     """
     domains = {}
 
     if not os.path.exists(haproxy_conf_path):
         # HaProxy is not installed
+        print('{} not found'.format(haproxy_conf_path))
         return domains
 
     with open(haproxy_conf_path, encoding='utf-8') as f:
@@ -168,23 +171,70 @@ def list_haproxy_domains():
         for line in f.readlines():
             line_number += 1
 
-            line = strip_comments(line).strip(' \t')
+            line = strip_comments(line).strip()
             if 'acl' != line[0:3] or 'hdr(host)' not in line:
                 continue
+
             # line format:
             #    acl <ACL_NAME> hdr(host) [-i] <DOMAIN_REGEX> [|| hdr(host) [-i] <DOMAIN_REGEX> [...]]
             #    acl <ACL_NAME> hdr(host) -f <FILE>
-            for s in ['acl', 'hdr(host)', '||', '-i']:
-                line.replace(s, '').strip()
-            words = line.split()
-            
-            #TODO ici
-            for w in words:
-                if w
 
-            domain_info = 'haproxy:{}:{}'.format(haproxy_conf_path, line_number)
+            # Case of an ACL based on domains file list
+            if ' -f ' in line:
+                doms_file_path = line.split()[4]
+                print('Found HaProxy domains file {}'.format(doms_file_path))
+                domains_to_add = read_domains_file(doms_file_path, 'haproxy')
+                domains.update(domains_to_add)
+            
+            # Case of an ACL based on a list of domains
+            # Limit: does not handle regex
+            else:
+                lines = line.split('||')
+                for l in lines:
+                    # Remove the 4 first words to keep only domains
+                    words = line.strip().lower().split()[4:]
+                    for dom in words:
+                        dom_infos = 'haproxy:{}:{}'.format(haproxy_conf_path, line_number)
+                        if dom not in domains:
+                            domains[dom] = []
+                        if dom_infos not in domains[dom]:
+                            domains[dom].append(dom_infos)
 
     return domains
+
+
+def read_domains_file(domains_file_path, origin):
+    """Process a file containing a list of domains :
+    - domains_file_path: path of the file to parse 
+    - origin: string keyword to prepend to the domains infos. Exemple: 'haproxy'
+    Return a dict containing :
+    - key: domain (from domains_file_path)
+    - value: a list of strings "origin:domains_file_path:<LINE_IN_BLOCK>"
+    """
+    domains = {}
+
+    try:
+        with open(domains_file_path, encoding='utf-8') as f:
+            line_number = 0
+            for line in f.readlines():
+                line_number += 1
+    
+                dom = strip_comments(line).strip()
+                if not dom:
+                    continue
+    
+                dom_infos = '{}:{}:{}'.format(origin, domains_file_path, line_number)
+                if dom not in domains:
+                    domains[dom] = []
+                if dom_infos not in domains[dom]:
+                    domains[dom].append(dom_infos)
+
+    except FileNotFoundError as e:
+        print('Error: FileNotFound', domains_file_path)
+        print(e)
+    
+    return domains
+    
 
 
 class DNSResolutionThread(threading.Thread):
@@ -225,7 +275,7 @@ def run_check_domains(domains):
 
     with open(excludes_path, encoding='utf-8') as f:
         for line in f:
-            domain = strip_comments(line).strip(' \t\n')
+            domain = strip_comments(line).strip()
             if not domain: continue
             excludes.append(domain)
     
@@ -357,7 +407,7 @@ def main(argv):
             line_number = 0
             for line in f:
                 line_number += 1
-                domain = strip_comments(line).strip(' \t\n') 
+                domain = strip_comments(line).strip() 
                 if not domain: continue
                 if domain not in doms:
                     doms[domain] = []
