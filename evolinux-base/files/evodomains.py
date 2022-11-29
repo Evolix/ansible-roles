@@ -24,26 +24,53 @@ import threading
 import time
 import argparse
 import json
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends import default_backend
+from cryptography.x509.oid import NameOID, ExtensionOID
 
+#TODO: improve data structure, example:
+""" "*.cybercartes.com": [
+    {
+        origin: haproxy,
+        type: certificate,
+        path: /etc/haproxy/ssl/cybercartes-www_wildcard.cybercartes.com.pem,
+        attribute: CN
+    },
+    {
+        origin: apache,
+        type: config,
+        path: /etc/apache/sites-enabled/default.conf,
+        line: 42
+    }
+]"""
+#TODO: fix line numbers (apache, nginx), line of virtual host block
 
-def execute(cmd):
-    """Execute Bash command cmd.
-    Return stdout and stderr as arrays of UTF-8 strings."""
+def execute(cmd, shell=False):
+    """Execute Bash command.
+    - cmd: the command to execute
+    - shell: if True, pass directly the command to shell (useful for pipes).
+    Before use shell=True, consider security warning:
+      https://docs.python.org/3/library/subprocess.html#security-considerations
+    
+    Return stdout and stderr as arrays of UTF-8 strings, and the return code."""
 
-    proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if not shell:
+        cmd = cmd.split()
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell)
     stdout, stderr = proc.communicate()
 
     stdout_lines = stdout.decode('utf-8').splitlines()
     stderr_lines = stderr.decode('utf-8').splitlines()
 
-    return stdout_lines, stderr_lines
+    return stdout_lines, stderr_lines, proc.returncode
 
 
 def get_allowed_ips():
     """Return the list of IPs the domains are allowed to point to."""
     
     # Server IPs
-    stdout, stderr = execute('hostname -I')
+    stdout, stderr, rc = execute('hostname -I')
     if not stdout:
         return []
     ips = stdout[0].strip().split()
@@ -59,7 +86,7 @@ def get_allowed_ips():
 
 def dig(domain):
     """Return "dig +short $domain", as a list of lines."""
-    stdout, stderr = execute('dig +short {}'.format(domain))
+    stdout, stderr, rc = execute('dig +short {}'.format(domain))
     return stdout
 
 
@@ -77,7 +104,7 @@ def list_apache_domains():
     domains = {}
 
     try:
-        stdout, stderr = execute('apache2ctl -D DUMP_VHOSTS')
+        stdout, stderr, rc = execute('apache2ctl -D DUMP_VHOSTS')
     except:
         # Apache is not present on the server
         return domains
@@ -114,7 +141,7 @@ def list_nginx_domains():
     domains = {}
 
     try:
-        stdout, stderr = execute('nginx -T')
+        stdout, stderr, rc = execute('nginx -T')
     except:
         # Nginx is not present on the server
         return domains
@@ -165,7 +192,8 @@ def list_haproxy_domains():
         # HaProxy is not installed
         print('{} not found'.format(haproxy_conf_path))
         return domains
-
+    
+    # Domains from ACLs
     with open(haproxy_conf_path, encoding='utf-8') as f:
         line_number = 0
         for line in f.readlines():
@@ -183,7 +211,7 @@ def list_haproxy_domains():
             if ' -f ' in line:
                 doms_file_path = line.split()[4]
                 print('Found HaProxy domains file {}'.format(doms_file_path))
-                domains_to_add = read_domains_file(doms_file_path, 'haproxy')
+                domains_to_add = read_haproxy_domains_file(doms_file_path, 'haproxy')
                 domains.update(domains_to_add)
             
             # Case of an ACL based on a list of domains
@@ -200,10 +228,14 @@ def list_haproxy_domains():
                         if dom_infos not in domains[dom]:
                             domains[dom].append(dom_infos)
 
+    # Domains from HaProxy certificates
+    domains_to_add = list_haproxy_certs_domains()
+    domains.update(domains_to_add)
+
     return domains
 
 
-def read_domains_file(domains_file_path, origin):
+def read_haproxy_domains_file(domains_file_path, origin):
     """Process a file containing a list of domains :
     - domains_file_path: path of the file to parse 
     - origin: string keyword to prepend to the domains infos. Exemple: 'haproxy'
@@ -235,6 +267,108 @@ def read_domains_file(domains_file_path, origin):
     
     return domains
     
+
+def list_haproxy_certs_domains():
+    """Return the domains present in HaProxy SSL certificates.
+    Return a dict containing :
+    - key: domain (from domains_file_path)
+    - value: a list of strings "haproxy_certs:cert_path:CN|SAN"
+    """
+    domains = {}
+
+    # Check if HaProxy version supports "show ssl cert" command
+    supports_show_ssl_cert = does_haproxy_support_show_ssl_cert()
+    
+    if supports_show_ssl_cert:
+        socket = get_haproxy_stats_socket()
+        # Ajoute l'IP locale dans le cas d'un port TCP (au lieu d'un socket Unix)
+        if socket.startswith(':'):
+            socket = 'tcp:127.0.0.1{}'.format(socket)
+
+        print('echo "show ssl cert" | socat stdio {}'.format(socket))
+        stdout, stderr, rc = execute('echo "show ssl cert" | socat stdio {}'.format(socket), shell=True)
+        # TODO: install socat dependency in Ansible role
+
+        for cert_path in stdout:
+            if cert_path.strip().startswith('#'):
+                continue
+            if os.path.exists(cert_path):
+                domains_to_add = list_cert_domains(cert_path, 'haproxy_certs')
+                domains.update(domains_to_add)
+
+    else:
+        print('HaProxy SSL parsing not implemented yet for HaProxy < 2.2.')
+        #TODO
+        # /etc/haproxy/haproxy.cfg: bind *:8080 ssl crt /etc/haproxy/ssl/
+
+    return domains
+
+
+def does_haproxy_support_show_ssl_cert():
+    """Return True if HaProxy version supports 'show ssl cert' command (version >= 2.2)."""
+    
+    stdout, stderr, rc = execute('dpkg -l haproxy | grep ii', shell=True)
+    
+    supports_show_ssl_cert = False
+
+    if rc == 0:
+        for line in stdout:
+            words = line.strip().split()
+            if len(words) >= 3 and words[1] == 'haproxy':
+                version = words[2]
+                [major, minor] = version.split('.')[:2]
+                if int(major) >= 2 and int(minor) >= 2:
+                    supports_show_ssl_cert = True
+
+    return supports_show_ssl_cert
+
+
+def get_haproxy_stats_socket():
+    """Return HaProxy stats socket."""
+    
+    with open(haproxy_conf_path, encoding='utf-8') as f:
+        line_number = 0
+        for line in f.readlines():
+            words = line.strip().split()
+            if len(words) >= 3 and words[0] == 'stats' and words[1] == 'socket':
+                return words[2]
+
+    return None
+
+
+def list_cert_domains(cert_path, origin):
+    """Return the domains present in a X509 PEM certificate. 
+    - cert_path: path of the certificate 
+    - origin: string keyword to prepend to the domains infos. Exemple: 'haproxy_certs'
+    Return a dict containing :
+    - key: domain (from the certificate)
+    - value: a list of strings "origin:cert_path:CN|SAN"
+    """
+    domains = {}
+
+    with open(cert_path, 'rb') as f:
+        cert = x509.load_pem_x509_certificate(f.read(), default_backend())
+        
+        # Common name
+        cn_list = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
+        if cn_list and len(cn_list) > 0:
+           dom = cn_list[0].value
+           dom_infos = '{}:{}:CN'.format(origin, cert_path)
+           if dom not in domains:
+               domains[dom] = []
+           if dom_infos not in domains[dom]:
+               domains[dom].append(dom_infos)
+
+        # Subject Alernative Name
+        san_ext = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+        for dom in san_ext.value.get_values_for_type(x509.DNSName):
+           dom_infos = '{}:{}:SAN'.format(origin, cert_path)
+           if dom not in domains:
+               domains[dom] = []
+           if dom_infos not in domains[dom]:
+               domains[dom].append(dom_infos)
+    
+    return domains
 
 
 class DNSResolutionThread(threading.Thread):
@@ -289,6 +423,8 @@ def run_check_domains(domains):
         if d in excludes:
             ok_domains.append(d)
             continue
+
+        #TODO: handle partially wilcards: check root domain example.fom for *.example.com
 
         t = DNSResolutionThread(d)
         t.start()
