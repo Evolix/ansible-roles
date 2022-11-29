@@ -36,12 +36,14 @@ from cryptography.x509.oid import NameOID, ExtensionOID
         type: certificate,
         path: /etc/haproxy/ssl/cybercartes-www_wildcard.cybercartes.com.pem,
         attribute: CN
+        ssl_enabled: True
     },
     {
         origin: apache,
         type: config,
         path: /etc/apache/sites-enabled/default.conf,
         line: 42
+        ssl_enabled: False
     }
 ]"""
 #TODO: fix line numbers (apache, nginx), line of virtual host block
