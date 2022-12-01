@@ -121,6 +121,7 @@
   when:
     - squid_localproxy_enable | bool
     - ansible_distribution_major_version is version('9', '>=')
+    - not ansible_check_mode
 
 - name: "evolinux custom overrides (Debian 9 or later)"
   copy:

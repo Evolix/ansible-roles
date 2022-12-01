@@ -8,6 +8,7 @@
     - etc-git
   when: 
     - ansible_distribution == "Debian"
+    - not ansible_check_mode
 
 - name: Install and configure utilities
   include: utils.yml
@@ -18,4 +19,6 @@
   include: repositories.yml
   tags:
     - etc-git
-  when: etc_git_config_repositories | bool
+  when:
+    - etc_git_config_repositories | bool
+    - not ansible_check_mode

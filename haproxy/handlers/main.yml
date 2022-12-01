@@ -3,13 +3,16 @@
   service:
     name: haproxy
     state: reloaded
+  when: not ansible_check_mode
 
 - name: restart haproxy
   service:
     name: haproxy
     state: restarted
+  when: not ansible_check_mode
 
 - name: restart munin-node
   service:
     name: munin-node
     state: restarted
+  when: not ansible_check_mode

@@ -10,6 +10,7 @@
   tags:
     - apache
     - ips
+  when: not ansible_check_mode
 
 - name: remove IP addresses from private IP whitelist
   lineinfile:

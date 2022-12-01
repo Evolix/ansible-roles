@@ -22,6 +22,7 @@
     state: present
   tags:
     - apache
+  when: not ansible_check_mode
 
 - name: Copy private_htpasswd
   copy:
@@ -44,6 +45,7 @@
   notify: reload apache
   tags:
     - apache
+  when: not ansible_check_mode
 
 - name: remove user:pwd from private htpasswd
   lineinfile:
@@ -54,3 +56,4 @@
   notify: reload apache
   tags:
     - apache
+  when: not ansible_check_mode

@@ -16,6 +16,7 @@
     daemon-reload: yes
     state: started
     enabled: yes
+  when: not ansible_check_mode
 
 - name: log2mail config is present
   blockinfile:
@@ -32,4 +33,5 @@
   notify: restart log2mail
   tags:
     - log2mail
+  when: not ansible_check_mode
 

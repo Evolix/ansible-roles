@@ -21,3 +21,4 @@
   notify: restart ntp
   tags:
   - ntp
+  when: not ansible_check_mode

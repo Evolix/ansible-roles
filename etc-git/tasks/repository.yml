@@ -22,6 +22,7 @@
     value: "root@{{ ansible_fqdn | default('localhost') }}"
   tags:
     - etc-git
+  when: not ansible_check_mode
 
 - name: "{{ repository_path }}/.git is restricted to root"
   file:
@@ -49,6 +50,7 @@
   loop: "{{ gitignore_items | default([]) }}"
   tags:
     - etc-git
+  when: not ansible_check_mode
 
 - name: "does {{ repository_path }}/ have any commit?"
   command: "git log"

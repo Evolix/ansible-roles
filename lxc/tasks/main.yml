@@ -48,6 +48,7 @@
   changed_when: false
   check_mode: no
   register: check_fs_options
+  when: not ansible_check_mode
 
 - name: Check if options are correct
   assert:
@@ -56,6 +57,7 @@
       - "'noexec' not in check_fs_options.stdout"
       - "'nosuid' not in check_fs_options.stdout"
     msg: "LXC directory is in a filesystem with incompatible options"
+  when: not ansible_check_mode
 
 - name: Create containers
   include: create-container.yml

@@ -20,6 +20,7 @@
   notify: reload postfix
   tags:
     - postfix
+  when: not ansible_check_mode
 
 - name: configure postfix mynetworks
   lineinfile:
@@ -30,6 +31,7 @@
   notify: reload postfix
   tags:
     - postfix
+  when: not ansible_check_mode
 
 - name: fetch users list
   shell: "set -o pipefail && getent passwd | cut -d':' -f 1 | grep -v root"
@@ -48,7 +50,9 @@
     line: "{{ item }}: root"
   loop: "{{ non_root_users_list.stdout_lines }}"
   notify: newaliases
-  when: evolinux_postfix_users_alias_root | bool
+  when:
+    - evolinux_postfix_users_alias_root | bool
+    - not ansible_check_mode
   tags:
     - postfix
 
@@ -65,7 +69,9 @@
     - error
     - bounce
   notify: newaliases
-  when: evolinux_postfix_mailer_alias_root | bool
+  when:
+    - evolinux_postfix_mailer_alias_root | bool
+    - not ansible_check_mode
   tags:
     - postfix
 
@@ -75,7 +81,9 @@
     regexp: "^root:"
     line: "root: {{ postfix_alias_email or general_alert_email | mandatory }}"
   notify: newaliases
-  when: evolinux_postfix_root_alias | bool
+  when:
+    - evolinux_postfix_root_alias | bool
+    - not ansible_check_mode
   tags:
     - postfix
 

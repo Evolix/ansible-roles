@@ -6,6 +6,7 @@
     state: present
   tags:
     - apache
+  when: not ansible_check_mode
 
 - name: Add log2mail config for Apache segfaults
   template:

@@ -89,7 +89,9 @@
   apt:
     name: serveur-base
     allow_unauthenticated: yes
-  when: evolinux_packages_serveur_base | bool
+  when: 
+    - evolinux_packages_serveur_base | bool
+    - not ansible_check_mode
 
 - name: Install/Update packages for Stretch and later
   apt:

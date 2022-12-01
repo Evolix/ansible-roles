@@ -1,14 +1,17 @@
 - name: newaliases
   command: newaliases
+  when: not ansible_check_mode
 
 - name: Test Apache conf
   command: apache2ctl -t
   notify: "Reload Apache conf"
+  when: not ansible_check_mode
 
 - name: reload apache2
   service:
     name: apache2
     state: reloaded
+  when: not ansible_check_mode
 
 - name: apt update
   apt:
@@ -18,8 +21,10 @@
   service:
     name: squid3
     state: reloaded
+  when: not ansible_check_mode
 
 - name: reload squid
   service:
     name: squid
     state: reloaded
+  when: not ansible_check_mode

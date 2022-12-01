@@ -17,6 +17,7 @@
     owner: root
     group: ssl-cert
     mode: "0640"
+  when: not ansible_check_mode
 
 - name: Create certificate for default site
   command: openssl x509 -req -days 3650 -sha256 -in /etc/ssl/{{ evoadmin_host }}.csr -signkey /etc/ssl/private/{{ evoadmin_host }}.key -out /etc/ssl/certs/{{ evoadmin_host }}.crt

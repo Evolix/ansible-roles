@@ -25,6 +25,7 @@
   file:
     dest: "{{ php_cli_custom_ini_file }}"
     mode: "0644"
+  when: not ansible_check_mode
 
 - name: "Set custom values for PHP to enable Symfony"
   ini_file:
@@ -36,3 +37,4 @@
   loop:
     - { option: "date.timezone", value: "Europe/Paris" }
   when: php_symfony_requirements | bool
+  when: not ansible_check_mode
