@@ -41,6 +41,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * varnish: better package facts usage with check mode and tags
 * varnish: systemd override depends on Varnish version instead of Debian version
 * keepalived: change exit code (warning if runnin but not on expected state ; critical if not running)
+* openvpn: shellpki upstream release 22.12
 
 ### Fixed
 
