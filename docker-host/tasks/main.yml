@@ -31,6 +31,12 @@
     state: present
     filename: docker.list
 
+- name: Drop unsigned Docker repository
+  apt_repository:
+    repo: 'deb https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable'
+    state: absent
+    filename: docker.list
+
 - name: Install Docker
   apt:
     name:

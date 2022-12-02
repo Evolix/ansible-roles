@@ -48,6 +48,16 @@
     - metricbeat
     - packages
 
+- name: Elastic sources list is available
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
+    filename: elastic
+    state: absent
+    update_cache: yes
+  tags:
+    - metricbeat
+    - packages
+
 - name: Metricbeat is installed
   apt:
     name: metricbeat

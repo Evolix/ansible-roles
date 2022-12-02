@@ -24,6 +24,12 @@
     filename: sury
     state: present
 
+- name: Setup deb.sury.org repository - Remove unsigned source list
+  apt_repository:
+    repo: "deb https://packages.sury.org/php/ {{ ansible_distribution_release }} main"
+    filename: sury
+    state: absent
+
 - name: "Override package list for Sury (Debian 9 or later)"
   set_fact:
     php_stretch_packages:

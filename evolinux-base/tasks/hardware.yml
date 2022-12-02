@@ -96,6 +96,13 @@
       tags:
         - packages
 
+    - name: Remove unsigned HPE repository
+      apt_repository:
+        repo: 'deb https://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_distribution_release }}/current non-free'
+        state: absent
+      tags:
+        - packages
+
     - name: Install HPE Smart Storage Administrator (ssacli)
       apt:
         name: ssacli
@@ -221,6 +228,13 @@
       apt_repository:
         repo: 'deb [signed-by={{ apt_keyring_dir }}/hwraid.le-vert.net.asc] http://hwraid.le-vert.net/debian {{ ansible_distribution_release }} main'
         state: present
+      tags:
+        - packages
+
+    - name: Remove unsigned HW tool repository
+      apt_repository:
+        repo: 'deb http://hwraid.le-vert.net/debian {{ ansible_distribution_release }} main'
+        state: absent
       tags:
         - packages
 

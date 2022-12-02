@@ -47,6 +47,18 @@
     - nodejs
     - yarn
 
+- name: Unsigned Yarn sources list is not available
+  apt_repository:
+    repo: "deb https://dl.yarnpkg.com/debian/ stable main"
+    filename: yarn
+    update_cache: yes
+    state: absent
+  tags:
+    - system
+    - packages
+    - nodejs
+    - yarn
+
 - name: Yarn is installed
   apt:
     name: yarn

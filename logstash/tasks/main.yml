@@ -48,6 +48,16 @@
     - logstash
     - packages
 
+- name: Unsigned Elastic sources list is not available
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
+    filename: elastic
+    state: absent
+    update_cache: yes
+  tags:
+    - logstash
+    - packages
+
 - name: Logstash is installed
   apt:
     name: logstash

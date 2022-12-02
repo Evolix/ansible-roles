@@ -52,6 +52,17 @@
     - packages
     - nodejs
 
+- name: Unsigned NodeJS sources list ({{ nodejs_apt_version }}) is not available
+  apt_repository:
+    repo: "deb https://deb.nodesource.com/{{ nodejs_apt_version }} {{ ansible_distribution_release }} main"
+    filename: nodesource
+    update_cache: yes
+    state: absent
+  tags:
+    - system
+    - packages
+    - nodejs
+
 - name: NodeJS is installed
   apt:
     name: nodejs

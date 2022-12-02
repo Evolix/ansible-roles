@@ -40,6 +40,16 @@
     - packages
     - fluentd
 
+- name: Unsigned Fluentd sources list is not available
+  apt_repository:
+    repo: "deb http://packages.treasuredata.com/3/debian/{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} contrib"
+    filename: treasuredata
+    update_cache: yes
+    state: absent
+  tags:
+    - packages
+    - fluentd
+
 - name: Fluentd is installed.
   apt:
     name: td-agent

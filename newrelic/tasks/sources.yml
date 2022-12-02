@@ -27,3 +27,10 @@
     state: present
     filename: newrelic
     update_cache: yes
+
+- name: Desinstall unsigned NewRelic repository
+  apt_repository:
+    repo: "deb http://apt.newrelic.com/debian/ newrelic non-free"
+    state: absent
+    filename: newrelic
+    update_cache: yes

@@ -32,6 +32,13 @@
     filename: jenkins
     update_cache: yes
 
+- name: Remove unsigned jenkins APT repository
+  apt_repository:
+    repo: deb http://pkg.jenkins-ci.org/debian-stable binary/
+    filename: jenkins
+    update_cache: yes
+    state: absent
+
 - name: Install Jenkins
   apt:
     name: jenkins
