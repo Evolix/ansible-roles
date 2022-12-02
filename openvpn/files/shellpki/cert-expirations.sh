@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION="22.12"
+VERSION="22.12.1"
 
 show_version() {
     cat <<END
@@ -21,6 +21,16 @@ show_usage() {
     cat <<END
 Usage: ${0} [--version]
 END
+}
+
+check_carp_state() {
+    if [ "${SYSTEM}" = "openbsd" ]; then
+        carp=$(/sbin/ifconfig carp0 2>/dev/null | grep 'status' | cut -d' ' -f2)
+
+        if [ "$carp" = "backup" ]; then
+            exit 0
+        fi
+    fi
 }
 
 check_ca_expiration() {
@@ -79,17 +89,8 @@ check_certs_expiration() {
 
 main() {
     SYSTEM=$(uname | tr '[:upper:]' '[:lower:]')
-    
-    if [ "${SYSTEM}" = "openbsd" ]; then
-        carp=$(/sbin/ifconfig carp0 2>/dev/null | grep 'status' | cut -d' ' -f2)
-    
-        if [ "$carp" = "backup" ]; then
-            exit 0
-        fi
-    fi
-    
-    cacert_path="/etc/openvpn/ssl/ca/cacert.pem"
-    index_path="/etc/openvpn/ssl/ca/index.txt"
+    cacert_path="/etc/shellpki/cacert.pem"
+    index_path="/etc/shellpki/index.txt"
     somedays="3456000" # 40 days currently
     expired_certs=""
     expiring_soon_certs=""
@@ -107,6 +108,7 @@ main() {
         ;;
 
         "")
+            check_carp_state
             echo "Warning : all times are in UTC !"
             echo ""
             check_ca_expiration
