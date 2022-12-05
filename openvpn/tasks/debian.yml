@@ -261,7 +261,7 @@
   cron:
     name: "OpenVPN certificates expiration"
     special_time: monthly
-    job: '/usr/share/scripts/cert-expirations.sh | mail -E -s "PKI VPN {{ ansible_hostname }} : recapitulatif expirations" {{ client_email }}'
+    job: '/usr/share/scripts/cert-expirations.sh | mail -E -s "PKI OpenVPN {{ ansible_hostname }} : recapitulatif expirations" {{ client_email }}'
 
 - name: Generate the CA password
   set_fact:
