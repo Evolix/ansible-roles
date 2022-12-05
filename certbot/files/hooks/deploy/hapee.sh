@@ -10,7 +10,17 @@ debug() {
     fi
 }
 daemon_found_and_running() {
-    test -n "$(pidof hapee-lb)" && test -n "${hapee_bin}"
+    readonly hapee_main_pid=$(ps -u root u | grep hapee-lb | grep -v grep | awk '{print $2}')
+    if [ -n "${hapee_main_pid}" ] && [ -d "/proc/${hapee_main_pid}" ] ; then
+        readonly hapee_bin=$(readlink "/proc/${hapee_main_pid}/exe")
+        readonly hapee_config_file=$(cat "/proc/${hapee_main_pid}/cmdline" | tr "\0" " " | grep --only-matching --extended-regexp -- "-f \S+" | awk '{print $2}')
+        readonly hapee_pid_file=$(cat "/proc/${hapee_main_pid}/cmdline" | tr "\0" " " | grep --only-matching --extended-regexp -- "-p \S+" | awk '{print $2}')
+        readonly hapee_service_name="$(basename -s .pid "${hapee_pid_file}").service"
+
+        kill -0 "${hapee_main_pid}" && test -n "${hapee_bin}" && test -f "${hapee_config_file}" && systemctl -q is-active "${hapee_service_name}"
+    else
+        return 1
+    fi
 }
 found_renewed_lineage() {
     test -f "${RENEWED_LINEAGE}/fullchain.pem" && test -f "${RENEWED_LINEAGE}/privkey.pem"
@@ -40,12 +50,6 @@ detect_hapee_cert_dir() {
     if [ -n "${config_cert_dir}" ]; then
         debug "Cert directory is configured with ${config_cert_dir}"
         echo "${config_cert_dir}"
-    elif [ -d "/etc/haproxy/ssl" ]; then
-        debug "No configured cert directory found, but /etc/haproxy/ssl exists"
-        echo "/etc/haproxy/ssl"
-    elif [ -d "/etc/ssl/haproxy" ]; then
-        debug "No configured cert directory found, but /etc/ssl/haproxy exists"
-        echo "/etc/ssl/haproxy"
     else
         error "Cert directory not found."
     fi
@@ -56,7 +60,6 @@ main() {
     fi
 
     if daemon_found_and_running; then
-        readonly hapee_config_file="/etc/hapee-2.4/hapee-lb.cfg"
         readonly hapee_cert_dir=$(detect_hapee_cert_dir)
 
         if found_renewed_lineage; then
@@ -72,7 +75,7 @@ main() {
 
             if config_check; then
                 debug "HAPEE detected... reloading"
-                systemctl reload hapee-2.4-lb.service
+                systemctl reload "${hapee_service_name}"
             else
                 error "HAPEE config is broken, you must fix it !"
             fi
@@ -87,7 +90,5 @@ main() {
 readonly PROGNAME=$(basename "$0")
 readonly VERBOSE=${VERBOSE:-"0"}
 readonly QUIET=${QUIET:-"0"}
-
-readonly hapee_bin="/opt/hapee-2.4/sbin/hapee-lb"
 
 main
