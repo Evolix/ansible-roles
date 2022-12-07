@@ -240,7 +240,7 @@ main() {
             echo "MySQL" >>"${servicesToRestart}"
         elif echo "${pkg}" | grep -q "^mariadb-server"; then
             echo "MariaDB" >>"${servicesToRestart}"
-        elif echo "${pkg}" | grep -qE "^postgresql-[[:digit:]]+\.[[:digit:]]+$"; then
+        elif echo "${pkg}" | grep -qE "^postgresql-[[:digit:]]+(\.[[:digit:]]+)?$"; then
             echo "PostgreSQL" >>"${servicesToRestart}"
         elif echo "${pkg}" | grep -qE "^tomcat[[:digit:]]+$"; then
             echo "Tomcat" >>"${servicesToRestart}"

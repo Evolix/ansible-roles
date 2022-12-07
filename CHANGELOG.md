@@ -32,6 +32,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-user: Add sudoers privilege for chck php\_fpm81
 * evomaintenance: allow missing API endpoint if APi is disabled
 * java: use default JRE package when version is not specified
+* listupgrade: better detection for PostgreSQL
 * lxc-solr: detect the real partition options
 * lxc-solr: download URL according to Solr Version
 * lxc-solr: set homedir and port at install
