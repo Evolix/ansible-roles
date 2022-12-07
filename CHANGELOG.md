@@ -21,6 +21,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios-nrpe: check_haproxy_stats supports DRAIN status
 * packweb-apache: enable log_forensic module
 * varnish: create special tmp directory for syntax validation
+* rabbitmq: add link in default page
 
 ### Changed
 

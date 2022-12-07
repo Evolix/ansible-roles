@@ -47,3 +47,9 @@
 
 - include: munin.yml
   when: etc_munin_directory.stat.exists
+
+- name: entry for RabbitMQ in web page is present
+  lineinfile:
+    dest: /var/www/index.html
+    insertbefore: '</ul>'
+    line: '<li><a href="/rabbitmq.html">RabbitMQ</a></li>'
