@@ -65,7 +65,7 @@
   template:
     dest: "/etc/proftpd/sftp.authorized_keys/{{ _proftpd_account.name }}"
     src: authorized_keys.j2
-    mode: 0600
+    mode: 0644
   loop: "{{ proftpd_accounts_final }}"
   loop_control:
     loop_var: _proftpd_account

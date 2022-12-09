@@ -54,6 +54,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios-nrpe: Fix check opendkim for recent change in listening port
 * varnish: fix missing state, that blocked the task
 * proftpd: Fix format of public key files controlled by ansible
+* proftpd: Fix mode of public key directory and files (they have to be accessible by proftpd:nobody)
 
 ### Removed
 
