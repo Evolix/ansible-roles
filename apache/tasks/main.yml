@@ -62,10 +62,11 @@
   loop:
     - cgi
   notify: reload apache
-  when: apache_mpm == "prefork" or apache_mpm == "itk"
+  when:
+    - apache_mpm == "prefork" or apache_mpm == "itk"
+    - not ansible_check_mode
   tags:
     - apache
-  when: not ansible_check_mode
 
 
 - name: Copy Apache defaults config file
@@ -132,10 +133,11 @@
     state: link
     force: yes
   notify: reload apache
-  when: apache_evolinux_default_enabled | bool
+  when:
+    - apache_evolinux_default_enabled | bool
+    - not ansible_check_mode
   tags:
     - apache
-  when: not ansible_check_mode
 
 - include: server_status.yml
   tags:
@@ -158,10 +160,11 @@
       ## Set umask for writing by Apache user.
       ## Set rights on files and directories written by Apache
       umask 007
-  when: envvar_grep_umask.rc != 0
+  when:
+    - envvar_grep_umask.rc != 0
+    - not ansible_check_mode
   tags:
     - apache
-  when: not ansible_check_mode
 
 - include_role:
     name: evolix/remount-usr
