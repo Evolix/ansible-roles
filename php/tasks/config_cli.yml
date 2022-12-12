@@ -36,5 +36,6 @@
     mode: "0644"
   loop:
     - { option: "date.timezone", value: "Europe/Paris" }
-  when: php_symfony_requirements | bool
-  when: not ansible_check_mode
+  when:
+    - php_symfony_requirements | bool
+    - not ansible_check_mode

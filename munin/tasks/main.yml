@@ -32,8 +32,9 @@
       removes: /var/lib/munin/localdomain
     notify: restart munin-node
 
-  when: not ansible_hostname == "localdomain"
-  when: not ansible_check_mode
+  when:
+    - not ansible_hostname == "localdomain"
+    - not ansible_check_mode
   tags:
     - munin
 

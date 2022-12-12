@@ -84,8 +84,9 @@
   file:
     dest: /etc/php/7.3/fpm
     mode: "0755"
-  when: php_fpm_enable | bool
-  when: not ansible_check_mode
+  when:
+    - php_fpm_enable | bool
+    - not ansible_check_mode
 
 - include: config_apache.yml
   when: php_apache_enable | bool
@@ -94,8 +95,9 @@
   file:
     dest: /etc/php/7.3/apache2
     mode: "0755"
-  when: php_apache_enable | bool
-  when: not ansible_check_mode
+  when:
+    - php_apache_enable | bool
+    - not ansible_check_mode
 
 - include: sury_post.yml
   when: php_sury_enable | bool
