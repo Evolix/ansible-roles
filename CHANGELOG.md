@@ -58,6 +58,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Removed
 
+* openvpn: Deleted the task fixing the CRL rights since it has been fixed in upstream
+
 ### Security
 
 ## [22.09] 2022-09-19
