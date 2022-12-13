@@ -5,7 +5,7 @@
 
 set -u
 
-VERSION="22.12"
+VERSION="22.12.2"
 
 show_version() {
     cat <<END
@@ -224,7 +224,7 @@ replace_existing_or_abort() {
 init() {
     umask 0177
 
-    [ -d "${CA_DIR}" ] || mkdir -m 0750 "${CA_DIR}"
+    [ -d "${CA_DIR}" ] || mkdir -m 0751 "${CA_DIR}"
     [ -d "${CRT_DIR}" ] || mkdir -m 0750 "${CRT_DIR}"
     [ -f "${INDEX_FILE}" ] || touch "${INDEX_FILE}"
     [ -f "${INDEX_FILE}.attr" ] || touch "${INDEX_FILE}.attr"
@@ -1103,9 +1103,11 @@ main() {
 
     # fix right
     chown -R "${PKI_USER}":"${PKI_USER}" "${CA_DIR}"
-    chmod 750 "${CA_DIR}" "${CRT_DIR}" "${KEY_DIR}" "${CSR_DIR}" "${PKCS12_DIR}" "${OVPN_DIR}" "${TMP_DIR}"
-    chmod 600 "${INDEX_FILE}"* "${SERIAL}"* "${CA_KEY}" "${CRL}"
+    chmod 750 "${CRT_DIR}" "${KEY_DIR}" "${CSR_DIR}" "${PKCS12_DIR}" "${OVPN_DIR}" "${TMP_DIR}"
+    chmod 600 "${INDEX_FILE}"* "${SERIAL}"* "${CA_KEY}"
     chmod 640 "${CA_CERT}"
+    chmod 604 "${CRL}"
+    chmod 751 "${CA_DIR}"
 }
 
 main "$@"
