@@ -38,7 +38,7 @@
     group: "{{ item.group }}"
   with_items:
      - { source: "openssl.cnf", destination: "/etc/shellpki/openssl.cnf", mode: "0640", owner: "_shellpki", group: "_shellpki" }
-     - { source: "shellpki", destination: "/usr/local/sbin/shellpki", mode: "0755", owner: "root", group: "wheel" }
+     - { source: "shellpki", destination: "/usr/local/sbin/shellpki", mode: "0750", owner: "root", group: "wheel" }
 
 - name: Add sudo rights
   lineinfile:

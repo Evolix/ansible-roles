@@ -55,6 +55,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * varnish: fix missing state, that blocked the task
 * proftpd: Fix format of public key files controlled by ansible
 * proftpd: Fix mode of public key directory and files (they have to be accessible by proftpd:nobody)
+* openvpn: Fix mode of shellpki script
 
 ### Removed
 
