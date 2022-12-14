@@ -38,7 +38,7 @@ bantime = {{ fail2ban_recidive_bantime }}
 # Evolix custom jails 
 
 [wordpress-hard]
-enabled = {{ fail2ban_wordpress_hard }}
+enabled = {{ fail2ban_wordpress_hard }}
 port = http, https
 filter = wordpress-hard
 logpath = /var/log/auth.log
@@ -47,7 +47,7 @@ findtime = {{ fail2ban_wordpress_hard_findtime }}
 bantime = {{ fail2ban_wordpress_hard_bantime }}
 
 [wordpress-soft]
-enabled = {{ fail2ban_wordpress_soft }}
+enabled = {{ fail2ban_wordpress_soft }}
 port = http, https
 filter = wordpress-soft
 logpath = /var/log/auth.log
@@ -56,7 +56,7 @@ findtime = {{ fail2ban_wordpress_soft_findtime }}
 bantime = {{ fail2ban_wordpress_soft_bantime }}
 
 [roundcube]
-enabled  = {{ fail2ban_roundcube }}
+enabled  = {{ fail2ban_roundcube }}
 port     = http, https
 filter   = roundcube
 logpath  = /var/lib/roundcube/logs/errors

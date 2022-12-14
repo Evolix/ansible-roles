@@ -9,7 +9,7 @@
 - name: "Met-à-jour userlogrotate"
   ansible.builtin.copy:
     src: userlogrotate
-    dest: "{{ item }}"
+    dest: "{{ item }}"
     mode: "0755"
   loop: "{{ find_logrotate.files }}"
   when: find_logrotate.files | length>0

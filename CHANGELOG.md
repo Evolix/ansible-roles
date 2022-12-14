@@ -205,7 +205,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * minifirewall: tail template follows symlinks
 * mysql: add "set crypt_use_gpgme=no" Mutt option, for mysqltuner
 
-### Fixed
+### Fixed
 
 * Role `postfix`: Add missing `localhost.localdomain localhost` to `mydestination` variable which caused undelivered of some local mails.
 
