@@ -4,7 +4,6 @@
   changed_when: false
   check_mode: no
   register: container_exists
-  when: not ansible_check_mode
 
 - name: "Create container {{ name }}"
   lxc_container:
@@ -14,7 +13,6 @@
     state: stopped
     template_options: "--arch amd64 --release {{ release }}"
   when: container_exists.stdout_lines | length == 0
-  when: not ansible_check_mode
 
 - name: "Disable network configuration inside container {{ name }}"
   replace:
@@ -22,14 +20,12 @@
     regexp: "^#CONFIGURE_INTERFACES=yes"
     replace: CONFIGURE_INTERFACES=no
   when: lxc_network_type == "none"
-  when: not ansible_check_mode
 
 - name: "Disable interface shut down on halt inside container {{ name }} (Jessie container)"
   lineinfile:
     name: "/var/lib/lxc/{{ name }}/rootfs/etc/default/halt"
     line: "NETDOWN=no"
   when: lxc_network_type == "none" and release == "jessie"
-  when: not ansible_check_mode
 
 - name: "Make the container {{ name }} poweroff on SIGPWR sent by lxc-stop (Jessie container)"
   file:
@@ -48,7 +44,6 @@
   lineinfile:
     name: "/var/lib/lxc/{{ name }}/rootfs/etc/hosts"
     line: "127.0.0.1 {{ name }}"
-  when: not ansible_check_mode
 
 - name: "Fix permission on /dev for container {{ name }}"
   lineinfile:
@@ -56,7 +51,6 @@
     line: "chmod 755 /dev"
     insertbefore: "^exit 0$"
   when: release == 'jessie'
-  when: not ansible_check_mode
 
 - name: "Ensure that {{ name }} container is running"
   lxc_container:

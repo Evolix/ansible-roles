@@ -53,7 +53,6 @@
   notify: reload apache
   tags:
     - apache
-  when: not ansible_check_mode
 
 - name: basic modules are enabled
   apache2_module:
@@ -194,7 +193,6 @@
     replace: "{{ apache_logrotate_frequency }}"
   tags:
     - apache
-  when: not ansible_check_mode
 
 - name: "logrotate: rotate {{ apache_logrotate_rotate }}"
   replace:
@@ -203,7 +201,6 @@
     replace: '\1 {{ apache_logrotate_rotate }}'
   tags:
     - apache
-  when: not ansible_check_mode
 
 - include: log2mail.yml
   when: apache_log2mail_include

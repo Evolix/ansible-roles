@@ -56,7 +56,6 @@
   file:
     dest: /etc/php5
     mode: "0755"
-  when: not ansible_check_mode
 
 - include: config_cli.yml
 
@@ -64,7 +63,6 @@
   file:
     dest: /etc/php5/cli
     mode: "0755"
-  when: not ansible_check_mode
 
 - include: config_fpm.yml
   when: php_fpm_enable | bool
@@ -74,7 +72,6 @@
     dest: /etc/php5/fpm
     mode: "0755"
   when: php_fpm_enable | bool
-  when: not ansible_check_mode
 
 - include: config_apache.yml
   when: php_apache_enable | bool
@@ -84,4 +81,3 @@
     dest: /etc/php5/apache2
     mode: "0755"
   when: php_apache_enable | bool
-  when: not ansible_check_mode

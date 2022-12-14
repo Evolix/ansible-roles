@@ -156,7 +156,6 @@
     dest: /etc/cron.{{ mysql_cron_optimize_frequency | mandatory }}/mysql-optimize.sh
     state: link
   when: mysql_cron_optimize | bool
-  when: not ansible_check_mode
   tags:
     - mysql
 

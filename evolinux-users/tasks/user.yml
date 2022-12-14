@@ -161,7 +161,6 @@
     insertafter: EOF
     line: 'trap "sudo /usr/share/scripts/evomaintenance.sh" 0'
   when: grep_profile_evomaintenance.rc != 0
-  when: not ansible_check_mode
 
 # SSH keys
 
@@ -193,6 +192,5 @@
   when:
     - user.ssh_keys is defined
     - user.ssh_keys | length > 0
-    - not ansible_check_mode
 
 - meta: flush_handlers

@@ -5,7 +5,6 @@
     state: present
     name: proxy_fcgi
   notify: restart apache2
-  when: not ansible_check_mode
 
 - include_role:
     name: remount-usr

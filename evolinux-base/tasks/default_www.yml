@@ -38,7 +38,6 @@
         owner: root
         group: ssl-cert
         mode: "0640"
-      when: not ansible_check_mode
 
     - name: Create certificate for default site
       command: openssl x509 -req -days 3650 -sha256 -in /etc/ssl/{{ ansible_fqdn }}.csr -signkey /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/certs/{{ ansible_fqdn }}.crt

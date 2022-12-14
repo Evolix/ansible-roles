@@ -23,7 +23,6 @@
   tags:
     - apache
     - munin
-  when: not ansible_check_mode
 
 - name: "Install fcgi packages for Munin graphs"
   apt:
@@ -44,7 +43,6 @@
   tags:
     - apache
     - munin
-  when: not ansible_check_mode
 
 - name: "Apache has access to /var/log/munin/"
   file:
@@ -53,4 +51,3 @@
   tags:
     - apache
     - munin
-  when: not ansible_check_mode

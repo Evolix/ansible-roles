@@ -79,14 +79,12 @@
   with_items:
     - /etc/php
     - /etc/php/{{ php_version }}
-  when: not ansible_check_mode
 
 - include: config_cli.yml
 - name: "Enforce permissions on PHP cli directory (Debian 12)"
   file:
     dest: /etc/php/{{ php_version }}/cli
     mode: "0755"
-  when: not ansible_check_mode
 
 - include: config_fpm.yml
   when: php_fpm_enable
@@ -96,7 +94,6 @@
     dest: /etc/php/{{ php_version }}/fpm
     mode: "0755"
   when: php_fpm_enable
-  when: not ansible_check_mode
 
 - include: config_apache.yml
   when: php_apache_enable
@@ -106,7 +103,6 @@
     dest: /etc/php/{{ php_version }}/apache2
     mode: "0755"
   when: php_apache_enable
-  when: not ansible_check_mode
 
 - include: sury_post.yml
   when: php_sury_enable

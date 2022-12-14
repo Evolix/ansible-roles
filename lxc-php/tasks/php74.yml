@@ -10,7 +10,6 @@
     dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/apt/sources.list"
     regexp: 'bullseye/updates'
     replace: 'bullseye-security'
-  when: not ansible_check_mode
 
 - name: "{{ lxc_php_version }} - Copy evolinux PHP configuration"
   template:
