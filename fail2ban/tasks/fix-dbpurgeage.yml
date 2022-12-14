@@ -6,9 +6,19 @@
 
 - name: Register bantime from default config from package
   shell: "grep -R -E 'dbpurgeage[[:blank:]]*=[[:blank:]]*[0-9]+' /etc/fail2ban/fail2ban.conf |awk '{print $3}'|head -n1"
-  register: default_dbpurgeage
+  register: dbpurgeage
   changed_when: false
   check_mode: false
+
+  - name:
+    set_fact:
+      dbpurgeage_default : "{{ dbpurgeage.stdout }}"
+    when: dbpurgeage.stdout | regex_search("^\\d+\w+$")
+
+  - name:
+    set_fact:
+      dbpurgeage_default : "{{ dbpurgeage.stdout }} second"
+    when: dbpurgeage.stdout | regex_search("^\\d+$")
 
 - name: Add crontab
   template:
