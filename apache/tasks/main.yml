@@ -64,7 +64,6 @@
   when: apache_mpm == "prefork" or apache_mpm == "itk"
   tags:
     - apache
-  when: not ansible_check_mode
 
 
 - name: Copy Apache defaults config file
@@ -134,7 +133,6 @@
   when: apache_evolinux_default_enabled | bool
   tags:
     - apache
-  when: not ansible_check_mode
 
 - include: server_status.yml
   tags:
@@ -160,7 +158,6 @@
   when: envvar_grep_umask.rc != 0
   tags:
     - apache
-  when: not ansible_check_mode
 
 - include_role:
     name: evolix/remount-usr
