@@ -52,7 +52,7 @@
   file:
     path: /etc/proftpd/sftp.authorized_keys/
     state: directory
-    mode: "0700"
+    mode: "0755"
     owner: root
     group: root
   notify: restart proftpd

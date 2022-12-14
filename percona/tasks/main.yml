@@ -18,7 +18,7 @@
 - name: Add Percona GPG key
   copy:
     src: percona.asc
-    dest: /etc/apt/trusted.gpg.d/percona.asc
+    dest: "{{ apt_keyring_dir }}/percona.asc"
     force: yes
     mode: "0644"
     owner: root

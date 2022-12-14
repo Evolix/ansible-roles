@@ -5,7 +5,7 @@
 
 set -u
 
-VERSION="22.04"
+VERSION="22.12.2"
 
 show_version() {
     cat <<END
@@ -137,14 +137,14 @@ warning() {
 }
 
 verify_ca_password() {
-    "${OPENSSL_BIN}" rsa \
+    "${OPENSSL_BIN}" pkey \
         -in "${CA_KEY}"    \
         -passin pass:"${CA_PASSWORD}" \
         >/dev/null 2>&1
 }
 get_real_path() {
     # --canonicalize is supported on Linux
-    # -f is supported on Linux and OpenBSD 
+    # -f is supported on Linux and OpenBSD
     readlink -f -- "${1}"
 }
 
@@ -224,9 +224,10 @@ replace_existing_or_abort() {
 init() {
     umask 0177
 
-    [ -d "${CA_DIR}" ] || mkdir -m 0750 "${CA_DIR}"
+    [ -d "${CA_DIR}" ] || mkdir -m 0751 "${CA_DIR}"
     [ -d "${CRT_DIR}" ] || mkdir -m 0750 "${CRT_DIR}"
     [ -f "${INDEX_FILE}" ] || touch "${INDEX_FILE}"
+    [ -f "${INDEX_FILE}.attr" ] || touch "${INDEX_FILE}.attr"
     [ -f "${CRL}" ] || touch "${CRL}"
     [ -f "${SERIAL}" ] || echo "01" > "${SERIAL}"
 
@@ -278,17 +279,18 @@ init() {
 
     passout_arg=""
     if [ -n "${CA_PASSWORD:-}" ]; then
-        passout_arg="-passout pass:${CA_PASSWORD}"
+        passout_arg="-pass pass:${CA_PASSWORD}"
     elif [ "${non_interactive}" -eq 1 ]; then
         error "In non-interactive mode, you must pass CA_PASSWORD as environment variable."
     fi
 
     if [ ! -f "${CA_KEY}" ]; then
-        "${OPENSSL_BIN}" genrsa \
+        "${OPENSSL_BIN}" genpkey \
+            -algorithm RSA \
             -out "${CA_KEY}" \
             ${passout_arg} \
             -aes256 \
-            "${CA_KEY_LENGTH}" \
+            -pkeyopt "rsa_keygen_bits:${CA_KEY_LENGTH}" \
             >/dev/null 2>&1
         # shellcheck disable=SC2181
         if [ "$?" -ne 0 ]; then
@@ -355,9 +357,10 @@ ocsp() {
     port=$(echo "${ocsp_uri}" | cut -d':' -f2)
 
     if [ ! -f "${OCSP_KEY}" ]; then
-        "${OPENSSL_BIN}" genrsa \
+        "${OPENSSL_BIN}" genpkey \
+            -algorithm RSA \
             -out "${OCSP_KEY}" \
-            "${KEY_LENGTH}" \
+            -pkeyopt "rsa_keygen_bits:${KEY_LENGTH}" \
             >/dev/null 2>&1
         # shellcheck disable=SC2181
         if [ "$?" -ne 0 ]; then
@@ -680,17 +683,19 @@ create() {
         # generate private key
         pass_args=""
         if [ -n "${password_file:-}" ]; then
-            pass_args="-aes256 -passout file:${password_file}"
+            pass_args="-aes256 -pass file:${password_file}"
         elif [ -n "${PASSWORD:-}" ]; then
-            pass_args="-aes256 -passout pass:${PASSWORD}"
+            pass_args="-aes256 -pass pass:${PASSWORD}"
         fi
-        "${OPENSSL_BIN}" genrsa \
+        "${OPENSSL_BIN}" genpkey \
+            -algorithm RSA \
             -out "${key_file}" \
             ${pass_args} \
-            "${KEY_LENGTH}" \
+            -pkeyopt "rsa_keygen_bits:${KEY_LENGTH}" \
             >/dev/null 2>&1
         # shellcheck disable=SC2181
         if [ "$?" -eq 0 ]; then
+            chmod 600 "${key_file}"
             echo "The KEY file is available at \`${key_file}'"
         else
             error "Error generating the private key"
@@ -1098,9 +1103,11 @@ main() {
 
     # fix right
     chown -R "${PKI_USER}":"${PKI_USER}" "${CA_DIR}"
-    chmod 750 "${CA_DIR}" "${CRT_DIR}" "${KEY_DIR}" "${CSR_DIR}" "${PKCS12_DIR}" "${OVPN_DIR}" "${TMP_DIR}"
-    chmod 600 "${INDEX_FILE}"* "${SERIAL}"* "${CA_KEY}" "${CRL}"
+    chmod 750 "${CRT_DIR}" "${KEY_DIR}" "${CSR_DIR}" "${PKCS12_DIR}" "${OVPN_DIR}" "${TMP_DIR}"
+    chmod 600 "${INDEX_FILE}"* "${SERIAL}"* "${CA_KEY}"
     chmod 640 "${CA_CERT}"
+    chmod 604 "${CRL}"
+    chmod 751 "${CA_DIR}"
 }
 
 main "$@"

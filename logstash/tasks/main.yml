@@ -29,7 +29,7 @@
 - name: Elastic GPG key is installed
   copy:
     src: elastic.asc
-    dest: /etc/apt/trusted.gpg.d/elastic.asc
+    dest: "{{ apt_keyring_dir }}/elastic.asc"
     force: yes
     mode: "0644"
     owner: root
@@ -40,9 +40,19 @@
 
 - name: Elastic sources list is available
   apt_repository:
-    repo: "deb https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
+    repo: "deb [signed-by={{ apt_keyring_dir }}/elastic.asc] https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
     filename: elastic
     state: present
+    update_cache: yes
+  tags:
+    - logstash
+    - packages
+
+- name: Unsigned Elastic sources list is not available
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
+    filename: elastic
+    state: absent
     update_cache: yes
   tags:
     - logstash

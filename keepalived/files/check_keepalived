@@ -18,35 +18,38 @@ MASTER='true'
 # checking if there are alive keepalived processes so we can trust the content of the notify 'state' file
 KEEPALIVENUM=`ps uax|grep '/usr/sbin/keepalived'|grep -v grep|wc -l|tr -d "\n"`
 
-if [ $KEEPALIVENUM -gt 0 ]; then
+if [ ${KEEPALIVENUM} -gt 0 ]; then
 
   KEEPALIVESTATE=`cat /var/run/keepalive.state`
 
-  if [ "$MASTER" == "true" ]; then
+  if [ "${MASTER}" == "true" ]; then
 
-    if [[ $KEEPALIVESTATE == *"MASTER"* ]];then
-      echo $KEEPALIVESTATE
+    if [[ ${KEEPALIVESTATE} == *"MASTER"* ]];then
+      echo "OK - ${KEEPALIVESTATE}"
       exit 0
     fi
 
-    if [[ $KEEPALIVESTATE == *"BACKUP"* ]];then
-      echo $KEEPALIVESTATE
-      exit 2
+    if [[ ${KEEPALIVESTATE} == *"BACKUP"* ]];then
+      echo "WARNING - ${KEEPALIVESTATE}"
+      exit 1
     fi
 
   else
 
-    if [[ $KEEPALIVESTATE == *"BACKUP"* ]];then
-      echo $KEEPALIVESTATE
+    if [[ ${KEEPALIVESTATE} == *"BACKUP"* ]];then
+      echo "OK - ${KEEPALIVESTATE}"
       exit 0
     fi
 
-    if [[ $KEEPALIVESTATE == *"MASTER"* ]];then
-      echo $KEEPALIVESTATE
-      exit 2
+    if [[ ${KEEPALIVESTATE} == *"MASTER"* ]];then
+      echo "WARNING - ${KEEPALIVESTATE}"
+      exit 1
     fi
 
   fi
+else
+    echo "CRITICAL - keepalived is not running"
+    exit 2
 fi
 
 echo "Keepalived is in UNKNOWN state"

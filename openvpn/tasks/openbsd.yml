@@ -38,7 +38,7 @@
     group: "{{ item.group }}"
   with_items:
      - { source: "openssl.cnf", destination: "/etc/shellpki/openssl.cnf", mode: "0640", owner: "_shellpki", group: "_shellpki" }
-     - { source: "shellpki", destination: "/usr/local/sbin/shellpki", mode: "0755", owner: "root", group: "wheel" }
+     - { source: "shellpki", destination: "/usr/local/sbin/shellpki", mode: "0750", owner: "root", group: "wheel" }
 
 - name: Add sudo rights
   lineinfile:
@@ -59,16 +59,6 @@
   openssl_dhparam:
     path: /etc/shellpki/dh2048.pem
     size: 2048
-
-- name: Fix CRL rights in shellpki command
-  lineinfile:
-    dest: "/usr/local/sbin/shellpki"
-    regexp: '{{ item.regexp }}'
-    insertafter: "{{ item.insertafter }}"
-    line: "{{ item.line }}"
-  with_items:
-     - { regexp: '^    chmod 604 /etc/shellpki/crl.pem$', line: "    chmod 604 /etc/shellpki/crl.pem", insertafter: '^    chmod 640 "\${CACERT}"$' }
-     - { regexp: '^    chmod 751 /etc/shellpki/$', line: "    chmod 751 /etc/shellpki/", insertafter: '^    chmod 604 /etc/shellpki/crl.pem$' }
 
 - name: Deploy OpenVPN server config
   template:
@@ -189,7 +179,7 @@
   cron:
     name: "OpenVPN certificates expiration"
     special_time: monthly
-    job: '/usr/share/scripts/cert-expirations.sh | mail -E -s "PKI VPN {{ ansible_hostname }} : recapitulatif expirations" {{ client_email }}'
+    job: '/usr/share/scripts/cert-expirations.sh | mail -E -s "PKI OpenVPN {{ ansible_hostname }} : recapitulatif expirations" {{ client_email }}'
 
 - name: Generate the CA password
   set_fact:

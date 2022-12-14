@@ -4,8 +4,12 @@
     msg: Not compatible with Debian 11 (Bullseye)
   when:
   - ansible_distribution_release == "bullseye" 
-  - mongodb_version is version('5.0', '<=')
+  - mongodb_version is version('5.0', '<')
 
+- name: Look for legacy apt keyring
+  stat:
+    path: /etc/apt/trusted.gpg
+  register: _trusted_gpg_keyring
 
 - name: MongoDB embedded GPG key is absent
   apt_key:
@@ -17,16 +21,23 @@
 - name: Add MongoDB GPG key
   copy:
     src: "server-{{mongodb_version}}.asc"
-    dest: "/etc/apt/trusted.gpg.d/mongodb-server-{{mongodb_version}}.asc"
+    dest: "{{ apt_keyring_dir }}/mongodb-server-{{mongodb_version}}.asc"
     force: yes
     mode: "0644"
     owner: root
     group: root
 
-- name: enable APT sources list
+- name: Enable APT sources list
   apt_repository:
-    repo: "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/{{mongodb_version}} main"
+    repo: "deb [signed-by={{ apt_keyring_dir }}/mongodb-server-{{mongodb_version}}.asc] http://repo.mongodb.org/apt/debian bullseye/mongodb-org/{{mongodb_version}} main"
     state: present
+    filename: "mongodb-org-{{mongodb_version}}"
+    update_cache: yes
+
+- name: Disable unsigned APT sources list
+  apt_repository:
+    repo: "deb http://repo.mongodb.org/apt/debian bullseye/mongodb-org/{{mongodb_version}} main"
+    state: absent
     filename: "mongodb-org-{{mongodb_version}}"
     update_cache: yes
 
@@ -46,19 +57,19 @@
 
 - name: install dependency for monitoring
   apt:
-    name: python-pymongo
+    name: python3-pymongo
     state: present
 
 - name: Custom configuration
   template:
-    src: mongodb_buster.conf.j2
+    src: mongodb_bullseye.conf.j2
     dest: "/etc/mongod.conf"
     force: "{{ mongodb_force_config | bool | ternary('yes', 'no') }}"
   notify: restart mongod
 
 - name: Configure logrotate
   template:
-    src: logrotate_buster.j2
+    src: logrotate_bullseye.j2
     dest: /etc/logrotate.d/mongodb
     force: yes
     backup: no

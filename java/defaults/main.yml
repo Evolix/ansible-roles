@@ -1,4 +1,4 @@
 ---
 java_alternative: 'openjdk'
-java_version: 8
+java_version: Null
 java_default_alternative: True

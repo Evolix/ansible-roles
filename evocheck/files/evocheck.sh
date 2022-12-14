@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian) server
 # powered by Evolix
 
-VERSION="22.09"
+VERSION="22.11"
 readonly VERSION
 
 # base functions
@@ -52,16 +52,19 @@ detect_os() {
     LSB_RELEASE_BIN=$(command -v lsb_release)
 
     if [ -e /etc/debian_version ]; then
-        DEBIAN_VERSION=$(cut -d "." -f 1 < /etc/debian_version)
+        DEBIAN_MAIN_VERSION=$(cut -d "." -f 1 < /etc/debian_version)
+
+        if [ "${DEBIAN_MAIN_VERSION}" -lt "9" ]; then
+            echo "Debian ${DEBIAN_MAIN_VERSION} is incompatible with this version of evocheck." >&2 
+            echo "This version is built for Debian 9 and later." >&2
+            exit
+        fi
+
         if [ -x "${LSB_RELEASE_BIN}" ]; then
             DEBIAN_RELEASE=$(${LSB_RELEASE_BIN} --codename --short)
         else
-            case ${DEBIAN_VERSION} in
-                5) DEBIAN_RELEASE="lenny";;
-                6) DEBIAN_RELEASE="squeeze";;
-                7) DEBIAN_RELEASE="wheezy";;
-                8) DEBIAN_RELEASE="jessie";;
-                9) DEBIAN_RELEASE="stretch";;
+            case ${DEBIAN_MAIN_VERSION} in
+                9)  DEBIAN_RELEASE="stretch";;
                 10) DEBIAN_RELEASE="buster";;
                 11) DEBIAN_RELEASE="bullseye";;
                 12) DEBIAN_RELEASE="bookworm";;
@@ -70,21 +73,6 @@ detect_os() {
     fi
 }
 
-is_debian() {
-    test -n "${DEBIAN_RELEASE}"
-}
-is_debian_lenny() {
-    test "${DEBIAN_RELEASE}" = "lenny"
-}
-is_debian_squeeze() {
-    test "${DEBIAN_RELEASE}" = "squeeze"
-}
-is_debian_wheezy() {
-    test "${DEBIAN_RELEASE}" = "wheezy"
-}
-is_debian_jessie() {
-    test "${DEBIAN_RELEASE}" = "jessie"
-}
 is_debian_stretch() {
     test "${DEBIAN_RELEASE}" = "stretch"
 }
@@ -97,12 +85,6 @@ is_debian_bullseye() {
 is_debian_bookworm() {
     test "${DEBIAN_RELEASE}" = "bookworm"
 }
-debian_release() {
-    printf "%s" "${DEBIAN_RELEASE}"
-}
-debian_version() {
-    printf "%s" "${DEBIAN_VERSION}"
-}
 
 is_pack_web(){
     test -e /usr/share/scripts/web-add.sh || test -e /usr/share/scripts/evoadmin/web-add.sh
@@ -114,16 +96,6 @@ is_installed(){
     for pkg in "$@"; do
         dpkg -l "$pkg" 2> /dev/null | grep -q -E '^(i|h)i' || return 1
     done
-}
-minifirewall_file() {
-    case ${DEBIAN_RELEASE} in
-        lenny) echo "/etc/firewall.rc" ;;
-        squeeze) echo "/etc/firewall.rc" ;;
-        wheezy) echo "/etc/firewall.rc" ;;
-        jessie) echo "/etc/default/minifirewall" ;;
-        stretch) echo "/etc/default/minifirewall" ;;
-        *) echo "/etc/default/minifirewall" ;;
-    esac
 }
 
 # logging
@@ -156,54 +128,18 @@ check_lsbrelease(){
     fi
 }
 check_dpkgwarning() {
-    if is_debian_squeeze; then
-        if [ "$IS_USRRO" = 1 ] || [ "$IS_TMPNOEXEC" = 1 ]; then
-            count=$(grep -c -E -i "(Pre-Invoke ..echo Are you sure to have rw on|Post-Invoke ..echo Dont forget to mount -o remount)" /etc/apt/apt.conf)
-            test "$count" = 2 || failed "IS_DPKGWARNING" "Pre/Post-Invoke are missing."
-        fi
-    elif is_debian_wheezy; then
-        if [ "$IS_USRRO" = 1 ] || [ "$IS_TMPNOEXEC" = 1 ]; then
-            test -e /etc/apt/apt.conf.d/80evolinux \
-                || failed "IS_DPKGWARNING" "/etc/apt/apt.conf.d/80evolinux is missing"
-            test -e /etc/apt/apt.conf \
-                && failed "IS_DPKGWARNING" "/etc/apt/apt.conf is missing"
-        fi
-    elif is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        test -e /etc/apt/apt.conf.d/z-evolinux.conf \
-            || failed "IS_DPKGWARNING" "/etc/apt/apt.conf.d/z-evolinux.conf is missing"
-    fi
-}
-check_umasksudoers(){
-    if is_debian_squeeze; then
-        grep -q "^Defaults.*umask=0077" /etc/sudoers \
-            || failed "IS_UMASKSUDOERS" "sudoers must set umask to 0077"
-    fi
+    test -e /etc/apt/apt.conf.d/z-evolinux.conf \
+        || failed "IS_DPKGWARNING" "/etc/apt/apt.conf.d/z-evolinux.conf is missing"
 }
 # Verifying check_mailq in Nagios NRPE config file. (Option "-M postfix" need to be set if the MTA is Postfix)
 check_nrpepostfix() {
     if is_installed postfix; then
-        if is_debian_squeeze; then
-            grep -q "^command.*check_mailq -M postfix" /etc/nagios/nrpe.cfg \
-                || failed "IS_NRPEPOSTFIX" "NRPE \"check_mailq\" for postfix is missing"
-        else
-            { test -e /etc/nagios/nrpe.cfg \
-                && grep -qr "^command.*check_mailq -M postfix" /etc/nagios/nrpe.*;
-            } || failed "IS_NRPEPOSTFIX" "NRPE \"check_mailq\" for postfix is missing"
-        fi
+        { test -e /etc/nagios/nrpe.cfg \
+            && grep -qr "^command.*check_mailq -M postfix" /etc/nagios/nrpe.*;
+        } || failed "IS_NRPEPOSTFIX" "NRPE \"check_mailq\" for postfix is missing"
     fi
 }
 # Check if mod-security config file is present
-check_modsecurity() {
-    if is_debian_squeeze; then
-        if is_installed libapache-mod-security; then
-            test -e /etc/apache2/conf.d/mod-security2.conf || failed "IS_MODSECURITY" "missing configuration file"
-        fi
-    elif is_debian_wheezy; then
-        if is_installed libapache2-modsecurity; then
-            test -e /etc/apache2/conf.d/mod-security2.conf || failed "IS_MODSECURITY" "missing configuration file"
-        fi
-    fi
-}
 check_customsudoers() {
     grep -E -qr "umask=0077" /etc/sudoers* || failed "IS_CUSTOMSUDOERS" "missing umask=0077 in sudoers file"
 }
@@ -226,46 +162,15 @@ check_syslogconf() {
         || failed "IS_SYSLOGCONF" "syslog evolix config file missing"
 }
 check_debiansecurity() {
-    if is_debian_bullseye; then
-        # https://www.debian.org/releases/bullseye/amd64/release-notes/ch-information.html#security-archive
-        # https://www.debian.org/security/
-        pattern="^deb  ?(\[.*\])? ?http://security\.debian\.org/debian-security/? bullseye-security main"
-    elif is_debian_buster; then
-        pattern="^deb  ?(\[.*\])? ?http://security\.debian\.org/debian-security/? buster/updates main"
-    elif is_debian_stretch; then
-        pattern="^deb  ?(\[.*\])? ?http://security\.debian\.org/debian-security/? stretch/updates main"
-    else
-        pattern="^deb.*security"
-    fi
-
-    source_file="/etc/apt/sources.list"
-    grep -qE "${pattern}" "${source_file}" || failed "IS_DEBIANSECURITY" "missing debian security repository"
-}
-check_aptitudeonly() {
-    if is_debian_squeeze || is_debian_wheezy; then
-        test -e /usr/bin/apt-get && failed "IS_APTITUDEONLY" \
-            "only aptitude may be enabled on Debian <=7, apt-get should be disabled"
-    fi
+    # Look for enabled "Debian-Security" sources from the "Debian" origin
+    apt-cache policy | grep "\bl=Debian-Security\b" | grep "\bo=Debian\b" | grep --quiet "\bc=main\b"
+    test $? -eq 0 || failed "IS_DEBIANSECURITY" "missing Debian-Security repository"
 }
 check_aptitude() {
-    if is_debian_jessie || is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        test -e /usr/bin/aptitude && failed "IS_APTITUDE" "aptitude may not be installed on Debian >=8"
-    fi
+    test -e /usr/bin/aptitude && failed "IS_APTITUDE" "aptitude may not be installed on Debian >=8"
 }
 check_aptgetbak() {
-    if is_debian_jessie || is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        test -e /usr/bin/apt-get.bak && failed "IS_APTGETBAK" "prohibit the installation of apt-get.bak with dpkg-divert(1)"
-    fi
-}
-check_apticron() {
-    status="OK"
-    test -e /etc/cron.d/apticron || status="fail"
-    test -e /etc/cron.daily/apticron && status="fail"
-    test "$status" = "fail" || test -e /usr/bin/apt-get.bak || status="fail"
-
-    if is_debian_squeeze || is_debian_wheezy; then
-        test "$status" = "fail" && failed "IS_APTICRON" "apticron must be in cron.d not cron.daily"
-    fi
+    test -e /usr/bin/apt-get.bak && failed "IS_APTGETBAK" "prohibit the installation of apt-get.bak with dpkg-divert(1)"
 }
 check_usrro() {
     grep /usr /etc/fstab | grep -qE "\bro\b" || failed "IS_USRRO" "missing ro directive on fstab for /usr"
@@ -290,19 +195,8 @@ check_mountfstab() {
     fi
 }
 check_listchangesconf() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        if is_installed apt-listchanges; then
-            failed "IS_LISTCHANGESCONF" "apt-listchanges must not be installed on Debian >=9"
-        fi
-    else
-        if [ -e "/etc/apt/listchanges.conf" ]; then
-            lines=$(grep -cE "(which=both|confirm=1)" /etc/apt/listchanges.conf)
-            if [ "$lines" != 2 ]; then
-                failed "IS_LISTCHANGESCONF" "apt-listchanges config is incorrect"
-            fi
-        else
-            failed "IS_LISTCHANGESCONF" "apt-listchanges config is missing"
-        fi
+    if is_installed apt-listchanges; then
+        failed "IS_LISTCHANGESCONF" "apt-listchanges must not be installed on Debian >=9"
     fi
 }
 check_customcrontab() {
@@ -321,14 +215,7 @@ check_tmoutprofile() {
     grep -sq "TMOUT=" /etc/profile /etc/profile.d/evolinux.sh || failed "IS_TMOUTPROFILE" "TMOUT is not set"
 }
 check_alert5boot() {
-    if is_debian_buster || is_debian_bullseye; then
-        grep -qs "^date" /usr/share/scripts/alert5.sh || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
-        if [ -f /etc/systemd/system/alert5.service ]; then
-            systemctl is-enabled alert5.service -q || failed "IS_ALERT5BOOT" "alert5 unit is not enabled"
-        else
-            failed "IS_ALERT5BOOT" "alert5 unit file is missing"
-        fi
-    else
+    if is_debian_stretch; then
         if [ -n "$(find /etc/rc2.d/ -name 'S*alert5')" ]; then
             grep -q "^date" /etc/rc2.d/S*alert5 || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
         elif [ -n "$(find /etc/init.d/ -name 'alert5')" ]; then
@@ -336,13 +223,17 @@ check_alert5boot() {
         else
             failed "IS_ALERT5BOOT" "alert5 init script is missing"
         fi
+    else
+        grep -qs "^date" /usr/share/scripts/alert5.sh || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
+        if [ -f /etc/systemd/system/alert5.service ]; then
+            systemctl is-enabled alert5.service -q || failed "IS_ALERT5BOOT" "alert5 unit is not enabled"
+        else
+            failed "IS_ALERT5BOOT" "alert5 unit file is missing"
+        fi
     fi
 }
 check_alert5minifw() {
-    if is_debian_buster || is_debian_bullseye; then
-        grep -qs "^/etc/init.d/minifirewall" /usr/share/scripts/alert5.sh \
-            || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 script or script is missing"
-    else
+    if is_debian_stretch; then
         if [ -n "$(find /etc/rc2.d/ -name 'S*alert5')" ]; then
             grep -q "^/etc/init.d/minifirewall" /etc/rc2.d/S*alert5 \
                 || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 init script"
@@ -352,6 +243,9 @@ check_alert5minifw() {
         else
             failed "IS_ALERT5MINIFW" "alert5 init script is missing"
         fi
+    else
+        grep -qs "^/etc/init.d/minifirewall" /usr/share/scripts/alert5.sh \
+            || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 script or script is missing"
     fi
 }
 check_minifw() {
@@ -360,8 +254,8 @@ check_minifw() {
 }
 check_minifw_includes() {
     if is_debian_bullseye; then
-        if grep -q -e '/sbin/iptables' -e '/sbin/ip6tables' "${MINIFW_FILE}"; then
-            failed "IS_MINIFWINCLUDES" "minifirewall has direct iptables invocations in ${MINIFW_FILE} that should go in /etc/minifirewall.d/"
+        if grep -q -e '/sbin/iptables' -e '/sbin/ip6tables' "/etc/default/minifirewall"; then
+            failed "IS_MINIFWINCLUDES" "minifirewall has direct iptables invocations in /etc/default/minifirewall that should go in /etc/minifirewall.d/"
         fi
     fi
 }
@@ -374,10 +268,10 @@ check_nrpeperms() {
     fi
 }
 check_minifwperms() {
-    if [ -f "$MINIFW_FILE" ]; then
-        actual=$(stat --format "%a" "$MINIFW_FILE")
+    if [ -f "/etc/default/minifirewall" ]; then
+        actual=$(stat --format "%a" "/etc/default/minifirewall")
         expected="600"
-        test "$expected" = "$actual" || failed "IS_MINIFWPERMS" "${MINIFW_FILE} must be ${expected}"
+        test "$expected" = "$actual" || failed "IS_MINIFWPERMS" "/etc/default/minifirewall must be ${expected}"
     fi
 }
 check_nrpedisks() {
@@ -390,7 +284,7 @@ check_nrpepid() {
         { test -e /etc/nagios/nrpe.cfg \
             && grep -q "^pid_file=/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
         } || failed "IS_NRPEPID" "missing or wrong pid_file directive in nrpe.cfg"
-    elif ! is_debian_squeeze; then
+    else
         { test -e /etc/nagios/nrpe.cfg \
             && grep -q "^pid_file=/var/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
         } || failed "IS_NRPEPID" "missing or wrong pid_file directive in nrpe.cfg"
@@ -405,20 +299,11 @@ check_grsecprocs() {
 }
 check_apachemunin() {
     if test -e /etc/apache2/apache2.conf; then
-        if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-            { test -h /etc/apache2/mods-enabled/status.load \
-                && test -h /etc/munin/plugins/apache_accesses \
-                && test -h /etc/munin/plugins/apache_processes \
-                && test -h /etc/munin/plugins/apache_volume;
-            } || failed "IS_APACHEMUNIN" "missing munin plugins for Apache"
-        else
-            pattern="/server-status-[[:alnum:]]{4,}"
-            { grep -r -q -s -E "^env.url.*${pattern}" /etc/munin/plugin-conf.d \
-                && { grep -q -s -E "${pattern}" /etc/apache2/apache2.conf \
-                    || grep -q -s -E "${pattern}" /etc/apache2/mods-enabled/status.conf;
-                };
-            } || failed "IS_APACHEMUNIN" "server status is not properly configured"
-        fi
+        { test -h /etc/apache2/mods-enabled/status.load \
+            && test -h /etc/munin/plugins/apache_accesses \
+            && test -h /etc/munin/plugins/apache_processes \
+            && test -h /etc/munin/plugins/apache_volume;
+        } || failed "IS_APACHEMUNIN" "missing munin plugins for Apache"
     fi
 }
 # Verification mytop + Munin si MySQL
@@ -426,7 +311,7 @@ check_mysqlutils() {
     MYSQL_ADMIN=${MYSQL_ADMIN:-mysqladmin}
     if is_installed mysql-server; then
         # With Debian 11 and later, root can connect to MariaDB with the socket
-        if is_debian_wheezy || is_debian_jessie ||  is_debian_stretch || is_debian_buster; then
+        if is_debian_stretch || is_debian_buster; then
             # You can configure MYSQL_ADMIN in evocheck.cf
             if ! grep -qs "^user *= *${MYSQL_ADMIN}" /root/.my.cnf; then
                 failed "IS_MYSQLUTILS" "${MYSQL_ADMIN} missing in /root/.my.cnf"
@@ -467,27 +352,23 @@ check_muninlogrotate() {
 }
 # Verification de l'activation de Squid dans le cas d'un pack mail
 check_squid() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        squidconffile="/etc/squid/evolinux-custom.conf"
-    else
-        squidconffile="/etc/squid*/squid.conf"
-    fi
+    squidconffile="/etc/squid/evolinux-custom.conf"
     if is_pack_web && (is_installed squid || is_installed squid3); then
         host=$(hostname -i)
         # shellcheck disable=SC2086
         http_port=$(grep -E "^http_port\s+[0-9]+" $squidconffile | awk '{ print $2 }')
-        { grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -m owner --uid-owner proxy -j ACCEPT" "$MINIFW_FILE" \
-            && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d $host -j ACCEPT" "$MINIFW_FILE" \
-            && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d 127.0.0.(1|0/8) -j ACCEPT" "$MINIFW_FILE" \
-            && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port.* $http_port" "$MINIFW_FILE";
-        } || grep -qE "^PROXY='?on'?" "$MINIFW_FILE" \
+        { grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -m owner --uid-owner proxy -j ACCEPT" "/etc/default/minifirewall" \
+            && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d $host -j ACCEPT" "/etc/default/minifirewall" \
+            && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d 127.0.0.(1|0/8) -j ACCEPT" "/etc/default/minifirewall" \
+            && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port.* $http_port" "/etc/default/minifirewall";
+        } || grep -qE "^PROXY='?on'?" "/etc/default/minifirewall" \
           || failed "IS_SQUID" "missing squid rules in minifirewall"
     fi
 }
 check_evomaintenance_fw() {
-    if [ -f "$MINIFW_FILE" ]; then
+    if [ -f "/etc/default/minifirewall" ]; then
         hook_db=$(grep -E '^\s*HOOK_DB' /etc/evomaintenance.cf | tr -d ' ' | cut -d= -f2)
-        rulesNumber=$(grep -c "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s .* -m state --state ESTABLISHED,RELATED -j ACCEPT" "$MINIFW_FILE")
+        rulesNumber=$(grep -c "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s .* -m state --state ESTABLISHED,RELATED -j ACCEPT" "/etc/default/minifirewall")
         if [ "$hook_db" = "1" ] && [ "$rulesNumber" -lt 2 ]; then
             failed "IS_EVOMAINTENANCE_FW" "HOOK_DB is enabled but missing evomaintenance rules in minifirewall"
         fi
@@ -510,11 +391,7 @@ check_log2mailrunning() {
     fi
 }
 check_log2mailapache() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        conf=/etc/log2mail/config/apache
-    else
-        conf=/etc/log2mail/config/default
-    fi
+    conf=/etc/log2mail/config/Apache
     if is_pack_web && is_installed log2mail; then
         grep -s -q "^file = /var/log/apache2/error.log" $conf \
             || failed "IS_LOG2MAILAPACHE" "missing log2mail directive for apache"
@@ -548,17 +425,6 @@ check_bindchroot() {
         fi
     fi
 }
-# Verification de la présence du depot volatile
-check_repvolatile() {
-    if is_debian_lenny; then
-        grep -qE "^deb http://volatile.debian.org/debian-volatile" /etc/apt/sources.list \
-            || failed "IS_REPVOLATILE" "missing debian-volatile repository"
-    fi
-    if is_debian_squeeze; then
-        grep -qE "^deb.*squeeze-updates" /etc/apt/sources.list \
-            || failed "IS_REPVOLATILE" "missing squeeze-updates repository"
-    fi
-}
 # /etc/network/interfaces should be present, we don't manage systemd-network yet
 check_network_interfaces() {
     if ! test -f /etc/network/interfaces; then
@@ -569,11 +435,7 @@ check_network_interfaces() {
 }
 # Verify if all if are in auto
 check_autoif() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep -E -v "(lo|vnet|docker|veth|tun|tap|macvtap|vrrp|lxcbr|wg)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
-    else
-        interfaces=$(/sbin/ifconfig -s | tail -n +2 | grep -E -v "^(lo|vnet|docker|veth|tun|tap|macvtap|vrrp)" | cut -d " " -f 1 |tr "\n" " ")
-    fi
+    interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep -E -v "(lo|vnet|docker|veth|tun|tap|macvtap|vrrp|lxcbr|wg)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
     for interface in $interfaces; do
         if grep -Rq "^iface $interface" /etc/network/interfaces* && ! grep -Rq "^auto $interface" /etc/network/interfaces*; then
             failed "IS_AUTOIF" "Network interface \`${interface}' is statically defined but not set to auto"
@@ -590,11 +452,9 @@ check_interfacesgw() {
 }
 # Verification de l’état du service networking
 check_networking_service() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        if systemctl is-enabled networking.service > /dev/null; then
-            if ! systemctl is-active networking.service > /dev/null; then
-                failed "IS_NETWORKING_SERVICE" "networking.service is not active"
-            fi
+    if systemctl is-enabled networking.service > /dev/null; then
+        if ! systemctl is-active networking.service > /dev/null; then
+            failed "IS_NETWORKING_SERVICE" "networking.service is not active"
         fi
     fi
 }
@@ -674,23 +534,21 @@ check_apacheipinallow() {
 }
 # Check if default Apache configuration file for munin is absent (or empty or commented).
 check_muninapacheconf() {
-    if is_debian_squeeze || is_debian_wheezy; then
-        muninconf="/etc/apache2/conf.d/munin"
-    else
-        muninconf="/etc/apache2/conf-available/munin.conf"
-    fi
+    muninconf="/etc/apache2/conf-available/munin.conf"
     if is_installed apache2; then
         test -e $muninconf && grep -vEq "^( |\t)*#" "$muninconf" \
             && failed "IS_MUNINAPACHECONF" "default munin configuration may be commented or disabled"
     fi
 }
-# Verification de la priorité du package samba si les backports sont utilisés
-check_sambainpriority() {
-    if is_debian_lenny && is_pack_samba; then
-        if grep -qrE "^[^#].*backport" /etc/apt/sources.list{,.d}; then
-            priority=$(grep -E -A2 "^Package:.*samba" /etc/apt/preferences | grep -A1 "^Pin: release a=lenny-backports" | grep "^Pin-Priority:" | cut -f2 -d" ")
-            test "$priority" -gt 500 || failed "IS_SAMBAPINPRIORITY" "bad pinning priority for samba"
-        fi
+# Check if default Apache configuration file for phpMyAdmin is absent (or empty or commented).
+check_phpmyadminapacheconf() {
+    phpmyadminconf0="/etc/apache2/conf-available/phpmyadmin.conf"
+    phpmyadminconf1="/etc/apache2/conf-enabled/phpmyadmin.conf"
+    if is_installed apache2; then
+        test -e $phpmyadminconf0 && grep -vEq "^( |\t)*#" "$phpmyadminconf0" \
+            && failed "IS_PHPMYADMINAPACHECONF" "default phpmyadmin configuration ($phpmyadminconf0) may be commented or disabled"
+        test -e $phpmyadminconf1 && grep -vEq "^( |\t)*#" "$phpmyadminconf1" \
+            && failed "IS_PHPMYADMINAPACHECONF" "default phpmyadmin configuration ($phpmyadminconf1) may be commented or disabled"
     fi
 }
 # Verification si le système doit redémarrer suite màj kernel.
@@ -833,60 +691,48 @@ check_tune2fs_m5() {
     done
 }
 check_evolinuxsudogroup() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        if grep -q "^evolinux-sudo:" /etc/group; then
-            if [ -f /etc/sudoers.d/evolinux ]; then
-                grep -qE '^%evolinux-sudo +ALL ?= ?\(ALL:ALL\) ALL' /etc/sudoers.d/evolinux \
-                    || failed "IS_EVOLINUXSUDOGROUP" "missing evolinux-sudo directive in sudoers file"
-            fi
+    if grep -q "^evolinux-sudo:" /etc/group; then
+        if [ -f /etc/sudoers.d/evolinux ]; then
+            grep -qE '^%evolinux-sudo +ALL ?= ?\(ALL:ALL\) ALL' /etc/sudoers.d/evolinux \
+                || failed "IS_EVOLINUXSUDOGROUP" "missing evolinux-sudo directive in sudoers file"
         fi
     fi
 }
 check_userinadmgroup() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        users=$(grep "^evolinux-sudo:" /etc/group | awk -F: '{print $4}' | tr ',' ' ')
-        for user in $users; do
-            if ! groups "$user" | grep -q adm; then
-                failed "IS_USERINADMGROUP" "User $user doesn't belong to \`adm' group"
-                test "${VERBOSE}" = 1 || break
-            fi
-        done
-    fi
+    users=$(grep "^evolinux-sudo:" /etc/group | awk -F: '{print $4}' | tr ',' ' ')
+    for user in $users; do
+        if ! groups "$user" | grep -q adm; then
+            failed "IS_USERINADMGROUP" "User $user doesn't belong to \`adm' group"
+            test "${VERBOSE}" = 1 || break
+        fi
+    done
 }
 check_apache2evolinuxconf() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        if is_installed apache2; then
-            { test -L /etc/apache2/conf-enabled/z-evolinux-defaults.conf \
-                && test -L /etc/apache2/conf-enabled/zzz-evolinux-custom.conf \
-                && test -f /etc/apache2/ipaddr_whitelist.conf;
-            } || failed "IS_APACHE2EVOLINUXCONF" "missing custom evolinux apache config"
-        fi
+    if is_installed apache2; then
+        { test -L /etc/apache2/conf-enabled/z-evolinux-defaults.conf \
+            && test -L /etc/apache2/conf-enabled/zzz-evolinux-custom.conf \
+            && test -f /etc/apache2/ipaddr_whitelist.conf;
+        } || failed "IS_APACHE2EVOLINUXCONF" "missing custom evolinux apache config"
     fi
 }
 check_backportsconf() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        grep -qsE "^[^#].*backports" /etc/apt/sources.list \
-            && failed "IS_BACKPORTSCONF" "backports can't be in main sources list"
-        if grep -qsE "^[^#].*backports" /etc/apt/sources.list.d/*.list; then
-            grep -qsE "^[^#].*backports" /etc/apt/preferences.d/* \
-                || failed "IS_BACKPORTSCONF" "backports must have preferences"
-        fi
+    grep -qsE "^[^#].*backports" /etc/apt/sources.list \
+        && failed "IS_BACKPORTSCONF" "backports can't be in main sources list"
+    if grep -qsE "^[^#].*backports" /etc/apt/sources.list.d/*.list; then
+        grep -qsE "^[^#].*backports" /etc/apt/preferences.d/* \
+            || failed "IS_BACKPORTSCONF" "backports must have preferences"
     fi
 }
 check_bind9munin() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        if is_installed bind9; then
-            { test -L /etc/munin/plugins/bind9 \
-                && test -e /etc/munin/plugin-conf.d/bind9;
-            } || failed "IS_BIND9MUNIN" "missing bind plugin for munin"
-        fi
+    if is_installed bind9; then
+        { test -L /etc/munin/plugins/bind9 \
+            && test -e /etc/munin/plugin-conf.d/bind9;
+        } || failed "IS_BIND9MUNIN" "missing bind plugin for munin"
     fi
 }
 check_bind9logrotate() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        if is_installed bind9; then
-            test -e /etc/logrotate.d/bind9 || failed "IS_BIND9LOGROTATE" "missing bind logrotate file"
-        fi
+    if is_installed bind9; then
+        test -e /etc/logrotate.d/bind9 || failed "IS_BIND9LOGROTATE" "missing bind logrotate file"
     fi
 }
 check_broadcomfirmware() {
@@ -917,14 +763,12 @@ check_hardwareraidtool() {
     fi
 }
 check_log2mailsystemdunit() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        systemctl -q is-active log2mail.service \
-            || failed "IS_LOG2MAILSYSTEMDUNIT" "log2mail unit not running"
-        test -f /etc/systemd/system/log2mail.service \
-            || failed "IS_LOG2MAILSYSTEMDUNIT" "missing log2mail unit file"
-        test -f /etc/init.d/log2mail \
-            && failed "IS_LOG2MAILSYSTEMDUNIT" "/etc/init.d/log2mail may be deleted (use systemd unit)"
-    fi
+    systemctl -q is-active log2mail.service \
+        || failed "IS_LOG2MAILSYSTEMDUNIT" "log2mail unit not running"
+    test -f /etc/systemd/system/log2mail.service \
+        || failed "IS_LOG2MAILSYSTEMDUNIT" "missing log2mail unit file"
+    test -f /etc/init.d/log2mail \
+        && failed "IS_LOG2MAILSYSTEMDUNIT" "/etc/init.d/log2mail may be deleted (use systemd unit)"
 }
 check_listupgrade() {
     test -f /etc/cron.d/listupgrade \
@@ -933,13 +777,11 @@ check_listupgrade() {
         || failed "IS_LISTUPGRADE" "missing listupgrade script or not executable"
 }
 check_mariadbevolinuxconf() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        if is_installed mariadb-server; then
-            { test -f /etc/mysql/mariadb.conf.d/z-evolinux-defaults.cnf \
-                && test -f /etc/mysql/mariadb.conf.d/zzz-evolinux-custom.cnf;
-            } || failed "IS_MARIADBEVOLINUXCONF" "missing mariadb custom config"
+    if is_installed mariadb-server; then
+        { test -f /etc/mysql/mariadb.conf.d/z-evolinux-defaults.cnf \
+            && test -f /etc/mysql/mariadb.conf.d/zzz-evolinux-custom.cnf;
+        } || failed "IS_MARIADBEVOLINUXCONF" "missing mariadb custom config"
         fi
-    fi
 }
 check_sql_backup() {
     if (is_installed "mysql-server" || is_installed "mariadb-server"); then
@@ -997,8 +839,12 @@ check_ldap_backup() {
 check_redis_backup() {
     if is_installed redis-server; then
         # You could change the default path in /etc/evocheck.cf
-        REDIS_BACKUP_PATH=${REDIS_BACKUP_PATH:-"/home/backup/dump.rdb"}
-        test -f "$REDIS_BACKUP_PATH" || failed "IS_REDIS_BACKUP" "Redis dump is missing (${REDIS_BACKUP_PATH})"
+        # REDIS_BACKUP_PATH may contain space-separated paths, example:
+        # REDIS_BACKUP_PATH='/home/backup/redis-instance1/dump.rdb /home/backup/redis-instance2/dump.rdb'
+        REDIS_BACKUP_PATH=${REDIS_BACKUP_PATH:-"/home/backup/redis/dump.rdb"}
+        for file in ${REDIS_BACKUP_PATH}; do
+            test -f "${file}" || failed "IS_REDIS_BACKUP" "Redis dump is missing (${file})"
+        done
     fi
 }
 check_elastic_backup() {
@@ -1020,73 +866,63 @@ check_mariadbsystemdunit() {
     fi
 }
 check_mysqlmunin() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        if is_installed mariadb-server; then
-            for file in mysql_bytes mysql_queries mysql_slowqueries \
-                mysql_threads mysql_connections mysql_files_tables \
-                mysql_innodb_bpool mysql_innodb_bpool_act mysql_innodb_io \
-                mysql_innodb_log mysql_innodb_rows mysql_innodb_semaphores \
-                mysql_myisam_indexes mysql_qcache mysql_qcache_mem \
-                mysql_sorts mysql_tmp_tables; do
+    if is_installed mariadb-server; then
+        for file in mysql_bytes mysql_queries mysql_slowqueries \
+            mysql_threads mysql_connections mysql_files_tables \
+            mysql_innodb_bpool mysql_innodb_bpool_act mysql_innodb_io \
+            mysql_innodb_log mysql_innodb_rows mysql_innodb_semaphores \
+            mysql_myisam_indexes mysql_qcache mysql_qcache_mem \
+            mysql_sorts mysql_tmp_tables; do
 
-                if [[ ! -L /etc/munin/plugins/$file ]]; then
-                    failed "IS_MYSQLMUNIN" "missing munin plugin '$file'"
-                    test "${VERBOSE}" = 1 || break
-                fi
-            done
-            munin-run mysql_commands 2> /dev/null > /dev/null
-            test $? -eq 0 || failed "IS_MYSQLMUNIN" "Munin plugin mysql_commands returned an error"
-        fi
+            if [[ ! -L /etc/munin/plugins/$file ]]; then
+                failed "IS_MYSQLMUNIN" "missing munin plugin '$file'"
+                test "${VERBOSE}" = 1 || break
+            fi
+        done
+        munin-run mysql_commands 2> /dev/null > /dev/null
+        test $? -eq 0 || failed "IS_MYSQLMUNIN" "Munin plugin mysql_commands returned an error"
     fi
 }
 check_mysqlnrpe() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        if is_installed mariadb-server; then
-            nagios_file=~nagios/.my.cnf
-            if ! test -f ${nagios_file}; then
-                failed "IS_MYSQLNRPE" "${nagios_file} is missing"
-            elif [ "$(stat -c %U ${nagios_file})" != "nagios" ] \
-                || [ "$(stat -c %a ${nagios_file})" != "600" ]; then
-                failed "IS_MYSQLNRPE" "${nagios_file} has wrong permissions"
-            else
-                grep -q -F "command[check_mysql]=/usr/lib/nagios/plugins/check_mysql" /etc/nagios/nrpe.d/evolix.cfg \
-                || failed "IS_MYSQLNRPE" "check_mysql is missing"
-            fi
+    if is_installed mariadb-server; then
+        nagios_file=~nagios/.my.cnf
+        if ! test -f ${nagios_file}; then
+            failed "IS_MYSQLNRPE" "${nagios_file} is missing"
+        elif [ "$(stat -c %U ${nagios_file})" != "nagios" ] \
+            || [ "$(stat -c %a ${nagios_file})" != "600" ]; then
+            failed "IS_MYSQLNRPE" "${nagios_file} has wrong permissions"
+        else
+            grep -q -F "command[check_mysql]=/usr/lib/nagios/plugins/check_mysql" /etc/nagios/nrpe.d/evolix.cfg \
+            || failed "IS_MYSQLNRPE" "check_mysql is missing"
         fi
-    fi
+        fi
 }
 check_phpevolinuxconf() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        is_debian_stretch  && phpVersion="7.0"
-        is_debian_buster   && phpVersion="7.3"
-        is_debian_bullseye && phpVersion="7.4"
-        if is_installed php; then
-            { test -f /etc/php/${phpVersion}/cli/conf.d/z-evolinux-defaults.ini \
-                && test -f /etc/php/${phpVersion}/cli/conf.d/zzz-evolinux-custom.ini
-            } || failed "IS_PHPEVOLINUXCONF" "missing php evolinux config"
-        fi
+    is_debian_stretch  && phpVersion="7.0"
+    is_debian_buster   && phpVersion="7.3"
+    is_debian_bullseye && phpVersion="7.4"
+    if is_installed php; then
+        { test -f /etc/php/${phpVersion}/cli/conf.d/z-evolinux-defaults.ini \
+            && test -f /etc/php/${phpVersion}/cli/conf.d/zzz-evolinux-custom.ini
+        } || failed "IS_PHPEVOLINUXCONF" "missing php evolinux config"
     fi
 }
 check_squidlogrotate() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        if is_installed squid; then
-            grep -q -e monthly -e daily /etc/logrotate.d/squid \
-                || failed "IS_SQUIDLOGROTATE" "missing squid logrotate file"
-        fi
+    if is_installed squid; then
+        grep -q -e monthly -e daily /etc/logrotate.d/squid \
+            || failed "IS_SQUIDLOGROTATE" "missing squid logrotate file"
     fi
 }
 check_squidevolinuxconf() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        if is_installed squid; then
-            { grep -qs "^CONFIG=/etc/squid/evolinux-defaults.conf$" /etc/default/squid \
-                && test -f /etc/squid/evolinux-defaults.conf \
-                && test -f /etc/squid/evolinux-whitelist-defaults.conf \
-                && test -f /etc/squid/evolinux-whitelist-custom.conf \
-                && test -f /etc/squid/evolinux-acl.conf \
-                && test -f /etc/squid/evolinux-httpaccess.conf \
-                && test -f /etc/squid/evolinux-custom.conf;
-            } || failed "IS_SQUIDEVOLINUXCONF" "missing squid evolinux config"
-        fi
+    if is_installed squid; then
+        { grep -qs "^CONFIG=/etc/squid/evolinux-defaults.conf$" /etc/default/squid \
+            && test -f /etc/squid/evolinux-defaults.conf \
+            && test -f /etc/squid/evolinux-whitelist-defaults.conf \
+            && test -f /etc/squid/evolinux-whitelist-custom.conf \
+            && test -f /etc/squid/evolinux-acl.conf \
+            && test -f /etc/squid/evolinux-httpaccess.conf \
+            && test -f /etc/squid/evolinux-custom.conf;
+        } || failed "IS_SQUIDEVOLINUXCONF" "missing squid evolinux config"
     fi
 }
 check_duplicate_fs_label() {
@@ -1152,41 +988,20 @@ check_apache_confenabled() {
     # Starting from Jessie and Apache 2.4, /etc/apache2/conf.d/
     # must be replaced by conf-available/ and config files symlinked
     # to conf-enabled/
-    if is_debian_jessie || is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        if [ -f /etc/apache2/apache2.conf ]; then
-            test -d /etc/apache2/conf.d/ \
-                && failed "IS_APACHE_CONFENABLED" "apache's conf.d directory must not exists"
-            grep -q 'Include conf.d' /etc/apache2/apache2.conf \
-                && failed "IS_APACHE_CONFENABLED" "apache2.conf must not Include conf.d"
-        fi
+    if [ -f /etc/apache2/apache2.conf ]; then
+        test -d /etc/apache2/conf.d/ \
+            && failed "IS_APACHE_CONFENABLED" "apache's conf.d directory must not exists"
+        grep -q 'Include conf.d' /etc/apache2/apache2.conf \
+            && failed "IS_APACHE_CONFENABLED" "apache2.conf must not Include conf.d"
     fi
 }
 check_meltdown_spectre() {
-    # For Stretch, detection is easy as the kernel use
     # /sys/devices/system/cpu/vulnerabilities/
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        for vuln in meltdown spectre_v1 spectre_v2; do
-            test -f "/sys/devices/system/cpu/vulnerabilities/$vuln" \
-                || failed "IS_MELTDOWN_SPECTRE" "vulnerable to $vuln"
-            test "${VERBOSE}" = 1 || break
-        done
-    # For Jessie this is quite complicated to verify and we need to use kernel config file
-    elif is_debian_jessie; then
-        if grep -q "BOOT_IMAGE=" /proc/cmdline; then
-            kernelPath=$(grep -Eo 'BOOT_IMAGE=[^ ]+' /proc/cmdline | cut -d= -f2)
-            kernelVer=${kernelPath##*/vmlinuz-}
-            kernelConfig="config-${kernelVer}"
-            # Sometimes autodetection of kernel config file fail, so we test if the file really exists.
-            if [ -f "/boot/${kernelConfig}" ]; then
-                grep -Eq '^CONFIG_PAGE_TABLE_ISOLATION=y' "/boot/$kernelConfig" \
-                    || failed "IS_MELTDOWN_SPECTRE" \
-                    "PAGE_TABLE_ISOLATION must be enabled in kernel, outdated kernel?"
-                grep -Eq '^CONFIG_RETPOLINE=y' "/boot/$kernelConfig" \
-                    || failed "IS_MELTDOWN_SPECTRE" \
-                    "RETPOLINE must be enabled in kernel, outdated kernel?"
-            fi
-        fi
-    fi
+    for vuln in meltdown spectre_v1 spectre_v2; do
+        test -f "/sys/devices/system/cpu/vulnerabilities/$vuln" \
+            || failed "IS_MELTDOWN_SPECTRE" "vulnerable to $vuln"
+        test "${VERBOSE}" = 1 || break
+    done
 }
 check_old_home_dir() {
     homeDir=${homeDir:-/home}
@@ -1218,7 +1033,7 @@ check_usrsharescripts() {
 }
 check_sshpermitrootno() {
     sshd_args="-C addr=,user=,host=,laddr=,lport=0"
-    if is_debian_jessie || is_debian_stretch; then
+    if is_debian_stretch; then
 	    # Noop, we'll use the default $sshd_args
         :
     elif is_debian_buster; then
@@ -1234,17 +1049,7 @@ check_sshpermitrootno() {
     fi
 }
 check_evomaintenanceusers() {
-    if is_debian_stretch || is_debian_buster || is_debian_bullseye; then
-        users=$(getent group evolinux-sudo | cut -d':' -f4 | tr ',' ' ')
-    else
-        if [ -f /etc/sudoers.d/evolinux ]; then
-            sudoers="/etc/sudoers.d/evolinux"
-        else
-            sudoers="/etc/sudoers"
-        fi
-        # combine users from User_Alias and sudo group
-        users=$({ grep "^User_Alias *ADMIN" $sudoers | cut -d= -f2 | tr -d " "; grep "^sudo" /etc/group | cut -d: -f 4; } | tr "," "\n" | sort -u)
-    fi
+    users=$(getent group evolinux-sudo | cut -d':' -f4 | tr ',' ' ')
     for user in $users; do
         user_home=$(getent passwd "$user" | cut -d: -f6)
         if [ -n "$user_home" ] && [ -d "$user_home" ]; then
@@ -1307,17 +1112,6 @@ check_osprober() {
     fi
 }
 
-check_jessie_backports() {
-    if is_debian_jessie; then
-        jessieBackports=$(grep -hs "jessie-backports" /etc/apt/sources.list /etc/apt/sources.list.d/*)
-        if test -n "$jessieBackports"; then
-            if ! grep -q "archive.debian.org" <<< "$jessieBackports"; then
-                failed "IS_JESSIE_BACKPORTS" "You must use deb http://archive.debian.org/debian/ jessie-backports main"
-            fi
-        fi
-    fi
-}
-
 check_apt_valid_until() {
     aptvalidFile="/etc/apt/apt.conf.d/99no-check-valid-until"
     aptvalidText="Acquire::Check-Valid-Until no;"
@@ -1356,14 +1150,8 @@ check_nginx_letsencrypt_uptodate() {
         snippets=$(find /etc/nginx -type f -name "letsencrypt.conf")
         if [ -n "${snippets}" ]; then
             while read -r snippet; do
-                if is_debian_jessie; then
-                    if ! grep -qE "^\s*alias\s+/.+/\.well-known/acme-challenge" "${snippet}"; then
-                        failed "IS_NGINX_LETSENCRYPT_UPTODATE" "Nginx snippet ${snippet} is not compatible with Nginx on Debian 8."
-                    fi
-                else
-                    if grep -qE "^\s*alias\s+/.+/\.well-known/acme-challenge" "${snippet}"; then
-                        failed "IS_NGINX_LETSENCRYPT_UPTODATE" "Nginx snippet ${snippet} is not compatible with Nginx on Debian 9+."
-                    fi
+                if grep -qE "^\s*alias\s+/.+/\.well-known/acme-challenge" "${snippet}"; then
+                    failed "IS_NGINX_LETSENCRYPT_UPTODATE" "Nginx snippet ${snippet} is not compatible with Nginx on Debian 9+."
                 fi
             done <<< "${snippets}"
         fi
@@ -1399,11 +1187,7 @@ download_versions() {
     # evoacme 21.06
     # evomaintenance 0.6.4
 
-    if is_debian; then
-        versions_url="https://upgrades.evolix.org/versions-${DEBIAN_RELEASE}"
-    else
-        failed "IS_CHECK_VERSIONS" "error determining os release"
-    fi
+    versions_url="https://upgrades.evolix.org/versions-${DEBIAN_RELEASE}"
 
     # fetch timeout, in seconds
     timeout=10
@@ -1527,8 +1311,6 @@ main() {
     main_output_file=$(mktemp --tmpdir="${TMPDIR:-/tmp}" "evocheck.main.XXXXX")
     files_to_cleanup="${files_to_cleanup} ${main_output_file}"
 
-    MINIFW_FILE=$(minifirewall_file)
-
     test "${IS_TMP_1777:=1}" = 1 && check_tmp_1777
     test "${IS_ROOT_0700:=1}" = 1 && check_root_0700
     test "${IS_USRSHARESCRIPTS:=1}" = 1 && check_usrsharescripts
@@ -1540,19 +1322,15 @@ main() {
 
     test "${IS_LSBRELEASE:=1}" = 1 && check_lsbrelease
     test "${IS_DPKGWARNING:=1}" = 1 && check_dpkgwarning
-    test "${IS_UMASKSUDOERS:=1}" = 1 && check_umasksudoers
     test "${IS_NRPEPOSTFIX:=1}" = 1 && check_nrpepostfix
-    test "${IS_MODSECURITY:=1}" = 1 && check_modsecurity
     test "${IS_CUSTOMSUDOERS:=1}" = 1 && check_customsudoers
     test "${IS_VARTMPFS:=1}" = 1 && check_vartmpfs
     test "${IS_SERVEURBASE:=1}" = 1 && check_serveurbase
     test "${IS_LOGROTATECONF:=1}" = 1 && check_logrotateconf
     test "${IS_SYSLOGCONF:=1}" = 1 && check_syslogconf
     test "${IS_DEBIANSECURITY:=1}" = 1 && check_debiansecurity
-    test "${IS_APTITUDEONLY:=1}" = 1 && check_aptitudeonly
     test "${IS_APTITUDE:=1}" = 1 && check_aptitude
     test "${IS_APTGETBAK:=1}" = 1 && check_aptgetbak
-    test "${IS_APTICRON:=0}" = 1 && check_apticron
     test "${IS_USRRO:=1}" = 1 && check_usrro
     test "${IS_TMPNOEXEC:=1}" = 1 && check_tmpnoexec
     test "${IS_MOUNT_FSTAB:=1}" = 1 && check_mountfstab
@@ -1584,7 +1362,6 @@ main() {
     test "${IS_LOG2MAILMYSQL:=1}" = 1 && check_log2mailmysql
     test "${IS_LOG2MAILSQUID:=1}" = 1 && check_log2mailsquid
     test "${IS_BINDCHROOT:=1}" = 1 && check_bindchroot
-    test "${IS_REPVOLATILE:=1}" = 1 && check_repvolatile
     test "${IS_NETWORK_INTERFACES:=1}" = 1 && check_network_interfaces
     test "${IS_AUTOIF:=1}" = 1 && check_autoif
     test "${IS_INTERFACESGW:=1}" = 1 && check_interfacesgw
@@ -1596,7 +1373,7 @@ main() {
     test "${IS_APACHESYMLINK:=1}" = 1 && check_apachesymlink
     test "${IS_APACHEIPINALLOW:=1}" = 1 && check_apacheipinallow
     test "${IS_MUNINAPACHECONF:=1}" = 1 && check_muninapacheconf
-    test "${IS_SAMBAPINPRIORITY:=1}" = 1 && check_sambainpriority
+    test "${IS_PHPMYADMINAPACHECONF:=1}" = 1 && check_phpmyadminapacheconf
     test "${IS_KERNELUPTODATE:=1}" = 1 && check_kerneluptodate
     test "${IS_UPTIME:=1}" = 1 && check_uptime
     test "${IS_MUNINRUNNING:=1}" = 1 && check_muninrunning
@@ -1637,7 +1414,6 @@ main() {
     test "${IS_OLD_HOME_DIR:=0}" = 1 && check_old_home_dir
     test "${IS_EVOBACKUP_INCS:=1}" = 1 && check_evobackup_incs
     test "${IS_OSPROBER:=1}" = 1 && check_osprober
-    test "${IS_JESSIE_BACKPORTS:=1}" = 1 && check_jessie_backports
     test "${IS_APT_VALID_UNTIL:=1}" = 1 && check_apt_valid_until
     test "${IS_CHROOTED_BINARY_UPTODATE:=1}" = 1 && check_chrooted_binary_uptodate
     test "${IS_NGINX_LETSENCRYPT_UPTODATE:=1}" = 1 && check_nginx_letsencrypt_uptodate

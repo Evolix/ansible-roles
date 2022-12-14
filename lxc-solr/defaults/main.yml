@@ -14,5 +14,9 @@
 #     release: stretch
 #     solr_version: 8.4.1
 #     solr_port: 8985
+#   - name: solr9
+#     release: bullseye
+#     solr_version: 9.0.0
+#     solr_port: 8985
 lxc_containers: []
 

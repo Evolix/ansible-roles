@@ -43,11 +43,19 @@
     - lxc_unprivilegied_containers | bool
     - root_subuids.rc != 0
 
-- name: Check if /var has not mount options or nosuid or nodev or noexec
-  shell: findmnt | grep -E "/var[^/]" | grep -e nodev -e noexec -e nosuid
-  register: check_var
+- name: Get filesystem options
+  command: findmnt --noheadings --target /var/lib/lxc --output OPTIONS
   changed_when: false
-  failed_when: "check_var.rc == 0"
+  check_mode: no
+  register: check_fs_options
+
+- name: Check if options are correct
+  assert:
+    that:
+      - "'nodev'  not in check_fs_options.stdout"
+      - "'noexec' not in check_fs_options.stdout"
+      - "'nosuid' not in check_fs_options.stdout"
+    msg: "LXC directory is in a filesystem with incompatible options"
 
 - name: Create containers
   include: create-container.yml

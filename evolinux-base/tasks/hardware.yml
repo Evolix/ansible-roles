@@ -81,7 +81,7 @@
     - name: HPE GPG key is installed
       copy:
         src: hpePublicKey2048_key1.asc
-        dest: /etc/apt/trusted.gpg.d/hpePublicKey2048_key1.asc
+        dest: "{{ apt_keyring_dir }}/hpePublicKey2048_key1.asc"
         force: yes
         mode: "0644"
         owner: root
@@ -91,8 +91,15 @@
 
     - name: Add HPE repository
       apt_repository:
-        repo: 'deb https://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_distribution_release }}/current non-free'
+        repo: 'deb [signed-by={{ apt_keyring_dir }}/hpePublicKey2048_key1.asc] https://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_distribution_release }}/current non-free'
         state: present
+      tags:
+        - packages
+
+    - name: Remove unsigned HPE repository
+      apt_repository:
+        repo: 'deb https://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_distribution_release }}/current non-free'
+        state: absent
       tags:
         - packages
 
@@ -208,7 +215,7 @@
     - name: HWRaid GPG key is installed
       copy:
         src: hwraid.le-vert.net.asc
-        dest: /etc/apt/trusted.gpg.d/hwraid.le-vert.net.asc
+        dest: "{{ apt_keyring_dir }}/hwraid.le-vert.net.asc"
         force: yes
         mode: "0644"
         owner: root
@@ -219,8 +226,15 @@
 
     - name: Add HW tool repository
       apt_repository:
-        repo: 'deb http://hwraid.le-vert.net/debian {{ ansible_distribution_release }} main'
+        repo: 'deb [signed-by={{ apt_keyring_dir }}/hwraid.le-vert.net.asc] http://hwraid.le-vert.net/debian {{ ansible_distribution_release }} main'
         state: present
+      tags:
+        - packages
+
+    - name: Remove unsigned HW tool repository
+      apt_repository:
+        repo: 'deb http://hwraid.le-vert.net/debian {{ ansible_distribution_release }} main'
+        state: absent
       tags:
         - packages
 

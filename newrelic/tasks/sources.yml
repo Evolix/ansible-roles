@@ -15,7 +15,7 @@
 - name: Add NewRelic GPG key
   copy:
     src: newrelic.asc
-    dest: /etc/apt/trusted.gpg.d/newrelic.asc
+    dest: "{{ apt_keyring_dir }}/newrelic.asc"
     force: yes
     mode: "0644"
     owner: root
@@ -23,7 +23,14 @@
 
 - name: Install NewRelic repository
   apt_repository:
-    repo: "deb http://apt.newrelic.com/debian/ newrelic non-free"
+    repo: "deb [signed-by={{ apt_keyring_dir }}/newrelic.asc] http://apt.newrelic.com/debian/ newrelic non-free"
     state: present
+    filename: newrelic
+    update_cache: yes
+
+- name: Desinstall unsigned NewRelic repository
+  apt_repository:
+    repo: "deb http://apt.newrelic.com/debian/ newrelic non-free"
+    state: absent
     filename: newrelic
     update_cache: yes

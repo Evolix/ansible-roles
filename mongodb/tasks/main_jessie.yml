@@ -1,15 +1,38 @@
 ---
 
-- name: MongoDB public GPG Key
-  apt_key:
-    # url: https://www.mongodb.org/static/pgp/server-3.4.asc
-    data: "{{ lookup('file', 'server-3.4.asc') }}"
+- name: Look for legacy apt keyring
+  stat:
+    path: /etc/apt/trusted.gpg
+  register: _trusted_gpg_keyring
 
-- name: enable APT sources list
+- name: MongoDB embedded GPG key is absent
+  apt_key:
+    id: "B8612B5D"
+    keyring: /etc/apt/trusted.gpg
+    state: absent
+  when: _trusted_gpg_keyring.stat.exists
+
+- name: Add MongoDB GPG key
+  copy:
+    src: "server-{{mongodb_version}}.asc"
+    dest: "/etc/apt/trusted.gpg.d/mongodb-server-{{mongodb_version}}.asc"
+    force: yes
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Enable APT sources list
   apt_repository:
-    repo: deb http://repo.mongodb.org/apt/debian jessie/mongodb-org/3.4 main
+    repo: "deb http://repo.mongodb.org/apt/debian jessie/mongodb-org/{{mongodb_version}} main"
     state: present
-    filename: mongodb
+    filename: "mongodb-org-{{mongodb_version}}"
+    update_cache: yes
+
+- name: Disable APT sources list
+  apt_repository:
+    repo: "deb http://repo.mongodb.org/apt/debian jessie/mongodb-org/{{mongodb_version}} main"
+    state: absent
+    filename: "mongodb-org-{{mongodb_version}}"
     update_cache: yes
 
 - name: Install packages

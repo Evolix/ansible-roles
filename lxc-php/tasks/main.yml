@@ -27,4 +27,6 @@
 - include: "php81.yml"
   when: lxc_php_version == "php81"
 
+- include: "umask.yml"
+
 - include: "misc.yml"

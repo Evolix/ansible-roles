@@ -8,3 +8,5 @@ logstash_custom_tmpdir: Null
 logstash_default_tmpdir: /var/lib/logstash/tmp
 logstash_log_syslog_enabled: True
 logstash_config_force: True
+
+apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"

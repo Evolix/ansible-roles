@@ -28,3 +28,5 @@ docker_tls_ca_key: ca/ca-key.pem
 docker_tls_cert: server/cert.pem
 docker_tls_key: server/key.pem
 docker_tls_csr: server/server.csr
+
+apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"

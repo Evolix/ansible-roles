@@ -22,3 +22,5 @@ filebeat_use_config_template: False
 filebeat_update_config: True
 filebeat_force_config: True
 filebeat_upgrade_package: False
+
+apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"

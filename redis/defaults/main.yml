@@ -61,5 +61,9 @@ redis_sentinel_install: False
 
 redis_default_server_disabled: False
 
+# Set to Null to leave as is
+# Set to "always", "madvise" or "never" for custom value
+redis_sysctl_transparent_hugepage_enabled: Null
+
 general_alert_email: "root@localhost"
 log2mail_alert_email: Null

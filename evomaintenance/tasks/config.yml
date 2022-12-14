@@ -5,6 +5,7 @@
       - evomaintenance_api_endpoint is not none
       - evomaintenance_api_key is not none
     msg: evomaintenance api variables must be set
+  when: evomaintenance_hook_api | bool
 
 - name: Configuration is installed
   template:

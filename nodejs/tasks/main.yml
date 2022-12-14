@@ -32,7 +32,7 @@
 - name: NodeJS GPG key is installed
   copy:
     src: nodesource.asc
-    dest: /etc/apt/trusted.gpg.d/nodesource.asc
+    dest: "{{ apt_keyring_dir }}/nodesource.asc"
     mode: "0644"
     owner: root
     group: root
@@ -43,10 +43,21 @@
 
 - name: NodeJS sources list ({{ nodejs_apt_version }}) is available
   apt_repository:
-    repo: "deb https://deb.nodesource.com/{{ nodejs_apt_version }} {{ ansible_distribution_release }} main"
+    repo: "deb [signed-by={{ apt_keyring_dir }}/nodesource.asc] https://deb.nodesource.com/{{ nodejs_apt_version }} {{ ansible_distribution_release }} main"
     filename: nodesource
     update_cache: yes
     state: present
+  tags:
+    - system
+    - packages
+    - nodejs
+
+- name: Unsigned NodeJS sources list ({{ nodejs_apt_version }}) is not available
+  apt_repository:
+    repo: "deb https://deb.nodesource.com/{{ nodejs_apt_version }} {{ ansible_distribution_release }} main"
+    filename: nodesource
+    update_cache: yes
+    state: absent
   tags:
     - system
     - packages

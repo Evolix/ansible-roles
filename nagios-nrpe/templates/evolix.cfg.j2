@@ -51,7 +51,7 @@ command[check_ssl]=/usr/lib/nagios/plugins/check_http -f follow -I 127.0.0.1 -S 
 command[check_ssl_local]={{ nagios_plugins_directory }}/check_ssl_local
 command[check_elasticsearch]=/usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /_cat/health?h=st -p 9200 -r 'red' --invert-regex
 command[check_memcached]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 11211
-command[check_opendkim]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 54321
+command[check_opendkim]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 8891
 command[check_bkctld_setup]=sudo /usr/sbin/bkctld check-setup
 command[check_bkctld_jails]=sudo /usr/sbin/bkctld check-jails
 # "check_bkctld" is here as backward compatibility, but is replaced by "check_bkctld_jails"
@@ -72,7 +72,7 @@ command[check_mongodb_connect]={{ nagios_plugins_directory }}/check_mongodb -H l
 command[check_glusterfs]={{ nagios_plugins_directory }}/check_glusterfs -v all -n 0
 command[check_supervisord_status]={{ nagios_plugins_directory }}/check_supervisord
 command[check_varnish]={{ nagios_plugins_directory }}/check_varnish_health -i 127.0.0.1 -p 6082 -s /etc/varnish/secret -w 2 -c 4
-command[check_haproxy]=sudo {{ nagios_plugins_directory }}/check_haproxy_stats -s /run/haproxy/admin.sock -w 80 -c 90 --ignore-maint --ignore-nolb
+command[check_haproxy]=sudo {{ nagios_plugins_directory }}/check_haproxy_stats -s /run/haproxy/admin.sock -w 80 -c 90 --ignore-maint --ignore-nolb --ignore-drain
 command[check_minifirewall]=sudo {{ nagios_plugins_directory }}/check_minifirewall
 command[check_redis_instances]={{ nagios_plugins_directory }}/check_redis_instances
 command[check_hpraid]={{ nagios_plugins_directory }}/check_hpraid

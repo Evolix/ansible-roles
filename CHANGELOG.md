@@ -20,6 +20,60 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [22.12] 2022-12-14
+
+### Added
+
+* all: add signed-by option for additional APT sources
+* all: preliminary work to support Debian 12
+* all: use proper keyrings directory for APT version
+* evolinux-base: replace regular kernel by cloud kernel on virtual servers
+* lxc-php: set php-fpm umask to `007`
+* nagios-nrpe: `check_ceph_*`
+* nagios-nrpe: `check_haproxy_stats` supports DRAIN status
+* packweb-apache: enable `log_forensic` module
+* rabbitmq: add link in default page
+* varnish: create special tmp directory for syntax validation
+
+### Changed
+
+* certbot: auto-detect HAPEE version in renewal hook
+* evocheck: install script according to Debian version
+* evolinux-base: `utils.yml` can be excluded
+* evolinux-todo: execute tasks only for Debian distribution (because this task is a dependency for others roles used on different distributions)
+* evolinux-user: add sudoers privilege for check `php_fpm81`
+* evomaintenance: allow missing API endpoint if APi is disabled
+* java: use default JRE package when version is not specified
+* keepalived: change exit code (_warning_ if running but not on expected state ; _critical_ if not running)
+* listupgrade: better detection for PostgreSQL
+* listupgrade: sort/uniq of packages/services lists in email template
+* lxc-solr: detect the real partition options
+* lxc-solr: download URL according to Solr Version
+* lxc-solr: set homedir and port at install
+* minifirewall: whitelist deb.freexian.com
+* openvpn: shellpki upstream release 22.12.2
+* openvpn: specifies that the mail for expirations is for OpenVPN
+* packweb-apache: manual dependencies resolution
+* redis: some values should be quoted
+* redis: variable to disable transparent hugepage (default: do nothing)
+* squid: whitelist `deb.freexian.com`
+* varnish: better package facts usage with check mode and tags
+* varnish: systemd override depends on Varnish version instead of Debian version
+
+### Fixed
+
+* evolinux-user: Fix sudoers privilege for check `php_fpm80`
+* nagios-nrpe: Fix check opendkim for recent change in listening port
+* openvpn: Fix mode of shellpki script
+* proftpd: Fix format of public key files controlled by Ansible
+* proftpd: Fix mode of public key directory and files (they have to be accessible by `proftpd:nobody`)
+* varnish: fix missing state, that blocked the task
+
+### Removed
+
+* openvpn: Deleted the task fixing the CRL rights since it has been fixed in upstream
+
+
 ## [22.09] 2022-09-19
 
 ### Added
@@ -151,7 +205,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * minifirewall: tail template follows symlinks
 * mysql: add "set crypt_use_gpgme=no" Mutt option, for mysqltuner
 
-### Fixed
+### Fixed
 
 * Role `postfix`: Add missing `localhost.localdomain localhost` to `mydestination` variable which caused undelivered of some local mails.
 
@@ -443,6 +497,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* bookworm-detect: transitional role to help dealing with unreleased bookworm version
 * dovecot: Update munin plugin & configure it
 * dovecot: vmail uid/gid are configurable
 * evoacme: variable to disable Debian version check (default: False)

@@ -9,3 +9,5 @@ kibana_proxy_nginx: False
 kibana_proxy_domain: "kibana.{{ ansible_fqdn }}"
 kibana_proxy_ssl_cert: "/etc/ssl/certs/{{ ansible_fqdn }}.crt"
 kibana_proxy_ssl_key: "/etc/ssl/private/{{ ansible_fqdn }}.key"
+
+apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"

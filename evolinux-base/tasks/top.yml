@@ -1,5 +1,0 @@
----
-- name: Deploy top configuration file
-  file:
-    path: /etc/topdefaultrc
-    state: absent

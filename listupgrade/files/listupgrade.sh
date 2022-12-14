@@ -100,15 +100,15 @@ semaine prochaine.
 
 Voici la listes de packages qui seront mis à jour :
 
-$(cat "${packages}")
+$(cat "${packages}" | sort | uniq)
 
 Liste des packages dont la mise-à-jour a été manuellement suspendue :
 
-$(cat "${packagesHold}")
+$(cat "${packagesHold}" | sort | uniq)
 
 Liste des services qui seront redémarrés :
 
-$(cat "${servicesToRestart}")
+$(cat "${servicesToRestart}" | sort | uniq)
 
 N'hésitez pas à nous faire toute remarque sur ce créneau d'intervention le plus
 tôt possible.
@@ -240,7 +240,7 @@ main() {
             echo "MySQL" >>"${servicesToRestart}"
         elif echo "${pkg}" | grep -q "^mariadb-server"; then
             echo "MariaDB" >>"${servicesToRestart}"
-        elif echo "${pkg}" | grep -qE "^postgresql-[[:digit:]]+\.[[:digit:]]+$"; then
+        elif echo "${pkg}" | grep -qE "^postgresql-[[:digit:]]+(\.[[:digit:]]+)?$"; then
             echo "PostgreSQL" >>"${servicesToRestart}"
         elif echo "${pkg}" | grep -qE "^tomcat[[:digit:]]+$"; then
             echo "Tomcat" >>"${servicesToRestart}"

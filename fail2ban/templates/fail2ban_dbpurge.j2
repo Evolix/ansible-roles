@@ -1,3 +1,13 @@
 #!/bin/sh
-# Juin 2022 : #64088
-/usr/bin/sqlite3 /var/lib/fail2ban/fail2ban.sqlite3 "DELETE FROM bans WHERE date('now', '-{{  fail2ban_recidive_bantime | default(default_dbpurgeage.stdout) }}') > datetime(timeofban, 'unixepoch'); VACUUM;"
+# Juin - Decembre 2022 : #64088
+# Purge pour Stretch et Buster
+
+/usr/bin/ionice -c3 /usr/bin/sqlite3 /var/lib/fail2ban/fail2ban.sqlite3 "DELETE FROM bans WHERE datetime('now', '-{{ bantime.stdout }} second') > datetime(timeofban, 'unixepoch');"
+
+place_dispo=$( df -h  /var/lib/fail2ban/fail2ban.sqlite3  --output="avail" -h --block-size=1 |tail -n1 )
+place_pris=$( echo $(("$(stat --format %s /var/lib/fail2ban/fail2ban.sqlite3 ) * 2" )) )
+
+if [ $place_pris -lt $place_dispo ]
+then
+    /usr/bin/ionice -c3 /usr/bin/sqlite3 /var/lib/fail2ban/fail2ban.sqlite3 "VACUUM;"
+fi
