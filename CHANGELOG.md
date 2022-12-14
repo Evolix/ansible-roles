@@ -29,7 +29,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evocheck: install script according to Debian version
 * evolinux-base: utils.yml can be excluded
 * evolinux-todo: execute tasks only for Debian distribution (because this task is a dependency for others roles used on different distributions)
-* evolinux-user: Add sudoers privilege for chck php\_fpm81
+* evolinux-user: Add sudoers privilege for check php\_fpm81
 * evomaintenance: allow missing API endpoint if APi is disabled
 * java: use default JRE package when version is not specified
 * listupgrade: better detection for PostgreSQL
@@ -44,7 +44,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * squid: whitelist deb.freexian.com
 * varnish: better package facts usage with check mode and tags
 * varnish: systemd override depends on Varnish version instead of Debian version
-* keepalived: change exit code (warning if runnin but not on expected state ; critical if not running)
+* keepalived: change exit code (warning if running but not on expected state ; critical if not running)
 * openvpn: shellpki upstream release 22.12.2
 * openvpn: specifies that the mail for expirations is for OpenVPN
 
