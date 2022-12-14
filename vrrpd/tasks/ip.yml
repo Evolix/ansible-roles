@@ -17,4 +17,6 @@
     daemon_reload: yes
     enabled: yes
     state: "{{ vrrp_address.state }}"
-  when: vrrp_systemd_unit is changed
+  when: 
+  - vrrp_systemd_unit is changed
+  - not ansible_check_mode
