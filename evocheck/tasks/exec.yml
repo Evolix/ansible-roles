@@ -10,8 +10,6 @@
 
 - debug:
     var: evocheck_run.stdout_lines
-  when:
-    - not ansible_check_mode
-    - evocheck_run.stdout | length > 0
+  when: evocheck_run.stdout | length > 0
   tags:
   - evocheck-exec

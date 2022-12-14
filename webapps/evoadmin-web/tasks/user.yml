@@ -54,9 +54,7 @@
     dest: "{{ evoadmin_document_root }}"
     version: jessie
     update: False
-  when:
-    - ansible_distribution_release == "jessie"
-    - not ansible_check_mode
+  when: ansible_distribution_release == "jessie"
 
 - name: "Clone evoadmin repository (Debian 9 or later)"
   git:
@@ -64,9 +62,7 @@
     dest: "{{ evoadmin_document_root }}"
     version: master
     update: False
-  when:
-    - ansible_distribution_major_version is version('9', '>=')
-    - not ansible_check_mode
+  when: ansible_distribution_major_version is version('9', '>=')
 
 - name: Change ownership on git repository
   file:

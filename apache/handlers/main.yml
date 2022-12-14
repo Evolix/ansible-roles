@@ -3,16 +3,13 @@
   service:
     name: apache2
     state: restarted
-  when: not ansible_check_mode
 
 - name: reload apache
   service:
     name: apache2
     state: reloaded
-  when: not ansible_check_mode
 
 - name: restart munin-node
   service:
     name: munin-node
     state: restarted
-  when: not ansible_check_mode

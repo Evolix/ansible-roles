@@ -160,9 +160,7 @@
     dest: '/home/{{ user.name }}/.profile'
     insertafter: EOF
     line: 'trap "sudo /usr/share/scripts/evomaintenance.sh" 0'
-  when:
-    - grep_profile_evomaintenance.rc != 0
-    - not ansible_check_mode
+  when: grep_profile_evomaintenance.rc != 0
 
 # SSH keys
 
@@ -194,6 +192,5 @@
   when:
     - user.ssh_keys is defined
     - user.ssh_keys | length > 0
-    - not ansible_check_mode
 
 - meta: flush_handlers

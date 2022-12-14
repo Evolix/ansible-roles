@@ -65,12 +65,10 @@
   changed_when: False
   check_mode: no
   register: new_packweb_phpmyadmin_suffix
-  when: not ansible_check_mode
 
 - name: overwrite packweb_phpmyadmin_suffix
   set_fact:
     packweb_phpmyadmin_suffix: "{{ new_packweb_phpmyadmin_suffix.stdout }}"
-  when: not ansible_check_mode
 
 - debug:
     var: packweb_phpmyadmin_suffix
@@ -88,18 +86,15 @@
           Require all denied
           Include /etc/apache2/ipaddr_whitelist.conf
       </Directory>
-  when: not ansible_check_mode
 
 - name: enable phpmyadmin link in default site index
   replace:
     dest: /var/www/index.html
     regexp:  '<!-- <li><a href="/phpmyadmin-__PHPMYADMIN_SUFFIX__/">Accès PhpMyAdmin</a></li> -->'
     replace: '     <li><a href="/phpmyadmin-__PHPMYADMIN_SUFFIX__/">Accès PhpMyAdmin</a></li>'
-  when: not ansible_check_mode
 
 - name: replace phpmyadmin suffix in default site index
   replace:
     dest: /var/www/index.html
     regexp: '__PHPMYADMIN_SUFFIX__'
     replace: "{{ packweb_phpmyadmin_suffix }}"
-  when: not ansible_check_mode

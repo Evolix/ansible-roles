@@ -4,10 +4,8 @@
   service:
     name: nagios-nrpe-server
     state: restarted
-  when: not ansible_check_mode
 
 - name: restart nrpe
   service:
     name: nrpe
     state: restarted
-  when: not ansible_check_mode

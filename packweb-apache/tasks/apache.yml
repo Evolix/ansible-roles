@@ -14,9 +14,7 @@
     block: |
       # Used for Evoadmin-web
       export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-  when:
-    - envvar_grep_path.rc != 0
-    - not ansible_check_mode
+  when: envvar_grep_path.rc != 0
 
 - name: Additional packages are installed
   apt:
@@ -36,7 +34,6 @@
     - negotiation
     - alias
     - log_forensic
-  when: not ansible_check_mode
 
 - name: Copy Apache settings for modules
   copy:
@@ -63,4 +60,3 @@
   loop:
     - evolinux-evasive
     - evolinux-modsec
-  when: not ansible_check_mode

@@ -26,7 +26,6 @@
     dest: /var/www/index.html
     line: '            <li><a href="/info.php">Infos PHP</a></li>'
     regexp: "Infos PHP"
-  when: not ansible_check_mode
 
 - name: install opcache.php
   copy:
@@ -39,7 +38,6 @@
     dest: /var/www/index.html
     line: '            <li><a href="/opcache.php">Infos OpCache PHP</a></li>'
     regexp: "Infos OpCache PHP"
-  when: not ansible_check_mode
 
 - name: Add elements to user account template
   file:
@@ -66,7 +64,6 @@
   loop:
     - access.log
     - error.log
-  when: not ansible_check_mode
 
 - name: "Install userlogrotate (jessie)"
   copy:

@@ -70,7 +70,6 @@
   notify: restart proftpd
   tags:
     - proftpd
-  when: not ansible_check_mode
 
 - name: Put empty vpasswd file if missing
   copy:
@@ -93,7 +92,6 @@
   notify: restart proftpd
   tags:
     - proftpd
-  when: not ansible_check_mode
 
 - include: accounts.yml
   when: proftpd_accounts | length > 0

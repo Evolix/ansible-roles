@@ -32,9 +32,7 @@
       removes: /var/lib/munin/localdomain
     notify: restart munin-node
 
-  when:
-    - not ansible_hostname == "localdomain"
-    - not ansible_check_mode
+  when: not ansible_hostname == "localdomain"
   tags:
     - munin
 
@@ -81,7 +79,6 @@
   notify: restart munin-node
   tags:
     - munin
-  when: not ansible_check_mode
 
 - name: Enable sensors_ plugin on dedicated hardware
   file:
@@ -95,7 +92,6 @@
   notify: restart munin-node
   tags:
     - munin
-  when: not ansible_check_mode
 
 - name: Enable ipmi_ plugin on dedicated hardware
   file:
@@ -109,7 +105,6 @@
     - temp
     - power
     - volts
-  when: not ansible_check_mode
 
 - name: adjustments for grsec kernel
   blockinfile:

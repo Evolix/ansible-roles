@@ -4,28 +4,23 @@
   service:
     name: php5-fpm
     state: restarted
-  when: not ansible_check_mode
 
 - name: restart php7.0-fpm
   service:
     name: php7.0-fpm
     state: restarted
-  when: not ansible_check_mode
 
 - name: restart php7.3-fpm
   service:
     name: php7.3-fpm
     state: restarted
-  when: not ansible_check_mode
 
 - name: restart php7.4-fpm
   service:
     name: php7.4-fpm
     state: restarted
-  when: not ansible_check_mode
 
 - name: restart php8.1-fpm
   service:
     name: php8.1-fpm
     state: restarted
-  when: not ansible_check_mode

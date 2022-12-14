@@ -123,7 +123,6 @@
   tags:
     - haproxy
     - logrotate
-  when: not ansible_check_mode
 
 - name: Rotate logs with nodelaycompress
   lineinfile:
@@ -134,7 +133,6 @@
   tags:
     - haproxy
     - logrotate
-  when: not ansible_check_mode
 
 - name: Set net.ipv4.ip_nonlocal_bind
   sysctl:

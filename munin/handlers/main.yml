@@ -4,13 +4,11 @@
   service:
     name: munin-node
     state: restarted
-  when: not ansible_check_mode
 
 - name: restart munin_node
   service:
     name: munin_node
     state: restarted
-  when: not ansible_check_mode
 
 - name: systemd daemon-reload
   systemd:

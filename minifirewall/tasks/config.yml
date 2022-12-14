@@ -30,7 +30,6 @@
     line: "# BEGIN ANSIBLE MANAGED BLOCK FOR IPS"
     insertbefore: '^# Main interface'
     create: no
-  when: not ansible_check_mode
 
 - name: End marker for IP addresses
   lineinfile:
@@ -38,7 +37,6 @@
     create: no
     line: "# END ANSIBLE MANAGED BLOCK FOR IPS"
     insertafter: '^PRIVILEGIEDIPS='
-  when: not ansible_check_mode
 
 - name: Verify that at least 1 trusted IP is provided
   assert:
@@ -86,7 +84,6 @@
       PRIVILEGIEDIPS='{{ minifirewall_privilegied_ips | join(' ') }}'
     create: no
   register: minifirewall_config_ips
-  when: not ansible_check_mode
 
 - name: Begin marker for ports
   lineinfile:
@@ -94,7 +91,6 @@
     line: "# BEGIN ANSIBLE MANAGED BLOCK FOR PORTS"
     insertbefore: '^# Protected services'
     create: no
-  when: not ansible_check_mode
 
 - name: End marker for ports
   lineinfile:
@@ -102,7 +98,6 @@
     line: "# END ANSIBLE MANAGED BLOCK FOR PORTS"
     insertafter: '^SERVICESUDP3='
     create: no
-  when: not ansible_check_mode
 
 - name: Configure ports
   blockinfile:
@@ -127,7 +122,6 @@
       SERVICESUDP3='{{ minifirewall_private_ports_udp | join(' ') }}'
     create: no
   register: minifirewall_config_ports
-  when: not ansible_check_mode
 
 - name: Configure DNSSERVEURS
   lineinfile:
@@ -199,9 +193,7 @@
     line: "PROXY='{{ minifirewall_proxy }}'"
     regexp: "PROXY=('|\").*('|\")"
     create: no
-  when:
-    - minifirewall_proxy is not none
-    - not ansible_check_mode
+  when: minifirewall_proxy is not none
 
 - name: Configure PROXYPORT
   lineinfile:
@@ -209,9 +201,7 @@
     line: "PROXYPORT='{{ minifirewall_proxyport }}'"
     regexp: "PROXYPORT=('|\").*('|\")"
     create: no
-  when:
-    - minifirewall_proxyport is not none
-    - not ansible_check_mode
+  when: minifirewall_proxyport is not none
 
 # Warning: keep double quotes for the value,
 # since we often reference a shell variable that needs to be interpolated
@@ -221,9 +211,7 @@
     line: "PROXYBYPASS=\"{{ minifirewall_proxybypass | join(' ') }}\""
     regexp: "PROXYBYPASS=('|\").*('|\")"
     create: no
-  when:
-    - minifirewall_proxyport is not none
-    - not ansible_check_mode
+  when: minifirewall_proxybypass is not none
 
 - name: Configure BACKUPSERVERS
   lineinfile:
@@ -231,9 +219,7 @@
     line: "BACKUPSERVERS='{{ minifirewall_backupservers | join(' ') }}'"
     regexp: "BACKUPSERVERS=('|\").*('|\")"
     create: no
-  when:
-    - minifirewall_backupservers is not none
-    - not ansible_check_mode
+  when: minifirewall_backupservers is not none
 
 - name: Configure SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS
   lineinfile:
