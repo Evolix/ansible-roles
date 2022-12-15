@@ -34,6 +34,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * packweb-apache: enable `log_forensic` module
 * rabbitmq: add link in default page
 * varnish: create special tmp directory for syntax validation
+* postfix: add localhost.$mydomain to mydestination
 
 ### Changed
 
