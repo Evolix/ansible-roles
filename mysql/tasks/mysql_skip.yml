@@ -31,6 +31,16 @@
   tags:
     - mysql_skip
 
+- name: "Copy logrotate file for mysql_skip.sh"
+  template:
+    src: mysql_skip.logrotate.j2
+    dest: "/etc/logrotate.d/mysql_skip"
+    owner: root
+    group: root
+    mode: "0600"
+  tags:
+    - mysql_skip
+
 - name: "Copy mysql_skip.sh systemd unit"
   template:
     src: mysql_skip.systemd.j2

@@ -1,0 +1,10 @@
+/var/log/mysql_skip.log {
+  missingok
+  notifempty
+  monthly
+  rotate 12
+  compress
+  create 640 root adm
+  dateext
+  dateformat -%Y%m%d%H
+}
