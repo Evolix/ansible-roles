@@ -16,6 +16,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Fixed
 
+* evolinux-base: ensure dbus is started and enabled (not by default in the case of an offline netinst)
+
 ### Removed
 
 ### Security
