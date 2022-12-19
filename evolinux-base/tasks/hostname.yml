@@ -4,6 +4,12 @@
     name: dbus
     state: present
 
+- name: dbus is enabled and started
+  service:
+    name: dbus
+    state: enabled
+    enabled: true
+
 - name: Set hostname "{{ evolinux_hostname }}"
   hostname:
     name: "{{ evolinux_hostname }}"
