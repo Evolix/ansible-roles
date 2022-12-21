@@ -1,6 +1,11 @@
 ---
 
-- name: add IP addresses to private IP whitelist
+- name: Is ipaddr_whitelist.conf present?
+  stat:
+    path: /etc/apache2/ipaddr_whitelist.conf
+  register: _ipaddr_whitelist_conf
+
+- name: Add IP addresses to private IP whitelist
   lineinfile:
     dest: /etc/apache2/ipaddr_whitelist.conf
     line: "Require ip {{ item }}"
@@ -10,8 +15,9 @@
   tags:
     - apache
     - ips
+  when: _ipaddr_whitelist_conf.stat.exists or not ansible_check_mode
 
-- name: remove IP addresses from private IP whitelist
+- name: Remove IP addresses from private IP whitelist
   lineinfile:
     dest: /etc/apache2/ipaddr_whitelist.conf
     line: "Require ip {{ item }}"

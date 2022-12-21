@@ -14,6 +14,7 @@
   file:
     dest: /etc/php/7.4/cli
     mode: "0755"
+  when: not ansible_check_mode
 
 - name: Symlink Evolix Apache config files from 7.4 to 7.0
   file:
@@ -30,7 +31,9 @@
   file:
     dest: /etc/php/7.4/apache2
     mode: "0755"
-  when: php_apache_enable | bool
+  when:
+    - php_apache_enable | bool
+    - not ansible_check_mode
 
 - name: Symlink Evolix FPM config files from 7.4 to 7.0
   file:
@@ -49,4 +52,6 @@
   file:
     dest: /etc/php/7.4/fpm
     mode: "0755"
-  when: php_fpm_enable | bool
+  when:
+    - php_fpm_enable | bool
+    - not ansible_check_mode

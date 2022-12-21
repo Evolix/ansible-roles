@@ -114,12 +114,29 @@
     - config
     - update-config
 
+- name: Is haproxy.cfg present?
+  stat:
+    path: /etc/haproxy/haproxy.cfg
+  register: _haproxy_cfg
+  tags:
+    - haproxy
+    - logrotate
+
 - name: Rotate logs with dateext
   lineinfile:
     dest: /etc/logrotate.d/haproxy
     line: '    dateext'
     regexp: '^\s*#*\s*(no)?dateext'
     insertbefore: '}'
+  tags:
+    - haproxy
+    - logrotate
+  when: _haproxy_cfg.stat.exists or not ansible_check_mode
+
+- name: Is logrotate.d/haproxy present?
+  stat:
+    path: /etc/logrotate.d/haproxy
+  register: _logrotate_d_haproxy
   tags:
     - haproxy
     - logrotate
@@ -133,6 +150,7 @@
   tags:
     - haproxy
     - logrotate
+  when: _logrotate_d_haproxy.stat.exists or not ansible_check_mode
 
 - name: Set net.ipv4.ip_nonlocal_bind
   sysctl:

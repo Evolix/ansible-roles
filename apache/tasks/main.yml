@@ -53,6 +53,7 @@
   notify: reload apache
   tags:
     - apache
+  when: not ansible_check_mode
 
 - name: basic modules are enabled
   apache2_module:
@@ -61,7 +62,9 @@
   loop:
     - cgi
   notify: reload apache
-  when: apache_mpm == "prefork" or apache_mpm == "itk"
+  when:
+    - apache_mpm == "prefork" or apache_mpm == "itk"
+    - not ansible_check_mode
   tags:
     - apache
 
@@ -123,14 +126,21 @@
   tags:
     - apache
 
-- name: default vhost is enabled
+- name: Is 000-evolinux-default.conf present?
+  stat:
+    path: /etc/apache2/sites-available/000-evolinux-default.conf
+  register: _000_evolinux_default_conf
+
+- name: Default vhost is enabled
   file:
     src: /etc/apache2/sites-available/000-evolinux-default.conf
     dest: /etc/apache2/sites-enabled/000-default.conf
     state: link
     force: yes
   notify: reload apache
-  when: apache_evolinux_default_enabled | bool
+  when:
+    - apache_evolinux_default_enabled | bool
+    - _000_evolinux_default_conf.stat.exists or not ansible_check_mode
   tags:
     - apache
 
@@ -138,12 +148,19 @@
   tags:
     - apache
 
-- name: is umask already present?
+- name: Is umask already present?
   command: "grep -E '^umask ' /etc/apache2/envvars"
   failed_when: False
   changed_when: False
   register: envvar_grep_umask
   check_mode: no
+  tags:
+    - apache
+
+- name: Is envvars present?
+  stat:
+    path: /etc/apache2/envvars
+  register: _envvars
   tags:
     - apache
 
@@ -155,7 +172,9 @@
       ## Set umask for writing by Apache user.
       ## Set rights on files and directories written by Apache
       umask 007
-  when: envvar_grep_umask.rc != 0
+  when:
+    - envvar_grep_umask.rc != 0
+    - _envvars.stat.exists or not ansible_check_mode
   tags:
     - apache
 
@@ -183,6 +202,13 @@
   tags:
     - apache
 
+- name: Is logrotate.d/apache2 present?
+  stat:
+    path: /etc/logrotate.d/apache2
+  register: _logrotate_d_apache2
+  tags:
+    - apache
+
 - name: "logrotate: {{ apache_logrotate_frequency }}"
   replace:
     dest: /etc/logrotate.d/apache2
@@ -190,6 +216,7 @@
     replace: "{{ apache_logrotate_frequency }}"
   tags:
     - apache
+  when: _logrotate_d_apache2.stat.exists or not ansible_check_mode
 
 - name: "logrotate: rotate {{ apache_logrotate_rotate }}"
   replace:
@@ -198,6 +225,7 @@
     replace: '\1 {{ apache_logrotate_rotate }}'
   tags:
     - apache
+  when: _logrotate_d_apache2.stat.exists or not ansible_check_mode
 
 - include: log2mail.yml
   when: apache_log2mail_include

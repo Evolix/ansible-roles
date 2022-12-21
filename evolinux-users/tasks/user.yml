@@ -154,13 +154,21 @@
   register: grep_profile_evomaintenance
 
 ## Don't add the trap if it is present or commented
+
+- name: "Is '/home/{{ user.name }}' present?"
+  stat:
+    path: '/home/{{ user.name }}'
+  register: _home_user_name
+
 - name: "User '{{ user.name }}' has its shell trap for evomaintenance"
   lineinfile:
     state: present
     dest: '/home/{{ user.name }}/.profile'
     insertafter: EOF
     line: 'trap "sudo /usr/share/scripts/evomaintenance.sh" 0'
-  when: grep_profile_evomaintenance.rc != 0
+  when:
+    - grep_profile_evomaintenance.rc != 0
+    - _home_user_name.stat.exists or not ansible_check_mode
 
 # SSH keys
 
@@ -192,5 +200,6 @@
   when:
     - user.ssh_keys is defined
     - user.ssh_keys | length > 0
+    - _home_user_name.stat.exists or not ansible_check_mode
 
 - meta: flush_handlers

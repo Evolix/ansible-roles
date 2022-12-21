@@ -16,6 +16,14 @@
     daemon-reload: yes
     state: started
     enabled: yes
+  when: not ansible_check_mode
+
+- name: Is log2mail/config/default present?
+  stat:
+    path: /etc/log2mail/config/default
+  register: _log2mail_config_default
+  tags:
+    - log2mail
 
 - name: log2mail config is present
   blockinfile:
@@ -32,4 +40,5 @@
   notify: restart log2mail
   tags:
     - log2mail
+  when: _log2mail_config_default.stat.exists or not ansible_check_mode
 

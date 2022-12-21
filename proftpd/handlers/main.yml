@@ -3,3 +3,4 @@
   service:
     name: proftpd
     state: restarted
+  when: not ansible_check_mode

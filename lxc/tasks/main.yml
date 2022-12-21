@@ -43,11 +43,17 @@
     - lxc_unprivilegied_containers | bool
     - root_subuids.rc != 0
 
+- name: Is lxc present?
+  stat:
+    path: /var/lib/lxc
+  register: _lib_lxc
+
 - name: Get filesystem options
   command: findmnt --noheadings --target /var/lib/lxc --output OPTIONS
   changed_when: false
   check_mode: no
   register: check_fs_options
+  when: _lib_lxc.stat.exists or not ansible_check_mode
 
 - name: Check if options are correct
   assert:
@@ -56,6 +62,7 @@
       - "'noexec' not in check_fs_options.stdout"
       - "'nosuid' not in check_fs_options.stdout"
     msg: "LXC directory is in a filesystem with incompatible options"
+  when: _lib_lxc.stat.exists or not ansible_check_mode
 
 - name: Create containers
   include: create-container.yml

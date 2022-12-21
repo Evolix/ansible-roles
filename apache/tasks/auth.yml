@@ -14,7 +14,12 @@
 - name: Load IP whitelist task
   include: ip_whitelist.yml
 
-- name: include private IP whitelist for server-status
+- name: Is status.conf present?
+  stat:
+    path: /etc/apache2/mods-available/status.conf
+  register: _status_conf
+
+- name: Include private IP whitelist for server-status
   lineinfile:
     dest: /etc/apache2/mods-available/status.conf
     line: "        include /etc/apache2/ipaddr_whitelist.conf"
@@ -22,6 +27,7 @@
     state: present
   tags:
     - apache
+  when: _status_conf.stat.exists or not ansible_check_mode
 
 - name: Copy private_htpasswd
   copy:
@@ -35,6 +41,13 @@
   tags:
     - apache
 
+- name: Is private_htpasswd present?
+  stat:
+    path: /etc/apache2/private_htpasswd
+  register: _private_htpasswd
+  tags:
+    - apache
+
 - name: add user:pwd to private htpasswd
   lineinfile:
     dest: /etc/apache2/private_htpasswd
@@ -44,6 +57,7 @@
   notify: reload apache
   tags:
     - apache
+  when: _private_htpasswd.stat.exists or not ansible_check_mode
 
 - name: remove user:pwd from private htpasswd
   lineinfile:
@@ -54,3 +68,4 @@
   notify: reload apache
   tags:
     - apache
+  when: _private_htpasswd.stat.exists or not ansible_check_mode

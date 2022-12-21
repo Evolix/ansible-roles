@@ -17,6 +17,13 @@
   include_role:
     name: evolix/remount-usr
 
+- name: Is munin present?
+  stat:
+    path: /var/lib/munin
+  register: _munin_present
+  tags:
+    - munin
+
 - block:
   - name: Replace localdomain in Munin config
     replace:
@@ -32,7 +39,9 @@
       removes: /var/lib/munin/localdomain
     notify: restart munin-node
 
-  when: not ansible_hostname == "localdomain"
+  when:
+    - not ansible_hostname == "localdomain"
+    - _munin_present.stat.exists or not ansible_check_mode
   tags:
     - munin
 
@@ -76,6 +85,7 @@
     - postfix_mailqueue
     - postfix_mailstats
     - postfix_mailvolume
+  when: _munin_present.stat.exists or not ansible_check_mode
   notify: restart munin-node
   tags:
     - munin
@@ -88,7 +98,9 @@
   with_items: 
     - fan
     - temp
-  when: ansible_virtualization_role == "host"
+  when:
+    - ansible_virtualization_role == "host"
+    - _munin_present.stat.exists or not ansible_check_mode
   notify: restart munin-node
   tags:
     - munin
@@ -98,7 +110,9 @@
     src: /usr/share/munin/plugins/ipmi_
     dest: "/etc/munin/plugins/ipmi_{{ item }}"
     state: link
-  when: ansible_virtualization_role == "host"
+  when:
+    - ansible_virtualization_role == "host"
+    - _munin_present.stat.exists or not ansible_check_mode
   notify: restart munin-node
   with_items:
     - fans

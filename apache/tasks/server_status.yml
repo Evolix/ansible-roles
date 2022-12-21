@@ -21,15 +21,22 @@
   args:
     creates: "{{ apache_serverstatus_suffix_file }}"
 
+- name: Is apache_serverstatus_suffix_file present?
+  stat:
+    path: "{{ apache_serverstatus_suffix_file }}"
+  register: _apache_serverstatus_suffix_file
+
 - name: read apache server status suffix
   command: "tail -n 1 {{ apache_serverstatus_suffix_file }}"
   changed_when: False
   check_mode: no
   register: new_apache_serverstatus_suffix
+  when: _apache_serverstatus_suffix_file.stat.exists or not ansible_check_mode
 
 - name: overwrite apache_serverstatus_suffix
   set_fact:
     apache_serverstatus_suffix: "{{ new_apache_serverstatus_suffix.stdout }}"
+  when: _apache_serverstatus_suffix_file.stat.exists or not ansible_check_mode
 
 - debug:
     var: apache_serverstatus_suffix
@@ -40,12 +47,14 @@
     dest: /var/www/index.html
     regexp: '__SERVERSTATUS_SUFFIX__'
     replace: "{{ apache_serverstatus_suffix }}"
+  when: _apache_serverstatus_suffix_file.stat.exists or not ansible_check_mode
 
 - name: add server-status suffix in default site index if missing
   replace:
     dest: /var/www/index.html
     regexp: '"/server-status-?"'
     replace: '"/server-status-{{ apache_serverstatus_suffix }}"'
+  when: _apache_serverstatus_suffix_file.stat.exists or not ansible_check_mode
 
 - name: add server-status suffix in default VHost
   replace:
@@ -53,12 +62,19 @@
     regexp: '<Location /server-status-?>'
     replace: '<Location /server-status-{{ apache_serverstatus_suffix }}>'
   notify: reload apache
+  when: _apache_serverstatus_suffix_file.stat.exists or not ansible_check_mode
+
+- name: Is munin-node present?
+  stat:
+    path: /etc/munin/plugin-conf.d/munin-node
+  register: _munin_node
 
 - name: Munin configuration has a section for apache
   lineinfile:
     dest: /etc/munin/plugin-conf.d/munin-node
     line: "[apache_*]"
     create: no
+  when: _munin_node.stat.exists or not ansible_check_mode
 
 - name: apache-status URL is configured for Munin
   lineinfile:
@@ -68,3 +84,4 @@
     insertafter: "[apache_*]"
     create: no
   notify: restart munin-node
+  when: _munin_node.stat.exists or not ansible_check_mode

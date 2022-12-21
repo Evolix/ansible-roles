@@ -28,6 +28,7 @@
   tags:
   - mysql
   - services
+  when: not ansible_check_mode
 
 - name: apg package is installed
   apt:

@@ -5,11 +5,17 @@
     name: "{{ lxc_php_version }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer"
 
+- name: "Is sources.list present?"
+  stat:
+    path: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/apt/sources.list"
+  register: _sources_list
+
 - name: "{{ lxc_php_version }} - fix bullseye repository"
   replace:
     dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/apt/sources.list"
     regexp: 'bullseye/updates'
     replace: 'bullseye-security'
+  when: _sources_list.stat.exists or not ansible_check_mode
 
 - name: "{{ lxc_php_version }} - Copy evolinux PHP configuration"
   template:

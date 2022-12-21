@@ -22,6 +22,7 @@
       AllowFullYearView=3
       ErrorMessages="An error occured. Contact your Administrator"
     mode: "0644"
+  when: not ansible_check_mode
 
 - name: Create conf-available/awstats-icon.conf file
   copy:
@@ -39,6 +40,7 @@
   register: command_result
   changed_when: "'Enabling' in command_result.stderr"
   notify: reload apache
+  when: not ansible_check_mode
 
 - name: Create awstats cron
   lineinfile:
@@ -46,6 +48,7 @@
     create: yes
     regexp: '-config=awstats'
     line: "10 */6 * * * root umask 033; [ -x /usr/lib/cgi-bin/awstats.pl -a -f /etc/awstats/awstats.conf -a -r /var/log/apache2/access.log ] && /usr/lib/cgi-bin/awstats.pl -config=awstats -update >/dev/null"
+  when: not ansible_check_mode
 
 - name: Comment default awstat cron's tasks
   lineinfile:
@@ -54,3 +57,4 @@
     line: '#\1'
     backrefs: yes
     state: present
+  when: not ansible_check_mode

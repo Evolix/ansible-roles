@@ -10,3 +10,4 @@
     remote_src: False
     src: ftp/evolinux.conf.diff
     dest: /etc/proftpd/conf.d/z-evolinux.conf
+  when: not ansible_check_mode

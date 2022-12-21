@@ -3,31 +3,38 @@
   service:
     name: munin-node
     state: restarted
+  when: not ansible_check_mode
 
 - name: restart squid
   service:
     name: squid
     state: restarted
+  when: not ansible_check_mode
 
 - name: reload squid
   service:
     name: squid
     state: reloaded
+  when: not ansible_check_mode
 
 - name: restart squid3
   service:
     name: squid3
     state: restarted
+  when: not ansible_check_mode
 
 - name: reload squid3
   service:
     name: squid3
     state: reloaded
+  when: not ansible_check_mode
 
 - name: restart log2mail
   service:
     name: log2mail
     state: restarted
+  when: not ansible_check_mode
 
 - name: restart minifirewall
   command: /etc/init.d/minifirewall restart
+  when: not ansible_check_mode

@@ -43,3 +43,4 @@
     - mysql_custom_logdir | length > 0
     - mysql_custom_logdir != mysql_current_real_logdir_test.stdout
     - not mysql_custom_logdir_test.stat.exists
+    - not ansible_check_mode
