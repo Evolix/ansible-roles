@@ -100,8 +100,6 @@
   register: command_result
   changed_when: "'changed' in command_result.stdout"
   # failed_when: False
-  args:
-    warn: False
 
 - name: Add evoadmin sudoers file
   template:

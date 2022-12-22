@@ -18,15 +18,11 @@
   shell: "chown --verbose www-data:munin /var/log/munin/munin-cgi-*"
   register: command_result
   changed_when: "'changed' in command_result.stdout"
-  args:
-    warn: no
 
 - name: Mode for munin-cgi is set to 660
   shell: "chmod --verbose 660 /var/log/munin/munin-cgi-*"
   register: command_result
   changed_when: "'changed' in command_result.stdout"
-  args:
-    warn: no
 
 - name: Systemd unit for Munin-fcgi is installed
   copy:
