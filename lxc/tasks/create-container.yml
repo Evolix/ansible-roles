@@ -5,6 +5,13 @@
   check_mode: no
   register: container_exists
 
+- name: "Downgrade debian key-ring (Jessie container)"
+  apt:
+    deb: https://snapshot.debian.org/archive/debian/20190423T161317Z/pool/main/d/debian-archive-keyring/debian-archive-keyring_2019.1_all.deb
+  when: 
+    - release == 'jessie'
+    - ansible_distribution_major_version is version('10', '>=')
+
 - name: "Create container {{ name }}"
   lxc_container:
     name: "{{ name }}"

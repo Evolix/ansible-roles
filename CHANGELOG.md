@@ -19,6 +19,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Fixed
 
 * evolinux-base: ensure dbus is started and enabled (not by default in the case of an offline netinst)
+* lxc: fix problems during php 5.6 containers creation on debian 10+ by downgrading the jessie keyring
 
 ### Removed
 
