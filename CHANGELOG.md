@@ -13,7 +13,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Added
 
 ### Changed
-* Removed all "warn: False" args in command, shell and other modules as it's been depreciated and will give a hard fail in ansible-core 2.14.0.
 
 * Removed all "warn: False" args in command, shell and other modules as it's been depreciated and will give a hard fail in ansible-core 2.14.0.
 
