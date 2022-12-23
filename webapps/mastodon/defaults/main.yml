@@ -1,0 +1,24 @@
+---
+# defaults file for mastodon
+system_dep: "['imagemagick', 'ffmpeg', 'libpq-dev', 'libxml2-dev', 'libxslt1-dev', 'file', 'git-core', 'g++', 'libprotobuf-dev', 'protobuf-compiler', 'pkg-config', 'nodejs', 'gcc', 'autoconf', 'bison', 'build-essential', 'libssl-dev', 'libyaml-dev', 'libreadline6-dev', 'zlib1g-dev', 'libncurses5-dev', 'libffi-dev', 'libgdbm-dev', 'nginx', 'redis-server', 'redis-tools', 'postgresql', 'postgresql-contrib', 'certbot', 'python3-certbot-nginx', 'libidn11-dev', 'libicu-dev', 'libjemalloc-dev', 'yarn']"
+domains: ['exemple.evolix.org']
+git_url: 'https://github.com/mastodon/mastodon.git'
+git_version: 'v4.0.2'
+ruby_version: '3.0.4'
+service: 'exemple'
+
+db_host: 'localhost'
+db_user: "{{ service }}"
+db_name: "{{ service }}_production"
+db_password: 'CHANGE_ME'
+
+app_secret_key_base: ""
+app_otp_secret: ""
+app_vapid_private_key: ""
+app_vapid_public_key: ""
+app_smtp_server: "127.0.0.1"
+app_smtp_port: "25"
+app_smtp_from_address: "exemple@evolix.org"
+app_smtp_auth_method: "none"
+app_smtp_openssl_verify_mode: "none"
+app_es_enabled: "false"
