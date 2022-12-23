@@ -1,0 +1,210 @@
+---
+# tasks file for mastodon
+
+- name: Install main system dependencies
+  apt:
+    name: "{{ system_dep }}"
+
+- name: Add PostgreSQL user
+  postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    role_attr_flags: CREATEDB
+  become_user: postgres
+
+- name: Add UNIX account
+  user:
+    name: "{{ service }}"
+    shell: /bin/bash
+#    umask: "0022" nécessite ansible-core 2.12
+
+- name: Install Ruby for service user (rbenv)
+  include_role:
+    name: rbenv
+  vars:
+    - username: "{{ service }}"
+    - rbenv_ruby_version: "{{ ruby_version }}"
+
+- name: Clone Mastodon repo (git)
+  git:
+    repo: "{{ git_url }}"
+    dest: "~/mastodon/"
+    version: "{{ git_version | default(omit) }}"
+    #force: yes
+    update: yes
+  become_user: "{{ service }}"
+
+- block:
+  - name: Install bundler
+    shell: ". ~/.profile && gem install bundler --no-document"
+    args:
+      chdir: "~/mastodon"
+      executable: /bin/bash # fails with /bin/sh
+  - name: Install gem dependencies
+    shell: ". ~/.profile && bundle install --deployment --without development test -j$(getconf _NPROCESSORS_ONLN)"
+    args:
+      chdir: "~/mastodon"
+      executable: /bin/bash # fails with /bin/sh
+  - name: Install javascript dependencies
+    shell: ". ~/.profile && yarn install --pure-lockfile"
+    args:
+      chdir: "~/mastodon"
+      executable: /bin/bash # fails with /bin/sh
+  become_user: "{{ service }}"
+
+- name: Template .env.production configuration file
+  template:
+    src: "env.j2"
+    dest: "~{{ service }}/mastodon/.env.production"
+    owner: "{{ service }}"
+    group: "{{ service }}"
+    mode: "0640"
+
+- name: Check if secrets need to be generated or not
+  shell: "grep -P SECRET_KEY_BASE=[[:alnum:]]{128} .env.production"
+  args:
+    chdir: "~/mastodon"
+  become_user: "{{ service }}"
+  register: secrets
+  failed_when: "secrets.rc == 2"
+
+- block:
+  - name: Generate secret for SECRET_KEY_BASE
+    shell: '. ~/.profile && sed -i -r "s/SECRET_KEY_BASE=/SECRET_KEY_BASE=$(RAILS_ENV=production bundle exec rake secret)/" .env.production' 
+    args:
+      chdir: "~/mastodon"
+      executable: /bin/bash # fails with /bin/sh
+  - name: Generate secret for OTP_SECRET
+    shell:  '. ~/.profile && sed -i -r "s/OTP_SECRET=/OTP_SECRET=$(RAILS_ENV=production bundle exec rake secret)/" .env.production'
+    args:
+      chdir: "~/mastodon"
+      executable: /bin/bash # fails with /bin/sh
+  - name: Generate secret for VAPID_PRIVATE_KEY and VAPID_PUBLIC_KEY
+    shell: . ~/.profile && RAILS_ENV=production bundle exec rake mastodon:webpush:generate_vapid_key > vapid.tmp | head -1 | cut -c 19-
+    args:
+      chdir: "~/mastodon"
+      executable: /bin/bash # fails with /bin/sh
+  - name: Read VAPID_PRIVATE_KEY secret from temp file
+    shell: "cat vapid.tmp | head -1 | cut -c 19-"
+    args:
+      chdir: "~/mastodon"
+    register: app_vapid_private_key
+  - name: Read VAPID_PUBLIC_KEY secret from temp file
+    shell: "cat vapid.tmp | tail -1 | cut -c 18-"
+    args:
+      chdir: "~/mastodon"
+    register: app_vapid_public_key
+  - name: Delete secrets temp file
+    file:
+      path: "~/mastodon/vapid.tmp"
+      state: absent
+  - name: Write app_vapid_private_key to production .env file
+    lineinfile:
+      path: "~/mastodon/.env.production"
+      regexp: '^VAPID_PRIVATE_KEY='
+      line: "VAPID_PRIVATE_KEY={{ app_vapid_private_key.stdout }}" 
+  - name: Write app_vapid_public_key to production .env file
+    lineinfile:
+      path: "~/mastodon/.env.production"
+      regexp: '^VAPID_PUBLIC_KEY='
+      line: "VAPID_PUBLIC_KEY={{ app_vapid_public_key.stdout }}"
+  become_user: "{{ service }}"
+  when: "secrets.rc == 1"
+
+- name: Check if mastodon database is already present or not
+  shell: |
+   psql -lqt | cut -d \| -f 1 | grep -qw {{ service }}_production
+  become_user: postgres
+  register: db_present
+  failed_when: "db_present.rc == 2"
+
+- name: Setup database schema if database not already present
+  shell: ". ~/.profile && RAILS_ENV=production SAFETY_ASSURED=1 bundle exec rails db:setup"
+  args:
+    chdir: "~/mastodon"
+    executable: /bin/bash # fails with /bin/sh
+  become_user: "{{ service }}"
+  when: "db_present.rc == 1"
+
+- name: Precompile assets
+  shell: ". ~/.profile && RAILS_ENV=production bundle exec rails assets:precompile"
+  args:
+    chdir: "~/mastodon"
+    executable: /bin/bash # fails with /bin/sh
+  become_user: "{{ service }}"
+
+- name: Add systemd target
+  template:
+    src: "mastodon.target.j2"
+    dest: "/etc/systemd/system/{{ service }}.target"
+
+- name: Add systemd web unit
+  template:
+    src: "mastodon-web.service.j2"
+    dest: "/etc/systemd/system/{{ service }}-web.service"
+
+- name: Add systemd sidekiq unit
+  template:
+    src: "mastodon-sidekiq.service.j2"
+    dest: "/etc/systemd/system/{{ service }}-sidekiq.service"
+
+- name: Add systemd streaming unit
+  template:
+    src: "mastodon-streaming.service.j2"
+    dest: "/etc/systemd/system/{{ service }}-streaming.service"
+
+- name: Enable systemd units
+  systemd:
+    name: "{{ item }}"
+    enabled: yes
+    daemon_reload: yes
+  loop:
+    - "{{ service }}.target"
+    - "{{ service }}-web.service"
+    - "{{ service }}-sidekiq.service"
+    - "{{ service }}-streaming.service"
+
+- name: Start services
+  service:
+    name: "{{ service }}.target"
+    state: started
+
+- name: Check if SSL certificate is present and register result
+  stat:
+    path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+  register: ssl
+
+#- name: Generate certificate only if required (first time)
+  #block:
+  #- name: Template vhost without SSL for successfull LE challengce
+    #template: 
+      #src: "vhost.j2"
+      #dest: "/etc/nginx/sites-available/{{ service }}"
+  #- name: Enable temporary nginx vhost for LE
+    #file:
+      #src: "/etc/nginx/sites-available/{{ service }}"
+      #dest: "/etc/nginx/sites-enabled/{{ service }}"
+      #state: link
+  #- name: Reload nginx conf
+    #service:
+      #name: nginx
+      #state: reloaded
+  #- name: Generate certificate with certbot
+    #shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt -d {{ domains |first }}
+  #when: ssl.stat.exists == false
+
+#- name: (Re)template conf file for nginx vhost with SSL
+  #template:
+    #src: "vhost.j2"
+    #dest: "/etc/nginx/sites-available/{{ service }}"
+
+#- name: Enable nginx vhost for mastodon
+  #file:
+    #src: "/etc/nginx/sites-available/{{ service }}"
+    #dest: "/etc/nginx/sites-enabled/{{ service }}"
+    #state: link
+
+#- name: Reload nginx conf
+  #service:
+    #name: nginx
+    #state: reloaded
