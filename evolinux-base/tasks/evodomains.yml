@@ -1,3 +1,8 @@
+---
+- name: Ensure python3-crytography dependency is installed
+  ansible.builtin.apt:
+      name: python3-cryptography
+
 - name: Copy evodomains script to local sbin
   ansible.builtin.copy:
     src: evodomains.py
