@@ -6,6 +6,20 @@ pipeline {
     }
 
     stages {
+        stage('Anible Lint') {
+            agent {
+                docker {
+                    image 'evolix/ansible-lint:latest'
+                }
+            }
+            steps {
+                script {
+                    sh 'for role_dir in ./*/; do HOME=$WORKSPACE_TMP ansible-lint -p $role_dir >> lint.txt || : ; done'
+                    recordIssues(tools: [ansibleLint(pattern: 'lint.txt')])
+                }
+            }
+        }
+
         stage('Build tagged docker image') {
             when {
                 buildingTag()
