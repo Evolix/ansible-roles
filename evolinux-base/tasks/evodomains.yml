@@ -1,19 +1,30 @@
 ---
-- name: Ensure python3-crytography dependency is installed
-  ansible.builtin.apt:
-      name: python3-cryptography
+- ansible.builtin.set_fact:
+    domains_script_name: evodomains
+    domains_config_path: /etc/evolinux/domains
+    domains_ignored_domains_list: ignored_domains.list
+    domains_included_domains_list: included_domains.list
+    domains_allowed_ips_list: allowed_ips.list
+    domains_dependencies:
+      - python3-cryptography
+      - socat
 
-- name: Copy evodomains script to local sbin
+- name: Ensure dependencies are installed
+  ansible.builtin.apt:
+    name: '{{ item }}'
+  loop: '{{ domains_dependencies }}'
+
+- name: Copy {{ domains_script_name }} script to local sbin
   ansible.builtin.copy:
-    src: evodomains.py
-    dest: /usr/local/sbin/evodomains
+    src: '{{ domains_script_name }}.py'
+    dest: '/usr/local/sbin/{{ domains_script_name }}'
     mode: '0700'
 
-- name: Create config file 'evodomains_exclude.list'
+- name: Create config file {{ domains_ignored_domains_list }}
   ansible.builtin.blockinfile:
-    path: /etc/evolinux/evodomains_exclude.list
+    path: '{{ domains_config_path }}/{{ domains_ignored_domains_list }}'
     create: true
-    marker: "### {mark} ANSIBLE MANAGED HEADER"
+    marker: '### {mark} ANSIBLE MANAGED HEADER'
     insertbefore: BOF
     block: |
       # Domains present in vhosts or SSL certificates whose DNS records should
@@ -22,22 +33,22 @@
       # this is useful for load-balanced domains or NAT.
       # Format: one domain per line, regex and wildcards not supported.
 
-- name: Create config file 'evodomains_include.list'
+- name: Create config file {{ domains_included_domains_list }}
   ansible.builtin.blockinfile:
-    path: /etc/evolinux/evodomains_include.list
+    path: '{{ domains_config_path }}/{{ domains_included_domains_list }}'
     create: true
-    marker: "### {mark} ANSIBLE MANAGED HEADER"
+    marker: '### {mark} ANSIBLE MANAGED HEADER'
     insertbefore: BOF
     block: |
       # Domains absent from vhosts or SSL certificates whose DNS records must
       # be checked by 'evodomains --check-dns'.
       # Format: one domain per line, regex and wildcards not supported.
 
-- name: Create config file 'evodomains_allowed_ips.list'
+- name: Create config file {{ domains_allowed_ips_list }}
   ansible.builtin.blockinfile:
-    path: /etc/evolinux/evodomains_allowed_ips.list
+    path: '{{ domains_config_path }}/{{ domains_allowed_ips_list }}'
     create: true
-    marker: "### {mark} ANSIBLE MANAGED HEADER"
+    marker: '### {mark} ANSIBLE MANAGED HEADER'
     insertbefore: BOF
     block: |
       # External IPs the domains of this server are allowed to point for

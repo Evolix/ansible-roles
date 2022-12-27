@@ -24,10 +24,13 @@ import threading
 import time
 import argparse
 import json
-from cryptography import x509
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.backends import default_backend
-from cryptography.x509.oid import NameOID, ExtensionOID
+try:
+    from cryptography import x509
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.x509.oid import NameOID, ExtensionOID
+except:
+    pass
 
 #TODO: improve data structure, example:
 """ "*.cybercartes.com": [
@@ -47,6 +50,11 @@ from cryptography.x509.oid import NameOID, ExtensionOID
     }
 ]"""
 #TODO: fix line numbers (apache, nginx), line of virtual host block
+
+def print_verbose(s):
+    if do_verbose_print:
+        print('Warning: '.format(s))
+
 
 def execute(cmd, shell=False):
     """Execute Bash command.
@@ -192,7 +200,7 @@ def list_haproxy_acl_domains():
 
     if not os.path.isfile(haproxy_conf_path):
         # HaProxy is not installed
-        print('{} not found'.format(haproxy_conf_path))
+        print_verbose('{} not found'.format(haproxy_conf_path))
         return domains
 
     # Domains from ACLs
@@ -240,7 +248,7 @@ def list_haproxy_acl_domains():
 
 def read_haproxy_domains_file(domains_file_path, origin):
     """Process a file containing a list of domains :
-    - domains_file_path: path of the file to parse 
+    - domains_file_path: path of the file to parse
     - origin: string keyword to prepend to the domains infos. Exemple: 'haproxy'
     Return a dict containing :
     - key: domain (from domains_file_path)
@@ -290,7 +298,6 @@ def list_haproxy_certs_domains():
 
         print('echo "show ssl cert" | socat stdio {}'.format(socket))
         stdout, stderr, rc = execute('echo "show ssl cert" | socat stdio {}'.format(socket), shell=True)
-        # TODO: install socat dependency in Ansible role
 
         for cert_path in stdout:
             if cert_path.strip().startswith('#'):
@@ -300,11 +307,9 @@ def list_haproxy_certs_domains():
                 domains.update(domains_to_add)
 
     else:
-        print('HaProxy SSL parsing not implemented yet for HaProxy < 2.2.')
-        #TODO
         if not os.path.isfile(haproxy_conf_path):
             # HaProxy is not installed
-            print('{} not found'.format(haproxy_conf_path))
+            print_verbose('{} not found'.format(haproxy_conf_path))
             return domains
 
         # Get HaProxy certificates paths (can be directory or file)
@@ -326,10 +331,10 @@ def list_haproxy_certs_domains():
                 domains.update(domains_to_add)
             elif os.path.isdir(cert_path):
                 for f in os.listdir(cert_path):
-                    #if isfile && pem TODO
-                    print('/'.join([cert_path, f]))
-                    domains_to_add = list_cert_domains('/'.join([cert_path, f]), 'haproxy_certs')
-                    domains.update(domains_to_add)
+                    p = cert_path + f
+                    if os.path.isfile(p):
+                        domains_to_add = list_cert_domains(p, 'haproxy_certs')
+                        domains.update(domains_to_add)
 
     return domains
 
@@ -367,7 +372,7 @@ def get_haproxy_stats_socket():
 
 
 def list_cert_domains(cert_path, origin):
-    """Return the domains present in a X509 PEM certificate. 
+    """Return the domains present in a X.509 PEM certificate. 
     - cert_path: path of the certificate 
     - origin: string keyword to prepend to the domains infos. Exemple: 'haproxy_certs'
     Return a dict containing :
@@ -377,7 +382,11 @@ def list_cert_domains(cert_path, origin):
     domains = {}
 
     with open(cert_path, 'rb') as f:
-        cert = x509.load_pem_x509_certificate(f.read(), default_backend())
+        try:
+            cert = x509.load_pem_x509_certificate(f.read(), default_backend())
+        except ValueError:
+            print_verbose('Could not load certificate file {}.'.format(cert_path))
+            return domains
 
         # Common name
         cn_list = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
@@ -390,13 +399,16 @@ def list_cert_domains(cert_path, origin):
                domains[dom].append(dom_infos)
 
         # Subject Alernative Name
-        san_ext = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
-        for dom in san_ext.value.get_values_for_type(x509.DNSName):
-           dom_infos = '{}:{}:SAN'.format(origin, cert_path)
-           if dom not in domains:
-               domains[dom] = []
-           if dom_infos not in domains[dom]:
-               domains[dom].append(dom_infos)
+        try:
+            san_ext = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+            for dom in san_ext.value.get_values_for_type(x509.DNSName):
+                dom_infos = '{}:{}:SAN'.format(origin, cert_path)
+                if dom not in domains:
+                    domains[dom] = []
+                if dom_infos not in domains[dom]:
+                    domains[dom].append(dom_infos)
+        except x509.ExtensionNotFound:
+            pass
 
     return domains
 
@@ -454,7 +466,7 @@ def run_check_domains(domains):
             ok_domains.append(d)
             continue
 
-        #TODO: handle partially wilcards: check root domain example.fom for *.example.com
+        #TODO: handle partially wilcards: check root domain example.com for *.example.com
 
         t = DNSResolutionThread(d)
         t.start()
@@ -487,7 +499,7 @@ def run_check_domains(domains):
 
 def output_nrpe_mode(timeout_domains, none_domains, outside_ips, ok_domains):
     """Output result for check mode.
-    For now, consider everyting as warnings to avoid too much alerts.
+    For now, never output critical alerts.
     """
 
     n_ok = len(ok_domains)
@@ -528,12 +540,16 @@ def output_human_mode(doms, timeout_domains, none_domains, outside_ips):
 def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('action', metavar='ACTION', help='Values: check-dns, list')
-    parser.add_argument('-o', '--output-style', help='Values: json (default for action list), human (default for action check-dns), nrpe')
+    parser.add_argument('-o', '--output-style', help='Values: json, human (default), nrpe')
     parser.add_argument('-a', '--all-domains', action='store_true', help='Include all domains (default).')
     parser.add_argument('-ap', '--apache-domains', action='store_true', help='Include Apache domains.')
     parser.add_argument('-ng', '--nginx-domains', action='store_true', help='Include Nginx domains.')
-    parser.add_argument('-ha', '--haproxy-domains', action='store_true', help='Include HaProxy domains (not supported yet).')
+    parser.add_argument('-ha', '--haproxy-domains', action='store_true', help='Include HaProxy domains.')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Print warnings to stdout.')
     args = parser.parse_args()
+
+    global do_verbose_print
+    do_verbose_print = args.verbose
 
     if args.action not in ['check-dns', 'list']:
         if args.output_style == 'nrpe':
@@ -579,7 +595,7 @@ def main(argv):
                 if not domain: continue
                 if domain not in doms:
                     doms[domain] = []
-                doms[domain].append('evodomains:{}:{}'.format(included_domains_path, line_number))
+                doms[domain].append('{}:{}:{}'.format(program_name, included_domains_path, line_number))
 
         timeout_domains, none_domains, outside_ips, ok_domains = run_check_domains(doms.keys())
 
@@ -593,10 +609,10 @@ def main(argv):
             output_human_mode(doms, timeout_domains, none_domains, outside_ips)
 
     elif args.action == 'list':
-        # Note: do not use evodomains include and exclude lists for listing.
+        # Note: do not use domains include and exclude lists for listing.
 
         if args.output_style == 'nrpe':
-            print('Action list is not for --output-style nrpe.')
+            print('Action list is not available for --output-style nrpe.')
 
         elif args.output_style == 'json':
             print(json.dumps(doms, sort_keys=True, indent=4))
@@ -607,12 +623,17 @@ def main(argv):
 
     #elif args.action == 'brice_action':
     #    #doms est un dict avec le nom de domaine comme clé, pour voir la structure de données :
-    #    # evodomains --output-style json list
+    #    # domains --output-style json list
     #
     #    print(doms)
     #    brice_function(doms)
     #
 
 if __name__ == '__main__':
+    program_name = os.path.splitext(os.path.basename(__file__))[0]
+
+    if 'cryptography.x509' not in sys.modules:
+        print('Not supported: {} requires cryptography module.'.format(program_name))
+
     main(sys.argv[1:])
 
