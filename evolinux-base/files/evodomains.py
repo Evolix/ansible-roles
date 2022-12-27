@@ -1,15 +1,15 @@
 #!/usr/bin/python3
 #
 # Execute 'evodomains --help' for usage.
-# 
+#
 # Evodomains is a Python script to facilitate the management
 # of a server's domains.
 # It's scope is Apache, Nginx, HaProxy and SSL certificates domains.
 # It can list domains, check domains records, and will permit (in the future)
 # to remove domains from vhosts configuration and remove certificate files.
-# 
-# Developped by Will & Brice
-# 
+#
+# Developped by Will
+#
 
 excludes_path = '/etc/evolinux/evodomains_exclude.list'
 includes_path = '/etc/evolinux/evodomains_include.list'
@@ -117,13 +117,13 @@ def list_apache_domains():
         words = line.strip().split()
 
         if 'namevhost' in line and len(words) >= 5:
-            # line format: port <PORT> namevhost <DOMAIN> (<VHOST_PATH>:<LINE_IN_BLOCK>)
+            # line format: port <PORT> namevhost <DOMAIN> (<VHOST_PATH>:<LINE_IN_BLOCK>)
             dom = words[3].strip()
             vhost_infos = 'apache:' + words[4].strip('()')
 
         elif 'alias' in line and len(words) >= 2:
             # line format: alias <DOMAIN>
-            dom = words[1].strip()  # vhost_infos defined in previous lines
+            dom = words[1].strip()  # vhost_infos defined in previous lines
 
         if dom:
             if dom not in domains:
@@ -182,15 +182,15 @@ def list_nginx_domains():
     return domains
 
 
-def list_haproxy_domains():
-    """Parse HaProxy config file in search of domains.
+def list_haproxy_acl_domains():
+    """Parse HaProxy config file in search of domain ACLs or files containing list of domains.
     Return a dict containing :
     - key: HaProxy domains (from ACLs in /etc/haproxy/haproxy.cgf).
     - value: a list of strings "haproxy:/etc/haproxy/haproxy.cfg:<LINE_IN_CONF>"
     """
     domains = {}
 
-    if not os.path.exists(haproxy_conf_path):
+    if not os.path.isfile(haproxy_conf_path):
         # HaProxy is not installed
         print('{} not found'.format(haproxy_conf_path))
         return domains
@@ -207,7 +207,7 @@ def list_haproxy_domains():
 
             # line format:
             #    acl <ACL_NAME> hdr(host) [-i] <DOMAIN_REGEX> [|| hdr(host) [-i] <DOMAIN_REGEX> [...]]
-            #    acl <ACL_NAME> hdr(host) -f <FILE>
+            #    acl <ACL_NAME> hdr(host) -f <FILE>
 
             # Case of an ACL based on domains file list
             if ' -f ' in line:
@@ -230,9 +230,10 @@ def list_haproxy_domains():
                         if dom_infos not in domains[dom]:
                             domains[dom].append(dom_infos)
 
+#TODO remove (call elsewhere)
     # Domains from HaProxy certificates
-    domains_to_add = list_haproxy_certs_domains()
-    domains.update(domains_to_add)
+#    domains_to_add = list_haproxy_certs_domains()
+#    domains.update(domains_to_add)
 
     return domains
 
@@ -294,14 +295,41 @@ def list_haproxy_certs_domains():
         for cert_path in stdout:
             if cert_path.strip().startswith('#'):
                 continue
-            if os.path.exists(cert_path):
+            if os.path.isfile(cert_path):
                 domains_to_add = list_cert_domains(cert_path, 'haproxy_certs')
                 domains.update(domains_to_add)
 
     else:
         print('HaProxy SSL parsing not implemented yet for HaProxy < 2.2.')
         #TODO
-        # /etc/haproxy/haproxy.cfg: bind *:8080 ssl crt /etc/haproxy/ssl/
+        if not os.path.isfile(haproxy_conf_path):
+            # HaProxy is not installed
+            print('{} not found'.format(haproxy_conf_path))
+            return domains
+
+        # Get HaProxy certificates paths (can be directory or file)
+        # Line format : bind *:<PORT> ssl crt <CERT_PATH>
+        cert_paths = []
+        with open(haproxy_conf_path, encoding='utf-8') as f:
+            for line in f.readlines():
+                line = strip_comments(line).strip()
+                if line[0:4] == 'bind' or 'ssl' in line or 'crt' in line:
+                    crt_index = line.find('crt')
+                    subs = line[crt_index+4:]
+                    cert_path = subs.split(' ')[0]  # in case other options are after cert path
+                    cert_paths.append(cert_path)
+        
+        for cert_path in cert_paths:
+            if os.path.isfile(cert_path):
+                print(cert_path)
+                domains_to_add = list_cert_domains(cert_path, 'haproxy_certs')
+                domains.update(domains_to_add)
+            elif os.path.isdir(cert_path):
+                for f in os.listdir(cert_path):
+                    #if isfile && pem TODO
+                    print('/'.join([cert_path, f]))
+                    domains_to_add = list_cert_domains('/'.join([cert_path, f]), 'haproxy_certs')
+                    domains.update(domains_to_add)
 
     return domains
 
@@ -467,7 +495,7 @@ def output_nrpe_mode(timeout_domains, none_domains, outside_ips, ok_domains):
 
     msg = 'WARNING' if n_warnings else 'OK'
 
-    print('{} - 0 UNK / 0 CRIT / {} WARN / {} OK \n'.format(msg, n_warnings, n_ok))
+    print('{} - 0 UNK / 0 CRIT / {} WARN / {} OK \n'.format(msg, n_warnings, n_ok))
     
     if timeout_domains or none_domains or outside_ips:
         for d in timeout_domains:
@@ -490,7 +518,7 @@ def output_human_mode(doms, timeout_domains, none_domains, outside_ips):
             print('\t{} {}'.format(d, ' '.join(doms[d])))
         if outside_ips: print('\nPointing elsewhere:')
         for d in outside_ips:
-            print('\t{} {} -> [{}]'.format(d, ' '.join(doms[d]), ' '.join(outside_ips[d])))
+            print('\t{} {} -> [{}]'.format(d, ' '.join(doms[d]), ' '.join(outside_ips[d])))
 
         sys.exit(1)
 
@@ -509,10 +537,10 @@ def main(argv):
     
     if args.action not in ['check-dns', 'list']:
         if args.output_style == 'nrpe':
-            print('UNKNOWN - unknown {} action, use -h option for help.'.format(args.action))
+            print('UNKNOWN - unknown {} action, use -h option for help.'.format(args.action))
             sys.exit(3)
         else:
-            print('Unknown {} action, use -h option for help.'.format(args.action))
+            print('Unknown {} action, use -h option for help.'.format(args.action))
             sys.exit(1)
    
     doms = {}
@@ -520,7 +548,8 @@ def main(argv):
     if args.all_domains:
         doms.update(list_apache_domains())
         doms.update(list_nginx_domains())
-        doms.update(list_haproxy_domains())
+        doms.update(list_haproxy_acl_domains())
+        doms.update(list_haproxy_certs_domains())
     
     else:
         if args.apache_domains:
@@ -528,7 +557,8 @@ def main(argv):
         if args.nginx_domains:
             doms.update(list_nginx_domains())
         if args.haproxy_domains:
-            doms.update(list_haproxy_domains())
+            doms.update(list_haproxy_acl_domains())
+            doms.update(list_haproxy_certs_domains())
     
     if not doms:
         if args.output_style == 'nrpe':
