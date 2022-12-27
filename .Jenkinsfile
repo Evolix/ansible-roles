@@ -14,7 +14,7 @@ pipeline {
             }
             steps {
                 script {
-                    sh 'for role_dir in ./*/; do HOME=$WORKSPACE_TMP ansible-lint -p $role_dir >> lint.txt || : ; done'
+                    sh 'for role_dir in ./*/; do HOME=$WORKSPACE_TMP ansible-lint -p $role_dir >> $WORKSPACE_TMP/lint.txt || : ; done'
                     recordIssues(tools: [ansibleLint(pattern: 'lint.txt')])
                 }
             }
