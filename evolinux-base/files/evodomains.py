@@ -11,9 +11,9 @@
 # Developped by Will
 #
 
-excludes_path = '/etc/evolinux/evodomains_exclude.list'
-includes_path = '/etc/evolinux/evodomains_include.list'
-allowed_ips_path = '/etc/evolinux/evodomains_allowed_ips.list'
+ignored_domains_path = '/etc/evolinux/domains/ignored_domains.list'
+included_domains_path = '/etc/evolinux/domains/included_domains.list'
+allowed_ips_path = '/etc/evolinux/domains/allowed_ips.list'
 haproxy_conf_path = '/etc/haproxy/haproxy.cfg'
 
 import os
@@ -54,7 +54,7 @@ def execute(cmd, shell=False):
     - shell: if True, pass directly the command to shell (useful for pipes).
     Before use shell=True, consider security warning:
       https://docs.python.org/3/library/subprocess.html#security-considerations
-    
+
     Return stdout and stderr as arrays of UTF-8 strings, and the return code."""
 
     if not shell:
@@ -70,7 +70,7 @@ def execute(cmd, shell=False):
 
 def get_allowed_ips():
     """Return the list of IPs the domains are allowed to point to."""
-    
+
     # Server IPs
     stdout, stderr, rc = execute('hostname -I')
     if not stdout:
@@ -157,7 +157,7 @@ def list_nginx_domains():
             words = line.strip(' \t;').split()
             config_file_path = words[3].strip(' :')
             continue
-         
+
         if 'server_name ' in line:
             # TODO: améliorer le if (cas tabulation)
             # line format : server_name <DOMAIN1> [<DOMAINS2 ...];
@@ -173,7 +173,7 @@ def list_nginx_domains():
                     domains[dom].append(vhost_infos)
 
         line_number += 1  # increment line number for next round
-        
+
         if 'server {' in line:
             # TODO: améliorer le if (cas plusieurs espaces)
             # line format : server {
@@ -194,7 +194,7 @@ def list_haproxy_acl_domains():
         # HaProxy is not installed
         print('{} not found'.format(haproxy_conf_path))
         return domains
-    
+
     # Domains from ACLs
     with open(haproxy_conf_path, encoding='utf-8') as f:
         line_number = 0
@@ -215,7 +215,7 @@ def list_haproxy_acl_domains():
                 print('Found HaProxy domains file {}'.format(doms_file_path))
                 domains_to_add = read_haproxy_domains_file(doms_file_path, 'haproxy')
                 domains.update(domains_to_add)
-            
+
             # Case of an ACL based on a list of domains
             # Limit: does not handle regex
             else:
@@ -253,11 +253,11 @@ def read_haproxy_domains_file(domains_file_path, origin):
             line_number = 0
             for line in f.readlines():
                 line_number += 1
-    
+
                 dom = strip_comments(line).strip()
                 if not dom:
                     continue
-    
+
                 dom_infos = '{}:{}:{}'.format(origin, domains_file_path, line_number)
                 if dom not in domains:
                     domains[dom] = []
@@ -267,9 +267,9 @@ def read_haproxy_domains_file(domains_file_path, origin):
     except FileNotFoundError as e:
         print('Error: FileNotFound', domains_file_path)
         print(e)
-    
+
     return domains
-    
+
 
 def list_haproxy_certs_domains():
     """Return the domains present in HaProxy SSL certificates.
@@ -281,7 +281,7 @@ def list_haproxy_certs_domains():
 
     # Check if HaProxy version supports "show ssl cert" command
     supports_show_ssl_cert = does_haproxy_support_show_ssl_cert()
-    
+
     if supports_show_ssl_cert:
         socket = get_haproxy_stats_socket()
         # Ajoute l'IP locale dans le cas d'un port TCP (au lieu d'un socket Unix)
@@ -318,7 +318,7 @@ def list_haproxy_certs_domains():
                     subs = line[crt_index+4:]
                     cert_path = subs.split(' ')[0]  # in case other options are after cert path
                     cert_paths.append(cert_path)
-        
+
         for cert_path in cert_paths:
             if os.path.isfile(cert_path):
                 print(cert_path)
@@ -336,9 +336,9 @@ def list_haproxy_certs_domains():
 
 def does_haproxy_support_show_ssl_cert():
     """Return True if HaProxy version supports 'show ssl cert' command (version >= 2.2)."""
-    
+
     stdout, stderr, rc = execute('dpkg -l haproxy | grep ii', shell=True)
-    
+
     supports_show_ssl_cert = False
 
     if rc == 0:
@@ -355,7 +355,7 @@ def does_haproxy_support_show_ssl_cert():
 
 def get_haproxy_stats_socket():
     """Return HaProxy stats socket."""
-    
+
     with open(haproxy_conf_path, encoding='utf-8') as f:
         line_number = 0
         for line in f.readlines():
@@ -378,7 +378,7 @@ def list_cert_domains(cert_path, origin):
 
     with open(cert_path, 'rb') as f:
         cert = x509.load_pem_x509_certificate(f.read(), default_backend())
-        
+
         # Common name
         cn_list = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
         if cn_list and len(cn_list) > 0:
@@ -397,7 +397,7 @@ def list_cert_domains(cert_path, origin):
                domains[dom] = []
            if dom_infos not in domains[dom]:
                domains[dom].append(dom_infos)
-    
+
     return domains
 
 
@@ -413,7 +413,7 @@ class DNSResolutionThread(threading.Thread):
         """Resolve domain with dig."""
         try:
             dig_results = dig(self.domain)
-            
+
             if not dig_results:
                 return
 
@@ -437,12 +437,12 @@ def run_check_domains(domains):
 
     allowed_ips = get_allowed_ips()
 
-    with open(excludes_path, encoding='utf-8') as f:
+    with open(ignored_domains_path, encoding='utf-8') as f:
         for line in f:
             domain = strip_comments(line).strip()
             if not domain: continue
             excludes.append(domain)
-    
+
     jobs = []
     timeout_domains = []
     none_domains = []
@@ -459,7 +459,7 @@ def run_check_domains(domains):
         t = DNSResolutionThread(d)
         t.start()
         jobs.append(t)
-    
+
     # Let <timeout> secs to DNS servers to reply to jobs threads queries
     time.sleep(timeout)
 
@@ -471,7 +471,7 @@ def run_check_domains(domains):
         if not j.ips:
             none_domains.append(j.domain)
             continue
-        
+
         is_outside = False
         for ip in j.ips:
             if ip not in allowed_ips:
@@ -483,20 +483,20 @@ def run_check_domains(domains):
             ok_domains.append(j.domain)
 
     return timeout_domains, none_domains, outside_ips, ok_domains
-   
+
 
 def output_nrpe_mode(timeout_domains, none_domains, outside_ips, ok_domains):
     """Output result for check mode.
     For now, consider everyting as warnings to avoid too much alerts.
     """
-    
+
     n_ok = len(ok_domains)
     n_warnings = len(timeout_domains) + len(none_domains) + len(outside_ips)
 
     msg = 'WARNING' if n_warnings else 'OK'
 
     print('{} - 0 UNK / 0 CRIT / {} WARN / {} OK \n'.format(msg, n_warnings, n_ok))
-    
+
     if timeout_domains or none_domains or outside_ips:
         for d in timeout_domains:
             print('WARNING - timeout resolving {}'.format(d))
@@ -504,7 +504,7 @@ def output_nrpe_mode(timeout_domains, none_domains, outside_ips, ok_domains):
             print('WARNING - no resolution for {}'.format(d))
         for d in outside_ips:
             print('WARNING - {} pointing elsewhere ({})'.format(d, ' '.join(outside_ips[d])))
-    
+
     sys.exit(1) if n_warnings else sys.exit(0)
 
 
@@ -534,7 +534,7 @@ def main(argv):
     parser.add_argument('-ng', '--nginx-domains', action='store_true', help='Include Nginx domains.')
     parser.add_argument('-ha', '--haproxy-domains', action='store_true', help='Include HaProxy domains (not supported yet).')
     args = parser.parse_args()
-    
+
     if args.action not in ['check-dns', 'list']:
         if args.output_style == 'nrpe':
             print('UNKNOWN - unknown {} action, use -h option for help.'.format(args.action))
@@ -542,15 +542,15 @@ def main(argv):
         else:
             print('Unknown {} action, use -h option for help.'.format(args.action))
             sys.exit(1)
-   
+
     doms = {}
-   
+
     if args.all_domains:
         doms.update(list_apache_domains())
         doms.update(list_nginx_domains())
         doms.update(list_haproxy_acl_domains())
         doms.update(list_haproxy_certs_domains())
-    
+
     else:
         if args.apache_domains:
             doms.update(list_apache_domains())
@@ -559,7 +559,7 @@ def main(argv):
         if args.haproxy_domains:
             doms.update(list_haproxy_acl_domains())
             doms.update(list_haproxy_certs_domains())
-    
+
     if not doms:
         if args.output_style == 'nrpe':
             print('UNKNOWN - No domain found on this server.')
@@ -567,11 +567,11 @@ def main(argv):
         else: # == 'json' or 'human'
             print('No domain found on this server.')
             sys.exit(1)
-    
+
     if args.action == 'check-dns':
 
         # Add included domains to domains dict
-        with open(includes_path, encoding='utf-8') as f:
+        with open(included_domains_path, encoding='utf-8') as f:
             line_number = 0
             for line in f:
                 line_number += 1
@@ -579,13 +579,13 @@ def main(argv):
                 if not domain: continue
                 if domain not in doms:
                     doms[domain] = []
-                doms[domain].append('evodomains:{}:{}'.format(includes_path, line_number))
+                doms[domain].append('evodomains:{}:{}'.format(included_domains_path, line_number))
 
         timeout_domains, none_domains, outside_ips, ok_domains = run_check_domains(doms.keys())
-        
+
         if args.output_style == 'nrpe':
             output_nrpe_mode(timeout_domains, none_domains, outside_ips, ok_domains)
-    
+
         elif args.output_style == 'json':
             print('Option --output-style json not implemented yet for action check-dns.')
 
@@ -604,14 +604,15 @@ def main(argv):
         else:
             print('Option --output-style human not implemented yet for action list, fallback to --output-style json.')
             print(json.dumps(doms, sort_keys=True, indent=4))
-    
+
     #elif args.action == 'brice_action':
     #    #doms est un dict avec le nom de domaine comme clé, pour voir la structure de données :
     #    # evodomains --output-style json list
-    #    
+    #
     #    print(doms)
     #    brice_function(doms)
     #
 
 if __name__ == '__main__':
     main(sys.argv[1:])
+
