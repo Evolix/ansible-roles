@@ -25,7 +25,7 @@
 
 - name: Install specific openjdk package
   apt:
-    name: "openjdk-{{ java_version}}-jre-headless"
+    name: "openjdk-{{ java_version }}-jre-headless"
     default_release: "{{ java_apt_release }}"
     state: present
   tags:

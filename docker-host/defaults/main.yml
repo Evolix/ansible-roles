@@ -1,7 +1,7 @@
 ---
 # If docher_home sets to /home/, the partition should be mounted with exec option.
 docker_home: /var/lib/docker
-docker_tmpdir: "{{docker_home}}/tmp"
+docker_tmpdir: "{{ docker_home }}/tmp"
 
 # Chose to use iptables instead of docker-proxy userland process
 docker_conf_use_iptables: False
@@ -22,7 +22,7 @@ docker_daemon_listening_ip: 0.0.0.0
 
 # TLS 
 docker_tls_enabled: False
-docker_tls_path: "{{docker_home}}/tls"
+docker_tls_path: "{{ docker_home }}/tls"
 docker_tls_ca: ca/ca.pem
 docker_tls_ca_key: ca/ca-key.pem
 docker_tls_cert: server/cert.pem

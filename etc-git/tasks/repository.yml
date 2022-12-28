@@ -2,7 +2,7 @@
 
 - include_role:
     name: evolix/remount-usr
-  when: repository_path is search ("/usr")
+  when: repository_path is search("/usr")
 
 - name: "{{ repository_path }} is versioned with git"
   command: "git init ."

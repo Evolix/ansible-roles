@@ -80,7 +80,7 @@
 
 - include_role:
     name: evolix/remount-usr
-  when: evoadmin_scripts_dir is search ("/usr")
+  when: evoadmin_scripts_dir is search("/usr")
 
 - name: "Create {{ evoadmin_scripts_dir }}"
   file:

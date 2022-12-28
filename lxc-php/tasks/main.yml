@@ -4,7 +4,7 @@
     msg: Please configure var lxc_php_version
   when: lxc_php_version is none
 
-- name: "Update APT cache in container {{lxc_php_version}}"
+- name: "Update APT cache in container {{ lxc_php_version }}"
   lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "apt-get update"

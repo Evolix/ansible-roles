@@ -58,7 +58,7 @@
 
 - include_role:
     name: evolix/remount-usr
-  when: nagios_plugins_directory is search ("/usr")
+  when: nagios_plugins_directory is search("/usr")
   tags:
     - nagios-nrpe
     - nagios-plugins

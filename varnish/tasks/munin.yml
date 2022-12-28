@@ -33,7 +33,7 @@
 - name: Enable varnish5 munin plugin
   file:
     src: /usr/local/share/munin/plugins/varnish5_
-    dest: "/etc/munin/plugins/varnish5_{{item}}"
+    dest: "/etc/munin/plugins/varnish5_{{ item }}"
     state: link
   loop:
     - memory_usage
