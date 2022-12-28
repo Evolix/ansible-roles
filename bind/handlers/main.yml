@@ -1,6 +1,8 @@
 ---
 - name: reload systemd
-  command: systemctl daemon-reload
+  systemd:
+    daemon-reload: yes
+
 
 - name: restart apparmor
   service:

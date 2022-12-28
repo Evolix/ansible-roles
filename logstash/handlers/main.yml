@@ -7,4 +7,5 @@
     daemon_reload: yes
 
 - name: reload systemd
-  command: systemctl daemon-reload
+  systemd:
+    daemon-reload: yes
