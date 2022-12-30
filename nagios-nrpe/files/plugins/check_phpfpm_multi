@@ -56,20 +56,20 @@ for pool_file in $POOL_FILES; do
   
   if [ "${ret}" -ge 2 ]; then
       nb_crit=$((nb_crit + 1))
-      output="${output}${result}\n"
       [ "${return}" -le 2 ] && return=2
   elif [ "${ret}" -ge 1 ]; then
       nb_warn=$((nb_warn + 1))
-      output="${output}${result}\n"
       [ "${return}" -le 1 ] && return=1
   else
       nb_ok=$((nb_ok + 1))
-      output="${output}$(echo "$result" | cut -d '|' -f1)\n"
       [ "${return}" -le 0 ] && return=0
   fi
 
+  result_status=$(echo ${result} | awk -F' - ' '{ print $1}')
+  result_content=$(echo ${result} | awk -F' - ' '{ print $2}')
+  output="${output}${result_status} - ${pool_file} - ${result_content}\n"
 
-done;
+done
 
 
 [ "${return}" -ge 0 ] && header="OK"
