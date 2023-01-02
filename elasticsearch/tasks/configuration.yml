@@ -118,6 +118,18 @@
   tags:
     - config
 
+- name: Garbage collector logs rotation by the JVM is disabled
+  lineinfile:
+    dest: /etc/elasticsearch/jvm.options.d/evolinux.options
+    regexp: "^-Xlog:gc"
+    line: "-Xlog:gc*,gc+age=trace,safepoint:file=/var/log/elasticsearch/gc.log:utctime,pid,tags:filecount=0"
+    create: yes
+    owner: root
+    group: elasticsearch
+    mode: "0640"
+  tags:
+    - config
+
 - name: Configure cluster members
   lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml

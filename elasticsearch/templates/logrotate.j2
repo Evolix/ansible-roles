@@ -1,0 +1,12 @@
+/var/log/elasticsearch/gc.log {
+    su elasticsearch elasticsearch
+    daily
+    rotate {{ elasticsearch_log_rotate_days }}
+    compress
+    nodelaycompress
+    missingok
+    copytruncate
+    dateext
+    dateformat .%Y-%m-%d
+}
+
