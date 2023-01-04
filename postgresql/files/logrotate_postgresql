@@ -1,5 +1,5 @@
 /var/log/postgresql/*.log {
-    su postgres adm
+    su postgres postgres
     daily
     rotate 10
     copytruncate
