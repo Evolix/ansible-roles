@@ -20,7 +20,7 @@ docker_remote_access_enabled: False
 docker_daemon_port: 2376
 docker_daemon_listening_ip: 0.0.0.0
 
-# TLS 
+# TLS
 docker_tls_enabled: False
 docker_tls_path: "{{ docker_home }}/tls"
 docker_tls_ca: ca/ca.pem

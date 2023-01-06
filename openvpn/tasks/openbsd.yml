@@ -218,6 +218,6 @@
       The "push" parameter may be needed to push a route to the client, so that the client can access that route through OpenVPN.
 
       Take note of the generated CA password and store it in your password manager : {{ ca_pwd }}
-      
+
       Press enter to exit when it's done.
 

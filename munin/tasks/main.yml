@@ -85,7 +85,7 @@
     src: /usr/share/munin/plugins/sensors_
     dest: "/etc/munin/plugins/sensors_{{ item }}"
     state: link
-  with_items: 
+  with_items:
     - fan
     - temp
   when: ansible_virtualization_role == "host"

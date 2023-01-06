@@ -56,7 +56,7 @@
     owner: root
     group: root
   notify: restart proftpd
-  when: 
+  when:
     - proftpd_sftp_enable | bool
     - proftpd_sftp_use_publickeys | bool
   tags:

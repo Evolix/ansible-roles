@@ -3,7 +3,7 @@
 - fail:
     msg: Not compatible with Debian 11 (Bullseye)
   when:
-  - ansible_distribution_release == "bullseye" 
+  - ansible_distribution_release == "bullseye"
   - mongodb_version is version('5.0', '<')
 
 - name: Look for legacy apt keyring

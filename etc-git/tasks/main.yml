@@ -6,7 +6,7 @@
     state: present
   tags:
     - etc-git
-  when: 
+  when:
     - ansible_distribution == "Debian"
 
 - name: Install and configure utilities

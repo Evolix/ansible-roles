@@ -51,7 +51,7 @@
   register: is_cron_installed
 
 - block:
-  - name: Legacy cron jobs for /etc/.git status are absent 
+  - name: Legacy cron jobs for /etc/.git status are absent
     file:
       dest: "{{ item }}"
       state: absent

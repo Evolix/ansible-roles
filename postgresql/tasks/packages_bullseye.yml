@@ -1,5 +1,5 @@
 ---
-  
+
 - name: "Set variables (Debian 11)"
   set_fact:
     postgresql_version: '13'
