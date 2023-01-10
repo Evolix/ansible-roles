@@ -5,7 +5,7 @@
   "data-root": "{{ docker_home }}",
 
   {# Keep containers running while docker daemon downtime #}
-  "live-restore": {{ docker_conf_live_restore | to_json }},,
+  "live-restore": {{ docker_conf_live_restore | to_json }},
 
   {# Turn on user namespace remaping #}
   "userns-remap": "default",
@@ -34,7 +34,5 @@
 
   {% if docker_remote_access_enabled %}
   "hosts": ["tcp://{{ docker_daemon_listening_ip }}:{{ docker_daemon_port }}", "fd://"]
-  {% else %}
-  "hosts": ["fd://"]
   {% endif %}
 }

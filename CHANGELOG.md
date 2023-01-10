@@ -24,6 +24,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * Proper jinja spacing
 * evolinux-base: ensure dbus is started and enabled (not by default in the case of an offline netinst)
 * elasticsearch : use logrotate for garbage collector logs instead of breaking compression cron
+* docker-host: fix type in daemon.json and remove host configuration that is already in the systemd service by default
 
 ### Removed
 
