@@ -63,7 +63,7 @@ listen stats
     acl stats_users http_auth(stats_users)
     stats http-request auth realm "HAProxy admin" if !stats_access_ips !stats_users
 {% else %}
-    stats http-request deny if !stats_access_ips
+    stats http-request deny if !stats_access_ips !stats_admin_ips
 {% endif %}
 
     http-request set-log-level silent
