@@ -26,6 +26,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * elasticsearch : use logrotate for garbage collector logs instead of breaking compression cron
 * docker-host: fix type in daemon.json and remove host configuration that is already in the systemd service by default
 * haproxy: fix missing admin ACL in stats module access permissions
+* openvpn: fix the client cipher configuration to match the server cipher configuration
 
 ### Removed
 
