@@ -18,6 +18,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * Use systemd module instead of command
 * Removed all "warn: False" args in command, shell and other modules as it's been deprecated and will give a hard fail in ansible-core 2.14.0.
+* webapp/nextcloud : Change default data directory to be outside web root
 
 ### Fixed
 
