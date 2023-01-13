@@ -107,7 +107,7 @@ def strip_comments(string):
 
 def list_apache_domains():
     """Parse Apache dynamic config in search of domains.
-    Return a dict containing :
+    Return a dict containing:
     - key: Apache domain (from command "apache2ctl -D DUMP_VHOSTS").
     - value: a list of strings "apache:<VHOST_PATH>:<LINE_IN_BLOCK>"
     """
@@ -206,37 +206,49 @@ def list_haproxy_acl_domains():
     # Domains from ACLs
     with open(haproxy_conf_path, encoding='utf-8') as f:
         line_number = 0
+        files = []
         for line in f.readlines():
             line_number += 1
 
+            # Handled line format:
+            #    acl <ACL_NAME> [hdr|hdr_reg|hdr_end](host) [-i] <STRING> [<STRING> [...]]
+            #    acl <ACL_NAME> [hdr|hdr_reg](host) [-i] -f <FILE>
+
             line = strip_comments(line).strip()
-            if 'acl' != line[0:3] or 'hdr(host)' not in line:
+
+            if (not line) or (not line.startswith('acl')):
+                continue
+            if 'hdr(host)' not in line and 'hdr_reg(host)' not in line and 'hdr_end(host)' not in line:
                 continue
 
-            # line format:
-            #    acl <ACL_NAME> hdr(host) [-i] <DOMAIN_REGEX> [|| hdr(host) [-i] <DOMAIN_REGEX> [...]]
-            #    acl <ACL_NAME> hdr(host) -f <FILE>
+            # Remove 'acl <ACL_NAME>' from line
+            line = ' '.join(line.split()[2:])
 
-            # Case of an ACL based on domains file list
+            is_file = False
             if ' -f ' in line:
-                doms_file_path = line.split()[4]
-                print('Found HaProxy domains file {}'.format(doms_file_path))
-                domains_to_add = read_haproxy_domains_file(doms_file_path, 'haproxy')
-                domains.update(domains_to_add)
+                is_file = True
 
-            # Case of an ACL based on a list of domains
             # Limit: does not handle regex
-            else:
-                lines = line.split('||')
-                for l in lines:
-                    # Remove the 4 first words to keep only domains
-                    words = line.strip().lower().split()[4:]
-                    for dom in words:
-                        dom_infos = 'haproxy:{}:{}'.format(haproxy_conf_path, line_number)
-                        if dom not in domains:
-                            domains[dom] = []
-                        if dom_infos not in domains[dom]:
-                            domains[dom].append(dom_infos)
+
+            words = line.split()
+            for word in line.split():
+                if word in ['hdr(host)', 'hdr_reg(host)', 'hdr_end(host)', '-f', '-i']:
+                    continue
+
+                if is_file:
+                    if word not in files:
+                        print('Found HaProxy domains file {}'.format(word))
+                        files.append(word)
+                else:
+                    dom_infos = 'haproxy:{}:{}'.format(haproxy_conf_path, line_number)
+                    if word not in domains:
+                        domains[word] = []
+                    if dom_infos not in domains[word]:
+                        domains[word].append(dom_infos)
+
+        for f in files:
+            domains_to_add = read_haproxy_domains_file(f, 'haproxy')
+            domains.update(domains_to_add)
 
 #TODO remove (call elsewhere)
     # Domains from HaProxy certificates
@@ -281,7 +293,7 @@ def read_haproxy_domains_file(domains_file_path, origin):
 
 def list_haproxy_certs_domains():
     """Return the domains present in HaProxy SSL certificates.
-    Return a dict containing :
+    Return a dict containing:
     - key: domain (from domains_file_path)
     - value: a list of strings "haproxy_certs:cert_path:CN|SAN"
     """
@@ -318,11 +330,13 @@ def list_haproxy_certs_domains():
         with open(haproxy_conf_path, encoding='utf-8') as f:
             for line in f.readlines():
                 line = strip_comments(line).strip()
-                if line[0:4] == 'bind' or 'ssl' in line or 'crt' in line:
-                    crt_index = line.find('crt')
-                    subs = line[crt_index+4:]
+                if not line: continue
+                if ' crt ' in line:
+                    crt_index = line.find(' crt ')
+                    subs = line[crt_index+5:]
                     cert_path = subs.split(' ')[0]  # in case other options are after cert path
                     cert_paths.append(cert_path)
+            print("hap certs", cert_paths)
 
         for cert_path in cert_paths:
             if os.path.isfile(cert_path):
@@ -366,14 +380,15 @@ def get_haproxy_stats_socket():
         for line in f.readlines():
             words = line.strip().split()
             if len(words) >= 3 and words[0] == 'stats' and words[1] == 'socket':
+                i
                 return words[2]
 
     return None
 
 
 def list_cert_domains(cert_path, origin):
-    """Return the domains present in a X.509 PEM certificate. 
-    - cert_path: path of the certificate 
+    """Return the domains present in a X.509 PEM certificate.
+    - cert_path: path of the certificate
     - origin: string keyword to prepend to the domains infos. Exemple: 'haproxy_certs'
     Return a dict containing :
     - key: domain (from the certificate)
@@ -561,6 +576,9 @@ def main(argv):
 
     doms = {}
 
+    if not (args.apache_domains or args.nginx_domains or args.haproxy_domains):
+        args.all_domains = True
+
     if args.all_domains:
         doms.update(list_apache_domains())
         doms.update(list_nginx_domains())
@@ -569,12 +587,15 @@ def main(argv):
 
     else:
         if args.apache_domains:
+            print('Apache domains')
             doms.update(list_apache_domains())
         if args.nginx_domains:
+            print('Nginx domains')
             doms.update(list_nginx_domains())
         if args.haproxy_domains:
+            print('HaProxy domains')
             doms.update(list_haproxy_acl_domains())
-            doms.update(list_haproxy_certs_domains())
+            #doms.update(list_haproxy_certs_domains())
 
     if not doms:
         if args.output_style == 'nrpe':
