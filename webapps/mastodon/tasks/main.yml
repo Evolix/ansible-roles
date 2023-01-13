@@ -32,6 +32,7 @@
     version: "{{ git_version | default(omit) }}"
     #force: yes
     update: yes
+    umask: '0022'
   become_user: "{{ service }}"
 
 - block:
@@ -131,6 +132,14 @@
   args:
     chdir: "~/mastodon"
     executable: /bin/bash # fails with /bin/sh
+  become_user: "{{ service }}"
+
+- name: Adjust permissions of files in public folder
+  file:
+    path: "~/mastodon/public"
+    state: directory
+    mode: 'o=rX'
+    recurse: true
   become_user: "{{ service }}"
 
 - name: Add systemd target
