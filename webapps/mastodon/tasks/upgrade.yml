@@ -43,6 +43,12 @@
     args:
       chdir: "~/mastodon"
       executable: /bin/bash # fails with /bin/sh
+  - name: Adjust permissions of files in public folder
+    file:
+      path: "~/mastodon/public"
+      state: directory
+      mode: 'o=rX'
+      recurse: true
   become_user: "{{ service }}"
 
 - name: Restart services
