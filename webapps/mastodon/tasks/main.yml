@@ -1,5 +1,5 @@
 ---
-# tasks file for mastodon
+# tasks file for mastodon install
 
 - name: Install main system dependencies
   apt:
@@ -42,7 +42,7 @@
       chdir: "~/mastodon"
       executable: /bin/bash # fails with /bin/sh
   - name: Install gem dependencies
-    shell: ". ~/.profile && bundle install --deployment --without development test -j$(getconf _NPROCESSORS_ONLN)"
+    shell: ". ~/.profile && bundle install --deployment --without development test -j{{ ansible_processor_count }}"
     args:
       chdir: "~/mastodon"
       executable: /bin/bash # fails with /bin/sh
