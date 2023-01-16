@@ -1,11 +1,11 @@
 ---
-# tasks file for mastodon
+# tasks file for mastodon upgrade
 
 - name: Dump database to a file with compression
   postgresql_db:
     name: "{{ service }}_production"
     state: dump
-    target: "{{ service }}_production.sql.gz"
+    target: "~/{{ service }}_production.sql.gz"
   become_user: postgres
 
 - name: Checkout (git)
@@ -24,7 +24,7 @@
       chdir: "~/mastodon"
       executable: /bin/bash # fails with /bin/sh
   - name: Install gem dependencies
-    shell: ". ~/.profile && bundle install --deployment --without development test -j$(getconf _NPROCESSORS_ONLN)"
+    shell: ". ~/.profile && bundle install --deployment --without development test -j{{ ansible_processor_count }}"
     args:
       chdir: "~/mastodon"
       executable: /bin/bash # fails with /bin/sh
@@ -63,22 +63,22 @@
     executable: /bin/bash # fails with /bin/sh
   become_user: "{{ service }}"
 
+- name: Restart services
+  service:
+    name: "{{ service }}.target"
+    state: restarted
+
 - name: Define variable to skip next task by default
   set_fact:
     keep_db_dump: true
 
 - name: Remove database dump
   file:
-    path: "{{ service }}_production.sql.gz"
+    path: "~/{{ service }}_production.sql.gz"
     state: absent
   become_user: postgres
   when: keep_db_dump is undefined
   tags: clean
-
-- name: Template conf file for nginx vhost
-  template:
-    src: "vhost.j2"
-    dest: "/etc/nginx/sites-available/{{ service }}"
 
 - name: Reload nginx conf
   service:
