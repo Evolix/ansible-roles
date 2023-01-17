@@ -20,6 +20,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * Removed all "warn: False" args in command, shell and other modules as it's been deprecated and will give a hard fail in ansible-core 2.14.0.
 * webapps/nextcloud : Change default data directory to be outside web root
 * webapps/nextcloud : Small enhancement on the vhost template to lock out data dir
+* nagios-nrpe : Rewrite check_vrrpd for a better check (check rp_filter, vrrpd and uvrrpd compatible, use arguments, …)
 
 ### Fixed
 
