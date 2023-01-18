@@ -30,6 +30,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * docker-host: fix type in daemon.json and remove host configuration that is already in the systemd service by default
 * haproxy: fix missing admin ACL in stats module access permissions
 * openvpn: fix the client cipher configuration to match the server cipher configuration
+* clamav: set `MaxConnectionQueueLength` to its default value (200), custom (15) was way too small and caused recurrent connections fail in Postfix.
+* postfix (packmail only): disable `concurrency_failed_cohort_limit` for destination smtp-amavis to prevent the suspension of this destination when Amavis fails to answer. Indeed, we configure the suspension delay quite long in `minimal_backoff_time` (2h) and `maximal_backoff_time` (6h) to reduce the risk of ban from external SMTPs.
 
 ### Removed
 

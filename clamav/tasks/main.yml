@@ -13,7 +13,7 @@
     - { key: 'clamav-daemon/StreamMaxLength', type: 'string', value: '25' }
     - { key: 'clamav-daemon/ReadTimeout', type: 'string', value: '180' }
     - { key: 'clamav-daemon/StatsEnabled', type: 'boolean', value: 'false' }
-    - { key: 'clamav-daemon/MaxConnectionQueueLength', type: 'string', value: '15' }
+    - { key: 'clamav-daemon/MaxConnectionQueueLength', type: 'string', value: '200' }
     - { key: 'clamav-daemon/LogRotate', type: 'boolean', value: 'true' }
     - { key: 'clamav-daemon/AllowAllMatchScan', type: 'boolean', value: 'true' }
     - { key: 'clamav-daemon/ScanOnAccess', type: 'boolean', value: 'false' }
