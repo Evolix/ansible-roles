@@ -118,7 +118,7 @@ if [ ${#ID_master[@]} -ne 0 ]; then
     for i in "${ID_master[@]}"; do
         # If array contains the current ID, then a process exist, and we have to make sure the corresponding interface exists
         if [[ " ${ID_running_vrrpd[*]} " =~ " $i " ]]; then
-            vrrpd_current_proccess=$(echo "$vrrpd_processes" | grep -E -- "-v $i")
+            vrrpd_current_proccess=$(echo "$vrrpd_processes" | grep -E -- "-v $i ")
             INT_current_vrrpd=$(echo "$vrrpd_current_proccess" | grep -Eo -- "-i \S+" | awk '{print $2}')
             IP_current_vrrpd=$(echo "$vrrpd_current_proccess" | grep -Eo "${regex_ipv4}|${regex_ipv6}")
             if [ "$used_daemon" = "vrrpd" ]; then
@@ -145,7 +145,7 @@ if [ ${#ID_backup[@]} -ne 0 ]; then
     for i in "${ID_backup[@]}"; do
         # If array contains the current ID, then a process exist, and we have to make sure the corresponding interface does not exist
         if [[ " ${ID_running_vrrpd[*]} " =~ " $i " ]]; then
-            vrrpd_current_proccess=$(echo "$vrrpd_processes" | grep -E -- "-v $i")
+            vrrpd_current_proccess=$(echo "$vrrpd_processes" | grep -E -- "-v $i ")
             INT_current_vrrpd=$(echo "$vrrpd_current_proccess" | grep -Eo -- "-i \S+" | awk '{print $2}')
             IP_current_vrrpd=$(echo "$vrrpd_current_proccess" | grep -Eo "${regex_ipv4}|${regex_ipv6}")
             if [ "$used_daemon" = "vrrpd" ]; then
