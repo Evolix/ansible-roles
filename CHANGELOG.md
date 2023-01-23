@@ -22,6 +22,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud : Change default data directory to be outside web root
 * webapps/nextcloud : Small enhancement on the vhost template to lock out data dir
 * nagios-nrpe : Rewrite check_vrrpd for a better check (check rp_filter, vrrpd and uvrrpd compatible, use arguments, …)
+* postfix: Do not notify errors of classes policy, protocol in `notify_classes` of main.cf.
 
 ### Fixed
 
