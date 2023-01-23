@@ -13,6 +13,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Added
 
 * nagios-nrpe: Print pool config path in check_phpfpm_multi output
+* fail2ban: add "Internal login failure" to Dovecot filter
 
 ### Changed
 
