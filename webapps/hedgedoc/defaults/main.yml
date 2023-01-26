@@ -1,0 +1,14 @@
+---
+# defaults file for mastodon
+system_dep: "['apt-transport-https', 'postgresql', 'python3-psycopg2', 'nginx', 'git', 'wget', 'certbot']"
+git_url: 'https://github.com/hedgedoc/hedgedoc.git'
+git_version: '1.9.6'
+node_version: 'node_16.x'
+node_port: '3000'
+service: 'example'
+domains: ['example.domain.org']
+
+db_host: 'localhost'
+db_user: "{{ service }}"
+db_name: "{{ service }}"
+db_password: 'CHANGE_ME'

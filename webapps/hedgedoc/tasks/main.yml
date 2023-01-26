@@ -1,0 +1,123 @@
+---
+# tasks file for hedgedoc install
+
+- name: Install main system dependencies
+  apt:
+    name: "{{ system_dep }}"
+
+- name: Install node-gyp from yarn
+  shell: npm install --global node-gyp
+
+- name: Add UNIX account
+  user:
+    name: "{{ service }}"
+    shell: /bin/bash
+
+- name: Add PostgreSQL user
+  postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    no_password_changes: true
+  become_user: postgres
+
+- name: Add PostgreSQL database
+  postgresql_db:
+    name: "{{ db_name }}"
+    owner: "{{ db_user }}"
+  become_user: postgres
+
+- block:
+  - name: Clone hedgedoc repo (git)
+    git:
+      repo: "{{ git_url }}"
+      dest: "~/hedgedoc/"
+      version: "{{ git_version | default(omit) }}"
+      update: yes
+      umask: '0022'
+  - name: Run setup
+    shell: "bin/setup"
+    args:
+      chdir: "~/hedgedoc"
+  - name: Install dependencies for frontend app
+    shell: "yarn install --frozen-lockfile"
+    args:
+      chdir: "~/hedgedoc"
+  - name: Build frontend app
+    shell: "yarn build"
+    args:
+      chdir: "~/hedgedoc"
+  become_user: "{{ service }}"
+
+- name: Template json config file
+  template:
+    src: "config.json.j2"
+    dest: "~{{ service }}/hedgedoc/config.json"
+    owner: "{{ service }}"
+    group: "{{ service }}"
+    mode: "0640"
+
+- name: Add systemd unit
+  template:
+    src: "hedgedoc.service.j2"
+    dest: "/etc/systemd/system/{{ service }}.service"
+
+- name: Enable systemd units
+  systemd:
+    name: "{{ service }}.service"
+    enabled: yes
+    daemon_reload: yes
+
+- name: Start service
+  service:
+    name: "{{ service }}.service"
+    state: started
+
+- name: Check if SSL certificate is present and register result
+  stat:
+    path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+  register: ssl
+
+- name: Generate certificate only if required (first time)
+  block:
+  - name: Template vhost without SSL for successfull LE challengce
+    template: 
+      src: "vhost.j2"
+      dest: "/etc/nginx/sites-available/{{ service }}"
+  - name: Enable temporary nginx vhost for LE
+    file:
+      src: "/etc/nginx/sites-available/{{ service }}"
+      dest: "/etc/nginx/sites-enabled/{{ service }}"
+      state: link
+  - name: Reload nginx conf
+    service:
+      name: nginx
+      state: reloaded
+  - name: Make sure /var/lib/letsencrypt exists and has correct permissions
+    file: 
+      path: /var/lib/letsencrypt
+      state: directory
+      mode: '0755'
+#  - name: Generate certificate with certbot
+#    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt -d {{ domains |first }}
+  when: ssl.stat.exists == false
+
+- name: (Re)check if SSL certificate is present and register result
+  stat:
+    path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+  register: ssl
+
+- name: (Re)template conf file for nginx vhost with SSL
+  template:
+    src: "vhost.j2"
+    dest: "/etc/nginx/sites-available/{{ service }}"
+
+- name: Enable nginx vhost for hedgedoc
+  file:
+    src: "/etc/nginx/sites-available/{{ service }}"
+    dest: "/etc/nginx/sites-enabled/{{ service }}"
+    state: link
+
+- name: Reload nginx conf
+  service:
+    name: nginx
+    state: reloaded
