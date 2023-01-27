@@ -41,7 +41,7 @@ Example Playbook
   pre_tasks:
     - name: "Install system roles"
       roles:
-        - { role: nodejs, nodejs_apt_version: 'node_16.x', nodejs_install_yarn: True }
+        - { role: nodejs, nodejs_apt_version: "{{ node_version }}" }
 
   roles:
     - { role: webapps/hedgedoc , tags: "hedgedoc" }
