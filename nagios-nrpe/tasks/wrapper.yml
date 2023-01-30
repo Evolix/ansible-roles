@@ -1,0 +1,35 @@
+---
+
+
+- name: "Remount /usr if needed"
+  include_role:
+    name: remount-usr
+
+- name: alerts_switch is at the right place
+  command: "mv /usr/share/scripts/alerts_switch /usr/local/bin/alerts_switch"
+  args:
+    creates: /usr/local/bin/alerts_switch
+
+- name: "copy alerts_switch"
+  copy:
+    src: alerts_switch
+    dest: /usr/local/bin/alerts_switch
+    owner: root
+    group: root
+    mode: "0750"
+    force: yes
+
+- name: "symlink for backward compatibility"
+  file:
+    src: /usr/local/bin/alerts_switch
+    dest: /usr/share/scripts/alerts_switch
+    state: link
+
+- name: "copy alerts_wrapper"
+  copy:
+    src: alerts_wrapper
+    dest: "{{ nagios_plugins_directory }}/alerts_wrapper"
+    owner: root
+    group: staff
+    mode: "0755"
+    force: yes

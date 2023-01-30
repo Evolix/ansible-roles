@@ -83,3 +83,5 @@
   notify: restart nagios-nrpe-server
   tags:
     - nagios-nrpe
+
+- include_tasks: wrapper.yml

@@ -1,8 +1,9 @@
 #!/bin/bash
 
-### WARNING #######################################
-# THIS IS A WORK IN PROGRESS AND IT IS NOT USABLE #
-###################################################
+# https://forge.evolix.org/projects/evolix-private/repository
+#
+# You should not alter this file.
+# If you need to, create and customize a copy.
 
 VERSION="21.04"
 readonly VERSION
@@ -11,29 +12,30 @@ readonly VERSION
 
 show_version() {
     cat <<END
-check_async version ${VERSION}
+alerts_wrapper version ${VERSION}
 
 Copyright 2018-2021 Evolix <info@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>
                     and others.
 
-check_async comes with ABSOLUTELY NO WARRANTY.This is free software,
+alerts_wrapper comes with ABSOLUTELY NO WARRANTY.This is free software,
 and you are welcome to redistribute it under certain conditions.
 See the GNU General Public License v3.0 for details.
 END
 }
 show_help() {
     cat <<END
-check_async is supposed to wrap an NRPE command and overrides the return code.
+alerts_wrapper is supposed to wrap an NRPE command and overrides the return code.
 
-Usage: check_async --max-age=1d --name=check_name
-  or   check_async --name=check_name
+Usage: alerts_wrapper --limit=1d --name=check_name command with optional arguments
+  or   alerts_wrapper --name=check_name command with optional arguments
+  or   alerts_wrapper check_name command with optional arguments
 
 Options
- -m, --max-age      max age of the "check file" ;
+ --limit            max age of the "check file" ;
                     can be "1d" for 1 day, "5m" for 5 minutes…
                     or more complex expressions like "1w2d10m42s"
- -n, --name         check name
+ --name             check name
  -h, --help         print this message and exit
  -V, --version      print version and exit
 END
@@ -49,8 +51,8 @@ time_in_seconds() {
     fi
 }
 
-delay_from_check_file() {
-    last_change=$(stat -c %Z "${check_file}")
+delay_from_alerts_disabled_file() {
+    last_change=$(stat -c %Z "${alerts_disabled_file}")
     limit_seconds=$(time_in_seconds "${wrapper_limit}" || time_in_seconds "${wrapper_limit_default}") 
     limit_date=$(date --date "${limit_seconds} seconds ago" +"%s")
 
@@ -72,16 +74,16 @@ main() {
 
     delay=0
 
-    if [ -e "${check_file}" ]; then
-        delay=$(delay_from_check_file)
+    if [ -e "${alerts_disabled_file}" ]; then
+        delay=$(delay_from_alerts_disabled_file)
 
         if [ "${delay}" -le "0" ]; then
             enable_check
         fi
     fi
 
-    if [ -e "${check_file}" ]; then
-        formatted_last_change=$(date --date "@$(stat -c %Z "${check_file}")" +'%c')
+    if [ -e "${alerts_disabled_file}" ]; then
+        formatted_last_change=$(date --date "@$(stat -c %Z "${alerts_disabled_file}")" +'%c')
         readonly formatted_last_change
 
         echo "ALERTS DISABLED for ${check_name} (since ${formatted_last_change}, delay: ${delay} sec) - $(cat "${check_stdout}")"
@@ -200,6 +202,8 @@ fi
 readonly check_name
 readonly check_command
 readonly wrapper_limit
+alerts_disabled_file="/var/lib/misc/${check_name}_alerts_disabled"
+readonly alerts_disabled_file
 
 check_file="/var/lib/misc/${check_name}_alerts_disabled"
 readonly check_file
