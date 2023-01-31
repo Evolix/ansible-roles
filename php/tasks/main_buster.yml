@@ -10,7 +10,6 @@
 
 - name: "Set variables (Debian 10)"
   set_fact:
-    #php_version: "{{ '7.3' if php_sury_enable == 'False' }}"
     php_cli_defaults_ini_file: /etc/php/{{ php_version }}/cli/conf.d/zvolinux-defaults.ini
     php_cli_custom_ini_file: /etc/php/{{ php_version }}/cli/conf.d/zzz-evolinux-custom.ini
     php_apache_defaults_ini_file: /etc/php/{{ php_version }}/apache2/conf.d/z-evolinux-defaults.ini
@@ -46,9 +45,6 @@
 
 - include: sury_pre.yml
   when: php_sury_enable | bool
-
-- debug:
-    var: php_stretch_packages
 
 - name: "Install PHP packages (Debian 10)"
   apt:
