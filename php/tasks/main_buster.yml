@@ -1,18 +1,27 @@
 ---
 
+- name: "Set php version to 7.3 if Sury repo is not enabled"
+  set_fact:
+    php_version: "7.3"
+  when: 
+    - php_sury_enable == 'False'
+    - php_version != '7.3'
+
+
 - name: "Set variables (Debian 10)"
   set_fact:
-    php_cli_defaults_ini_file: /etc/php/7.3/cli/conf.d/z-evolinux-defaults.ini
-    php_cli_custom_ini_file: /etc/php/7.3/cli/conf.d/zzz-evolinux-custom.ini
-    php_apache_defaults_ini_file: /etc/php/7.3/apache2/conf.d/z-evolinux-defaults.ini
-    php_apache_custom_ini_file: /etc/php/7.3/apache2/conf.d/zzz-evolinux-custom.ini
-    php_fpm_defaults_ini_file: /etc/php/7.3/fpm/conf.d/z-evolinux-defaults.ini
-    php_fpm_custom_ini_file: /etc/php/7.3/fpm/conf.d/zzz-evolinux-custom.ini
-    php_fpm_debian_default_pool_file: /etc/php/7.3/fpm/pool.d/www.conf
-    php_fpm_default_pool_file: /etc/php/7.3/fpm/pool.d/www-evolinux-defaults.conf
-    php_fpm_default_pool_custom_file: /etc/php/7.3/fpm/pool.d/www-evolinux-zcustom.conf
-    php_fpm_default_pool_socket: /var/run/php/php7.3-fpm.sock
-    php_fpm_service_name: php7.3-fpm
+    #php_version: "{{ '7.3' if php_sury_enable == 'False' }}"
+    php_cli_defaults_ini_file: /etc/php/{{ php_version }}/cli/conf.d/zvolinux-defaults.ini
+    php_cli_custom_ini_file: /etc/php/{{ php_version }}/cli/conf.d/zzz-evolinux-custom.ini
+    php_apache_defaults_ini_file: /etc/php/{{ php_version }}/apache2/conf.d/z-evolinux-defaults.ini
+    php_apache_custom_ini_file: /etc/php/{{ php_version }}/apache2/conf.d/zzz-evolinux-custom.ini
+    php_fpm_defaults_ini_file: /etc/php/{{ php_version }}/fpm/conf.d/z-evolinux-defaults.ini
+    php_fpm_custom_ini_file: /etc/php/{{ php_version }}/fpm/conf.d/zzz-evolinux-custom.ini
+    php_fpm_debian_default_pool_file: /etc/php/{{ php_version }}/fpm/pool.d/www.conf
+    php_fpm_default_pool_file: /etc/php/{{ php_version }}/fpm/pool.d/www-evolinux-defaults.conf
+    php_fpm_default_pool_custom_file: /etc/php/{{ php_version }}/fpm/pool.d/www-evolinux-zcustom.conf
+    php_fpm_default_pool_socket: /var/run/php/php{{ php_version }}-fpm.sock
+    php_fpm_service_name: php{{ php_version }}-fpm
 
 # Packages
 
@@ -38,6 +47,9 @@
 - include: sury_pre.yml
   when: php_sury_enable | bool
 
+- debug:
+    var: php_stretch_packages
+
 - name: "Install PHP packages (Debian 10)"
   apt:
     name: '{{ php_stretch_packages }}'
@@ -54,8 +66,8 @@
 - name: "Install PHP FPM packages (Debian 10)"
   apt:
     name:
-      - php-fpm
-      - php
+      - php{{ php_version }}-fpm
+      - php{{ php_version }}
     state: present
   when: php_fpm_enable | bool
 
@@ -67,12 +79,12 @@
     mode: "0755"
   loop:
     - /etc/php
-    - /etc/php/7.3
+    - /etc/php/{{ php_version }}
 
 - include: config_cli.yml
 - name: "Enforce permissions on PHP cli directory (Debian 10)"
   file:
-    dest: /etc/php/7.3/cli
+    dest: /etc/php/{{ php_version }}/cli
     mode: "0755"
 
 - include: config_fpm.yml
@@ -80,7 +92,7 @@
 
 - name: "Enforce permissions on PHP fpm directory (Debian 10)"
   file:
-    dest: /etc/php/7.3/fpm
+    dest: /etc/php/{{ php_version }}/fpm
     mode: "0755"
   when: php_fpm_enable | bool
 
@@ -89,9 +101,9 @@
 
 - name: "Enforce permissions on PHP apache2 directory (Debian 10)"
   file:
-    dest: /etc/php/7.3/apache2
+    dest: /etc/php/{{ php_version }}/apache2
     mode: "0755"
   when: php_apache_enable | bool
 
-- include: sury_post.yml
-  when: php_sury_enable | bool
+#- include: sury_post.yml
+#  when: php_sury_enable | bool

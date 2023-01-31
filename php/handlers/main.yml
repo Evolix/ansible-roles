@@ -5,6 +5,11 @@
     name: php5-fpm
     state: restarted
 
+- name: restart php5.6-fpm
+  service:
+    name: php5.6-fpm
+    state: restarted
+
 - name: restart php7.0-fpm
   service:
     name: php7.0-fpm
