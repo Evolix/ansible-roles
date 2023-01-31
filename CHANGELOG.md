@@ -24,6 +24,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud : Small enhancement on the vhost template to lock out data dir
 * nagios-nrpe : Rewrite check_vrrpd for a better check (check rp_filter, vrrpd and uvrrpd compatible, use arguments, …)
 * postfix: come back to default value of `notify_classes` for pack mails.
+* openvpn: Change check_openvpn destination file to comply with recent EvoBSD change
 
 ### Fixed
 
