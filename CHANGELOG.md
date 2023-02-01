@@ -25,6 +25,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios-nrpe : Rewrite check_vrrpd for a better check (check rp_filter, vrrpd and uvrrpd compatible, use arguments, …)
 * postfix: come back to default value of `notify_classes` for pack mails.
 * openvpn: Change check_openvpn destination file to comply with recent EvoBSD change
+* evolinux-users: Update sudoers template to remove commands allowed without password
 
 ### Fixed
 
