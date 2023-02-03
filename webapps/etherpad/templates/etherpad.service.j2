@@ -1,0 +1,17 @@
+[Unit]
+Description=Etherpad - open source online editor for real-time collaborative editing.
+Documentation=https://etherpad.org/doc/v1.8.18/
+After=network.target
+After=mariadb.service
+
+[Service]
+Type=simple
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node --experimental-worker /home/{{service}}/etherpad-lite/node_modules/ep_etherpad-lite/node/server.js
+Restart=always
+User={{service}}
+Group={{service}}
+WorkingDirectory=/home/{{service}}/etherpad-lite
+
+[Install]
+WantedBy=multi-user.target
