@@ -45,15 +45,16 @@ class DomainProvider:
         - type: type of provider ('config', 'certificate')
         - path: config or certificate path where the domain was found
         - line: line in config file or certificate where the domain was found
-        - port: listening port
+        - ssl: is SSL ? (can be None, which means unknown)
         - attribute: certificate attribute ('CN', 'SAN')
     """
-    def __init__(self, provider, provider_type, path, line, port, attribute):
+    def __init__(self, provider, provider_type, path, line, port, ssl, attribute):
         self.provider = provider
         self.type = provider_type
         self.path = path
         self.line = line
         self.port = port
+        self.ssl = ssl
         self.attribute = attribute
 
     def __eq__(self, other):
@@ -64,24 +65,24 @@ class DomainProvider:
                 and self.type == other.type
                 and self.path == other.path
                 and self.line == other.line
-                and self.port == other.port
+                and self.ssl == other.ssl
                 and self.attribute == other.attribute
                )
 
 class ApacheProvider(DomainProvider):
     """DomainProvider for Apache"""
-    def __init__(self, path, line, port, attribute=None):
-        super().__init__('apache', 'config', path, line, port, attribute)
+    def __init__(self, path, line, port, ssl=None, attribute=None):
+        super().__init__('apache', 'config', path, line, port, ssl, attribute)
 
 class NginxProvider(DomainProvider):
     """DomainProvider for Nginx"""
-    def __init__(self, path, line, port, attribute=None):
-        super().__init__('nginx', 'config', path, line, port, attribute)
+    def __init__(self, path, line, port, ssl=None, attribute=None):
+        super().__init__('nginx', 'config', path, line, port, ssl, attribute)
 
 class HaProxyProvider(DomainProvider):
     """DomainProvider for HaProxy"""
-    def __init__(self, provider_type, path, line, port=None, attribute=None):
-        super().__init__('haproxy', provider_type, path, line, port, attribute)
+    def __init__(self, provider_type, path, line, port=None, ssl=None, attribute=None):
+        super().__init__('haproxy', provider_type, path, line, port, ssl, attribute)
 
 
 
