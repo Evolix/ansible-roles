@@ -11,9 +11,10 @@
 # Developped by Will
 #
 
-ignored_domains_path = '/etc/evolinux/domains/ignored_domains.list'
-included_domains_path = '/etc/evolinux/domains/included_domains.list'
-allowed_ips_path = '/etc/evolinux/domains/allowed_ips.list'
+config_dir_path = '/etc/evolinux/domains'
+ignored_domains_file = 'ignored_domains.list'
+included_domains_file = 'included_domains.list'
+allowed_ips_file = 'allowed_ips.list'
 haproxy_conf_path = '/etc/haproxy/haproxy.cfg'
 
 import os
@@ -51,9 +52,26 @@ except:
 ]"""
 #TODO: fix line numbers (apache, nginx), line of virtual host block
 
-def print_verbose(s):
-    if do_verbose_print:
-        print('Warning: '.format(s))
+
+
+""" Utilitary functions """
+
+
+def print_error_and_exit(s):
+    if nrpe:
+        print('UNKNOWN - {}'.format(s), file=sys.stderr)
+        sys.exit(3)
+    else:
+        print('Error: {}'.format(s), file=sys.stderr)
+        sys.exit(1)
+
+def print_warning(s):
+    if warning or debug:
+        print('Warning: {}'.format(s), file=sys.stderr, flush=True)
+
+def print_debug(s):
+    if debug:
+        print('Debug: {}'.format(s))
 
 
 def execute(cmd, shell=False):
@@ -76,24 +94,6 @@ def execute(cmd, shell=False):
     return stdout_lines, stderr_lines, proc.returncode
 
 
-def get_allowed_ips():
-    """Return the list of IPs the domains are allowed to point to."""
-
-    # Server IPs
-    stdout, stderr, rc = execute('hostname -I')
-    if not stdout:
-        return []
-    ips = stdout[0].strip().split()
-
-    # Custom allowed IPs from config file
-    with open(allowed_ips_path, encoding='utf-8') as f:
-        for line in f:
-            ip = strip_comments(line).strip(' \t;')
-            ips.append(ip)
-
-    return ips
-
-
 def dig(domain):
     """Return "dig +short $domain", as a list of lines."""
     stdout, stderr, rc = execute('dig +short {}'.format(domain))
@@ -105,12 +105,71 @@ def strip_comments(string):
     return string.split('#')[0]
 
 
+class DNSResolutionThread(threading.Thread):
+    """Thread that executes a dig."""
+
+    def __init__(self, domain):
+        threading.Thread.__init__(self, daemon=True)
+        self.domain = domain
+        self.ips = []
+
+    def run(self):
+        """Resolve domain with dig."""
+        try:
+            dig_results = dig(self.domain)
+
+            if not dig_results:
+                return
+
+            for line in dig_results:
+                match = re.search('^([0-9abcdef\.:]+)$', line)
+                if match:
+                    ip = match.group(1)
+                    if ip not in self.ips:
+                        self.ips.append(ip)
+
+        except Exception as e:
+            print_warning(e)
+            return
+
+
+
+""" Functions to deal with program config """
+
+
+def read_config_file(file_path):
+    cleaned_lines = []
+    with open(file_path, encoding='utf-8') as f:
+        for line in f:
+            cleaned_line = strip_comments(line).strip()
+            if not cleaned_line: continue
+            cleaned_lines.append(cleaned_line)
+    return cleaned_lines
+
+
+def get_allowed_ips():
+    """Return the list of IPs the domains are allowed to point to."""
+
+    # Server IPs
+    stdout, stderr, rc = execute('hostname -I')
+    if not stdout:
+        return []
+    ips = stdout[0].strip().split()
+
+    # Read custom allowed IPs in config file
+    allowed_ips_path = os.path.join(config_dir_path, allowed_ips_file)
+    ips.extend(read_config_file(allowed_ips_path))
+
+    return ips
+
+
 def list_apache_domains():
     """Parse Apache dynamic config in search of domains.
     Return a dict containing:
     - key: Apache domain (from command "apache2ctl -D DUMP_VHOSTS").
     - value: a list of strings "apache:<VHOST_PATH>:<LINE_IN_BLOCK>"
     """
+    print_debug('Listing Apache domains')
     domains = {}
 
     try:
@@ -142,12 +201,17 @@ def list_apache_domains():
     return domains
 
 
+
+""" Core functions """
+
+
 def list_nginx_domains():
     """Parse Nginx dynamic config in search of domains.
     Return a dict containing :
     - key: Nginx domain (from command "nginx -T").
     - value: a list of strings "nginx:<VHOST_PATH>:<LINE_IN_BLOCK>"
     """
+    print_debug('Listing Ningx domains')
     domains = {}
 
     try:
@@ -196,11 +260,12 @@ def list_haproxy_acl_domains():
     - key: HaProxy domains (from ACLs in /etc/haproxy/haproxy.cgf).
     - value: a list of strings "haproxy:/etc/haproxy/haproxy.cfg:<LINE_IN_CONF>"
     """
+    print_debug('Listing HaProxy ACL domains')
     domains = {}
 
     if not os.path.isfile(haproxy_conf_path):
         # HaProxy is not installed
-        print_verbose('{} not found'.format(haproxy_conf_path))
+        print_warning('{} not found'.format(haproxy_conf_path))
         return domains
 
     # Domains from ACLs
@@ -285,8 +350,8 @@ def read_haproxy_domains_file(domains_file_path, origin):
                     domains[dom].append(dom_infos)
 
     except FileNotFoundError as e:
-        print('Error: FileNotFound', domains_file_path)
-        print(e)
+        print_warning('FileNotFound {}'.format(domains_file_path))
+        print_warning(e)
 
     return domains
 
@@ -297,6 +362,7 @@ def list_haproxy_certs_domains():
     - key: domain (from domains_file_path)
     - value: a list of strings "haproxy_certs:cert_path:CN|SAN"
     """
+    print_debug('Listing HaProxy certificates domains')
     domains = {}
 
     # Check if HaProxy version supports "show ssl cert" command
@@ -321,7 +387,7 @@ def list_haproxy_certs_domains():
     else:
         if not os.path.isfile(haproxy_conf_path):
             # HaProxy is not installed
-            print_verbose('{} not found'.format(haproxy_conf_path))
+            print_warning('{} not found'.format(haproxy_conf_path))
             return domains
 
         # Get HaProxy certificates paths (can be directory or file)
@@ -400,7 +466,7 @@ def list_cert_domains(cert_path, origin):
         try:
             cert = x509.load_pem_x509_certificate(f.read(), default_backend())
         except ValueError:
-            print_verbose('Could not load certificate file {}.'.format(cert_path))
+            print_warning('Could not load certificate file {}.'.format(cert_path))
             return domains
 
         # Common name
@@ -428,41 +494,11 @@ def list_cert_domains(cert_path, origin):
     return domains
 
 
-class DNSResolutionThread(threading.Thread):
-    """Thread that executes a dig."""
-
-    def __init__(self, domain):
-        threading.Thread.__init__(self, daemon=True)
-        self.domain = domain
-        self.ips = []
-
-    def run(self):
-        """Resolve domain with dig."""
-        try:
-            dig_results = dig(self.domain)
-
-            if not dig_results:
-                return
-
-            for line in dig_results:
-                match = re.search('^([0-9abcdef\.:]+)$', line)
-                if match:
-                    ip = match.group(1)
-                    if ip not in self.ips:
-                        self.ips.append(ip)
-
-        except Exception as e:
-            #print(e)
-            return
-
-
 def run_check_domains(domains):
     """Check resolution of domains (list)."""
 
     excludes = ['_']
     timeout = 5
-
-    allowed_ips = get_allowed_ips()
 
     with open(ignored_domains_path, encoding='utf-8') as f:
         for line in f:
@@ -552,109 +588,101 @@ def output_human_mode(doms, timeout_domains, none_domains, outside_ips):
     print('Domains resolve to right IPs !')
 
 
-def main(argv):
+def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('action', metavar='ACTION', help='Values: check-dns, list')
-    parser.add_argument('-o', '--output-style', help='Values: json, human (default), nrpe')
-    parser.add_argument('-a', '--all-domains', action='store_true', help='Include all domains (default).')
-    parser.add_argument('-ap', '--apache-domains', action='store_true', help='Include Apache domains.')
-    parser.add_argument('-ng', '--nginx-domains', action='store_true', help='Include Nginx domains.')
-    parser.add_argument('-ha', '--haproxy-domains', action='store_true', help='Include HaProxy domains.')
-    parser.add_argument('-v', '--verbose', action='store_true', help='Print warnings to stdout.')
+    parser.add_argument('-o', '--output', help='Output format. Values: json, human (default), nrpe')
+    parser.add_argument('-s', '--ssl-only', action='store_true', help='SSL/TLS domains only.')
+    parser.add_argument('-w', '--warning', action='store_true', help='Print warnings to stdout.')
+    parser.add_argument('-d', '--debug', action='store_true', help='Print debug to stdout (include warnings).')
     args = parser.parse_args()
 
-    global do_verbose_print
-    do_verbose_print = args.verbose
+    global action, output, ssl_only, warning, debug
+    action = args.action
+    output = args.output
+    ssl_only = args.ssl_only
+    warning = args.warning
+    debug = args.debug
 
-    if args.action not in ['check-dns', 'list']:
-        if args.output_style == 'nrpe':
-            print('UNKNOWN - unknown {} action, use -h option for help.'.format(args.action))
-            sys.exit(3)
-        else:
-            print('Unknown {} action, use -h option for help.'.format(args.action))
-            sys.exit(1)
+    for arg, value in vars(args).items():
+        print_debug('{} = {}'.format(arg, value))
 
+    if action not in ['check-dns', 'list']:
+        print_error_and_exit('Unknown {} action, use -h option for help.'.format(args.action))
+
+
+
+def load_conf():
+    # Create missing directories and files
+    if not os.path.exists(config_dir_path):
+        os.makedirs(config_dir_path, mode=0o755, exist_ok=True)
+    ignored_domains_path = os.path.join(config_dir_path, ignored_domains_file)
+    included_domains_path = os.path.join(config_dir_path, included_domains_file)
+    allowed_ips_path = os.path.join(config_dir_path, allowed_ips_file)
+    for f in [ignored_domains_path, included_domains_path, allowed_ips_path]:
+        open(f, 'a').close()  # touch
+
+    # Load config in global variables
+    global ignored_domains, included_domains, allowed_ips
+    ignored_domains = read_config_file(ignored_domains_path)
+    included_domains = read_config_file(included_domains_path)
+    allowed_ips = get_allowed_ips()
+
+
+def check_deps():
+    if 'cryptography.x509' not in sys.modules:
+        print_warning('Python3 cryptography.x509 module missing.'.format(program_name))
+
+
+def main(argv):
+    parse_arguments()
+    check_deps()
+    load_conf()
+
+    # List domains
     doms = {}
+    doms.update(list_apache_domains())
+    doms.update(list_nginx_domains())
+    doms.update(list_haproxy_acl_domains())
+    #doms.update(list_haproxy_certs_domains())
 
-    if not (args.apache_domains or args.nginx_domains or args.haproxy_domains):
-        args.all_domains = True
-
-    if args.all_domains:
-        doms.update(list_apache_domains())
-        doms.update(list_nginx_domains())
-        doms.update(list_haproxy_acl_domains())
-        doms.update(list_haproxy_certs_domains())
-
-    else:
-        if args.apache_domains:
-            print('Apache domains')
-            doms.update(list_apache_domains())
-        if args.nginx_domains:
-            print('Nginx domains')
-            doms.update(list_nginx_domains())
-        if args.haproxy_domains:
-            print('HaProxy domains')
-            doms.update(list_haproxy_acl_domains())
-            #doms.update(list_haproxy_certs_domains())
-
+    # Output error if no domain was found
     if not doms:
-        if args.output_style == 'nrpe':
-            print('UNKNOWN - No domain found on this server.')
-            sys.exit(3)
-        else: # == 'json' or 'human'
-            print('No domain found on this server.')
-            sys.exit(1)
+        print_error_and_exit('No domain found on this server.')
 
-    if args.action == 'check-dns':
+    if action == 'check-dns':
 
         # Add included domains to domains dict
-        with open(included_domains_path, encoding='utf-8') as f:
-            line_number = 0
-            for line in f:
-                line_number += 1
-                domain = strip_comments(line).strip() 
-                if not domain: continue
-                if domain not in doms:
-                    doms[domain] = []
-                doms[domain].append('{}:{}:{}'.format(program_name, included_domains_path, line_number))
+        for domain in included_domains:
+            if domain not in doms:
+                doms[domain] = []
+            doms[domain].append('{}:{}:{}'.format(program_name, included_domains_path, line_number))
 
         timeout_domains, none_domains, outside_ips, ok_domains = run_check_domains(doms.keys())
 
-        if args.output_style == 'nrpe':
+        if output == 'nrpe':
             output_nrpe_mode(timeout_domains, none_domains, outside_ips, ok_domains)
 
-        elif args.output_style == 'json':
-            print('Option --output-style json not implemented yet for action check-dns.')
+        elif output == 'json':
+            print_error_and_exit('Option --output json not implemented yet for action check-dns.')
 
-        else:  # args.output_style == 'human'
+        else:  # output == 'human'
             output_human_mode(doms, timeout_domains, none_domains, outside_ips)
 
-    elif args.action == 'list':
-        # Note: do not use domains include and exclude lists for listing.
+    elif action == 'list':
 
-        if args.output_style == 'nrpe':
-            print('Action list is not available for --output-style nrpe.')
+        if output == 'nrpe':
+            print_error_and_exit('Action list is not available for --output nrpe.')
 
-        elif args.output_style == 'json':
+        elif output == 'json':
             print(json.dumps(doms, sort_keys=True, indent=4))
 
         else:
-            print('Option --output-style human not implemented yet for action list, fallback to --output-style json.')
+            print_warning('Option --output human not implemented yet for action list, fallback to --output json.')
             print(json.dumps(doms, sort_keys=True, indent=4))
 
-    #elif args.action == 'brice_action':
-    #    #doms est un dict avec le nom de domaine comme clé, pour voir la structure de données :
-    #    # domains --output-style json list
-    #
-    #    print(doms)
-    #    brice_function(doms)
-    #
 
 if __name__ == '__main__':
     program_name = os.path.splitext(os.path.basename(__file__))[0]
-
-    if 'cryptography.x509' not in sys.modules:
-        print('Not supported: {} requires cryptography module.'.format(program_name))
-
     main(sys.argv[1:])
 
