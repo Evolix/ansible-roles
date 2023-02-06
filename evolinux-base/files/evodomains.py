@@ -41,7 +41,7 @@ class DomainProvider:
     """Data structure to store where a domain was found.
     For inheritance only, should not be instantiated.
     Attributes:
-        - provider: 'apache', 'nginx', 'haproxy', ''
+        - provider: 'apache', 'nginx', 'x509', 'haproxy', ''
         - type: type of provider ('config', 'certificate')
         - path: config or certificate path where the domain was found
         - line: line in config file or certificate where the domain was found
@@ -78,6 +78,11 @@ class NginxProvider(DomainProvider):
     def __init__(self, path, line, port, attribute=None):
         super().__init__('nginx', 'config', path, line, port, attribute)
 
+class CertificateProvider(DomainProvider):
+    """DomainProvider for X.509 certificates."""
+    def __init__(self, provider, path, attribute):
+        super().__init__(provider, 'certificate', path, None, None, attribute)
+
 class HaProxyProvider(DomainProvider):
     """DomainProvider for HaProxy"""
     def __init__(self, provider_type, path, line, port=None, attribute=None):
@@ -89,7 +94,7 @@ class HaProxyProvider(DomainProvider):
 
 
 def print_error_and_exit(s):
-    if nrpe:
+    if output ==  'nrpe':
         print('UNKNOWN - {}'.format(s), file=sys.stderr)
         sys.exit(3)
     else:
@@ -125,15 +130,19 @@ def execute(cmd, shell=False):
     return stdout_lines, stderr_lines, proc.returncode
 
 
+def strip_comments(string):
+    """Return string with any # comment removed.""" 
+    return string.split('#')[0]
+
+
+
+""" Code to deal with DNS resolution """
+
+
 def dig(domain):
     """Return "dig +short $domain", as a list of lines."""
     stdout, stderr, rc = execute('dig +short {}'.format(domain))
     return stdout
-
-
-def strip_comments(string):
-    """Return string with any # comment removed.""" 
-    return string.split('#')[0]
 
 
 class DNSResolutionThread(threading.Thread):
@@ -206,36 +215,73 @@ def get_allowed_ips():
 
 
 
+""" Functions to deal with X.509 certificates """
+
+
+def get_certificate_CN_domain(cert_path):
+    """Return the domain in the subject CN.
+    Python module cryptography.x509 is not available on Debian 8,
+    # so let's do it the old way.
+    """
+    domain = None
+    if not os.path.exists(cert_path) or not os.path.isfile(cert_path):
+        return domain
+
+    command = 'openssl x509 -subject -nameopt RFC2253 -noout -in {}'.format(cert_path)
+    try:
+        stdout, stderr, rc = execute(command)
+        if stderr:
+            raise RuntimeError('\n'.join(stderr))
+    except:
+        print_debug('Could not read certificate file {} or execute {}.'.format(cert_path, command))
+    else:
+        for line in stdout:
+            # format: Subject: (...), CN=<DOMAIN>, (...)
+            words = line.strip().split()
+            for word in words:
+                word = word.strip().strip(',')
+                if word.startswith('CN='):
+                    domain = word.split('=')[1]
+                    if domain:
+                        return domain
+
+    return domain
+
+
+def get_certificate_SAN_domains(cert_path):
+    """Return the list of domains in the Subject Alternative Name (SAN).
+    Neither Python module cryptography.x509 or openssl x509 -ext
+    are available on Debian 8, so let's do it the old way.
+    """
+    domains = []
+
+    if not os.path.exists(cert_path) or not os.path.isfile(cert_path):
+        return domains
+
+    command = 'openssl x509 -text -noout -in {} | grep DNS'.format(cert_path)
+    try:
+        stdout, stderr, rc = execute(command, shell=True)
+        if stderr:
+            print_debug('\n'.join(stderr))
+            raise RuntimeError('\n'.join(stderr))
+    except:
+        print_debug('Could not read certificate file {} or execute {}.'.format(cert_path, command))
+    else:
+        for line in stdout:
+            # format: DNS:<DOMAIN1>, DNS:<DOMAIN2>[, ...]
+            words = line.strip().split()
+            for word in words:
+                word = word.strip().strip(',')
+                if word.startswith('DNS:'):
+                    domain = word.split(':')[1]
+                    if domain:
+                        domains.append(domain)
+
+    return domains
+
+
+
 """ Core functions """
-
-
-def find_line_number(provider, path, domain, start_line=1):
-    """"""
-    if not os.path.exists(path) or not os.path.isfile(path):
-        print_warning('File {} was not found or is not a file.'.format(path))
-        return None
-
-    line_number = 0
-    with open(path, encoding='utf-8') as f:
-        for line in f:
-            line_number += 1
-            if line_number < start_line:
-                continue
-            line = strip_comments(line).strip().strip(';')
-
-            cond = False
-            if provider == 'apache':
-                cond = 'ServerName' in line or 'ServerAlias' in line
-            elif provider == 'nginx':
-                cond = 'server_name' in line
-            else:
-                print_error_and_exit('Provider {} not supported'.format(provider))
-            if cond:
-                words = line.split()
-                if domain in words:
-                    return line_number
-
-    return None
 
 
 def list_apache_domains():
@@ -244,7 +290,7 @@ def list_apache_domains():
     - key: Apache domain (from command "apache2ctl -D DUMP_VHOSTS").
     - value: a list of ApacheProvider"
     """
-    print_debug('Listing Apache domains')
+    print_debug('Listing Apache domains.')
     domains = {}
 
     # Dumps Apache vhosts
@@ -254,79 +300,153 @@ def list_apache_domains():
         print_debug('Apache is not present.')
         return domains
 
-    # Parse Apache vhosts
+    # Parse output of 'apache2ctl -D DUMP_VHOSTS'
     for line in stdout:
         domain = ''
         words = line.strip().split()
 
         if 'namevhost' in line and len(words) >= 5:
-            # line format: port <PORT> namevhost <DOMAIN> (<VHOST_PATH>:<LINE_IN_BLOCK>)
+            # line format: port <PORT> namevhost <DOMAIN> (<VHOST_PATH>:<VHOST_LINE_NUMBER>)
             port = int(words[1])
             domain = words[3].strip()
-            path, vhost_line = words[4].strip('()').split(':')
-            vhost_line = int(vhost_line)
+            config_path, vhost_line_number = words[4].strip('()').split(':')
+            vhost_line_number = int(vhost_line_number)
 
         elif 'alias' in line and len(words) >= 2:
             # line format: alias <DOMAIN>
             domain = words[1].strip()  # other infos defined upward ^
 
         if domain:
-            domain_line = find_line_number('apache', path, domain, vhost_line)
-            provider = ApacheProvider(path, domain_line, port)
+            # Find line numbers in config file
+            # (limit search inside <VirtualHost> directives)
+            line_numbers = []
+            with open(config_path, encoding='utf-8') as f:
+                i = 0
+                for line in f:
+                    i += 1
+                    if i < vhost_line_number:
+                        continue
+                    line = strip_comments(line).strip()
+                    if i > vhost_line_number and line == '</VirtualHost>':
+                        break
+
+                    if 'ServerName' in line or 'ServerAlias' in line:
+                        words = line.split()
+                        if 'ServerName' in words or 'ServerAlias' in words:
+                            if domain in words:
+                                line_numbers.append(i)
+
             if domain not in domains:
                 domains[domain] = []
-            if provider not in domains[domain]:
-                domains[domain].append(provider)
+            for line_number in line_numbers:
+                provider = ApacheProvider(config_path, line_number, port)
+                if provider not in domains[domain]:
+                    domains[domain].append(provider)
 
     return domains
-
 
 
 def list_nginx_domains():
     """Parse Nginx dynamic config in search of domains.
     Return a dict containing :
     - key: Nginx domain (from command "nginx -T").
-    - value: a list of strings "nginx:<VHOST_PATH>:<LINE_IN_BLOCK>"
+    - value: a list of NginxProvider"
     """
-    print_debug('Listing Ningx domains')
+    print_debug('Listing Ningx domains.')
     domains = {}
 
     try:
         stdout, stderr, rc = execute('nginx -T')
     except:
-        # Nginx is not present on the server
+        print_debug('Nginx is not present.')
         return domains
 
-    line_number = 1
-    config_file_path = ''
+    line_number, config_file_path, ports = None, None, None
 
     for line in stdout:
+        if line_number is not None:
+            line_number += 1
+
         if '# configuration file' in line:
-            # line format : # configuration file <PATH>:
-            words = line.strip(' \t;').split()
+            # line format: # configuration file <PATH>:
+            words = line.strip().strip(';').split()
             config_file_path = words[3].strip(' :')
-            continue
-
-        if 'server_name ' in line:
-            # TODO: améliorer le if (cas tabulation)
-            # line format : server_name <DOMAIN1> [<DOMAINS2 ...];
-            line = strip_comments(line)
-            words = line.strip(' \t;').split()
-
-            for d in words[1:]:
-                dom = d.strip()
-                vhost_infos = 'nginx:{}:{}'.format(config_file_path, line_number)
-                if dom not in domains:
-                    domains[dom] = []
-                if vhost_infos not in domains[dom]:
-                    domains[dom].append(vhost_infos)
-
-        line_number += 1  # increment line number for next round
-
-        if 'server {' in line:
-            # TODO: améliorer le if (cas plusieurs espaces)
-            # line format : server {
             line_number = 0
+
+        elif 'server' in line and '{' in line:
+            # line format: server {
+            line = strip_comments(line).strip().strip('{').strip()
+            if line == 'server':
+                ports = []
+
+        elif 'listen' in line:
+            # line format: [IP:]<PORT> [[IP:]<PORT>...] | <OTHER_DIRECTIVES>
+            line = strip_comments(line).strip().strip(';')
+            words = line.split()
+
+            if 'listen' in words:
+                for w1 in words[1:]:
+                    words2 = w1.split(':')
+                    for w2 in words2:
+                        try:
+                            p = int(w2)
+                        except:
+                            # Not a port
+                            pass
+                        else:
+                            if p not in ports:
+                                ports.append(p)
+
+        elif 'server_name' in line:
+            # line format: server_name <DOMAIN1> [<DOMAINS2 ...];
+            line = strip_comments(line).strip().strip(';')
+            words = line.split()
+
+            if 'server_name' in words:
+                for d in words[1:]:
+                    domain = d.strip()
+                    if domain == '_':  # default vhost
+                        continue
+                    if domain not in domains:
+                        domains[domain] = []
+                    for port in ports:
+                        provider = NginxProvider(config_file_path, line_number, port)
+                        if provider not in domains[domain]:
+                            domains[domain].append(provider)
+
+    return domains
+
+
+def list_letsencrypt_domains():
+    """ Parse certificates in /etc/letsencrypt in search of domains.
+    Return a dict containing :
+    - key: CN or SAN domain (/etc/letsencrypt certs).
+    - value: a list of CertificateProvider"
+    """
+    print_debug('Listing Let\'s Encrypt certificates domains.')
+    domains = {}
+
+    le_path = '/etc/letsencrypt'
+    if not os.path.exists(le_path):
+        return domains
+
+    for vhost in os.listdir(le_path):
+        cert_path = os.path.join(le_path, vhost, 'live', 'cert.crt')
+
+        cn = get_certificate_CN_domain(cert_path)
+        if cn:
+            if cn not in domains:
+                domains[cn] = []
+            provider = CertificateProvider('letsencrypt', cert_path , 'CN')
+            domains[cn].append(provider)
+
+        san = get_certificate_SAN_domains(cert_path)
+        if san:
+            for domain in san:
+                if domain not in domains:
+                    domains[domain] = []
+                provider = CertificateProvider('letsencrypt', cert_path , 'SAN')
+                domains[domain].append(provider)
 
     return domains
 
@@ -669,7 +789,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('action', metavar='ACTION', help='Values: check-dns, list')
     parser.add_argument('-o', '--output', help='Output format. Values: json, human (default), nrpe')
-    parser.add_argument('-s', '--ssl-only', action='store_true', help='SSL/TLS domains only.')
+    parser.add_argument('-s', '--ssl-only', action='store_true', help='SSL/TLS domains only (not implemented.')
     parser.add_argument('-w', '--warning', action='store_true', help='Print warnings to stdout.')
     parser.add_argument('-d', '--debug', action='store_true', help='Print debug to stdout (include warnings).')
     args = parser.parse_args()
@@ -714,7 +834,8 @@ def list_domains():
     doms = {}
     doms.update(list_apache_domains())
     doms.update(list_nginx_domains())
-    doms.update(list_haproxy_acl_domains())
+    doms.update(list_letsencrypt_domains())
+    #doms.update(list_haproxy_acl_domains())
     #doms.update(list_haproxy_certs_domains())
 
     if not doms:
