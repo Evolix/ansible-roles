@@ -56,6 +56,9 @@ class DomainProvider:
         self.port = port
         self.attribute = attribute
 
+    def __str__(self):
+        return str(self.__dict__)
+
     def __eq__(self, other):
         if not isinstance(other, DomainProvider):
             return False
@@ -87,6 +90,17 @@ class HaProxyProvider(DomainProvider):
     """DomainProvider for HaProxy"""
     def __init__(self, provider_type, path, line, port=None, attribute=None):
         super().__init__('haproxy', provider_type, path, line, port, attribute)
+
+
+class CustomJSONEncoder(json.JSONEncoder):
+    """Custom JSONEncoder that also encodes DomainProvider objects
+    as JSON.
+    """
+    def default(self, object):
+        if isinstance(object, DomainProvider):
+            return object.__dict__
+        else:
+            return json.JSONEncoder.default(self, object)
 
 
 
@@ -135,6 +149,14 @@ def strip_comments(string):
     return string.split('#')[0]
 
 
+def merge_dicts(*dicts):
+    """Merge an arbitrary number of dictionaries containing lists."""
+    merged = {}
+    for d in dicts:
+        for key, value in d.items():
+            merged.setdefault(key, []).extend(value)
+    return merged
+
 
 """ Code to deal with DNS resolution """
 
@@ -171,17 +193,6 @@ class DNSResolutionThread(threading.Thread):
         except Exception as e:
             print_warning(e)
             return
-
-
-class CustomJSONEncoder(json.JSONEncoder):
-    """Custom JSONEncoder that also encodes DomainProvider objects
-    as JSON.
-    """
-    def default(self, object):
-        if isinstance(object, DomainProvider):
-            return object.__dict__
-        else:
-            return json.JSONEncoder.default(self, object)
 
 
 
@@ -278,6 +289,96 @@ def get_certificate_SAN_domains(cert_path):
                         domains.append(domain)
 
     return domains
+
+
+
+""" Print and output functions """
+
+
+def output_domains_json(domains):
+    """Print domains dict of Providers to stdout in JSON format.
+    """
+    print(json.dumps(domains, sort_keys=True, indent=4, cls=CustomJSONEncoder))
+
+
+def output_domains_human(domains):
+    """Print domains dict of Providers to stdout in human readable format.
+    """
+    for dom in sorted(domains.keys()):
+        print('{}'.format(dom))
+        providers = domains[dom]
+        output_providers_human(domains, dom, prefix='\t')
+
+
+def output_check_result_nrpe(timeout_domains, none_domains, outside_ips, ok_domains):
+    """Print domains dict of Providers to stdout in NRPE format.
+    For now, never output critical alerts.
+    """
+
+    n_ok = len(ok_domains)
+    n_warnings = len(timeout_domains) + len(none_domains) + len(outside_ips)
+
+    msg = 'WARNING' if n_warnings else 'OK'
+
+    print('{} - 0 UNK / 0 CRIT / {} WARN / {} OK \n'.format(msg, n_warnings, n_ok))
+
+    if timeout_domains or none_domains or outside_ips:
+        for d in timeout_domains:
+            print('WARNING - timeout resolving {}'.format(d))
+        for d in none_domains:
+            print('WARNING - no resolution for {}'.format(d))
+        for d in outside_ips:
+            print('WARNING - {} pointing elsewhere ({})'.format(d, ' '.join(outside_ips[d])))
+
+    sys.exit(1) if n_warnings else sys.exit(0)
+
+
+def output_check_result_json(domains, timeout_domains, none_domains, outside_ips, ok_domains):
+    """Print result of check domains to stdout in JSON format.
+    """
+    output_dict = {
+        'domains': domains,
+        'timeout_domains': sorted(timeout_domains),
+        'none_domains': sorted(none_domains),
+        'outside_ips': outside_ips,
+        'ok_domains': sorted(ok_domains)
+    }
+    print(json.dumps(output_dict, sort_keys=True, indent=4, cls=CustomJSONEncoder))
+
+
+def output_providers_human(domains_dict, domain, prefix='', suffix=''):
+    """Print providers (in domains_dict) of domain in human readable format.
+    """
+    for p in domains_dict[domain]:
+        if p.provider in ['apache', 'nginx'] and p.type in ['config']:
+            print('{}{}:{} port(s) {}{}'.format(prefix, p.path, p.line, p.port, suffix))
+        elif p.provider in ['letsencrypt'] and p.type in ['certificate']:
+            print('{}{}:{}{}'.format(prefix, p.path, p.attribute, suffix))
+
+
+def output_check_result_human(domains, timeout_domains, none_domains, outside_ips):
+    """Print result of check domains to stdout in human readable format.
+    """
+    if timeout_domains or none_domains or outside_ips:
+
+        if timeout_domains: print('\nTimeouts:')
+        for d in timeout_domains:
+            print('\t{}'.format(d))
+            output_providers_human(domains, d, '\t\t')
+
+        if none_domains: print('\nNo resolution:')
+        for d in none_domains:
+            print('\t{}'.format(d))
+            output_providers_human(domains, d, '\t\t')
+
+        if outside_ips: print('\nPointing elsewhere:')
+        for d in outside_ips:
+            print('\t{} -> [{}]'.format(d, ' '.join(outside_ips[d])))
+            output_providers_human(domains, d, '\t\t')
+
+        sys.exit(1)
+
+    print('Domains resolve to right IPs!')
 
 
 
@@ -691,17 +792,16 @@ def list_cert_domains(cert_path, origin):
     return domains
 
 
-def run_check_domains(domains):
-    """Check resolution of domains (list)."""
+def check_domains(domains):
+    """Check resolution of domains (list).
+    Returns:
+    - timeout_domains: list of domains which exceeded timeout limit (see 'timeout' variable).
+    - none_domains: list of domains that do not resolve.
+    - outside_ips: dict of domains (keys) that resolve to some not allowed IPs (values).
+    - ok_domains: list of domains that resolve to allowed IPs.
+    """
 
-    excludes = ['_']
     timeout = 5
-
-    with open(ignored_domains_path, encoding='utf-8') as f:
-        for line in f:
-            domain = strip_comments(line).strip()
-            if not domain: continue
-            excludes.append(domain)
 
     jobs = []
     timeout_domains = []
@@ -710,7 +810,7 @@ def run_check_domains(domains):
     ok_domains = []
 
     for d in domains:
-        if d in excludes:
+        if d in ignored_domains:
             ok_domains.append(d)
             continue
 
@@ -745,61 +845,21 @@ def run_check_domains(domains):
     return timeout_domains, none_domains, outside_ips, ok_domains
 
 
-def output_nrpe_mode(timeout_domains, none_domains, outside_ips, ok_domains):
-    """Output result for check mode.
-    For now, never output critical alerts.
-    """
-
-    n_ok = len(ok_domains)
-    n_warnings = len(timeout_domains) + len(none_domains) + len(outside_ips)
-
-    msg = 'WARNING' if n_warnings else 'OK'
-
-    print('{} - 0 UNK / 0 CRIT / {} WARN / {} OK \n'.format(msg, n_warnings, n_ok))
-
-    if timeout_domains or none_domains or outside_ips:
-        for d in timeout_domains:
-            print('WARNING - timeout resolving {}'.format(d))
-        for d in none_domains:
-            print('WARNING - no resolution for {}'.format(d))
-        for d in outside_ips:
-            print('WARNING - {} pointing elsewhere ({})'.format(d, ' '.join(outside_ips[d])))
-
-    sys.exit(1) if n_warnings else sys.exit(0)
-
-
-def output_human_mode(doms, timeout_domains, none_domains, outside_ips):
-    if timeout_domains or none_domains or outside_ips:
-        if timeout_domains: print('\nTimeouts:')
-        for d in timeout_domains:
-            print('\t{} {}'.format(d, ' '.join(doms[d])))
-        if none_domains: print('\nNo resolution:')
-        for d in none_domains:
-            print('\t{} {}'.format(d, ' '.join(doms[d])))
-        if outside_ips: print('\nPointing elsewhere:')
-        for d in outside_ips:
-            print('\t{} {} -> [{}]'.format(d, ' '.join(doms[d]), ' '.join(outside_ips[d])))
-
-        sys.exit(1)
-
-    print('Domains resolve to right IPs !')
-
-
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('action', metavar='ACTION', help='Values: check-dns, list')
-    parser.add_argument('-o', '--output', help='Output format. Values: json, human (default), nrpe')
-    parser.add_argument('-s', '--ssl-only', action='store_true', help='SSL/TLS domains only (not implemented.')
+    parser.add_argument('-o', '--output', help='Output format. Values: human (default), json, nrpe')
+    #parser.add_argument('-s', '--ssl-only', action='store_true', help='SSL/TLS domains only (not implemented.')
     parser.add_argument('-w', '--warning', action='store_true', help='Print warnings to stdout.')
     parser.add_argument('-d', '--debug', action='store_true', help='Print debug to stdout (include warnings).')
     args = parser.parse_args()
 
-    global action, output, ssl_only, warning, debug
+    global action, output, warning, debug #, ssl_only
     action = args.action
     output = args.output
-    ssl_only = args.ssl_only
     warning = args.warning
     debug = args.debug
+    #ssl_only = args.ssl_only
 
     for arg, value in vars(args).items():
         print_debug('{} = {}'.format(arg, value))
@@ -810,7 +870,8 @@ def parse_arguments():
 
 def check_deps():
     if 'cryptography.x509' not in sys.modules:
-        print_warning('Python3 cryptography.x509 module missing.'.format(program_name))
+        print_warning('Python3 cryptography.x509 module missing, failing over OpenSSL.'.format(program_name))
+    #TODO: socat
 
 
 def load_conf():
@@ -829,19 +890,23 @@ def load_conf():
     included_domains = read_config_file(included_domains_path)
     allowed_ips = get_allowed_ips()
 
+    ignored_domains.append('_')
+
 
 def list_domains():
-    doms = {}
-    doms.update(list_apache_domains())
-    doms.update(list_nginx_domains())
-    doms.update(list_letsencrypt_domains())
-    #doms.update(list_haproxy_acl_domains())
-    #doms.update(list_haproxy_certs_domains())
+    apache_doms = list_apache_domains()
+    nginx_doms = list_nginx_domains()
+    letsencrypt_doms = list_letsencrypt_domains()
+    #haproxy_acl_doms = list_haproxy_acl_domains()
+    #haproxy_certs_doms = list_haproxy_certs_domains()
+
+    doms = merge_dicts(apache_doms, nginx_doms, letsencrypt_doms)
 
     if not doms:
         print_error_and_exit('No domain found on this server.')
 
     return doms
+
 
 
 def main(argv):
@@ -853,33 +918,32 @@ def main(argv):
     if action == 'check-dns':
 
         # Add included domains to domains dict
-        for domain in included_domains:
-            if domain not in doms:
-                doms[domain] = []
-            doms[domain].append('{}:{}:{}'.format(program_name, included_domains_path, line_number))
+        #for domain in included_domains:
+        #    if domain not in doms:
+        #        doms[domain] = []
+        #    doms[domain].append('{}:{}:{}'.format(program_name, included_domains_path, line_number))
 
-        timeout_domains, none_domains, outside_ips, ok_domains = run_check_domains(doms.keys())
+        timeout_domains, none_domains, outside_ips, ok_domains = check_domains(doms.keys())
 
         if output == 'nrpe':
-            output_nrpe_mode(timeout_domains, none_domains, outside_ips, ok_domains)
+            output_check_result_nrpe(timeout_domains, none_domains, outside_ips, ok_domains)
 
         elif output == 'json':
-            print_error_and_exit('Option --output json not implemented yet for action check-dns.')
+            output_check_result_json(doms, timeout_domains, none_domains, outside_ips, ok_domains)
 
         else:  # output == 'human'
-            output_human_mode(doms, timeout_domains, none_domains, outside_ips)
+            output_check_result_human(doms, timeout_domains, none_domains, outside_ips)
 
     elif action == 'list':
 
         if output == 'nrpe':
-            print_error_and_exit('Action list is not available for --output nrpe.')
+            print_error_and_exit('Action \'list\' is not available for --output nrpe.')
 
         elif output == 'json':
-            print(json.dumps(doms, sort_keys=True, indent=4, cls=CustomJSONEncoder))
+            output_domains_json(doms)
 
         else:
-            print_warning('Option --output human not implemented yet for action list, fallback to --output json.')
-            print(json.dumps(doms, sort_keys=True, indent=4, cls=CustomJSONEncoder))
+            output_domains_human(doms)
 
 
 if __name__ == '__main__':
