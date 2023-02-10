@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian) server
 # powered by Evolix
 
-VERSION="22.11"
+VERSION="22.12"
 readonly VERSION
 
 # base functions
@@ -130,6 +130,13 @@ check_lsbrelease(){
 check_dpkgwarning() {
     test -e /etc/apt/apt.conf.d/z-evolinux.conf \
         || failed "IS_DPKGWARNING" "/etc/apt/apt.conf.d/z-evolinux.conf is missing"
+}
+# Check if localhost, localhost.localdomain and localhost.$mydomain are set in Postfix mydestination option.
+check_localhost_in_postfix_mydestination() {
+    # shellcheck disable=SC2016
+    if ! grep mydestination /etc/postfix/main.cf | grep --extended-regexp 'localhost[^\\.]' | grep 'localhost.localdomain' | grep 'localhost.$mydomain'; then
+        failed "IS_LOCALHOST_IN_POSTFIX_MYDESTINATION" "'localhost' and/or 'localhost.localdomain' and/or 'localhost.\$mydomain' are missing in Postfix mydestination option. Consider adding then."
+    fi
 }
 # Verifying check_mailq in Nagios NRPE config file. (Option "-M postfix" need to be set if the MTA is Postfix)
 check_nrpepostfix() {
@@ -391,7 +398,7 @@ check_log2mailrunning() {
     fi
 }
 check_log2mailapache() {
-    conf=/etc/log2mail/config/Apache
+    conf=/etc/log2mail/config/apache
     if is_pack_web && is_installed log2mail; then
         grep -s -q "^file = /var/log/apache2/error.log" $conf \
             || failed "IS_LOG2MAILAPACHE" "missing log2mail directive for apache"
@@ -463,18 +470,26 @@ check_evobackup() {
     evobackup_found=$(find /etc/cron* -name '*evobackup*' | wc -l)
     test "$evobackup_found" -gt 0 || failed "IS_EVOBACKUP" "missing evobackup cron"
 }
-# Vérification de la mise en place de la purge pour fail2ban
-check_purge_fail2ban() {
+# Vérification de la mise en place d'un cron de purge de la base SQLite de Fail2ban
+check_fail2ban_purge() {
     if is_debian_stretch || is_debian_buster; then
       if is_installed fail2ban; then
         test -f /etc/cron.daily/fail2ban_dbpurge || failed "IS_FAIL2BAN_PURGE" "missing script fail2ban_dbpurge cron"
       fi
     fi
 }
+# Vérification qu'il ne reste pas des jails nommées ssh non renommées en sshd
+check_ssh_fail2ban_jail_renamed() {
+    if is_installed fail2ban && [ -f /etc/fail2ban/jail.local ]; then
+        if grep --quiet --fixed-strings "[ssh]" /etc/fail2ban/jail.local; then
+            failed "IS_SSH_FAIL2BAN_JAIL_RENAMED" "Jail ssh must be renamed sshd in fail2ban >= 0.9."
+        fi
+    fi
+}
 # Vérification de l'exclusion des montages (NFS) dans les sauvegardes
 check_evobackup_exclude_mount() {
-    excludes_file=$(mktemp --tmpdir="${TMPDIR:-/tmp}" "evocheck.evobackup_exclude_mount.XXXXX")
-    files_to_cleanup="${files_to_cleanup} ${excludes_file}"
+    excludes_file=$(mktemp --tmpdir "evocheck.evobackup_exclude_mount.XXXXX")
+    files_to_cleanup+=("${excludes_file}")
 
     # shellcheck disable=SC2044
     for evobackup_file in $(find /etc/cron* -name '*evobackup*' | grep -v -E ".disabled$"); do
@@ -643,7 +658,7 @@ check_notupgraded() {
         fi
     done
     if $upgraded; then
-        last_upgrade=$(date +%s -d "$(zgrep -h upgrade /var/log/dpkg.log* | sort -n | tail -1 | cut -f1 -d ' ')")
+        last_upgrade=$(date +%s -d "$(zgrep --no-filename --no-messages upgrade /var/log/dpkg.log* | sort -n | tail -1 | cut -f1 -d ' ')")
     fi
     if grep -qs '^mailto="listupgrade-todo@' /etc/evolinux/listupgrade.cnf \
         || grep -qs -E '^[[:digit:]]+[[:space:]]+[[:digit:]]+[[:space:]]+[^\*]' /etc/cron.d/listupgrade; then
@@ -841,10 +856,17 @@ check_redis_backup() {
         # You could change the default path in /etc/evocheck.cf
         # REDIS_BACKUP_PATH may contain space-separated paths, example:
         # REDIS_BACKUP_PATH='/home/backup/redis-instance1/dump.rdb /home/backup/redis-instance2/dump.rdb'
-        REDIS_BACKUP_PATH=${REDIS_BACKUP_PATH:-"/home/backup/redis/dump.rdb"}
-        for file in ${REDIS_BACKUP_PATH}; do
-            test -f "${file}" || failed "IS_REDIS_BACKUP" "Redis dump is missing (${file})"
-        done
+        # Old default path: /home/backup/dump.rdb
+        # New default path: /home/backup/redis/dump.rdb
+        if [ -z "${REDIS_BACKUP_PATH}" ]; then
+            if ! [ -f "/home/backup/dump.rdb" ] && ! [ -f "/home/backup/redis/dump.rdb" ]; then
+                failed "IS_REDIS_BACKUP" "Redis dump is missing (/home/backup/dump.rdb or /home/backup/redis/dump.rdb)."
+            fi
+        else
+            for file in ${REDIS_BACKUP_PATH}; do
+                test -f "${file}" || failed "IS_REDIS_BACKUP" "Redis dump ${file} is missing."
+            done
+        fi
     fi
 }
 check_elastic_backup() {
@@ -895,15 +917,15 @@ check_mysqlnrpe() {
             grep -q -F "command[check_mysql]=/usr/lib/nagios/plugins/check_mysql" /etc/nagios/nrpe.d/evolix.cfg \
             || failed "IS_MYSQLNRPE" "check_mysql is missing"
         fi
-        fi
+    fi
 }
 check_phpevolinuxconf() {
     is_debian_stretch  && phpVersion="7.0"
     is_debian_buster   && phpVersion="7.3"
     is_debian_bullseye && phpVersion="7.4"
     if is_installed php; then
-        { test -f /etc/php/${phpVersion}/cli/conf.d/z-evolinux-defaults.ini \
-            && test -f /etc/php/${phpVersion}/cli/conf.d/zzz-evolinux-custom.ini
+        { test -f "/etc/php/${phpVersion}/cli/conf.d/z-evolinux-defaults.ini" \
+            && test -f "/etc/php/${phpVersion}/cli/conf.d/zzz-evolinux-custom.ini"
         } || failed "IS_PHPEVOLINUXCONF" "missing php evolinux config"
     fi
 }
@@ -929,8 +951,8 @@ check_duplicate_fs_label() {
     # Do it only if thereis blkid binary
     BLKID_BIN=$(command -v blkid)
     if [ -n "$BLKID_BIN" ]; then
-        tmpFile=$(mktemp --tmpdir="${TMPDIR:-/tmp}" "evocheck.duplicate_fs_label.XXXXX")
-        files_to_cleanup="${files_to_cleanup} ${tmpFile}"
+        tmpFile=$(mktemp --tmpdir "evocheck.duplicate_fs_label.XXXXX")
+        files_to_cleanup+=("${tmpFile}")
 
         parts=$($BLKID_BIN -c /dev/null | grep -ve raid_member -e EFI_SYSPART | grep -Eo ' LABEL=".*"' | cut -d'"' -f2)
         for part in $parts; do
@@ -1097,8 +1119,8 @@ check_evobackup_incs() {
         bkctld_cron_file=${bkctld_cron_file:-/etc/cron.d/bkctld}
         if [ -f "${bkctld_cron_file}" ]; then
             root_crontab=$(grep -v "^#" "${bkctld_cron_file}")
-            echo "${root_crontab}" | grep -q "bkctld inc" || failed "IS_EVOBACKUP_INCS" "\`bkctld inc' is missing in ${bkctld_cron_file}"
-            echo "${root_crontab}" | grep -qE "(check-incs.sh|bkctld check-incs)" || failed "IS_EVOBACKUP_INCS" "\`check-incs.sh' is missing in ${bkctld_cron_file}"
+            echo "${root_crontab}" | grep -q "bkctld inc" || failed "IS_EVOBACKUP_INCS" "'bkctld inc' is missing in ${bkctld_cron_file}"
+            echo "${root_crontab}" | grep -qE "(check-incs.sh|bkctld check-incs)" || failed "IS_EVOBACKUP_INCS" "'check-incs.sh' is missing in ${bkctld_cron_file}"
         else
             failed "IS_EVOBACKUP_INCS" "Crontab \`${bkctld_cron_file}' is missing"
         fi
@@ -1129,7 +1151,7 @@ check_chrooted_binary_uptodate() {
     for process_name in ${process_list}; do
         # what is the binary path?
         original_bin=$(command -v "${process_name}")
-        for pid in $(pgrep ${process_name}); do
+        for pid in $(pgrep "${process_name}"); do
             process_bin=$(realpath "/proc/${pid}/exe")
             # Is the process chrooted?
             real_root=$(realpath "/proc/${pid}/root")
@@ -1157,7 +1179,6 @@ check_nginx_letsencrypt_uptodate() {
         fi
     fi
 }
-
 check_lxc_container_resolv_conf() {
     if is_installed lxc; then
         container_list=$(lxc-ls)
@@ -1178,6 +1199,38 @@ check_lxc_container_resolv_conf() {
         done 
     fi
 }
+# Check that there are containers if lxc is installed.
+check_no_lxc_container() {
+    if is_installed lxc; then
+        containers_count=$(lxc-ls | wc -l)
+        if [ "$containers_count" -eq 0 ]; then
+            failed "IS_NO_LXC_CONTAINER" "LXC is installed but have no container. Consider removing it."
+        fi
+    fi
+}
+# Check that in LXC containers, phpXX-fpm services have UMask set to 0007.
+check_lxc_php_fpm_service_umask_set() {
+    if is_installed lxc; then
+        php_containers_list=$(lxc-ls --filter php)
+        missing_umask=""
+        for container in $php_containers_list; do
+            # Translate container name in service name
+            if [ "$container" = "php56" ]; then
+                service="php5-fpm"
+            else
+                service="${container:0:4}.${container:4}-fpm"
+            fi
+            umask=$(lxc-attach --name "${container}" -- systemctl show -p UMask "$service" | cut -d "=" -f2)
+            if ! [ "$umask" != "0007" ]; then
+                missing_umask="${missing_umask} ${container}"
+            fi
+        done
+        if [ -n "${missing_umask}" ]; then
+            failed "IS_LXC_PHP_FPM_SERVICE_UMASK_SET" "UMask is not set to 0007 in PHP-FPM services of theses containers : ${missing_umask}."
+        fi
+    fi
+}
+
 download_versions() {
     local file
     file=${1:-}
@@ -1280,8 +1333,8 @@ add_to_path() {
     echo "$PATH" | grep -qF "${new_path}" || export PATH="${PATH}:${new_path}"
 }
 check_versions() {
-    versions_file=$(mktemp --tmpdir="${TMPDIR:-/tmp}" "evocheck.versions.XXXXX")
-    files_to_cleanup="${files_to_cleanup} ${versions_file}"
+    versions_file=$(mktemp --tmpdir "evocheck.versions.XXXXX")
+    files_to_cleanup+=("${versions_file}")
 
     download_versions "${versions_file}"
     add_to_path "/usr/share/scripts"
@@ -1308,8 +1361,8 @@ main() {
     # Detect operating system name, version and release
     detect_os
 
-    main_output_file=$(mktemp --tmpdir="${TMPDIR:-/tmp}" "evocheck.main.XXXXX")
-    files_to_cleanup="${files_to_cleanup} ${main_output_file}"
+    main_output_file=$(mktemp --tmpdir "evocheck.main.XXXXX")
+    files_to_cleanup+=("${main_output_file}")
 
     test "${IS_TMP_1777:=1}" = 1 && check_tmp_1777
     test "${IS_ROOT_0700:=1}" = 1 && check_root_0700
@@ -1322,6 +1375,7 @@ main() {
 
     test "${IS_LSBRELEASE:=1}" = 1 && check_lsbrelease
     test "${IS_DPKGWARNING:=1}" = 1 && check_dpkgwarning
+    test "${IS_LOCALHOST_IN_POSTFIX_MYDESTINATION:=1}" = 1 && check_localhost_in_postfix_mydestination
     test "${IS_NRPEPOSTFIX:=1}" = 1 && check_nrpepostfix
     test "${IS_CUSTOMSUDOERS:=1}" = 1 && check_customsudoers
     test "${IS_VARTMPFS:=1}" = 1 && check_vartmpfs
@@ -1367,6 +1421,8 @@ main() {
     test "${IS_INTERFACESGW:=1}" = 1 && check_interfacesgw
     test "${IS_NETWORKING_SERVICE:=1}" = 1 && check_networking_service
     test "${IS_EVOBACKUP:=1}" = 1 && check_evobackup
+    test "${IS_PURGE_FAIL2BAN:=1}" = 1 && check_fail2ban_purge
+    test "${IS_SSH_FAIL2BAN_JAIL_RENAMED:=1}" = 1 && check_ssh_fail2ban_jail_renamed
     test "${IS_EVOBACKUP_EXCLUDE_MOUNT:=1}" = 1 && check_evobackup_exclude_mount
     test "${IS_USERLOGROTATE:=1}" = 1 && check_userlogrotate
     test "${IS_APACHECTL:=1}" = 1 && check_apachectl
@@ -1418,6 +1474,8 @@ main() {
     test "${IS_CHROOTED_BINARY_UPTODATE:=1}" = 1 && check_chrooted_binary_uptodate
     test "${IS_NGINX_LETSENCRYPT_UPTODATE:=1}" = 1 && check_nginx_letsencrypt_uptodate
     test "${IS_LXC_CONTAINER_RESOLV_CONF:=1}" = 1 && check_lxc_container_resolv_conf
+    test "${IS_NO_LXC_CONTAINER:=1}" = 1 && check_no_lxc_container
+    test "${IS_LXC_PHP_FPM_SERVICE_UMASK_SET:=1}" = 1 && check_lxc_php_fpm_service_umask_set
     test "${IS_CHECK_VERSIONS:=1}" = 1 && check_versions
 
     if [ -f "${main_output_file}" ]; then
@@ -1432,8 +1490,8 @@ main() {
     exit ${RC}
 }
 cleanup_temp_files() {
-    # shellcheck disable=SC2086
-    rm -f ${files_to_cleanup}
+    # shellcheck disable=SC2086,SC2317
+    rm -f ${files_to_cleanup[@]}
 }
 
 PROGNAME=$(basename "$0")
@@ -1448,7 +1506,7 @@ readonly ARGS
 export LANG=C
 export LANGUAGE=C
 
-files_to_cleanup=""
+declare -a files_to_cleanup
 # shellcheck disable=SC2064
 trap cleanup_temp_files 0
 
