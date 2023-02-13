@@ -8,6 +8,14 @@
     owner: root
     group: root
 
+- name: copy pub.evolix.net GPG key
+  copy:
+    src: reg.asc
+    dest: "{{ apt_keyring_dir }}/reg.asc"
+    mode: "0644"
+    owner: root
+    group: root
+
 - name: Setup deb.sury.org repository - Install apt-transport-https
   apt:
     state: present
@@ -17,6 +25,14 @@
   copy:
     src: sury.preferences
     dest: /etc/apt/preferences.d/z-sury
+
+- name: Setup pub.evolix.net repository - Add source list
+  apt_repository:
+    repo: "deb [signed-by={{ apt_keyring_dir }}/reg.asc] http://pub.evolix.net/ {{ ansible_distribution_release }}-php81/"
+    filename: evolix-php
+    state: present
+  when:
+    - ansible_distribution_release == "bullseye"
 
 - name: Setup deb.sury.org repository - Add source list
   apt_repository:
@@ -46,4 +62,3 @@
       - php{{ php_version }}-ssh2
 #      - composer
 #      - libphp-phpmailer
-  when: ansible_distribution_release != "bullseye"

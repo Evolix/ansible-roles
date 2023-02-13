@@ -1,18 +1,25 @@
 ---
 
+- name: "Set php version to 7.4 if Sury repo is not enabled"
+  set_fact:
+    php_version: "7.4"
+  when:
+    - php_sury_enable == 'False'
+    - php_version != '7.4'
+
 - name: "Set variables (Debian 11)"
   set_fact:
-    php_cli_defaults_ini_file: /etc/php/7.4/cli/conf.d/z-evolinux-defaults.ini
-    php_cli_custom_ini_file: /etc/php/7.4/cli/conf.d/zzz-evolinux-custom.ini
-    php_apache_defaults_ini_file: /etc/php/7.4/apache2/conf.d/z-evolinux-defaults.ini
-    php_apache_custom_ini_file: /etc/php/7.4/apache2/conf.d/zzz-evolinux-custom.ini
-    php_fpm_defaults_ini_file: /etc/php/7.4/fpm/conf.d/z-evolinux-defaults.ini
-    php_fpm_custom_ini_file: /etc/php/7.4/fpm/conf.d/zzz-evolinux-custom.ini
-    php_fpm_debian_default_pool_file: /etc/php/7.4/fpm/pool.d/www.conf
-    php_fpm_default_pool_file: /etc/php/7.4/fpm/pool.d/www-evolinux-defaults.conf
-    php_fpm_default_pool_custom_file: /etc/php/7.4/fpm/pool.d/www-evolinux-zcustom.conf
-    php_fpm_default_pool_socket: /var/run/php/php7.4-fpm.sock
-    php_fpm_service_name: php7.4-fpm
+    php_cli_defaults_ini_file: /etc/php/{{ php_version }}/cli/conf.d/z-evolinux-defaults.ini
+    php_cli_custom_ini_file: /etc/php/{{ php_version }}/cli/conf.d/zzz-evolinux-custom.ini
+    php_apache_defaults_ini_file: /etc/php/{{ php_version }}/apache2/conf.d/z-evolinux-defaults.ini
+    php_apache_custom_ini_file: /etc/php/{{ php_version }}/apache2/conf.d/zzz-evolinux-custom.ini
+    php_fpm_defaults_ini_file: /etc/php/{{ php_version }}/fpm/conf.d/z-evolinux-defaults.ini
+    php_fpm_custom_ini_file: /etc/php/{{ php_version }}/fpm/conf.d/zzz-evolinux-custom.ini
+    php_fpm_debian_default_pool_file: /etc/php/{{ php_version }}/fpm/pool.d/www.conf
+    php_fpm_default_pool_file: /etc/php/{{ php_version }}/fpm/pool.d/www-evolinux-defaults.conf
+    php_fpm_default_pool_custom_file: /etc/php/{{ php_version }}/fpm/pool.d/www-evolinux-zcustom.conf
+    php_fpm_default_pool_socket: /var/run/php/php{{ php_version }}-fpm.sock
+    php_fpm_service_name: php{{ php_version }}-fpm
 
 # Packages
 
@@ -25,7 +32,6 @@
       - php-imap
       - php-ldap
       - php-mysql
-      # php-mcrypt is no longer packaged for PHP 7.2
       - php-pgsql
       - php-sqlite3
       - php-curl
@@ -54,8 +60,8 @@
 - name: "Install PHP FPM packages (Debian 11)"
   apt:
     name:
-      - php-fpm
-      - php
+      - php{{ php_version }}-fpm
+      - php{{ php_version }}
     state: present
   when: php_fpm_enable
 
@@ -67,12 +73,12 @@
     mode: "0755"
   with_items:
     - /etc/php
-    - /etc/php/7.4
+    - /etc/php/{{ php_version }}
 
 - include: config_cli.yml
 - name: "Enforce permissions on PHP cli directory (Debian 11)"
   file:
-    dest: /etc/php/7.4/cli
+    dest: /etc/php/{{ php_version }}/cli
     mode: "0755"
 
 - include: config_fpm.yml
@@ -80,7 +86,7 @@
 
 - name: "Enforce permissions on PHP fpm directory (Debian 11)"
   file:
-    dest: /etc/php/7.4/fpm
+    dest: /etc/php/{{ php_version }}/fpm
     mode: "0755"
   when: php_fpm_enable
 
@@ -89,9 +95,9 @@
 
 - name: "Enforce permissions on PHP apache2 directory (Debian 11)"
   file:
-    dest: /etc/php/7.4/apache2
+    dest: /etc/php/{{ php_version }}/apache2
     mode: "0755"
   when: php_apache_enable
 
-- include: sury_post.yml
-  when: php_sury_enable
+#- include: sury_post.yml
+#  when: php_sury_enable
