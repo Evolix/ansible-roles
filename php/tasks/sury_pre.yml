@@ -25,6 +25,8 @@
   copy:
     src: sury.preferences
     dest: /etc/apt/preferences.d/z-sury
+  when:
+    - ansible_distribution_release == "bullseye"
 
 - name: Setup pub.evolix.net repository - Add source list
   apt_repository:
