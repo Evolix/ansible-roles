@@ -15,6 +15,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios-nrpe: Print pool config path in check_phpfpm_multi output
 * nagios-nrpe: add tasks/files for a wrapper
 * fail2ban: add "Internal login failure" to Dovecot filter
+* php: add a way to choose which version to install using sury repository
 
 ### Changed
 
@@ -37,6 +38,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * openvpn: fix the client cipher configuration to match the server cipher configuration
 * clamav: set `MaxConnectionQueueLength` to its default value (200), custom (15) was way too small and caused recurrent connections fail in Postfix.
 * postfix (packmail only): disable `concurrency_failed_cohort_limit` for destination smtp-amavis to prevent the suspension of this destination when Amavis fails to answer. Indeed, we configure the suspension delay quite long in `minimal_backoff_time` (2h) and `maximal_backoff_time` (6h) to reduce the risk of ban from external SMTPs.
+* php: install using sury repositories on bullseye
 
 ### Removed
 
