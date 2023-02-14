@@ -11,12 +11,6 @@
 # Developped by Will
 #
 
-config_dir_path = '/etc/evolinux/domains'
-ignored_domains_file = 'ignored_domains.list'
-included_domains_file = 'included_domains.list'
-allowed_ips_file = 'allowed_ips.list'
-haproxy_conf_path = '/etc/haproxy/haproxy.cfg'
-
 import os
 import sys
 import re
@@ -33,6 +27,14 @@ try:
 except:
     pass
 
+
+config_dir_path = '/etc/evolinux/domains'
+ignored_domains_file = 'ignored_domains_check.list'
+included_domains_file = 'included_domains_check.list'
+allowed_ips_file = 'allowed_ips_check.list'
+haproxy_conf_path = '/etc/haproxy/haproxy.cfg'
+domain_cn_regex = re.compile('CN=(((?!-)[A-Za-z0-9-\*]{1,63}(?<!-)\.)+[A-Za-z]{2,6})')
+domain_san_regex = re.compile('DNS:(((?!-)[A-Za-z0-9-\*]{1,63}(?<!-)\.)+[A-Za-z]{2,6})')
 
 
 """ Data structures """
@@ -71,13 +73,20 @@ class DomainProvider:
                 and self.attribute == other.attribute
                )
 
+class IncludedProvider(DomainProvider):
+    """DomainProvider for domains from included_domains_file."""
+    def __init__(self, path=None, line=None, port=None, attribute=None):
+        if not path:
+            path = os.path.join(config_dir_path, included_domains_file)
+        super().__init__('evodomains', 'config', path, line, port, attribute)
+
 class ApacheProvider(DomainProvider):
-    """DomainProvider for Apache"""
+    """DomainProvider for Apache."""
     def __init__(self, path, line, port, attribute=None):
         super().__init__('apache', 'config', path, line, port, attribute)
 
 class NginxProvider(DomainProvider):
-    """DomainProvider for Nginx"""
+    """DomainProvider for Nginx."""
     def __init__(self, path, line, port, attribute=None):
         super().__init__('nginx', 'config', path, line, port, attribute)
 
@@ -87,7 +96,7 @@ class CertificateProvider(DomainProvider):
         super().__init__(provider, 'certificate', path, None, None, attribute)
 
 class HaProxyProvider(DomainProvider):
-    """DomainProvider for HaProxy"""
+    """DomainProvider for HaProxy."""
     def __init__(self, provider_type, path, line, port=None, attribute=None):
         super().__init__('haproxy', provider_type, path, line, port, attribute)
 
@@ -158,6 +167,7 @@ def merge_dicts(*dicts):
     return merged
 
 
+
 """ Code to deal with DNS resolution """
 
 
@@ -200,6 +210,8 @@ class DNSResolutionThread(threading.Thread):
 
 
 def read_config_file(file_path):
+    """Return a list of not empty lines and without the comments (as strings).
+    """
     cleaned_lines = []
     with open(file_path, encoding='utf-8') as f:
         for line in f:
@@ -210,7 +222,8 @@ def read_config_file(file_path):
 
 
 def get_allowed_ips():
-    """Return the list of IPs the domains are allowed to point to."""
+    """Return the list of IPs the domains are allowed to point to.
+    """
 
     # Server IPs
     stdout, stderr, rc = execute('hostname -I')
@@ -229,64 +242,49 @@ def get_allowed_ips():
 """ Functions to deal with X.509 certificates """
 
 
-def get_certificate_CN_domain(cert_path):
-    """Return the domain in the subject CN.
+def get_certificate_domains(cert_path, provider):
+    """List the domains in the certificate.
+    Return a dict containing:
+    - key: CN or SAN domain.
+    - value: a list of CertificateProvider."
     Python module cryptography.x509 is not available on Debian 8,
-    # so let's do it the old way.
+    so let's do it the old way.
     """
-    domain = None
+    domains = {}
     if not os.path.exists(cert_path) or not os.path.isfile(cert_path):
-        return domain
+        return domains
 
-    command = 'openssl x509 -subject -nameopt RFC2253 -noout -in {}'.format(cert_path)
+    command = 'openssl x509 -text -noout -in {}'.format(cert_path)
     try:
         stdout, stderr, rc = execute(command)
         if stderr:
             raise RuntimeError('\n'.join(stderr))
     except:
         print_debug('Could not read certificate file {} or execute {}.'.format(cert_path, command))
-    else:
-        for line in stdout:
-            # format: Subject: (...), CN=<DOMAIN>, (...)
-            words = line.strip().split()
-            for word in words:
-                word = word.strip().strip(',')
-                if word.startswith('CN='):
-                    domain = word.split('=')[1]
-                    if domain:
-                        return domain
-
-    return domain
-
-
-def get_certificate_SAN_domains(cert_path):
-    """Return the list of domains in the Subject Alternative Name (SAN).
-    Neither Python module cryptography.x509 or openssl x509 -ext
-    are available on Debian 8, so let's do it the old way.
-    """
-    domains = []
-
-    if not os.path.exists(cert_path) or not os.path.isfile(cert_path):
         return domains
 
-    command = 'openssl x509 -text -noout -in {} | grep DNS'.format(cert_path)
-    try:
-        stdout, stderr, rc = execute(command, shell=True)
-        if stderr:
-            print_debug('\n'.join(stderr))
-            raise RuntimeError('\n'.join(stderr))
-    except:
-        print_debug('Could not read certificate file {} or execute {}.'.format(cert_path, command))
-    else:
-        for line in stdout:
+    for line in stdout:
+        if 'Subject:' in line:
+            # CN
+            # Format: subject: (...), CN=<COMMON NAME>, (...)
+            match = domain_cn_regex.search(line)
+            if match:
+                domain = match.group(1)
+                if domain not in domains:
+                    domains[domain] = []
+                p = CertificateProvider(provider, cert_path , 'CN')
+                domains[domain].append(p)
+
+        if 'DNS:' in line:
+            # SAN
             # format: DNS:<DOMAIN1>, DNS:<DOMAIN2>[, ...]
-            words = line.strip().split()
-            for word in words:
-                word = word.strip().strip(',')
-                if word.startswith('DNS:'):
-                    domain = word.split(':')[1]
-                    if domain:
-                        domains.append(domain)
+            matches = domain_san_regex.findall(line)
+            for m in matches:
+                domain = m[0]
+                if domain not in domains:
+                    domains[domain] = []
+                p = CertificateProvider(provider, cert_path , 'SAN')
+                domains[domain].append(p)
 
     return domains
 
@@ -354,6 +352,12 @@ def output_providers_human(domains_dict, domain, prefix='', suffix=''):
             print('{}{}:{} port(s) {}{}'.format(prefix, p.path, p.line, p.port, suffix))
         elif p.provider in ['letsencrypt'] and p.type in ['certificate']:
             print('{}{}:{}{}'.format(prefix, p.path, p.attribute, suffix))
+        elif p.provider in ['manual'] and p.type in ['certificate']:
+            print('{}{}:{}{}'.format(prefix, p.path, p.attribute, suffix))
+        elif p.provider in ['evodomains'] and p.type in ['config']:
+            print('{}{}{}'.format(prefix, p.path, suffix))
+        else:
+            print('{}Unknown provider {}{}'.format(prefix, p, suffix))
 
 
 def output_check_result_human(domains, timeout_domains, none_domains, outside_ips):
@@ -449,7 +453,7 @@ def list_apache_domains():
 
 def list_nginx_domains():
     """Parse Nginx dynamic config in search of domains.
-    Return a dict containing :
+    Return a dict containing:
     - key: Nginx domain (from command "nginx -T").
     - value: a list of NginxProvider"
     """
@@ -518,9 +522,34 @@ def list_nginx_domains():
     return domains
 
 
+def list_certificates_domains(dir_path, provider):
+    """ Parse certificates in dir_path in search of domains (not recursive).
+    Return a dict containing:
+    - key: CN or SAN domain.
+    - value: a list of CertificateProvider."
+    """
+
+    print_debug('Listing {} certificates domains for provider {}.'.format(dir_path, provider))
+    domains = {}
+
+    if not os.path.exists(dir_path):
+        return domains
+
+    for f in os.listdir(dir_path):
+        cert_path = os.path.join(dir_path, f)
+        if os.path.islink(cert_path):
+            continue
+
+        cert_domains = get_certificate_domains(cert_path, provider)
+        if cert_domains:
+            domains = merge_dicts(domains, cert_domains)
+
+    return domains
+
+
 def list_letsencrypt_domains():
     """ Parse certificates in /etc/letsencrypt in search of domains.
-    Return a dict containing :
+    Return a dict containing:
     - key: CN or SAN domain (/etc/letsencrypt certs).
     - value: a list of CertificateProvider"
     """
@@ -533,21 +562,9 @@ def list_letsencrypt_domains():
 
     for vhost in os.listdir(le_path):
         cert_path = os.path.join(le_path, vhost, 'live', 'cert.crt')
-
-        cn = get_certificate_CN_domain(cert_path)
-        if cn:
-            if cn not in domains:
-                domains[cn] = []
-            provider = CertificateProvider('letsencrypt', cert_path , 'CN')
-            domains[cn].append(provider)
-
-        san = get_certificate_SAN_domains(cert_path)
-        if san:
-            for domain in san:
-                if domain not in domains:
-                    domains[domain] = []
-                provider = CertificateProvider('letsencrypt', cert_path , 'SAN')
-                domains[domain].append(provider)
+        cert_domains = get_certificate_domains(cert_path, 'letsencrypt')
+        if cert_domains:
+            domains = merge_dicts(domains, cert_domains)
 
     return domains
 
@@ -897,15 +914,23 @@ def list_domains():
     apache_doms = list_apache_domains()
     nginx_doms = list_nginx_domains()
     letsencrypt_doms = list_letsencrypt_domains()
+    etc_ssl_certs_doms = list_certificates_domains('/etc/ssl/certs', 'manual')
     #haproxy_acl_doms = list_haproxy_acl_domains()
     #haproxy_certs_doms = list_haproxy_certs_domains()
 
-    doms = merge_dicts(apache_doms, nginx_doms, letsencrypt_doms)
+    domains = merge_dicts(apache_doms, nginx_doms, letsencrypt_doms, etc_ssl_certs_doms)
 
-    if not doms:
+    for domain in included_domains:
+        if domain not in domains:
+            domains[domain] = []
+        provider = IncludedProvider()
+        if provider not in domains[domain]:
+            domains[domain].append(provider)
+
+    if not domains:
         print_error_and_exit('No domain found on this server.')
 
-    return doms
+    return domains
 
 
 
@@ -916,12 +941,6 @@ def main(argv):
     doms = list_domains()
 
     if action == 'check-dns':
-
-        # Add included domains to domains dict
-        #for domain in included_domains:
-        #    if domain not in doms:
-        #        doms[domain] = []
-        #    doms[domain].append('{}:{}:{}'.format(program_name, included_domains_path, line_number))
 
         timeout_domains, none_domains, outside_ips, ok_domains = check_domains(doms.keys())
 
