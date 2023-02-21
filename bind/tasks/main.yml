@@ -42,7 +42,9 @@
     line: 'include "/etc/bind/zones.rfc1918";'
     regexp: "zones.rfc1918"
   notify: restart bind
-  when: bind_recursive_server | bool
+  when:
+    - bind_recursive_server | bool
+    - not ansible_check_mode
 
 - name: Set bind configuration for authoritative server
   template:

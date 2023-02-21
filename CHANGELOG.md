@@ -41,6 +41,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * clamav: set `MaxConnectionQueueLength` to its default value (200), custom (15) was way too small and caused recurrent connections fail in Postfix.
 * postfix (packmail only): disable `concurrency_failed_cohort_limit` for destination smtp-amavis to prevent the suspension of this destination when Amavis fails to answer. Indeed, we configure the suspension delay quite long in `minimal_backoff_time` (2h) and `maximal_backoff_time` (6h) to reduce the risk of ban from external SMTPs.
 * php: install using sury repositories on bullseye
+* bind: fix fail in check mode
 
 ### Removed
 

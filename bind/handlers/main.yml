@@ -13,6 +13,7 @@
   systemd:
     name: bind9
     state: restarted
+  when: not ansible_check_mode
 
 - name: restart munin-node
   systemd:
