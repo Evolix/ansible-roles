@@ -1,12 +1,14 @@
 ---
 
+- debug:
+    msg: "{{ php_sury_enable }}"
+
 - name: "Set php version to 7.3 if Sury repo is not enabled"
   set_fact:
     php_version: "7.3"
-  when: 
-    - php_sury_enable == 'False'
-    - php_version != '7.3'
-
+  when:
+    - php_sury_enable == false
+  check_mode: no
 
 - name: "Set variables (Debian 10)"
   set_fact:
