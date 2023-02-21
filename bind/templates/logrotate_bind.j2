@@ -1,4 +1,4 @@
-{% if bind_chroot_set %}
+{% if bind_chroot_set | bool %}
 {{ bind_chroot_path }}{{ bind_log_file }} {
 {% else %}
 {{ bind_log_file }} {

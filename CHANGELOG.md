@@ -22,7 +22,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * Use systemd module instead of command
 * Removed all "warn: False" args in command, shell and other modules as it's been deprecated and will give a hard fail in ansible-core 2.14.0.
-* bind: use systemd module
+* bind: refactor role
 * evolinux-users: Update sudoers template to remove commands allowed without password
 * nagios-nrpe : Rewrite check_vrrpd for a better check (check rp_filter, vrrpd and uvrrpd compatible, use arguments, …)
 * openvpn: Change check_openvpn destination file to comply with recent EvoBSD change
@@ -42,7 +42,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * clamav: set `MaxConnectionQueueLength` to its default value (200), custom (15) was way too small and caused recurrent connections fail in Postfix.
 * postfix (packmail only): disable `concurrency_failed_cohort_limit` for destination smtp-amavis to prevent the suspension of this destination when Amavis fails to answer. Indeed, we configure the suspension delay quite long in `minimal_backoff_time` (2h) and `maximal_backoff_time` (6h) to reduce the risk of ban from external SMTPs.
 * php: install using sury repositories on bullseye
-* bind: fix fail in check mode
 
 ### Removed
 
