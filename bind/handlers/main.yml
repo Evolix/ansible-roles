@@ -5,17 +5,17 @@
 
 
 - name: restart apparmor
-  service:
+  systemd:
     name: apparmor
     state: restarted
 
 - name: restart bind
-  service:
+  systemd:
     name: bind9
     state: restarted
 
 - name: restart munin-node
-  service:
+  systemd:
     name: munin-node
     state: restarted
 
