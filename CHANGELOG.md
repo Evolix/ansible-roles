@@ -22,12 +22,13 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * Use systemd module instead of command
 * Removed all "warn: False" args in command, shell and other modules as it's been deprecated and will give a hard fail in ansible-core 2.14.0.
 * bind: use systemd module
+* evolinux-users: Update sudoers template to remove commands allowed without password
+* nagios-nrpe : Rewrite check_vrrpd for a better check (check rp_filter, vrrpd and uvrrpd compatible, use arguments, …)
+* openvpn: Change check_openvpn destination file to comply with recent EvoBSD change
+* postfix: come back to default value of `notify_classes` for pack mails.
 * webapps/nextcloud : Change default data directory to be outside web root
 * webapps/nextcloud : Small enhancement on the vhost template to lock out data dir
-* nagios-nrpe : Rewrite check_vrrpd for a better check (check rp_filter, vrrpd and uvrrpd compatible, use arguments, …)
-* postfix: come back to default value of `notify_classes` for pack mails.
-* openvpn: Change check_openvpn destination file to comply with recent EvoBSD change
-* evolinux-users: Update sudoers template to remove commands allowed without password
+* yarn: update apt key
 
 ### Fixed
 
