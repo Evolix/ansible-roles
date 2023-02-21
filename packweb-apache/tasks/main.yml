@@ -65,19 +65,8 @@
     - access.log
     - error.log
 
-- name: "Install userlogrotate (jessie)"
-  copy:
-    src: userlogrotate_jessie
-    dest: /etc/cron.weekly/userlogrotate
-    mode: "0755"
-  when: ansible_distribution_release == "jessie"
-
-- name: "Install userlogrotate (Debian 9 or later)"
-  copy:
-    src: userlogrotate
-    dest: /etc/cron.weekly/userlogrotate
-    mode: "0755"
-  when: ansible_distribution_major_version is version('9', '>=')
+- include_role:
+    name: userlogrotate
 
 - name: Force DIR_MODE to 0750 in /etc/adduser.conf
   lineinfile:
@@ -102,3 +91,4 @@
 
 - include: multiphp.yml
   when: packweb_multiphp_versions | length > 0
+

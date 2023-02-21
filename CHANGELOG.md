@@ -16,6 +16,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios-nrpe: add tasks/files for a wrapper
 * fail2ban: add "Internal login failure" to Dovecot filter
 * php: add a way to choose which version to install using sury repository
+* userlogrotate: create role separated from packweb-apache
 
 ### Changed
 

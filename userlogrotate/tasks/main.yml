@@ -1,0 +1,34 @@
+---
+- name: "Is userlogrotate present ?"
+  ansible.builtin.find:
+    paths: ["/etc/cron.weekly", "/etc/cron.daily"]
+    patterns: ["userlogrotate"]
+  register: find_logrotate
+  check_mode: no
+
+- name: "Update userlogrotate"
+  ansible.builtin.copy:
+    src: userlogrotate
+    dest: "{{ item.path }}"
+    mode: "0755"
+  loop: "{{ find_logrotate.files }}"
+  when: find_logrotate.files | length>0
+
+- name: "Install userlogrotate (jessie)"
+  copy:
+    src: userlogrotate_jessie
+    dest: /etc/cron.weekly/userlogrotate
+    mode: "0755"
+  when:
+    - ansible_distribution_release == "jessie"
+    - find_logrotate.files | length==0
+
+- name: "Install userlogrotate (Debian 9 or later)"
+  copy:
+    src: userlogrotate
+    dest: /etc/cron.weekly/userlogrotate
+    mode: "0755"
+  when:
+    - ansible_distribution_major_version is version('9', '>=')
+    - find_logrotate.files | length==0
+
