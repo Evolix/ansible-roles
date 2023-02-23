@@ -19,6 +19,7 @@ import threading
 import time
 import argparse
 import json
+from enum import Enum
 try:
     from cryptography import x509
     from cryptography.hazmat.primitives import hashes
@@ -36,13 +37,34 @@ haproxy_conf_path = '/etc/haproxy/haproxy.cfg'
 domain_cn_regex = re.compile('CN=(((?!-)[A-Za-z0-9-\*]{1,63}(?<!-)\.)+[A-Za-z]{2,6})')
 domain_san_regex = re.compile('DNS:(((?!-)[A-Za-z0-9-\*]{1,63}(?<!-)\.)+[A-Za-z]{2,6})')
 
+# Time to wait for DNS answer before considering a domain in timeouted.
+# (Full DNS check must execute in less than 10s to avoid Icinga timeout.)
+DNS_timeout = 5
+
 
 """ Data structures """
+
+class Domain:
+    def __init__(self, domain):
+        self.domain = domain
+        self.providers = []
+        self.DNS_check_result = None
+
+    def add_provider(self, provider):
+        self.providers.append(provider)
+
+    def add_providers(self, providers):
+        self.providers.extend(providers)
+
+    def set_DNS_check_result(self, DNS_check_result):
+        self.DNS_check_result = DNS_check_result
+
 
 class DomainProvider:
     """Data structure to store where a domain was found.
     For inheritance only, should not be instantiated.
     Attributes:
+        - domain: the domain
         - provider: 'apache', 'nginx', 'x509', 'haproxy', ''
         - type: type of provider ('config', 'certificate')
         - path: config or certificate path where the domain was found
@@ -50,7 +72,8 @@ class DomainProvider:
         - port: listening port
         - attribute: certificate attribute ('CN', 'SAN')
     """
-    def __init__(self, provider, provider_type, path, line, port, attribute):
+    def __init__(self, domain, provider, provider_type, path, line, port, attribute):
+        self.domain = domain
         self.provider = provider
         self.type = provider_type
         self.path = path
@@ -65,7 +88,8 @@ class DomainProvider:
         if not isinstance(other, DomainProvider):
             return False
 
-        return (self.provider == other.provider
+        return (self.domain == other.domain
+                and self.provider == other.provider
                 and self.type == other.type
                 and self.path == other.path
                 and self.line == other.line
@@ -75,30 +99,56 @@ class DomainProvider:
 
 class IncludedProvider(DomainProvider):
     """DomainProvider for domains from included_domains_file."""
-    def __init__(self, path=None, line=None, port=None, attribute=None):
+    def __init__(self, domain, path=None, line=None, port=None, attribute=None):
         if not path:
             path = os.path.join(config_dir_path, included_domains_file)
-        super().__init__('evodomains', 'config', path, line, port, attribute)
+        super().__init__(domain, 'evodomains', 'config', path, line, port, attribute)
 
 class ApacheProvider(DomainProvider):
     """DomainProvider for Apache."""
-    def __init__(self, path, line, port, attribute=None):
-        super().__init__('apache', 'config', path, line, port, attribute)
+    def __init__(self, domain, path, line, port, attribute=None):
+        super().__init__(domain, 'apache', 'config', path, line, port, attribute)
 
 class NginxProvider(DomainProvider):
     """DomainProvider for Nginx."""
-    def __init__(self, path, line, port, attribute=None):
-        super().__init__('nginx', 'config', path, line, port, attribute)
+    def __init__(self, domain, path, line, port, attribute=None):
+        super().__init__(domain, 'nginx', 'config', path, line, port, attribute)
 
 class CertificateProvider(DomainProvider):
     """DomainProvider for X.509 certificates."""
-    def __init__(self, provider, path, attribute):
-        super().__init__(provider, 'certificate', path, None, None, attribute)
+    def __init__(self, domain, provider, path, attribute):
+        super().__init__(domain, provider, 'certificate', path, None, None, attribute)
 
-class HaProxyProvider(DomainProvider):
-    """DomainProvider for HaProxy."""
-    def __init__(self, provider_type, path, line, port=None, attribute=None):
-        super().__init__('haproxy', provider_type, path, line, port, attribute)
+#class HaProxyProvider(DomainProvider):
+#    """DomainProvider for HaProxy."""
+#    def __init__(self, domain, provider_type, path, line, port=None, attribute=None):
+#        super().__init__(domain, 'haproxy', provider_type, path, line, port, attribute)
+
+
+class CheckStatus(Enum):
+    OK = 1
+    UNKNOWN = 2
+    DNS_TIMEOUT = 3
+    DOMAIN_NOT_FOUND = 4
+    IP_NOT_ALLOWED = 5
+
+
+class DNSCheckResult:
+    def __init__(self):
+        self.status = CheckStatus.UNKNOWN
+        self.resolve_ips = []
+        self.comments = []
+
+    def set_status(self, status):
+        if not isinstance(status, CheckStatus):
+            raise ValueError('Unknown DNS status {}'.format(status))
+        self.status = status
+
+    def set_resolve_ips(self, ips):
+        self.resolve_ips = ips
+
+    def add_comment(self, comment):
+        self.comments.append(comment)
 
 
 class CustomJSONEncoder(json.JSONEncoder):
@@ -106,8 +156,12 @@ class CustomJSONEncoder(json.JSONEncoder):
     as JSON.
     """
     def default(self, object):
-        if isinstance(object, DomainProvider):
-            return object.__dict__
+        if isinstance(object, Domain) or isinstance(object, DomainProvider) or isinstance(object, DNSCheckResult):
+            # Remove None values
+            d = { key:value for key, value in object.__dict__.items() if value }
+            return d
+        elif isinstance(object, CheckStatus):
+            return object.name
         else:
             return json.JSONEncoder.default(self, object)
 
@@ -118,10 +172,10 @@ class CustomJSONEncoder(json.JSONEncoder):
 
 def print_error_and_exit(s):
     if output ==  'nrpe':
-        print('UNKNOWN - {}'.format(s), file=sys.stderr)
+        print('UNKNOWN - {}'.format(s), file=sys.stderr, flush=True)
         sys.exit(3)
     else:
-        print('Error: {}'.format(s), file=sys.stderr)
+        print('Error: {}'.format(s), file=sys.stderr, flush=True)
         sys.exit(1)
 
 def print_warning(s):
@@ -130,7 +184,7 @@ def print_warning(s):
 
 def print_debug(s):
     if debug:
-        print('Debug: {}'.format(s))
+        print('Debug: {}'.format(s), flush=True)
 
 
 def execute(cmd, shell=False):
@@ -158,13 +212,13 @@ def strip_comments(string):
     return string.split('#')[0]
 
 
-def merge_dicts(*dicts):
-    """Merge an arbitrary number of dictionaries containing lists."""
-    merged = {}
-    for d in dicts:
-        for key, value in d.items():
-            merged.setdefault(key, []).extend(value)
-    return merged
+#def merge_dicts(*dicts):
+#    """Merge an arbitrary number of dictionaries containing lists."""
+#    merged = {}
+#    for d in dicts:
+#        for key, value in d.items():
+#            merged.setdefault(key, []).extend(value)
+#    return merged
 
 
 
@@ -188,7 +242,12 @@ class DNSResolutionThread(threading.Thread):
     def run(self):
         """Resolve domain with dig."""
         try:
-            dig_results = dig(self.domain)
+            domain = self.domain.domain
+            # Wilcards hanling: check www.example.com for *.example.com
+            if '*' in domain:
+                domain = domain.replace('*', 'www')
+
+            dig_results = dig(domain)
 
             if not dig_results:
                 return
@@ -243,25 +302,22 @@ def get_allowed_ips():
 
 
 def get_certificate_domains(cert_path, provider):
-    """List the domains in the certificate.
-    Return a dict containing:
-    - key: CN or SAN domain.
-    - value: a list of CertificateProvider."
-    Python module cryptography.x509 is not available on Debian 8,
-    so let's do it the old way.
+    """List the domains in the certificate with OpenSSL binary
+    (Python module cryptography.x509 is not available on Debian 8).
+    Return a list of CertificateProvider."
     """
-    domains = {}
+    providers = []
     if not os.path.exists(cert_path) or not os.path.isfile(cert_path):
-        return domains
+        return providers
 
     command = 'openssl x509 -text -noout -in {}'.format(cert_path)
     try:
         stdout, stderr, rc = execute(command)
         if stderr:
-            raise RuntimeError('\n'.join(stderr))
+            raise RuntimeError('{}\n'.format(command) + '\n'.join(stderr))
     except:
         print_debug('Could not read certificate file {} or execute {}.'.format(cert_path, command))
-        return domains
+        return providers
 
     for line in stdout:
         if 'Subject:' in line:
@@ -270,10 +326,8 @@ def get_certificate_domains(cert_path, provider):
             match = domain_cn_regex.search(line)
             if match:
                 domain = match.group(1)
-                if domain not in domains:
-                    domains[domain] = []
-                p = CertificateProvider(provider, cert_path , 'CN')
-                domains[domain].append(p)
+                p = CertificateProvider(domain, provider, cert_path , 'CN')
+                providers.append(p)
 
         if 'DNS:' in line:
             # SAN
@@ -281,12 +335,10 @@ def get_certificate_domains(cert_path, provider):
             matches = domain_san_regex.findall(line)
             for m in matches:
                 domain = m[0]
-                if domain not in domains:
-                    domains[domain] = []
-                p = CertificateProvider(provider, cert_path , 'SAN')
-                domains[domain].append(p)
+                p = CertificateProvider(domain, provider, cert_path , 'SAN')
+                providers.append(p)
 
-    return domains
+    return providers
 
 
 
@@ -294,60 +346,61 @@ def get_certificate_domains(cert_path, provider):
 
 
 def output_domains_json(domains):
-    """Print domains dict of Providers to stdout in JSON format.
+    """Print domains dict to stdout in JSON format.
     """
     print(json.dumps(domains, sort_keys=True, indent=4, cls=CustomJSONEncoder))
 
 
 def output_domains_human(domains):
-    """Print domains dict of Providers to stdout in human readable format.
+    """Print domains dict to stdout in human readable format.
     """
     for dom in sorted(domains.keys()):
         print('{}'.format(dom))
-        providers = domains[dom]
-        output_providers_human(domains, dom, prefix='\t')
+        output_providers_human(domains[dom], prefix='\t')
 
 
-def output_check_result_nrpe(timeout_domains, none_domains, outside_ips, ok_domains):
-    """Print domains dict of Providers to stdout in NRPE format.
+def output_check_result_nrpe(domains, ok_domains, timeout_domains, not_found_domains, unallowed_domains, unknown_domains):
+    """Print DNS check results to stdout in NRPE format.
     For now, never output critical alerts.
     """
-
     n_ok = len(ok_domains)
-    n_warnings = len(timeout_domains) + len(none_domains) + len(outside_ips)
+    n_warnings = len(timeout_domains) + len(not_found_domains) + len(unallowed_domains)
+    n_unknown = len(unknown_domains)
 
-    msg = 'WARNING' if n_warnings else 'OK'
+    msg = 'WARNING' if n_warnings or n_unknown else 'OK'
 
-    print('{} - 0 UNK / 0 CRIT / {} WARN / {} OK \n'.format(msg, n_warnings, n_ok))
+    print('{} - {} UNK / 0 CRIT / {} WARN / {} OK \n'.format(msg, n_unknown, n_warnings, n_ok))
 
-    if timeout_domains or none_domains or outside_ips:
-        for d in timeout_domains:
-            print('WARNING - timeout resolving {}'.format(d))
-        for d in none_domains:
-            print('WARNING - no resolution for {}'.format(d))
-        for d in outside_ips:
-            print('WARNING - {} pointing elsewhere ({})'.format(d, ' '.join(outside_ips[d])))
+    for d in unknown_domains.keys():
+        print('UNKNOWN - DNS status of {}'.format(d))
+    for d in timeout_domains.keys():
+        print('WARNING - timeout resolving {}'.format(d))
+    for d in not_found_domains.keys():
+        print('WARNING - no resolution for {}'.format(d))
+    for d in unallowed_domains.keys():
+        print('WARNING - {} resolves to unallowed IP ({})'.format(d, ' '.join(unallowed_domains[d].DNS_check_result.resolve_ips)))
 
-    sys.exit(1) if n_warnings else sys.exit(0)
+    sys.exit(1) if n_warnings or n_unknown else sys.exit(0)
 
 
-def output_check_result_json(domains, timeout_domains, none_domains, outside_ips, ok_domains):
+def output_check_result_json(domains, ok_domains, timeout_domains, not_found_domains, unallowed_domains, unknown_domains):
     """Print result of check domains to stdout in JSON format.
     """
     output_dict = {
-        'domains': domains,
         'timeout_domains': sorted(timeout_domains),
-        'none_domains': sorted(none_domains),
-        'outside_ips': outside_ips,
-        'ok_domains': sorted(ok_domains)
+        'not_found_domains': sorted(not_found_domains),
+        'unallowed_domains': unallowed_domains,
+        'unknown_domains': unknown_domains,
+        'ok_domains': sorted(ok_domains),
+        'domains': domains
     }
     print(json.dumps(output_dict, sort_keys=True, indent=4, cls=CustomJSONEncoder))
 
 
-def output_providers_human(domains_dict, domain, prefix='', suffix=''):
-    """Print providers (in domains_dict) of domain in human readable format.
+def output_providers_human(domain, prefix='', suffix=''):
+    """Print providers of domain object in human readable format.
     """
-    for p in domains_dict[domain]:
+    for p in domain.providers:
         if p.provider in ['apache', 'nginx'] and p.type in ['config']:
             print('{}{}:{} port(s) {}{}'.format(prefix, p.path, p.line, p.port, suffix))
         elif p.provider in ['letsencrypt'] and p.type in ['certificate']:
@@ -360,25 +413,30 @@ def output_providers_human(domains_dict, domain, prefix='', suffix=''):
             print('{}Unknown provider {}{}'.format(prefix, p, suffix))
 
 
-def output_check_result_human(domains, timeout_domains, none_domains, outside_ips):
+def output_check_result_human(domains, ok_domains, timeout_domains, not_found_domains, unallowed_domains, unknown_domains):
     """Print result of check domains to stdout in human readable format.
     """
-    if timeout_domains or none_domains or outside_ips:
+    if timeout_domains or not_found_domains or unallowed_domains or unknown_domains:
 
         if timeout_domains: print('\nTimeouts:')
-        for d in timeout_domains:
+        for d in timeout_domains.keys():
             print('\t{}'.format(d))
-            output_providers_human(domains, d, '\t\t')
+            output_providers_human(domains[d], '\t\t')
 
-        if none_domains: print('\nNo resolution:')
-        for d in none_domains:
+        if not_found_domains: print('\nNo resolution:')
+        for d in not_found_domains.keys():
             print('\t{}'.format(d))
-            output_providers_human(domains, d, '\t\t')
+            output_providers_human(domains[d], '\t\t')
 
-        if outside_ips: print('\nPointing elsewhere:')
-        for d in outside_ips:
-            print('\t{} -> [{}]'.format(d, ' '.join(outside_ips[d])))
-            output_providers_human(domains, d, '\t\t')
+        if unallowed_domains: print('\nUnallowed resolved IPs:')
+        for d in unallowed_domains.keys():
+            print('\t{} -> [{}]'.format(d, ' '.join(unallowed_domains[d].DNS_check_result.resolve_ips)))
+            output_providers_human(domains[d], '\t\t')
+
+        if unknown_domains: print('\nUnknown DNS status:')
+        for d in unknown_domains.keys():
+            print('\t{}'.format(d))
+            output_providers_human(domains[d], '\t\t')
 
         sys.exit(1)
 
@@ -391,19 +449,17 @@ def output_check_result_human(domains, timeout_domains, none_domains, outside_ip
 
 def list_apache_domains():
     """Parse Apache live vhosts in search of domains.
-    Return a dict containing:
-    - key: Apache domain (from command "apache2ctl -D DUMP_VHOSTS").
-    - value: a list of ApacheProvider"
+    Return a list of ApacheProvider.
     """
     print_debug('Listing Apache domains.')
-    domains = {}
+    providers = []
 
     # Dumps Apache vhosts
     try:
         stdout, stderr, rc = execute('apache2ctl -D DUMP_VHOSTS')
     except:
         print_debug('Apache is not present.')
-        return domains
+        return providers
 
     # Parse output of 'apache2ctl -D DUMP_VHOSTS'
     for line in stdout:
@@ -441,425 +497,458 @@ def list_apache_domains():
                             if domain in words:
                                 line_numbers.append(i)
 
-            if domain not in domains:
-                domains[domain] = []
             for line_number in line_numbers:
-                provider = ApacheProvider(config_path, line_number, port)
-                if provider not in domains[domain]:
-                    domains[domain].append(provider)
+                provider = ApacheProvider(domain, config_path, line_number, port)
+                if provider not in providers:
+                    providers.append(provider)
 
-    return domains
+    return providers
 
 
 def list_nginx_domains():
     """Parse Nginx dynamic config in search of domains.
-    Return a dict containing:
-    - key: Nginx domain (from command "nginx -T").
-    - value: a list of NginxProvider"
+    Return a list of NginxProvider.
     """
     print_debug('Listing Ningx domains.')
-    domains = {}
+    providers = []
 
     try:
         stdout, stderr, rc = execute('nginx -T')
     except:
         print_debug('Nginx is not present.')
-        return domains
+        return providers
 
-    line_number, config_file_path, ports = None, None, None
+    line_number, config_file_path, ports, domains = None, None, None, None
 
     for line in stdout:
         if line_number is not None:
             line_number += 1
 
+        # New config file, reset line number
         if '# configuration file' in line:
             # line format: # configuration file <PATH>:
             words = line.strip().strip(';').split()
             config_file_path = words[3].strip(' :')
             line_number = 0
 
-        elif 'server' in line and '{' in line:
-            # line format: server {
-            line = strip_comments(line).strip().strip('{').strip()
-            if line == 'server':
-                ports = []
+        else:
+            line = strip_comments(line).strip()
 
-        elif 'listen' in line:
-            # line format: [IP:]<PORT> [[IP:]<PORT>...] | <OTHER_DIRECTIVES>
-            line = strip_comments(line).strip().strip(';')
-            words = line.split()
+            # New vhost, save previous result and reset domains and ports
+            if 'server' in line and '{' in line:
+                # line format: server {
+                line = strip_comments(line).strip().strip('{').strip()
+                if line == 'server':
+                    if domains and ports:
+                        for domain in domains:
+                            for port in ports:
+                                provider = NginxProvider(domain, config_file_path, line_number, port)
+                                if provider not in providers:
+                                    providers.append(provider)
+                    domains, ports = [], []
 
-            if 'listen' in words:
-                for w1 in words[1:]:
-                    words2 = w1.split(':')
-                    for w2 in words2:
-                        try:
-                            p = int(w2)
-                        except:
-                            # Not a port
-                            pass
-                        else:
-                            if p not in ports:
-                                ports.append(p)
+            # Parse port
+            elif 'listen' in line:
+                # line format: [IP:]<PORT> [[IP:]<PORT>...] | <OTHER_DIRECTIVES>
+                line = strip_comments(line).strip().strip(';')
+                words = line.split()
 
-        elif 'server_name' in line:
-            # line format: server_name <DOMAIN1> [<DOMAINS2 ...];
-            line = strip_comments(line).strip().strip(';')
-            words = line.split()
+                if 'listen' in words:
+                    for w1 in words[1:]:
+                        words2 = w1.split(':')
+                        for w2 in words2:
+                            try:
+                                p = int(w2)
+                            except:
+                                # Not a port
+                                pass
+                            else:
+                                if p not in ports:
+                                    ports.append(p)
 
-            if 'server_name' in words:
-                for d in words[1:]:
-                    domain = d.strip()
-                    if domain == '_':  # default vhost
-                        continue
-                    if domain not in domains:
-                        domains[domain] = []
-                    for port in ports:
-                        provider = NginxProvider(config_file_path, line_number, port)
-                        if provider not in domains[domain]:
-                            domains[domain].append(provider)
+            # Parse domain
+            elif 'server_name' in line:
+                # line format: server_name <DOMAIN1> [<DOMAINS2 ...];
+                line = strip_comments(line).strip().strip(';')
+                words = line.split()
 
-    return domains
+                if 'server_name' in words:
+                    for d in words[1:]:
+                        domain = d.strip()
+                        if domain == '_':  # default vhost
+                            continue
+                        domains.append(domain)
+
+    # Save last server directive
+    if domains and ports:
+        for domain in domains:
+            for port in ports:
+                provider = NginxProvider(domain, config_file_path, line_number, port)
+                if provider not in providers:
+                    providers.append(provider)
+
+    return providers
 
 
 def list_certificates_domains(dir_path, provider):
     """ Parse certificates in dir_path in search of domains (not recursive).
-    Return a dict containing:
-    - key: CN or SAN domain.
-    - value: a list of CertificateProvider."
+    Return a list of CertificateProvider."
     """
 
     print_debug('Listing {} certificates domains for provider {}.'.format(dir_path, provider))
-    domains = {}
+    providers = []
 
     if not os.path.exists(dir_path):
-        return domains
+        return providers
 
     for f in os.listdir(dir_path):
         cert_path = os.path.join(dir_path, f)
         if os.path.islink(cert_path):
+            # Cert is a CA
             continue
 
-        cert_domains = get_certificate_domains(cert_path, provider)
-        if cert_domains:
-            domains = merge_dicts(domains, cert_domains)
+        cert_providers = get_certificate_domains(cert_path, provider)
+        if cert_providers:
+            providers.extend(cert_providers)
 
-    return domains
+    return providers
 
 
 def list_letsencrypt_domains():
     """ Parse certificates in /etc/letsencrypt in search of domains.
-    Return a dict containing:
-    - key: CN or SAN domain (/etc/letsencrypt certs).
-    - value: a list of CertificateProvider"
+    Return a list of CertificateProvider."
     """
     print_debug('Listing Let\'s Encrypt certificates domains.')
-    domains = {}
+    providers = []
 
     le_path = '/etc/letsencrypt'
     if not os.path.exists(le_path):
-        return domains
+        return providers
 
     for vhost in os.listdir(le_path):
         cert_path = os.path.join(le_path, vhost, 'live', 'cert.crt')
-        cert_domains = get_certificate_domains(cert_path, 'letsencrypt')
-        if cert_domains:
-            domains = merge_dicts(domains, cert_domains)
+        cert_providers = get_certificate_domains(cert_path, 'letsencrypt')
+        if cert_providers:
+            providers.extend(cert_providers)
 
-    return domains
+    return providers
 
 
-def list_haproxy_acl_domains():
-    """Parse HaProxy config file in search of domain ACLs or files containing list of domains.
-    Return a dict containing :
-    - key: HaProxy domains (from ACLs in /etc/haproxy/haproxy.cgf).
-    - value: a list of strings "haproxy:/etc/haproxy/haproxy.cfg:<LINE_IN_CONF>"
+#def list_haproxy_acl_domains():
+#    """Parse HaProxy config file in search of domain ACLs or files containing list of domains.
+#    Return a dict containing :
+#    - key: HaProxy domains (from ACLs in /etc/haproxy/haproxy.cgf).
+#    - value: a list of strings "haproxy:/etc/haproxy/haproxy.cfg:<LINE_IN_CONF>"
+#    """
+#    print_debug('Listing HaProxy ACL domains')
+#    domains = {}
+#
+#    if not os.path.isfile(haproxy_conf_path):
+#        # HaProxy is not installed
+#        print_warning('{} not found'.format(haproxy_conf_path))
+#        return domains
+#
+#    # Domains from ACLs
+#    with open(haproxy_conf_path, encoding='utf-8') as f:
+#        line_number = 0
+#        files = []
+#        for line in f.readlines():
+#            line_number += 1
+#
+#            # Handled line format:
+#            #    acl <ACL_NAME> [hdr|hdr_reg|hdr_end](host) [-i] <STRING> [<STRING> [...]]
+#            #    acl <ACL_NAME> [hdr|hdr_reg](host) [-i] -f <FILE>
+#
+#            line = strip_comments(line).strip()
+#
+#            if (not line) or (not line.startswith('acl')):
+#                continue
+#            if 'hdr(host)' not in line and 'hdr_reg(host)' not in line and 'hdr_end(host)' not in line:
+#                continue
+#
+#            # Remove 'acl <ACL_NAME>' from line
+#            line = ' '.join(line.split()[2:])
+#
+#            is_file = False
+#            if ' -f ' in line:
+#                is_file = True
+#
+#            # Limit: does not handle regex
+#
+#            words = line.split()
+#            for word in line.split():
+#                if word in ['hdr(host)', 'hdr_reg(host)', 'hdr_end(host)', '-f', '-i']:
+#                    continue
+#
+#                if is_file:
+#                    if word not in files:
+#                        print('Found HaProxy domains file {}'.format(word))
+#                        files.append(word)
+#                else:
+#                    dom_infos = 'haproxy:{}:{}'.format(haproxy_conf_path, line_number)
+#                    if word not in domains:
+#                        domains[word] = []
+#                    if dom_infos not in domains[word]:
+#                        domains[word].append(dom_infos)
+#
+#        for f in files:
+#            domains_to_add = read_haproxy_domains_file(f, 'haproxy')
+#            domains.update(domains_to_add)
+#
+##TODO remove (call elsewhere)
+#    # Domains from HaProxy certificates
+##    domains_to_add = list_haproxy_certs_domains()
+##    domains.update(domains_to_add)
+#
+#    return domains
+#
+#
+#def read_haproxy_domains_file(domains_file_path, origin):
+#    """Process a file containing a list of domains :
+#    - domains_file_path: path of the file to parse
+#    - origin: string keyword to prepend to the domains infos. Exemple: 'haproxy'
+#    Return a dict containing :
+#    - key: domain (from domains_file_path)
+#    - value: a list of strings "origin:domains_file_path:<LINE_IN_BLOCK>"
+#    """
+#    domains = {}
+#
+#    try:
+#        with open(domains_file_path, encoding='utf-8') as f:
+#            line_number = 0
+#            for line in f.readlines():
+#                line_number += 1
+#
+#                dom = strip_comments(line).strip()
+#                if not dom:
+#                    continue
+#
+#                dom_infos = '{}:{}:{}'.format(origin, domains_file_path, line_number)
+#                if dom not in domains:
+#                    domains[dom] = []
+#                if dom_infos not in domains[dom]:
+#                    domains[dom].append(dom_infos)
+#
+#    except FileNotFoundError as e:
+#        print_warning('FileNotFound {}'.format(domains_file_path))
+#        print_warning(e)
+#
+#    return domains
+#
+#
+#def list_haproxy_certs_domains():
+#    """Return the domains present in HaProxy SSL certificates.
+#    Return a dict containing:
+#    - key: domain (from domains_file_path)
+#    - value: a list of strings "haproxy_certs:cert_path:CN|SAN"
+#    """
+#    print_debug('Listing HaProxy certificates domains')
+#    domains = {}
+#
+#    # Check if HaProxy version supports "show ssl cert" command
+#    supports_show_ssl_cert = does_haproxy_support_show_ssl_cert()
+#
+#    if supports_show_ssl_cert:
+#        socket = get_haproxy_stats_socket()
+#        # Ajoute l'IP locale dans le cas d'un port TCP (au lieu d'un socket Unix)
+#        if socket.startswith(':'):
+#            socket = 'tcp:127.0.0.1{}'.format(socket)
+#
+#        print('echo "show ssl cert" | socat stdio {}'.format(socket))
+#        stdout, stderr, rc = execute('echo "show ssl cert" | socat stdio {}'.format(socket), shell=True)
+#
+#        for cert_path in stdout:
+#            if cert_path.strip().startswith('#'):
+#                continue
+#            if os.path.isfile(cert_path):
+#                domains_to_add = list_cert_domains(cert_path, 'haproxy_certs')
+#                domains.update(domains_to_add)
+#
+#    else:
+#        if not os.path.isfile(haproxy_conf_path):
+#            # HaProxy is not installed
+#            print_warning('{} not found'.format(haproxy_conf_path))
+#            return domains
+#
+#        # Get HaProxy certificates paths (can be directory or file)
+#        # Line format : bind *:<PORT> ssl crt <CERT_PATH>
+#        cert_paths = []
+#        with open(haproxy_conf_path, encoding='utf-8') as f:
+#            for line in f.readlines():
+#                line = strip_comments(line).strip()
+#                if not line: continue
+#                if ' crt ' in line:
+#                    crt_index = line.find(' crt ')
+#                    subs = line[crt_index+5:]
+#                    cert_path = subs.split(' ')[0]  # in case other options are after cert path
+#                    cert_paths.append(cert_path)
+#            print("hap certs", cert_paths)
+#
+#        for cert_path in cert_paths:
+#            if os.path.isfile(cert_path):
+#                print(cert_path)
+#                domains_to_add = list_cert_domains(cert_path, 'haproxy_certs')
+#                domains.update(domains_to_add)
+#            elif os.path.isdir(cert_path):
+#                for f in os.listdir(cert_path):
+#                    p = cert_path + f
+#                    if os.path.isfile(p):
+#                        domains_to_add = list_cert_domains(p, 'haproxy_certs')
+#                        domains.update(domains_to_add)
+#
+#    return domains
+#
+#
+#def does_haproxy_support_show_ssl_cert():
+#    """Return True if HaProxy version supports 'show ssl cert' command (version >= 2.2)."""
+#
+#    stdout, stderr, rc = execute('dpkg -l haproxy | grep ii', shell=True)
+#
+#    supports_show_ssl_cert = False
+#
+#    if rc == 0:
+#        for line in stdout:
+#            words = line.strip().split()
+#            if len(words) >= 3 and words[1] == 'haproxy':
+#                version = words[2]
+#                [major, minor] = version.split('.')[:2]
+#                if int(major) >= 2 and int(minor) >= 2:
+#                    supports_show_ssl_cert = True
+#
+#    return supports_show_ssl_cert
+#
+#
+#def get_haproxy_stats_socket():
+#    """Return HaProxy stats socket."""
+#
+#    with open(haproxy_conf_path, encoding='utf-8') as f:
+#        line_number = 0
+#        for line in f.readlines():
+#            words = line.strip().split()
+#            if len(words) >= 3 and words[0] == 'stats' and words[1] == 'socket':
+#                i
+#                return words[2]
+#
+#    return None
+#
+#
+#def list_cert_domains(cert_path, origin):
+#    """Return the domains present in a X.509 PEM certificate.
+#    - cert_path: path of the certificate
+#    - origin: string keyword to prepend to the domains infos. Exemple: 'haproxy_certs'
+#    Return a dict containing :
+#    - key: domain (from the certificate)
+#    - value: a list of strings "origin:cert_path:CN|SAN"
+#    """
+#    domains = {}
+#
+#    with open(cert_path, 'rb') as f:
+#        try:
+#            cert = x509.load_pem_x509_certificate(f.read(), default_backend())
+#        except ValueError:
+#            print_warning('Could not load certificate file {}.'.format(cert_path))
+#            return domains
+#
+#        # Common name
+#        cn_list = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
+#        if cn_list and len(cn_list) > 0:
+#           dom = cn_list[0].value
+#           dom_infos = '{}:{}:CN'.format(origin, cert_path)
+#           if dom not in domains:
+#               domains[dom] = []
+#           if dom_infos not in domains[dom]:
+#               domains[dom].append(dom_infos)
+#
+#        # Subject Alternative Name
+#        try:
+#            san_ext = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+#            for dom in san_ext.value.get_values_for_type(x509.DNSName):
+#                dom_infos = '{}:{}:SAN'.format(origin, cert_path)
+#                if dom not in domains:
+#                    domains[dom] = []
+#                if dom_infos not in domains[dom]:
+#                    domains[dom].append(dom_infos)
+#        except x509.ExtensionNotFound:
+#            pass
+#
+#    return domains
+
+
+def list_domains():
+    """List domains from all providers.
+    Return a dict of { key: domain, value: Domain object }
     """
-    print_debug('Listing HaProxy ACL domains')
+    apache_providers = list_apache_domains()
+    nginx_providers = list_nginx_domains()
+    letsencrypt_providers = list_letsencrypt_domains()
+    etc_ssl_certs_providers = list_certificates_domains('/etc/ssl/certs', 'manual')
+    #haproxy_acl_providers = list_haproxy_acl_domains()
+    #haproxy_certs_providers = list_haproxy_certs_domains()
+
+    providers = apache_providers + nginx_providers + letsencrypt_providers + etc_ssl_certs_providers
+
+    for domain in included_domains:
+        provider = IncludedProvider()
+        if provider not in providers:
+            providers.append(provider)
+
+    if not providers:
+        print_error_and_exit('No domain found on this server.')
+
     domains = {}
-
-    if not os.path.isfile(haproxy_conf_path):
-        # HaProxy is not installed
-        print_warning('{} not found'.format(haproxy_conf_path))
-        return domains
-
-    # Domains from ACLs
-    with open(haproxy_conf_path, encoding='utf-8') as f:
-        line_number = 0
-        files = []
-        for line in f.readlines():
-            line_number += 1
-
-            # Handled line format:
-            #    acl <ACL_NAME> [hdr|hdr_reg|hdr_end](host) [-i] <STRING> [<STRING> [...]]
-            #    acl <ACL_NAME> [hdr|hdr_reg](host) [-i] -f <FILE>
-
-            line = strip_comments(line).strip()
-
-            if (not line) or (not line.startswith('acl')):
-                continue
-            if 'hdr(host)' not in line and 'hdr_reg(host)' not in line and 'hdr_end(host)' not in line:
-                continue
-
-            # Remove 'acl <ACL_NAME>' from line
-            line = ' '.join(line.split()[2:])
-
-            is_file = False
-            if ' -f ' in line:
-                is_file = True
-
-            # Limit: does not handle regex
-
-            words = line.split()
-            for word in line.split():
-                if word in ['hdr(host)', 'hdr_reg(host)', 'hdr_end(host)', '-f', '-i']:
-                    continue
-
-                if is_file:
-                    if word not in files:
-                        print('Found HaProxy domains file {}'.format(word))
-                        files.append(word)
-                else:
-                    dom_infos = 'haproxy:{}:{}'.format(haproxy_conf_path, line_number)
-                    if word not in domains:
-                        domains[word] = []
-                    if dom_infos not in domains[word]:
-                        domains[word].append(dom_infos)
-
-        for f in files:
-            domains_to_add = read_haproxy_domains_file(f, 'haproxy')
-            domains.update(domains_to_add)
-
-#TODO remove (call elsewhere)
-    # Domains from HaProxy certificates
-#    domains_to_add = list_haproxy_certs_domains()
-#    domains.update(domains_to_add)
-
-    return domains
-
-
-def read_haproxy_domains_file(domains_file_path, origin):
-    """Process a file containing a list of domains :
-    - domains_file_path: path of the file to parse
-    - origin: string keyword to prepend to the domains infos. Exemple: 'haproxy'
-    Return a dict containing :
-    - key: domain (from domains_file_path)
-    - value: a list of strings "origin:domains_file_path:<LINE_IN_BLOCK>"
-    """
-    domains = {}
-
-    try:
-        with open(domains_file_path, encoding='utf-8') as f:
-            line_number = 0
-            for line in f.readlines():
-                line_number += 1
-
-                dom = strip_comments(line).strip()
-                if not dom:
-                    continue
-
-                dom_infos = '{}:{}:{}'.format(origin, domains_file_path, line_number)
-                if dom not in domains:
-                    domains[dom] = []
-                if dom_infos not in domains[dom]:
-                    domains[dom].append(dom_infos)
-
-    except FileNotFoundError as e:
-        print_warning('FileNotFound {}'.format(domains_file_path))
-        print_warning(e)
-
-    return domains
-
-
-def list_haproxy_certs_domains():
-    """Return the domains present in HaProxy SSL certificates.
-    Return a dict containing:
-    - key: domain (from domains_file_path)
-    - value: a list of strings "haproxy_certs:cert_path:CN|SAN"
-    """
-    print_debug('Listing HaProxy certificates domains')
-    domains = {}
-
-    # Check if HaProxy version supports "show ssl cert" command
-    supports_show_ssl_cert = does_haproxy_support_show_ssl_cert()
-
-    if supports_show_ssl_cert:
-        socket = get_haproxy_stats_socket()
-        # Ajoute l'IP locale dans le cas d'un port TCP (au lieu d'un socket Unix)
-        if socket.startswith(':'):
-            socket = 'tcp:127.0.0.1{}'.format(socket)
-
-        print('echo "show ssl cert" | socat stdio {}'.format(socket))
-        stdout, stderr, rc = execute('echo "show ssl cert" | socat stdio {}'.format(socket), shell=True)
-
-        for cert_path in stdout:
-            if cert_path.strip().startswith('#'):
-                continue
-            if os.path.isfile(cert_path):
-                domains_to_add = list_cert_domains(cert_path, 'haproxy_certs')
-                domains.update(domains_to_add)
-
-    else:
-        if not os.path.isfile(haproxy_conf_path):
-            # HaProxy is not installed
-            print_warning('{} not found'.format(haproxy_conf_path))
-            return domains
-
-        # Get HaProxy certificates paths (can be directory or file)
-        # Line format : bind *:<PORT> ssl crt <CERT_PATH>
-        cert_paths = []
-        with open(haproxy_conf_path, encoding='utf-8') as f:
-            for line in f.readlines():
-                line = strip_comments(line).strip()
-                if not line: continue
-                if ' crt ' in line:
-                    crt_index = line.find(' crt ')
-                    subs = line[crt_index+5:]
-                    cert_path = subs.split(' ')[0]  # in case other options are after cert path
-                    cert_paths.append(cert_path)
-            print("hap certs", cert_paths)
-
-        for cert_path in cert_paths:
-            if os.path.isfile(cert_path):
-                print(cert_path)
-                domains_to_add = list_cert_domains(cert_path, 'haproxy_certs')
-                domains.update(domains_to_add)
-            elif os.path.isdir(cert_path):
-                for f in os.listdir(cert_path):
-                    p = cert_path + f
-                    if os.path.isfile(p):
-                        domains_to_add = list_cert_domains(p, 'haproxy_certs')
-                        domains.update(domains_to_add)
-
-    return domains
-
-
-def does_haproxy_support_show_ssl_cert():
-    """Return True if HaProxy version supports 'show ssl cert' command (version >= 2.2)."""
-
-    stdout, stderr, rc = execute('dpkg -l haproxy | grep ii', shell=True)
-
-    supports_show_ssl_cert = False
-
-    if rc == 0:
-        for line in stdout:
-            words = line.strip().split()
-            if len(words) >= 3 and words[1] == 'haproxy':
-                version = words[2]
-                [major, minor] = version.split('.')[:2]
-                if int(major) >= 2 and int(minor) >= 2:
-                    supports_show_ssl_cert = True
-
-    return supports_show_ssl_cert
-
-
-def get_haproxy_stats_socket():
-    """Return HaProxy stats socket."""
-
-    with open(haproxy_conf_path, encoding='utf-8') as f:
-        line_number = 0
-        for line in f.readlines():
-            words = line.strip().split()
-            if len(words) >= 3 and words[0] == 'stats' and words[1] == 'socket':
-                i
-                return words[2]
-
-    return None
-
-
-def list_cert_domains(cert_path, origin):
-    """Return the domains present in a X.509 PEM certificate.
-    - cert_path: path of the certificate
-    - origin: string keyword to prepend to the domains infos. Exemple: 'haproxy_certs'
-    Return a dict containing :
-    - key: domain (from the certificate)
-    - value: a list of strings "origin:cert_path:CN|SAN"
-    """
-    domains = {}
-
-    with open(cert_path, 'rb') as f:
-        try:
-            cert = x509.load_pem_x509_certificate(f.read(), default_backend())
-        except ValueError:
-            print_warning('Could not load certificate file {}.'.format(cert_path))
-            return domains
-
-        # Common name
-        cn_list = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
-        if cn_list and len(cn_list) > 0:
-           dom = cn_list[0].value
-           dom_infos = '{}:{}:CN'.format(origin, cert_path)
-           if dom not in domains:
-               domains[dom] = []
-           if dom_infos not in domains[dom]:
-               domains[dom].append(dom_infos)
-
-        # Subject Alternative Name
-        try:
-            san_ext = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
-            for dom in san_ext.value.get_values_for_type(x509.DNSName):
-                dom_infos = '{}:{}:SAN'.format(origin, cert_path)
-                if dom not in domains:
-                    domains[dom] = []
-                if dom_infos not in domains[dom]:
-                    domains[dom].append(dom_infos)
-        except x509.ExtensionNotFound:
-            pass
+    for p in providers:
+        if p.domain not in domains:
+            domains[p.domain] = Domain(p.domain)
+        domains[p.domain].add_provider(p)
 
     return domains
 
 
 def check_domains(domains):
-    """Check resolution of domains (list).
-    Returns:
-    - timeout_domains: list of domains which exceeded timeout limit (see 'timeout' variable).
-    - none_domains: list of domains that do not resolve.
-    - outside_ips: dict of domains (keys) that resolve to some not allowed IPs (values).
-    - ok_domains: list of domains that resolve to allowed IPs.
+    """Check resolution of domains and save it a DNSCheckResult object in Domain attribute DNS_check_result.
+    Returns: nothing
+    #- timeout_domains: list of domains which exceeded timeout limit (see 'timeout' variable).
+    #- none_domains: list of domains that do not resolve.
+    #- outside_ips: dict of domains (keys) that resolve to some not allowed IPs (values).
+    #- ok_domains: list of domains that resolve to allowed IPs.
     """
-
-    timeout = 5
-
     jobs = []
-    timeout_domains = []
-    none_domains = []
-    outside_ips = {}
-    ok_domains = []
-
-    for d in domains:
-        if d in ignored_domains:
-            ok_domains.append(d)
-            continue
-
-        #TODO: handle partially wilcards: check root domain example.com for *.example.com
-
-        t = DNSResolutionThread(d)
+    for domain_txt, domain_obj in domains.items():
+        t = DNSResolutionThread(domain_obj)
         t.start()
         jobs.append(t)
 
-    # Let <timeout> secs to DNS servers to reply to jobs threads queries
-    time.sleep(timeout)
+    # Let <DNS_timeout> secs to DNS servers to reply to jobs threads queries
+    time.sleep(DNS_timeout)
 
     for j in jobs:
-        if j.is_alive():
-            timeout_domains.append(j.domain)
-            continue
+        result = DNSCheckResult()
 
-        if not j.ips:
-            none_domains.append(j.domain)
-            continue
+        if '*' in j.domain.domain:
+            result.add_comment("Domain in ignored domains list.")
 
-        is_outside = False
-        for ip in j.ips:
-            if ip not in allowed_ips:
-                is_outside = True
-                break
-        if is_outside:
-            outside_ips[j.domain] = j.ips
+        if j.domain.domain in ignored_domains:
+            result.set_status(CheckStatus.OK)
+            result.add_comment("Domain in ignored domains list.")
+            if j.ips:
+                result.set_resolve_ips(j.ips)
+        elif j.is_alive():
+            result.set_status(CheckStatus.DNS_TIMEOUT)
+        elif not j.ips:
+            result.set_status(CheckStatus.DOMAIN_NOT_FOUND)
         else:
-            ok_domains.append(j.domain)
+            result.set_resolve_ips(j.ips)
+            is_allowed = True
+            for ip in j.ips:
+                if ip not in allowed_ips:
+                    is_allowed = False
+                    break
+            if not is_allowed:
+                result.set_status(CheckStatus.IP_NOT_ALLOWED)
+            else:
+                result.set_status(CheckStatus.OK)
 
-    return timeout_domains, none_domains, outside_ips, ok_domains
+        j.domain.set_DNS_check_result(result)
 
 
 def parse_arguments():
@@ -886,9 +975,11 @@ def parse_arguments():
 
 
 def check_deps():
-    if 'cryptography.x509' not in sys.modules:
-        print_warning('Python3 cryptography.x509 module missing, failing over OpenSSL.'.format(program_name))
-    #TODO: socat
+    #TODO: socat, openssl…
+    # Replaced by openssl (for now, it is useless to maintain 2 ways of reading certs)
+    #if 'cryptography.x509' not in sys.modules:
+    #    print_warning('Python3 cryptography.x509 module missing (need python3-cryptography >= 0.9), failing over OpenSSL binary.')
+    pass
 
 
 def load_conf():
@@ -910,59 +1001,45 @@ def load_conf():
     ignored_domains.append('_')
 
 
-def list_domains():
-    apache_doms = list_apache_domains()
-    nginx_doms = list_nginx_domains()
-    letsencrypt_doms = list_letsencrypt_domains()
-    etc_ssl_certs_doms = list_certificates_domains('/etc/ssl/certs', 'manual')
-    #haproxy_acl_doms = list_haproxy_acl_domains()
-    #haproxy_certs_doms = list_haproxy_certs_domains()
-
-    domains = merge_dicts(apache_doms, nginx_doms, letsencrypt_doms, etc_ssl_certs_doms)
-
-    for domain in included_domains:
-        if domain not in domains:
-            domains[domain] = []
-        provider = IncludedProvider()
-        if provider not in domains[domain]:
-            domains[domain].append(provider)
-
-    if not domains:
-        print_error_and_exit('No domain found on this server.')
-
-    return domains
-
-
-
 def main(argv):
     parse_arguments()
     check_deps()
     load_conf()
-    doms = list_domains()
+    domains = list_domains()
 
-    if action == 'check-dns':
-
-        timeout_domains, none_domains, outside_ips, ok_domains = check_domains(doms.keys())
-
+    if action == 'list':
         if output == 'nrpe':
-            output_check_result_nrpe(timeout_domains, none_domains, outside_ips, ok_domains)
-
+            print_error_and_exit('Action \'list\' is not available for \'--output nrpe\'.')
         elif output == 'json':
-            output_check_result_json(doms, timeout_domains, none_domains, outside_ips, ok_domains)
-
+            output_domains_json(domains)
         else:  # output == 'human'
-            output_check_result_human(doms, timeout_domains, none_domains, outside_ips)
+            output_domains_human(domains)
 
-    elif action == 'list':
+    elif action == 'check-dns':
+        check_domains(domains)
+
+        # Sort domains in function of check results
+        ok_domains, timeout_domains, not_found_domains, unallowed_domains, unknown_domains = {}, {}, {}, {}, {}
+        for domain_txt, domain_obj in domains.items():
+            if domain_obj.DNS_check_result.status == CheckStatus.OK:
+                ok_domains[domain_txt] = domain_obj
+            elif domain_obj.DNS_check_result.status == CheckStatus.DNS_TIMEOUT:
+                timeout_domains[domain_txt] = domain_obj
+            elif domain_obj.DNS_check_result.status == CheckStatus.DOMAIN_NOT_FOUND:
+                not_found_domains[domain_txt] = domain_obj
+            elif domain_obj.DNS_check_result.status == CheckStatus.IP_NOT_ALLOWED:
+                unallowed_domains[domain_txt] = domain_obj
+            elif domain_obj.DNS_check_result.status == CheckStatus.UNKNOWN:
+                unknown_domains[domain_txt] = domain_obj
+            else:
+                unknown_domains[domain_txt] = domain_obj
 
         if output == 'nrpe':
-            print_error_and_exit('Action \'list\' is not available for --output nrpe.')
-
+            output_check_result_nrpe(domains, ok_domains, timeout_domains, not_found_domains, unallowed_domains, unknown_domains)
         elif output == 'json':
-            output_domains_json(doms)
-
-        else:
-            output_domains_human(doms)
+            output_check_result_json(domains, ok_domains, timeout_domains, not_found_domains, unallowed_domains, unknown_domains)
+        else:  # output == 'human'
+            output_check_result_human(domains, ok_domains, timeout_domains, not_found_domains, unallowed_domains, unknown_domains)
 
 
 if __name__ == '__main__':
