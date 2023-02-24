@@ -17,6 +17,9 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * fail2ban: add "Internal login failure" to Dovecot filter
 * php: add a way to choose which version to install using sury repository
 * userlogrotate: create role separated from packweb-apache
+* postfix: Add task for enable mailgraph on packmail
+* apache: add tash for enable mailgraph on default vhost and index.html
+* php: add variables php_version when sury is activated for each Debian version
 
 ### Changed
 
