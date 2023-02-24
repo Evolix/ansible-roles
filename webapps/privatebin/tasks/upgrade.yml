@@ -1,0 +1,37 @@
+---
+# tasks file for etherpad upgrade
+
+- name: Move some directories back to DocumentRoot
+  shell: 
+    cmd: "mv {bin,cfg,doc,lib,tpl,tst,vendor} ~/PrivateBin/"
+    chdir: "~/secret/"
+    executable: /bin/bash
+  become_user: "{{ service }}"
+
+- name: Update privatebin repo (git)
+  git:
+    repo: "{{ git_url }}"
+    dest: "~/PrivateBin/"
+    version: "{{ git_version }}"
+    update: yes
+    force: true
+  become_user: "{{ service }}"
+
+- name: Move back some directories outside DocumentRoot
+  shell: 
+    cmd: "mv {bin,cfg,doc,lib,tpl,tst,vendor} ~/secret/"
+    chdir: "~/PrivateBin/"
+    executable: /bin/bash
+  become_user: "{{ service }}"
+
+- name: Ajust path needed for directories outside DocumentRoot
+  lineinfile:
+    path: "~/PrivateBin/index.php"
+    regexp: ^define\('PATH', ''\);
+    line: define('PATH', '../secret/');
+  become_user: "{{ service }}"
+
+- name: Reload apache conf
+  service:
+    name: apache2
+    state: reloaded

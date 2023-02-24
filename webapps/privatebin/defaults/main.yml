@@ -1,0 +1,6 @@
+---
+# defaults file for vars
+system_dep: "['apt-transport-https', 'git', 'certbot', 'libapache2-mod-php', 'libapache2-mpm-itk', 'php-gd']"
+git_url: 'https://github.com/PrivateBin/PrivateBin'
+git_version: '1.5.1'
+domains: ['example.domain.org']
