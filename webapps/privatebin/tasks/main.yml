@@ -1,0 +1,97 @@
+---
+# tasks file for privatebin install
+
+- name: Install main system dependencies
+  apt:
+    name: "{{ system_dep }}"
+
+- name: Add UNIX account
+  user:
+    name: "{{ service }}"
+    shell: /bin/bash
+
+- name: Clone privatebin repo (git)
+  git:
+    repo: "{{ git_url }}"
+    dest: "~/PrivateBin/"
+    version: "{{ git_version | default(omit) }}"
+    update: yes
+    force: true
+    umask: '0022'
+  become_user: "{{ service }}"
+
+- name: Check if SSL certificate is present and register result
+  stat:
+    path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+  register: ssl
+
+- name: Generate certificate only if required (first time)
+  block:
+  - name: Template vhost without SSL for successfull LE challengce
+    template: 
+      src: "vhost.conf.j2"
+      dest: "/etc/apache2/sites-available/{{ service }}.conf"
+  - name: Enable apache vhost for privatebin
+    command: "/usr/sbin/a2ensite {{ service }}"
+  - name: Reload apache conf
+    service:
+      name: apache2
+      state: reloaded
+  - name: Make sure /var/lib/letsencrypt exists and has correct permissions
+    file: 
+      path: /var/lib/letsencrypt
+      state: directory
+      mode: '0755'
+  - name: Generate certificate with certbot
+    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt -d {{ domains |first }}
+  when: ssl.stat.exists == true
+
+- name: (Re)check if SSL certificate is present and register result
+  stat:
+    path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+  register: ssl
+
+- name: (Re)template conf file for apache vhost with SSL
+  template:
+    src: "vhost.conf.j2"
+    dest: "/etc/apache2/sites-available/{{ service }}.conf"
+
+- name: Enable apache mode_rewrite
+  command: "/usr/sbin/a2enmod rewrite"
+  
+- name: Enable .htaccess configuration
+  copy:
+    src: "~/PrivateBin/.htaccess.disabled"
+    dest: "~/PrivateBin/.htaccess"
+    remote_src: true
+  become_user: "{{ service }}"
+
+- name: Creates directory outside DocumentRoot
+  file:
+    path: "~/secret"
+    state: directory
+  become_user: "{{ service }}"
+  register: directory
+
+- name: Move some directories outside DocumentRoot
+  shell: 
+    cmd: "mv {bin,cfg,doc,lib,tpl,tst,vendor} ~/secret/"
+    chdir: "~/PrivateBin/"
+    executable: /bin/bash
+  become_user: "{{ service }}"
+  when: directory.changed
+
+- name: Ajust path needed for directories outside DocumentRoot
+  lineinfile:
+    path: "~/PrivateBin/index.php"
+    regexp: ^define\('PATH', ''\);
+    line: define('PATH', '../secret/');
+  become_user: "{{ service }}"
+
+- name: Enable apache vhost for privatebin
+  command: "/usr/sbin/a2ensite {{ service }}"
+
+- name: Reload apache conf
+  service:
+    name: apache2
+    state: reloaded
