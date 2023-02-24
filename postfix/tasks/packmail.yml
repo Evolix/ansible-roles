@@ -10,6 +10,20 @@
   tags:
   - postfix
 
+- name: make /var/lib/mailgraph accessible by www-data
+  file:
+    path: "/var/lib/mailgraph"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: make sure a service Mailgraph is running
+  systemd:
+    name: mailgraph.service
+    state: started  
+    enabled: true
+
 - name: create packmail main.cf
   template:
     src: packmail_main.cf.j2
