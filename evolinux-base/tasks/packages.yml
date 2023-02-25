@@ -55,7 +55,6 @@
       - mutt
       - tree
       - git
-      - subversion
       - rsync
       - bc
       - pinentry-curses

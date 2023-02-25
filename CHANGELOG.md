@@ -48,6 +48,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Removed
 
+* evolinux-base: subversion is not installed anymore
+
 ### Security
 
 ## [22.12] 2022-12-14
