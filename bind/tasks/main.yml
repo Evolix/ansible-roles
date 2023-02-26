@@ -1,11 +1,11 @@
 # Until chroot-bind.sh is migrated to ansible, we hardcode the chroot paths.
 - name: set chroot variables
   set_fact:
-     bind_log_file: /var/log/bind.log
-     bind_query_file: /var/log/bind_queries.log
-     bind_cache_dir: /var/cache/bind
-     bind_statistics_file: /var/run/named.stats
-     bind_chroot_path: /var/chroot-bind
+    bind_log_file: /var/log/bind.log
+    bind_query_file: /var/log/bind_queries.log
+    bind_cache_dir: /var/cache/bind
+    bind_statistics_file: /var/run/named.stats
+    bind_chroot_path: /var/chroot-bind
   when: bind_chroot_set | bool
 
 - name: Check AppArmor
@@ -21,7 +21,7 @@
     dest: /etc/apparmor.d/usr.sbin.named
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
     force: yes
   notify: restart apparmor
   when: check_apparmor.rc == 0
