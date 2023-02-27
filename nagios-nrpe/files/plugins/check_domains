@@ -10,5 +10,5 @@ if ! command -v evodomains >/dev/null; then
     exit 3
 fi
 
-evodomains -o nrpe -a check-dns
+evodomains -o nrpe check-dns
 

@@ -2,12 +2,12 @@
 - ansible.builtin.set_fact:
     domains_script_name: evodomains
     domains_config_path: /etc/evolinux/domains
-    domains_ignored_domains_list: ignored_domains.list
-    domains_included_domains_list: included_domains.list
-    domains_allowed_ips_list: allowed_ips.list
-    domains_dependencies:
-      - python3-cryptography
-      - socat
+    domains_ignored_domains_list: ignored_domains_check.list
+    domains_included_domains_list: included_domains_check.list
+    domains_allowed_ips_list: allowed_ips_check.list
+    domains_dependencies: []
+#      - python3-cryptography
+#      - socat
 
 - name: Ensure dependencies are installed
   ansible.builtin.apt:
