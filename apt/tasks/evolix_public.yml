@@ -18,8 +18,8 @@
 
 - name: Add Evolix GPG key
   copy:
-    src: reg.asc
-    dest: "{{ apt_keyring_dir }}/reg.asc"
+    src: pub_evolix.asc
+    dest: "{{ apt_keyring_dir }}/pub_evolix.asc"
     force: yes
     mode: "0644"
     owner: root

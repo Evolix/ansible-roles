@@ -1,5 +1,8 @@
 ---
 
+- include_role:
+    name: evolix/remount-usr
+
 - name: "hold packages (apt)"
   shell: "set -o pipefail && (dpkg -l {{ item }} 2>/dev/null | grep -q -E '^(i|h)i') && ((apt-mark showhold | grep --quiet {{ item }}) || apt-mark hold {{ item }})"
   args:
