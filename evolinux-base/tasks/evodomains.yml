@@ -8,6 +8,15 @@
     domains_dependencies: []
 #      - python3-cryptography
 #      - socat
+    domains_allowed_ips:
+       - 127.0.0.1
+       - 31.170.13.1  # boost05
+       - 31.170.8.100  # boost04
+       - 54.39.237.40  # cariboost
+       - 31.170.11.208  # boost-mrs00
+       - 31.170.13.9  # boost-par00
+       - 31.170.11.118  # boost-pp00
+
 
 - name: Ensure dependencies are installed
   ansible.builtin.apt:
@@ -56,4 +65,10 @@
       # This is useful for load-balanced domains or NAT.
       # Note: the network interfaces IPs of the server are allowed by default.
       # Format: one IP per line, regex and wildcards not supported.
+
+- name: Add default allowed IPs in config file
+  ansible.builtin.lineinfile:
+    path: '{{ domains_config_path }}/{{ domains_allowed_ips_list }}'
+    line: '{{ item }}'
+  loop: '{{ domains_allowed_ips }}'
 

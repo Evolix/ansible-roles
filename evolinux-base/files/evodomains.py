@@ -575,7 +575,7 @@ def list_nginx_domains():
                 if 'server_name' in words:
                     for d in words[1:]:
                         domain = d.strip()
-                        if domain == '_':  # default vhost
+                        if domain in ['_', 'localhost']:  # default vhosh
                             continue
                         domains.append(domain)
 
