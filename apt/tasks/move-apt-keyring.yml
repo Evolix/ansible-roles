@@ -1,0 +1,36 @@
+---
+- name: New APT keyrings directory is present
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: migration script is present
+  copy:
+    src: move-apt-keyrings.sh
+    dest: /root/move-apt-keyrings.sh
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: Move repository signing key
+  command: "/root/move-apt-keyrings.sh \"{{ item.repository_pattern }}\" \"{{ item.key }}\""
+  loop:
+    - { repository_pattern: "http://pub.evolix.net/", key: "reg.asc" }
+    - { repository_pattern: "https://artifacts.elastic.co/packages/[^/]+/apt", key: "elastics.asc" }
+    - { repository_pattern: "https://download.docker.com/linux/debian", key: "docker-debian.asc" }
+    - { repository_pattern: "https://downloads.linux.hpe.com/SDR/repo/mcp", key: "hpePublicKey2048_key1.asc" }
+    - { repository_pattern: "http://pkg.jenkins-ci.org/debian-stable", key: "jenkins.asc" }
+    - { repository_pattern: "https://packages.sury.org/php/", key: "sury.gpg" }
+    - { repository_pattern: "http://repo.mongodb.org/apt/debian", key: "mongodb-server-[0-9\\.]+.asc" }
+    - { repository_pattern: "http://apt.newrelic.com/debian/", key: "newrelic.asc" }
+    - { repository_pattern: "https://deb.nodesource.com/", key: "nodesource.asc" }
+    - { repository_pattern: "https://dl.yarnpkg.com/debian/", key: "yarn.asc" }
+    - { repository_pattern: "http://apt.postgresql.org/pub/repos/apt/", key: "postgresql.asc" }
+  register: _cmd
+
+- name: Debug command
+  debug:
+    var: _cmd

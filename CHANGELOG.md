@@ -12,6 +12,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* apt: add move-apt-keyrings script/tasks
 * nagios-nrpe: Print pool config path in check_phpfpm_multi output
 * nagios-nrpe: add tasks/files for a wrapper
 * fail2ban: add "Internal login failure" to Dovecot filter
