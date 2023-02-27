@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.yml": "ansible",
+        "*.yaml": "ansible"
+    },
+    "yaml.format.enable": false
+}
