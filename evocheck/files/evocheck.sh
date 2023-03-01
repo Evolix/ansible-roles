@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian) server
 # powered by Evolix
 
-VERSION="23.02"
+VERSION="<23.03>"
 readonly VERSION
 
 # base functions
@@ -100,6 +100,17 @@ is_installed(){
 
 # logging
 
+log() {
+    date=$(/bin/date +"${DATE_FORMAT}")
+    if [ "${1}" != '' ]; then
+        printf "[%s] %s: %s\\n" "$date" "${PROGNAME}" "${1}" >> "${LOGFILE}"
+    else
+        while read line; do
+            printf "[%s] %s: %s\\n" "$date" "${PROGNAME}" "${line}" >> "${LOGFILE}"
+        done < /dev/stdin
+    fi
+}
+
 failed() {
     check_name=$1
     shift
@@ -113,6 +124,9 @@ failed() {
             printf "%s FAILED!\n" "${check_name}" >> "${main_output_file}"
         fi
     fi
+
+    # Always log verbose
+    log "${check_name} FAILED! ${check_comments}"
 }
 
 # check functions
@@ -134,7 +148,7 @@ check_dpkgwarning() {
 # Check if localhost, localhost.localdomain and localhost.$mydomain are set in Postfix mydestination option.
 check_localhost_in_postfix_mydestination() {
     # shellcheck disable=SC2016
-    if ! grep mydestination /etc/postfix/main.cf | grep --extended-regexp 'localhost[^\\.]' | grep 'localhost.localdomain' | grep 'localhost.$mydomain'; then
+    if ! grep mydestination /etc/postfix/main.cf | grep --quiet --extended-regexp '(localhost[^\\.]|localhost.localdomain|localhost.$mydomain)'; then
         failed "IS_LOCALHOST_IN_POSTFIX_MYDESTINATION" "'localhost' and/or 'localhost.localdomain' and/or 'localhost.\$mydomain' are missing in Postfix mydestination option. Consider adding then."
     fi
 }
@@ -1221,7 +1235,7 @@ check_lxc_php_fpm_service_umask_set() {
                 service="${container:0:4}.${container:4}-fpm"
             fi
             umask=$(lxc-attach --name "${container}" -- systemctl show -p UMask "$service" | cut -d "=" -f2)
-            if ! [ "$umask" != "0007" ]; then
+            if [ "$umask" != "0007" ]; then
                 missing_umask="${missing_umask} ${container}"
             fi
         done
@@ -1489,9 +1503,12 @@ main() {
 
     exit ${RC}
 }
-cleanup_temp_files() {
+cleanup() {
+    # Cleanup tmp files
     # shellcheck disable=SC2086,SC2317
     rm -f ${files_to_cleanup[@]}
+
+    log "$PROGNAME exit."
 }
 
 PROGNAME=$(basename "$0")
@@ -1502,17 +1519,23 @@ readonly PROGNAME
 ARGS=$@
 readonly ARGS
 
+LOGFILE="/var/log/evocheck.log"
+readonly LOGFILE
+
+CONFIGFILE="/etc/evocheck.cf"
+readonly CONFIGFILE
+
+DATE_FORMAT="%Y-%m-%d %H:%M:%S"
+# shellcheck disable=SC2034
+readonly DATEFORMAT
+
 # Disable LANG*
 export LANG=C
 export LANGUAGE=C
 
-declare -a files_to_cleanup
-# shellcheck disable=SC2064
-trap cleanup_temp_files 0
-
 # Source configuration file
 # shellcheck disable=SC1091
-test -f /etc/evocheck.cf && . /etc/evocheck.cf
+test -f "${CONFIGFILE}" && . "${CONFIGFILE}"
 
 # Parse options
 # based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
@@ -1560,5 +1583,24 @@ while :; do
     shift
 done
 
+# Keep this after "show_version(); exit 0" which is called by check_versions
+# to avoid logging exit twice.
+declare -a files_to_cleanup
+files_to_cleanup=""
+# shellcheck disable=SC2064
+trap cleanup EXIT INT TERM
+
+log '-----------------------------------------------'
+log "Running $PROGNAME $VERSION..."
+
+# Log config file content
+if [ -f "${CONFIGFILE}" ]; then
+    log "Runtime configuration (${CONFIGFILE}):"
+    sed -e '/^[[:blank:]]*#/d; s/#.*//; /^[[:blank:]]*$/d' "${CONFIGFILE}" | log
+fi
+
 # shellcheck disable=SC2086
 main ${ARGS}
+
+log "End of $PROGNAME execution."
+
