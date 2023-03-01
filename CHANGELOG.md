@@ -49,6 +49,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * postfix (packmail only): disable `concurrency_failed_cohort_limit` for destination smtp-amavis to prevent the suspension of this destination when Amavis fails to answer. Indeed, we configure the suspension delay quite long in `minimal_backoff_time` (2h) and `maximal_backoff_time` (6h) to reduce the risk of ban from external SMTPs.
 * php: install using sury repositories on bullseye
 * postfix: remove unused "aliases_scope=sub" from virtual_aliases.cf (it generated warnings)
+* userlogrotate: fix bug introduced in commit 2e54944a246 (rotated files were not zipped)
 
 ### Removed
 
