@@ -51,6 +51,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * postfix: remove unused "aliases_scope=sub" from virtual_aliases.cf (it generated warnings)
 * userlogrotate: fix bug introduced in commit 2e54944a246 (rotated files were not zipped)
 * userlogrotate: skip zipping if .gz log already exists (prevents interactive question)
+* postfix: avoid Amavis transport to be considered dead when restarted.
 
 ### Removed
 
