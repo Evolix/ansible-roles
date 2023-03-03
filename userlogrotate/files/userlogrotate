@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DATE=`/bin/date +"%d-%m-%Y"`
+DATE=`/bin/date +"%Y-%m-%d"`
 HOMEPREFIX="/home"
 
 rotate () {
