@@ -22,6 +22,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * apache: add tash for enable mailgraph on default vhost and index.html
 * php: add variables php_version when sury is activated for each Debian version
 * varnish: add variable varnish_update_config to disable configuration update
+* lxc: copy /etc/profile.d/evolinux.sh from host into container
 
 ### Changed
 
