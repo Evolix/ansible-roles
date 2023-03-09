@@ -9,6 +9,9 @@ checkpoint_segments = 30
 {% else %}
 max_wal_size = 15GB
 {% endif %}
+{% if postgresql_max_connections and postgresql_max_connections | int > 0 %}
+max_connections = {{ postgresql_max_connections }}
+{% endif %}
 
 checkpoint_completion_target = 0.9
 random_page_cost = {{ postgresql_random_page_cost }}
