@@ -54,6 +54,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * userlogrotate: fix bug introduced in commit 2e54944a246 (rotated files were not zipped)
 * userlogrotate: skip zipping if .gz log already exists (prevents interactive question)
 * postfix: avoid Amavis transport to be considered dead when restarted.
+* elasticsearch: Disable GC rotation for JDK 8 (priorly done only for >= 9)
 
 ### Removed
 
