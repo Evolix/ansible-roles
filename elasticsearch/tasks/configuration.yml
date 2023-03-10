@@ -118,24 +118,11 @@
   tags:
     - config
 
-- name: Garbage collector logs rotation by the JVM is disabled (JDK >= 9)
+- name: Disable garbage collector logs (JDK >= 9)
   lineinfile:
-    dest: /etc/elasticsearch/jvm.options.d/evolinux.options
-    regexp: "^-Xlog:gc"
-    line: "9-:-Xlog:gc*,gc+age=trace,safepoint:file=/var/log/elasticsearch/gc.log:utctime,pid,tags:filecount=0"
-    create: yes
-    owner: root
-    group: elasticsearch
-    mode: "0640"
-  tags:
-    - config
-
-- name: Garbage collector logs rotation by the JVM is disabled (JDK == 8)
-  lineinfile:
-    dest: /etc/elasticsearch/jvm.options.d/evolinux.options
-    regexp: "^-Xlog:gc"
-    line: "8:-XX:GCLogFileSize=0"
-    create: yes
+    dest: /etc/elasticsearch/jvm.options
+    regexp: "Xlog:gc"
+    line: "#9-:-Xlog:gc*,gc+age=trace,safepoint:file=/opt/my-app/gc.log:utctime,pid,tags:filecount=32,filesize=64m"
     owner: root
     group: elasticsearch
     mode: "0640"

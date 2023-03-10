@@ -38,12 +38,12 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * yarn: update apt key
 * apt: Use pub.evolix.org instead of pub.evolix.net' 
 * userlogrotate: set rotate date format in right order (YYYY-MM-DD)!
+* elasticsearch: Disable garabge collector logging (JDK >= 9)
 
 ### Fixed
 
 * Proper jinja spacing
 * evolinux-base: ensure dbus is started and enabled (not by default in the case of an offline netinst)
-* elasticsearch : use logrotate for garbage collector logs instead of breaking compression cron
 * docker-host: fix type in daemon.json and remove host configuration that is already in the systemd service by default
 * haproxy: fix missing admin ACL in stats module access permissions
 * openvpn: fix the client cipher configuration to match the server cipher configuration
@@ -54,7 +54,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * userlogrotate: fix bug introduced in commit 2e54944a246 (rotated files were not zipped)
 * userlogrotate: skip zipping if .gz log already exists (prevents interactive question)
 * postfix: avoid Amavis transport to be considered dead when restarted.
-* elasticsearch: Disable GC rotation for JDK 8 (priorly done only for >= 9)
 
 ### Removed
 

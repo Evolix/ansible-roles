@@ -18,11 +18,3 @@
     mode: "0750"
   when: is_cron_installed.rc == 0
 
-- name: "Setup logrotate for JVM garbage collector"
-  template:
-    src: logrotate.j2
-    dest: /etc/logrotate/elasticsearch
-    owner: root
-    group: root
-    mode: "0750"
-  when: is_cron_installed.rc == 0
