@@ -1,0 +1,40 @@
+APP_NAME = Gitea
+RUN_USER = {{ service }}
+RUN_MODE = prod
+
+[server]
+PROTOCOL               = unix
+DOMAIN                 = {{ domains | first }}
+HTTP_ADDR              = /home/{{ service }}/gitea.sock
+UNIX_SOCKET_PERMISSION = 660
+OFFLINE_MODE           = true
+SSH_DOMAIN             = {{ domains | first }}
+ROOT_URL               = http://{{ domains | first }}/
+
+[repository]
+ROOT = /home/{{ service }}/repositories
+
+[log]
+ROOT_PATH = /home/{{ service }}/log/
+MODE      = console
+LEVEL     = info
+ROUTER    = console
+
+[i18n]
+LANGS = fr-FR, en-US
+NAMES = Français,English
+
+[database]
+DB_TYPE  = mysql
+HOST     = {{ db_host }}
+NAME     = {{ db_name }}
+USER     = {{ db_user }}
+PASSWD   = {{ db_password }}
+
+[session]
+PROVIDER         = redis
+PROVIDER_CONFIG  = network=unix,addr=/home/{{ service }}/redis/redis.sock,db=0,pool_size=100,idle_timeout=180
+
+[cache]
+ADAPTER = redis
+HOST    = network=unix,addr=/home/{{ service }}/redis/redis.sock,db=1,pool_size=100,idle_timeout=180

@@ -1,0 +1,26 @@
+---
+# tasks file for gitea upgrade
+
+- name: Download gitea binary
+  get_url:
+    url: "{{ gitea_url }}"
+    dest: /usr/local/bin
+    checksum: "{{ gitea_checksum }}"
+    mode: '0755'
+
+- name: Create symbolic link
+  file:
+    src: "/usr/local/bin/gitea-{{ git_version }}-linux-amd64"
+    dest: "/usr/local/bin/gitea"
+    state: link
+
+- name: Start gitea systemd unit
+  service:
+    name: "gitea@{{ service }}"
+    state: restarted
+
+- name: Reload nginx conf
+  service:
+    name: nginx
+    state: reloaded
+
