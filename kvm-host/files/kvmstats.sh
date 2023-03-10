@@ -72,7 +72,19 @@ main() {
         column -t
         ;;
     'html')
-        awk 'BEGIN{print "<html><body>\n<table>"}{printf "<tr>";for(i=1;i<=NF;i++)printf "<td>%s</td>", $i;print "</tr>"}END{print "</table>\n</body></html>"}'
+        awk '
+BEGIN {
+    print "<html><body>\n<table>"
+}
+{
+    printf "<tr>"
+    for(i = 1; i <= NF; i++)
+        printf "<td>%s</td>", $i
+    print "</tr>"
+}
+END {
+    print "</table>\n</body></html>"
+}'
         ;;
     'csv')
         tr ' ' ','
