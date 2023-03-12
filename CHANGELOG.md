@@ -31,7 +31,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * Removed all "warn: False" args in command, shell and other modules as it's been deprecated and will give a hard fail in ansible-core 2.14.0.
 * bind: refactor role
 * evolinux-users: Update sudoers template to remove commands allowed without password
-* listupgrade: upstream release 23.03
+* listupgrade: upstream release 23.03.1
 * nagios-nrpe : Rewrite check_vrrpd for a better check (check rp_filter, vrrpd and uvrrpd compatible, use arguments, …)
 * openvpn: Change check_openvpn destination file to comply with recent EvoBSD change
 * postfix: come back to default value of `notify_classes` for pack mails.

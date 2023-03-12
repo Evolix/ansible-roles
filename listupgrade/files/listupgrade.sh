@@ -9,7 +9,7 @@
 # - 60 : current release is not in the $r_releases list
 # - 70 : at least an upgradable package is not in the $r_packages list
 
-VERSION="23.03"
+VERSION="23.03.1"
 
 show_version() {
     cat <<END
@@ -184,12 +184,24 @@ main() {
     local_release=$(cut -f 1 -d . </etc/debian_version)
     # In case the version is a release name and not a number
     case "${local_release}" in
-        jessie*)    local_release=8  ;;
-        stretch*)   local_release=9  ;;
-        buster*)    local_release=10 ;;
-        bullseye*)  local_release=11 ;;
-        bookworm*)  local_release=12 ;;
-        trixie*)    local_release=13 ;;
+        *jessie*) 
+            local_release=8
+            ;;
+        *stretch*) 
+            local_release=9
+            ;;
+        *buster*) 
+            local_release=10
+            ;;
+        *bullseye*) 
+            local_release=11
+            ;;
+        *bookworm*)
+            local_release=12
+            ;;
+        *trixie*) 
+            local_release=13
+            ;;
     esac
 
 
