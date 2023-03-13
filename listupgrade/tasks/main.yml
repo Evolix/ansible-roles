@@ -47,7 +47,7 @@
 
 - name: Enable listupgrade cron
   cron:
-    name: "lisupgrade.sh"
+    name: "listupgrade.sh"
     cron_file: "listupgrade"
     user: root
     job: "/usr/share/scripts/listupgrade.sh --cron {{ listupgrade_cron_force | bool | ternary('--force','') }}"
