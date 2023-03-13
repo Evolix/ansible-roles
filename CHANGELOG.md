@@ -38,7 +38,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud : Change default data directory to be outside web root
 * webapps/nextcloud : Small enhancement on the vhost template to lock out data dir
 * yarn: update apt key
-* apt: Use pub.evolix.org instead of pub.evolix.net' 
+* apt: Use pub.evolix.org instead of pub.evolix.net
 * userlogrotate: set rotate date format in right order (YYYY-MM-DD)!
 * elasticsearch: Disable garabge collector logging (JDK >= 9)
 
