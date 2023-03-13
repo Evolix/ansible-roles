@@ -42,13 +42,17 @@ apache2ctl restart > /dev/null
 
 for log in access.log*[!\.gz] access-*.log*[!\.gz] error.log*[!\.gz]; do
   for i in `ls -1 -d $HOMEPREFIX/*/log/$log 2>/dev/null | grep -v \.bak\.`; do
-    gzip $i
+    if test -f "$i"; then
+      gzip "$i"
+    fi
   done
 done
 
 for log in production.log*[!\.gz] delayed_job.log*[!\.gz] development.log*[!\.gz] test.log*[!\.gz]; do
   for i in `ls -1 -d $HOMEPREFIX/*/www/{,current/}log/$log 2>/dev/null | grep -v \.bak\.`; do
-    gzip $i
+    if test -f "$i"; then
+      gzip "$i"
+    fi
   done
 done
 
