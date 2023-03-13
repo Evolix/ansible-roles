@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DATE=`/bin/date +"%Y-%m-%d"`
+DATE="$(/bin/date +"%Y-%m-%d")"
 HOMEPREFIX="/home"
 
 rotate () {
@@ -11,20 +11,20 @@ rotate () {
 }
 
 user_for() {
-  homedir=`echo $1 | sed "s#\($HOMEPREFIX/\([^/]\+\)\).*#\1#"`
+  homedir="$(echo $1 | sed "s#\($HOMEPREFIX/\([^/]\+\)\).*#\1#")"
   stat -L -c '%G' $homedir
 }
 
 for log in access.log access-*.log error.log; do
-  for i in `ls -1 -d $HOMEPREFIX/*/log/$log 2>/dev/null | grep -v \.bak\.`; do
-    USER=`user_for $i`
+  for i in $(ls -1 -d $HOMEPREFIX/*/log/$log 2>/dev/null | grep -v \.bak\.); do
+    USER="$(user_for $i)"
     rotate $i root:$USER
   done
 done
 
 for log in production.log delayed_job.log development.log test.log; do
-  for i in `ls -1 -d $HOMEPREFIX/*/www/{,current/}log/$log 2>/dev/null | grep -v \.bak\.`; do
-    USER=`user_for $i`
+  for i in $(ls -1 -d $HOMEPREFIX/*/www/{,current/}log/$log 2>/dev/null | grep -v \.bak\.); do
+    USER="$(user_for $i)"
     rotate $i $USER:$USER
   done
 done
@@ -40,7 +40,7 @@ test -x /usr/sbin/nginx && invoke-rc.d nginx rotate >/dev/null 2>&1
 # and logs written during the zipping process might be lost.
 
 for log in access.log*[!\.gz] access-*.log*[!\.gz] error.log*[!\.gz]; do
-  for i in `ls -1 -d $HOMEPREFIX/*/log/$log 2>/dev/null | grep -v \.bak\.`; do
+  for i in $(ls -1 -d $HOMEPREFIX/*/log/$log 2>/dev/null | grep -v \.bak\.); do
     if test -f "$i"; then
       gzip "$i"
     fi
@@ -48,7 +48,7 @@ for log in access.log*[!\.gz] access-*.log*[!\.gz] error.log*[!\.gz]; do
 done
 
 for log in production.log*[!\.gz] delayed_job.log*[!\.gz] development.log*[!\.gz] test.log*[!\.gz]; do
-  for i in `ls -1 -d $HOMEPREFIX/*/www/{,current/}log/$log 2>/dev/null | grep -v \.bak\.`; do
+  for i in $(ls -1 -d $HOMEPREFIX/*/www/{,current/}log/$log 2>/dev/null | grep -v \.bak\.); do
     if test -f "$i"; then
       gzip "$i"
     fi
