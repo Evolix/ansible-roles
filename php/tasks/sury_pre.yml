@@ -8,10 +8,10 @@
     owner: root
     group: root
 
-- name: copy pub.evolix.net GPG key
+- name: copy pub.evolix.org GPG key
   copy:
-    src: reg.asc
-    dest: "{{ apt_keyring_dir }}/reg.asc"
+    src: pub_evolix.asc
+    dest: "{{ apt_keyring_dir }}/pub_evolix.asc"
     mode: "0644"
     owner: root
     group: root
@@ -28,9 +28,9 @@
   when:
     - ansible_distribution_release != "bullseye"
 
-- name: Setup pub.evolix.net repository - Add source list
+- name: Setup pub.evolix.org repository - Add source list
   apt_repository:
-    repo: "deb [signed-by={{ apt_keyring_dir }}/reg.asc] http://pub.evolix.net/ {{ ansible_distribution_release }}-php81/"
+    repo: "deb [signed-by={{ apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix {{ ansible_distribution_release }}-php81 main"
     filename: evolix-php
     state: present
   when:
