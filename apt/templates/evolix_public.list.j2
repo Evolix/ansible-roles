@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
 
 {% if ansible_distribution_release == "bookworm" %}
-deb [signed-by={{ apt_keyring_dir }}/pub_evolix.asc] https://pub.evolix.org/evolix bullseye main
+deb [signed-by={{ apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix bullseye main
 {% else %}
-deb [signed-by={{ apt_keyring_dir }}/pub_evolix.asc] https://pub.evolix.org/evolix {{ ansible_distribution_release }} main
+deb [signed-by={{ apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix {{ ansible_distribution_release }} main
 {% endif %}
