@@ -4,7 +4,7 @@
   set_fact:
     php_version: "7.4"
   when:
-    - php_sury_enable == 'False'
+    - php_sury_enable == False
   check_mode: no
 
 - name: "Set variables (Debian 11)"
