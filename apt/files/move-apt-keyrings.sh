@@ -7,7 +7,7 @@
 repository_pattern=$1
 key=$2
 
-found_files=$(grep --files-with-matches --recursive --extended-regexp "${repository_pattern}" "/etc/apt/sources.list.d/")
+found_files=$(grep --files-with-matches --recursive --extended-regexp "${repository_pattern}" "/etc/apt/sources.list.d/*.list")
 
 old_key_file="/etc/apt/trusted.gpg.d/${key}"
 new_key_file="/etc/apt/keyrings/${key}"

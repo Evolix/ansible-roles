@@ -1,4 +1,5 @@
 ---
+
 - name: New APT keyrings directory is present
   file:
     path: /etc/apt/keyrings
@@ -7,16 +8,29 @@
     owner: root
     group: root
 
+- include_role:
+    name: evolix/remount-usr
+
+- name: /usr/share/scripts exists
+  file:
+    dest: /usr/share/scripts
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+  tags:
+    - apt
+
 - name: migration script is present
   copy:
     src: move-apt-keyrings.sh
-    dest: /root/move-apt-keyrings.sh
+    dest: /usr/share/scripts/move-apt-keyrings.sh
     mode: "0755"
     owner: root
     group: root
 
 - name: Move repository signing key
-  command: "/root/move-apt-keyrings.sh \"{{ item.repository_pattern }}\" \"{{ item.key }}\""
+  command: "/usr/share/scripts/move-apt-keyrings.sh \"{{ item.repository_pattern }}\" \"{{ item.key }}\""
   loop:
     - { repository_pattern: "http://pub.evolix.net/", key: "reg.asc" }
     - { repository_pattern: "http://pub.evolix.org/evolix", key: "pub_evolix.asc" }
