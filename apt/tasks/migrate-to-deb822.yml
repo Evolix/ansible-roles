@@ -1,0 +1,31 @@
+---
+- include_role:
+    name: evolix/remount-usr
+
+- name: /usr/share/scripts exists
+  file:
+    dest: /usr/share/scripts
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+  tags:
+    - apt
+
+- name: Migration scripts are installed
+  copy:
+    src: "{{ item  }}"
+    dest: "/usr/share/scripts/{{ item  }}"
+    force: yes
+    mode: "0755"
+  loop:
+    - deb822-migration.py
+    - deb822-migration.sh
+  tags:
+    - apt
+
+- name: Exec migration script
+  command: /usr/share/scripts/deb822-migration.sh
+  ignore_errors: yes
+  tags:
+    - apt
