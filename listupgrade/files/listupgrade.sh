@@ -9,7 +9,7 @@
 # - 60 : current release is not in the $r_releases list
 # - 70 : at least an upgradable package is not in the $r_packages list
 
-VERSION="23.03.2"
+VERSION="23.03.3"
 
 show_version() {
     cat <<END
@@ -263,7 +263,7 @@ main() {
             echo "MySQL" >>"${servicesToRestart}"
         elif echo "${pkg}" | grep -q "^mariadb-server"; then
             echo "MariaDB" >>"${servicesToRestart}"
-        elif echo "${pkg}" | grep -qE "^postgresql-[[:digit:]]+\.[[:digit:]]+$"; then
+        elif echo "${pkg}" | grep -qE "^postgresql-[[:digit:]]+(\.[[:digit:]]+)?$"; then
             echo "PostgreSQL" >>"${servicesToRestart}"
         elif echo "${pkg}" | grep -qE "^tomcat[[:digit:]]+$"; then
             echo "Tomcat" >>"${servicesToRestart}"
