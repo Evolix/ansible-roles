@@ -1,6 +1,6 @@
 ---
 
-- name: "Set php version to 8.2(Debian 12)"
+- name: "Set php version to 8.2 (Debian 12)"
   set_fact:
     php_version: "8.2"
   when:
