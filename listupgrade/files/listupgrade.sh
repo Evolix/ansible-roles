@@ -9,7 +9,7 @@
 # - 60 : current release is not in the $r_releases list
 # - 70 : at least an upgradable package is not in the $r_packages list
 
-VERSION="23.03.1"
+VERSION="23.03.2"
 
 show_version() {
     cat <<END
@@ -101,15 +101,15 @@ semaine prochaine.
 
 Voici la listes de packages qui seront mis à jour :
 
-$(cat "${packages}")
+$(sort -h "${packages}" | uniq)
 
 Liste des packages dont la mise-à-jour a été manuellement suspendue :
 
-$(cat "${packagesHold}")
+$(sort -h "${packagesHold}" | uniq)
 
 Liste des services qui seront redémarrés :
 
-$(cat "${servicesToRestart}")
+$(sort -h "${servicesToRestart}" | uniq)
 
 N'hésitez pas à nous faire toute remarque sur ce créneau d'intervention le plus
 tôt possible.
