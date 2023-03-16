@@ -20,12 +20,12 @@
     mode: "0644"
   loop:
     - "deb [signed-by={{ apt_keyring_dir }}/sury.gpg] https://packages.sury.org/php/ bullseye main"
-    - "deb [signed-by={{ apt_keyring_dir }}/reg.asc] http://pub.evolix.net/ bullseye-php80/"
+    - "deb [signed-by={{ apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix bullseye-php80 main"
 
 - name: copy pub.evolix.net GPG key
   copy:
-    src: reg.asc
-    dest: /var/lib/lxc/{{ lxc_php_version }}/rootfs{{ apt_keyring_dir }}/reg.asc
+    src: pub_evolix.asc
+    dest: /var/lib/lxc/{{ lxc_php_version }}/rootfs{{ apt_keyring_dir }}/pub_evolix.asc
     mode: "0644"
     owner: root
     group: root

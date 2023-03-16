@@ -1,5 +1,5 @@
 ---
-  
+
 - name: "Set variables (Debian 11)"
   set_fact:
     postgresql_version: '13'
@@ -11,6 +11,6 @@
 - name: Install postgresql package
   apt:
     name:
-      - "postgresql-{{postgresql_version}}"
+      - "postgresql-{{ postgresql_version }}"
       - pgtop
       - libdbd-pg-perl

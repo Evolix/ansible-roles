@@ -10,8 +10,8 @@
 
 - name: Install postgresql package
   apt:
-    name: '{{item}}'
+    name: '{{ item }}'
   loop:
-    - "postgresql-{{postgresql_version}}"
+    - "postgresql-{{ postgresql_version }}"
     - ptop
     - libdbd-pg-perl

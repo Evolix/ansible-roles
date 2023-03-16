@@ -45,3 +45,5 @@
 - include_tasks: log2mail.yml
 
 - include_tasks: utils.yml
+
+- include_tasks: mysql_skip.yml

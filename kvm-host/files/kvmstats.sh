@@ -42,25 +42,34 @@ error () {
 main() {
     for VM in $(virsh list --name --all | sed '/^$/d' | sort)
     do
-        echo "$VM"
-
-        # cpu
-        virsh vcpucount --current "$VM"
-
-        # mem
-        # libvirt stores memory in KiB, POW must be lowered by 1
-        virsh dommemstat "$VM" 2>/dev/null | awk 'BEGIN{ret=1}$1~/^actual$/{print $2 / '$((POW / 1024))';ret=0}END{exit ret}' ||
-            virsh dumpxml "$VM" | awk -F'[<>]' '$2~/^memory unit/{print $3/'$((POW / 1024))'}'
-
-        # disk
-        for BLK in $(virsh domblklist "$VM" | sed '1,2d;/-$/d;/^$/d' | awk '{print $1}')
-        do
-            virsh domblkinfo "$VM" "$BLK" 2>/dev/null
-        done | awk '/Physical:/ { size += $2 } END { print int(size / '${POW}') }'
-
-        # state
-        virsh domstate "$VM" | grep -q '^running$' && echo yes || echo no
-    done | xargs -n5 | {
+        printf '%s ' "${VM}"
+        virsh domstats "${VM}" | awk '
+BEGIN {
+    FS = "="
+}
+/vcpu\.current/ {
+    vcpu = $2
+}
+/balloon\.current/ {
+    mem = $2
+}
+/balloon\.maximum/ {
+    if (!mem)
+        mem = $2
+}
+/block\.[0-9]+\.physical/ {
+    disksize += $2
+}
+/state\.state/ {
+    if ($2 == 1)
+        running = "yes"
+    else
+        running = "no"
+}
+END {
+    print vcpu, mem / 1024 ^ 2, disksize / 1024 ^ 3, running
+}'
+    done | {
         echo vm vcpu ram disk running
         awk '{ print } /yes$/ { vcpu += $2; ram += $3; disk += $4; running++ } END { print "TOTAL(running)", vcpu, ram, disk, running }'
         test "$SHOW_AVAIL" && {
@@ -72,7 +81,19 @@ main() {
         column -t
         ;;
     'html')
-        awk 'BEGIN{print "<html><body>\n<table>"}{printf "<tr>";for(i=1;i<=NF;i++)printf "<td>%s</td>", $i;print "</tr>"}END{print "</table>\n</body></html>"}'
+        awk '
+BEGIN {
+    print "<html><body>\n<table>"
+}
+{
+    printf "<tr>"
+    for(i = 1; i <= NF; i++)
+        printf "<td>%s</td>", $i
+    print "</tr>"
+}
+END {
+    print "</table>\n</body></html>"
+}'
         ;;
     'csv')
         tr ' ' ','

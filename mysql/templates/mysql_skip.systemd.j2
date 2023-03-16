@@ -1,0 +1,16 @@
+[Unit]
+Description=Script for skip define mysql replication errors
+
+[Service]
+ExecStart=/usr/local/bin/mysql_skip.sh
+Type=simple
+User=root
+Group=root
+PIDFile=/run/mysql_skip.pid
+ExecStop=/bin/kill -- $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

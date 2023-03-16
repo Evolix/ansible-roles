@@ -8,6 +8,7 @@ The **major** part of the version is the year
 The **minor** part changes is the month
 The **patch** part changes is incremented if multiple releases happen the same month
 
+
 ## [Unreleased]
 
 ### Added
@@ -19,6 +20,63 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Removed
 
 ### Security
+
+## [23.03] 2023-03-16
+
+### Added
+
+* apache: add task to enable mailgraph on default vhost and index.html
+* apt: add move-apt-keyrings script/tasks
+* apt: add tools to migrate sources to deb822 format
+* fail2ban: add "Internal login failure" to Dovecot filter
+* lxc: copy `/etc/profile.d/evolinux.sh` from host into container
+* nagios-nrpe: add tasks/files for a wrapper
+* nagios-nrpe: Print pool config path in check_phpfpm_multi output
+* php: add `php_version` variable when sury is activated for each Debian version
+* php: add a way to choose which version to install using sury repository
+* postfix: Add task to enable mailgraph on packmail
+* postgresql: configure max_connections
+* userlogrotate: create dedicated role, separated from packweb-apache
+* varnish: add `varnish_update_config` variable to disable configuration update
+
+### Changed
+
+* Use systemd module instead of command
+* Removed all `warn: False` args in command, shell and other modules as it's been deprecated and will give a hard fail in ansible-core 2.14.0.
+* apt: Use pub.evolix.org instead of pub.evolix.net
+* bind: refactor role
+* elasticsearch: Disable garabge collector logging (JDK >= 9)
+* evolinux-users: Update sudoers template to remove commands allowed without password
+* listupgrade: upstream release 23.03.3
+* kvmstats: use virsh domstats | awk to get guests informations
+* nagios-nrpe : Rewrite `check_vrrpd` for a better check (check `rp_filter`, `vrrpd` and `uvrrpd` compatible, use arguments, …)
+* openvpn: Change `check_openvpn` destination file to comply with recent EvoBSD change
+* postfix: come back to default value of `notify_classes` for pack mails.
+* userlogrotate: set rotate date format in right order (YYYY-MM-DD)!
+* webapps/nextcloud : Change default data directory to be outside web root
+* webapps/nextcloud : Small enhancement on the vhost template to lock out data dir
+* yarn: update apt key
+
+### Fixed
+
+* Proper jinja spacing
+* clamav: set `MaxConnectionQueueLength` to its default value (200), custom (15) was way too small and caused recurring failures in Postfix.
+* docker-host: fix type in `daemon.json` and remove host configuration that is already in the systemd service by default
+* evolinux-base: ensure dbus is started and enabled (not by default in the case of an offline netinst)
+* haproxy: fix missing admin ACL in stats module access permissions
+* openvpn: fix the client cipher configuration to match the server cipher configuration
+* php: fix error introduced in #33503e4538 (`False` evaluated as a String instead of Boolean)
+* php: install using Sury repositories on Bullseye
+* postfix (packmail only): disable `concurrency_failed_cohort_limit` for destination smtp-amavis to prevent the suspension of this destination when Amavis fails to answer. Indeed, we configure the suspension delay quite long in `minimal_backoff_time` (2h) and `maximal_backoff_time` (6h) to reduce the risk of ban from external SMTPs.
+* postfix: avoid Amavis transport to be considered dead when restarted.
+* postfix: remove unused `aliases_scope=sub` from virtual_aliases.cf (it generated warnings)
+* userlogrotate: fix bug introduced in commit 2e54944a246 (rotated files were not zipped)
+* userlogrotate: skip zipping if .gz log already exists (prevents interactive question)
+
+### Removed
+
+* evolinux-base: subversion is not installed anymore
+
 
 ## [22.12] 2022-12-14
 
@@ -34,6 +92,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * packweb-apache: enable `log_forensic` module
 * rabbitmq: add link in default page
 * varnish: create special tmp directory for syntax validation
+* postfix: add localhost.$mydomain to mydestination
 
 ### Changed
 

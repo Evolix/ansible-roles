@@ -1,5 +1,8 @@
 ---
 
+- include_role:
+    name: evolix/remount-usr
+
 - name: "hold packages (apt)"
   shell: "set -o pipefail && (dpkg -l {{ item }} 2>/dev/null | grep -q -E '^(i|h)i') && ((apt-mark showhold | grep --quiet {{ item }}) || apt-mark hold {{ item }})"
   args:
@@ -76,8 +79,8 @@
 - name: Check if Cron is installed
   shell: "dpkg --list 'cron' 2>/dev/null | grep -q -E '^(i|h)i'"
   register: is_cron
-  changed_when: false
-  failed_when: false
+  changed_when: False
+  failed_when: False
   check_mode: no
   tags:
     - apt

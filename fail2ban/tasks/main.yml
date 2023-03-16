@@ -97,7 +97,7 @@
     marker: "# ANSIBLE MANAGED"
     block: |
       [DEFAULT]
-      dbpurgeage = {{ fail2ban_recidive_bantime}}
+      dbpurgeage = {{ fail2ban_recidive_bantime }}
     insertafter: EOF
     create: yes
     mode: "0644"

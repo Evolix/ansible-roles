@@ -1,6 +1,6 @@
 Defaults        umask=0077
 
-Cmnd_Alias      MAINT = /usr/share/scripts/evomaintenance.sh, /usr/share/scripts/listupgrade.sh, /usr/bin/apt, /bin/mount
+Cmnd_Alias      MAINT = /usr/share/scripts/evomaintenance.sh, /usr/share/scripts/listupgrade.sh
 User_Alias      ADMINS = {{ user.name }}
 
 nagios          ALL = NOPASSWD: /usr/lib/nagios/plugins/check_procs

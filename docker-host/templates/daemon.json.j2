@@ -1,40 +1,30 @@
 {
-  "debug": false,
-
+  "debug": false
   {# Docker data-dir (default to /var/lib/docker) #}
-  "data-root": "{{ docker_home }}",
-
+  ,"data-root": "{{ docker_home }}"
   {# Keep containers running while docker daemon downtime #}
-  "live-restore": {{ docker_conf_live_restore | to_json }},,
-
+  ,"live-restore": {{ docker_conf_live_restore | to_json }}
   {# Turn on user namespace remaping #}
-  "userns-remap": "default",
-
-  {% if docker_conf_use_iptables %}
+  ,"userns-remap": "default"
+{% if docker_conf_use_iptables %}
   {# Use iptables instead of docker-proxy #}
-  "userland-proxy": false,
-  "iptables": true,
-  {% endif %}
-
+  ,"userland-proxy": false
+  ,"iptables": true
+{% endif %}
   {# Disable the possibility for containers processes to gain new privileges #}
-  "no-new-privileges": {{ docker_conf_no_newprivileges | to_json }},
-
-  {% if docker_conf_disable_default_networking %}
+  ,"no-new-privileges": {{ docker_conf_no_newprivileges | to_json }}
+{% if docker_conf_disable_default_networking %}
   {# Disable all default network connectivity #}
-  "bridge": "none",
-  "icc": false,
-  {% endif %}
-
-  {% if docker_tls_enabled %}
-  "tls": true,
-  "tlscert": "{{ docker_tls_path }}/{{ docker_tls_cert }}",
-  "tlscacert": "{{ docker_tls_path }}/{{ docker_tls_ca }}",
-  "tlskey": "{{ docker_tls_path }}/{{ docker_tls_key }}",
-  {% endif %}
-
-  {% if docker_remote_access_enabled %}
-  "hosts": ["tcp://{{ docker_daemon_listening_ip }}:{{ docker_daemon_port }}", "fd://"]
-  {% else %}
-  "hosts": ["fd://"]
-  {% endif %}
+  ,"bridge": "none"
+  ,"icc": false
+{% endif %}
+{% if docker_tls_enabled %}
+  ,"tls": true
+  ,"tlscert": "{{ docker_tls_path }}/{{ docker_tls_cert }}"
+  ,"tlscacert": "{{ docker_tls_path }}/{{ docker_tls_ca }}"
+  ,"tlskey": "{{ docker_tls_path }}/{{ docker_tls_key }}"
+{% endif %}
+{% if docker_remote_access_enabled %}
+  ,"hosts": ["tcp://{{ docker_daemon_listening_ip }}:{{ docker_daemon_port }}", "fd://"]
+{% endif %}
 }

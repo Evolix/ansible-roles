@@ -18,7 +18,7 @@
 
 - name: list newrelic config files
   shell: "find /etc/php* -type f -name newrelic.ini"
-  changed_when: false
+  changed_when: False
   check_mode: no
   register: find_newrelic_ini
 

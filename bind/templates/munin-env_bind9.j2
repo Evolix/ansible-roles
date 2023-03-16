@@ -1,9 +1,17 @@
 [bind*]
 user root
 
-env.logfile {% if bind_chroot_set %}{{ bind_chroot_path }}{% endif %}{{ bind_query_file }}
+{% if bind_query_file_enabled | bool %}
+{% if bind_chroot_set | bool %}
+env.logfile {{ bind_chroot_path }}{{ bind_query_file }}
+{% else %}
+env.logfile {{ bind_query_file }}
+{% endif %}
+{% endif %}
+
 {% if bind_authoritative_server %}
 env.querystats {% if bind_chroot_set %}{{ bind_chroot_path }}{% endif %}{{ bind_statistics_file }}
 {% endif %}
+
 env.MUNIN_PLUGSTATE /var/lib/munin
 timeout 120

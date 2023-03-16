@@ -8,6 +8,14 @@
     owner: root
     group: root
 
+- name: copy pub.evolix.org GPG key
+  copy:
+    src: pub_evolix.asc
+    dest: "{{ apt_keyring_dir }}/pub_evolix.asc"
+    mode: "0644"
+    owner: root
+    group: root
+
 - name: Setup deb.sury.org repository - Install apt-transport-https
   apt:
     state: present
@@ -17,6 +25,16 @@
   copy:
     src: sury.preferences
     dest: /etc/apt/preferences.d/z-sury
+  when:
+    - ansible_distribution_release != "bullseye"
+
+- name: Setup pub.evolix.org repository - Add source list
+  apt_repository:
+    repo: "deb [signed-by={{ apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix {{ ansible_distribution_release }}-php81 main"
+    filename: evolix-php
+    state: present
+  when:
+    - ansible_distribution_release == "bullseye"
 
 - name: Setup deb.sury.org repository - Add source list
   apt_repository:
@@ -33,17 +51,16 @@
 - name: "Override package list for Sury (Debian 9 or later)"
   set_fact:
     php_stretch_packages:
-      - php-cli
-      - php-gd
-      - php-intl
-      - php-imap
-      - php-ldap
-      - php-mysql
+      - php{{ php_version }}-cli
+      - php{{ php_version }}-gd
+      - php{{ php_version }}-intl
+      - php{{ php_version }}-imap
+      - php{{ php_version }}-ldap
+      - php{{ php_version }}-mysql
       # php-mcrypt is no longer packaged for PHP 7.2
-      - php-pgsql
-      - php-gettext
-      - php-curl
-      - php-ssh2
-      - composer
-      - libphp-phpmailer
-  when: ansible_distribution_release != "bullseye"
+      - php{{ php_version }}-pgsql
+      - php{{ php_version }}-gettext
+      - php{{ php_version }}-curl
+      - php{{ php_version }}-ssh2
+#      - composer
+#      - libphp-phpmailer

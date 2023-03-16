@@ -8,7 +8,7 @@
 - block:
   - name: Install dependencies
     apt:
-      name: 
+      name:
       - libcache-memcached-perl
       - libmemcached11
 

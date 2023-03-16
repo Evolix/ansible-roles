@@ -32,8 +32,8 @@
 
 - name: Check if root has subuids
   command: grep '^root:100000:10000$' /etc/subuid
-  failed_when: false
-  changed_when: false
+  failed_when: False
+  changed_when: False
   register: root_subuids
   when: lxc_unprivilegied_containers | bool
 
@@ -45,7 +45,7 @@
 
 - name: Get filesystem options
   command: findmnt --noheadings --target /var/lib/lxc --output OPTIONS
-  changed_when: false
+  changed_when: False
   check_mode: no
   register: check_fs_options
 

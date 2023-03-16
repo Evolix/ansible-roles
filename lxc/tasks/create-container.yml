@@ -1,7 +1,7 @@
 ---
 - name: "Check if container {{ name }} exists"
   command: "lxc-ls {{ name }}"
-  changed_when: false
+  changed_when: False
   check_mode: no
   register: container_exists
 
@@ -56,3 +56,15 @@
   lxc_container:
     name: "{{ name }}"
     state: started
+
+- name: "Ensure /etc/profile.d exists in container"
+  ansible.builtin.file:
+    path: "/var/lib/lxc/{{ name }}/rootfs/etc/profile.d"
+    mode: '0755'
+    state: directory
+
+- name: "Copy host /etc/profile.d/evolinux into container"
+  ansible.builtin.copy:
+    src: "/etc/profile.d/evolinux.sh"
+    remote_src: true
+    dest: "/var/lib/lxc/{{ name }}/rootfs/etc/profile.d/evolinux.sh"

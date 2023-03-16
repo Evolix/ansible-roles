@@ -9,7 +9,7 @@ nextcloud_domains: []
 
 nextcloud_home: "/home/{{ nextcloud_user }}"
 nextcloud_webroot: "{{ nextcloud_home }}/nextcloud"
-nextcloud_data: "{{ nextcloud_webroot }}/data"
+nextcloud_data: "{{ nextcloud_home }}/data"
 
 nextcloud_db_user: "{{ nextcloud_user }}"
 nextcloud_db_name: "{{ nextcloud_instance_name }}"

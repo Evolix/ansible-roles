@@ -74,7 +74,7 @@ myhostname = {{ ansible_fqdn }}
 
 # Liste des noms de domaine (ou IP) consideres comme local
 #par defaut, = $myhostname, localhost.$mydomain, localhost
-mydestination = $myhostname localhost.localdomain localhost
+mydestination = $myhostname localhost localhost.localdomain localhost.$mydomain
 
 # Indique le domaine apparaissant dans le courrier envoye
 #par defaut, = $myhostname
@@ -294,7 +294,7 @@ slow_destination_concurrency_failed_cohort_limit = 100
 # bounce   : envoie les entetes de tous les message renvoyes
 # 2bounce  : envoie les entetes de tous les messages renvoyes non delivres
 #par defaut, = resource, software
-notify_classes = resource, software, bounce, 2bounce, delay, policy, protocol
+#notify_classes = resource, software
 
 # A qui les reporter ?
 #Pour delay
@@ -412,8 +412,10 @@ smtpd_sasl_path = private/auth-client
 
 # Amavis and OpenDKIM
 content_filter = smtp-amavis:[127.0.0.1]:10024
+smtp-amavis_destination_concurrency_failed_cohort_limit = 0
 smtpd_milters = inet:[127.0.0.1]:8891
 non_smtpd_milters = inet:[127.0.0.1]:8891
+smtp-amavis_destination_concurrency_failed_cohort_limit = 0
 
 {% if postfix_slow_transport_include == True %}
 # Slow transports configuration
@@ -430,3 +432,4 @@ slow_destination_concurrency_failed_cohort_limit = 100
 slow_destination_recipient_limit = 25
 transport_maps = hash:$config_directory/transport
 {% endif %}
+

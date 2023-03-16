@@ -8,7 +8,7 @@
 
 - include_role:
     name: remount-usr
-  when: kvm_scripts_dir is search ("/usr")
+  when: kvm_scripts_dir is search("/usr")
 
 - name: add-vm script is present
   copy:

@@ -25,7 +25,7 @@
 - name: Generate random password
   command: apg -n1 -m 12 -M LCN
   register: shell_password
-  changed_when: false
+  changed_when: False
 
 - name: Read mysql config from .my.cnf
   set_fact:
@@ -48,13 +48,13 @@
 
 - name: Configure site
   shell: '{{ wordpress_wpcli }} core install --url={{ wordpress_host | quote }} --title={{ wordpress_title | quote }} --admin_user=admin --admin_password="{{ admin_pwd | quote }}" --admin_email={{ wordpress_email }} --skip-email'
-  changed_when: false
+  changed_when: False
 
 - name: Check if Wordpress is up to date
   shell: '{{ wordpress_wpcli }} core check-update | grep -q Success'
   register: check_version
   check_mode: no
-  failed_when: false
+  failed_when: False
   changed_when: check_version.rc == 1
 
 - name: Update Wordpress
@@ -65,17 +65,17 @@
 
 - name: Install default plugin
   shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} || {{ wordpress_wpcli }} plugin install {{ item }}'
-  changed_when: false
+  changed_when: False
   loop: "{{ wordpress_plugins }}"
 
 - name: Update default plugins
   shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} && {{ wordpress_wpcli }} plugin update {{ item }}'
-  changed_when: false
+  changed_when: False
   loop: "{{ wordpress_plugins }}"
 
 - name: Activate default plugins
   shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} && {{ wordpress_wpcli }} plugin activate {{ item }}'
-  changed_when: false
+  changed_when: False
   loop: "{{ wordpress_plugins }}"
 
 - name: Send a summary mail

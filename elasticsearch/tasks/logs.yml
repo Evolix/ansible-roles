@@ -17,3 +17,4 @@
     group: root
     mode: "0750"
   when: is_cron_installed.rc == 0
+

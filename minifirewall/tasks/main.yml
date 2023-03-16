@@ -6,6 +6,8 @@
   stat:
     path: /etc/init.d/minifirewall
   register: _minifirewall_check
+  tags:
+    - always
 
 # Legacy versions of minifirewall don't define the VERSION variable
 - name: Look for minifirewall version
@@ -14,6 +16,8 @@
   changed_when: False
   check_mode: False
   register: _minifirewall_version_check
+  tags:
+    - always
 
 - name: Set install mode to legacy if needed
   set_fact:
@@ -24,21 +28,30 @@
     - minifirewall_install_mode != 'modern'
     - not (minifirewall_force_upgrade_script | bool)
     - _minifirewall_version_check.rc == 1 # grep didn't find but the file exists
+  tags:
+    - always
 
 - name: Set install mode to modern if not legacy
   set_fact:
     minifirewall_install_mode: modern
   when: minifirewall_install_mode != 'legacy'
+  tags:
+    - always
 
 - name: Debug install mode
   debug:
     var: minifirewall_install_mode
     verbosity: 1
+  tags:
+    - always
 
 - name: 'Set minifirewall_restart_handler_name to "noop"'
   set_fact:
     minifirewall_restart_handler_name: "restart minifirewall (noop)"
-  when: not (minifirewall_restart_if_needed | bool)
+  when:
+    - not (minifirewall_restart_if_needed | bool)
+  tags:
+    - always
 
 - name: 'Set minifirewall_restart_handler_name to "legacy"'
   set_fact:
@@ -46,6 +59,8 @@
   when:
     - minifirewall_restart_if_needed | bool
     - minifirewall_install_mode == 'legacy'
+  tags:
+    - always
 
 - name: 'Set minifirewall_restart_handler_name to "modern"'
   set_fact:
@@ -53,6 +68,8 @@
   when:
     - minifirewall_restart_if_needed | bool
     - minifirewall_install_mode != 'legacy'
+  tags:
+    - always
 
 #######################################################################
 
@@ -62,54 +79,74 @@
   when:
     - minifirewall_install_mode != 'legacy'
     - minifirewall_main_file is defined
+  tags:
+    - always
 
 - name: Install tasks (modern mode)
-  include: install.yml
+  import_tasks: install.yml
   when: minifirewall_install_mode != 'legacy'
 
 - name: Install tasks (legacy mode)
-  include: install.legacy.yml
+  import_tasks: install.legacy.yml
   when: minifirewall_install_mode == 'legacy'
 
 - name: Debug minifirewall_update_config
   debug:
     var: minifirewall_update_config | bool
     verbosity: 1
+  tags:
+    - always
 
 - name: Config tasks (modern mode)
-  include: config.yml
+  include_tasks: config.yml
   when:
     - minifirewall_install_mode != 'legacy'
     - minifirewall_update_config | bool
+  tags:
+    - manage
 
 - name: Config tasks (legacy mode)
-  include: config.legacy.yml
+  include_tasks: config.legacy.yml
+  args:
+    apply:
+      tags:
+        - manage
   when:
     - minifirewall_install_mode == 'legacy'
     - minifirewall_update_config | bool
 
 - name: Utils tasks
-  include: utils.yml
+  include_tasks: utils.yml
 
 - name: NRPE tasks
-  include: nrpe.yml
+  include_tasks: nrpe.yml
 
 - name: Activation tasks
-  include: activate.yml
+  include_tasks: activate.yml
 
 - name: Debug minifirewall_tail_included
   debug:
     var: minifirewall_tail_included | bool
     verbosity: 1
+  tags:
+    - always
 
 - name: Tail tasks (modern mode)
-  include: tail.yml
+  include_tasks: tail.yml
+  args:
+    apply:
+      tags:
+        - manage
   when:
     - minifirewall_install_mode != 'legacy'
     - minifirewall_tail_included | bool
 
 - name: Tail tasks (legacy mode)
-  include: tail.legacy.yml
+  include_tasks: tail.legacy.yml
+  args:
+    apply:
+      tags:
+        - manage
   when:
     - minifirewall_install_mode == 'legacy'
     - minifirewall_tail_included | bool
@@ -120,10 +157,14 @@
   debug:
     var: minifirewall_restart_force | bool
     verbosity: 1
+  tags:
+    - always
 
 - name: Force restart minifirewall (legacy)
   command: /bin/true
   notify: "restart minifirewall (legacy)"
+  tags:
+    - always
   when:
     - minifirewall_install_mode == 'legacy'
     - minifirewall_restart_force | bool
@@ -131,6 +172,8 @@
 - name: Force restart minifirewall (modern)
   command: /bin/true
   notify: "restart minifirewall (modern)"
+  tags:
+    - always
   when:
     - minifirewall_install_mode != 'legacy'
     - minifirewall_restart_force | bool

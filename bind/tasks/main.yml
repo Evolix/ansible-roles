@@ -1,12 +1,19 @@
 # Until chroot-bind.sh is migrated to ansible, we hardcode the chroot paths.
 - name: set chroot variables
   set_fact:
-     bind_log_file: /var/log/bind.log
-     bind_query_file: /var/log/bind_queries.log
-     bind_cache_dir: /var/cache/bind
-     bind_statistics_file: /var/run/named.stats
-     bind_chroot_path: /var/chroot-bind
+    bind_log_file: /var/log/bind.log
+    bind_query_file: /var/log/bind_queries.log
+    bind_cache_dir: /var/cache/bind
+    bind_statistics_file: /var/run/named.stats
+    bind_chroot_path: /var/chroot-bind
   when: bind_chroot_set | bool
+
+- name: Check AppArmor
+  shell: systemctl is-active apparmor || systemctl is-enabled apparmor
+  failed_when: False
+  changed_when: False
+  check_mode: no
+  register: check_apparmor
 
 - name: configure apparmor
   template:
@@ -14,9 +21,10 @@
     dest: /etc/apparmor.d/usr.sbin.named
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
     force: yes
   notify: restart apparmor
+  when: check_apparmor.rc == 0
 
 - name: package are installed
   apt:
@@ -25,47 +33,23 @@
       - dnstop
     state: present
 
-- name: Set bind configuration for recursive server
-  template:
-    src: named.conf.options_recursive.j2
-    dest: /etc/bind/named.conf.options
-    owner: bind
-    group: bind
-    mode: "0644"
-    force: yes
-  notify: restart bind
-  when: bind_recursive_server | bool
-
-- name: enable zones.rfc1918 for recursive server
-  lineinfile:
-    dest: /etc/bind/named.conf.local
-    line: 'include "/etc/bind/zones.rfc1918";'
-    regexp: "zones.rfc1918"
-  notify: restart bind
-  when: bind_recursive_server | bool
-
-- name: Set bind configuration for authoritative server
-  template:
-    src: named.conf.options_authoritative.j2
-    dest: /etc/bind/named.conf.options
-    owner: bind
-    group: bind
-    mode: "0644"
-    force: yes
-  notify: restart bind
+- include: authoritative.yml
   when: bind_authoritative_server | bool
 
-- name: Create systemd service
+- include: recursive.yml
+  when: bind_recursive_server | bool
+
+- name: Create systemd service for Debian 8 (Jessie)
   template:
-    src: bind9.service.j2
+    src: bind9.service.jessie.j2
     dest: "{{ bind_systemd_service_path }}"
     owner: root
     group: root
     mode: "0644"
     force: yes
   notify:
-  - reload systemd
-  - restart bind
+    - reload systemd
+    - restart bind
   when: ansible_distribution_release == "jessie"
 
 - name: "touch {{ bind_log_file }} if non chroot"

@@ -122,8 +122,8 @@
 - name: Patch logrotate conf
   replace:
     name: /etc/logrotate.d/varnish
-    regexp: '^(\s+)(/usr/sbin/invoke-rc.d {{item}}.*)'
-    replace: '\1systemctl -q is-active {{item}} && \2'
+    regexp: '^(\s+)(/usr/sbin/invoke-rc.d {{ item }}.*)'
+    replace: '\1systemctl -q is-active {{ item }} && \2'
   loop:
     - varnishlog
     - varnishncsa
@@ -137,6 +137,7 @@
     dest: "{{ varnish_config_file }}"
     mode: "0644"
     force: yes
+  when: "{{ varnish_update_config }}"
   loop: "{{ query('first_found', templates) }}"
   vars:
     templates:

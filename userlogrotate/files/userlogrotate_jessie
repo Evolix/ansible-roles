@@ -5,7 +5,6 @@ HOMEPREFIX="/home"
 
 rotate () {
   mv $1 $1.$DATE
-  gzip $1.$DATE
   touch $1
   chown $2 $1
   chmod g+r $1
@@ -36,3 +35,25 @@ for log in production.log delayed_job.log development.log test.log; do
 done
 
 apache2ctl restart > /dev/null
+
+# Zipping is done after web server reload, so that the file descriptor is released.
+# Else, an error is raised (gzip file size changed while zipping)
+# and logs written during the zipping process might be lost.
+
+for log in access.log*[!\.gz] access-*.log*[!\.gz] error.log*[!\.gz]; do
+  for i in `ls -1 -d $HOMEPREFIX/*/log/$log 2>/dev/null | grep -v \.bak\.`; do
+    if test -f "$i"; then
+      gzip "$i"
+    fi
+  done
+done
+
+for log in production.log*[!\.gz] delayed_job.log*[!\.gz] development.log*[!\.gz] test.log*[!\.gz]; do
+  for i in `ls -1 -d $HOMEPREFIX/*/www/{,current/}log/$log 2>/dev/null | grep -v \.bak\.`; do
+    if test -f "$i"; then
+      gzip "$i"
+    fi
+  done
+done
+
+

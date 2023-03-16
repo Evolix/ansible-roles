@@ -2,14 +2,13 @@
 
 - include_role:
     name: evolix/remount-usr
-  when: repository_path is search ("/usr")
+  when: repository_path is search("/usr")
 
 - name: "{{ repository_path }} is versioned with git"
   command: "git init ."
   args:
     chdir: "{{ repository_path }}"
     creates: "{{ repository_path }}/.git/"
-    warn: no
   register: git_init
   tags:
     - etc-git
@@ -54,7 +53,6 @@
   command: "git log"
   args:
     chdir: "{{ repository_path }}"
-    warn: no
   changed_when: False
   failed_when: False
   register: git_log
@@ -66,7 +64,6 @@
   shell: "git add -A . && git commit -m \"Initial commit via Ansible\""
   args:
     chdir: "{{ repository_path }}"
-    warn: no
   register: git_commit
   when: git_log.rc != 0 or (git_init is defined and git_init is changed)
   tags:

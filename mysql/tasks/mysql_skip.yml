@@ -1,0 +1,54 @@
+---
+
+- name: "Copy script mysql_skip.sh into /usr/local/bin/"
+  copy:
+    src: mysql_skip.sh
+    dest: "/usr/local/bin/mysql_skip.sh"
+    owner: root
+    group: root
+    mode: "0700"
+    force: yes
+  tags:
+    - mysql_skip
+
+- name: "Copy config file for mysql_skip.sh"
+  template:
+    src: mysql_skip.conf.j2
+    dest: "/etc/mysql_skip.conf"
+    owner: root
+    group: root
+    mode: "0600"
+  tags:
+    - mysql_skip
+
+- name: "Create log file for mysql_skip.sh"
+  file:
+    path: "/var/log/mysql_skip.log"
+    state: touch
+    owner: root
+    group: adm
+    mode: "0640"
+  tags:
+    - mysql_skip
+
+- name: "Copy logrotate file for mysql_skip.sh"
+  template:
+    src: mysql_skip.logrotate.j2
+    dest: "/etc/logrotate.d/mysql_skip"
+    owner: root
+    group: root
+    mode: "0600"
+  tags:
+    - mysql_skip
+
+- name: "Copy mysql_skip.sh systemd unit"
+  template:
+    src: mysql_skip.systemd.j2
+    dest: /etc/systemd/system/mysql_skip.service
+    force: yes
+
+- name: "Start or stop systemd unit"
+  systemd:
+    name: mysql_skip
+    daemon_reload: yes
+    state: "{{ mysql_skip_enabled | bool | ternary('started', 'stopped') }}"

@@ -1,8 +1,11 @@
 ---
 
-- name: "Set php version to 8.1 (Debian 12)"
+- name: "Set php version to 8.2 (Debian 12)"
   set_fact:
-    php_version: "8.1"
+    php_version: "8.2"
+  when:
+    - php_sury_enable == false
+  check_mode: no
 
 - name: "Set php config directories (Debian 12)"
   set_fact:
@@ -19,9 +22,9 @@
     php_apache_custom_ini_file: "{{ php_apache_conf_dir }}/zzz-evolinux-custom.ini"
     php_fpm_defaults_ini_file: "{{ php_fpm_conf_dir }}/z-evolinux-defaults.ini"
     php_fpm_custom_ini_file: "{{ php_fpm_conf_dir }}/zzz-evolinux-custom.ini"
-    php_fpm_debian_default_pool_file: "{{ php_fpm_pool_dir}}/www.conf"
-    php_fpm_default_pool_file: "{{ php_fpm_pool_dir}}/www-evolinux-defaults.conf"
-    php_fpm_default_pool_custom_file: "{{ php_fpm_pool_dir}}/www-evolinux-zcustom.conf"
+    php_fpm_debian_default_pool_file: "{{ php_fpm_pool_dir }}/www.conf"
+    php_fpm_default_pool_file: "{{ php_fpm_pool_dir }}/www-evolinux-defaults.conf"
+    php_fpm_default_pool_custom_file: "{{ php_fpm_pool_dir }}/www-evolinux-zcustom.conf"
     php_fpm_default_pool_socket: "/var/run/php/php{{ php_version }}-fpm.sock"
     php_fpm_service_name: "php{{ php_version }}-fpm"
 

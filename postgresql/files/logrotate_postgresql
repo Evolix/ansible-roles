@@ -1,11 +1,10 @@
 /var/log/postgresql/*.log {
+    su postgres postgres
     daily
     rotate 10
     copytruncate
     nodelaycompress
     compress
-    notifempty
     missingok
-    su root root
+    dateext
 }
-

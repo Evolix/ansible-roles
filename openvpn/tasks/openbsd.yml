@@ -132,7 +132,7 @@
 
 - name: Configure NRPE OpenVPN check
   lineinfile:
-    dest: "/etc/nrpe.d/zzz_evolix.cfg"
+    dest: "/etc/nrpe.d/evolix.cfg"
     regexp: '^command\[check_openvpn\]='
     line: "command[check_openvpn]=/usr/local/libexec/nagios/plugins/check_openvpn.pl -H 127.0.0.1 -p 1195 -P {{ management_pwd }}"
     create: yes
@@ -218,6 +218,6 @@
       The "push" parameter may be needed to push a route to the client, so that the client can access that route through OpenVPN.
 
       Take note of the generated CA password and store it in your password manager : {{ ca_pwd }}
-      
+
       Press enter to exit when it's done.
 

@@ -87,7 +87,7 @@
     name: log2mail
     state: present
   tags: dovecot
-  
+
 - name: dovecot is configured in log2mail
   blockinfile:
     path: /etc/log2mail/config/mail.conf

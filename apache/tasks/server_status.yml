@@ -68,3 +68,10 @@
     insertafter: "[apache_*]"
     create: no
   notify: restart munin-node
+
+- name: add mailgraph URL in index.html
+  lineinfile:
+    dest: /var/www/index.html
+    state: present
+    line: '            <li><a href="/mailgraph">Stats Mail</a></li>'
+    insertbefore: "</ul>"

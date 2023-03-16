@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# https://forge.evolix.org/projects/evolix-private/repository
+#
+# You should not alter this file.
+# If you need to, create and customize a copy.
+
+set -e
+
+readonly PROGNAME=$(basename $0)
+readonly PROGDIR=$(readlink -m $(dirname $0))
+readonly ARGS="$@"
+
+usage() {
+    echo "$PROGNAME action prefix"
+}
+
+disable_alerts () {
+    disabled_file="$1_disabled"
+    enabled_file="$1_enabled"
+
+    if [ -e "${enabled_file}" ]; then
+        mv "${enabled_file}" "${disabled_file}"
+    else
+        touch "${disabled_file}"
+        chmod 0644 "${disabled_file}"
+    fi
+}
+
+enable_alerts () {
+    disabled_file="$1_disabled"
+    enabled_file="$1_enabled"
+
+    if [ -e "${disabled_file}" ]; then
+        mv "${disabled_file}" "${enabled_file}"
+    else
+        touch "${enabled_file}"
+        chmod 0644 "${enabled_file}"
+    fi
+}
+
+now () {
+  date --iso-8601=seconds
+}
+
+log_disable () {
+    echo "$(now) - alerts disabled by $(logname || echo unknown)" >> $1
+}
+
+log_enable () {
+    echo "$(now) - alerts enabled by $(logname || echo unknown)" >> $1
+}
+
+main () {
+    local action=$1
+    local prefix=$2
+
+    local base_dir="/var/lib/misc"
+    mkdir -p "${base_dir}"
+
+    local file_path="${base_dir}/${prefix}_alerts"
+    local log_file="/var/log/${prefix}_alerts.log"
+
+    case "$action" in
+    enable)
+        enable_alerts ${file_path}
+        log_enable ${log_file}
+        ;;
+    disable)
+        disable_alerts ${file_path}
+        log_disable ${log_file}
+        ;;
+    help)
+        usage
+        ;;
+    *)
+        >&2 echo "Unknown action '$action'"
+        exit 1
+        ;;
+    esac
+}
+
+main $ARGS

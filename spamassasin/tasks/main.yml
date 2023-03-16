@@ -87,7 +87,7 @@
 
 - name: update SpamAssasin's rules
   command: "/usr/share/scripts/sa-update.sh"
-  changed_when: false
+  changed_when: False
   tags:
     - spamassassin
 

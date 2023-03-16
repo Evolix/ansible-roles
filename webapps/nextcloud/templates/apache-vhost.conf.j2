@@ -5,9 +5,11 @@
   ServerAlias {{  domain_alias }}
   {% endfor %}
 
+  # SSL
   # SSLEngine on
   # SSLCertificateFile    /etc/letsencrypt/live/{{ nextcloud_instance_name }}/fullchain.pem
   # SSLCertificateKeyFile /etc/letsencrypt/live/{{ nextcloud_instance_name }}/privkey.pem
+  # Header always set Strict-Transport-Security "max-age=15552000"
 
   DocumentRoot {{ nextcloud_webroot }}/
 
@@ -15,6 +17,15 @@
     Require all granted
     AllowOverride All
     Options FollowSymLinks MultiViews
+
+    <IfModule mod_dav.c>
+      Dav off
+    </IfModule>
+  </Directory>
+
+  <Directory {{ nextcloud_data }}/>
+    Require all denied
+    AllowOverride None
 
     <IfModule mod_dav.c>
       Dav off

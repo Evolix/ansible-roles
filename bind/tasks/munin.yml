@@ -19,7 +19,7 @@
     - bind9_rndc
   notify: restart munin-node
   when:
-    - bind_authoritative_server
+    - bind_authoritative_server | bool
     - munin_node_plugins_config.stat.exists
   tags:
     - bind
@@ -32,10 +32,10 @@
     state: link
   loop:
     - bind9
-    - bind9_rndc
   notify: restart munin-node
   when:
-    - bind_recursive_server
+    - bind_recursive_server | bool
+    - bind_query_file_enabled | bool
     - munin_node_plugins_config.stat.exists
   tags:
     - bind

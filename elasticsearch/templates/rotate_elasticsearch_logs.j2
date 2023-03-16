@@ -8,7 +8,6 @@ MAX_AGE={{ elasticsearch_log_rotate_days | mandatory }}
 # Compress logs
 find ${LOG_DIR} -type f -user ${USER} -name "*.log.????-??-??" -exec gzip --best {} \;
 find ${LOG_DIR} -type f -user ${USER} -name "*-????-??-??.log" -exec gzip --best {} \;
-find ${LOG_DIR} -type f -user ${USER} -name "*.log.??" -not -name "*.gz" -exec gzip --best {} \;
 
 # Delete old logs
 find ${LOG_DIR} -type f -user ${USER} -name "*gz" -ctime +${MAX_AGE} -delete

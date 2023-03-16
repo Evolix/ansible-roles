@@ -10,7 +10,7 @@
 
     - name: "read the real datadir"
       command: readlink -f /var/lib/elasticsearch
-      changed_when: false
+      changed_when: False
       register: elasticsearch_current_real_datadir_test
       check_mode: no
   tags:

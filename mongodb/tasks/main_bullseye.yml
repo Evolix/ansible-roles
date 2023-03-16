@@ -3,7 +3,7 @@
 - fail:
     msg: Not compatible with Debian 11 (Bullseye)
   when:
-  - ansible_distribution_release == "bullseye" 
+  - ansible_distribution_release == "bullseye"
   - mongodb_version is version('5.0', '<')
 
 - name: Look for legacy apt keyring
@@ -20,8 +20,8 @@
 
 - name: Add MongoDB GPG key
   copy:
-    src: "server-{{mongodb_version}}.asc"
-    dest: "{{ apt_keyring_dir }}/mongodb-server-{{mongodb_version}}.asc"
+    src: "server-{{ mongodb_version }}.asc"
+    dest: "{{ apt_keyring_dir }}/mongodb-server-{{ mongodb_version }}.asc"
     force: yes
     mode: "0644"
     owner: root
@@ -29,16 +29,16 @@
 
 - name: Enable APT sources list
   apt_repository:
-    repo: "deb [signed-by={{ apt_keyring_dir }}/mongodb-server-{{mongodb_version}}.asc] http://repo.mongodb.org/apt/debian bullseye/mongodb-org/{{mongodb_version}} main"
+    repo: "deb [signed-by={{ apt_keyring_dir }}/mongodb-server-{{ mongodb_version }}.asc] http://repo.mongodb.org/apt/debian bullseye/mongodb-org/{{ mongodb_version }} main"
     state: present
-    filename: "mongodb-org-{{mongodb_version}}"
+    filename: "mongodb-org-{{ mongodb_version }}"
     update_cache: yes
 
 - name: Disable unsigned APT sources list
   apt_repository:
-    repo: "deb http://repo.mongodb.org/apt/debian bullseye/mongodb-org/{{mongodb_version}} main"
+    repo: "deb http://repo.mongodb.org/apt/debian bullseye/mongodb-org/{{ mongodb_version }} main"
     state: absent
-    filename: "mongodb-org-{{mongodb_version}}"
+    filename: "mongodb-org-{{ mongodb_version }}"
     update_cache: yes
 
 - name: Install packages

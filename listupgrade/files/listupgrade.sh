@@ -9,13 +9,13 @@
 # - 60 : current release is not in the $r_releases list
 # - 70 : at least an upgradable package is not in the $r_packages list
 
-VERSION="21.06.3"
+VERSION="23.03.3"
 
 show_version() {
     cat <<END
 listupgrade.sh version ${VERSION}
 
-Copyright 2018-2021 Evolix <info@evolix.fr>,
+Copyright 2018-2023 Evolix <info@evolix.fr>,
                Gregory Colpart <reg@evolix.fr>,
                Romain Dessort <rdessort@evolix.fr>,
                Ludovic Poujol <lpoujol@evolix.fr>,
@@ -84,6 +84,7 @@ Subject: Prochain creneau pour mise a jour de votre serveur ${hostname}
 X-Debian-Release: ${local_release}
 X-Packages: ${packagesParsable}
 X-Date: ${date}
+X-Listupgrade-Version: ${VERSION}
 
 Bonjour,
 
@@ -100,15 +101,15 @@ semaine prochaine.
 
 Voici la listes de packages qui seront mis à jour :
 
-$(cat "${packages}" | sort | uniq)
+$(sort -h "${packages}" | uniq)
 
 Liste des packages dont la mise-à-jour a été manuellement suspendue :
 
-$(cat "${packagesHold}" | sort | uniq)
+$(sort -h "${packagesHold}" | uniq)
 
 Liste des services qui seront redémarrés :
 
-$(cat "${servicesToRestart}" | sort | uniq)
+$(sort -h "${servicesToRestart}" | uniq)
 
 N'hésitez pas à nous faire toute remarque sur ce créneau d'intervention le plus
 tôt possible.
@@ -181,6 +182,28 @@ main() {
     fi
 
     local_release=$(cut -f 1 -d . </etc/debian_version)
+    # In case the version is a release name and not a number
+    case "${local_release}" in
+        *jessie*) 
+            local_release=8
+            ;;
+        *stretch*) 
+            local_release=9
+            ;;
+        *buster*) 
+            local_release=10
+            ;;
+        *bullseye*) 
+            local_release=11
+            ;;
+        *bookworm*)
+            local_release=12
+            ;;
+        *trixie*) 
+            local_release=13
+            ;;
+    esac
+
 
     if force_mode; then
         if ! cron_mode; then

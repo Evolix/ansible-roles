@@ -16,7 +16,7 @@ destemail = {{ fail2ban_alert_email or general_alert_email | mandatory }}
 
 # ACTIONS
 banaction = iptables-multiport
-action = %({{fail2ban_default_action}})s
+action = %({{ fail2ban_default_action }})s
 
 
 [sshd]

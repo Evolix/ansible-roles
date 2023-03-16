@@ -36,7 +36,7 @@
 
 - name: Get Redis version
   shell: "redis-server -v | grep -Eo '(v=\\S+)' | cut -d'=' -f 2 | grep -E '^([0-9]|\\.)+$'"
-  changed_when: false
+  changed_when: False
   check_mode: no
   register: _redis_installed_version
   tags:

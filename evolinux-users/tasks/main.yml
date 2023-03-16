@@ -16,7 +16,7 @@
   vars:
     user: "{{ item.value }}"
   loop: "{{ evolinux_users | dict2items }}"
-  when: 
+  when:
     - user.create == evolinux_users_create
     - evolinux_users | length > 0
 

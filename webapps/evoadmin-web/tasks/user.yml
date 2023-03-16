@@ -80,7 +80,7 @@
 
 - include_role:
     name: evolix/remount-usr
-  when: evoadmin_scripts_dir is search ("/usr")
+  when: evoadmin_scripts_dir is search("/usr")
 
 - name: "Create {{ evoadmin_scripts_dir }}"
   file:
@@ -100,8 +100,6 @@
   register: command_result
   changed_when: "'changed' in command_result.stdout"
   # failed_when: False
-  args:
-    warn: False
 
 - name: Add evoadmin sudoers file
   template:

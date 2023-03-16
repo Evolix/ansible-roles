@@ -39,4 +39,4 @@
     mode: '0755'
 
 - name: "Install Solr {{ solr_version }}"
-  command: "lxc-attach -n {{name}} -- /root/solr-{{ solr_version }}/bin/install_solr_service.sh /root/solr-{{ solr_version }}.tgz -d /home/solr/{{name}} -p {{ solr_port }}"
+  command: "lxc-attach -n {{ name }} -- /root/solr-{{ solr_version }}/bin/install_solr_service.sh /root/solr-{{ solr_version }}.tgz -d /home/solr/{{ name }} -p {{ solr_port }}"

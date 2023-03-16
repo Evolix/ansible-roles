@@ -24,7 +24,7 @@
 
 - name: Fetch packages
   package_facts:
-    manager: auto  
+    manager: auto
 
 - debug:
     var: ansible_facts.packages[squid_daemon_name]

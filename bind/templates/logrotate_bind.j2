@@ -1,7 +1,7 @@
-{% if bind_chroot_set %}
-{{ bind_chroot_path }}{{bind_log_file}} {
+{% if bind_chroot_set | bool %}
+{{ bind_chroot_path }}{{ bind_log_file }} {
 {% else %}
-{{bind_log_file}} {
+{{ bind_log_file }} {
 {% endif %}
     weekly
     missingok
