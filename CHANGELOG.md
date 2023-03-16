@@ -13,6 +13,18 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [23.03.1] 2023-03-16
+
+### Added
+
 * pgbouncer: new role
 
 ### Changed
@@ -20,12 +32,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * apt: deb822 migration python script is looked relative to shell script
 * listupgrade: remove old typo version of the cron task
 * minifirewall: support protocols in numeric form
-
-### Fixed
-
-### Removed
-
-### Security
 
 ## [23.03] 2023-03-16
 
