@@ -42,6 +42,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * apt: Use pub.evolix.org instead of pub.evolix.net
 * userlogrotate: set rotate date format in right order (YYYY-MM-DD)!
 * elasticsearch: Disable garabge collector logging (JDK >= 9)
+* kvmstats: use virsh domstats | awk to get guests informations
 
 ### Fixed
 
