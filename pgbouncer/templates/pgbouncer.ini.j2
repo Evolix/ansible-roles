@@ -1,0 +1,29 @@
+[databases]
+{% for db in pgbouncer_databases %}
+{{ db.name }} = host={{ db.host }} port={{ db.port }}
+{% endfor %}
+
+[pgbouncer]
+logfile = /var/log/postgresql/pgbouncer.log
+pidfile = /var/run/postgresql/pgbouncer.pid
+
+listen_addr = {{ pgbouncer_listen_addr }}
+listen_port = {{ pgbouncer_listen_port }}
+unix_socket_dir =
+
+auth_type = scram-sha-256
+auth_file = /etc/pgbouncer/userlist.txt
+
+# La connexion au serveur redevient libre lorsque le client termine une transaction
+# Autres valeurs possibles : session (lorsque le client ferme la session), statement (lorsque la requête se termine)
+pool_mode = transaction
+
+# Nombre maximum de connexions entrantes
+max_client_conn = 5000
+
+# Nombre de connexion maintenues avec le serveur
+default_pool_size = 20
+
+# Ne pas enregistrer les connexions qui se passent bien
+log_connections = 0
+log_disconnections = 0

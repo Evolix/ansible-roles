@@ -13,6 +13,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* pgbouncer: new role
+
 ### Changed
 
 ### Fixed
