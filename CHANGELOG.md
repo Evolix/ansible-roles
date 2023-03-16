@@ -12,53 +12,52 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* apache: add task to enable mailgraph on default vhost and index.html
 * apt: add move-apt-keyrings script/tasks
 * apt: add tools to migrate sources to deb822 format
-* nagios-nrpe: Print pool config path in check_phpfpm_multi output
-* nagios-nrpe: add tasks/files for a wrapper
 * fail2ban: add "Internal login failure" to Dovecot filter
+* lxc: copy `/etc/profile.d/evolinux.sh` from host into container
+* nagios-nrpe: add tasks/files for a wrapper
+* nagios-nrpe: Print pool config path in check_phpfpm_multi output
+* php: add `php_version` variable when sury is activated for each Debian version
 * php: add a way to choose which version to install using sury repository
-* userlogrotate: create role separated from packweb-apache
-* postfix: Add task for enable mailgraph on packmail
+* postfix: Add task to enable mailgraph on packmail
 * postgresql: configure max_connections
-* apache: add tash for enable mailgraph on default vhost and index.html
-* php: add variables php_version when sury is activated for each Debian version
-* varnish: add variable varnish_update_config to disable configuration update
-* lxc: copy /etc/profile.d/evolinux.sh from host into container
+* userlogrotate: create dedicated role, separated from packweb-apache
+* varnish: add `varnish_update_config` variable to disable configuration update
 
 ### Changed
 
 * Use systemd module instead of command
-* Removed all "warn: False" args in command, shell and other modules as it's been deprecated and will give a hard fail in ansible-core 2.14.0.
+* Removed all `warn: False` args in command, shell and other modules as it's been deprecated and will give a hard fail in ansible-core 2.14.0.
+* apt: Use pub.evolix.org instead of pub.evolix.net
 * bind: refactor role
+* elasticsearch: Disable garabge collector logging (JDK >= 9)
 * evolinux-users: Update sudoers template to remove commands allowed without password
 * listupgrade: upstream release 23.03.1
-* nagios-nrpe : Rewrite check_vrrpd for a better check (check rp_filter, vrrpd and uvrrpd compatible, use arguments, …)
-* openvpn: Change check_openvpn destination file to comply with recent EvoBSD change
+* nagios-nrpe : Rewrite `check_vrrpd` for a better check (check `rp_filter`, `vrrpd` and `uvrrpd` compatible, use arguments, …)
+* openvpn: Change `check_openvpn` destination file to comply with recent EvoBSD change
 * postfix: come back to default value of `notify_classes` for pack mails.
+* userlogrotate: set rotate date format in right order (YYYY-MM-DD)!
 * webapps/nextcloud : Change default data directory to be outside web root
 * webapps/nextcloud : Small enhancement on the vhost template to lock out data dir
 * yarn: update apt key
-* apt: Use pub.evolix.org instead of pub.evolix.net
-* userlogrotate: set rotate date format in right order (YYYY-MM-DD)!
-* elasticsearch: Disable garabge collector logging (JDK >= 9)
-* kvmstats: use virsh domstats | awk to get guests informations
 
 ### Fixed
 
 * Proper jinja spacing
+* clamav: set `MaxConnectionQueueLength` to its default value (200), custom (15) was way too small and caused recurring failures in Postfix.
+* docker-host: fix type in `daemon.json` and remove host configuration that is already in the systemd service by default
 * evolinux-base: ensure dbus is started and enabled (not by default in the case of an offline netinst)
-* docker-host: fix type in daemon.json and remove host configuration that is already in the systemd service by default
 * haproxy: fix missing admin ACL in stats module access permissions
 * openvpn: fix the client cipher configuration to match the server cipher configuration
-* clamav: set `MaxConnectionQueueLength` to its default value (200), custom (15) was way too small and caused recurrent connections fail in Postfix.
+* php: fix error introduced in #33503e4538 (`False` evaluated as a String instead of Boolean)
+* php: install using Sury repositories on Bullseye
 * postfix (packmail only): disable `concurrency_failed_cohort_limit` for destination smtp-amavis to prevent the suspension of this destination when Amavis fails to answer. Indeed, we configure the suspension delay quite long in `minimal_backoff_time` (2h) and `maximal_backoff_time` (6h) to reduce the risk of ban from external SMTPs.
-* php: install using sury repositories on bullseye
-* php: fix error introduced in 33503e4538 (False evaluated as a string instead of boolean)
-* postfix: remove unused "aliases_scope=sub" from virtual_aliases.cf (it generated warnings)
+* postfix: avoid Amavis transport to be considered dead when restarted.
+* postfix: remove unused `aliases_scope=sub` from virtual_aliases.cf (it generated warnings)
 * userlogrotate: fix bug introduced in commit 2e54944a246 (rotated files were not zipped)
 * userlogrotate: skip zipping if .gz log already exists (prevents interactive question)
-* postfix: avoid Amavis transport to be considered dead when restarted.
 
 ### Removed
 
