@@ -1,0 +1,17 @@
+---
+- name: PgBouncer is installed
+  apt:
+    name: pgbouncer
+    state: present
+- name: Limit for PgBouncer is set
+  lineinfile:
+    path: /etc/default/pgbouncer
+    line: ulimit -n 65536
+- name: Add config file for PgBouncer
+  template:
+    src: pgbouncer.ini.j2
+    dest: /etc/pgbouncer/pgbouncer.ini
+- name: Populate userlist.txt
+  template:
+    src: userlist.txt.j2
+    dest: /etc/pgbouncer/userlist.txt
