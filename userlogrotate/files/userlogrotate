@@ -55,5 +55,4 @@ for log in production.log*[!\.gz] delayed_job.log*[!\.gz] development.log*[!\.gz
   done
 done
 
-# we want exit 0
-true
+exit 0
