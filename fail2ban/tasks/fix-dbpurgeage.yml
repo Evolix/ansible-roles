@@ -8,7 +8,7 @@
 - name: Register bantime from default config from package
   shell: "grep -R -E 'dbpurgeage[[:blank:]]*=[[:blank:]]*[0-9]+' /etc/fail2ban/fail2ban.conf |awk '{print $3}'|head -n1"
   register: dbpurgeage
-  changed_when: false
+  changed_when: False
   check_mode: false
 
 - name:

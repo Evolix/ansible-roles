@@ -9,7 +9,7 @@
   command: cat /root/.ssh/id_rsa.pub
   register: ssh_keys
   check_mode: no
-  changed_when: false
+  changed_when: False
 
 - name: Print ssh public keys
   debug:

@@ -1,4 +1,4 @@
 ---
 - name: remount usr
   command: "mount -o remount /usr"
-  failed_when: false
+  failed_when: False

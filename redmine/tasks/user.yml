@@ -41,4 +41,4 @@
 
 - name: Enable systemd user mode
   command: "loginctl enable-linger {{ redmine_user }}"
-  changed_when: false
+  changed_when: False

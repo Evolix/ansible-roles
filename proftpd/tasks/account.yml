@@ -1,7 +1,7 @@
 ---
 - name: Check if FTP account exist
   command: grep "^{{ proftpd_name }}:" /etc/proftpd/vpasswd
-  failed_when: false
+  failed_when: False
   check_mode: no
   changed_when: check_ftp_account.rc != 0
   register: check_ftp_account
@@ -36,7 +36,7 @@
   register: hashed_ftp_password
   check_mode: no
   when: check_ftp_account.rc == 0
-  changed_when: false
+  changed_when: False
   tags:
     - proftpd
 
@@ -45,7 +45,7 @@
     proftpd_password: "{{ hashed_ftp_password.stdout }}"
   check_mode: no
   when: check_ftp_account.rc == 0
-  changed_when: false
+  changed_when: False
   tags:
     - proftpd
 

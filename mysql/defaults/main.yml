@@ -50,10 +50,10 @@ mysql_restart_if_needed: True
 
 mysql_performance_schema: True
 
-mysql_skip_enabled: false
+mysql_skip_enabled: False
 
 # replication variables:
-mysql_replication: false
+mysql_replication: False
 mysql_log_bin: null
 mysql_binlog_format: mixed
 mysql_server_id: null

@@ -1,7 +1,7 @@
 ---
 - name: Enable systemd user mode
   command: "loginctl enable-linger {{ tomcat_instance_name }}"
-  changed_when: false
+  changed_when: False
 
 - name: Set systemd conf var
   lineinfile:

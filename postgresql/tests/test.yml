@@ -6,7 +6,7 @@
     apt:
       name: locales
       state: present
-    changed_when: false
+    changed_when: False
 
   - name: Setting default locales
     lineinfile:
@@ -14,7 +14,7 @@
       line: "{{ item }}"
       create: yes
       state: present
-    changed_when: false
+    changed_when: False
     loop:
       - "en_US.UTF-8 UTF-8"
       - "fr_FR ISO-8859-1"
@@ -23,7 +23,7 @@
 
   - name: Reconfigure locales
     command: /usr/sbin/locale-gen
-    changed_when: false
+    changed_when: False
     when: test_locales is changed
 
   roles:

@@ -84,8 +84,8 @@
   command: grep logstash-input-beats /usr/share/logstash/Gemfile
   check_mode: no
   register: logstash_plugin_installed
-  failed_when: false
-  changed_when: false
+  failed_when: False
+  changed_when: False
   when:
     - filebeat_logstash_plugin | bool
     - logstash_plugin.stat.exists

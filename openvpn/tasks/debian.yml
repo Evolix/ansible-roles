@@ -89,13 +89,13 @@
   stat:
     path: "/etc/default/minifirewall"
   check_mode: no
-  changed_when: false
+  changed_when: False
   register: minifirewall_config
 
 - name: Retrieve the default interface
   shell: "grep '^INT=' /etc/default/minifirewall | cut -d\\' -f 2"
   check_mode: no
-  changed_when: false
+  changed_when: False
   register: minifirewall_int
   when: minifirewall_config.stat.exists
 
@@ -176,7 +176,7 @@
   stat:
     path: "/etc/nagios/nrpe.d/evolix.cfg"
   check_mode: no
-  changed_when: false
+  changed_when: False
   register: nrpe_evolix_config
 
 - name: Install NRPE check dependencies

@@ -3,7 +3,7 @@
   shell: grep nameserver /etc/resolv.conf | awk '{ print $2 }'
   register: grep_nameserver
   check_mode: no
-  changed_when: false
+  changed_when: False
   tags:
   - nameserver
 

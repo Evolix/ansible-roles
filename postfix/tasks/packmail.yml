@@ -133,6 +133,6 @@
 
 - name: update antispam list
   command: /usr/share/scripts/spam.sh
-  changed_when: false
+  changed_when: False
   tags:
   - postfix
