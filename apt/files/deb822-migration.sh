@@ -3,7 +3,7 @@
 deb822_migrate_script=$(command -v deb822-migration.py)
 
 if [ -z "${deb822_migrate_script}" ]; then
-    deb822_migrate_script="./deb822-migration.py"
+    deb822_migrate_script="$(dirname "$0")/deb822-migration.py"
 fi
 if [ ! -x "${deb822_migrate_script}" ]; then
     >&2 echo "ERROR: '${deb822_migrate_script}' not found or not executable"

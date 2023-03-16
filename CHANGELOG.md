@@ -17,7 +17,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
-minifirewall: support protocols in numeric form
+* apt: deb822 migration python script is looked relative to shell script
+* minifirewall: support protocols in numeric form
 
 ### Fixed
 
