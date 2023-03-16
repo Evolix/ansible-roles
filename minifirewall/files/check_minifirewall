@@ -39,7 +39,7 @@ is_minifirewall_started() {
     if test -x /usr/share/scripts/minifirewall_status; then
       /usr/share/scripts/minifirewall_status > /dev/null
     else
-      /sbin/iptables -L -n | grep -q -E "^(DROP\s+udp|ACCEPT\s+icmp)\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
+      /sbin/iptables -L -n | grep -q -E "^(DROP\s+(udp|17)|ACCEPT\s+(icmp|1)))\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
     fi
   fi
 }

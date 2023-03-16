@@ -17,6 +17,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+minifirewall: support protocols in numeric form
+
 ### Fixed
 
 ### Removed
