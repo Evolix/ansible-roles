@@ -37,7 +37,7 @@ haproxy_conf_path = '/etc/haproxy/haproxy.cfg'
 domain_cn_regex = re.compile('CN=(((?!-)[A-Za-z0-9-\*]{1,63}(?<!-)\.)+[A-Za-z]{2,6})')
 domain_san_regex = re.compile('DNS:(((?!-)[A-Za-z0-9-\*]{1,63}(?<!-)\.)+[A-Za-z]{2,6})')
 
-# Time to wait for DNS answer before considering a domain in timeouted.
+# Time to wait for DNS answer before considering a domain in timeouted.
 # (Full DNS check must execute in less than 10s to avoid Icinga timeout.)
 DNS_timeout = 5
 
@@ -65,7 +65,7 @@ class DomainProvider:
     For inheritance only, should not be instantiated.
     Attributes:
         - domain: the domain
-        - provider: 'apache', 'nginx', 'x509', 'haproxy', ''
+        - provider: 'apache', 'nginx', 'haproxy', 'certbot', 'evoacme'
         - type: type of provider ('config', 'certificate')
         - path: config or certificate path where the domain was found
         - line: line in config file or certificate where the domain was found
@@ -301,6 +301,16 @@ def get_allowed_ips():
 """ Functions to deal with X.509 certificates """
 
 
+def is_certbot():
+    """Return True if /etc/letsencrypt/live is not empty.
+    """
+    certbot_live_path = '/etc/letsencrypt/live'
+    if not os.path.exists(certbot_live_path):
+        return False
+    certs = os.listdir(certbot_live_path)
+    return len(certs) > 0
+
+
 def get_certificate_domains(cert_path, provider):
     """List the domains in the certificate with OpenSSL binary
     (Python module cryptography.x509 is not available on Debian 8).
@@ -345,6 +355,27 @@ def get_certificate_domains(cert_path, provider):
 """ Print and output functions """
 
 
+def output_providers_human(domain, prefix='', suffix=''):
+    """Print providers of domain object in human readable format.
+    """
+    for p in domain.providers:
+        if p.provider in ['apache', 'nginx'] and p.type in ['config']:
+            print('{}{}:{} port(s) {}{}'.format(prefix, p.path, p.line, p.port, suffix))
+        elif p.provider in ['certbot', 'evoacme', 'manual'] and p.type in ['certificate']:
+            print('{}{}:{}{}'.format(prefix, p.path, p.attribute, suffix))
+        elif p.provider in ['evodomains'] and p.type in ['config']:
+            print('{}{}{}'.format(prefix, p.path, suffix))
+        else:
+            print('{}Unknown provider {}{}'.format(prefix, p, suffix))
+
+
+def output_comments_human(domain, prefix='', suffix=''):
+    """Print providers of domain object in human readable format.
+    """
+    for comment in domain.DNS_check_result.comments:
+        print('{}{}{}'.format(prefix, comment, suffix))
+
+
 def output_domains_json(domains):
     """Print domains dict to stdout in JSON format.
     """
@@ -359,12 +390,12 @@ def output_domains_human(domains):
         output_providers_human(domains[dom], prefix='\t')
 
 
-def output_check_result_nrpe(domains, ok_domains, timeout_domains, not_found_domains, unallowed_domains, unknown_domains):
+def output_check_result_nrpe(domains, ok_domains, timeout_domains, not_found_domains, unexpected_domains, unknown_domains):
     """Print DNS check results to stdout in NRPE format.
     For now, never output critical alerts.
     """
     n_ok = len(ok_domains)
-    n_warnings = len(timeout_domains) + len(not_found_domains) + len(unallowed_domains)
+    n_warnings = len(timeout_domains) + len(not_found_domains) + len(unexpected_domains)
     n_unknown = len(unknown_domains)
 
     msg = 'WARNING' if n_warnings or n_unknown else 'OK'
@@ -377,19 +408,19 @@ def output_check_result_nrpe(domains, ok_domains, timeout_domains, not_found_dom
         print('WARNING - timeout resolving {}'.format(d))
     for d in not_found_domains.keys():
         print('WARNING - no resolution for {}'.format(d))
-    for d in unallowed_domains.keys():
-        print('WARNING - {} resolves to unallowed IP ({})'.format(d, ' '.join(unallowed_domains[d].DNS_check_result.resolve_ips)))
+    for d in unexpected_domains.keys():
+        print('WARNING - {} resolves to unexpected IP ({})'.format(d, ' '.join(unexpected_domains[d].DNS_check_result.resolve_ips)))
 
     sys.exit(1) if n_warnings or n_unknown else sys.exit(0)
 
 
-def output_check_result_json(domains, ok_domains, timeout_domains, not_found_domains, unallowed_domains, unknown_domains):
+def output_check_result_json(domains, ok_domains, timeout_domains, not_found_domains, unexpected_domains, unknown_domains):
     """Print result of check domains to stdout in JSON format.
     """
     output_dict = {
         'timeout_domains': sorted(timeout_domains),
         'not_found_domains': sorted(not_found_domains),
-        'unallowed_domains': unallowed_domains,
+        'unexpected_domains': unexpected_domains,
         'unknown_domains': unknown_domains,
         'ok_domains': sorted(ok_domains),
         'domains': domains
@@ -397,45 +428,33 @@ def output_check_result_json(domains, ok_domains, timeout_domains, not_found_dom
     print(json.dumps(output_dict, sort_keys=True, indent=4, cls=CustomJSONEncoder))
 
 
-def output_providers_human(domain, prefix='', suffix=''):
-    """Print providers of domain object in human readable format.
-    """
-    for p in domain.providers:
-        if p.provider in ['apache', 'nginx'] and p.type in ['config']:
-            print('{}{}:{} port(s) {}{}'.format(prefix, p.path, p.line, p.port, suffix))
-        elif p.provider in ['letsencrypt'] and p.type in ['certificate']:
-            print('{}{}:{}{}'.format(prefix, p.path, p.attribute, suffix))
-        elif p.provider in ['manual'] and p.type in ['certificate']:
-            print('{}{}:{}{}'.format(prefix, p.path, p.attribute, suffix))
-        elif p.provider in ['evodomains'] and p.type in ['config']:
-            print('{}{}{}'.format(prefix, p.path, suffix))
-        else:
-            print('{}Unknown provider {}{}'.format(prefix, p, suffix))
-
-
-def output_check_result_human(domains, ok_domains, timeout_domains, not_found_domains, unallowed_domains, unknown_domains):
+def output_check_result_human(domains, ok_domains, timeout_domains, not_found_domains, unexpected_domains, unknown_domains):
     """Print result of check domains to stdout in human readable format.
     """
-    if timeout_domains or not_found_domains or unallowed_domains or unknown_domains:
+    if timeout_domains or not_found_domains or unexpected_domains or unknown_domains:
 
         if timeout_domains: print('\nTimeouts:')
         for d in timeout_domains.keys():
             print('\t{}'.format(d))
+            output_comments_human(domains[d], '\t\tComment: ')
             output_providers_human(domains[d], '\t\t')
 
         if not_found_domains: print('\nNo resolution:')
         for d in not_found_domains.keys():
             print('\t{}'.format(d))
+            output_comments_human(domains[d], '\t\tComment: ')
             output_providers_human(domains[d], '\t\t')
 
-        if unallowed_domains: print('\nUnallowed resolved IPs:')
-        for d in unallowed_domains.keys():
-            print('\t{} -> [{}]'.format(d, ' '.join(unallowed_domains[d].DNS_check_result.resolve_ips)))
+        if unexpected_domains: print('\nUnexpected resolved IPs:')
+        for d in unexpected_domains.keys():
+            print('\t{} -> [{}]'.format(d, ' '.join(unexpected_domains[d].DNS_check_result.resolve_ips)))
+            output_comments_human(domains[d], '\t\tComment: ')
             output_providers_human(domains[d], '\t\t')
 
         if unknown_domains: print('\nUnknown DNS status:')
         for d in unknown_domains.keys():
             print('\t{}'.format(d))
+            output_comments_human(domains[d], '\t\tComment: ')
             output_providers_human(domains[d], '\t\t')
 
         sys.exit(1)
@@ -621,13 +640,23 @@ def list_letsencrypt_domains():
     print_debug('Listing Let\'s Encrypt certificates domains.')
     providers = []
 
-    le_path = '/etc/letsencrypt'
-    if not os.path.exists(le_path):
+    if is_certbot():
+        provider = 'certbot'
+        base_path = '/etc/letsencrypt/live'
+        subdir = ''
+        cert_name = 'cert.pem'
+    else:
+        provider = 'evoacme'
+        base_path = '/etc/letsencrypt'
+        subdir = 'live'
+        cert_name = 'cert.crt'
+
+    if not os.path.exists(base_path):
         return providers
 
-    for vhost in os.listdir(le_path):
-        cert_path = os.path.join(le_path, vhost, 'live', 'cert.crt')
-        cert_providers = get_certificate_domains(cert_path, 'letsencrypt')
+    for dir_name in os.listdir(base_path):
+        cert_path = os.path.join(base_path, dir_name, subdir, cert_name)
+        cert_providers = get_certificate_domains(cert_path, provider)
         if cert_providers:
             providers.extend(cert_providers)
 
@@ -888,7 +917,7 @@ def list_domains():
     providers = apache_providers + nginx_providers + letsencrypt_providers + etc_ssl_certs_providers
 
     for domain in included_domains:
-        provider = IncludedProvider()
+        provider = IncludedProvider(domain)
         if provider not in providers:
             providers.append(provider)
 
@@ -905,11 +934,12 @@ def list_domains():
 
 
 def check_domains(domains):
-    """Check resolution of domains and save it a DNSCheckResult object in Domain attribute DNS_check_result.
+    """Check resolution of domains and save it
+    in a DNSCheckResult object in Domain attribute DNS_check_result.
     Returns: nothing
     #- timeout_domains: list of domains which exceeded timeout limit (see 'timeout' variable).
     #- none_domains: list of domains that do not resolve.
-    #- outside_ips: dict of domains (keys) that resolve to some not allowed IPs (values).
+    #- outside_ips: dict of domains (keys) that resolve to unexpected IPs (values).
     #- ok_domains: list of domains that resolve to allowed IPs.
     """
     jobs = []
@@ -925,7 +955,7 @@ def check_domains(domains):
         result = DNSCheckResult()
 
         if '*' in j.domain.domain:
-            result.add_comment("Domain in ignored domains list.")
+            result.add_comment("Resolution checked for subdomain www. ({}).".format(j.domain.domain))
 
         if j.domain.domain in ignored_domains:
             result.set_status(CheckStatus.OK)
@@ -1018,8 +1048,8 @@ def main(argv):
     elif action == 'check-dns':
         check_domains(domains)
 
-        # Sort domains in function of check results
-        ok_domains, timeout_domains, not_found_domains, unallowed_domains, unknown_domains = {}, {}, {}, {}, {}
+        # Filter domains in function of check results
+        ok_domains, timeout_domains, not_found_domains, unexpected_domains, unknown_domains = {}, {}, {}, {}, {}
         for domain_txt, domain_obj in domains.items():
             if domain_obj.DNS_check_result.status == CheckStatus.OK:
                 ok_domains[domain_txt] = domain_obj
@@ -1028,18 +1058,18 @@ def main(argv):
             elif domain_obj.DNS_check_result.status == CheckStatus.DOMAIN_NOT_FOUND:
                 not_found_domains[domain_txt] = domain_obj
             elif domain_obj.DNS_check_result.status == CheckStatus.IP_NOT_ALLOWED:
-                unallowed_domains[domain_txt] = domain_obj
+                unexpected_domains[domain_txt] = domain_obj
             elif domain_obj.DNS_check_result.status == CheckStatus.UNKNOWN:
                 unknown_domains[domain_txt] = domain_obj
             else:
                 unknown_domains[domain_txt] = domain_obj
 
         if output == 'nrpe':
-            output_check_result_nrpe(domains, ok_domains, timeout_domains, not_found_domains, unallowed_domains, unknown_domains)
+            output_check_result_nrpe(domains, ok_domains, timeout_domains, not_found_domains, unexpected_domains, unknown_domains)
         elif output == 'json':
-            output_check_result_json(domains, ok_domains, timeout_domains, not_found_domains, unallowed_domains, unknown_domains)
+            output_check_result_json(domains, ok_domains, timeout_domains, not_found_domains, unexpected_domains, unknown_domains)
         else:  # output == 'human'
-            output_check_result_human(domains, ok_domains, timeout_domains, not_found_domains, unallowed_domains, unknown_domains)
+            output_check_result_human(domains, ok_domains, timeout_domains, not_found_domains, unexpected_domains, unknown_domains)
 
 
 if __name__ == '__main__':
