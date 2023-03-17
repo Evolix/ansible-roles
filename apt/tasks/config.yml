@@ -12,9 +12,9 @@
     - { line: "APT::Install-Recommends \"false\";", regexp: 'APT::Install-Recommends' }
     - { line: "APT::Install-Suggests \"false\";",   regexp: 'APT::Install-Suggests' }
     - { line: "APT::Periodic::Enable \"0\";",   regexp: 'APT::Periodic::Enable' }
-  when: apt_evolinux_config | bool
   tags:
     - apt
+  when: apt_evolinux_config | bool
 
 - name: DPkg invoke hooks
   lineinfile:
@@ -28,14 +28,14 @@
     - "DPkg::Pre-Invoke { \"df /usr | grep -q /usr && mount -oremount,rw /usr || true\"; };"
     - "DPkg::Post-Invoke { \"df /tmp | grep -q /tmp && mount -oremount /tmp || true\"; };"
     - "DPkg::Post-Invoke { \"df /usr | grep -q /usr && mount -oremount /usr || true\"; };"
-  when: apt_hooks | bool
   tags:
     - apt
+  when: apt_hooks | bool
 
 - name: Remove Aptitude
   apt:
     name: aptitude
     state: absent
-  when: apt_remove_aptitude | bool
   tags:
     - apt
+  when: apt_remove_aptitude | bool

@@ -3,7 +3,7 @@
 - name: "Compatibility check"
   assert:
     that:
-      - ansible_distribution = "Debian"
+      - ansible_distribution == "Debian"
       - ansible_distribution_major_version is version('8', '>=')
     msg: Only compatible with Debian >= 8
   tags:
@@ -17,7 +17,7 @@
     - apt
   when: ansible_distribution_major_version is version('10', '<')
 
-- name: "certificates are installed to https repositories"
+- name: "certificates are installed for https repositories"
   apt:
     name:
       - ca-certificates
@@ -25,13 +25,13 @@
     - apt
 
 - name: Custom configuration
-  include: config.yml
+  import_tasks: config.yml
   when: apt_config | bool
   tags:
     - apt
 
 - name: Install basics repositories (Debian <12)
-  include: basics.debian-lt-12.yml
+  import_tasks: basics.oneline.yml
   tags:
     - apt
   when:
@@ -39,7 +39,7 @@
     - ansible_distribution_major_version is version('12', '<')
 
 - name: Install basics repositories (Debian >=12)
-  include: basics.debian-ge-12.yml
+  import_tasks: basics.deb822.yml
   tags:
     - apt
   when:
@@ -48,7 +48,7 @@
 
 
 - name: Install backports repositories (Debian <12)
-  include: backports.debian-lt-12.yml
+  import_tasks: backports.oneline.yml
   tags:
     - apt
   when:
@@ -56,7 +56,7 @@
     - ansible_distribution_major_version is version('12', '<')
 
 - name: Install backports repositories (Debian >=12)
-  include: backports.debian-ge-12.yml
+  import_tasks: backports.deb822.yml
   tags:
     - apt
   when:
@@ -65,7 +65,7 @@
 
 
 - name: Install Evolix Public repositories (Debian <12)
-  include: evolix_public.debian-lt-12.yml
+  import_tasks: evolix_public.oneline.yml
   tags:
     - apt
   when:
@@ -73,7 +73,7 @@
     - ansible_distribution_major_version is version('12', '<')
 
 - name: Install Evolix Public repositories (Debian >=12)
-  include: evolix_public.debian-ge-12.yml
+  import_tasks: evolix_public.deb822.yml
   tags:
     - apt
   when:
@@ -97,7 +97,7 @@
 
 
 - name: Install check for packages marked hold
-  include: hold_packages.yml
+  import_tasks: hold_packages.yml
   when: apt_install_hold_packages | bool
   tags:
     - apt

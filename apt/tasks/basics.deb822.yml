@@ -20,6 +20,22 @@
   tags:
     - apt
 
+- name: Find one-line APT sources
+  ansible.builtin.find:
+    paths: /etc/apt
+    patterns: '*.list'
+  register: list_files
+
+- name: Disable one-line-formatted sources
+  command: "mv --verbose {{ item.path }} {{ item.path }}.bak"
+  environment:
+    LC_ALL: C
+  loop: "{{ list_files.files }}"
+  register: rename_cmd
+  changed_when: "'renamed' in rename_cmd.stdout"
+  tags:
+    - apt
+
 - name: Apt update
   apt:
     update_cache: yes
