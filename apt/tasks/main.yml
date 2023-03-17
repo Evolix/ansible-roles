@@ -1,10 +1,26 @@
 ---
 
 - name: "Compatibility check"
-  fail:
-    msg: only compatible with Debian >= 8
-  when:
-    - ansible_distribution != "Debian" or ansible_distribution_major_version is version('8', '<')
+  assert:
+    that:
+      - ansible_distribution = "Debian"
+      - ansible_distribution_major_version is version('8', '>=')
+    msg: Only compatible with Debian >= 8
+  tags:
+    - apt
+
+- name: "apt-transport-https is installed for https repositories (before Buster)"
+  apt:
+    name:
+      - apt-transport-https
+  tags:
+    - apt
+  when: ansible_distribution_major_version is version('10', '<')
+
+- name: "certificates are installed to https repositories"
+  apt:
+    name:
+      - ca-certificates
   tags:
     - apt
 
@@ -14,23 +30,71 @@
   tags:
     - apt
 
-- name: Install basics repositories
-  include: basics.yml
-  when: apt_install_basics | bool
+- name: Install basics repositories (Debian <12)
+  include: basics.debian-lt-12.yml
   tags:
     - apt
+  when:
+    - apt_install_basics | bool
+    - ansible_distribution_major_version is version('12', '<')
 
-- name: Install APT Backports repository
-  include: backports.yml
-  when: apt_install_backports | bool
+- name: Install basics repositories (Debian >=12)
+  include: basics.debian-ge-12.yml
   tags:
     - apt
+  when:
+    - apt_install_basics | bool
+    - ansible_distribution_major_version is version('12', '>=')
 
-- name: Install Evolix Public APT repository
-  include: evolix_public.yml
-  when: apt_install_evolix_public | bool
+
+- name: Install backports repositories (Debian <12)
+  include: backports.debian-lt-12.yml
   tags:
     - apt
+  when:
+    - apt_install_backports | bool
+    - ansible_distribution_major_version is version('12', '<')
+
+- name: Install backports repositories (Debian >=12)
+  include: backports.debian-ge-12.yml
+  tags:
+    - apt
+  when:
+    - apt_install_backports | bool
+    - ansible_distribution_major_version is version('12', '>=')
+
+
+- name: Install Evolix Public repositories (Debian <12)
+  include: evolix_public.debian-lt-12.yml
+  tags:
+    - apt
+  when:
+    - apt_install_evolix_public | bool
+    - ansible_distribution_major_version is version('12', '<')
+
+- name: Install Evolix Public repositories (Debian >=12)
+  include: evolix_public.debian-ge-12.yml
+  tags:
+    - apt
+  when:
+    - apt_install_evolix_public | bool
+    - ansible_distribution_major_version is version('12', '>=')
+
+- name: Clean GANDI sources
+  file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - /etc/apt/sources.list.d/debian-security.list
+    - /etc/apt/sources.list.d/debian-jessie.list
+    - /etc/apt/sources.list.d/debian-stretch.list
+    - /etc/apt/sources.list.d/debian-buster.list
+    - /etc/apt/sources.list.d/debian-bullseye.list
+    - /etc/apt/sources.list.d/debian-update.list
+  tags:
+    - apt
+  when: apt_clean_gandi_sourceslist | bool
+
 
 - name: Install check for packages marked hold
   include: hold_packages.yml

@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+
+Types: deb
+URIs: https://mirror.evolix.org/debian
+Suites: bullseye-backports
+Components: {{ apt_backports_components | mandatory }}
+Enabled: yes

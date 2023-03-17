@@ -1,0 +1,28 @@
+---
+
+- name: Change basics repositories
+  template:
+    src: "{{ ansible_distribution_release }}_basics.sources.j2"
+    dest: /etc/apt/sources.list.d/system.sources
+    mode: "0644"
+    force: yes
+  register: apt_basic_sources
+  tags:
+    - apt
+
+- name: Change security repositories
+  template:
+    src: "{{ ansible_distribution_release }}_security.sources.j2"
+    dest: /etc/apt/sources.list.d/security.sources
+    mode: "0644"
+    force: yes
+  register: apt_security_sources
+  tags:
+    - apt
+
+- name: Apt update
+  apt:
+    update_cache: yes
+  tags:
+    - apt
+  when: apt_basic_list is changed or apt_security_sources is changed

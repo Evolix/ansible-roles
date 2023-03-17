@@ -97,6 +97,6 @@
     day: "{{ apt_check_hold_cron_day }}"
     month: "{{ apt_check_hold_cron_month }}"
     state: "present"
-  when: is_cron.rc == 0
   tags:
     - apt
+  when: is_cron.rc == 0

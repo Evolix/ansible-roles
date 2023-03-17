@@ -12,9 +12,9 @@
     id: "B8612B5D"
     keyring: /etc/apt/trusted.gpg
     state: absent
-  when: _trusted_gpg_keyring.stat.exists
   tags:
     - apt
+  when: _trusted_gpg_keyring.stat.exists
 
 - name: Add Evolix GPG key
   copy:
@@ -29,8 +29,8 @@
 
 - name: Evolix public list is installed
   template:
-    src: evolix_public.list.j2
-    dest: /etc/apt/sources.list.d/evolix_public.list
+    src: evolix_public.sources.j2
+    dest: /etc/apt/sources.list.d/evolix_public.sources
     force: yes
     mode: "0640"
   register: apt_evolix_public
@@ -40,6 +40,6 @@
 - name: Apt update
   apt:
     update_cache: yes
-  when: apt_evolix_public is changed
   tags:
     - apt
+  when: apt_evolix_public is changed
