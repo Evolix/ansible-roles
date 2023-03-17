@@ -8,4 +8,4 @@
     ansible_distribution_major_version: 12
     ansible_distribution: "Debian"
     ansible_distribution_release: "bookworm"
-  when: "ansible_lsb.codename == 'bookworm'"
+  when: "'bookworm' in ansible_lsb.codename or 'bookworm' in ansible_lsb.description"
