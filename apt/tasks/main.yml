@@ -46,7 +46,6 @@
     - apt_install_basics | bool
     - ansible_distribution_major_version is version('12', '>=')
 
-
 - name: Install backports repositories (Debian <12)
   import_tasks: backports.oneline.yml
   tags:
@@ -55,12 +54,13 @@
     - apt_install_backports | bool
     - ansible_distribution_major_version is version('12', '<')
 
+# With Debian 12+ and the deb822 format of source files
+# backports are always installed but enabled according to `apt_install_backports`
 - name: Install backports repositories (Debian >=12)
   import_tasks: backports.deb822.yml
   tags:
     - apt
   when:
-    - apt_install_backports | bool
     - ansible_distribution_major_version is version('12', '>=')
 
 

@@ -1,13 +1,6 @@
 ---
-- name: No backports config in default sources.list
-  lineinfile:
-    dest: /etc/apt/sources.list.d/
-    regexp: "backports"
-    state: absent
-  tags:
-    - apt
 
-- name: Backports sources list is installed
+- name: Backports deb822 sources list is installed
   template:
     src: '{{ ansible_distribution_release }}_backports.sources.j2'
     dest: /etc/apt/sources.list.d/backports.sources

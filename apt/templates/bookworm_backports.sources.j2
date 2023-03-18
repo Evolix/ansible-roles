@@ -4,4 +4,4 @@ Types: deb
 URIs: http://mirror.evolix.org/debian
 Suites: bullseye-backports
 Components: {{ apt_backports_components | mandatory }}
-Enabled: yes
+Enabled: {{ apt_install_backports | bool | ternary('yes', 'no') }}

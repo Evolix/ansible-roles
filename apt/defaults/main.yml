@@ -8,6 +8,8 @@ apt_upgrade: False
 apt_install_basics: True
 apt_basics_components: "main"
 
+# With Debian 12+ and the deb822 format of source files
+# backports are always installed but enabled according to `apt_install_backports`
 apt_install_backports: False
 apt_backports_components: "main"
 
