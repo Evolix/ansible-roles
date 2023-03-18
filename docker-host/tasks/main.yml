@@ -11,10 +11,16 @@
 - name: Install source requirements
   apt:
     name:
-      - apt-transport-https
       - ca-certificates
       - gnupg2
     state: present
+
+- name: Install apt-transport-https (Debian <10)
+  apt:
+    name:
+      - apt-transport-https
+    state: present
+  when: ansible_distribution_major_version is version('10', '<')
 
 - name: Add Docker's official GPG key
   copy:
@@ -25,17 +31,19 @@
     owner: root
     group: root
 
-- name: Add Docker repository
+- name: Add Docker repository (Debian <12)
   apt_repository:
     repo: 'deb [signed-by={{ apt_keyring_dir }}/docker-debian.asc] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable'
+    filename: docker.list
     state: present
-    filename: docker.list
+  when: ansible_distribution_major_version is version('12', '<')
 
-- name: Drop unsigned Docker repository
-  apt_repository:
-    repo: 'deb https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable'
-    state: absent
-    filename: docker.list
+- name: Add Docker repository (Debian >=12)
+  ansible.builtin.template:
+    src: docker.sources.j2
+    dest: /etc/apt/sources.list.d/docker.sources
+    state: present
+  when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Install Docker
   apt:
