@@ -1,5 +1,9 @@
 ---
-- debug:
+# This is a copy of ssh.single-file.yml
+# It needs to be changed when we move to a included-files configuration
+
+
+- ansible.builtin.debug:
     msg: "Warning: empty 'evolinux_ssh_password_auth_addresses' variable, tasks will be skipped!"
   when: evolinux_ssh_password_auth_addresses == []
 
@@ -14,7 +18,7 @@
 # but users of the "{{ evolinux_internal_group }}" group can't login with password from other IP addresses
 
 - name: "Security directives for Evolinux (Debian 10 or later)"
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/ssh/sshd_config
     marker: "# {mark} EVOLINUX PASSWORD RESTRICTIONS"
     block: |
@@ -30,7 +34,7 @@
     - ansible_distribution_major_version is version('10', '>=')
 
 - name: Security directives for Evolinux (Jessie/Stretch)
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/ssh/sshd_config
     marker: "# {mark} EVOLINUX PASSWORD RESTRICTIONS BY ADDRESS"
     block: |
@@ -46,7 +50,7 @@
 # We disable AcceptEnv because it can be a security issue, but also because we
 # do not want clients to push their environment variables like LANG.
 - name: disable AcceptEnv in ssh config
-  replace:
+  ansible.builtin.replace:
     dest: /etc/ssh/sshd_config
     regexp: '^AcceptEnv'
     replace: "#AcceptEnv"
@@ -54,7 +58,7 @@
   when: evolinux_ssh_disable_acceptenv | bool
 
 - name: Set log level to verbose (for Debian >= 9)
-  replace:
+  ansible.builtin.replace:
     dest: /etc/ssh/sshd_config
     regexp: '^#?LogLevel [A-Z]+'
     replace: "LogLevel VERBOSE"
@@ -62,7 +66,8 @@
   when: ansible_distribution_major_version is version('9', '>=')
 
 - name: "Get current user"
-  command: logname
+  ansible.builtin.command:
+    cmd: logname
   changed_when: False
   register: logname
   check_mode: no
@@ -70,7 +75,8 @@
 
 # we must double-escape caracters, because python
 - name: verify AllowUsers directive
-  command: "grep -E '^AllowUsers' /etc/ssh/sshd_config"
+  ansible.builtin.command:
+    cmd: "grep -E '^AllowUsers' /etc/ssh/sshd_config"
   failed_when: False
   changed_when: False
   register: grep_allowusers_ssh
@@ -78,7 +84,7 @@
   when: evolinux_ssh_allow_current_user | bool
 
 - name: "Add AllowUsers sshd directive for current user"
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/ssh/sshd_config
     line: "\nAllowUsers {{ logname.stdout }}"
     insertafter: 'Subsystem'
@@ -87,7 +93,7 @@
   when: evolinux_ssh_allow_current_user and grep_allowusers_ssh.rc != 0
 
 - name: "Modify AllowUsers sshd directive for current user"
-  replace:
+  ansible.builtin.replace:
     dest: /etc/ssh/sshd_config
     regexp: '^(AllowUsers ((?!{{ logname.stdout }}).)*)$'
     replace: '\1 {{ logname.stdout }}'
@@ -95,4 +101,4 @@
   notify: reload sshd
   when: evolinux_ssh_allow_current_user and grep_allowusers_ssh.rc == 0
 
-- meta: flush_handlers
+- ansible.builtin.meta: flush_handlers

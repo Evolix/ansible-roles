@@ -56,9 +56,17 @@
     name: evolix/evomaintenance
   when: evolinux_evomaintenance_include | bool
 
-- name: SSH configuration
-  include: ssh.yml
-  when: evolinux_ssh_include | bool
+- name: SSH configuration (single file)
+  import_tasks: ssh.single-file.yml
+  when:
+    - ansible_distribution_major_version is version('12', '<')
+    - evolinux_ssh_include | bool
+
+- name: SSH configuration (included-files)
+  import_tasks: ssh.included-files.yml
+  when:
+    - ansible_distribution_major_version is version('12', '>=')
+    - evolinux_ssh_include | bool
 
 ### disabled because of a memory leak
 # - name: Create evolinux users
