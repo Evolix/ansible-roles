@@ -1,7 +1,7 @@
 ---
 
 - name: "Use Cloud kernel on virtual servers"
-  apt:
+  ansible.builtin.apt:
     name: "linux-image-cloud-amd64"
     state: present
   when:
@@ -10,7 +10,7 @@
     - evolinux_kernel_cloud_auto | bool
 
 - name: "Remove non-Cloud kernel on virtual servers"
-  apt:
+  ansible.builtin.apt:
     name: "linux-image-amd64"
     state: absent
   when:
@@ -19,7 +19,7 @@
     - evolinux_kernel_cloud_auto | bool
 
 - name: Reboot after panic
-  sysctl:
+  ansible.posix.sysctl:
     name: "{{ item.name }}"
     value: "{{ item.value }}"
     sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
@@ -31,7 +31,7 @@
   when: evolinux_kernel_reboot_after_panic | bool
 
 - name: Don't reboot after panic
-  sysctl:
+  ansible.posix.sysctl:
     name: "{{ item }}"
     sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
     state: absent
@@ -42,7 +42,7 @@
   when: not evolinux_kernel_reboot_after_panic | bool
 
 - name: Disable net.ipv4.tcp_timestamps
-  sysctl:
+  ansible.posix.sysctl:
     name: net.ipv4.tcp_timestamps
     value: '0'
     sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
@@ -51,7 +51,7 @@
   when: evolinux_kernel_disable_tcp_timestamps | bool
 
 - name: Customize the swappiness
-  sysctl:
+  ansible.posix.sysctl:
     name: vm.swappiness
     value: "{{ evolinux_kernel_swappiness }}"
     sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
@@ -60,7 +60,7 @@
   when: evolinux_kernel_customize_swappiness | bool
 
 - name: Patch for TCP stack vulnerability CVE-2016-5696
-  sysctl:
+  ansible.posix.sysctl:
     name: net.ipv4.tcp_challenge_ack_limit
     value: "1073741823"
     sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
@@ -69,7 +69,7 @@
   when: evolinux_kernel_cve20165696 | bool
 
 - name: Patch for TCP stack vulnerability CVE-2018-5391 (FragmentSmack)
-  sysctl:
+  ansible.posix.sysctl:
     name: "{{ item.name }}"
     value: "{{ item.value }}"
     sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
@@ -81,4 +81,4 @@
     - { name: "net.ipv4.ipfrag_high_thresh",  value: "262144" }
     - { name: "net.ipv6.ip6frag_high_thresh", value: "262144" }
 
-- meta: flush_handlers
+- ansible.builtin.meta: flush_handlers

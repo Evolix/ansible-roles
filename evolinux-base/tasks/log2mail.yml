@@ -1,24 +1,24 @@
 ---
 - name: Deploy log2mail systemd unit
-  copy:
+  ansible.builtin.copy:
     src: log2mail.service
     dest: /etc/systemd/system/log2mail.service
     mode: "0644"
 
 - name: Remove log2mail sysvinit service
-  file:
+  ansible.builtin.file:
     path: /etc/init.d/log2mail
     state: absent
 
 - name: Enable and start log2mail service
-  systemd:
+  ansible.builtin.systemd:
     name: log2mail
     daemon-reload: yes
     state: started
     enabled: yes
 
 - name: log2mail config is present
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/log2mail/config/default
     owner: log2mail
     group: adm

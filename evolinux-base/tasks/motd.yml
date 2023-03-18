@@ -1,6 +1,6 @@
 ---
 - name: Deploy custom motd
-  template:
+  ansible.builtin.template:
     src: "{{ item }}"
     dest: /etc/motd
     force: True

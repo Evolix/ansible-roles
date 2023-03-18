@@ -1,14 +1,14 @@
 ---
 
 - name: /tmp must be world-writable
-  file:
+  ansible.builtin.file:
     path: /tmp
     state: directory
     mode: "u=rwx,g=rwx,o=rwxt"
   when: evolinux_system_chmod_tmp | bool
 
 - name: Setting default locales
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/locale.gen
     line: "{{ item }}"
     create: yes
@@ -21,11 +21,12 @@
   when: evolinux_system_locales | bool
 
 - name: Reconfigure locales
-  command: /usr/sbin/locale-gen
+  ansible.builtin.command:
+    cmd: /usr/sbin/locale-gen
   when: evolinux_system_locales and default_locales is changed
 
 - name: Setting default timezone
-  timezone:
+  community.general.timezone:
     name: "{{ evolinux_system_timezone | mandatory }}"
   notify: restart cron
   when: evolinux_system_set_timezone | bool
@@ -37,20 +38,20 @@
     name: evolix/remount-usr
 
 - name: Ensure automagic vim conf is disabled
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/vim/vimrc
     regexp: 'let g:skip_defaults_vim ='
     line: 'let g:skip_defaults_vim = 1'
   when: evolinux_system_vim_skip_defaults | bool
 
 - name: Setting vim as default editor
-  alternatives:
+  community.general.alternatives:
     name: editor
     path: /usr/bin/vim.basic
   when: evolinux_system_vim_default_editor | bool
 
 - name: Add "umask 027" to /etc/profile.d/evolinux.sh
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/profile.d/evolinux.sh
     line: "umask 027"
     create: yes
@@ -58,7 +59,7 @@
   when: evolinux_system_profile | bool
 
 - name: Set /etc/adduser.conf DIR_MODE to 0700
-  replace:
+  ansible.builtin.replace:
     dest: /etc/adduser.conf
     regexp: "^DIR_MODE=0755$"
     replace: "DIR_MODE=0700"
@@ -67,7 +68,7 @@
 # TODO: trouver comment ne pas faire ça sur Xen Dom-U
 
 - name: Deactivating login on all tty except tty2
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/securetty
     line: "tty2"
     create: yes
@@ -75,7 +76,7 @@
   when: evolinux_system_restrict_securetty | bool
 
 - name: Setting TMOUT to disconnect inactive users
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/profile.d/evolinux.sh
     line: "export TMOUT={{ evolinux_system_timeout }}"
     regexp: "^export TMOUT="
@@ -86,8 +87,8 @@
 #- name: Customizing /etc/fstab
 
 - name: Check if cron is installed
-  shell: "set -o pipefail && dpkg -l cron 2>/dev/null | grep -q -E '^(i|h)i'"
-  args:
+  ansible.builtin.shell:
+    cmd: "set -o pipefail && dpkg -l cron 2>/dev/null | grep -q -E '^(i|h)i'"
     executable: /bin/bash
   check_mode: no
   failed_when: False
@@ -95,7 +96,7 @@
   register: is_cron_installed
 
 - name: Set verbose logging for cron deamon
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/default/cron
     line: "EXTRA_OPTS='-L 15'"
     create: yes
@@ -105,7 +106,7 @@
     - evolinux_system_cron_verboselog | bool
 
 - name: Modify default umask for cron deamon
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/default/cron
     line: "umask 022"
     create: yes
@@ -115,7 +116,7 @@
     - evolinux_system_cron_umask | bool
 
 - name: Randomize periodic crontabs
-  replace:
+  ansible.builtin.replace:
     dest: /etc/crontab
     regexp:  "{{ item.regexp }}"
     replace: "{{ item.replace }}"
@@ -134,7 +135,7 @@
 ## alert5
 
 - name: Install alert5 init script (jessie/stretch)
-  template:
+  ansible.builtin.template:
     src: system/alert5.sysvinit.j2
     dest: /etc/init.d/alert5
     force: no
@@ -144,7 +145,7 @@
     - ansible_distribution_release == "jessie" or ansible_distribution_release == "stretch"
 
 - name: Enable alert5 init script (jessie/stretch)
-  service:
+  ansible.builtin.service:
     name: alert5
     enabled: yes
   when:
@@ -155,7 +156,7 @@
 
 
 - name: Install alert5 init script (buster and later)
-  template:
+  ansible.builtin.template:
     src: system/alert5.sh.j2
     dest: /usr/share/scripts/alert5.sh
     force: no
@@ -165,7 +166,7 @@
     - ansible_distribution_major_version is version('10', '>=')
 
 - name: Install alert5 service (buster and later)
-  copy:
+  ansible.builtin.copy:
     src: alert5.service
     dest: /etc/systemd/system/alert5.service
     force: yes
@@ -175,7 +176,7 @@
     - ansible_distribution_major_version is version('10', '>=')
 
 - name: Enable alert5 init script (buster and later)
-  systemd:
+  ansible.builtin.systemd:
     name: alert5
     daemon_reload: yes
     enabled: yes
@@ -188,14 +189,15 @@
 ## network interfaces
 
 - name: "Is there an \"allow-hotplug\" interface ?"
-  command: grep allow-hotplug /etc/network/interfaces
+  ansible.builtin.command:
+    cmd: grep allow-hotplug /etc/network/interfaces
   failed_when: False
   changed_when: False
   check_mode: no
   register: grep_hotplug_eni
 
 - name: "Network interfaces must be \"auto\" and not \"allow-hotplug\""
-  replace:
+  ansible.builtin.replace:
     dest: /etc/network/interfaces
     regexp: "allow-hotplug"
     replace: "auto"
@@ -203,6 +205,4 @@
     - evolinux_system_eni_auto | bool
     - grep_hotplug_eni.rc == 0
 
-## /sbin/deny
-
-- meta: flush_handlers
+- ansible.builtin.meta: flush_handlers

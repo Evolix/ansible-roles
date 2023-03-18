@@ -1,29 +1,29 @@
 ---
 - name: dbus is installed
-  apt:
+  ansible.builtin.apt:
     name: dbus
     state: present
 
 - name: dbus is enabled and started
-  service:
+  ansible.builtin.systemd:
     name: dbus
     state: started
     enabled: true
 
 - name: Set hostname "{{ evolinux_hostname }}"
-  hostname:
+  ansible.builtin.hostname:
     name: "{{ evolinux_hostname }}"
   when: evolinux_hostname_hosts | bool
 
 - name: Set right localhost line in /etc/hosts
-  replace:
+  ansible.builtin.replace:
     dest: /etc/hosts
     regexp: '^127.0.0.1(\s+)localhost.*$'
     replace: '127.0.0.1\1localhost.localdomain localhost'
   when: evolinux_hostname_hosts | bool
 
 - name: Set ip+fqdn+hostname in /etc/hosts
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/hosts
     regexp: '^{{ ansible_default_ipv4.address }}\s+'
     line: "{{ ansible_default_ipv4.address }}    {{ [evolinux_fqdn, evolinux_internal_fqdn] | unique | join(' ') }} {{ [evolinux_hostname, evolinux_internal_hostname] | unique | join(' ') }}"
@@ -31,14 +31,14 @@
   when: evolinux_hostname_hosts | bool
 
 - name: 127.0.1.1 is removed
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/hosts
     regexp: '^127.0.1.1\s+'
     state: absent
   when: evolinux_hostname_hosts | bool
 
 - name: /etc/mailname is up-to-date
-  copy:
+  ansible.builtin.copy:
     dest: /etc/mailname
     content: "{{ evolinux_fqdn }}\n"
     force: yes
@@ -47,18 +47,18 @@
 # Override facts
 
 - name: Override ansible_hostname fact
-  set_fact:
+  ansible.builtin.set_fact:
     ansible_hostname: "{{ evolinux_hostname }}"
   when: ansible_hostname != evolinux_hostname
 
 - name: Override ansible_domain fact
-  set_fact:
+  ansible.builtin.set_fact:
     ansible_domain: "{{ evolinux_domain }}"
   when: ansible_domain != evolinux_domain
 
 - name: Override ansible_fqdn fact
-  set_fact:
+  ansible.builtin.set_fact:
     ansible_fqdn: "{{ evolinux_fqdn }}"
   when: ansible_fqdn != evolinux_fqdn
 
-- meta: flush_handlers
+- ansible.builtin.meta: flush_handlers

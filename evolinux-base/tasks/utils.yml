@@ -7,7 +7,7 @@
     file: dump-server-state.yml
 
 - name: "/sbin/deny script is present"
-  copy:
+  ansible.builtin.copy:
     src: deny.sh
     dest: /sbin/deny
     mode: "0700"
@@ -16,7 +16,7 @@
     force: no
 
 - name: update-evobackup-canary script is present
-  copy:
+  ansible.builtin.copy:
     src: update-evobackup-canary
     dest: /usr/local/bin/update-evobackup-canary
     force: True
@@ -26,26 +26,17 @@
 
 # TODO: delete when this has been run once on all our servers
 - name: update-evobackup-canary is removed from sbin
-  file:
+  ansible.builtin.file:
     path: /usr/local/sbin/update-evobackup-canary
     state: absent
 
-# - name: dir-check script is present
-#   copy:
-#     src: "dir-check.sh"
-#     dest: /usr/local/bin/dir-check
-#     force: True
-#     owner: root
-#     group: root
-#     mode: "0755"
-
 - name: Deploy htop configuration
-  copy:
+  ansible.builtin.copy:
     src: htoprc
     dest: /etc/htoprc
     mode: "0644"
 
 - name: Deploy top configuration file
-  file:
+  ansible.builtin.file:
     path: /etc/topdefaultrc
     state: absent
