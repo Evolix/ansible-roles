@@ -1,15 +1,24 @@
 ---
 - name: Install pciutils
-  apt:
+  ansible.builtin.apt:
     name: pciutils
     state: present
   tags:
     - packages
 
+- name: firmware-non-free components are installed (Debian 12+)
+  ansible.builtin.replace:
+    dest: /etc/apt/sources.list.d/system.sources
+    regexp: '^(Components: ((?!\bfirmware-non-free\b).)*)$'
+    replace: '\1 firmware-non-free'
+  when:
+    - ansible_distribution_major_version is version('12', '>=')
+
 ## Broadcom NetXtreme II
 
 - name: Check if Broadcom NetXtreme II device is present
-  shell: "lspci | grep -q 'NetXtreme II'"
+  ansible.builtin.shell:
+    cmd: "lspci | grep -q 'NetXtreme II'"
   check_mode: no
   register: broadcom_netextreme_search
   failed_when: False
@@ -17,23 +26,21 @@
   tags:
     - packages
 
-# TODO: add the "non-free" part to the existing sources
-# instead of adding a new source
-
-- name: Add non-free repo for Broadcom NetXtreme II
-  include_role:
-    name: evolix/apt
-    tasks_from: basics.yml
-  vars:
-    apt_basics_components: "main contrib non-free"
+- name: Add non-free repo for Broadcom NetXtreme II (Debian <12)
+  ansible.builtin.replace:
+    dest: /etc/apt/sources.list
+    regexp: '^(main ((?!\bnon-free\b).)*)$'
+    replace: '\1 non-free'
   tags:
     - packages
-  when: broadcom_netextreme_search.rc == 0
+  when:
+    - broadcom_netextreme_search.rc == 0
+    - ansible_distribution_major_version is version('12', '<')
 
+## Baremetal servers
 
-## Dedicated hardware
 - name: Install some additionnals tools when it dedicated hardware
-  apt:
+  ansible.builtin.apt:
     name:
       - libipc-run-perl
       - freeipmi
@@ -43,14 +50,13 @@
     state: present
   tags:
     - packages
-  when: ansible_virtualization_role == "host"
 
 ## RAID
 # Dell and others: MegaRAID SAS
 # HP gen <10: Hewlett-Packard Company Smart Array
 # HP gen >=10: Adaptec Smart Storage PQI
 - name: Detect if RAID is installed
-  shell:
+  ansible.builtin.shell:
     cmd: "lspci -q | grep -e 'RAID bus controller' -e 'Serial Attached SCSI controller'"
     executable: /bin/bash
   check_mode: no
@@ -60,211 +66,16 @@
   tags:
     - packages
 
-- name: Look for legacy apt keyring
-  stat:
-    path: /etc/apt/trusted.gpg
-  register: _trusted_gpg_keyring
-  tags:
-    - packages
-
-- name: HPE Smart Storage Administrator (ssacli) is present
-  block:
-    - name: HPE GPG embedded key is absent
-      apt_key:
-        id: "26C2B797"
-        keyring: /etc/apt/trusted.gpg
-        state: absent
-      when: _trusted_gpg_keyring.stat.exists
-      tags:
-        - packages
-
-    - name: HPE GPG key is installed
-      copy:
-        src: hpePublicKey2048_key1.asc
-        dest: "{{ apt_keyring_dir }}/hpePublicKey2048_key1.asc"
-        force: yes
-        mode: "0644"
-        owner: root
-        group: root
-      tags:
-        - packages
-
-    - name: Add HPE repository
-      apt_repository:
-        repo: 'deb [signed-by={{ apt_keyring_dir }}/hpePublicKey2048_key1.asc] https://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_distribution_release }}/current non-free'
-        state: present
-      tags:
-        - packages
-
-    - name: Remove unsigned HPE repository
-      apt_repository:
-        repo: 'deb https://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_distribution_release }}/current non-free'
-        state: absent
-      tags:
-        - packages
-
-    - name: Install HPE Smart Storage Administrator (ssacli)
-      apt:
-        name: ssacli
-      tags:
-        - packages
+- name: "HP"
+  import_tasks: hardware.hp.yml
   when:
-    - "'Hewlett-Packard Company Smart Array' in raidmodel.stdout"
-    - "'Adaptec Smart Storage PQI' in raidmodel.stdout"
+    - "'Hewlett-Packard Company Smart Array' in raidmodel.stdout or  'Adaptec Smart Storage PQI' in raidmodel.stdout"
     - evolinux_packages_hardware_raid | bool
 
-# NOTE: check_hpraid cron use check_hpraid from nagios-nrpe role
-# So, if nagios-nrpe role is not installed it will not work
-- name: Install and configure check_hpraid cron (HP gen >=10)
-  block:
-    - name: check_hpraid cron is present (HP gen >=10)
-      copy:
-        src: check_hpraid.cron.sh
-        dest: /etc/cron.{{ evolinux_cron_checkhpraid_frequency | mandatory }}/check_hpraid
-        mode: "0755"
-      tags:
-        - config
-  when: "'Adaptec Smart Storage PQI' in raidmodel.stdout"
-
-- name: Install and configure cciss-vol-status (HP gen <10)
-  block:
-    - name: Install cciss-vol-status (HP gen <10)
-      apt:
-        name: cciss-vol-status
-        state: present
-      tags:
-        - packages
-
-    - name: cciss-vol-statusd init script is present (HP gen <10)
-      template:
-        src: hardware/cciss-vol-statusd.j2
-        dest: /etc/init.d/cciss-vol-statusd
-        mode: "0755"
-      tags:
-        - packages
-
-    - name: Configure cciss-vol-statusd (HP gen <10)
-      lineinfile:
-        dest: /etc/default/cciss-vol-statusd
-        line: 'MAILTO="{{ raid_alert_email or general_alert_email | mandatory }}"'
-        regexp: 'MAILTO='
-        create: yes
-      tags:
-        - config
-
-    - name: Enable cciss-vol-status in systemd (HP gen <10)
-      service:
-        name: cciss-vol-statusd
-        enabled: true
-        state: restarted
-      tags:
-        - packages
-        - config
-  when:
-    - "'Hewlett-Packard Company Smart Array' in raidmodel.stdout"
-    - evolinux_packages_hardware_raid | bool
-
-## LSI MegaRAID 12GSAS/PCIe Secure SAS39xx
-# This is still incompatible with Debian
-
-- name: Check if PERC HBA11 device is present
-  shell: "lspci | grep -qE 'MegaRAID.*SAS39xx'"
-  check_mode: no
-  register: perc_hba11_search
-  failed_when: False
-  changed_when: False
-  tags:
-    - packages
-
-- name: MegaCLI SAS package must not be installed if PERC HBA11 is present
-  block:
-    - name: Disable harware RAID tasks
-      set_fact:
-        evolinux_packages_hardware_raid: False
-
-    - name: blacklist mageclisas-status package
-      blockinfile:
-        dest: /etc/apt/preferences.d/0-blacklist
-        create: yes
-        marker: "## {mark} MEGACLISAS-STATUS BLACKLIST"
-        block: |
-          # DO NOT INSTALL THESE PACKAGES ON THIS SERVER
-          Package: megacli megaclisas-status
-          Pin: version *
-          Pin-Priority: -100
-
-    - name: Remove MegaCLI packages
-      apt:
-        name:
-          - megacli
-          - megaclisas-status
-        state: absent
-  when: perc_hba11_search.rc == 0
-
-- name: MegaCLI SAS package is present
-  block:
-    - name: HWRaid embedded GPG key is absent
-      apt_key:
-        id: "23B3D3B4"
-        keyring: /etc/apt/trusted.gpg
-        state: absent
-      tags:
-        - packages
-      when: _trusted_gpg_keyring.stat.exists
-
-    - name: HWRaid GPG key is installed
-      copy:
-        src: hwraid.le-vert.net.asc
-        dest: "{{ apt_keyring_dir }}/hwraid.le-vert.net.asc"
-        force: yes
-        mode: "0644"
-        owner: root
-        group: root
-      tags:
-        - packages
-      when: ansible_distribution_major_version is version('9', '>=')
-
-    - name: Add HW tool repository
-      apt_repository:
-        repo: 'deb [signed-by={{ apt_keyring_dir }}/hwraid.le-vert.net.asc] http://hwraid.le-vert.net/debian {{ ansible_distribution_release }} main'
-        state: present
-      tags:
-        - packages
-
-    - name: Remove unsigned HW tool repository
-      apt_repository:
-        repo: 'deb http://hwraid.le-vert.net/debian {{ ansible_distribution_release }} main'
-        state: absent
-      tags:
-        - packages
-
-    - name: Install packages for DELL/LSI hardware
-      apt:
-        name:
-          - megacli
-          - megaclisas-status
-        allow_unauthenticated: yes
-      tags:
-        - packages
-
-    - name: Configure packages for DELL/LSI hardware
-      template:
-        src: hardware/megaclisas-statusd.j2
-        dest: /etc/default/megaclisas-statusd
-        mode: "0755"
-      tags:
-        - config
-
-    - name: Enable DELL/LSI hardware in systemd
-      service:
-        name: megaclisas-statusd
-        enabled: true
-        state: restarted
-      tags:
-        - packages
-        - config
+- name: "Dell"
+  import_tasks: hardware.dell.yml
   when:
     - "'MegaRAID' in raidmodel.stdout"
     - evolinux_packages_hardware_raid | bool
 
-- meta: flush_handlers
+- ansible.builtin.meta: flush_handlers

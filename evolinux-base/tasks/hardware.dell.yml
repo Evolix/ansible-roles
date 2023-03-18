@@ -1,0 +1,99 @@
+---
+
+## LSI MegaRAID 12GSAS/PCIe Secure SAS39xx
+# This is still incompatible with Debian
+
+- name: Check if PERC HBA11 device is present
+  ansible.builtin.shell: "lspci | grep -qE 'MegaRAID.*SAS39xx'"
+  check_mode: no
+  register: perc_hba11_search
+  failed_when: False
+  changed_when: False
+  tags:
+    - packages
+
+- name: MegaCLI SAS package must not be installed if PERC HBA11 is present
+  block:
+    - name: Disable harware RAID tasks
+      ansible.builtin.set_fact:
+        evolinux_packages_hardware_raid: False
+
+    - name: blacklist mageclisas-status package
+      ansible.builtin.blockinfile:
+        dest: /etc/apt/preferences.d/0-blacklist
+        create: yes
+        marker: "## {mark} MEGACLISAS-STATUS BLACKLIST"
+        block: |
+          # DO NOT INSTALL THESE PACKAGES ON THIS SERVER
+          Package: megacli megaclisas-status
+          Pin: version *
+          Pin-Priority: -100
+
+    - name: Remove MegaCLI packages
+      ansible.builtin.apt:
+        name:
+          - megacli
+          - megaclisas-status
+        state: absent
+  when: perc_hba11_search.rc == 0
+
+- name: MegaCLI SAS package is present
+  block:
+    - name: HWRaid GPG key is installed
+      ansible.builtin.copy:
+        src: hwraid.le-vert.net.asc
+        dest: "{{ apt_keyring_dir }}/hwraid.le-vert.net.asc"
+        force: yes
+        mode: "0644"
+        owner: root
+        group: root
+      tags:
+        - packages
+      when: ansible_distribution_major_version is version('9', '>=')
+
+    - name: Add HW tool repository (Debian <12)
+      ansible.builtin.apt_repository:
+        repo: 'deb [signed-by={{ apt_keyring_dir }}/hwraid.le-vert.net.asc] http://hwraid.le-vert.net/debian {{ ansible_distribution_release }} main'
+        state: present
+      tags:
+        - packages
+      when:
+        - ansible_distribution_major_version is version('12', '<')
+
+    - name: Add HW tool repository (Debian >=12)
+      ansible.builtin.template:
+        src: hardware/hwraid.le-vert.net.sources.j2
+        dest: /etc/apt/sources.list.d/hwraid.le-vert.net.sources
+      tags:
+        - packages
+      when:
+        - ansible_distribution_major_version is version('12', '>=')
+
+    - name: Install packages for DELL/LSI hardware
+      ansible.builtin.apt:
+        name:
+          - megacli
+          - megaclisas-status
+        allow_unauthenticated: yes
+      tags:
+        - packages
+
+    - name: Configure packages for DELL/LSI hardware
+      ansible.builtin.template:
+        src: hardware/megaclisas-statusd.j2
+        dest: /etc/default/megaclisas-statusd
+        mode: "0755"
+      tags:
+        - config
+
+    - name: megaclisas-statusd is enabled and started
+      ansible.builtin.systemd:
+        name: megaclisas-statusd
+        enabled: true
+        state: restarted
+      tags:
+        - packages
+        - config
+  when:
+    - "'MegaRAID' in raidmodel.stdout"
+
