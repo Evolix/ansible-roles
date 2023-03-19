@@ -15,8 +15,9 @@
 - name: Add Treasuredata repository (Debian <12)
   apt_repository:
     repo: "deb [signed-by={{ apt_keyring_dir }}/treasuredata.asc] http://packages.treasuredata.com/3/debian/{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} contrib"
-    filename: treasuredata.list
+    filename: treasuredata
     state: present
+    update_cache: yes
   tags:
     - packages
     - fluentd
@@ -27,16 +28,21 @@
     src: treasuredata.sources.j2
     dest: /etc/apt/sources.list.d/treasuredata.sources
     state: present
+  register: treasuredata_sources
   tags:
     - packages
     - fluentd
   when: ansible_distribution_major_version is version('12', '>=')
 
+- name: Update APT cache
+  apt:
+    update_cache: yes
+  when: treasuredata_sources is changed
+
 - name: Fluentd is installed.
   apt:
     name: td-agent
     state: present
-    update_cache: yes
   tags:
     - fluentd
     - packages
