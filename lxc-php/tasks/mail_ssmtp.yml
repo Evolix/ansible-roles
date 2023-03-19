@@ -8,5 +8,5 @@
 - name: "{{ lxc_php_version }} - Configure ssmtp"
   template:
     src: ssmtp.conf.j2
-    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/ssmtp/ssmtp.conf"
+    dest: "{{ lxc_rootfs }}/etc/ssmtp/ssmtp.conf"
     mode: "0644"

@@ -12,6 +12,10 @@
       - { name: "{{ lxc_php_version }}", release: "{{ lxc_php_container_releases[lxc_php_version] }}" }
   when: lxc_php_version is defined
 
+- name: set LXC rootfs
+  ansible.builtin.set_fact:
+    lxc_rootfs: "/var/lib/lxc/{{ lxc_php_version }}/rootfs"
+
 - name: "Update APT cache in container {{ lxc_php_version }}"
   lxc_container:
     name: "{{ lxc_php_version }}"

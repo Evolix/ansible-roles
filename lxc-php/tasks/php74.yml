@@ -7,7 +7,7 @@
 
 - name: "{{ lxc_php_version }} - fix bullseye repository"
   replace:
-    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/apt/sources.list"
+    dest: "{{ lxc_rootfs }}/etc/apt/sources.list"
     regexp: 'bullseye/updates'
     replace: 'bullseye-security'
 
@@ -18,8 +18,8 @@
     mode: "0644"
   notify: "Reload {{ lxc_php_version }}-fpm"
   loop:
-    - "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/php/7.4/fpm/conf.d/z-evolinux-defaults.ini"
-    - "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/php/7.4/cli/conf.d/z-evolinux-defaults.ini"
+    - "{{ lxc_rootfs }}/etc/php/7.4/fpm/conf.d/z-evolinux-defaults.ini"
+    - "{{ lxc_rootfs }}/etc/php/7.4/cli/conf.d/z-evolinux-defaults.ini"
   loop_control:
     loop_var: line_item
 

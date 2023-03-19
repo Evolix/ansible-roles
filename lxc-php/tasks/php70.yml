@@ -12,8 +12,8 @@
     mode: "0644"
   notify: "Reload {{ lxc_php_version }}-fpm"
   loop:
-    - "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/php/7.0/fpm/conf.d/z-evolinux-defaults.ini"
-    - "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/php/7.0/cli/conf.d/z-evolinux-defaults.ini"
+    - "{{ lxc_rootfs }}/etc/php/7.0/fpm/conf.d/z-evolinux-defaults.ini"
+    - "{{ lxc_rootfs }}/etc/php/7.0/cli/conf.d/z-evolinux-defaults.ini"
   loop_control:
     loop_var: line_item
 

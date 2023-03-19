@@ -1,31 +1,35 @@
 ---
 
+- name: set APT keyring
+  ansible.builtin.set_fact:
+    lxc_apt_keyring_dir: /etc/apt/trusted.gpg.d
+
 - name: "{{ lxc_php_version }} - Install dependency packages"
   lxc_container:
     name: "{{ lxc_php_version }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y wget apt-transport-https gnupg"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y wget gnupg"
 
 - name: "{{ lxc_php_version }} - fix bullseye repository"
   replace:
-    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/apt/sources.list"
+    dest: "{{ lxc_rootfs }}/etc/apt/sources.list"
     regexp: 'bullseye/updates'
     replace: 'bullseye-security'
 
 - name: "{{ lxc_php_version }} - Add sury repo"
   lineinfile:
-    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/apt/sources.list.d/sury.list"
+    dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/sury.list"
     line: "{{ item }}"
     state: present
     create: yes
     mode: "0644"
   loop:
-    - "deb [signed-by={{ apt_keyring_dir }}/sury.gpg] https://packages.sury.org/php/ bullseye main"
-    - "deb [signed-by={{ apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix bullseye-php81 main"
+    - "deb [signed-by={{ lxc_apt_keyring_dir }}/sury.gpg] https://packages.sury.org/php/ bullseye main"
+    - "deb [signed-by={{ lxc_apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix bullseye-php81 main"
 
 - name: copy pub.evolix.net GPG key
   copy:
     src: pub_evolix.asc
-    dest: /var/lib/lxc/{{ lxc_php_version }}/rootfs{{ apt_keyring_dir }}/pub_evolix.asc
+    dest: "{{ lxc_rootfs }}{{ lxc_apt_keyring_dir }}/pub_evolix.asc"
     mode: "0644"
     owner: root
     group: root
@@ -33,7 +37,7 @@
 - name: copy packages.sury.org GPG Key
   copy:
     src: sury.gpg
-    dest: /var/lib/lxc/{{ lxc_php_version }}/rootfs{{ apt_keyring_dir }}/sury.gpg
+    dest: "{{ lxc_rootfs }}{{ lxc_apt_keyring_dir }}/sury.gpg"
     mode: "0644"
     owner: root
     group: root
@@ -55,8 +59,8 @@
     mode: "0644"
   notify: "Reload {{ lxc_php_version }}-fpm"
   loop:
-    - "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/php/8.1/fpm/conf.d/z-evolinux-defaults.ini"
-    - "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/php/8.1/cli/conf.d/z-evolinux-defaults.ini"
+    - "{{ lxc_rootfs }}/etc/php/8.1/fpm/conf.d/z-evolinux-defaults.ini"
+    - "{{ lxc_rootfs }}/etc/php/8.1/cli/conf.d/z-evolinux-defaults.ini"
   loop_control:
     loop_var: line_item
 

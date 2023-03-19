@@ -2,13 +2,9 @@
 # dans /etc/systemd/system/phpX.X-fpm.service.d/evolinux.conf
 ---
 
-- name: "Définis le chemin du système de fichiers du conteneur LXC."
-  set_fact:
-    lxc_rootfs_path: "/var/lib/lxc/{{ lxc_php_version }}/rootfs"
-
 - name: "Crée des répertoires (si absents) pour surcharger la config des services PHP dans les conteneurs LXC."
   ansible.builtin.file:
-    path: "{{ lxc_rootfs_path }}/etc/systemd/system/{{ lxc_php_services[lxc_php_version] }}.d"
+    path: "{{ lxc_rootfs }}/etc/systemd/system/{{ lxc_php_services[lxc_php_version] }}.d"
     state: directory
   register: systemd_path
 
