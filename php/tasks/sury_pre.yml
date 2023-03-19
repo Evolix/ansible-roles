@@ -1,12 +1,10 @@
 ---
 
-- name: Setup deb.sury.org repository - Add GPG key
-  copy:
-    src: sury.gpg
-    dest: "{{ apt_keyring_dir }}/sury.gpg"
-    mode: "0644"
-    owner: root
-    group: root
+- name: Setup deb.sury.org repository - Install apt-transport-https
+  apt:
+    name: apt-transport-https
+    state: present
+  when: ansible_distribution_major_version is version('10', '<')
 
 - name: copy pub.evolix.org GPG key
   copy:
@@ -16,18 +14,6 @@
     owner: root
     group: root
 
-- name: Setup deb.sury.org repository - Install apt-transport-https
-  apt:
-    state: present
-    name: apt-transport-https
-
-- name: Setup deb.sury.org repository - Add preferences file
-  copy:
-    src: sury.preferences
-    dest: /etc/apt/preferences.d/z-sury
-  when:
-    - ansible_distribution_release != "bullseye"
-
 - name: Setup pub.evolix.org repository - Add source list
   apt_repository:
     repo: "deb [signed-by={{ apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix {{ ansible_distribution_release }}-php81 main"
@@ -36,17 +22,41 @@
   when:
     - ansible_distribution_release == "bullseye"
 
-- name: Setup deb.sury.org repository - Add source list
+- name: Setup deb.sury.org repository - Add preferences file
+  copy:
+    src: sury.preferences
+    dest: /etc/apt/preferences.d/z-sury
+  when:
+    - ansible_distribution_release != "bullseye"
+
+- name: Setup deb.sury.org repository - Add GPG key
+  copy:
+    src: sury.gpg
+    dest: "{{ apt_keyring_dir }}/sury.gpg"
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Add Sury repository (Debian <12)
   apt_repository:
     repo: "deb [signed-by={{ apt_keyring_dir }}/sury.gpg] https://packages.sury.org/php/ {{ ansible_distribution_release }} main"
     filename: sury
     state: present
+    update_cache: yes
+  when: ansible_distribution_major_version is version('12', '<')
 
-- name: Setup deb.sury.org repository - Remove unsigned source list
-  apt_repository:
-    repo: "deb https://packages.sury.org/php/ {{ ansible_distribution_release }} main"
-    filename: sury
-    state: absent
+- name: Add Sury repository (Debian >=12)
+  ansible.builtin.template:
+    src: sury.sources.j2
+    dest: /etc/apt/sources.list.d/sury.sources
+    state: present
+  register: sury_sources
+  when: ansible_distribution_major_version is version('12', '>=')
+
+- name: Update APT cache
+  apt:
+    update_cache: yes
+  when: sury_sources is changed
 
 - name: "Override package list for Sury (Debian 9 or later)"
   set_fact:

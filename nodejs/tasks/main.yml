@@ -1,36 +1,17 @@
 ---
 
-- name: APT https transport is enabled
-  apt:
+- name: APT https transport is enabled (Debian <10)
+  ansible.builtin.apt:
     name: apt-transport-https
     state: present
   tags:
     - system
     - packages
     - nodejs
-
-- name: Look for legacy apt keyring
-  stat:
-    path: /etc/apt/trusted.gpg
-  register: _trusted_gpg_keyring
-  tags:
-    - system
-    - packages
-    - nodejs
-
-- name: NodeJS embedded GPG key is absent
-  apt_key:
-    id: "68576280"
-    keyring: /etc/apt/trusted.gpg
-    state: absent
-  when: _trusted_gpg_keyring.stat.exists
-  tags:
-    - system
-    - packages
-    - nodejs
+  when: ansible_distribution_major_version is version('10', '<')
 
 - name: NodeJS GPG key is installed
-  copy:
+  ansible.builtin.copy:
     src: nodesource.asc
     dest: "{{ apt_keyring_dir }}/nodesource.asc"
     mode: "0644"
@@ -41,8 +22,8 @@
     - packages
     - nodejs
 
-- name: NodeJS sources list ({{ nodejs_apt_version }}) is available
-  apt_repository:
+- name: Add NodeJS repository (Debian <12)
+  ansible.builtin.apt_repository:
     repo: "deb [signed-by={{ apt_keyring_dir }}/nodesource.asc] https://deb.nodesource.com/{{ nodejs_apt_version }} {{ ansible_distribution_release }} main"
     filename: nodesource
     update_cache: yes
@@ -51,26 +32,32 @@
     - system
     - packages
     - nodejs
+  when: ansible_distribution_major_version is version('12', '<')
 
-- name: Unsigned NodeJS sources list ({{ nodejs_apt_version }}) is not available
-  apt_repository:
-    repo: "deb https://deb.nodesource.com/{{ nodejs_apt_version }} {{ ansible_distribution_release }} main"
-    filename: nodesource
-    update_cache: yes
-    state: absent
+- name: Add NodeJS repository (Debian >=12)
+  ansible.builtin.template:
+    src: nodesource.sources.j2
+    dest: /etc/apt/sources.list.d/nodesource.sources
+    state: present
+  register: nodesource_sources
   tags:
     - system
     - packages
     - nodejs
+  when: ansible_distribution_major_version is version('12', '>=')
+
+- name: Update APT cache
+  ansible.builtin.apt:
+    update_cache: yes
+  when: nodesource_sources is changed
 
 - name: NodeJS is installed
-  apt:
+  ansible.builtin.apt:
     name: nodejs
     state: present
-    update_cache: yes
   tags:
     - packages
     - nodejs
 
-- include: yarn.yml
+- ansible.builtin.import_tasks: yarn.yml
   when: nodejs_install_yarn | bool

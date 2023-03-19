@@ -1,7 +1,7 @@
 # This role installs the docker daemon
 ---
 - name: Remove older docker packages
-  apt:
+  ansible.builtin.apt:
     name:
       - docker
       - docker-engine
@@ -9,21 +9,21 @@
     state: absent
 
 - name: Install source requirements
-  apt:
+  ansible.builtin.apt:
     name:
       - ca-certificates
       - gnupg2
     state: present
 
 - name: Install apt-transport-https (Debian <10)
-  apt:
+  ansible.builtin.apt:
     name:
       - apt-transport-https
     state: present
   when: ansible_distribution_major_version is version('10', '<')
 
 - name: Add Docker's official GPG key
-  copy:
+  ansible.builtin.copy:
     src: docker-debian.asc
     dest: "{{ apt_keyring_dir }}/docker-debian.asc"
     force: yes
@@ -32,10 +32,11 @@
     group: root
 
 - name: Add Docker repository (Debian <12)
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: 'deb [signed-by={{ apt_keyring_dir }}/docker-debian.asc] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable'
-    filename: docker.list
+    filename: docker
     state: present
+    update_cache: yes
   when: ansible_distribution_major_version is version('12', '<')
 
 - name: Add Docker repository (Debian >=12)
@@ -43,43 +44,48 @@
     src: docker.sources.j2
     dest: /etc/apt/sources.list.d/docker.sources
     state: present
+  register: docker_sources
   when: ansible_distribution_major_version is version('12', '>=')
 
+- name: Update APT cache
+  ansible.builtin.apt:
+    update_cache: yes
+  when: docker_sources is changed
+
 - name: Install Docker
-  apt:
+  ansible.builtin.apt:
     name:
       - docker-ce
       - docker-ce-cli
       - containerd.io
-    update_cache: yes
 
 - name: python-docker is installed
-  apt:
+  ansible.builtin.apt:
     name: python-docker
     state: present
   when: ansible_python_version is version('3', '<')
 
 - name: python3-docker is installed
-  apt:
+  ansible.builtin.apt:
     name: python3-docker
     state: present
   when: ansible_python_version is version('3', '>=')
 
 - name: Copy Docker daemon configuration file
-  template:
+  ansible.builtin.template:
     src: daemon.json.j2
     dest: /etc/docker/daemon.json
   notify: restart docker
 
 - name: Creating Docker tmp directory
-  file:
+  ansible.builtin.file:
     path: "{{ docker_tmpdir }}"
     state: directory
     mode: "0644"
     owner: root
 
 - name: Creating Docker TLS directory
-  file:
+  ansible.builtin.file:
     path: "{{ docker_tls_path }}"
     state: directory
     mode: "0644"
@@ -87,7 +93,7 @@
   when: docker_tls_enabled | bool
 
 - name: Copy shellpki utility to Docker TLS directory
-  template:
+  ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "{{ docker_tls_path }}/{{ item }}"
     mode: "0744"
@@ -97,12 +103,13 @@
   when: docker_tls_enabled | bool
 
 - name: Check if certs are already created
-  stat:
+  ansible.builtin.stat:
     path: "{{ docker_tls_path }}/certs"
   register: tls_certs_stat
 
 - name: Creating a CA, server key
-  command: "{{ docker_tls_path }}/shellpki.sh init"
+  ansible.builtin.command:
+    cmd: "{{ docker_tls_path }}/shellpki.sh init"
   when:
     - docker_tls_enabled | bool
     - not tls_certs_stat.stat.isdir

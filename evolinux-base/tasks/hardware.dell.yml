@@ -55,6 +55,7 @@
       ansible.builtin.apt_repository:
         repo: 'deb [signed-by={{ apt_keyring_dir }}/hwraid.le-vert.net.asc] http://hwraid.le-vert.net/debian {{ ansible_distribution_release }} main'
         state: present
+        update_cache: yes
       tags:
         - packages
       when:
@@ -66,8 +67,13 @@
         dest: /etc/apt/sources.list.d/hwraid.le-vert.net.sources
       tags:
         - packages
-      when:
-        - ansible_distribution_major_version is version('12', '>=')
+      register: hwraid_sources
+      when: ansible_distribution_major_version is version('12', '>=')
+
+    - name: Update APT cache
+      apt:
+        update_cache: yes
+      when: hwraid_sources is changed
 
     - name: Install packages for DELL/LSI hardware
       ansible.builtin.apt:

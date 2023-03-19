@@ -1,15 +1,15 @@
 ---
 
 - name: "Set variables (Debian 12)"
-  set_fact:
+  ansible.builtin.set_fact:
     postgresql_version: '15'
   when: postgresql_version is none or postgresql_version | length == 0
 
-- include: pgdg-repo.yml
+- ansible.builtin.import_tasks: pgdg-repo.yml
   when: postgresql_version != '15'
 
 - name: Install postgresql package
-  apt:
+  ansible.builtin.apt:
     name:
       - "postgresql-{{ postgresql_version }}"
       - pgtop

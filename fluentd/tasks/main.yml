@@ -1,27 +1,9 @@
 ---
 
-- name: Look for legacy apt keyring
-  stat:
-    path: /etc/apt/trusted.gpg
-  register: _trusted_gpg_keyring
-  tags:
-    - packages
-    - fluentd
-
-- name: Fluentd embedded GPG key is absent
-  apt_key:
-    id: "AB97ACBE"
-    keyring: /etc/apt/trusted.gpg
-    state: absent
-  when: _trusted_gpg_keyring.stat.exists
-  tags:
-    - packages
-    - fluentd
-
 - name: Add Fluentd GPG key
   copy:
-    src: fluentd.asc
-    dest: "{{ apt_keyring_dir }}/fluentd.asc"
+    src: treasuredata.asc
+    dest: "{{ apt_keyring_dir }}/treasuredata.asc"
     force: yes
     mode: "0644"
     owner: root
@@ -30,30 +12,31 @@
     - packages
     - fluentd
 
-- name: Fluentd sources list is available
+- name: Add Treasuredata repository (Debian <12)
   apt_repository:
-    repo: "deb [signed-by={{ apt_keyring_dir }}/fluentd.asc] http://packages.treasuredata.com/3/debian/{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} contrib"
-    filename: treasuredata
-    update_cache: yes
+    repo: "deb [signed-by={{ apt_keyring_dir }}/treasuredata.asc] http://packages.treasuredata.com/3/debian/{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} contrib"
+    filename: treasuredata.list
     state: present
   tags:
     - packages
     - fluentd
+  when: ansible_distribution_major_version is version('12', '<')
 
-- name: Unsigned Fluentd sources list is not available
-  apt_repository:
-    repo: "deb http://packages.treasuredata.com/3/debian/{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} contrib"
-    filename: treasuredata
-    update_cache: yes
-    state: absent
+- name: Add Treasuredata repository (Debian >=12)
+  ansible.builtin.template:
+    src: treasuredata.sources.j2
+    dest: /etc/apt/sources.list.d/treasuredata.sources
+    state: present
   tags:
     - packages
     - fluentd
+  when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Fluentd is installed.
   apt:
     name: td-agent
     state: present
+    update_cache: yes
   tags:
     - fluentd
     - packages

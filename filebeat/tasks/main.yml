@@ -1,62 +1,11 @@
 ---
-
-- name: APT https transport is enabled
-  apt:
-    name: apt-transport-https
-    state: present
-  tags:
-    - filebeat
-    - packages
-
-- name: Look for legacy apt keyring
-  stat:
-    path: /etc/apt/trusted.gpg
-  register: _trusted_gpg_keyring
-  tags:
-    - filebeat
-    - packages
-
-- name: Elastic embedded GPG key is absent
-  apt_key:
-    id: "D88E42B4"
-    keyring: /etc/apt/trusted.gpg
-    state: absent
-  when: _trusted_gpg_keyring.stat.exists
-  tags:
-    - filebeat
-    - packages
-
-- name: Elastic GPG key is installed
-  copy:
-    src: elastic.asc
-    dest: "{{ apt_keyring_dir }}/elastic.asc"
-    force: yes
-    mode: "0644"
-    owner: root
-    group: root
-  tags:
-    - filebeat
-    - packages
-
-- name: Elastic sources list is available
-  apt_repository:
-    repo: "deb [signed-by={{ apt_keyring_dir }}/elastic.asc] https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
-    filename: elastic
-    state: present
-    update_cache: yes
-  tags:
-    - filebeat
-    - packages
-
-- name: Unsigned Elastic sources list is not available
-  apt_repository:
-    repo: "deb https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
-    filename: elastic
-    state: absent
-    update_cache: yes
-  tags:
-    - filebeat
-    - packages
+- name: APT sources
+  import_tasks: apt_sources.yml
+  args:
+    apply:
+      tags:
+        - filebeat
+        - packages
 
 - name: Filebeat is installed
   apt:

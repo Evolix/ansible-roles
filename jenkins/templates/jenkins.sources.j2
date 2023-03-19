@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+
+Types: deb
+URIs: http://pkg.jenkins-ci.org/debian-stable
+Suites: binary/
+Signed-by: {{ apt_keyring_dir }}/jenkins.asc
+Enabled: yes

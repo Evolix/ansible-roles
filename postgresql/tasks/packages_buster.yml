@@ -14,3 +14,4 @@
       - "postgresql-{{ postgresql_version }}"
       - pgtop
       - libdbd-pg-perl
+    update_cache: yes

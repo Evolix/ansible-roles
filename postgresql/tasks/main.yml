@@ -1,25 +1,28 @@
 ---
-- include: locales.yml
+- ansible.builtin.import_tasks: locales.yml
 
-- include: packages_jessie.yml
+- ansible.builtin.import_tasks: packages_jessie.yml
   when: ansible_distribution_release == "jessie"
 
-- include: packages_stretch.yml
+- ansible.builtin.import_tasks: packages_stretch.yml
   when: ansible_distribution_release == "stretch"
 
-- include: packages_buster.yml
+- ansible.builtin.import_tasks: packages_buster.yml
   when: ansible_distribution_release == "buster"
 
-- include: packages_bullseye.yml
-  when: ansible_distribution_major_version is version('11', '>=')
+- ansible.builtin.import_tasks: packages_bullseye.yml
+  when: ansible_distribution_release == "bullseye"
 
-- include: config.yml
+- ansible.builtin.import_tasks: packages_bookworm.yml
+  when: ansible_distribution_release == "bookworm"
 
-- include: nrpe.yml
+- ansible.builtin.import_tasks: config.yml
 
-- include: munin.yml
+- ansible.builtin.import_tasks: nrpe.yml
 
-- include: logrotate.yml
+- ansible.builtin.import_tasks: munin.yml
 
-- include: postgis.yml
+- ansible.builtin.import_tasks: logrotate.yml
+
+- ansible.builtin.import_tasks: postgis.yml
   when: postgresql_install_postgis | bool
