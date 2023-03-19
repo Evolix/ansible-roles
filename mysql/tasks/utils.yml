@@ -55,11 +55,11 @@
 - name: "Install dependencies for mytop (Debian 12 or later)"
   apt:
     name:
-      - mariadb-client-10.6
+      - mariadb-client
       - libconfig-inifiles-perl
       - libterm-readkey-perl
       - libdbd-mariadb-perl
-  when: ansible_distribution_major_version is version('12', '=')
+  when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Read debian-sys-maint password (Debian < 11)
   shell: 'cat /etc/mysql/debian.cnf | grep -m1 "password = .*" | cut -d" " -f3'

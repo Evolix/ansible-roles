@@ -4,6 +4,15 @@
   set_fact:
     mysql_restart_handler_name: "{{ mysql_restart_if_needed | bool | ternary('restart mysql', 'restart mysql (noop)') }}"
 
+- name: Default log directory is present
+  file:
+    path: /var/log/mysql
+    owner: mysql
+    group: adm
+    mode: "2750"
+    state: directory
+  when: ansible_distribution_major_version is version('12', '>=')
+
 - include_tasks: packages_stretch.yml
   when: ansible_distribution_major_version is version('9', '>=')
 
