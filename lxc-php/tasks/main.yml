@@ -4,6 +4,14 @@
     msg: Please configure var lxc_php_version
   when: lxc_php_version is none
 
+
+- include_role:
+    name: evolix/lxc
+  vars:
+    lxc_containers:
+      - { name: "{{ lxc_php_version }}", release: "{{ lxc_php_container_releases[lxc_php_version] }}" }
+  when: lxc_php_version is defined
+
 - name: "Update APT cache in container {{ lxc_php_version }}"
   lxc_container:
     name: "{{ lxc_php_version }}"
