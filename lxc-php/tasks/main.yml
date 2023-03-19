@@ -1,6 +1,6 @@
 ---
 - name: "Ensure that lxc_php_version is defined"
-  fail:
+  ansible.builtin.fail:
     msg: Please configure var lxc_php_version
   when: lxc_php_version is none
 
@@ -17,28 +17,31 @@
     lxc_rootfs: "/var/lib/lxc/{{ lxc_php_version }}/rootfs"
 
 - name: "Update APT cache in container {{ lxc_php_version }}"
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "apt-get update"
 
-- include: "php56.yml"
+- ansible.builtin.import_tasks: "php56.yml"
   when: lxc_php_version == "php56"
 
-- include: "php70.yml"
+- ansible.builtin.import_tasks: "php70.yml"
   when: lxc_php_version == "php70"
 
-- include: "php73.yml"
+- ansible.builtin.import_tasks: "php73.yml"
   when: lxc_php_version == "php73"
 
-- include: "php74.yml"
+- ansible.builtin.import_tasks: "php74.yml"
   when: lxc_php_version == "php74"
 
-- include: "php80.yml"
+- ansible.builtin.import_tasks: "php80.yml"
   when: lxc_php_version == "php80"
 
-- include: "php81.yml"
+- ansible.builtin.import_tasks: "php81.yml"
   when: lxc_php_version == "php81"
 
-- include: "umask.yml"
+# - ansible.builtin.import_tasks: "php82.yml"
+#   when: lxc_php_version == "php82"
 
-- include: "misc.yml"
+- ansible.builtin.import_tasks: "umask.yml"
+
+- ansible.builtin.import_tasks: "misc.yml"
