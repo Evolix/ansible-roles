@@ -12,3 +12,5 @@
 - ansible.builtin.import_tasks: main_bullseye.yml
   when: ansible_distribution_release == "bullseye"
 
+- ansible.builtin.import_tasks: main_bookworm.yml
+  when: ansible_distribution_release == "bookworm"
