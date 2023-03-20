@@ -1,5 +1,5 @@
 ---
 - name: reload unbound
-  service:
+  ansible.builtin.service:
     name: unbound
     state: reloaded

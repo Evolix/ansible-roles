@@ -1,5 +1,5 @@
 - name: LDAP packages are installed
-  apt:
+  ansible.builtin.apt:
     name:
       - slapd
       - ldap-utils
@@ -9,18 +9,18 @@
     update_cache: yes
 
 - name: change slapd listen ip:port
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/default/slapd
     regexp: 'SLAPD_SERVICES=.*'
     line: "SLAPD_SERVICES=\"{{ ldap_listen }}\""
   notify: restart slapd
 
 - name: ldapvirc file
-  include: ldapvirc.yml
+  ansible.builtin.include: ldapvirc.yml
 
 - name: nagios config file for LDAP
-  include: nagios.yml
+  ansible.builtin.include: nagios.yml
 
 - name: initialize database
-  include: init.yml
+  ansible.builtin.include: init.yml
   when: not root_ldapvirc_path.stat.exists

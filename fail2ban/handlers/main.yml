@@ -1,10 +1,10 @@
 ---
 - name: restart fail2ban
-  service:
+  ansible.builtin.service:
     name: fail2ban
     state: restarted
 
 - name: restart munin-node
-  service:
+  ansible.builtin.service:
     name: munin-node
     state: restarted

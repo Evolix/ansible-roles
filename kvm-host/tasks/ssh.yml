@@ -1,18 +1,19 @@
 ---
 - name: Generate root ssh_key
-  user:
+  ansible.builtin.user:
     name: root
     generate_ssh_key: yes
     ssh_key_bits: 2048
 
 - name: Fetch ssh public keys
-  command: cat /root/.ssh/id_rsa.pub
+  ansible.builtin.command:
+    cmd: cat /root/.ssh/id_rsa.pub
   register: ssh_keys
   check_mode: no
   changed_when: False
 
 - name: Print ssh public keys
-  debug:
+  ansible.builtin.debug:
     msg: "{{ ssh_keys.stdout }}"
 
 #- name: Autorize other kvm ssh key
@@ -28,7 +29,7 @@
 #  when: item[1] != inventory_hostname
 
 - name: Crontab for sync libvirt xml file
-  cron:
+  ansible.builtin.cron:
     name: "sync libvirt xml on {{ kvm_pair }}"
     state: present
     special_time: "hourly"
@@ -42,7 +43,7 @@
   tags: crontab
 
 - name: Crontab for sync list of running vm
-  cron:
+  ansible.builtin.cron:
     name: "sync list of libvirt running vm on {{ kvm_pair }}"
     state: present
     special_time: "daily"

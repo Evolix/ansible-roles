@@ -7,7 +7,8 @@
 # This is still incompatible with Debian
 
 - name: Check if PERC HBA11 device is present
-  ansible.builtin.shell: "lspci | grep -qE 'MegaRAID.*SAS39xx'"
+  ansible.builtin.shell:
+    cmd: "lspci | grep -qE 'MegaRAID.*SAS39xx'"
   check_mode: no
   register: perc_hba11_search
   failed_when: False
@@ -74,7 +75,7 @@
       when: ansible_distribution_major_version is version('12', '>=')
 
     - name: Update APT cache
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
       when: hwraid_sources is changed
 

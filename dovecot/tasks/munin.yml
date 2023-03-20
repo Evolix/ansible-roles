@@ -1,7 +1,7 @@
 ---
 
 - name: is Munin present ?
-  stat:
+  ansible.builtin.stat:
     path: /etc/munin/plugin-conf.d/munin-node
   check_mode: no
   register: munin_node_plugins_config
@@ -9,13 +9,13 @@
 - name: Munin plugins are present and configured
   block:
     - name: Install munin plugin
-      copy:
+      ansible.builtin.copy:
         src: munin_plugin
         dest: /etc/munin/plugins/dovecot
         mode: "0755"
 
     - name: Install munin config
-      copy:
+      ansible.builtin.copy:
         src: munin_config
         dest: /etc/munin/plugin-conf.d/dovecot
         mode: "0644"

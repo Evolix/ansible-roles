@@ -2,15 +2,16 @@
 
 - block:
   - name: Generate admin password
-    command: 'apg -n 1 -m 16 -M lcN'
+    ansible.builtin.command:
+      cmd: 'apg -n 1 -m 16 -M lcN'
     register: nextcloud_admin_password_apg
     check_mode: no
     changed_when: False
 
-  - debug:
+  - ansible.builtin.debug:
       var: nextcloud_admin_password_apg
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       nextcloud_admin_password: "{{ nextcloud_admin_password_apg.stdout }}"
 
   tags:
@@ -18,7 +19,8 @@
   when: nextcloud_admin_password | length == 0
 
 - name: Get Nextcloud Status
-  shell: "php ./occ status --output json | grep -v 'Nextcloud is not installed'"
+  ansible.builtin.shell:
+    cmd: "php ./occ status --output json | grep -v 'Nextcloud is not installed'"
   args:
     chdir: "{{ nextcloud_webroot }}"
   become_user: "{{ nextcloud_user }}"
@@ -28,7 +30,8 @@
     - nextcloud
 
 - name: Install Nextcloud
-  command: "php ./occ maintenance:install --database mysql --database-name {{ nextcloud_db_name | mandatory }} --database-user {{ nextcloud_db_user | mandatory }} --database-pass {{ nextcloud_db_pass | mandatory }} --admin-user {{ nextcloud_admin_login | mandatory }} --admin-pass {{ nextcloud_admin_password | mandatory }} --data-dir {{ nextcloud_data | mandatory }}"
+  ansible.builtin.command:
+    cmd: "php ./occ maintenance:install --database mysql --database-name {{ nextcloud_db_name | mandatory }} --database-user {{ nextcloud_db_user | mandatory }} --database-pass {{ nextcloud_db_pass | mandatory }} --admin-user {{ nextcloud_admin_login | mandatory }} --admin-pass {{ nextcloud_admin_password | mandatory }} --data-dir {{ nextcloud_data | mandatory }}"
   args:
     chdir: "{{ nextcloud_webroot }}"
     creates: "{{ nextcloud_home }}/config/config.php"
@@ -38,7 +41,7 @@
     - nextcloud
 
 - name: Configure Nextcloud Mysql password
-  replace:
+  ansible.builtin.replace:
     dest: "{{ nextcloud_home }}/nextcloud/config/config.php"
     regexp:  "'dbpassword' => '([^']*)',"
     replace: "'dbpassword' => '{{ nextcloud_db_pass }}',"
@@ -46,7 +49,7 @@
     - nextcloud
 
 - name: Configure Nextcloud cron
-  cron:
+  ansible.builtin.cron:
     name: 'Nextcloud'
     minute: "*/5"
     job: "php -f {{ nextcloud_webroot }}/cron.php"
@@ -55,7 +58,8 @@
     - nextcloud
 
 - name: Erase previously trusted domains config
-  command: "php ./occ config:system:set trusted_domains"
+  ansible.builtin.command:
+    cmd: "php ./occ config:system:set trusted_domains"
   args:
     chdir: "{{ nextcloud_webroot }}"
   become_user: "{{ nextcloud_user }}"
@@ -63,7 +67,8 @@
     - nextcloud
 
 - name: Configure trusted domains
-  command: "php ./occ config:system:set trusted_domains {{ item.0 }} --value {{ item.1 }}"
+  ansible.builtin.command:
+    cmd: "php ./occ config:system:set trusted_domains {{ item.0 }} --value {{ item.1 }}"
   args:
     chdir: "{{ nextcloud_webroot }}"
   with_indexed_items:

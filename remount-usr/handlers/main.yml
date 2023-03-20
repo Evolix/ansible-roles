@@ -1,4 +1,5 @@
 ---
 - name: remount usr
-  command: "mount -o remount /usr"
+  ansible.builtin.command:
+    cmd: "mount -o remount /usr"
   failed_when: False

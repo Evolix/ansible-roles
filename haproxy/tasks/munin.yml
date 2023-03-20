@@ -1,6 +1,6 @@
 ---
 - name: Install Munin plugin and dependencies
-  apt:
+  ansible.builtin.apt:
     name:
       - munin-plugins-extra
       - liblwp-useragent-determined-perl
@@ -9,7 +9,7 @@
   - haproxy
 
 - name: Enable Munin Haproxy plugins
-  file:
+  ansible.builtin.file:
     src: /usr/share/munin/plugins/haproxy_ng
     dest: /etc/munin/plugins/haproxy_ng
     force: yes
@@ -19,7 +19,7 @@
   - haproxy
 
 - name: Copy Munin Haproxy config
-  template:
+  ansible.builtin.template:
     src: munin.conf.j2
     dest: /etc/munin/plugin-conf.d/haproxy
     mode: "0644"

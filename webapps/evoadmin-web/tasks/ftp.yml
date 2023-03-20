@@ -1,12 +1,12 @@
 ---
 
 - name: patch must be installed
-  apt:
+  ansible.builtin.apt:
     name: patch
     state: present
 
 - name: Patch ProFTPd config file
-  patch:
+  ansible.posix.patch:
     remote_src: False
     src: ftp/evolinux.conf.diff
     dest: /etc/proftpd/conf.d/z-evolinux.conf

@@ -3,11 +3,11 @@
 # Backward compatibility task file
 
 - name: Install basics repositories (Debian <12)
-  import_tasks: basics.oneline.yml
+  ansible.builtin.import_tasks: basics.oneline.yml
   when:
     - ansible_distribution_major_version is version('12', '<')
 
 - name: Install basics repositories (Debian >=12)
-  import_tasks: basics.deb822.yml
+  ansible.builtin.import_tasks: basics.deb822.yml
   when:
     - ansible_distribution_major_version is version('12', '>=')

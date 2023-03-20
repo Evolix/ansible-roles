@@ -1,14 +1,14 @@
 ---
 
 - name: "System compatibility checks"
-  assert:
+  ansible.builtin.assert:
     that:
       - ansible_distribution == "Debian"
       - ansible_distribution_major_version is version('8', '>=')
     msg: only compatible with Debian >= 8
 
 - name: Apt configuration
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/apt
   vars:
     apt_install_basics: "{{ evolinux_apt_replace_default_sources }}"
@@ -18,52 +18,52 @@
   when: evolinux_apt_include | bool
 
 - name: /etc versioning with Git
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/etc-git
   when: evolinux_etcgit_include | bool
 
 - name: /etc/evolinux base
-  import_tasks: etc-evolinux.yml
+  ansible.builtin.import_tasks: etc-evolinux.yml
   when: evolinux_etcevolinux_include | bool
 
 - name: Hostname
-  import_tasks: hostname.yml
+  ansible.builtin.import_tasks: hostname.yml
   when: evolinux_hostname_include | bool
 
 - name: Kernel tuning
-  import_tasks: kernel.yml
+  ansible.builtin.import_tasks: kernel.yml
   when: evolinux_kernel_include | bool
 
 - name: Fstab configuration
-  import_tasks: fstab.yml
+  ansible.builtin.import_tasks: fstab.yml
   when: evolinux_fstab_include | bool
 
 - name: Packages
-  import_tasks: packages.yml
+  ansible.builtin.import_tasks: packages.yml
   when: evolinux_packages_include | bool
 
 - name: System settings
-  import_tasks: system.yml
+  ansible.builtin.import_tasks: system.yml
   when: evolinux_system_include | bool
 
 - name: Minifirewall
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/minifirewall
   when: evolinux_minifirewall_include | bool
 
 - name: Evomaintenance
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/evomaintenance
   when: evolinux_evomaintenance_include | bool
 
 - name: SSH configuration (single file)
-  import_tasks: ssh.single-file.yml
+  ansible.builtin.import_tasks: ssh.single-file.yml
   when:
     - ansible_distribution_major_version is version('12', '<')
     - evolinux_ssh_include | bool
 
 - name: SSH configuration (included-files)
-  import_tasks: ssh.included-files.yml
+  ansible.builtin.import_tasks: ssh.included-files.yml
   when:
     - ansible_distribution_major_version is version('12', '>=')
     - evolinux_ssh_include | bool
@@ -75,71 +75,71 @@
 #   when: evolinux_users_include
 
 - name: Root user configuration
-  import_tasks: root.yml
+  ansible.builtin.import_tasks: root.yml
   when: evolinux_root_include | bool
 
 - name: Postfix
-  import_tasks: postfix.yml
+  ansible.builtin.import_tasks: postfix.yml
   when: evolinux_postfix_include | bool
 
 - name: Logs management
-  import_tasks: logs.yml
+  ansible.builtin.import_tasks: logs.yml
   when: evolinux_logs_include | bool
 
 - name: Default index page
-  import_tasks: default_www.yml
+  ansible.builtin.import_tasks: default_www.yml
   when: evolinux_default_www_include | bool
 
 - name: Hardware drivers and tools
-  import_tasks: hardware.yml
+  ansible.builtin.import_tasks: hardware.yml
   when:
     - evolinux_hardware_include | bool
     - ansible_virtualization_role == "host"
 
 - name: Customize for Online.net
-  import_tasks: provider_online.yml
+  ansible.builtin.import_tasks: provider_online.yml
   when: evolinux_provider_online_include | bool
 
 - name: Customize for Orange FCE
-  import_tasks: provider_orange_fce.yml
+  ansible.builtin.import_tasks: provider_orange_fce.yml
   when: evolinux_provider_orange_fce_include | bool
 
 - name: Override Log2mail service
-  import_tasks: log2mail.yml
+  ansible.builtin.import_tasks: log2mail.yml
   when: evolinux_log2mail_include | bool
 
-- import_tasks: motd.yml
+- ansible.builtin.import_tasks: motd.yml
   when: evolinux_motd_include | bool
 
-- import_tasks: utils.yml
+- ansible.builtin.import_tasks: utils.yml
   when: evolinux_utils_include | bool
 
 - name: Munin
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/munin
   when: evolinux_munin_include | bool
 
 - name: Nagios/NRPE
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/nagios-nrpe
   when: evolinux_nagios_nrpe_include | bool
 
 - name: fail2ban
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/fail2ban
   when: evolinux_fail2ban_include | bool
 
 - name: Evocheck
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/evocheck
   when: evolinux_evocheck_include | bool
 
 - name: Listupgrade
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/listupgrade
   when: evolinux_listupgrade_include | bool
 
 - name: Generate ldif script
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/generate-ldif
   when: evolinux_generateldif_include | bool

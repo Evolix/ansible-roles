@@ -1,7 +1,7 @@
 ---
 
 - name: Install perl lib-redis (needed by check_redis)
-  apt:
+  ansible.builtin.apt:
     name: libredis-perl
     state: present
   tags:
@@ -9,7 +9,7 @@
     - nrpe
 
 - name: install check_redis on Jessie
-  copy:
+  ansible.builtin.copy:
     src: check_redis.pl
     dest: /usr/local/lib/nagios/plugins/check_redis
     force: yes
@@ -24,7 +24,7 @@
     - nrpe
 
 - name: set the path of check_redis on Jessie
-  set_fact:
+  ansible.builtin.set_fact:
     redis_check_redis_path: /usr/local/lib/nagios/plugins/check_redis
   when:
     - ansible_distribution == "Debian"
@@ -34,7 +34,7 @@
     - nrpe
 
 - name: set the path of check_redis on Stretch and later
-  set_fact:
+  ansible.builtin.set_fact:
     redis_check_redis_path: /usr/lib/nagios/plugins/check_redis
   when:
     - ansible_distribution == "Debian"
@@ -44,7 +44,7 @@
     - nrpe
 
 - name: sudo without password for nagios
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/sudoers.d/evolinux
     regexp: 'check_redis$'
     line: 'nagios          ALL = NOPASSWD: {{ redis_check_redis_path }}'
@@ -57,7 +57,7 @@
     - nrpe
 
 - name: Use check_redis for NRPE
-  replace:
+  ansible.builtin.replace:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: '^command\[check_redis\]=.+'
     replace: 'command[check_redis]=sudo {{ redis_check_redis_path }} -H {{ redis_bind_interfaces | first }} -p {{ redis_port }}'
@@ -68,7 +68,7 @@
     - nrpe
 
 - name: sudo without password for nagios
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/sudoers.d/evolinux
     regexp: 'check_redis$'
     line: 'nagios          ALL = NOPASSWD: {{ redis_check_redis_path }}'
@@ -80,11 +80,11 @@
     - nrpe
 
 - name: "Remount /usr with RW for 'install check_redis instance'"
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - name: install check_redis_instances
-  copy:
+  ansible.builtin.copy:
     src: check_redis_instances.sh
     dest: /usr/local/lib/nagios/plugins/check_redis_instances
     force: yes
@@ -96,7 +96,7 @@
     - nrpe
 
 - name: Use check_redis_instances for NRPE
-  replace:
+  ansible.builtin.replace:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: '^command\[check_redis\]=.+'
     replace: 'command[check_redis]=sudo /usr/local/lib/nagios/plugins/check_redis_instances'
@@ -107,7 +107,7 @@
     - nrpe
 
 - name: sudo without password for nagios
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/sudoers.d/evolinux
     regexp: 'check_redis_instances$'
     line: 'nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_redis_instances'

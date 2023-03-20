@@ -1,10 +1,10 @@
 ---
 
-- set_fact:
+- ansible.builtin.set_fact:
     mysql_config_directory: "/etc/mysql/mysql.conf.d"
 
 - name: "Copy MySQL defaults config file"
-  copy:
+  ansible.builtin.copy:
     src: evolinux-defaults.cnf
     dest: "{{ mysql_config_directory }}/z-evolinux-defaults.cnf"
     owner: root
@@ -15,7 +15,7 @@
     - mysql
 
 - name: "Copy MySQL custom config file"
-  template:
+  ansible.builtin.template:
     src: evolinux-custom.cnf.j2
     dest: "{{ mysql_config_directory }}/zzz-evolinux-custom.cnf"
     owner: root

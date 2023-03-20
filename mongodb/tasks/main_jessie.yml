@@ -1,19 +1,19 @@
 ---
 
 - name: Look for legacy apt keyring
-  stat:
+  ansible.builtin.stat:
     path: /etc/apt/trusted.gpg
   register: _trusted_gpg_keyring
 
 - name: MongoDB embedded GPG key is absent
-  apt_key:
+  ansible.builtin.apt_key:
     id: "B8612B5D"
     keyring: /etc/apt/trusted.gpg
     state: absent
   when: _trusted_gpg_keyring.stat.exists
 
 - name: Add MongoDB GPG key
-  copy:
+  ansible.builtin.copy:
     src: "server-{{ mongodb_version }}.asc"
     dest: "/etc/apt/trusted.gpg.d/mongodb-server-{{ mongodb_version }}.asc"
     force: yes
@@ -22,39 +22,39 @@
     group: root
 
 - name: Enable APT sources list
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: "deb http://repo.mongodb.org/apt/debian jessie/mongodb-org/{{ mongodb_version }} main"
     state: present
     filename: "mongodb-org-{{ mongodb_version }}"
     update_cache: yes
 
 - name: Disable APT sources list
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: "deb http://repo.mongodb.org/apt/debian jessie/mongodb-org/{{ mongodb_version }} main"
     state: absent
     filename: "mongodb-org-{{ mongodb_version }}"
     update_cache: yes
 
 - name: Install packages
-  apt:
+  ansible.builtin.apt:
     name: mongodb-org
     allow_unauthenticated: yes
     state: present
 
 - name: install dependency for monitoring
-  apt:
+  ansible.builtin.apt:
     name: python-pymongo
     state: present
 
 - name: Custom configuration
-  template:
+  ansible.builtin.template:
     src: mongod_jessie.conf.j2
     dest: "/etc/mongod.conf"
     force: "{{ mongodb_force_config | bool | ternary('yes', 'no') }}"
   notify: restart mongod
 
 - name: Configure logrotate
-  template:
+  ansible.builtin.template:
     src: logrotate_jessie.j2
     dest: /etc/logrotate.d/mongodb
     force: yes

@@ -1,22 +1,22 @@
 ---
 
-- include_role:
+- ansible.builtin.include_role:
     name: remount-usr
 
 - name: Create local munin directory
-  file:
+  ansible.builtin.file:
     name: /usr/local/share/munin/
     state: directory
     mode: "0755"
 
 - name: Create plugin directory
-  file:
+  ansible.builtin.file:
     name: /usr/local/share/munin/plugins/
     state: directory
     mode: "0755"
 
 - name: Get Munin plugins
-  get_url:
+  ansible.builtin.get_url:
     url: "https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/libvirt/{{ item }}"
     dest: "/usr/local/share/munin/plugins/"
     mode: "0755"
@@ -28,7 +28,7 @@
   notify: restart munin-node
 
 - name: Enable Munin plugins
-  file:
+  ansible.builtin.file:
     src: "/usr/local/share/munin/plugins/{{ plugin_name }}"
     dest: "/etc/munin/plugins/{{ plugin_name }}"
     state: link
@@ -42,7 +42,7 @@
   notify: restart munin-node
 
 - name: Copy Munin plugins conf
-  copy:
+  ansible.builtin.copy:
     src: files/munin-plugins
     dest: "/etc/munin/plugin-conf.d/kvm"
     mode: "0644"

@@ -1,6 +1,6 @@
 ---
-- include: check.yml
-- include: user.yml
-- include: systemd.yml
-- include: alias.yml
-- include: bootstrap.yml
+- ansible.builtin.include: check.yml
+- ansible.builtin.include: user.yml
+- ansible.builtin.include: systemd.yml
+- ansible.builtin.include: alias.yml
+- ansible.builtin.include: bootstrap.yml

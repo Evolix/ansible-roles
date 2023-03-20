@@ -1,6 +1,6 @@
 ---
 - name: Install evoadminmail VHost
-  template:
+  ansible.builtin.template:
     src: apache_evoadminmail.conf.j2
     dest: /etc/apache2/sites-available/evoadminmail.conf
   notify: reload apache2
@@ -8,7 +8,7 @@
     - evoadmin-mail
 
 - name: Enable evoadminmail vhost
-  file:
+  ansible.builtin.file:
     src: "/etc/apache2/sites-available/evoadminmail.conf"
     dest: "/etc/apache2/sites-enabled/evoadminmail.conf"
     state: link
@@ -18,7 +18,7 @@
     - evoadmin-mail
 
 - name: Disable evoadminmail vhost
-  file:
+  ansible.builtin.file:
     dest: "/etc/apache2/sites-enabled/evoadminmail.conf"
     state: absent
   notify: reload apache2

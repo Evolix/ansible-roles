@@ -1,19 +1,19 @@
 ---
 - name: Intall monitorings plugins
-  apt:
+  ansible.builtin.apt:
     name: monitoring-plugins
     state: present
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - name: Create Nagios plugins dir
-  file:
+  ansible.builtin.file:
     path: /usr/local/lib/nagios/plugins
     state: directory
 
 - name: Copy Tomcat instance check
-  template:
+  ansible.builtin.template:
     src: check_tomcat_instance.sh.j2
     dest: /usr/local/lib/nagios/plugins/check_tomcat_instance.sh
     mode: "0755"

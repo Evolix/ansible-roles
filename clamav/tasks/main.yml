@@ -1,6 +1,6 @@
 ---
 - name: configure clamav-daemon
-  debconf:
+  ansible.builtin.debconf:
     name: clamav-daemon
     question: "{{ item.key }}"
     value: "{{ item.value }}"
@@ -52,7 +52,7 @@
   - clamav
 
 - name: configure clamav-freshclam
-  debconf:
+  ansible.builtin.debconf:
     name: clamav-freshclam
     question: "{{ item.key }}"
     value: "{{ item.value }}"
@@ -73,7 +73,7 @@
   - clamav
 
 - name: install ClamAV
-  apt:
+  ansible.builtin.apt:
     name:
       - clamav-daemon
       - clamav
@@ -92,7 +92,7 @@
   - clamav
 
 - name: add clamav user to amavis group
-  user:
+  ansible.builtin.user:
     name: clamav
     groups: amavis
     append: True
@@ -100,7 +100,7 @@
   - clamav
 
 - name: allow supplementary groups
-  replace:
+  ansible.builtin.replace:
     dest: /etc/clamav/clamd.conf
     regexp: 'AllowSupplementaryGroups false'
     replace: 'AllowSupplementaryGroups true'

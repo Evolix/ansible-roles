@@ -1,14 +1,14 @@
 ---
 
 - name: 'Copy MySQL configuration for replication'
-  template:
+  ansible.builtin.template:
     src: 'replication.cnf.j2'
     dest: "{{ mysql_config_directory }}/zzzz-replication.cnf"
     mode: "0644"
   notify: 'restart mysql'
 
 - name: 'Create repl user'
-  mysql_user:
+  community.mysql.mysql_user:
     name: 'repl'
     host: '%'
     encrypted: true
@@ -20,22 +20,22 @@
   when: mysql_repl_password | length > 0
 
 - name: 'Install xinetd'
-  apt:
+  ansible.builtin.apt:
     name: 'xinetd'
 
 - name: 'Add xinetd configuration for MySQL HAProxy check'
-  copy:
+  ansible.builtin.copy:
     src: 'xinetd/mysqlchk'
     dest: '/etc/xinetd.d/'
     mode: '0644'
   notify: 'restart xinetd'
 
 # /!\ Warning, this is a temporary hack
-- include_role:
+- ansible.builtin.include_role:
     name: remount-usr
 
 - name: 'Copy mysqlchk script'
-  copy:
+  ansible.builtin.copy:
     src: 'xinetd/mysqlchk.sh'
     dest: '/usr/share/scripts/'
     mode: '0755'

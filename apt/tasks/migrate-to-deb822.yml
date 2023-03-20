@@ -1,9 +1,9 @@
 ---
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - name: /usr/share/scripts exists
-  file:
+  ansible.builtin.file:
     dest: /usr/share/scripts
     mode: "0700"
     owner: root
@@ -13,7 +13,7 @@
     - apt
 
 - name: Migration scripts are installed
-  copy:
+  ansible.builtin.copy:
     src: "{{ item  }}"
     dest: "/usr/share/scripts/{{ item  }}"
     force: yes
@@ -25,7 +25,8 @@
     - apt
 
 - name: Exec migration script
-  command: /usr/share/scripts/deb822-migration.sh
+  ansible.builtin.command:
+    cmd: /usr/share/scripts/deb822-migration.sh
   ignore_errors: yes
   tags:
     - apt

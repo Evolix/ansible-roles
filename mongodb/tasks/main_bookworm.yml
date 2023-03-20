@@ -1,6 +1,6 @@
 ---
 
-- fail:
+- ansible.builtin.fail:
     msg: MongoDB is not compatible with Debian 12 (Bookworm)
   when:
   - ansible_distribution_release == "bookworm"
@@ -30,48 +30,48 @@
   register: _mongodb_install_package
 
 - name: MongoDB service in enabled and started
-  systemd:
+  ansible.builtin.systemd:
     name: mongod
     enabled: yes
     state: started
   when: _mongodb_install_package is changed
 
 - name: install dependency for monitoring
-  apt:
+  ansible.builtin.apt:
     name: python3-pymongo
     state: present
 
 - name: Custom configuration
-  template:
+  ansible.builtin.template:
     src: mongodb_bullseye.conf.j2
     dest: "/etc/mongod.conf"
     force: "{{ mongodb_force_config | bool | ternary('yes', 'no') }}"
   notify: restart mongod
 
 - name: Configure logrotate
-  template:
+  ansible.builtin.template:
     src: logrotate_bullseye.j2
     dest: /etc/logrotate.d/mongodb
     force: yes
     backup: no
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - name: Create plugin directory
-  file:
+  ansible.builtin.file:
     name: /usr/local/share/munin/
     state: directory
     mode: "0755"
 
 - name: Create plugin directory
-  file:
+  ansible.builtin.file:
     name: /usr/local/share/munin/plugins/
     state: directory
     mode: "0755"
 
 - name: Munin plugins are present
-  copy:
+  ansible.builtin.copy:
     src: "munin/{{ item }}"
     dest: '/usr/local/share/munin/plugins/{{ item }}'
     force: yes
@@ -87,7 +87,7 @@
   notify: restart munin-node
 
 - name: Enable core Munin plugins
-  file:
+  ansible.builtin.file:
     src: '/usr/local/share/munin/plugins/{{ item }}'
     dest: /etc/munin/plugins/{{ item }}
     state: link

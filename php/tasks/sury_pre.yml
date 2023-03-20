@@ -1,13 +1,13 @@
 ---
 
 - name: Setup deb.sury.org repository - Install apt-transport-https
-  apt:
+  ansible.builtin.apt:
     name: apt-transport-https
     state: present
   when: ansible_distribution_major_version is version('10', '<')
 
 - name: copy pub.evolix.org GPG key
-  copy:
+  ansible.builtin.copy:
     src: pub_evolix.asc
     dest: "{{ apt_keyring_dir }}/pub_evolix.asc"
     mode: "0644"
@@ -15,7 +15,7 @@
     group: root
 
 - name: Setup pub.evolix.org repository - Add source list
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: "deb [signed-by={{ apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix {{ ansible_distribution_release }}-php81 main"
     filename: evolix-php
     state: present
@@ -23,14 +23,14 @@
     - ansible_distribution_release == "bullseye"
 
 - name: Setup deb.sury.org repository - Add preferences file
-  copy:
+  ansible.builtin.copy:
     src: sury.preferences
     dest: /etc/apt/preferences.d/z-sury
   when:
     - ansible_distribution_release != "bullseye"
 
 - name: Setup deb.sury.org repository - Add GPG key
-  copy:
+  ansible.builtin.copy:
     src: sury.gpg
     dest: "{{ apt_keyring_dir }}/sury.gpg"
     mode: "0644"
@@ -38,7 +38,7 @@
     group: root
 
 - name: Add Sury repository (Debian <12)
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: "deb [signed-by={{ apt_keyring_dir }}/sury.gpg] https://packages.sury.org/php/ {{ ansible_distribution_release }} main"
     filename: sury
     state: present
@@ -54,12 +54,12 @@
   when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Update APT cache
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
   when: sury_sources is changed
 
 - name: "Override package list for Sury (Debian 9 or later)"
-  set_fact:
+  ansible.builtin.set_fact:
     php_stretch_packages:
       - php{{ php_version }}-cli
       - php{{ php_version }}-gd

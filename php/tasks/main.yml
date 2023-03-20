@@ -1,23 +1,23 @@
 ---
 
-- assert:
+- ansible.builtin.assert:
     that:
       - ansible_distribution == "Debian"
       - ansible_distribution_major_version is version('8', '>=')
       - ansible_distribution_major_version is version('12', '<=')
     msg: This is only compatible with Debian 8 → 12
 
-- include_tasks: main_jessie.yml
+- ansible.builtin.include_tasks: main_jessie.yml
   when: ansible_distribution_release == "jessie"
 
-- include_tasks: main_stretch.yml
+- ansible.builtin.include_tasks: main_stretch.yml
   when: ansible_distribution_release == "stretch"
 
-- include_tasks: main_buster.yml
+- ansible.builtin.include_tasks: main_buster.yml
   when: ansible_distribution_release == "buster"
 
-- include_tasks: main_bullseye.yml
+- ansible.builtin.include_tasks: main_bullseye.yml
   when: ansible_distribution_release == "bullseye"
 
-- include_tasks: main_bookworm.yml
+- ansible.builtin.include_tasks: main_bookworm.yml
   when: ansible_distribution_release == "bookworm"

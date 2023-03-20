@@ -1,10 +1,10 @@
 ---
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - name: Create CSR dir
-  file:
+  ansible.builtin.file:
     path: "{{ evoacme_csr_dir }}"
     state: directory
     owner: root
@@ -12,7 +12,7 @@
     mode: "0755"
 
 - name: Copy make-csr.sh script
-  copy:
+  ansible.builtin.copy:
     src: make-csr.sh
     dest: /usr/local/sbin/make-csr
     owner: root
@@ -20,7 +20,7 @@
     mode: "0755"
 
 - name: Copy vhost-domains.sh script
-  copy:
+  ansible.builtin.copy:
     src: vhost-domains.sh
     dest: /usr/local/sbin/vhost-domains
     owner: root
@@ -28,7 +28,7 @@
     mode: "0755"
 
 - name: Copy evoacme script
-  copy:
+  ansible.builtin.copy:
     src: evoacme.sh
     dest: /usr/local/sbin/evoacme
     owner: root
@@ -36,7 +36,7 @@
     mode: "0755"
 
 - name: Delete scripts in old location
-  file:
+  ansible.builtin.file:
     path: "/usr/local/bin/{{ item }}"
     state: absent
   loop:

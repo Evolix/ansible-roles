@@ -1,11 +1,11 @@
 ---
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   when: elasticsearch_additional_scripts_dir is search("/usr")
 
 - name: "{{ elasticsearch_additional_scripts_dir }} exists"
-  file:
+  ansible.builtin.file:
     dest: "{{ elasticsearch_additional_scripts_dir }}"
     mode: "0700"
     owner: root
@@ -13,7 +13,7 @@
     state: directory
 
 - name: Plugins upgrade script is installed
-  copy:
+  ansible.builtin.copy:
     src: upgrade_elasticsearch_plugins.sh
     dest: "{{ elasticsearch_additional_scripts_dir }}/upgrade_elasticsearch_plugins.sh"
     mode: "0755"

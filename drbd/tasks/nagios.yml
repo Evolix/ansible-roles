@@ -1,21 +1,21 @@
 ---
 
 - name: Check if Nagios is installed
-  stat:
+  ansible.builtin.stat:
     path: /usr/local/lib/nagios/plugins/
   register: nagios_plugins_dir
   check_mode: no
   tags:
   - drbd
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   tags:
   - drbd
 
 # https://exchange.nagios.org/components/com_mtree/attachment.php?link_id=3367&cf_id=30
 - name: Install Nagios plugin
-  copy:
+  ansible.builtin.copy:
     src: "nagios/check_drbd"
     dest: "/usr/local/lib/nagios/plugins/check_drbd"
     mode: "0755"

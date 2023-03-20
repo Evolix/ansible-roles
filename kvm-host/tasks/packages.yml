@@ -1,7 +1,7 @@
 ---
 
 - name: Install packages for kvm/libvirt
-  apt:
+  ansible.builtin.apt:
     name:
       - qemu-kvm
       - netcat-openbsd
@@ -14,7 +14,7 @@
     state: present
 
 - name: Install packages for kvmstats
-  apt:
+  ansible.builtin.apt:
     name:
       - dialog
       - html-xml-utils

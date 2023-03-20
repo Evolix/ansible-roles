@@ -1,28 +1,29 @@
 ---
 - name: apg package is installed
-  apt:
+  ansible.builtin.apt:
     name: apg
     state: present
 
 - name: Generate random password for nrpe user
-  command: apg -n1 -m 12 -M SCNL
+  ansible.builtin.command:
+    cmd: apg -n1 -m 12 -M SCNL
   register: postgresql_nrpe_password
   changed_when: False
 
 - name: python-psycopg2 is installed (Ansible dependency)
-  apt:
+  ansible.builtin.apt:
     name: python-psycopg2
     state: present
   when: ansible_python_version is version('3', '<')
 
 - name: python3-psycopg2 is installed (Ansible dependency)
-  apt:
+  ansible.builtin.apt:
     name: python3-psycopg2
     state: present
   when: ansible_python_version is version('3', '>=')
 
 - name: Is nrpe present ?
-  stat:
+  ansible.builtin.stat:
     path: /etc/nagios/nrpe.d/evolix.cfg
   register: nrpe_evolix_config
 
@@ -30,7 +31,7 @@
   - name: Create nrpe user
     become: yes
     become_user: postgres
-    postgresql_user:
+    community.postgresql.postgresql_user:
       name: nrpe
       password: '{{ postgresql_nrpe_password.stdout }}'
       encrypted: yes
@@ -39,7 +40,7 @@
     when: nrpe_evolix_config.stat.exists
 
   - name: Add NRPE check
-    lineinfile:
+    ansible.builtin.lineinfile:
       name: /etc/nagios/nrpe.d/evolix.cfg
       regexp: '^command\[check_pgsql\]='
       line: 'command[check_pgsql]=/usr/lib/nagios/plugins/check_pgsql -H localhost -l nrpe -p "{{ postgresql_nrpe_password.stdout }}"'

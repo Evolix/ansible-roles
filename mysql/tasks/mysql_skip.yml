@@ -1,7 +1,7 @@
 ---
 
 - name: "Copy script mysql_skip.sh into /usr/local/bin/"
-  copy:
+  ansible.builtin.copy:
     src: mysql_skip.sh
     dest: "/usr/local/bin/mysql_skip.sh"
     owner: root
@@ -12,7 +12,7 @@
     - mysql_skip
 
 - name: "Copy config file for mysql_skip.sh"
-  template:
+  ansible.builtin.template:
     src: mysql_skip.conf.j2
     dest: "/etc/mysql_skip.conf"
     owner: root
@@ -22,7 +22,7 @@
     - mysql_skip
 
 - name: "Create log file for mysql_skip.sh"
-  file:
+  ansible.builtin.file:
     path: "/var/log/mysql_skip.log"
     state: touch
     owner: root
@@ -32,7 +32,7 @@
     - mysql_skip
 
 - name: "Copy logrotate file for mysql_skip.sh"
-  template:
+  ansible.builtin.template:
     src: mysql_skip.logrotate.j2
     dest: "/etc/logrotate.d/mysql_skip"
     owner: root
@@ -42,13 +42,13 @@
     - mysql_skip
 
 - name: "Copy mysql_skip.sh systemd unit"
-  template:
+  ansible.builtin.template:
     src: mysql_skip.systemd.j2
     dest: /etc/systemd/system/mysql_skip.service
     force: yes
 
 - name: "Start or stop systemd unit"
-  systemd:
+  ansible.builtin.systemd:
     name: mysql_skip
     daemon_reload: yes
     state: "{{ mysql_skip_enabled | bool | ternary('started', 'stopped') }}"

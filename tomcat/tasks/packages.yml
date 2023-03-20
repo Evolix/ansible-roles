@@ -1,35 +1,35 @@
 ---
 
 - name: Set Tomcat version to 7 on Debian 8 if missing
-  set_fact:
+  ansible.builtin.set_fact:
     tomcat_version: 7
   when:
     - ansible_distribution_release == "jessie"
     - tomcat_version is not defined
 
 - name: Set Tomcat version to 8 on Debian 9 if missing
-  set_fact:
+  ansible.builtin.set_fact:
     tomcat_version: 8
   when:
     - ansible_distribution_release == "stretch"
     - tomcat_version is not defined
 
 - name: Set Tomcat version to 9 on Debian 10 if missing
-  set_fact:
+  ansible.builtin.set_fact:
     tomcat_version: 9
   when:
     - ansible_distribution_release == "buster"
     - tomcat_version is not defined
 
 - name: Set Tomcat version to 9 on Debian 11 if missing
-  set_fact:
+  ansible.builtin.set_fact:
     tomcat_version: 9
   when:
     - ansible_distribution_release == "bullseye"
     - tomcat_version is not defined
 
 - name: Install packages
-  apt:
+  ansible.builtin.apt:
     name:
       - "tomcat{{ tomcat_version }}"
       - "tomcat{{ tomcat_version }}-user"
@@ -37,7 +37,7 @@
     state: present
 
 - name: Create tomcat root dir
-  file:
+  ansible.builtin.file:
     path: "{{ tomcat_instance_root }}"
     state: directory
     owner: "{{ tomcat_root_dir_owner | default('root') }}"
@@ -45,13 +45,13 @@
     mode: "0755"
 
 - name: Copy systemd unit
-  template:
+  ansible.builtin.template:
     src: 'tomcat.service.j2'
     dest: "/etc/systemd/user/tomcat.service"
     mode: "0755"
 
 - name: Disable default tomcat service
-  service:
+  ansible.builtin.service:
     name: "tomcat{{ tomcat_version }}"
     state: stopped
     enabled: false

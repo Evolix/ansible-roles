@@ -1,10 +1,10 @@
 ---
 - name: reload opendkim
-  systemd:
+  ansible.builtin.systemd:
     name: opendkim
     state: reloaded
 
 - name: restart opendkim
-  systemd:
+  ansible.builtin.systemd:
     name: opendkim
     state: restarted

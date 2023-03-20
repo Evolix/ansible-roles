@@ -5,18 +5,18 @@
     lxc_apt_keyring_dir: /etc/apt/trusted.gpg.d
 
 - name: "{{ lxc_php_version }} - Install dependency packages"
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt install -y wget gnupg"
 
 - name: "{{ lxc_php_version }} - fix bullseye repository"
-  replace:
+  ansible.builtin.replace:
     dest: "{{ lxc_rootfs }}/etc/apt/sources.list"
     regexp: 'bullseye/updates'
     replace: 'bullseye-security'
 
 - name: "{{ lxc_php_version }} - Add sury repo"
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/sury.list"
     line: "{{ item }}"
     state: present
@@ -27,7 +27,7 @@
     - "deb [signed-by={{ lxc_apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix bullseye-php81 main"
 
 - name: copy pub.evolix.net GPG key
-  copy:
+  ansible.builtin.copy:
     src: pub_evolix.asc
     dest: "{{ lxc_rootfs }}{{ lxc_apt_keyring_dir }}/pub_evolix.asc"
     mode: "0644"
@@ -35,7 +35,7 @@
     group: root
 
 - name: copy packages.sury.org GPG Key
-  copy:
+  ansible.builtin.copy:
     src: sury.gpg
     dest: "{{ lxc_rootfs }}{{ lxc_apt_keyring_dir }}/sury.gpg"
     mode: "0644"
@@ -43,17 +43,17 @@
     group: root
 
 - name: "{{ lxc_php_version }} - Update APT cache"
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt update"
 
 - name: "{{ lxc_php_version }} - Install PHP packages"
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer"
 
 - name: "{{ lxc_php_version }} - Copy evolinux PHP configuration"
-  template:
+  ansible.builtin.template:
     src: z-evolinux-defaults.ini.j2
     dest: "{{ line_item }}"
     mode: "0644"
@@ -64,4 +64,4 @@
   loop_control:
     loop_var: line_item
 
-- include: "mail_opensmtpd.yml"
+- ansible.builtin.include: "mail_opensmtpd.yml"

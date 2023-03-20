@@ -5,7 +5,7 @@
   when: lxc_php_version is none
 
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/lxc
   vars:
     lxc_containers:

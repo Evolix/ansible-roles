@@ -1,17 +1,17 @@
 ---
 
-- set_fact:
+- ansible.builtin.set_fact:
     minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | bool | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
 
 - name: Is minifirewall installed?
-  stat:
+  ansible.builtin.stat:
     path: /etc/default/minifirewall
   register: minifirewall_default_file
   tags:
     - evomaintenance
 
 - name: minifirewall section for evomaintenance
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/default/minifirewall
     line: "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s {{ item }} -m state --state ESTABLISHED,RELATED -j ACCEPT"
     insertafter: "^# EvoMaintenance"
@@ -22,7 +22,7 @@
     - evomaintenance
 
 - name: remove minifirewall example rule for the proxy
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/default/minifirewall
     regexp: '^#.*(--sport 5432).*(-s X\.X\.X\.X)'
     state: absent
@@ -32,7 +32,8 @@
     - evomaintenance
 
 - name: Force restart minifirewall
-  command: /bin/true
+  ansible.builtin.command:
+    cmd: /bin/true
   notify: restart minifirewall
   when: minifirewall_restart_force | bool
   tags:

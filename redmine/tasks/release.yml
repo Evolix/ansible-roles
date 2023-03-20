@@ -1,6 +1,7 @@
 ---
 - name: Get id of user
-  command: "id -u {{ redmine_user }}"
+  ansible.builtin.command:
+    cmd: "id -u {{ redmine_user }}"
   register: redmine_command_user_id
   changed_when: False
   check_mode: False
@@ -8,7 +9,7 @@
     - redmine
 
 - name: Define user environment
-  set_fact:
+  ansible.builtin.set_fact:
     user_env:
       XDG_RUNTIME_DIR: "/run/user/{{ redmine_command_user_id.stdout }}"
       RAILS_ENV: production
@@ -16,7 +17,7 @@
     - redmine
 
 - name: Stop puma service
-  systemd:
+  ansible.builtin.systemd:
     name: puma
     daemon_reload: yes
     state: stopped
@@ -27,7 +28,7 @@
     - redmine
 
 - name: Create mysqldump directory
-  file:
+  ansible.builtin.file:
     path: "/home/{{ redmine_user }}/mysqldump"
     state: directory
     owner: "{{ redmine_user }}"
@@ -37,7 +38,7 @@
     - redmine
 
 - name: Dump mysql database
-  mysql_db:
+  community.mysql.mysql_db:
     state: dump
     config_file: "/home/{{ redmine_user }}/.my.cnf"
     name: "{{ redmine_db_name }}"
@@ -46,7 +47,7 @@
     - redmine
 
 - name: Change www link
-  file:
+  ansible.builtin.file:
     state: link
     src: "/home/{{ redmine_user }}/releases/{{ redmine_version }}"
     dest: "/home/{{ redmine_user }}/www"
@@ -56,7 +57,8 @@
     - redmine
 
 - name: Update Gemfile.lock
-  command: "~/.rbenv/bin/rbenv exec bundle lock"
+  ansible.builtin.command:
+    cmd: "~/.rbenv/bin/rbenv exec bundle lock"
   args:
     chdir: "/home/{{ redmine_user }}/www"
   become_user: "{{ redmine_user }}"
@@ -65,7 +67,8 @@
     - redmine
 
 - name: Update local gems with bundle
-  command: "~/.rbenv/bin/rbenv exec bundle install --deployment"
+  ansible.builtin.command:
+    cmd: "~/.rbenv/bin/rbenv exec bundle install --deployment"
   args:
     chdir: "/home/{{ redmine_user }}/www"
   become_user: "{{ redmine_user }}"
@@ -74,7 +77,8 @@
     - redmine
 
 - name: Generate secret token
-  command: "~/.rbenv/bin/rbenv exec bundle exec rake -q generate_secret_token"
+  ansible.builtin.command:
+    cmd: "~/.rbenv/bin/rbenv exec bundle exec rake -q generate_secret_token"
   args:
     chdir: "/home/{{ redmine_user }}/www"
     creates: "/home/{{ redmine_user }}/www/config/initializers/secret_token.rb"
@@ -84,7 +88,8 @@
     - redmine
 
 - name: Migrate database with rake
-  command: "~/.rbenv/bin/rbenv exec bundle exec rake -q db:migrate"
+  ansible.builtin.command:
+    cmd: "~/.rbenv/bin/rbenv exec bundle exec rake -q db:migrate"
   args:
     chdir: "/home/{{ redmine_user }}/www/"
   become_user: "{{ redmine_user }}"
@@ -93,7 +98,8 @@
     - redmine
 
 - name: Populate Mysql database
-  command: "~/.rbenv/bin/rbenv exec bundle exec rake -q redmine:load_default_data REDMINE_LANG=fr"
+  ansible.builtin.command:
+    cmd: "~/.rbenv/bin/rbenv exec bundle exec rake -q redmine:load_default_data REDMINE_LANG=fr"
   args:
     chdir: "/home/{{ redmine_user }}/www/"
   become_user: "{{ redmine_user }}"
@@ -103,7 +109,8 @@
     - redmine
 
 - name: Migrate plugins
-  command: "~/.rbenv/bin/rbenv exec bundle exec rake -q redmine:plugins:migrate"
+  ansible.builtin.command:
+    cmd: "~/.rbenv/bin/rbenv exec bundle exec rake -q redmine:plugins:migrate"
   args:
     chdir: "/home/{{ redmine_user }}/www/"
   become_user: "{{ redmine_user }}"
@@ -112,7 +119,7 @@
     - redmine
 
 - name: Start puma service
-  systemd:
+  ansible.builtin.systemd:
     name: puma
     daemon_reload: yes
     state: started

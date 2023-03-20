@@ -1,6 +1,6 @@
 ---
 - name: Copy SSL certificate
-  copy:
+  ansible.builtin.copy:
     src: "ssl/{{ ssl_cert }}.pem"
     dest: "/etc/ssl/certs/{{ ssl_cert }}.pem"
     mode: "0644"
@@ -9,7 +9,7 @@
     - ssl
 
 - name: Copy SSL key
-  copy:
+  ansible.builtin.copy:
     src: "ssl/{{ ssl_cert }}.key"
     dest: "/etc/ssl/private/{{ ssl_cert }}.key"
     mode: "0640"
@@ -20,7 +20,7 @@
     - ssl
 
 - name: Copy SSL dhparam
-  copy:
+  ansible.builtin.copy:
     src: "ssl/{{ ssl_cert }}.dhp"
     dest: "/etc/ssl/certs/{{ ssl_cert }}.dhp"
     mode: "0644"
@@ -29,8 +29,8 @@
     - ssl
 
 - name: Check if Haproxy is installed
-  shell: "set -o pipefail && dpkg -l haproxy 2>/dev/null | grep -q -E '^(i|h)i'"
-  args:
+  ansible.builtin.shell:
+    cmd: "set -o pipefail && dpkg -l haproxy 2>/dev/null | grep -q -E '^(i|h)i'"
     executable: /bin/bash
   register: haproxy_check
   check_mode: no
@@ -39,5 +39,5 @@
   tags:
     - ssl
 
-- include: haproxy.yml
+- ansible.builtin.include: haproxy.yml
   when: haproxy_check.rc == 0

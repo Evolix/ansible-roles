@@ -1,7 +1,7 @@
 ---
 
 - name: Evolinux config for APT
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/apt/apt.conf.d/z-evolinux.conf
     line: "{{ item.line }}"
     regexp: "{{ item.regexp }}"
@@ -17,7 +17,7 @@
   when: apt_evolinux_config | bool
 
 - name: DPkg invoke hooks
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/apt/apt.conf.d/z-evolinux.conf
     line: "{{ item }}"
     create: yes
@@ -33,7 +33,7 @@
   when: apt_hooks | bool
 
 - name: Remove Aptitude
-  apt:
+  ansible.builtin.apt:
     name: aptitude
     state: absent
   tags:

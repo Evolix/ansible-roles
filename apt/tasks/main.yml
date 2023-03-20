@@ -1,7 +1,7 @@
 ---
 
 - name: "Compatibility check"
-  assert:
+  ansible.builtin.assert:
     that:
       - ansible_distribution == "Debian"
       - ansible_distribution_major_version is version('8', '>=')
@@ -10,7 +10,7 @@
     - apt
 
 - name: "apt-transport-https is installed for https repositories (before Buster)"
-  apt:
+  ansible.builtin.apt:
     name:
       - apt-transport-https
   tags:
@@ -18,20 +18,20 @@
   when: ansible_distribution_major_version is version('10', '<')
 
 - name: "certificates are installed for https repositories"
-  apt:
+  ansible.builtin.apt:
     name:
       - ca-certificates
   tags:
     - apt
 
 - name: Custom configuration
-  import_tasks: config.yml
+  ansible.builtin.import_tasks: config.yml
   when: apt_config | bool
   tags:
     - apt
 
 - name: Install basics repositories (Debian <12)
-  import_tasks: basics.oneline.yml
+  ansible.builtin.import_tasks: basics.oneline.yml
   tags:
     - apt
   when:
@@ -39,7 +39,7 @@
     - ansible_distribution_major_version is version('12', '<')
 
 - name: Install basics repositories (Debian >=12)
-  import_tasks: basics.deb822.yml
+  ansible.builtin.import_tasks: basics.deb822.yml
   tags:
     - apt
   when:
@@ -47,7 +47,7 @@
     - ansible_distribution_major_version is version('12', '>=')
 
 - name: Install backports repositories (Debian <12)
-  import_tasks: backports.oneline.yml
+  ansible.builtin.import_tasks: backports.oneline.yml
   tags:
     - apt
   when:
@@ -57,7 +57,7 @@
 # With Debian 12+ and the deb822 format of source files
 # backports are always installed but enabled according to `apt_install_backports`
 - name: Install backports repositories (Debian >=12)
-  import_tasks: backports.deb822.yml
+  ansible.builtin.import_tasks: backports.deb822.yml
   tags:
     - apt
   when:
@@ -65,7 +65,7 @@
 
 
 - name: Install Evolix Public repositories (Debian <12)
-  import_tasks: evolix_public.oneline.yml
+  ansible.builtin.import_tasks: evolix_public.oneline.yml
   tags:
     - apt
   when:
@@ -73,7 +73,7 @@
     - ansible_distribution_major_version is version('12', '<')
 
 - name: Install Evolix Public repositories (Debian >=12)
-  import_tasks: evolix_public.deb822.yml
+  ansible.builtin.import_tasks: evolix_public.deb822.yml
   tags:
     - apt
   when:
@@ -81,7 +81,7 @@
     - ansible_distribution_major_version is version('12', '>=')
 
 - name: Clean GANDI sources
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: absent
   loop:
@@ -97,20 +97,20 @@
 
 
 - name: Install check for packages marked hold
-  import_tasks: hold_packages.yml
+  ansible.builtin.import_tasks: hold_packages.yml
   when: apt_install_hold_packages | bool
   tags:
     - apt
 
 - name: Updating APT cache
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
   changed_when: False
   tags:
     - apt
 
 - name: Upgrading system
-  apt:
+  ansible.builtin.apt:
     upgrade: dist
   when: apt_upgrade | bool
   tags:

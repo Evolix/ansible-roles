@@ -3,14 +3,15 @@
 # this check must be repeated for each user
 # even if it's been done before
 - name: verify AllowGroups directive
-  command: "grep -E '^AllowGroups' /etc/ssh/sshd_config"
+  ansible.builtin.command:
+    cmd: "grep -E '^AllowGroups' /etc/ssh/sshd_config"
   changed_when: False
   failed_when: False
   check_mode: no
   register: grep_allowgroups_ssh
 
 - name: "Add AllowGroups sshd directive with '{{ evolinux_ssh_group }}'"
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/ssh/sshd_config
     line: "\nAllowGroups {{ evolinux_ssh_group }}"
     insertafter: 'Subsystem'
@@ -19,7 +20,7 @@
   when: grep_allowgroups_ssh.rc != 0
 
 - name: "Append '{{ evolinux_ssh_group }}' to AllowGroups sshd directive"
-  replace:
+  ansible.builtin.replace:
     dest: /etc/ssh/sshd_config
     regexp: '^(AllowGroups ((?!\b{{ evolinux_ssh_group }}\b).)*)$'
     replace: '\1 {{ evolinux_ssh_group }}'

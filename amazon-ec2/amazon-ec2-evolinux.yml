@@ -9,10 +9,10 @@
     aws_region: ca-central-1
 
   tasks:
-    - include_role:
+    - ansible.builtin.include_role:
         name: evolix/amazon-ec2
         tasks_from: setup.yml
-    - include_role:
+    - ansible.builtin.include_role:
         name: evolix/amazon-ec2
         tasks_from: create-instance.yml
 
@@ -51,7 +51,7 @@
   - mysql
 
   post_tasks:
-  - include_role:
+  - ansible.builtin.include_role:
       name: evolix/etc-git
       tasks_from: commit.yml
     vars:

@@ -6,7 +6,7 @@
 # http://jenkins.mirror.isppower.de/.*
 
 - name: Add Jenkins GPG key
-  copy:
+  ansible.builtin.copy:
     src: jenkins.asc
     dest: "{{ apt_keyring_dir }}/jenkins.asc"
     force: yes
@@ -15,7 +15,7 @@
     group: root
 
 - name: Add Jenkins APT repository (Debian <12)
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: deb [signed-by={{ apt_keyring_dir }}/jenkins.asc] http://pkg.jenkins-ci.org/debian-stable binary/
     filename: jenkins
     update_cache: yes
@@ -30,17 +30,17 @@
   when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Update APT cache
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
   when: jenkins_sources is changed
 
 - name: Install Jenkins
-  apt:
+  ansible.builtin.apt:
     name: jenkins
     state: present
 
 - name: Change Jenkins port
-  replace:
+  ansible.builtin.replace:
     name: /etc/default/jenkins
     regexp: "^HTTP_PORT=.*$"
     replace: "HTTP_PORT=8081"

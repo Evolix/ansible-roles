@@ -1,6 +1,6 @@
 ---
 
 - name: certbot package is installed
-  apt:
+  ansible.builtin.apt:
     name: certbot
     state: latest

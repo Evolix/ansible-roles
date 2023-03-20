@@ -1,10 +1,10 @@
 ---
 
-- set_fact:
+- ansible.builtin.set_fact:
     mysql_config_directory: /etc/mysql/mariadb.conf.d
 
 - name: "Copy MySQL defaults config file (Debian 9 or later)"
-  copy:
+  ansible.builtin.copy:
     src: evolinux-defaults.cnf
     dest: "{{ mysql_config_directory }}/{{ mysql_evolinux_defaults_file }}"
     owner: root
@@ -15,7 +15,7 @@
     - mysql
 
 - name: "Copy MySQL custom config file (Debian 9 or later)"
-  template:
+  ansible.builtin.template:
     src: evolinux-custom.cnf.j2
     dest: "{{ mysql_config_directory }}/{{ mysql_evolinux_custom_file }}"
     owner: root
@@ -26,19 +26,19 @@
     - mysql
 
 - name: "Create a system config directory for systemd overrides (Debian 9 or later)"
-  file:
+  ansible.builtin.file:
     path: /etc/systemd/system/mariadb.service.d
     state: directory
 
 - name: "Override MariaDB systemd unit (Debian 9 or later)"
-  template:
+  ansible.builtin.template:
     src: mariadb.systemd.j2
     dest: /etc/systemd/system/mariadb.service.d/evolinux.conf
     force: yes
   register: mariadb_systemd_override
 
 - name: reload systemd and restart MariaDB
-  systemd:
+  ansible.builtin.systemd:
     name: mysql
     daemon_reload: yes
   notify: "{{ mysql_restart_handler_name }}"

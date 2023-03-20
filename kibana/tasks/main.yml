@@ -1,6 +1,6 @@
 ---
 - name: APT sources
-  import_tasks: apt_sources.yml
+  ansible.builtin.import_tasks: apt_sources.yml
   args:
     apply:
       tags:
@@ -8,7 +8,7 @@
         - packages
 
 - name: Kibana is installed
-  apt:
+  ansible.builtin.apt:
     name: kibana
     state: present
     update_cache: yes
@@ -17,7 +17,7 @@
     - packages
 
 - name: kibana server host configuration
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/kibana/kibana.yml
     line: "server.host: \"{{ kibana_server_host }}\""
     regexp: '^server.host:'
@@ -27,7 +27,7 @@
     - kibana
 
 - name: kibana server basepath configuration
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/kibana/kibana.yml
     line: "server.basePath: \"{{ kibana_server_basepath }}\""
     regexp: '^server.basePath:'
@@ -37,7 +37,7 @@
     - kibana
 
 - name: kibana log destination is present
-  file:
+  ansible.builtin.file:
     dest: /var/log/kibana
     owner: kibana
     group: kibana
@@ -47,7 +47,7 @@
     - kibana
 
 - name: kibana log messages go to custom file
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/kibana/kibana.yml
     line: "logging.dest: \"/var/log/kibana/kibana.log\""
     regexp: '^logging.dest:'
@@ -57,7 +57,7 @@
     - kibana
 
 - name: Kibana service is enabled and started
-  systemd:
+  ansible.builtin.systemd:
     name: kibana
     enabled: yes
     state: started
@@ -65,7 +65,7 @@
     - kibana
 
 - name: Logrotate configuration is enabled
-  copy:
+  ansible.builtin.copy:
     src: logrotate
     dest: /etc/logrotate.d/kibana
     mode: "0644"
@@ -94,7 +94,7 @@
 #       - optimize
 #       - data
 
-- include: proxy_nginx.yml
+- ansible.builtin.include: proxy_nginx.yml
   when: kibana_proxy_nginx | bool
   tags:
     - kibana

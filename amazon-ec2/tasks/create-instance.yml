@@ -1,7 +1,7 @@
 ---
 
 - name: Launch new instance(s)
-  ec2:
+  amazon.aws.ec2:
     state: present
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"
@@ -16,19 +16,19 @@
   register: ec2
 
 - name: Add newly created instance(s) to inventory
-  add_host:
+  ansible.builtin.add_host:
     hostname: "{{ item.public_dns_name }}"
     groupname: launched-instances
     ansible_user: admin
     ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
   loop: "{{ ec2.instances }}"
 
-- debug:
+- ansible.builtin.debug:
     msg: "Your newly created instance is reachable at: {{ item.public_dns_name }}"
   loop: "{{ ec2.instances }}"
 
 - name: Wait for SSH to come up on all instances (give up after 2m)
-  wait_for:
+  ansible.builtin.wait_for:
     state: started
     host: "{{ item.public_dns_name }}"
     port: 22

@@ -1,14 +1,15 @@
 ---
 
 - name: Verify Redis port
-  assert:
+  ansible.builtin.assert:
     that:
       - redis_port | int != 6379
     msg: "If you want to use port 6379, use the default instance, not a named instance."
   when: not (redis_force_instance_port | bool)
 
 - name: "Instance '{{ redis_instance_name }}' group is present"
-  group:
+
+  ansible.builtin.group:
     name: "redis-{{ redis_instance_name }}"
     state: present
     system: True
@@ -16,7 +17,7 @@
     - redis
 
 - name: "Instance '{{ redis_instance_name }}' user is present"
-  user:
+  ansible.builtin.user:
     name: "redis-{{ redis_instance_name }}"
     group: "redis-{{ redis_instance_name }}"
     state: present
@@ -26,7 +27,7 @@
     - redis
 
 - name: "Instance '{{ redis_instance_name }}' config directory is present"
-  file:
+  ansible.builtin.file:
     dest: "{{ redis_conf_dir }}"
     mode: "0750"
     owner: "redis-{{ redis_instance_name }}"
@@ -37,7 +38,7 @@
     - redis
 
 - name: "Instance '{{ redis_instance_name }}' config hooks directories are present"
-  file:
+  ansible.builtin.file:
     dest: "{{ _dir }}"
     mode: "0750"
     owner: "redis-{{ redis_instance_name }}"
@@ -58,7 +59,8 @@
     - redis
 
 - name: "Instance '{{ redis_instance_name }}' hooks examples are present"
-  command: "cp -a /etc/redis/{{ _dir }}/00_example {{ redis_conf_dir }}/{{ _dir }}"
+  ansible.builtin.command:
+    cmd: "cp -a /etc/redis/{{ _dir }}/00_example {{ redis_conf_dir }}/{{ _dir }}"
   args:
     creates: "{{ redis_conf_dir }}/{{ _dir }}/00_example"
   loop:
@@ -75,7 +77,7 @@
     - redis
 
 - name: "Instance '{{ redis_instance_name }}' socket/pid directories are present"
-  file:
+  ansible.builtin.file:
     dest: "{{ _dir }}"
     mode: "0755"
     owner: "redis-{{ redis_instance_name }}"
@@ -91,7 +93,7 @@
     - redis
 
 - name: "Instance '{{ redis_instance_name }}' data/log directories are present"
-  file:
+  ansible.builtin.file:
     dest: "{{ _dir }}"
     mode: "0751"
     owner: "redis-{{ redis_instance_name }}"
@@ -107,7 +109,7 @@
     - redis
 
 - name: "Instance '{{ redis_instance_name }}' log file are present"
-  file:
+  ansible.builtin.file:
     path: "{{ redis_log_dir }}/redis-server.log"
     mode: "660"
     owner: "redis-{{ redis_instance_name }}"
@@ -118,7 +120,7 @@
 
 
 - name: "Instance '{{ redis_instance_name }}' configuration file is present"
-  template:
+  ansible.builtin.template:
     src: redis.conf.j2
     dest: "{{ redis_conf_dir }}/redis.conf"
     mode: "0640"
@@ -129,7 +131,7 @@
     - redis
 
 - name: Systemd template for redis instances is installed (Debian 8)
-  template:
+  ansible.builtin.template:
     src: 'redis-server@jessie.service.j2'
     dest: '/etc/systemd/system/redis-server@.service'
     mode: "0644"
@@ -142,7 +144,7 @@
     - redis
 
 - name: Systemd template for redis instances is installed (Debian 9)
-  template:
+  ansible.builtin.template:
     src: 'redis-server@stretch.service.j2'
     dest: '/etc/systemd/system/redis-server@.service'
     mode: "0644"
@@ -155,7 +157,7 @@
     - redis
 
 - name: Systemd template for redis instances is installed (Debian 10 or later)
-  template:
+  ansible.builtin.template:
     src: 'redis-server@buster.service.j2'
     dest: '/etc/systemd/system/redis-server@.service'
     mode: "0644"
@@ -168,7 +170,7 @@
     - redis
 
 - name: "Instance '{{ redis_instance_name }}' systemd unit is enabled and started"
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ redis_systemd_name }}"
     enabled: yes
     state: started
@@ -177,7 +179,7 @@
     - redis
 
 - name: Redis SysVinit script is stopped and disabled
-  service:
+  ansible.builtin.service:
     name: "redis-server"
     enabled: no
     state: stopped

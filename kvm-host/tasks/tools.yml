@@ -1,17 +1,17 @@
 ---
 
 - name: remove old package
-  apt:
+  ansible.builtin.apt:
     name: kvm-tools
     purge: yes
     state: absent
 
-- include_role:
+- ansible.builtin.include_role:
     name: remount-usr
   when: kvm_scripts_dir is search("/usr")
 
 - name: add-vm script is present
-  copy:
+  ansible.builtin.copy:
     src: add-vm.sh
     dest: "{{ kvm_scripts_dir }}/add-vm"
     mode: "0700"
@@ -20,7 +20,7 @@
     force: yes
 
 - name: migrate-vm script is present
-  copy:
+  ansible.builtin.copy:
     src: migrate-vm.sh
     dest: "{{ kvm_scripts_dir }}/migrate-vm"
     mode: "0700"
@@ -29,7 +29,7 @@
     force: yes
 
 - name: kvmstats script is present
-  copy:
+  ansible.builtin.copy:
     src: kvmstats.sh
     dest: "{{ kvm_scripts_dir }}/kvmstats"
     mode: "0700"
@@ -38,7 +38,7 @@
     force: yes
 
 - name: kvmstats cron is present
-  template:
+  ansible.builtin.template:
     src: kvmstats.cron.j2
     dest: "/etc/cron.hourly/kvmstats"
     mode: "0755"
@@ -46,7 +46,7 @@
     group: root
 
 - name: entry for kvmstats in web page is present
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /var/www/index.html
     insertbefore: '</ul>'
     line: '<li><a href="/kvmstats.html">kvmstats</a></li>'
@@ -55,13 +55,13 @@
 # backward compatibility
 
 - name: remove old migrate-vm script
-  file:
+  ansible.builtin.file:
     path: /usr/share/scripts/migrate-vm
     state: absent
   when: "'/usr/share/scripts' not in kvm_scripts_dir"
 
 - name: remove old kvmstats script
-  file:
+  ansible.builtin.file:
     path: /usr/share/scripts/kvmstats
     state: absent
   when: "'/usr/share/scripts' not in kvm_scripts_dir"

@@ -1,16 +1,16 @@
 - name: Ensure memcached is installed
-  apt:
+  ansible.builtin.apt:
     name: memcached
     state: present
   tags:
     - memcached
 
-- include: instance-default.yml
+- ansible.builtin.include: instance-default.yml
   when: memcached_instance_name is undefined
 
-- include: instance-multi.yml
+- ansible.builtin.include: instance-multi.yml
   when: memcached_instance_name is defined
 
-- include: munin.yml
+- ansible.builtin.include: munin.yml
 
-- include: nrpe.yml
+- ansible.builtin.include: nrpe.yml

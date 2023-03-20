@@ -1,6 +1,6 @@
 ---
 - name: slow transport is defined in master.cf
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/postfix/master.cf
     regexp: "^slow "
     line: "slow      unix     -       -       n       -       -    smtp"
@@ -9,7 +9,7 @@
   - postfix
 
 - name: list of providers for slow transport
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/postfix/transport
     line: "{{ item }}"
     create: yes

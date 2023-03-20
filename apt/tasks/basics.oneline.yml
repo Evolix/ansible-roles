@@ -1,7 +1,7 @@
 ---
 
 - name: Change basics repositories
-  template:
+  ansible.builtin.template:
     src: "{{ ansible_distribution_release }}_basics.list.j2"
     dest: /etc/apt/sources.list
     mode: "0644"
@@ -11,7 +11,7 @@
     - apt
 
 - name: Apt update
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
   tags:
     - apt

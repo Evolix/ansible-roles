@@ -1,6 +1,7 @@
 ---
 - name: Get actual nameserver
-  shell: grep nameserver /etc/resolv.conf | awk '{ print $2 }'
+  ansible.builtin.shell:
+    cmd: grep nameserver /etc/resolv.conf | awk '{ print $2 }'
   register: grep_nameserver
   check_mode: no
   changed_when: False
@@ -8,7 +9,7 @@
   - nameserver
 
 - name: Set nameserver
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/resolv.conf
     line: "nameserver {{ item }}"
     state: present
@@ -17,7 +18,7 @@
   - nameserver
 
 - name: Unset others nameserver
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/resolv.conf
     line: "nameserver {{ item }}"
     state: absent

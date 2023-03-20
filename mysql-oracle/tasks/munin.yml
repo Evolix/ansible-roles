@@ -1,7 +1,7 @@
 ---
 
 - name: is Munin present ?
-  stat:
+  ansible.builtin.stat:
     path: /etc/munin/plugin-conf.d/munin-node
   check_mode: no
   register: munin_node_plugins_config
@@ -11,14 +11,14 @@
 
 - block:
   - name: Install perl libraries for Munin
-    apt:
+    ansible.builtin.apt:
       name:
         - libdbd-mysql-perl
         - libcache-cache-perl
       state: present
 
   - name: Enable core Munin plugins
-    file:
+    ansible.builtin.file:
       src: '/usr/share/munin/plugins/{{ item }}'
       dest: /etc/munin/plugins/{{ item }}
       state: link
@@ -30,7 +30,7 @@
     notify: restart munin-node
 
   - name: Enable contributed Munin plugins
-    file:
+    ansible.builtin.file:
       src: /usr/share/munin/plugins/mysql_
       dest: '/etc/munin/plugins/mysql_{{ item }}'
       state: link

@@ -1,57 +1,57 @@
 ---
 
 - name: Reload PHP-FPM
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "systemctl reload {{ lxc_php_services[lxc_php_version] }}"
 
 - name: Restart PHP-FPM
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "systemctl restart {{ lxc_php_services[lxc_php_version] }}"
 
 - name: Reload php81-fpm
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "systemctl reload php8.1-fpm"
 
 - name: Reload php80-fpm
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "systemctl reload php8.0-fpm"
 
 - name: Reload php74-fpm
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "systemctl reload php7.4-fpm"
 
 - name: Reload php73-fpm
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "systemctl reload php7.3-fpm"
 
 - name: Reload php70-fpm
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "systemctl reload php7.0-fpm"
 
 - name: Reload php56-fpm
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "systemctl reload php5-fpm"
 
 - name: Restart opensmtpd
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "systemctl restart opensmtpd"
 
 - name: Daemon reload
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "systemctl daemon-reload"
 
 - name: Restart container
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     state: restarted
 

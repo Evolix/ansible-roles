@@ -1,8 +1,8 @@
 ---
-- include: packages.yml
-- include: syslog.yml
-- include: user.yml
-- include_role:
+- ansible.builtin.include: packages.yml
+- ansible.builtin.include: syslog.yml
+- ansible.builtin.include: user.yml
+- ansible.builtin.include_role:
     name: evolix/rbenv
   vars:
     - username: "{{ redmine_user }}"

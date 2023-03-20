@@ -1,6 +1,6 @@
 ---
 
-- include: repository.yml
+- ansible.builtin.include: repository.yml
   vars:
     repository_path: "/etc"
     gitignore_items:
@@ -15,18 +15,18 @@
     - etc-git
 
 - name: verify /usr/share/scripts presence
-  stat:
+  ansible.builtin.stat:
     path: /usr/share/scripts
   register: _usr_share_scripts
   tags:
     - etc-git
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   when:
     - _usr_share_scripts.stat.isdir
 
-- include: repository.yml
+- ansible.builtin.include: repository.yml
   vars:
     repository_path: "/usr/share/scripts"
     gitignore_items: []

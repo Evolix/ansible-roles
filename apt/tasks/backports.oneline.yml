@@ -1,6 +1,6 @@
 ---
 - name: No backports config in default sources.list
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/apt/sources.list
     regexp: "backports"
     state: absent
@@ -8,7 +8,7 @@
     - apt
 
 - name: Backports sources list is installed
-  template:
+  ansible.builtin.template:
     src: '{{ ansible_distribution_release }}_backports.list.j2'
     dest: /etc/apt/sources.list.d/backports.list
     force: yes
@@ -18,7 +18,7 @@
     - apt
 
 - name: Backports configuration
-  copy:
+  ansible.builtin.copy:
     src: '{{ ansible_distribution_release }}_backports_preferences'
     dest: /etc/apt/preferences.d/0-backports-defaults
     force: yes
@@ -28,7 +28,7 @@
     - apt
 
 - name: Archived backport are accepted (jessie)
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/apt/apt.conf.d/99no-check-valid-until'
     line: 'Acquire::Check-Valid-Until no;'
     create: yes
@@ -38,7 +38,7 @@
   when: ansible_distribution_release == "jessie"
 
 - name: Apt update
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
   tags:
     - apt

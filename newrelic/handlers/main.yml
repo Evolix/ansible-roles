@@ -1,20 +1,20 @@
 ---
 
 - name: reload squid3
-  service:
+  ansible.builtin.service:
     name: squid3
     state: reloaded
 
 - name: reload squid
-  service:
+  ansible.builtin.service:
     name: squid
     state: reloaded
 
 - name: apt update
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
 
 - name: restart newrelic-sysmond
-  systemd:
+  ansible.builtin.systemd:
     name: newrelic-sysmond
     state: restarted

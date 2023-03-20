@@ -1,7 +1,7 @@
 ---
 
 - name: Is log2mail present ?
-  stat:
+  ansible.builtin.stat:
     path: /etc/log2mail/config
   check_mode: no
   register: log2mail_config_dir
@@ -10,7 +10,7 @@
     - log2mail
 
 - name: Copy log2mail config
-  template:
+  ansible.builtin.template:
     src: log2mail.j2
     dest: /etc/log2mail/config/mysql.conf
     owner: log2mail

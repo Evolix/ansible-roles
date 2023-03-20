@@ -1,16 +1,16 @@
 
 
-- set_fact:
+- ansible.builtin.set_fact:
     nginx_default_package_name: nginx-light
   when: nginx_minimal | bool
 
-- include: packages_backports.yml
+- ansible.builtin.include: packages_backports.yml
   when: nginx_backports | bool
 
 # TODO: install "nginx" + only necessary modules, instead of "nginx-full"
 
 - name: Nginx is installed
-  apt:
+  ansible.builtin.apt:
     name: "{{ nginx_package_name | default(nginx_default_package_name) }}"
     state: present
   tags:

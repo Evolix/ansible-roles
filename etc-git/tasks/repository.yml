@@ -1,11 +1,12 @@
 ---
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   when: repository_path is search("/usr")
 
 - name: "{{ repository_path }} is versioned with git"
-  command: "git init ."
+  ansible.builtin.command:
+    cmd: "git init ."
   args:
     chdir: "{{ repository_path }}"
     creates: "{{ repository_path }}/.git/"
@@ -14,7 +15,7 @@
     - etc-git
 
 - name: Git user.email is configured
-  git_config:
+  community.general.git_config:
     name: user.email
     repo: "{{ repository_path }}"
     scope: local
@@ -23,7 +24,7 @@
     - etc-git
 
 - name: "{{ repository_path }}/.git is restricted to root"
-  file:
+  ansible.builtin.file:
     path: "{{ repository_path }}/.git"
     owner: root
     mode: "0700"
@@ -32,7 +33,7 @@
     - etc-git
 
 - name: "{{ repository_path }}/.gitignore is present"
-  copy:
+  ansible.builtin.copy:
     src: gitignore
     dest: "{{ repository_path }}/.gitignore"
     owner: root
@@ -42,7 +43,7 @@
     - etc-git
 
 - name: "Some entries MUST be in the {{ repository_path }}/.gitignore file"
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ repository_path }}/.gitignore"
     line: "{{ item }}"
   loop: "{{ gitignore_items | default([]) }}"
@@ -50,7 +51,8 @@
     - etc-git
 
 - name: "does {{ repository_path }}/ have any commit?"
-  command: "git log"
+  ansible.builtin.command:
+    cmd: "git log"
   args:
     chdir: "{{ repository_path }}"
   changed_when: False
@@ -61,7 +63,8 @@
     - etc-git
 
 - name: initial commit is present?
-  shell: "git add -A . && git commit -m \"Initial commit via Ansible\""
+  ansible.builtin.shell:
+    cmd: "git add -A . && git commit -m \"Initial commit via Ansible\""
   args:
     chdir: "{{ repository_path }}"
   register: git_commit

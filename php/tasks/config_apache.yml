@@ -1,7 +1,7 @@
 ---
 
 - name: Set default values for PHP
-  ini_file:
+  community.general.ini_file:
     dest: "{{ php_apache_defaults_ini_file }}"
     section: PHP
     option: "{{ item.option }}"
@@ -19,7 +19,7 @@
     - { option: "opcache.max_accelerated_files", value: "8000" }
 
 - name: Disable PHP functions
-  ini_file:
+  community.general.ini_file:
     dest: "{{ php_apache_defaults_ini_file }}"
     section: PHP
     option: disable_functions
@@ -27,7 +27,7 @@
     mode: "0644"
 
 - name: Custom php.ini
-  copy:
+  ansible.builtin.copy:
     dest: "{{ php_apache_custom_ini_file }}"
     content: |
       ; Put customized values here.
@@ -36,7 +36,7 @@
     force: no
 
 - name: "Set custom values for PHP to enable Symfony"
-  ini_file:
+  community.general.ini_file:
     dest: "{{ php_apache_custom_ini_file }}"
     section: PHP
     option: "{{ item.option }}"

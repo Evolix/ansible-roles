@@ -6,23 +6,24 @@
     state: present
 
 - name: Register bantime from default config from package
-  shell: "grep -R -E 'dbpurgeage[[:blank:]]*=[[:blank:]]*[0-9]+' /etc/fail2ban/fail2ban.conf |awk '{print $3}'|head -n1"
+  ansible.builtin.shell:
+    cmd: "grep -R -E 'dbpurgeage[[:blank:]]*=[[:blank:]]*[0-9]+' /etc/fail2ban/fail2ban.conf |awk '{print $3}'|head -n1"
   register: dbpurgeage
   changed_when: False
   check_mode: false
 
 - name:
-  set_fact:
+  ansible.builtin.set_fact:
     dbpurgeage_default : "{{ dbpurgeage.stdout }}"
   when: dbpurgeage.stdout | regex_search("^\\d+\w+$")
 
 - name:
-  set_fact:
+  ansible.builtin.set_fact:
     dbpurgeage_default : "{{ dbpurgeage.stdout }} second"
   when: dbpurgeage.stdout | regex_search("^\\d+$")
 
 - name: Add crontab
-  template:
+  ansible.builtin.template:
     src: fail2ban_dbpurge.j2
     dest: /etc/cron.daily/fail2ban_dbpurge
     mode: 0700

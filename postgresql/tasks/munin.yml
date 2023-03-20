@@ -1,16 +1,16 @@
 ---
 - name: Are Munin plugins present in /etc ?
-  stat:
+  ansible.builtin.stat:
     path: /etc/munin/plugins
   register: etc_munin_plugins
 
 - name: Are Munin plugins present in /usr/share ?
-  stat:
+  ansible.builtin.stat:
     path: /usr/share/munin/plugins
   register: usr_share_munin_plugins
 
 - name: Add Munin plugins for PostgreSQL
-  file:
+  ansible.builtin.file:
     state: link
     src: '/usr/share/munin/plugins/{{ item }}'
     dest: '/etc/munin/plugins/{{ item }}'
@@ -24,7 +24,7 @@
   when: etc_munin_plugins.stat.exists and usr_share_munin_plugins.stat.exists
 
 - name: Add Munin plugins for PostgreSQL (for specific databases)
-  file:
+  ansible.builtin.file:
     state: link
     src: '/usr/share/munin/plugins/{{ item[0] }}'
     dest: '/etc/munin/plugins/{{ item[0] }}{{ item[1] }}'

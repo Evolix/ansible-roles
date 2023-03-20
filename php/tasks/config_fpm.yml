@@ -1,7 +1,7 @@
 ---
 
 - name: Set default php.ini values for FPM
-  ini_file:
+  community.general.ini_file:
     dest: "{{ php_fpm_defaults_ini_file }}"
     section: PHP
     option: "{{ item.option }}"
@@ -20,7 +20,7 @@
   notify: "restart {{ php_fpm_service_name }}"
 
 - name: Disable PHP functions for FPM
-  ini_file:
+  community.general.ini_file:
     dest: "{{ php_fpm_defaults_ini_file }}"
     section: PHP
     option: disable_functions
@@ -28,7 +28,7 @@
   notify: "restart {{ php_fpm_service_name }}"
 
 - name: Custom php.ini for FPM
-  copy:
+  ansible.builtin.copy:
     dest: "{{ php_fpm_custom_ini_file }}"
     content: |
       ; Put customized values here.
@@ -36,7 +36,7 @@
   notify: "restart {{ php_fpm_service_name }}"
 
 - name: Set default PHP FPM values
-  ini_file:
+  community.general.ini_file:
     dest: "{{ php_fpm_default_pool_file }}"
     section: www
     option: "{{ item.option }}"
@@ -60,7 +60,7 @@
   when: ansible_distribution_major_version is version('9', '>=')
 
 - name: Custom PHP FPM values
-  copy:
+  ansible.builtin.copy:
     dest: "{{ php_fpm_default_pool_custom_file }}"
     content: |
       ; Put customized values here.
@@ -70,7 +70,7 @@
   notify: "restart {{ php_fpm_service_name }}"
 
 - name: "Set custom values for PHP to enable Symfony"
-  ini_file:
+  community.general.ini_file:
     dest: "{{ php_cli_custom_ini_file }}"
     section: PHP
     option: "{{ item.option }}"
@@ -82,7 +82,7 @@
   when: php_symfony_requirements | bool
 
 - name: Delete debian default pool
-  file:
+  ansible.builtin.file:
     path: "{{ php_fpm_debian_default_pool_file | mandatory }}"
     state: absent
   notify: "restart {{ php_fpm_service_name }}"

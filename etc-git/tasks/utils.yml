@@ -1,12 +1,12 @@
 ---
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   tags:
     - etc-git
 
 - name: "evocommit script is installed"
-  copy:
+  ansible.builtin.copy:
     src: evocommit
     dest: /usr/local/bin/evocommit
     mode: "0755"
@@ -15,7 +15,7 @@
     - etc-git
 
 - name: "ansible-commit script is installed"
-  copy:
+  ansible.builtin.copy:
     src: ansible-commit
     dest: /usr/local/bin/ansible-commit
     mode: "0755"
@@ -24,7 +24,7 @@
     - etc-git
 
 - name: "etc-git-optimize script is installed"
-  copy:
+  ansible.builtin.copy:
     src: etc-git-optimize
     dest: /usr/share/scripts/etc-git-optimize
     mode: "0755"
@@ -33,7 +33,7 @@
     - etc-git
 
 - name: "etc-git-status script is installed"
-  copy:
+  ansible.builtin.copy:
     src: etc-git-status
     dest: /usr/share/scripts/etc-git-status
     mode: "0755"
@@ -42,8 +42,8 @@
     - etc-git
 
 - name: Check if cron is installed
-  shell: "set -o pipefail && dpkg -l cron 2>/dev/null | grep -q -E '^(i|h)i'"
-  args:
+  ansible.builtin.shell:
+    cmd: "set -o pipefail && dpkg -l cron 2>/dev/null | grep -q -E '^(i|h)i'"
     executable: /bin/bash
   failed_when: False
   changed_when: False
@@ -52,7 +52,7 @@
 
 - block:
   - name: Legacy cron jobs for /etc/.git status are absent
-    file:
+    ansible.builtin.file:
       dest: "{{ item }}"
       state: absent
     loop:
@@ -60,7 +60,7 @@
       - /etc/cron.d/etc-git-status
 
   - name: Cron job for monthly git optimization
-    cron:
+    ansible.builtin.cron:
       name: "Monthly optimization"
       cron_file: etc-git
       special_time: "monthly"
@@ -68,7 +68,7 @@
       job: "/usr/share/scripts/etc-git-optimize"
 
   - name: Cron job for hourly git status
-    cron:
+    ansible.builtin.cron:
       name: "Hourly warning for unclean Git repository if nobody is connected"
       cron_file: etc-git
       special_time: "hourly"
@@ -77,7 +77,7 @@
       state: "{{ etc_git_monitor_status | bool | ternary('present','absent') }}"
 
   - name: Cron job for daily git status
-    cron:
+    ansible.builtin.cron:
       name: "Daily warning for unclean Git repository"
       cron_file: etc-git
       user: root

@@ -1,56 +1,59 @@
 ---
 - name: Install lxc tools
-  apt:
+  ansible.builtin.apt:
     name:
       - lxc
       - debootstrap
       - xz-utils
 
 - name: python-lxc is installed (Debian <= 10)
-  apt:
+  ansible.builtin.apt:
     name: python-lxc
     state: present
   when: ansible_python_version is version('3', '<')
 
 - name: python3-lxc is installed (Debian >= 10)
-  apt:
+  ansible.builtin.apt:
     name: python3-lxc
     state: present
   when: ansible_python_version is version('3', '>=')
 
 - name: Install additional packages (Debian >= 10)
-  apt:
+  ansible.builtin.apt:
     name:
       - apparmor
       - lxc-templates
   when: ansible_distribution_major_version is version('10', '>=')
 
 - name: Copy LXC default containers configuration
-  template:
+  ansible.builtin.template:
     src: default.conf
     dest: /etc/lxc/
 
 - name: Check if root has subuids
-  command: grep '^root:100000:10000$' /etc/subuid
+  ansible.builtin.command:
+    cmd: grep '^root:100000:10000$' /etc/subuid
   failed_when: False
   changed_when: False
   register: root_subuids
   when: lxc_unprivilegied_containers | bool
 
 - name: Add subuid and subgid ranges to root
-  command: usermod -v 100000-199999 -w 100000-109999 root
+  ansible.builtin.command:
+    cmd: usermod -v 100000-199999 -w 100000-109999 root
   when:
     - lxc_unprivilegied_containers | bool
     - root_subuids.rc != 0
 
 - name: Get filesystem options
-  command: findmnt --noheadings --target /var/lib/lxc --output OPTIONS
+  ansible.builtin.command:
+    cmd: findmnt --noheadings --target /var/lib/lxc --output OPTIONS
   changed_when: False
   check_mode: no
   register: check_fs_options
 
 - name: Check if options are correct
-  assert:
+  ansible.builtin.assert:
     that:
       - "'nodev'  not in check_fs_options.stdout"
       - "'noexec' not in check_fs_options.stdout"
@@ -58,7 +61,7 @@
     msg: "LXC directory is in a filesystem with incompatible options"
 
 - name: Create containers
-  include: create-container.yml
+  ansible.builtin.include: create-container.yml
   vars:
     name: "{{ item.name }}"
     release: "{{ item.release }}"

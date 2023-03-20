@@ -1,14 +1,14 @@
 ---
 
-- set_fact:
+- ansible.builtin.set_fact:
     _mysql_scripts_dir: "{{ mysql_scripts_dir | default(general_scripts_dir, True) | mandatory }}"
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   when: _mysql_scripts_dir is search("/usr")
 
 - name: Ensure scripts directory exists
-  file:
+  ansible.builtin.file:
     dest: "{{ _mysql_scripts_dir }}"
     mode: "0700"
     state: directory
@@ -18,7 +18,7 @@
 # mytop
 
 - name: "Install mytop (Debian 8)"
-  apt:
+  ansible.builtin.apt:
     name: mytop
     state: present
   tags:
@@ -28,7 +28,7 @@
   when: ansible_distribution_release == "jessie"
 
 - name: "Install dependencies for mytop (Debian 9)"
-  apt:
+  ansible.builtin.apt:
     name:
       - mariadb-client-10.1
       - libconfig-inifiles-perl
@@ -36,7 +36,7 @@
   when: ansible_distribution_release == "stretch"
 
 - name: "Install dependencies for mytop (Debian 10)"
-  apt:
+  ansible.builtin.apt:
     name:
       - mariadb-client-10.3
       - libconfig-inifiles-perl
@@ -44,7 +44,7 @@
   when: ansible_distribution_release == "buster"
 
 - name: "Install dependencies for mytop (Debian 11)"
-  apt:
+  ansible.builtin.apt:
     name:
       - mariadb-client-10.5
       - libconfig-inifiles-perl
@@ -53,7 +53,7 @@
   when: ansible_distribution_release == "bullseye"
 
 - name: "Install dependencies for mytop (Debian 12 or later)"
-  apt:
+  ansible.builtin.apt:
     name:
       - mariadb-client
       - libconfig-inifiles-perl
@@ -62,7 +62,8 @@
   when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Read debian-sys-maint password (Debian < 11)
-  shell: 'cat /etc/mysql/debian.cnf | grep -m1 "password = .*" | cut -d" " -f3'
+  ansible.builtin.shell:
+    cmd: 'cat /etc/mysql/debian.cnf | grep -m1 "password = .*" | cut -d" " -f3'
   register: mysql_debian_password
   changed_when: False
   check_mode: no
@@ -71,7 +72,7 @@
   when: ansible_distribution_major_version is version('11', '<')
 
 - name: Configure mytop (Debian < 11)
-  template:
+  ansible.builtin.template:
     src: mytop.j2
     dest: /root/.mytop
     mode: "0600"
@@ -82,7 +83,7 @@
   when: ansible_distribution_major_version is version('11', '<')
 
 - name: Configure mytop (Debian >= 11)
-  template:
+  ansible.builtin.template:
     src: mytop.bullseye.j2
     dest: /root/.mytop
     mode: "0600"
@@ -94,7 +95,7 @@
 
 # mysqltuner
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   when: _mysql_scripts_dir is search("/usr")
 
@@ -103,7 +104,7 @@
   #   src: mysqltuner.pl
   #   dest: "{{ _mysql_scripts_dir }}/mysqltuner.pl"
   #   mode: "0700"
-  apt:
+  ansible.builtin.apt:
     name: mysqltuner
     state: present
   tags:
@@ -111,7 +112,7 @@
     - mysqltuner
 
 - name: Install aha
-  apt:
+  ansible.builtin.apt:
     name: aha
   tags:
     - mysql
@@ -119,7 +120,7 @@
 # Percona Toolkit
 
 - name: "Install percona-toolkit (Debian 9 or later)"
-  apt:
+  ansible.builtin.apt:
     name: percona-toolkit
     state: present
   tags:
@@ -130,12 +131,12 @@
 
 # automatic optimizations
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   when: _mysql_scripts_dir is search("/usr")
 
 - name: Optimize script for MySQL
-  copy:
+  ansible.builtin.copy:
     src: mysql-optimize.sh
     dest: "{{ _mysql_scripts_dir }}/mysql-optimize.sh"
     mode: "0700"
@@ -143,7 +144,7 @@
     - mysql
 
 - name: "Cron dir for optimize is present"
-  file:
+  ansible.builtin.file:
     path: "/etc/cron.{{ mysql_cron_optimize_frequency | mandatory }}"
     state: directory
     mode: "0755"
@@ -151,7 +152,7 @@
     group: root
 
 - name: "Enable cron to optimize MySQL"
-  file:
+  ansible.builtin.file:
     src: "{{ _mysql_scripts_dir }}/mysql-optimize.sh"
     dest: /etc/cron.{{ mysql_cron_optimize_frequency | mandatory }}/mysql-optimize.sh
     state: link
@@ -160,7 +161,7 @@
     - mysql
 
 - name: "Disable cron to optimize MySQL"
-  file:
+  ansible.builtin.file:
     dest: /etc/cron.{{ mysql_cron_optimize_frequency | mandatory }}/mysql-optimize.sh
     state: absent
   when: not (mysql_cron_optimize | bool)
@@ -168,7 +169,7 @@
     - mysql
 
 - name: "Cron dir for mysqltuner is present"
-  file:
+  ansible.builtin.file:
     path: "/etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}"
     state: directory
     mode: "0755"
@@ -176,7 +177,7 @@
     group: root
 
 - name: "Enable mysqltuner in cron"
-  copy:
+  ansible.builtin.copy:
     src: mysqltuner.cron.sh
     dest: /etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}/mysqltuner.sh
     mode: "0755"
@@ -185,7 +186,7 @@
     - mysql
 
 - name: "Disable mysqltuner in cron"
-  file:
+  ansible.builtin.file:
     dest: /etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}/mysqltuner.sh
     state: absent
   when: not (mysql_cron_mysqltuner | bool)
@@ -194,12 +195,12 @@
 
 # my-add.sh
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   when: _mysql_scripts_dir is search("/usr")
 
 - name: Install my-add.sh
-  copy:
+  ansible.builtin.copy:
     src: my-add.sh
     dest: "{{ _mysql_scripts_dir }}/my-add.sh"
     mode: "0700"
@@ -208,14 +209,14 @@
     - mysql
 
 - name: Install apg
-  apt:
+  ansible.builtin.apt:
     name: apg
   tags:
     - mysql
     - packages
 
 - name: "Install save_mysql_processlist.sh"
-  copy:
+  ansible.builtin.copy:
     src: save_mysql_processlist.sh
     dest: "{{ _mysql_scripts_dir }}/save_mysql_processlist.sh"
     mode: "0755"
@@ -224,7 +225,7 @@
     - mysql
 
 - name: "Install mysql_connections"
-  copy:
+  ansible.builtin.copy:
     src: mysql_connections.sh
     dest: "{{ _mysql_scripts_dir }}/mysql_connections"
     mode: "0755"
@@ -233,7 +234,7 @@
     - mysql
 
 - name: "Install mysql-queries-killer.sh"
-  copy:
+  ansible.builtin.copy:
     src: mysql-queries-killer.sh
     dest: "{{ _mysql_scripts_dir }}/mysql-queries-killer.sh"
     mode: "0755"
@@ -242,7 +243,7 @@
     - mysql
 
 - name: "Install evomariabackup"
-  copy:
+  ansible.builtin.copy:
     src: evomariabackup.sh
     dest: "{{ _mysql_scripts_dir }}/evomariabackup"
     mode: "0755"

@@ -1,6 +1,6 @@
 ---
 - name: install OpenDKIM
-  apt:
+  ansible.builtin.apt:
     name:
       - opendkim
       - opendkim-tools
@@ -11,7 +11,7 @@
   - opendkim
 
 - name: Add user opendkim in ssl-cert group
-  user:
+  ansible.builtin.user:
     name: opendkim
     groups: ssl-cert
     state: present
@@ -20,7 +20,7 @@
   - opendkim
 
 - name: add 127.0.0.1 to TrustedHosts
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/opendkim/TrustedHosts'
     line: '127.0.0.1'
     create: True
@@ -32,7 +32,7 @@
   - opendkim
 
 - name: create config files
-  file:
+  ansible.builtin.file:
     name: "/etc/opendkim/{{ item }}"
     state: touch
     owner: opendkim
@@ -46,7 +46,7 @@
   - opendkim
 
 - name: copy OpenDKIM config
-  copy:
+  ansible.builtin.copy:
     src: opendkim.conf
     dest: /etc/opendkim.conf
     mode: "0644"
@@ -57,7 +57,7 @@
 
 
 - name: Set folder permissions to 0750
-  file:
+  ansible.builtin.file:
     path: "/etc/opendkim/"
     owner: opendkim
     group: opendkim
@@ -67,18 +67,18 @@
   - opendkim
 
 - name: ensure opendkim is started and enabled
-  systemd:
+  ansible.builtin.systemd:
     name: opendkim
     state: started
     enabled: True
   tags:
   - opendkim
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - name: deploy opendkim-add.sh script
-  copy:
+  ansible.builtin.copy:
     src: opendkim-add.sh
     dest: /usr/share/scripts/opendkim-add.sh
     mode: "0750"

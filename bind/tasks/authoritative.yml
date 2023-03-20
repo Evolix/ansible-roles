@@ -1,7 +1,7 @@
 ---
 
 - name: Set bind configuration for authoritative server
-  template:
+  ansible.builtin.template:
     src: named.conf.options_authoritative.j2
     dest: /etc/bind/named.conf.options
     owner: bind

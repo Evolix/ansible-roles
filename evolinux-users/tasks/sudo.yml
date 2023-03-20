@@ -1,6 +1,6 @@
 ---
 
-- include: sudo_jessie.yml
+- ansible.builtin.include: sudo_jessie.yml
   vars:
     user: "{{ item.value }}"
   loop: "{{ evolinux_users | dict2items }}"
@@ -11,9 +11,9 @@
 
 
 - block:
-  - include: sudo_stretch_common.yml
+  - ansible.builtin.include: sudo_stretch_common.yml
 
-  - include: sudo_stretch_user.yml
+  - ansible.builtin.include: sudo_stretch_user.yml
     vars:
       user: "{{ item.value }}"
     loop: "{{ evolinux_users | dict2items }}"
@@ -24,4 +24,4 @@
     - ansible_distribution_major_version is defined
     - ansible_distribution_major_version is version('9', '>=')
 
-- meta: flush_handlers
+- ansible.builtin.meta: flush_handlers

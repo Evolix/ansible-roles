@@ -1,21 +1,21 @@
 ---
 - name: reload systemd
-  systemd:
+  ansible.builtin.systemd:
     daemon-reload: yes
 
 
 - name: restart apparmor
-  systemd:
+  ansible.builtin.systemd:
     name: apparmor
     state: restarted
 
 - name: restart bind
-  systemd:
+  ansible.builtin.systemd:
     name: bind9
     state: restarted
 
 - name: restart munin-node
-  systemd:
+  ansible.builtin.systemd:
     name: munin-node
     state: restarted
 

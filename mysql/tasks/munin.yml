@@ -1,7 +1,7 @@
 ---
 
 - name: is Munin present ?
-  stat:
+  ansible.builtin.stat:
     path: /etc/munin/plugin-conf.d/munin-node
   check_mode: no
   register: munin_node_plugins_config
@@ -11,7 +11,7 @@
 
 - block:
   - name: "Install perl libraries for Munin (Debian < 11)"
-    apt:
+    ansible.builtin.apt:
       name:
         - libdbd-mysql-perl
         - libcache-cache-perl
@@ -19,14 +19,14 @@
     when: ansible_distribution_major_version is version('11', '<')
 
   - name: "Install perl libraries for Munin (Debian >= 11)"
-    apt:
+    ansible.builtin.apt:
       name:
         - libcache-cache-perl
         - libdbd-mariadb-perl
     when: ansible_distribution_major_version is version('11', '>=')
 
   - name: Enable core Munin plugins
-    file:
+    ansible.builtin.file:
       src: '/usr/share/munin/plugins/{{ item }}'
       dest: /etc/munin/plugins/{{ item }}
       state: link
@@ -38,7 +38,7 @@
     notify: restart munin-node
 
   - name: Enable contributed Munin plugins
-    file:
+    ansible.builtin.file:
       src: /usr/share/munin/plugins/mysql_
       dest: '/etc/munin/plugins/mysql_{{ item }}'
       state: link
@@ -67,7 +67,7 @@
     notify: restart munin-node
 
   - name: verify Munin configuration for mysql < Debian 11
-    replace:
+    ansible.builtin.replace:
       dest: /etc/munin/plugin-conf.d/munin-node
       after: '\[mysql\*\]'
       regexp: '^env.mysqluser (.+)$'
@@ -76,7 +76,7 @@
     when: ansible_distribution_major_version is version_compare('11', '<')
 
   - name: set Munin env.mysqluser option for mysql >= Debian 11
-    replace:
+    ansible.builtin.replace:
       dest: /etc/munin/plugin-conf.d/munin-node
       after: '\[mysql\*\]'
       regexp: '^env.mysqluser (.+)$'
@@ -85,7 +85,7 @@
     when: ansible_distribution_major_version is version_compare('11', '>=')
 
   - name: set Munin env.mysqlopts option for mysql >= Debian 11
-    replace:
+    ansible.builtin.replace:
       dest: /etc/munin/plugin-conf.d/munin-node
       after: '\[mysql\*\]'
       regexp: '^env.mysqlopts (.+)$'
@@ -94,7 +94,7 @@
     when: ansible_distribution_major_version is version_compare('11', '>=')
 
   - name: set Munin env.mysqlconnection option for mysql >= Debian 11
-    replace:
+    ansible.builtin.replace:
       dest: /etc/munin/plugin-conf.d/munin-node
       after: '\[mysql\*\]'
       regexp: '^env.mysqlconnection (.+)$'

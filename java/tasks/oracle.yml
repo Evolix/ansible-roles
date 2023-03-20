@@ -1,6 +1,6 @@
 ---
 - name: Install dependencies for build java package
-  apt:
+  ansible.builtin.apt:
     name:
       - java-package
       - build-essential
@@ -9,7 +9,7 @@
   - java
 
 - name: Create jvm dir
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: "0777"
@@ -21,7 +21,7 @@
   - java
 
 - name: Get Oracle jre archive
-  get_url:
+  ansible.builtin.get_url:
     url: 'https://download.oracle.com/otn-pub/java/jdk/8u192-b12/750e1c8617c5452694857ad95c3ee230/server-jre-8u192-linux-x64.tar.gz'
     dest: '/srv/java-package/src/'
     checksum: 'sha256:3d811a5ec65dc6fc261f488757bae86ecfe285a79992363b016f60cdb4dbe7e6'
@@ -31,7 +31,8 @@
   - java
 
 - name: Make Debian package from Oracle JDK archive
-  shell: "yes | TMPDIR=/srv/java-package/tmp make-jpkg /srv/java-package/src/server-jre-8u192-linux-x64.tar.gz"
+  ansible.builtin.shell:
+    cmd: "yes | TMPDIR=/srv/java-package/tmp make-jpkg /srv/java-package/src/server-jre-8u192-linux-x64.tar.gz"
   args:
     chdir: /srv/java-package
     creates: /srv/java-package/oracle-java8-server-jre_8u192_amd64.deb
@@ -39,17 +40,17 @@
   tags:
   - java
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - name: Install java package
-  apt:
+  ansible.builtin.apt:
     deb: /srv/java-package/oracle-java8-server-jre_8u192_amd64.deb
   tags:
    - java
 
 - name: This openjdk version is the default alternative
-  alternatives:
+  community.general.alternatives:
     name: java
     path: "/usr/lib/jvm/oracle-java{{ java_version }}-server-jre-amd64/bin/java"
   when: java_default_alternative | bool

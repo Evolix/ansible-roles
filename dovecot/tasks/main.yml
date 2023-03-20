@@ -1,5 +1,5 @@
 - name: ensure packages are installed
-  apt:
+  ansible.builtin.apt:
     name:
       - dovecot-ldap
       - dovecot-imapd
@@ -11,12 +11,12 @@
   - dovecot
 
 - name: Generate 4096 bits Diffie-Hellman parameters (may take several minutes)
-  openssl_dhparam:
+  community.crypto.openssl_dhparam:
     path: /etc/ssl/dhparams.pem
     size: 4096
 
 - name: disable pam auth
-  replace:
+  ansible.builtin.replace:
     dest: /etc/dovecot/conf.d/10-auth.conf
     regexp: "[^#]!include auth-system.conf.ext"
     replace: "#!include auth-system.conf.ext"
@@ -24,7 +24,7 @@
   - dovecot
 
 - name: update ldap auth
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/dovecot/dovecot-ldap.conf.ext
     line: "{{ item.key }} = {{ item.value }}"
     regexp: "^#*{{ item.key }}"
@@ -43,7 +43,7 @@
   - dovecot
 
 - name: create vmail group
-  group:
+  ansible.builtin.group:
     name: vmail
     gid: "{{ dovecot_vmail_gid }}"
     system: True
@@ -51,7 +51,7 @@
   - dovecot
 
 - name: create vmail user
-  user:
+  ansible.builtin.user:
     name: vmail
     group: vmail
     uid: "{{ dovecot_vmail_uid }}"
@@ -61,7 +61,7 @@
   - dovecot
 
 - name: deploy evolix config
-  template:
+  ansible.builtin.template:
     src: z-evolinux-defaults.conf.j2
     dest: /etc/dovecot/conf.d/z-evolinux-defaults.conf
     mode: "0644"
@@ -70,7 +70,7 @@
   - dovecot
 
 - name: deploy file for custom configuration
-  template:
+  ansible.builtin.template:
     src: zzz-evolinux-custom.conf.j2
     dest: /etc/dovecot/conf.d/zzz-evolinux-custom.conf
     mode: "0644"
@@ -78,18 +78,18 @@
   tags:
   - dovecot
 
-- include: munin.yml
+- ansible.builtin.include: munin.yml
   tags:
-  - dovecot
+    - dovecot
 
 - name: log2mail is installed
-  apt:
+  ansible.builtin.apt:
     name: log2mail
     state: present
   tags: dovecot
 
 - name: dovecot is configured in log2mail
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/log2mail/config/mail.conf
     create: true
     owner: log2mail

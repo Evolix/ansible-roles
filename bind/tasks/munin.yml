@@ -1,7 +1,7 @@
 ---
 
 - name: is Munin present ?
-  stat:
+  ansible.builtin.stat:
     path: /etc/munin/plugin-conf.d/munin-node
   check_mode: no
   register: munin_node_plugins_config
@@ -10,7 +10,7 @@
     - munin
 
 - name: Enable munin plugins for authoritative server
-  file:
+  ansible.builtin.file:
     src: "/usr/share/munin/plugins/{{ item }}"
     dest: "/etc/munin/plugins/{{ item }}"
     state: link
@@ -18,31 +18,31 @@
     - bind9
     - bind9_rndc
   notify: restart munin-node
-  when:
-    - bind_authoritative_server | bool
-    - munin_node_plugins_config.stat.exists
   tags:
     - bind
     - munin
+  when:
+    - bind_authoritative_server | bool
+    - munin_node_plugins_config.stat.exists
 
 - name: Enable munin plugins for recursive server
-  file:
+  ansible.builtin.file:
     src: "/usr/share/munin/plugins/{{ item }}"
     dest: "/etc/munin/plugins/{{ item }}"
     state: link
   loop:
     - bind9
   notify: restart munin-node
+  tags:
+    - bind
+    - munin
   when:
     - bind_recursive_server | bool
     - bind_query_file_enabled | bool
     - munin_node_plugins_config.stat.exists
-  tags:
-    - bind
-    - munin
 
 - name: Add munin plugin configuration
-  template:
+  ansible.builtin.template:
     src: munin-env_bind9.j2
     dest: /etc/munin/plugin-conf.d/bind9
     owner: root
@@ -50,7 +50,7 @@
     mode: "0644"
     force: yes
   notify: restart munin-node
-  when: munin_node_plugins_config.stat.exists
   tags:
     - bind
     - munin
+  when: munin_node_plugins_config.stat.exists

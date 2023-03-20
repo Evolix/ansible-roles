@@ -1,18 +1,19 @@
 ---
 
 - name: Check if /tmp is noexec
-  shell: "cat /etc/fstab | grep -E \" +/tmp\" | grep noexec"
+  ansible.builtin.shell:
+    cmd: "cat /etc/fstab | grep -E \" +/tmp\" | grep noexec"
   register: fstab_tmp_noexec
   failed_when: False
   changed_when: False
   check_mode: no
 
 - block:
-  - set_fact:
+  - ansible.builtin.set_fact:
       _logstash_custom_tmpdir: "{{ logstash_custom_tmpdir | default(logstash_default_tmpdir, True) | mandatory }}"
 
   - name: "Create {{ _logstash_custom_tmpdir }}"
-    file:
+    ansible.builtin.file:
       path: "{{ _logstash_custom_tmpdir }}"
       owner: logstash
       group: logstash
@@ -22,7 +23,7 @@
       - logstash
 
   - name: change JVM tmpdir
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/logstash/jvm.options
       line: "-Djava.io.tmpdir={{ _logstash_custom_tmpdir }}"
       regexp: "^-Djava.io.tmpdir="

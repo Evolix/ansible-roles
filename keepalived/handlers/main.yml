@@ -1,10 +1,10 @@
 ---
 - name: restart keepalived
-  systemd:
+  ansible.builtin.systemd:
     name: keepalived
     state: restarted
 
 - name: restart nagios-nrpe-server
-  service:
+  ansible.builtin.service:
     name: nagios-nrpe-server
     state: restarted

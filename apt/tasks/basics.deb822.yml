@@ -1,7 +1,7 @@
 ---
 
 - name: Change basics repositories
-  template:
+  ansible.builtin.template:
     src: "{{ ansible_distribution_release }}_basics.sources.j2"
     dest: /etc/apt/sources.list.d/system.sources
     mode: "0644"
@@ -11,7 +11,7 @@
     - apt
 
 - name: Change security repositories
-  template:
+  ansible.builtin.template:
     src: "{{ ansible_distribution_release }}_security.sources.j2"
     dest: /etc/apt/sources.list.d/security.sources
     mode: "0644"
@@ -27,7 +27,8 @@
   register: list_files
 
 - name: Disable one-line-formatted sources
-  command: "mv --verbose {{ item.path }} {{ item.path }}.bak"
+  ansible.builtin.command:
+    cmd: "mv --verbose {{ item.path }} {{ item.path }}.bak"
   environment:
     LC_ALL: C
   loop: "{{ list_files.files }}"
@@ -37,7 +38,7 @@
     - apt
 
 - name: Apt update
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
   tags:
     - apt

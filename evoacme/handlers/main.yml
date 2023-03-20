@@ -1,25 +1,27 @@
 - name: newaliases
-  command: newaliases
+  ansible.builtin.command:
+    cmd: newaliases
 
 - name: Test Apache conf
-  command: apache2ctl -t
+  ansible.builtin.command:
+    cmd: apache2ctl -t
   notify: "Reload Apache conf"
 
 - name: reload apache2
-  service:
+  ansible.builtin.service:
     name: apache2
     state: reloaded
 
 - name: apt update
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
 
 - name: reload squid3
-  service:
+  ansible.builtin.service:
     name: squid3
     state: reloaded
 
 - name: reload squid
-  service:
+  ansible.builtin.service:
     name: squid
     state: reloaded

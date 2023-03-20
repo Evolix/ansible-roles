@@ -1,13 +1,13 @@
 ---
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   tags:
     - rabbitmq
     - munin
 
 - name: Create local munin directory
-  file:
+  ansible.builtin.file:
     name: /usr/local/share/munin/
     state: directory
     mode: "0755"
@@ -16,7 +16,7 @@
     - munin
 
 - name: Create local plugins directory
-  file:
+  ansible.builtin.file:
     name: /usr/local/share/munin/plugins/
     state: directory
     mode: "0755"
@@ -25,7 +25,7 @@
     - munin
 
 - name: Copy rabbitmq_connections munin plugin
-  copy:
+  ansible.builtin.copy:
     src: rabbitmq_connections
     dest: /usr/local/share/munin/plugins/rabbitmq_connections
     mode: "0755"
@@ -35,7 +35,7 @@
     - munin
 
 - name: Enable rabbitmq_connections munin plugin
-  file:
+  ansible.builtin.file:
     src: /usr/local/share/munin/plugins/rabbitmq_connections
     dest: "/etc/munin/plugins/rabbitmq_connections"
     state: link

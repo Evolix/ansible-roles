@@ -1,12 +1,13 @@
 ---
 
 - name: "Abort if MariaDB on Debian 8"
-  fail:
+  ansible.builtin.fail:
     msg: "We can't create other users with 'debian-sys-maint' on Debian 8 with MariaDB.\nWe must give it the GRANT privilege before continuing."
   when: mysql_variant == "mariadb"
 
 - name: create a password for mysqladmin
-  command: "apg -n 1 -m 16 -M lcN"
+  ansible.builtin.command:
+    cmd: "apg -n 1 -m 16 -M lcN"
   register: mysql_admin_password
   changed_when: False
   check_mode: no
@@ -14,7 +15,7 @@
     - mysql
 
 - name: there is a mysqladmin user
-  mysql_user:
+  community.mysql.mysql_user:
     name: mysqladmin
     password: '{{ mysql_admin_password.stdout }}'
     priv: "*.*:ALL,GRANT"
@@ -26,7 +27,7 @@
     - mysql
 
 - name: mysqladmin is the default user
-  ini_file:
+  community.general.ini_file:
     dest: /root/.my.cnf
     mode: "0600"
     section: client
@@ -41,7 +42,7 @@
    - mysql
 
 - name: root user is absent
-  mysql_user:
+  community.mysql.mysql_user:
     name: root
     host_all: yes
     config_file: "/root/.my.cnf"

@@ -1,10 +1,10 @@
 ---
 - name: restart rsyslog
-  service:
+  ansible.builtin.service:
     name: rsyslog
     state: restarted
 
 - name: reload nginc
-  service:
+  ansible.builtin.service:
     name: nginx
     state: reloaded

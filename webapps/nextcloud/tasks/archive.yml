@@ -1,7 +1,7 @@
 ---
 
 - name: Retrieve Nextcloud archive
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ nextcloud_releases_baseurl }}{{ nextcloud_archive_name }}"
     dest: "{{ nextcloud_home }}/{{ nextcloud_archive_name }}"
     force: no
@@ -9,7 +9,7 @@
     - nextcloud
 
 - name: Retrieve Nextcloud sha256 checksum
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ nextcloud_releases_baseurl }}{{ nextcloud_archive_name }}.sha256"
     dest: "{{ nextcloud_home }}/{{ nextcloud_archive_name }}.sha256"
     force: no
@@ -17,7 +17,8 @@
     - nextcloud
 
 - name: Verify Nextcloud sha256 checksum
-  command: "sha256sum -c {{ nextcloud_archive_name }}.sha256"
+  ansible.builtin.command:
+    cmd: "sha256sum -c {{ nextcloud_archive_name }}.sha256"
   changed_when: "False"
   args:
     chdir: "{{ nextcloud_home }}"
@@ -25,7 +26,7 @@
     - nextcloud
 
 - name: Extract Nextcloud archive
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ nextcloud_home }}/{{ nextcloud_archive_name }}"
     dest: "{{ nextcloud_home }}"
     creates: "{{ nextcloud_home }}/nextcloud"

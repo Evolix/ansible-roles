@@ -1,7 +1,7 @@
 ---
 
 - name: Git is installed (Debian)
-  apt:
+  ansible.builtin.apt:
     name: git
     state: present
   tags:
@@ -10,12 +10,12 @@
     - ansible_distribution == "Debian"
 
 - name: Install and configure utilities
-  include: utils.yml
+  ansible.builtin.include: utils.yml
   tags:
     - etc-git
 
 - name: Configure repositories
-  include: repositories.yml
+  ansible.builtin.include: repositories.yml
   tags:
     - etc-git
   when: etc_git_config_repositories | bool

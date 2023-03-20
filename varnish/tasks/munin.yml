@@ -1,29 +1,29 @@
 ---
 - name: Install dependencies
-  apt:
+  ansible.builtin.apt:
     name: libxml-parser-perl
   tags: varnish
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   tags: varnish
 
 - name: Create plugin directory
-  file:
+  ansible.builtin.file:
     name: /usr/local/share/munin/
     state: directory
     mode: "0755"
   tags: varnish
 
 - name: Create plugin directory
-  file:
+  ansible.builtin.file:
     name: /usr/local/share/munin/plugins/
     state: directory
     mode: "0755"
   tags: varnish
 
 - name: Copy varnish5 munin plugin
-  copy:
+  ansible.builtin.copy:
     src: munin/varnish5_
     dest: /usr/local/share/munin/plugins/
     mode: "0755"
@@ -31,7 +31,7 @@
   tags: varnish
 
 - name: Enable varnish5 munin plugin
-  file:
+  ansible.builtin.file:
     src: /usr/local/share/munin/plugins/varnish5_
     dest: "/etc/munin/plugins/varnish5_{{ item }}"
     state: link
@@ -51,7 +51,7 @@
   tags: varnish
 
 - name: Copy varnish5 munin plugin config
-  copy:
+  ansible.builtin.copy:
     src: munin/varnish5.conf
     dest: /etc/munin/plugin-conf.d/varnish5
     mode: "0644"

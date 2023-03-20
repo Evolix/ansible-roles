@@ -1,21 +1,21 @@
 ---
 
-- include: packages.yml
+- ansible.builtin.include: packages.yml
 
-- include: configuration.yml
+- ansible.builtin.include: configuration.yml
 
-- include: bootstrap_checks.yml
+- ansible.builtin.include: bootstrap_checks.yml
 
-- include: tmpdir.yml
+- ansible.builtin.include: tmpdir.yml
 
-- include: datadir.yml
+- ansible.builtin.include: datadir.yml
 
-- include: logs.yml
+- ansible.builtin.include: logs.yml
 
-- include: additional_scripts.yml
+- ansible.builtin.include: additional_scripts.yml
 
-- include: plugin_head.yml
+- ansible.builtin.include: plugin_head.yml
   when: elasticsearch_plugin_head | bool
 
-- include: curator.yml
+- ansible.builtin.include: curator.yml
   when: elasticsearch_curator | bool

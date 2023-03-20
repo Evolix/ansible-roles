@@ -1,6 +1,6 @@
 ---
 - name: logrotate configuration
-  copy:
+  ansible.builtin.copy:
     src: logrotate_postgresql
     dest: /etc/logrotate.d/postgresql-common
     force: no

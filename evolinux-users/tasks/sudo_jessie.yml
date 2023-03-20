@@ -1,7 +1,7 @@
 ---
 
 - name: "Verify Evolinux sudoers file presence (jessie)"
-  template:
+  ansible.builtin.template:
     src: sudoers_jessie.j2
     dest: /etc/sudoers.d/evolinux
     force: no
@@ -10,7 +10,7 @@
   register: copy_sudoers_evolinux
 
 - name: "Add user in sudoers file for '{{ user.name }}' (jessie)"
-  replace:
+  ansible.builtin.replace:
     dest: /etc/sudoers.d/evolinux
     regexp: '^(User_Alias\s+ADMINS\s+=((?!{{ user.name }}).)*)$'
     replace: '\1,{{ user.name }}'

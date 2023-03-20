@@ -1,6 +1,6 @@
 ---
 - name: APT sources
-  import_tasks: apt_sources.yml
+  ansible.builtin.import_tasks: apt_sources.yml
   args:
     apply:
       tags:
@@ -8,7 +8,7 @@
         - packages
 
 - name: Filebeat is installed
-  apt:
+  ansible.builtin.apt:
     name: filebeat
     state: "{% if filebeat_upgrade_package %}latest{% else %}present{% endif %}"
   notify: restart filebeat
@@ -17,20 +17,21 @@
     - packages
 
 - name: Filebeat service is enabled
-  systemd:
+  ansible.builtin.systemd:
     name: filebeat
     enabled: yes
   notify: restart filebeat
   when: not ansible_check_mode
 
 - name: is logstash-plugin available?
-  stat:
+  ansible.builtin.stat:
     path: /usr/share/logstash/bin/logstash-plugin
   check_mode: no
   register: logstash_plugin
 
 - name: is logstash-input-beats installed?
-  command: grep logstash-input-beats /usr/share/logstash/Gemfile
+  ansible.builtin.command:
+    cmd: grep logstash-input-beats /usr/share/logstash/Gemfile
   check_mode: no
   register: logstash_plugin_installed
   failed_when: False
@@ -41,11 +42,11 @@
 
 - name: Logstash plugin is installed
   block:
-    - include_role:
+    - ansible.builtin.include_role:
         name: evolix/remount-usr
 
     - name: logstash-plugin install logstash-input-beats
-      command: /usr/share/logstash/bin/logstash-plugin install logstash-input-beats
+      ansible.builtin.command: /usr/share/logstash/bin/logstash-plugin install logstash-input-beats
   when:
     - filebeat_logstash_plugin | bool
     - logstash_plugin.stat.exists
@@ -54,7 +55,7 @@
 # When we don't use a config template (default)
 - block:
   - name: cloud_metadata processor is disabled
-    replace:
+    ansible.builtin.replace:
       dest: /etc/filebeat/filebeat.yml
       regexp: '^(\s+)(- add_cloud_metadata:)'
       replace: '\1# \2'
@@ -62,7 +63,7 @@
     when: not (filebeat_processors_cloud_metadata | bool)
 
   - name: cloud_metadata processor is disabled
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/filebeat/filebeat.yml
       line: "  - add_cloud_metadata: ~"
       insert_after: '^processors:'
@@ -70,7 +71,7 @@
     when: filebeat_processors_cloud_metadata | bool
 
   - name: Filebeat knows where to find Elasticsearch
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/filebeat/filebeat.yml
       regexp: '^  hosts: .*'
       line: "  hosts: [\"{{ filebeat_elasticsearch_hosts | join('\", \"') }}\"]"
@@ -79,7 +80,7 @@
     when: filebeat_elasticsearch_hosts | length > 0
 
   - name: Filebeat protocol for Elasticsearch
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/filebeat/filebeat.yml
       regexp: '^  #?protocol: .*'
       line: "  protocol: \"{{ filebeat_elasticsearch_protocol }}\""
@@ -88,7 +89,7 @@
     when: filebeat_elasticsearch_protocol == "http" or filebeat_elasticsearch_protocol == "https"
 
   - name: Filebeat auth/username for Elasticsearch are configured
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/filebeat/filebeat.yml
       regexp: '{{ item.regexp }}'
       line: '{{ item.line }}'
@@ -105,7 +106,7 @@
     - not ansible_check_mode
 
 - name: Filebeat api_key for Elasticsearch are configured
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/filebeat/filebeat.yml
     regexp: '^  #?api_key: .*'
     line: '  api_key: "{{ filebeat_elasticsearch_auth_api_key }}"'
@@ -116,7 +117,7 @@
 # When we use a config template
 - block:
   - name: Configuration is up-to-date
-    template:
+    ansible.builtin.template:
       src: "{{ item }}"
       dest: /etc/filebeat/filebeat.yml
       force: "{{ filebeat_force_config }}"

@@ -1,7 +1,8 @@
 ---
 
 - name: "Execute ansible-commit"
-  command: "/usr/local/bin/ansible-commit --verbose --message \"{{ commit_message | mandatory }}\""
+  ansible.builtin.command:
+    cmd: "/usr/local/bin/ansible-commit --verbose --message \"{{ commit_message | mandatory }}\""
   changed_when:
     - _ansible_commit.stdout
     - "'CHANGED:' in _ansible_commit.stdout"

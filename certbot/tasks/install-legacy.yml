@@ -1,16 +1,16 @@
 ---
 
 - name: certbot package is removed
-  apt:
+  ansible.builtin.apt:
     name: certbot
     state: absent
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 # copied and customized from https://raw.githubusercontent.com/certbot/certbot/v1.14.0/letsencrypt-auto
 - name: Let's Encrypt script is present
-  copy:
+  ansible.builtin.copy:
     src: letsencrypt-auto
     dest: /usr/local/bin/letsencrypt-auto
     mode: '0755'
@@ -20,22 +20,23 @@
   notify: install letsencrypt-auto
 
 - name: Check certbot script
-  stat:
+  ansible.builtin.stat:
     path: /usr/local/bin/certbot
   register: certbot_path
 
 - name: Rename certbot script if present
-  command: "mv /usr/local/bin/certbot /usr/local/bin/certbot.bak"
+  ansible.builtin.command:
+    cmd: "mv /usr/local/bin/certbot /usr/local/bin/certbot.bak"
   when: certbot_path.stat.exists
 
 - name: Let's Encrypt script is symlinked as certbot
-  file:
+  ansible.builtin.file:
     src: "/usr/local/bin/letsencrypt-auto"
     dest: "/usr/local/bin/certbot"
     state: link
 
 - name: systemd artefacts are absent
-  file:
+  ansible.builtin.file:
     dest: "{{ item }}"
     state: absent
   loop:
@@ -45,14 +46,14 @@
   notify: systemd daemon-reload
 
 - name: custom crontab is present
-  copy:
+  ansible.builtin.copy:
     src: cron_jessie
     dest: /etc/cron.d/certbot
     force: yes
   when: certbot_custom_crontab | bool
 
 - name: disable self-upgrade
-  ini_file:
+  community.general.ini_file:
     dest: "/etc/letsencrypt/cli.ini"
     section: null
     option: "no-self-upgrade"

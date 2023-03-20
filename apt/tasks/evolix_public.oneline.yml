@@ -1,14 +1,14 @@
 ---
 
 - name: Look for legacy apt keyring
-  stat:
+  ansible.builtin.stat:
     path: /etc/apt/trusted.gpg
   register: _trusted_gpg_keyring
   tags:
     - apt
 
 - name: Evolix embedded GPG key is absent
-  apt_key:
+  ansible.builtin.apt_key:
     id: "B8612B5D"
     keyring: /etc/apt/trusted.gpg
     state: absent
@@ -17,7 +17,7 @@
   when: _trusted_gpg_keyring.stat.exists
 
 - name: Add Evolix GPG key
-  copy:
+  ansible.builtin.copy:
     src: pub_evolix.asc
     dest: "{{ apt_keyring_dir }}/pub_evolix.asc"
     force: yes
@@ -28,7 +28,7 @@
     - apt
 
 - name: Evolix public list is installed
-  template:
+  ansible.builtin.template:
     src: evolix_public.list.j2
     dest: /etc/apt/sources.list.d/evolix_public.list
     force: yes
@@ -38,7 +38,7 @@
     - apt
 
 - name: Apt update
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
   tags:
     - apt

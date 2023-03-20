@@ -1,16 +1,16 @@
 ---
 
 - name: Verify Debian version
-  assert:
+  ansible.builtin.assert:
     that:
       - ansible_distribution == "Debian"
       - ansible_distribution_major_version is version('9', '>=')
     msg: only compatible with Debian >= 9
   when: not (evoacme_disable_debian_check | bool)
 
-- include: certbot.yml
+- ansible.builtin.include: certbot.yml
 
-- include: permissions.yml
+- ansible.builtin.include: permissions.yml
 
 # Enable this task if you want to deploy hooks
 # - include: evoacme_hook.yml
@@ -18,6 +18,6 @@
 #     hook_name: "{{ item }}"
 #   loop: []
 
-- include: conf.yml
+- ansible.builtin.include: conf.yml
 
-- include: scripts.yml
+- ansible.builtin.include: scripts.yml

@@ -1,10 +1,10 @@
 ---
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   when: general_scripts_dir is search("/usr")
 
 - name: "copy generateldif.sh"
-  template:
+  ansible.builtin.template:
     src: templates/generateldif.sh.j2
     dest: '{{ general_scripts_dir }}/generateldif.sh'
     owner: root

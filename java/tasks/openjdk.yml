@@ -1,12 +1,12 @@
 ---
 - name: Decide which Debian release to use
-  set_fact:
+  ansible.builtin.set_fact:
     java_apt_release: '{% if ansible_distribution_release == "jessie" %}jessie-backports{% else %}{{ ansible_distribution_release }}{% endif %}'
   tags:
     - java
 
 - name: Install jessie-backports
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/apt
     tasks_from: backports.yml
   when: ansible_distribution_release == "jessie"
@@ -14,7 +14,7 @@
     - java
 
 - name: Install default openjdk package
-  apt:
+  ansible.builtin.apt:
     name: "default-jre-headless"
     default_release: "{{ java_apt_release }}"
     state: present
@@ -24,7 +24,7 @@
   when: java_version is none
 
 - name: Install specific openjdk package
-  apt:
+  ansible.builtin.apt:
     name: "openjdk-{{ java_version }}-jre-headless"
     default_release: "{{ java_apt_release }}"
     state: present
@@ -34,7 +34,7 @@
   when: java_version is not none
 
 - name: This openjdk version is the default alternative
-  alternatives:
+  community.general.alternatives:
     name: java
     path: "{{ java_bin_path[java_version] }}"
   tags:

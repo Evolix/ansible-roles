@@ -1,7 +1,7 @@
 ---
 
 - name: Create SSH key
-  user:
+  ansible.builtin.user:
     name: root
     generate_ssh_key: true
     ssh_key_file: "{{ evobackup_client__root_key_path }}"
@@ -12,7 +12,7 @@
     - evobackup_client_backup_ssh_key
 
 - name: Print SSH key
-  debug:
+  ansible.builtin.debug:
     var: evobackup_client__root_key.ssh_public_key
   when: evobackup_client__root_key.ssh_public_key is defined
   tags:
@@ -20,7 +20,7 @@
     - evobackup_client_backup_ssh_key
 
 - name: 'copy ssh public key to backup server'
-  copy:
+  ansible.builtin.copy:
     content: "{{ evobackup_client__root_key.ssh_public_key }}"
     dest: "/root/{{ evolinux_hostname }}.pub"
   become: true

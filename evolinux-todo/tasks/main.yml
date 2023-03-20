@@ -1,14 +1,14 @@
 ---
 
 - name: /etc/evolinux is present
-  file:
+  ansible.builtin.file:
     dest: /etc/evolinux
     mode: "0700"
     state: directory
   when: ansible_distribution == "Debian"
 
 - name: /etc/evolinux/todo.txt is present
-  copy:
+  ansible.builtin.copy:
     src: todo.defaults.txt
     dest: /etc/evolinux/todo.txt
     mode: "0640"

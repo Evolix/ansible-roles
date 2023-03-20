@@ -1,7 +1,8 @@
 ---
 
 - name: Remove read permission on some folders (/, /etc, ...)
-  shell: "test -d {{ item }} && chmod --verbose o-r {{ item }}"
+  ansible.builtin.shell:
+    cmd: "test -d {{ item }} && chmod --verbose o-r {{ item }}"
   register: command_result
   changed_when: "'changed' in command_result.stdout"
   failed_when: False
@@ -25,7 +26,8 @@
     - /etc/default
 
 - name: Set 750 permission on some folders (/var/log/apt, /var/log/munin, ...)
-  shell: "test -d {{ item }} && chmod --verbose 750 {{ item }}"
+  ansible.builtin.shell:
+    cmd: "test -d {{ item }} && chmod --verbose 750 {{ item }}"
   register: command_result
   changed_when: "'changed' in command_result.stdout"
   failed_when: False
@@ -41,13 +43,14 @@
     - /var/log/installer
 
 - name: Change group to www-data for /etc/phpmyadmin/
-  file:
+  ansible.builtin.file:
     dest: /etc/phpmyadmin/
     group: www-data
     state: directory
 
 - name: Set u-s permission on some binaries (/bin/ping, /usr/bin/mtr, ...)
-  shell: "test -f {{ item }} && chmod --verbose u-s {{ item }}"
+  ansible.builtin.shell:
+    cmd: "test -f {{ item }} && chmod --verbose u-s {{ item }}"
   register: command_result
   changed_when: "'changed' in command_result.stdout"
   failed_when: False
@@ -59,7 +62,8 @@
     - /usr/bin/mtr
 
 - name: Set 640 permission on some files (/var/log/evolix.log, ...)
-  shell: "test -f {{ item }} && chmod --verbose 640 {{ item }}"
+  ansible.builtin.shell:
+    cmd: "test -f {{ item }} && chmod --verbose 640 {{ item }}"
   register: command_result
   changed_when: "'changed' in command_result.stdout"
   failed_when: False

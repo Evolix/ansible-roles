@@ -1,7 +1,7 @@
 ---
 
 - name: Fix crt directory permissions
-  file:
+  ansible.builtin.file:
     path: "{{ evoacme_crt_dir }}"
     mode: "0755"
     owner: root
@@ -9,7 +9,7 @@
     state: directory
 
 - name: "Fix hooks directory permissions"
-  file:
+  ansible.builtin.file:
     path: "{{ evoacme_hooks_dir }}"
     mode: "0700"
     owner: root
@@ -17,7 +17,7 @@
     state: directory
 
 - name: Fix log directory permissions
-  file:
+  ansible.builtin.file:
     path: "{{ evoacme_log_dir }}"
     mode: "0755"
     owner: root
@@ -25,7 +25,7 @@
     state: directory
 
 - name: Fix challenge directory permissions
-  file:
+  ansible.builtin.file:
     path: "{{ evoacme_acme_dir }}"
     mode: "0755"
     owner: root

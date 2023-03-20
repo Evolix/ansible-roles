@@ -1,5 +1,5 @@
 - name: Install dependency
-  apt:
+  ansible.builtin.apt:
     name:
       - drbd-utils
       - lvm2
@@ -7,7 +7,7 @@
   - drbd
 
 - name: Enable drbd.service
-  service:
+  ansible.builtin.service:
     name: drbd
     enabled: yes
   tags:

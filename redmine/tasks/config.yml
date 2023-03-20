@@ -1,6 +1,6 @@
 ---
 - name: Create systemd config dir
-  file:
+  ansible.builtin.file:
     state: directory
     dest: "/home/{{ redmine_user }}/{{ item }}"
     mode: "0750"
@@ -14,7 +14,7 @@
     - redmine
 
 - name: Deploy systemd unit
-  copy:
+  ansible.builtin.copy:
     src: puma.service
     dest: "/home/{{ redmine_user }}/.config/systemd/user/puma.service"
     mode: "0644"
@@ -24,7 +24,7 @@
     - redmine
 
 - name: Set user .profile
-  copy:
+  ansible.builtin.copy:
     src: profile
     dest: "/home/{{ redmine_user }}/.profile"
     owner: "{{ redmine_user }}"
@@ -34,7 +34,7 @@
     - redmine
 
 - name: Create config directory
-  file:
+  ansible.builtin.file:
     path: "/home/{{ redmine_user }}/config"
     state: directory
     owner: "{{ redmine_user }}"
@@ -44,7 +44,7 @@
     - redmine
 
 - name: Copy configurations file
-  template:
+  ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "/home/{{ redmine_user }}/config/{{ item }}"
     owner: "{{ redmine_user }}"

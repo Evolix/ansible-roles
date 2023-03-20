@@ -34,7 +34,7 @@
 # TODO : find a way to force the console-data configuration
 # non-interactively (like tzdata ↑)
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - name: Ensure automagic vim conf is disabled
@@ -129,7 +129,7 @@
     - is_cron_installed.rc == 0
     - evolinux_system_cron_random | bool
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/ntpd
 
 ## alert5

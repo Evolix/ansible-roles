@@ -1,6 +1,6 @@
 ---
 - name: Create releases directory
-  file:
+  ansible.builtin.file:
     path: "/home/{{ redmine_user }}/{{ item }}"
     state: directory
     owner: "{{ redmine_user }}"
@@ -13,7 +13,7 @@
     - redmine
 
 - name: Download Redmine archive
-  unarchive:
+  ansible.builtin.unarchive:
     src: "https://redmine.org/releases/redmine-{{ redmine_version }}.tar.gz"
     dest: "/home/{{ redmine_user }}/releases/{{ redmine_version }}"
     remote_src: True
@@ -24,7 +24,7 @@
     - redmine
 
 - name: Link config files
-  file:
+  ansible.builtin.file:
     state: link
     src: "/home/{{ redmine_user }}/config/{{ item }}"
     dest: "/home/{{ redmine_user }}/releases/{{ redmine_version }}/config/{{ item }}"
@@ -38,7 +38,7 @@
     - redmine
 
 - name: Copy/Update plugin from archive
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ item.zip }}"
     dest: "/home/{{ redmine_user }}/releases/{{ redmine_version }}/plugins/"
     remote_src: yes
@@ -51,7 +51,7 @@
     - redmine
 
 - name: Copy/Update plugin from git repository
-  git:
+  ansible.builtin.git:
     repo: "{{ item.git }}"
     dest: "/home/{{ redmine_user }}/releases/{{ redmine_version }}/plugins/{{ item.git | basename | splitext | first }}"
     version: "{{ item.tree | default('master') }}"
@@ -63,7 +63,7 @@
     - redmine
 
 - name: Copy/Update theme from archive
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ item.zip }}"
     dest: "/home/{{ redmine_user }}/releases/{{ redmine_version }}/public/themes"
     remote_src: yes
@@ -76,7 +76,7 @@
     - redmine
 
 - name: Copy/Update theme from git repository
-  git:
+  ansible.builtin.git:
     repo: "{{ item.git }}"
     dest: "/home/{{ redmine_user }}/releases/{{ redmine_version }}/public/themes/{{ item.git | basename | splitext | first }}"
     version: "{{ item.tree | default('master') }}"
@@ -88,7 +88,7 @@
     - redmine
 
 - name: Deploy custom Gemfile
-  template:
+  ansible.builtin.template:
     src: Gemfile.local.j2
     dest: "/home/{{ redmine_user }}/releases/{{ redmine_version }}/Gemfile.local"
     owner: "{{ redmine_user }}"

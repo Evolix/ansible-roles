@@ -1,5 +1,5 @@
 ---
 - name: restart supervisor
-  service:
+  ansible.builtin.service:
     name: supervisor
     state: restarted

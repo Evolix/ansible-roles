@@ -1,5 +1,5 @@
 ---
 - name: restart proftpd
-  service:
+  ansible.builtin.service:
     name: proftpd
     state: restarted

@@ -1,26 +1,28 @@
 ---
 - name: restart munin-node
-  service:
+  ansible.builtin.service:
     name: munin-node
     state: restarted
 
 - name: restart nagios-nrpe-server
-  service:
+  ansible.builtin.service:
     name: nagios-nrpe-server
     state: restarted
 
 - name: restart postgresql
-  systemd:
+  ansible.builtin.systemd:
     name: postgresql
     state: restarted
     daemon_reload: yes
 
 - name: reload systemd
-  systemd:
+  ansible.builtin.systemd:
     daemon-reload: yes
 
 - name: Restart minifirewall
-  command: /etc/init.d/minifirewall restart
+  ansible.builtin.command:
+    cmd: /etc/init.d/minifirewall restart
 
 - name: reconfigure locales
-  command: dpkg-reconfigure -f noninteractive locales
+  ansible.builtin.command:
+    cmd: dpkg-reconfigure -f noninteractive locales

@@ -1,26 +1,26 @@
 ---
 
-- include: "ssh_key.yml"
+- ansible.builtin.include: "ssh_key.yml"
   tags:
     - evobackup_client
     - evobackup_client_backup_ssh_key
 
-- include: "jail.yml"
+- ansible.builtin.include: "jail.yml"
   tags:
     - evobackup_client
     - evobackup_client_jail
 
-- include: "upload_scripts.yml"
+- ansible.builtin.include: "upload_scripts.yml"
   tags:
     - evobackup_client
     - evobackup_client_backup_scripts
 
-- include: "open_ssh_ports.yml"
+- ansible.builtin.include: "open_ssh_ports.yml"
   tags:
     - evobackup_client
     - evobackup_client_backup_firewall
 
-- include: "verify_ssh.yml"
+- ansible.builtin.include: "verify_ssh.yml"
   tags:
     - evobackup_client
     - evobackup_client_backup_hosts

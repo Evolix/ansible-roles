@@ -1,17 +1,17 @@
 ---
 
-- debug:
+- ansible.builtin.debug:
     var: php_sury_enable
 
 - name: "Set php version to 7.3 if Sury repo is not enabled"
-  set_fact:
+  ansible.builtin.set_fact:
     php_version: "7.3"
   check_mode: no
   when:
     - not (php_sury_enable | bool)
 
 - name: "Set variables (Debian 10)"
-  set_fact:
+  ansible.builtin.set_fact:
     php_cli_defaults_ini_file: /etc/php/{{ php_version }}/cli/conf.d/zvolinux-defaults.ini
     php_cli_custom_ini_file: /etc/php/{{ php_version }}/cli/conf.d/zzz-evolinux-custom.ini
     php_apache_defaults_ini_file: /etc/php/{{ php_version }}/apache2/conf.d/z-evolinux-defaults.ini
@@ -27,7 +27,7 @@
 # Packages
 
 - name: "Set package list (Debian 10)"
-  set_fact:
+  ansible.builtin.set_fact:
     php_stretch_packages:
       - php-cli
       - php-gd
@@ -45,16 +45,16 @@
       - composer
       - libphp-phpmailer
 
-- include: sury_pre.yml
+- ansible.builtin.include: sury_pre.yml
   when: php_sury_enable | bool
 
 - name: "Install PHP packages (Debian 10)"
-  apt:
+  ansible.builtin.apt:
     name: '{{ php_stretch_packages }}'
     state: present
 
 - name: "Install mod_php packages (Debian 10)"
-  apt:
+  ansible.builtin.apt:
     name:
       - libapache2-mod-php
       - php
@@ -62,7 +62,7 @@
   when: php_apache_enable | bool
 
 - name: "Install PHP FPM packages (Debian 10)"
-  apt:
+  ansible.builtin.apt:
     name:
       - php{{ php_version }}-fpm
       - php{{ php_version }}
@@ -72,33 +72,33 @@
 # Configuration
 
 - name: "Enforce permissions on PHP directory (Debian 10)"
-  file:
+  ansible.builtin.file:
     dest: "{{ item }}"
     mode: "0755"
   loop:
     - /etc/php
     - /etc/php/{{ php_version }}
 
-- include: config_cli.yml
+- ansible.builtin.include: config_cli.yml
 - name: "Enforce permissions on PHP cli directory (Debian 10)"
-  file:
+  ansible.builtin.file:
     dest: /etc/php/{{ php_version }}/cli
     mode: "0755"
 
-- include: config_fpm.yml
+- ansible.builtin.include: config_fpm.yml
   when: php_fpm_enable | bool
 
 - name: "Enforce permissions on PHP fpm directory (Debian 10)"
-  file:
+  ansible.builtin.file:
     dest: /etc/php/{{ php_version }}/fpm
     mode: "0755"
   when: php_fpm_enable | bool
 
-- include: config_apache.yml
+- ansible.builtin.include: config_apache.yml
   when: php_apache_enable | bool
 
 - name: "Enforce permissions on PHP apache2 directory (Debian 10)"
-  file:
+  ansible.builtin.file:
     dest: /etc/php/{{ php_version }}/apache2
     mode: "0755"
   when: php_apache_enable | bool

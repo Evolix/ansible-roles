@@ -1,10 +1,11 @@
 ---
 - name: Enable systemd user mode
-  command: "loginctl enable-linger {{ tomcat_instance_name }}"
+  ansible.builtin.command:
+    cmd: "loginctl enable-linger {{ tomcat_instance_name }}"
   changed_when: False
 
 - name: Set systemd conf var
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/.profile"
     state: present
     owner: "{{ tomcat_instance_name }}"

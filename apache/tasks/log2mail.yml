@@ -1,14 +1,14 @@
 ---
 
 - name: log2mail is installed
-  apt:
+  ansible.builtin.apt:
     name: log2mail
     state: present
   tags:
     - apache
 
 - name: Add log2mail config for Apache segfaults
-  template:
+  ansible.builtin.template:
     src: log2mail-apache.j2
     dest: "/etc/log2mail/config/apache"
     owner: log2mail

@@ -1,6 +1,6 @@
 ---
 - name: APT sources
-  import_tasks: apt_sources.yml
+  ansible.builtin.import_tasks: apt_sources.yml
   args:
     apply:
       tags:
@@ -8,7 +8,7 @@
         - packages
 
 - name: Logstash is installed
-  apt:
+  ansible.builtin.apt:
     name: logstash
     state: present
   tags:
@@ -16,14 +16,14 @@
     - packages
 
 - name: Logstash service is enabled
-  systemd:
+  ansible.builtin.systemd:
     name: logstash
     enabled: yes
   tags:
     - logstash
 
 - name: JVM Heap size (min) is set
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/logstash/jvm.options
     regexp: "^-Xms"
     line: "-Xms{{ logstash_jvm_xms }}"
@@ -32,7 +32,7 @@
     - config
 
 - name: JVM Heap size (max) is set
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/logstash/jvm.options
     regexp: "^-Xmx"
     line: "-Xmx{{ logstash_jvm_xmx }}"
@@ -41,7 +41,7 @@
     - config
 
 - name: Add a configuration
-  template:
+  ansible.builtin.template:
     src: "{{ item }}"
     dest: /etc/logstash/conf.d/logstash.conf
     owner: logstash
@@ -60,10 +60,10 @@
     - logstash
     - config
 
-- debug:
+- ansible.builtin.debug:
     var: logstash_template
     verbosity: 1
 
-- include: logs.yml
+- ansible.builtin.include: logs.yml
 
-- include: tmpdir.yml
+- ansible.builtin.include: tmpdir.yml

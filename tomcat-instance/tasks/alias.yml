@@ -1,6 +1,6 @@
 ---
 - name: Create bin dir for alias
-  file:
+  ansible.builtin.file:
     path: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/bin"
     state: directory
     mode: "0770"
@@ -8,7 +8,7 @@
     group: "{{ tomcat_instance_name }}"
 
 - name: Copy alias script for systemctl --user
-  template:
+  ansible.builtin.template:
     src: "{{ item }}"
     dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/bin/"
     mode: "0770"

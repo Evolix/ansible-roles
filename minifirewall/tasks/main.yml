@@ -3,7 +3,7 @@
 # Legacy or modern mode? ##############################################
 
 - name: Check minifirewall
-  stat:
+  ansible.builtin.stat:
     path: /etc/init.d/minifirewall
   register: _minifirewall_check
   tags:
@@ -11,7 +11,8 @@
 
 # Legacy versions of minifirewall don't define the VERSION variable
 - name: Look for minifirewall version
-  shell: "grep -E '^\\s*VERSION=' /etc/init.d/minifirewall"
+  ansible.builtin.shell:
+    cmd: "grep -E '^\\s*VERSION=' /etc/init.d/minifirewall"
   failed_when: False
   changed_when: False
   check_mode: False
@@ -20,7 +21,7 @@
     - always
 
 - name: Set install mode to legacy if needed
-  set_fact:
+  ansible.builtin.set_fact:
     minifirewall_install_mode: legacy
     minifirewall_main_file: "{{ minifirewall_legacy_main_file }}"
     minifirewall_tail_file: "{{ minifirewall_legacy_tail_file }}"
@@ -32,21 +33,21 @@
     - always
 
 - name: Set install mode to modern if not legacy
-  set_fact:
+  ansible.builtin.set_fact:
     minifirewall_install_mode: modern
   when: minifirewall_install_mode != 'legacy'
   tags:
     - always
 
 - name: Debug install mode
-  debug:
+  ansible.builtin.debug:
     var: minifirewall_install_mode
     verbosity: 1
   tags:
     - always
 
 - name: 'Set minifirewall_restart_handler_name to "noop"'
-  set_fact:
+  ansible.builtin.set_fact:
     minifirewall_restart_handler_name: "restart minifirewall (noop)"
   when:
     - not (minifirewall_restart_if_needed | bool)
@@ -54,7 +55,7 @@
     - always
 
 - name: 'Set minifirewall_restart_handler_name to "legacy"'
-  set_fact:
+  ansible.builtin.set_fact:
     minifirewall_restart_handler_name: "restart minifirewall (legacy)"
   when:
     - minifirewall_restart_if_needed | bool
@@ -63,7 +64,7 @@
     - always
 
 - name: 'Set minifirewall_restart_handler_name to "modern"'
-  set_fact:
+  ansible.builtin.set_fact:
     minifirewall_restart_handler_name: "restart minifirewall (modern)"
   when:
     - minifirewall_restart_if_needed | bool
@@ -74,7 +75,7 @@
 #######################################################################
 
 - name: Fail if minifirewall_main_file is defined (legacy mode)
-  fail:
+  ansible.builtin.fail:
     msg: "Variable minifirewall_main_file is deprecated and not configurable anymore."
   when:
     - minifirewall_install_mode != 'legacy'
@@ -83,22 +84,22 @@
     - always
 
 - name: Install tasks (modern mode)
-  import_tasks: install.yml
+  ansible.builtin.import_tasks: install.yml
   when: minifirewall_install_mode != 'legacy'
 
 - name: Install tasks (legacy mode)
-  import_tasks: install.legacy.yml
+  ansible.builtin.import_tasks: install.legacy.yml
   when: minifirewall_install_mode == 'legacy'
 
 - name: Debug minifirewall_update_config
-  debug:
+  ansible.builtin.debug:
     var: minifirewall_update_config | bool
     verbosity: 1
   tags:
     - always
 
 - name: Config tasks (modern mode)
-  include_tasks: config.yml
+  ansible.builtin.include_tasks: config.yml
   when:
     - minifirewall_install_mode != 'legacy'
     - minifirewall_update_config | bool
@@ -106,7 +107,7 @@
     - manage
 
 - name: Config tasks (legacy mode)
-  include_tasks: config.legacy.yml
+  ansible.builtin.include_tasks: config.legacy.yml
   args:
     apply:
       tags:
@@ -116,23 +117,23 @@
     - minifirewall_update_config | bool
 
 - name: Utils tasks
-  include_tasks: utils.yml
+  ansible.builtin.include_tasks: utils.yml
 
 - name: NRPE tasks
-  include_tasks: nrpe.yml
+  ansible.builtin.include_tasks: nrpe.yml
 
 - name: Activation tasks
-  include_tasks: activate.yml
+  ansible.builtin.include_tasks: activate.yml
 
 - name: Debug minifirewall_tail_included
-  debug:
+  ansible.builtin.debug:
     var: minifirewall_tail_included | bool
     verbosity: 1
   tags:
     - always
 
 - name: Tail tasks (modern mode)
-  include_tasks: tail.yml
+  ansible.builtin.include_tasks: tail.yml
   args:
     apply:
       tags:
@@ -142,7 +143,7 @@
     - minifirewall_tail_included | bool
 
 - name: Tail tasks (legacy mode)
-  include_tasks: tail.legacy.yml
+  ansible.builtin.include_tasks: tail.legacy.yml
   args:
     apply:
       tags:
@@ -154,14 +155,15 @@
 # Restart?
 
 - name: Debug minifirewall_restart_force
-  debug:
+  ansible.builtin.debug:
     var: minifirewall_restart_force | bool
     verbosity: 1
   tags:
     - always
 
 - name: Force restart minifirewall (legacy)
-  command: /bin/true
+  ansible.builtin.command:
+    cmd: /bin/true
   notify: "restart minifirewall (legacy)"
   tags:
     - always
@@ -170,7 +172,8 @@
     - minifirewall_restart_force | bool
 
 - name: Force restart minifirewall (modern)
-  command: /bin/true
+  ansible.builtin.command:
+    cmd: /bin/true
   notify: "restart minifirewall (modern)"
   tags:
     - always

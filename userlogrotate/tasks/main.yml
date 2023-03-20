@@ -15,7 +15,7 @@
   when: find_logrotate.files | length>0
 
 - name: "Install userlogrotate (jessie)"
-  copy:
+  ansible.builtin.copy:
     src: userlogrotate_jessie
     dest: /etc/cron.weekly/userlogrotate
     mode: "0755"
@@ -24,7 +24,7 @@
     - find_logrotate.files | length==0
 
 - name: "Install userlogrotate (Debian 9 or later)"
-  copy:
+  ansible.builtin.copy:
     src: userlogrotate
     dest: /etc/cron.weekly/userlogrotate
     mode: "0755"

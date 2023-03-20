@@ -1,6 +1,6 @@
 
 - name: Memcached is configured.
-  template:
+  ansible.builtin.template:
     src: memcached.conf.j2
     dest: /etc/memcached.conf
     mode: "0644"
@@ -9,7 +9,7 @@
     - memcached
 
 - name: Memcached is running and enabled on boot.
-  service:
+  ansible.builtin.service:
     name: memcached
     enabled: yes
     state: started

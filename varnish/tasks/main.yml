@@ -1,13 +1,13 @@
 ---
 - name: Install Varnish
-  apt:
+  ansible.builtin.apt:
     name: varnish
     state: present
   tags:
     - varnish
 
 - name: Fetch packages
-  package_facts:
+  ansible.builtin.package_facts:
     manager: auto
   check_mode: no
   tags:
@@ -15,7 +15,7 @@
     - config
     - update-config
 
-- set_fact:
+- ansible.builtin.set_fact:
     varnish_package_facts: "{{ ansible_facts.packages['varnish'] | first }}"
   check_mode: no
   tags:
@@ -32,7 +32,7 @@
 #     - update-config
 
 - name: Remove default varnish configuration files
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   loop:
@@ -45,7 +45,7 @@
     - config
 
 - name: Copy Custom Varnish ExecReload script (Debian < 10)
-  template:
+  ansible.builtin.template:
     src: "reload-vcl.sh.j2"
     dest: "/etc/varnish/reload-vcl.sh"
     mode: "0700"
@@ -57,7 +57,7 @@
     - varnish
 
 - name: Create a system config directory for systemd overrides
-  file:
+  ansible.builtin.file:
     path: /etc/systemd/system/varnish.service.d
     state: directory
   tags:
@@ -65,7 +65,7 @@
     - config
 
 - name: Remove legacy systemd override
-  file:
+  ansible.builtin.file:
     path: /etc/systemd/system/varnish.service.d/evolinux.conf
     state: absent
   notify:
@@ -75,7 +75,7 @@
     - config
 
 - name: Varnish systemd override template (Varnish 4 and 5)
-  set_fact:
+  ansible.builtin.set_fact:
     varnish_systemd_override_template: override.conf.varnish4.j2
   when:
     - varnish_package_facts['version'] is version('4', '>=')
@@ -86,7 +86,7 @@
     - update-config
 
 - name: Varnish systemd override template (Varnish 6)
-  set_fact:
+  ansible.builtin.set_fact:
     varnish_systemd_override_template: override.conf.varnish6.j2
   when:
     - varnish_package_facts['version'] is version('6', '>=')
@@ -97,7 +97,7 @@
     - update-config
 
 - name: Varnish systemd override template (Varnish 7 and later)
-  set_fact:
+  ansible.builtin.set_fact:
     varnish_systemd_override_template: override.conf.varnish7.j2
   when:
     - varnish_package_facts['version'] is version('7', '>=')
@@ -107,7 +107,7 @@
     - update-config
 
 - name: Override Varnish systemd unit
-  template:
+  ansible.builtin.template:
     src: "{{ varnish_systemd_override_template }}"
     dest: /etc/systemd/system/varnish.service.d/override.conf
     force: yes
@@ -120,7 +120,7 @@
     - update-config
 
 - name: Patch logrotate conf
-  replace:
+  ansible.builtin.replace:
     name: /etc/logrotate.d/varnish
     regexp: '^(\s+)(/usr/sbin/invoke-rc.d {{ item }}.*)'
     replace: '\1systemctl -q is-active {{ item }} && \2'
@@ -132,7 +132,7 @@
     - logrotate
 
 - name: Copy Varnish configuration
-  template:
+  ansible.builtin.template:
     src: "{{ item }}"
     dest: "{{ varnish_config_file }}"
     mode: "0644"
@@ -156,7 +156,7 @@
     - update-config
 
 - name: Create Varnish config dir
-  file:
+  ansible.builtin.file:
     path: /etc/varnish/conf.d
     state: directory
     mode: "0755"
@@ -166,7 +166,7 @@
     - update-config
 
 - name: Copy included Varnish config
-  template:
+  ansible.builtin.template:
     src: "{{ item }}"
     dest: /etc/varnish/conf.d/
     force: yes
@@ -183,11 +183,11 @@
 # We usually use /vat/tmp-cache then validate the syntax with this command:
 # sudo -u vcache TMPDIR=/var/tmp-vcache varnishd -Cf /etc/varnish/default.vcl > /dev/null
 - name: Special tmp directory
-  file:
+  ansible.builtin.file:
     path: "{{ varnish_tmp_dir }}"
     state: directory
     owner: vcache
     group: varnish
     mode: "0750"
 
-- include: munin.yml
+- ansible.builtin.include: munin.yml

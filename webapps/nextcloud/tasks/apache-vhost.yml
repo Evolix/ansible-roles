@@ -1,6 +1,6 @@
 ---
 - name: Copy Apache vhost
-  template:
+  ansible.builtin.template:
     src: apache-vhost.conf.j2
     dest: "/etc/apache2/sites-available/{{ nextcloud_instance_name }}.conf"
     mode: "0640"
@@ -9,7 +9,7 @@
     - nextcloud
 
 - name: Enable Apache vhost
-  file:
+  ansible.builtin.file:
     src: "/etc/apache2/sites-available/{{ nextcloud_instance_name }}.conf"
     dest: "/etc/apache2/sites-enabled/{{ nextcloud_instance_name }}.conf"
     state: link

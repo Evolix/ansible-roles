@@ -1,16 +1,16 @@
 ---
 # handlers file for mongodb
 - name: restart mongod
-  service:
+  ansible.builtin.service:
     name: mongod
     state: restarted
 
 - name: restart mongodb
-  service:
+  ansible.builtin.service:
     name: mongodb
     state: restarted
 
 - name: restart munin-node
-  systemd:
+  ansible.builtin.systemd:
     name: munin-node
     state: restarted

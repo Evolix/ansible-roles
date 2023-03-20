@@ -1,15 +1,15 @@
 ---
 - name: Open firewall for PGDG repository
-  replace:
+  ansible.builtin.replace:
     name: /etc/default/minifirewall
     regexp: "^(HTTPSITES='((?!apt\\.postgresql\\.org|0\\.0\\.0\\.0).)*)'$"
     replace: "\\1 apt.postgresql.org'"
   notify: Restart minifirewall
 
-- meta: flush_handlers
+- ansible.builtin.meta: flush_handlers
 
 - name: Add PGDG GPG key
-  copy:
+  ansible.builtin.copy:
     src: postgresql.asc
     dest: "{{ apt_keyring_dir }}/postgresql.asc"
     force: yes
@@ -18,7 +18,7 @@
     group: root
 
 - name: Add PGDG repository (Debian <12)
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: "deb [signed-by={{ apt_keyring_dir }}/postgresql.asc] http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main"
     filename: postgresql
     update_cache: yes
@@ -38,7 +38,7 @@
   when: elastic_sources is changed
 
 - name: Add APT preference file
-  template:
+  ansible.builtin.template:
     src: postgresql.pref.j2
     dest: /etc/apt/preferences.d/postgresql.pref
     mode: "0644"

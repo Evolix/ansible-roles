@@ -1,6 +1,6 @@
 ---
 - name: Add www-data to Redmine group
-  user:
+  ansible.builtin.user:
     name: www-data
     groups: "{{ redmine_user }}"
     append: True
@@ -9,7 +9,7 @@
     - nginx
 
 - name: Copy nginx vhost
-  template:
+  ansible.builtin.template:
     src: nginx.conf.j2
     dest: "/etc/nginx/sites-available/{{ redmine_user }}.conf"
     mode: "0644"
@@ -19,7 +19,7 @@
     - nginx
 
 - name: Enable nginx vhost
-  file:
+  ansible.builtin.file:
     src: "/etc/nginx/sites-available/{{ redmine_user }}.conf"
     dest: "/etc/nginx/sites-enabled/{{ redmine_user }}.conf"
     state: link

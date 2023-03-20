@@ -1,6 +1,7 @@
 ---
 - name: Check if FTP account exist
-  command: grep "^{{ proftpd_name }}:" /etc/proftpd/vpasswd
+  ansible.builtin.command:
+    cmd: grep "^{{ proftpd_name }}:" /etc/proftpd/vpasswd
   failed_when: False
   check_mode: no
   changed_when: check_ftp_account.rc != 0
@@ -9,7 +10,8 @@
     - proftpd
 
 - name: Generate FTP password
-  command: apg -n1
+  ansible.builtin.command:
+    cmd: apg -n1
   register: ftp_password
   check_mode: no
   when: check_ftp_account.rc != 0
@@ -17,14 +19,14 @@
     - proftpd
 
 - name: Print generated password
-  debug:
+  ansible.builtin.debug:
     msg: "{{ ftp_password.stdout }}"
   when: check_ftp_account.rc != 0
   tags:
     - proftpd
 
 - name: Hash generated FTP password
-  set_fact:
+  ansible.builtin.set_fact:
     proftpd_password: "{{ ftp_password.stdout | password_hash('sha512') }}"
   check_mode: no
   when: check_ftp_account.rc != 0
@@ -32,7 +34,8 @@
     - proftpd
 
 - name: Get current FTP password
-  shell: grep "^{{ proftpd_name }}:" /etc/proftpd/vpasswd | cut -d':' -f2
+  ansible.builtin.shell:
+    cmd: grep "^{{ proftpd_name }}:" /etc/proftpd/vpasswd | cut -d':' -f2
   register: hashed_ftp_password
   check_mode: no
   when: check_ftp_account.rc == 0
@@ -41,7 +44,7 @@
     - proftpd
 
 - name: Get current FTP password
-  set_fact:
+  ansible.builtin.set_fact:
     proftpd_password: "{{ hashed_ftp_password.stdout }}"
   check_mode: no
   when: check_ftp_account.rc == 0
@@ -50,7 +53,7 @@
     - proftpd
 
 - name: Create FTP account
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/proftpd/vpasswd
     state: present
     create: yes
@@ -61,7 +64,7 @@
     - proftpd
 
 - name: Allow FTP account
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/proftpd/conf.d/z-evolinux.conf
     state: present
     line: "	AllowUser {{ proftpd_name }}"

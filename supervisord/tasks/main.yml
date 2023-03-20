@@ -1,12 +1,12 @@
 ---
 - name: Install Supervisor
-  apt:
+  ansible.builtin.apt:
     name: supervisor
   tags:
     - supervisord
 
 - name: Add http configuration for Supervisor
-  copy:
+  ansible.builtin.copy:
     src: http.conf
     dest: /etc/supervisor/conf.d/
     mode: "0644"

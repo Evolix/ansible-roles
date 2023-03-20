@@ -1,6 +1,6 @@
 ---
 
-- include: install.yml
+- ansible.builtin.include: install.yml
 
-- include: cron.yml
+- ansible.builtin.include: cron.yml
   when: evocheck_update_crontab | bool

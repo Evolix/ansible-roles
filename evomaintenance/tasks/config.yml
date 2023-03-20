@@ -1,6 +1,6 @@
 ---
 
-- assert:
+- ansible.builtin.assert:
     that:
       - evomaintenance_api_endpoint is not none
       - evomaintenance_api_key is not none
@@ -8,7 +8,7 @@
   when: evomaintenance_hook_api | bool
 
 - name: Configuration is installed
-  template:
+  ansible.builtin.template:
     src: evomaintenance.j2
     dest: /etc/evomaintenance.cf
     owner: root

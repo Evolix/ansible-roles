@@ -1,13 +1,14 @@
 ---
 - name: Create {{ nextcloud_user }} unix group
-  group:
+
+  ansible.builtin.group:
     name: "{{ nextcloud_user | mandatory }}"
     state: present
   tags:
     - nextcloud
 
 - name: Create {{ nextcloud_user | mandatory }} unix user
-  user:
+  ansible.builtin.user:
     name: "{{ nextcloud_user | mandatory }}"
     group: "{{ nextcloud_user | mandatory }}"
     home: "{{ nextcloud_home | mandatory }}"
@@ -19,7 +20,7 @@
   - nextcloud
 
 - name: Create top-level directories
-  file:
+  ansible.builtin.file:
     dest: "{{ item }}"
     state: directory
     mode: "0700"

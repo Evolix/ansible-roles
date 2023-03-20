@@ -1,10 +1,10 @@
 ---
 
-- set_fact:
+- ansible.builtin.set_fact:
     redis_restart_handler_name: "{{ redis_restart_if_needed | bool | ternary('restart redis', 'restart redis (noop)') }}"
 
 - name: Linux kernel overcommit memory setting is enabled
-  sysctl:
+  ansible.posix.sysctl:
     name: "vm.overcommit_memory"
     value: "1"
     sysctl_file: "/etc/sysctl.d/evolinux-redis.conf"
@@ -12,11 +12,11 @@
     reload: yes
 
 - name: Customize Kernel Transparent Huge Page
-  include: thp.yml
+  ansible.builtin.include: thp.yml
   when: redis_sysctl_transparent_hugepage_enabled is not none
 
 - name: Redis is installed
-  apt:
+  ansible.builtin.apt:
     name:
       - redis-server
       - redis-tools
@@ -26,7 +26,7 @@
     - packages
 
 - name: Redis Sentinel is installed
-  apt:
+  ansible.builtin.apt:
     name: "redis-sentinel"
     state: present
   tags:
@@ -35,21 +35,22 @@
   when: redis_sentinel_install | bool
 
 - name: Get Redis version
-  shell: "redis-server -v | grep -Eo '(v=\\S+)' | cut -d'=' -f 2 | grep -E '^([0-9]|\\.)+$'"
+  ansible.builtin.shell:
+    cmd: "redis-server -v | grep -Eo '(v=\\S+)' | cut -d'=' -f 2 | grep -E '^([0-9]|\\.)+$'"
   changed_when: False
   check_mode: no
   register: _redis_installed_version
   tags:
     - redis
 
-- set_fact:
+- ansible.builtin.set_fact:
     redis_installed_version: "{{ _redis_installed_version.stdout }}"
   check_mode: no
   tags:
     - redis
 
 - name: set variables for default mode
-  set_fact:
+  ansible.builtin.set_fact:
     redis_conf_dir: "{{ redis_conf_dir_prefix }}"
     redis_socket_dir: "{{ redis_socket_dir_prefix }}"
     redis_pid_dir: "{{ redis_pid_dir_prefix }}"
@@ -58,7 +59,7 @@
   when: redis_instance_name is not defined
 
 - name: set variables for instance mode
-  set_fact:
+  ansible.builtin.set_fact:
     redis_systemd_name: "redis-server@{{ redis_instance_name }}"
     redis_conf_dir: "{{ redis_conf_dir_prefix }}-{{ redis_instance_name }}"
     redis_socket_dir: "{{ redis_socket_dir_prefix }}-{{ redis_instance_name }}"
@@ -68,7 +69,7 @@
   when: redis_instance_name is defined
 
 - name: Fail if redis_bind_interface is set
-  fail:
+  ansible.builtin.fail:
     msg: "Please change 'redis_bind_interface' (String) to 'redis_bind_interfaces' (List)"
   when:
     - redis_bind_interface is defined
@@ -76,15 +77,15 @@
     - redis_bind_interface | length > 0
 
 - name: configure Redis for default mode
-  include: default-server.yml
+  ansible.builtin.include: default-server.yml
   when: redis_instance_name is not defined
 
 - name: configure Redis for instance mode
-  include: instance-server.yml
+  ansible.builtin.include: instance-server.yml
   when: redis_instance_name is defined
 
 - name: Is Munin installed
-  stat:
+  ansible.builtin.stat:
     path: /etc/munin/plugins
   register: _munin_installed
   tags:
@@ -92,7 +93,7 @@
     - munin
 
 - name: configure Munin for default mode
-  include: default-munin.yml
+  ansible.builtin.include: default-munin.yml
   when:
     - _munin_installed.stat.exists
     - _munin_installed.stat.isdir
@@ -102,7 +103,7 @@
     - munin
 
 - name: configure Munin for instance mode
-  include: instance-munin.yml
+  ansible.builtin.include: instance-munin.yml
   when:
     - _munin_installed.stat.exists
     - _munin_installed.stat.isdir
@@ -112,7 +113,7 @@
     - munin
 
 - name: Is log2mail installed
-  stat:
+  ansible.builtin.stat:
     path: /etc/log2mail/config
   register: _log2mail_installed
   tags:
@@ -120,7 +121,7 @@
     - log2mail
 
 - name: configure log2mail for default mode
-  include: default-log2mail.yml
+  ansible.builtin.include: default-log2mail.yml
   when:
     - _log2mail_installed.stat.exists
     - _log2mail_installed.stat.isdir
@@ -130,7 +131,7 @@
     - log2mail
 
 - name: configure log2mail for instance mode
-  include: instance-log2mail.yml
+  ansible.builtin.include: instance-log2mail.yml
   when:
     - _log2mail_installed.stat.exists
     - _log2mail_installed.stat.isdir
@@ -140,7 +141,7 @@
     - log2mail
 
 - name: is NRPE present ?
-  stat:
+  ansible.builtin.stat:
     path: /etc/nagios/nrpe.d/evolix.cfg
   check_mode: no
   register: nrpe_evolix_config
@@ -148,13 +149,14 @@
     - redis
     - nrpe
 
-- include: nrpe.yml
+- ansible.builtin.include: nrpe.yml
   when: nrpe_evolix_config.stat.exists
   tags:
     - redis
     - nrpe
 
 - name: Force restart redis
-  command: /bin/true
+  ansible.builtin.command:
+    cmd: /bin/true
   notify: restart redis
   when: redis_restart_force | bool

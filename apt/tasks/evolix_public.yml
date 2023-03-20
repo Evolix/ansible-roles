@@ -3,11 +3,11 @@
 # Backward compatibility task file
 
 - name: Install Evolix Public repositories (Debian <12)
-  import_tasks: evolix_public.oneline.yml
+  ansible.builtin.import_tasks: evolix_public.oneline.yml
   when:
     - ansible_distribution_major_version is version('12', '<')
 
 - name: Install Evolix Public repositories (Debian >=12)
-  import_tasks: evolix_public.deb822.yml
+  ansible.builtin.import_tasks: evolix_public.deb822.yml
   when:
     - ansible_distribution_major_version is version('12', '>=')

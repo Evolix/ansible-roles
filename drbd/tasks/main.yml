@@ -1,6 +1,6 @@
 ---
-- include: packages.yml
+- ansible.builtin.include: packages.yml
 
-- include: munin.yml
+- ansible.builtin.include: munin.yml
 
-- include: nagios.yml
+- ansible.builtin.include: nagios.yml

@@ -1,13 +1,13 @@
 ---
 - name: Install Evolix public repositry
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/apt
     tasks_from: evolix_public.yml
   tags:
     - vrrpd
 
 - name: Install vrrpd packages
-  apt:
+  ansible.builtin.apt:
     name: vrrpd=1.0-2.evolix
     allow_unauthenticated: yes
     state: present
@@ -15,7 +15,7 @@
     - vrrpd
 
 - name: Adjust sysctl config (except rp_filter)
-  sysctl:
+  ansible.posix.sysctl:
     name: "{{ item.name }}"
     value: "{{ item.value }}"
     sysctl_file: /etc/sysctl.d/vrrpd.conf
@@ -29,14 +29,15 @@
     - vrrpd
 
 - name: look if rp_filter is managed by minifirewall
-  command: grep "SYSCTL_RP_FILTER=" /etc/default/minifirewall
+  ansible.builtin.command:
+    cmd: grep "SYSCTL_RP_FILTER=" /etc/default/minifirewall
   failed_when: False
   changed_when: False
   check_mode: no
   register: grep_sysctl_rp_filter_minifirewall
 
 - name: Configure SYSCTL_RP_FILTER in minifirewall
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "SYSCTL_RP_FILTER='0'"
     regexp: "SYSCTL_RP_FILTER=('|\").*('|\")"
@@ -44,7 +45,7 @@
   when: grep_sysctl_rp_filter_minifirewall.rc == 0
 
 - name: Adjust sysctl config (only rp_filter)
-  sysctl:
+  ansible.posix.sysctl:
     name: "{{ item.name }}"
     value: "{{ item.value }}"
     sysctl_file: /etc/sysctl.d/vrrpd.conf
@@ -58,7 +59,7 @@
     - vrrpd
 
 - name: Create VRRP address
-  include: ip.yml
+  ansible.builtin.include: ip.yml
   loop: "{{ vrrp_addresses }}"
   loop_control:
     loop_var: "vrrp_address"

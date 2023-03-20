@@ -1,10 +1,10 @@
 ---
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - name: Scripts dir is present
-  file:
+  ansible.builtin.file:
     path: "/usr/share/scripts"
     state: directory
     owner: root
@@ -12,7 +12,7 @@
     mode: "0700"
 
 - name: Copy listupgrade script
-  copy:
+  ansible.builtin.copy:
     src: listupgrade.sh
     dest: "/usr/share/scripts/listupgrade.sh"
     mode: "0700"
@@ -21,7 +21,7 @@
     force: yes
 
 - name: Create /etc/evolinux
-  file:
+  ansible.builtin.file:
     path: /etc/evolinux
     state: directory
     owner: root
@@ -29,7 +29,7 @@
     mode: "0700"
 
 - name: Copy listupgrade config
-  template:
+  ansible.builtin.template:
     src: listupgrade.cnf.j2
     dest: /etc/evolinux/listupgrade.cnf
     mode: "0600"
@@ -38,7 +38,7 @@
     force: no
 
 - name: Cron.d is present
-  file:
+  ansible.builtin.file:
     path: "/etc/cron.d"
     state: directory
     mode: "0755"
@@ -46,7 +46,7 @@
     group: root
 
 - name: Enable listupgrade cron
-  cron:
+  ansible.builtin.cron:
     name: "listupgrade.sh"
     cron_file: "listupgrade"
     user: root
@@ -59,13 +59,13 @@
     state: "{{ listupgrade_cron_enabled | bool | ternary('present','absent') }}"
 
 - name: Remove old lisupgrade typo
-  cron:
+  ansible.builtin.cron:
     name: "lisupgrade.sh"
     cron_file: "listupgrade"
     state: absent
 
 - name: old-kernel-autoremoval script is present
-  copy:
+  ansible.builtin.copy:
     src: old-kernel-autoremoval.sh
     dest: /usr/share/scripts/old-kernel-autoremoval.sh
     mode: "0755"

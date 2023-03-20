@@ -3,13 +3,13 @@
 
   pre_tasks:
   - name: Install locales
-    apt:
+    ansible.builtin.apt:
       name: locales
       state: present
     changed_when: False
 
   - name: Setting default locales
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/locale.gen
       line: "{{ item }}"
       create: yes
@@ -22,7 +22,8 @@
     register: test_locales
 
   - name: Reconfigure locales
-    command: /usr/sbin/locale-gen
+    ansible.builtin.command:
+      cmd: /usr/sbin/locale-gen
     changed_when: False
     when: test_locales is changed
 

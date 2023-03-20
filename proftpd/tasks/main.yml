@@ -1,6 +1,6 @@
 ---
 - name: package is installed
-  apt:
+  ansible.builtin.apt:
     name: proftpd-basic
     state: present
   tags:
@@ -8,7 +8,8 @@
     - packages
 
 - name: ftpusers groupe exists
-  group:
+
+  ansible.builtin.group:
     name: ftpusers
     state: present
   notify: restart proftpd
@@ -16,7 +17,7 @@
     - proftpd
 
 - name: FTP jail is installed
-  template:
+  ansible.builtin.template:
     src: evolinux.conf.j2
     dest: /etc/proftpd/conf.d/z-evolinux.conf
     mode: "0644"
@@ -27,7 +28,7 @@
     - proftpd
 
 - name: FTPS jail is installed
-  template:
+  ansible.builtin.template:
     src: ftps.conf.j2
     dest: /etc/proftpd/conf.d/ftps.conf
     mode: "0644"
@@ -38,7 +39,7 @@
     - proftpd
 
 - name: SFTP jail is installed
-  template:
+  ansible.builtin.template:
     src: sftp.conf.j2
     dest: /etc/proftpd/conf.d/sftp.conf
     mode: "0644"
@@ -49,7 +50,7 @@
     - proftpd
 
 - name: SFTP key folder exists if needed
-  file:
+  ansible.builtin.file:
     path: /etc/proftpd/sftp.authorized_keys/
     state: directory
     mode: "0755"
@@ -63,7 +64,7 @@
     - proftpd
 
 - name: mod_tls_memcache is disabled
-  replace:
+  ansible.builtin.replace:
     dest: /etc/proftpd/modules.conf
     regexp: '^LoadModule mod_tls_memcache.c'
     replace: '#LoadModule mod_tls_memcache.c'
@@ -72,7 +73,7 @@
     - proftpd
 
 - name: Put empty vpasswd file if missing
-  copy:
+  ansible.builtin.copy:
     src: vpasswd
     dest: /etc/proftpd/vpasswd
     force: no
@@ -84,7 +85,7 @@
 # So, readonly when opened with vim.
 # Then readable by group.
 - name: Enforce permissions on password file
-  file:
+  ansible.builtin.file:
     path: /etc/proftpd/vpasswd
     mode: "0440"
     owner: root
@@ -93,5 +94,5 @@
   tags:
     - proftpd
 
-- include: accounts.yml
+- ansible.builtin.include: accounts.yml
   when: proftpd_accounts | length > 0

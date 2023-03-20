@@ -1,28 +1,29 @@
 ---
 - name: restart munin-node
-  service:
+  ansible.builtin.service:
     name: munin-node
     state: restarted
 
 - name: restart nagios-nrpe-server
-  service:
+  ansible.builtin.service:
     name: nagios-nrpe-server
     state: restarted
 
 - name: restart mysql
-  service:
+  ansible.builtin.service:
     name: mysql
     state: restarted
 
 - name: restart mysql (noop)
-  meta: noop
+  ansible.builtin.meta: noop
   failed_when: False
   changed_when: False
 
 - name: reload systemd
-  systemd:
+  ansible.builtin.systemd:
     name: mysql
     daemon_reload: yes
 
 - name: Restart minifirewall
-  command: /etc/init.d/minifirewall restart
+  ansible.builtin.command:
+    cmd: /etc/init.d/minifirewall restart

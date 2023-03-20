@@ -1,10 +1,10 @@
 - name: Install packages
-  apt:
+  ansible.builtin.apt:
     name: rabbitmq-server
     state: present
 
 - name: Create rabbitmq-env.conf
-  copy:
+  ansible.builtin.copy:
     src: evolinux-rabbitmq-env.conf
     dest: /etc/rabbitmq/rabbitmq-env.conf
     owner: rabbitmq
@@ -13,7 +13,7 @@
     force: no
 
 - name: Create rabbitmq.config
-  copy:
+  ansible.builtin.copy:
     src: evolinux-rabbitmq.config
     dest: /etc/rabbitmq/rabbitmq.config
     owner: rabbitmq
@@ -22,34 +22,34 @@
     force: no
 
 - name: Adjust ulimit
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/default/rabbitmq-server
     line: ulimit -n 2048
 
 - name: is NRPE present ?
-  stat:
+  ansible.builtin.stat:
     path: /etc/nagios/nrpe.d/evolix.cfg
   check_mode: no
   register: nrpe_evolix_config
   tags:
     - nrpe
 
-- include: nrpe.yml
+- ansible.builtin.include: nrpe.yml
   when: nrpe_evolix_config.stat.exists
 
 - name: is Munin present ?
-  stat:
+  ansible.builtin.stat:
     path: /etc/munin
   check_mode: no
   register: etc_munin_directory
   tags:
     - nrpe
 
-- include: munin.yml
+- ansible.builtin.include: munin.yml
   when: etc_munin_directory.stat.exists
 
 - name: entry for RabbitMQ in web page is present
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /var/www/index.html
     insertbefore: '</ul>'
     line: '<li><a href="/rabbitmq.html">RabbitMQ</a></li>'

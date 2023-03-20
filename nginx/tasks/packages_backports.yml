@@ -1,7 +1,7 @@
 ---
 
 - name: Backports repository is configured
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/apt
     tasks_from: backports.yml
   tags:
@@ -9,7 +9,7 @@
     - packages
 
 - name: Prefer Nginx packages from backports
-  template:
+  ansible.builtin.template:
     src: apt/nginx_preferences
     dest: /etc/apt/preferences.d/999-nginx
     force: yes
@@ -20,7 +20,7 @@
     - packages
 
 - name: APT cache is updated
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
   when: nginx_apt_preferences is changed
   tags:

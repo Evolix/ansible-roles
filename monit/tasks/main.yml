@@ -1,7 +1,7 @@
 ---
 
 - name: monit is installed
-  apt:
+  ansible.builtin.apt:
     name: monit
     state: present
   tags:
@@ -9,7 +9,7 @@
   - packages
 
 - name: custom config is installed
-  template:
+  ansible.builtin.template:
     src: evolinux-defaults.conf.j2
     dest: /etc/monit/conf.d/z-evolinux-defaults.conf
     mode: "0640"

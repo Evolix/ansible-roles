@@ -1,33 +1,34 @@
 ---
 - name: restart munin-node
-  service:
+  ansible.builtin.service:
     name: munin-node
     state: restarted
 
 - name: restart squid
-  service:
+  ansible.builtin.service:
     name: squid
     state: restarted
 
 - name: reload squid
-  service:
+  ansible.builtin.service:
     name: squid
     state: reloaded
 
 - name: restart squid3
-  service:
+  ansible.builtin.service:
     name: squid3
     state: restarted
 
 - name: reload squid3
-  service:
+  ansible.builtin.service:
     name: squid3
     state: reloaded
 
 - name: restart log2mail
-  service:
+  ansible.builtin.service:
     name: log2mail
     state: restarted
 
 - name: restart minifirewall
-  command: /etc/init.d/minifirewall restart
+  ansible.builtin.command:
+    cmd: /etc/init.d/minifirewall restart

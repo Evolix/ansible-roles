@@ -1,13 +1,14 @@
 ---
 - name: Create redmine group
-  group:
+
+  ansible.builtin.group:
     name: "{{ redmine_user }}"
     state: present
   tags:
     - redmine
 
 - name: Create redmine user
-  user:
+  ansible.builtin.user:
     name: "{{ redmine_user }}"
     state: present
     group: "{{ redmine_user }}"
@@ -18,7 +19,7 @@
     - redmine
 
 - name: Add redmine user to Redis group
-  user:
+  ansible.builtin.user:
     name: "{{ redmine_user }}"
     groups: "redis-{{ redmine_user }}"
     append: True
@@ -27,7 +28,7 @@
     - redmine
 
 - name: Create required directory
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     owner: "{{ redmine_user }}"
@@ -40,5 +41,6 @@
     - redmine
 
 - name: Enable systemd user mode
-  command: "loginctl enable-linger {{ redmine_user }}"
+  ansible.builtin.command:
+    cmd: "loginctl enable-linger {{ redmine_user }}"
   changed_when: False
