@@ -137,7 +137,7 @@
     dest: "{{ varnish_config_file }}"
     mode: "0644"
     force: yes
-  when: "{{ varnish_update_config }}"
+  when: varnish_update_config | bool
   loop: "{{ query('first_found', templates) }}"
   vars:
     templates:

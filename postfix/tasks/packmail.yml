@@ -21,7 +21,7 @@
 - name: make sure a service Mailgraph is running
   ansible.builtin.systemd:
     name: mailgraph.service
-    state: started  
+    state: started
     enabled: true
 
 - name: create packmail main.cf

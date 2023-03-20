@@ -3,8 +3,7 @@
 - name: "Set php version to 7.4 if Sury repo is not enabled"
   ansible.builtin.set_fact:
     php_version: "7.4"
-  when:
-    - php_sury_enable == False
+  when: not (php_sury_enable | bool)
   check_mode: no
 
 - name: "Set variables (Debian 11)"

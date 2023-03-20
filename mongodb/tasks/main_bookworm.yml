@@ -11,7 +11,7 @@
 #   - ansible_distribution_release == "bookworm"
 #   - mongodb_version is version('5.0', '<')
 
-- name: Add MongoDB repository 
+- name: Add MongoDB repository
   ansible.builtin.template:
     src: mongodb.sources.j2
     dest: /etc/apt/sources.list.d/mongodb.sources

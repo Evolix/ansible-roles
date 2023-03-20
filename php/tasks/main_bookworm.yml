@@ -3,8 +3,7 @@
 - name: "Set php version to 8.2 (Debian 12)"
   ansible.builtin.set_fact:
     php_version: "8.2"
-  when:
-    - php_sury_enable == false
+  when: not (php_sury_enable | bool)
   check_mode: no
 
 - name: "Set php config directories (Debian 12)"

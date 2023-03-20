@@ -36,7 +36,7 @@
     chdir: "{{ nextcloud_webroot }}"
     creates: "{{ nextcloud_home }}/config/config.php"
   become_user: "{{ nextcloud_user }}"
-  when: (nc_status.stdout | from_json).installed == false
+  when: not ((nc_status.stdout | from_json).installed | bool)
   tags:
     - nextcloud
 
