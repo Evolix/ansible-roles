@@ -1,6 +1,9 @@
 ---
 
-## LSI MegaRAID 12GSAS/PCIe Secure SAS39xx
+## H745: Broadcom / LSI MegaRAID Tri-Mode SAS3516 (rev 01)
+# This is OK
+
+## H750: Broadcom / LSI MegaRAID 12GSAS/PCIe Secure SAS39xx
 # This is still incompatible with Debian
 
 - name: Check if PERC HBA11 device is present
