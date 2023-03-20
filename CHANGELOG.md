@@ -15,6 +15,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * graylog: new role
 * Patroni: new role for install Patroni cluster 
+* lxc-php: add support for PHP 8.2 container
 
 ### Changed
 
