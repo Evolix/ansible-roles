@@ -16,6 +16,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Changed
 
 * apt: with Debian 12, backports are installed but disabled by default
+* openvpn: updated the README file
 
 ### Fixed
 
