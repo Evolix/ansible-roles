@@ -8,8 +8,21 @@
     update_cache: yes
     state: present
   tags:
-  - mysql
-  - packages
+    - mysql
+    - packages
+
+- name: Default log directory is present
+  ansible.builtin.file:
+    path: /var/log/mysql
+    owner: mysql
+    group: adm
+    mode: "2750"
+    state: directory
+  notify: restart mysql
+  tags:
+    - mysql
+    - packages
+  when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Install MySQL dev packages
   ansible.builtin.apt:
@@ -17,8 +30,8 @@
     update_cache: yes
     state: present
   tags:
-  - mysql
-  - packages
+    - mysql
+    - packages
   when: mysql_install_libclient | bool
 
 - name: MySQL is started
@@ -26,16 +39,16 @@
     name: mysql
     state: started
   tags:
-  - mysql
-  - services
+    - mysql
+    - services
 
 - name: apg package is installed
   ansible.builtin.apt:
     name: apg
     state: present
   tags:
-  - mysql
-  - packages
+    - mysql
+    - packages
 
 - name: Python2 dependencies for Ansible are installed
   ansible.builtin.apt:
