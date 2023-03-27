@@ -1,0 +1,20 @@
+---
+
+# Install Patroni from backport Evolix
+patroni_backport: false
+
+# Define variable for Patroni
+
+cluster_name: "mycluster"
+patroni_restapi_listen: "127.0.0.1"
+patroni_port: "8008"
+postgresql_hosts_cluster: []
+postgresql_host: 127.0.0.1
+postgresql_version: ''
+postgresql_replication_user: 'repl'
+postgresql_superuser: 'admin'
+
+# Define variable for etcd
+etcd_hosts: []
+etcd_port: "2379"
+
