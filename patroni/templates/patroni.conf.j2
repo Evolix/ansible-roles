@@ -1,0 +1,73 @@
+scope: {{ cluster_name }}
+name: {{ cluster_name }}
+
+restapi:
+    listen: {{ patroni_restapi_listen }}:{{ patroni_port }}
+    connect_address: {{ patroni_restapi_listen }}:{{ patroni_port }}
+
+etcd:
+    hosts:
+    - {{ etcd_hosts }}:{{ etcd_port }}
+    - {{ etcd_hosts }}:{{ etcd_port }}
+    - {{ etcd_hosts }}:{{ etcd_port }}
+
+bootstrap:
+    dcs:
+        ttl: 30
+        loop_wait: 10
+        retry_timeout: 10
+        maximum_lag_on_failover: 1048576
+        postgresql:
+            use_pg_rewind: true
+            use_slots: true
+            parameters:
+              wal_level: replica
+              hot_standby: "on"
+              wal_keep_segment: 8
+              max_wal_senders: 5
+              max_relication_slots: 5
+              checkpoint_timeout: 30
+
+    initdb:
+    - encoding: UTF8
+    - data-checksums
+
+    pg_hba:
+    - host replication repl 127.0.0.1/32 md5
+    - host replication repl {{ postgresql_hosts_cluster }}/0 md5
+    - host replication repl {{ postgresql_hosts_cluster }}/0 md5
+    - host replication repl {{ postgresql_hosts_cluster }}/0 md5
+    - host all all 0.0.0.0/0 md5
+
+   users:
+        {{ postgresql_superuser }}:
+            password: {{ postgresql_superuser_password }}
+            options:
+             - createrole
+             - createdb
+        {{ postgresql_replication_user }}:
+           password: {{ postgresql_replication_password }}
+           options:
+            - replication
+
+postgresql:
+    listen: {{ postgresql_host }}:{{ postgresql_port }}
+    connect_address: {{ postgresql_host }}:{{ postgresql_port }}
+    bin_dir: /usr/lib/postgresql/{{ postgresql_version }}/bin/
+    data_dir: /home/{{ cluster_name }}
+    pgpass: /tmp/{{ cluster_name }}-pgpass
+    authentication:
+        replication:
+            username: {{ postgresql_replication_user }}
+            password: {{ postgresql_replication_password }}
+        superuser:
+            username: {{ postgresql_superuser }}
+            password: {{ postgresql_superuser_password }}
+    parameters:
+        unix_socket_directories: '/tmp'
+
+tags:
+    nofailover: false
+    noloadbalance: false
+    clonefrom: false
+    nosync: false

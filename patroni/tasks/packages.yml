@@ -1,0 +1,8 @@
+---
+
+- name: Install patroni package
+  ansible.builtin.apt:
+    name:
+      - patroni
+    update_cache: yes
+
