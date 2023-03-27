@@ -22,4 +22,5 @@
     - check_port_uid.stdout != "{{ tomcat_instance_name }}"
 
 #- name: Check use of http port
-#  command: grep '<Connector port="{{ tomcat_instance_port }}" protocol="HTTP/1.1"' $(ls {{ tomcat_instance_root }}/*/conf/server.xml|grep -v {{ tomcat_instance_name }})
+#  ansible.builtin.command:
+#    cmd: grep '<Connector port="{{ tomcat_instance_port }}" protocol="HTTP/1.1"' $(ls {{ tomcat_instance_root }}/*/conf/server.xml|grep -v {{ tomcat_instance_name }})
