@@ -1,0 +1,13 @@
+---
+
+# Backward compatibility task file
+
+- name: SSH configuration (Debian <12)
+  ansible.builtin.import_tasks: ssh.single-file.yml
+  when:
+    - ansible_distribution_major_version is version('12', '<')
+
+- name: SSH configuration (Debian >=12)
+  ansible.builtin.import_tasks: ssh.included-files.yml
+  when:
+    - ansible_distribution_major_version is version('12', '>=')
