@@ -40,27 +40,27 @@ if [ "$type" = "kvm" ]; then
     HardwareMark="KVM"
     HardwareModel="Virtual Machine"
 
-    cpuMark=$(lscpu | grep Vendor | tr -s '\t' ' ' | cut -d' ' -f3)
-    cpuModel="Virtual $(lscpu | grep "Model name" | tr -s '\t' ' ' | cut -d' ' -f3-), $(nproc) vCPU"
-    cpuFreq="$(lscpu | grep "CPU MHz" | tr -s '\t' ' ' | cut -d' ' -f3-)MHz"
+    cpuMark=$(lscpu | grep "Vendor ID:" | head -n1 | tr -s '\t' ' ' | cut -d' ' -f3)
+    cpuModel="Virtual $(lscpu | grep "Model name" | head -n1 | tr -s '\t' ' ' | cut -d' ' -f3-), $(nproc) vCPU"
+    cpuFreq="$(lscpu | grep "GHz" | head -n1 |  tr -s '\t' ' ' | cut -d'@' -f2 | tr -d ' ')"
 
 elif [ "$type" = "vmware" ]; then
     ComputerType="VM"
     HardwareMark="VMWare"
     HardwareModel="Virtual Machine"
 
-    cpuMark=$(lscpu | grep Vendor | tr -s '\t' ' ' | cut -d' ' -f3)
-    cpuModel="Virtual $(lscpu | grep "Model name" | tr -s '\t' ' ' | cut -d' ' -f3-), $(nproc) vCPU"
-    cpuFreq="$(lscpu | grep "CPU MHz" | tr -s '\t' ' ' | cut -d' ' -f3-)MHz"
+    cpuMark=$(lscpu | grep "Vendor ID:" | head -n1 | tr -s '\t' ' ' | cut -d' ' -f3)
+    cpuModel="Virtual $(lscpu | grep "Model name" | head -n1 | tr -s '\t' ' ' | cut -d' ' -f3-), $(nproc) vCPU"
+    cpuFreq="$(lscpu | grep "GHz" | head -n1 |  tr -s '\t' ' ' | cut -d'@' -f2 | tr -d ' ')"
 
 elif [ "$type" = "virtualbox" ]; then
     ComputerType="VM"
     HardwareMark="VirtualBox"
     HardwareModel="Virtual Machine"
 
-    cpuMark=$(lscpu | grep Vendor | tr -s '\t' ' ' | cut -d' ' -f3)
-    cpuModel="Virtual $(lscpu | grep "Model name" | tr -s '\t' ' ' | cut -d' ' -f3-), $(nproc) vCPU"
-    cpuFreq="$(lscpu | grep "CPU MHz" | tr -s '\t' ' ' | cut -d' ' -f3-)MHz"
+    cpuMark=$(lscpu | grep "Vendor ID:" | head -n1 | tr -s '\t' ' ' | cut -d' ' -f3)
+    cpuModel="Virtual $(lscpu | grep "Model name" | head -n1 | tr -s '\t' ' ' | cut -d' ' -f3-), $(nproc) vCPU"
+    cpuFreq="$(lscpu | grep "GHz" | head -n1 |  tr -s '\t' ' ' | cut -d'@' -f2 | tr -d ' ')"
 else
     ComputerType="Baremetal"
     HardwareModel=$(dmidecode -s system-product-name | grep -v '^#')
@@ -307,10 +307,10 @@ for net in $(ls /sys/class/net); do
         hw=$(cat ${path}/address)
         # In some cases some devices does not have a vendor or device, skip it
         test -f ${path}/device/vendor || continue
-        vendor_id=$(cat ${path}/device/vendor)
+        vendor_id=$(cat ${path}/device/vendor | sed -E 's/^0x//g')
         test -f ${path}/device/device || continue
-        dev_id=$(cat ${path}/device/device)
-        [ "${dev_id}" = "0x0001" ] && dev_id="0x1000"
+        dev_id=$(cat ${path}/device/device | sed -E 's/^0x//g')
+        [ "${dev_id}" = "0001" ] && dev_id="1000"
         dev=$(lspci -d "${vendor_id}:${dev_id}" -vm)
         vendor=$(echo "${dev}" | grep -E "^Vendor" | cut -d':' -f2 | xargs)
         model=$(echo "${dev}" | grep -E "^Vendor" -A1 | grep -E "^Device" | cut -d':' -f2 | xargs)

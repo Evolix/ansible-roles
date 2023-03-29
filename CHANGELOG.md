@@ -20,6 +20,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Fixed
 
+* generate-ldif: Support for Debian 12
+
 ### Removed
 
 ### Security
