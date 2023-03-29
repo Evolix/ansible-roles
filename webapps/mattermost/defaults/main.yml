@@ -1,0 +1,11 @@
+---
+# defaults file for vars
+system_dep: "['git', 'nginx', 'postgresql', 'python3-psycopg2', 'certbot', 'acl']"
+version: '7.8.1'
+download_url: "https://releases.mattermost.com/{{ version }}/mattermost-team-{{ version }}-linux-amd64.tar.gz"
+domains: ['example.domain.org']
+mm_port: '8065'
+db_host: '127.0.0.1'
+db_name: "{{ service }}"
+db_user: "{{ service }}"
+db_password: 'UQ6_CHANGE_ME_Gzb'

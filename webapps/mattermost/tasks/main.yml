@@ -1,0 +1,104 @@
+---
+# tasks file for mattermost install
+
+- name: Install main system dependencies
+  apt:
+    name: "{{ system_dep }}"
+
+- name: Add UNIX account
+  user:
+    name: "{{ service }}"
+    shell: /bin/bash
+
+- name: Add PostgreSQL user
+  postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    no_password_changes: true
+  become_user: postgres
+
+- name: Add PostgreSQL database
+  postgresql_db:
+    name: "{{ db_name }}"
+    owner: "{{ db_user }}"
+  become_user: postgres
+
+- name: Unarchive mattermost archive
+  unarchive:
+    src: "{{ download_url }}"
+    dest: ~/
+    remote_src: yes
+  become_user: "{{ service }}"
+
+- name: Create the mattermost data dir if needed
+  file:
+    path: ~/mattermost/data
+    state: directory
+    mode: '0750'
+  become_user: "{{ service }}"
+
+- name: Template mattermost conf file
+  template: 
+    src: "config.json.j2"
+    dest: "~/mattermost/config/config.json"
+  become_user: "{{ service }}"
+
+- name: Template mattermost systemd unit
+  template: 
+    src: "mattermost.service.j2"
+    dest: "/etc/systemd/system/mattermost@.service"
+
+- name: Start mattermost systemd unit
+  service:
+    name: "mattermost@{{ service }}"
+    state: started
+
+#~ - name: Check if SSL certificate is present and register result
+  #~ stat:
+    #~ path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+  #~ register: ssl
+
+#~ - name: Generate certificate only if required (first time)
+  #~ block:
+  #~ - name: Template vhost without SSL for successfull LE challengce
+    #~ template: 
+      #~ src: "vhost.conf.j2"
+      #~ dest: "/etc/nginx/sites-available/{{ service }}.conf"
+  #~ - name: Enable temporary nginx vhost for mattermost
+    #~ file:
+      #~ src: "/etc/nginx/sites-available/{{ service }}.conf"
+      #~ dest: "/etc/nginx/sites-enabled/{{ service }}.conf"
+      #~ state: link
+  #~ - name: Reload nginx conf
+    #~ service:
+      #~ name: nginx
+      #~ state: reloaded
+  #~ - name: Make sure /var/lib/letsencrypt exists and has correct permissions
+    #~ file: 
+      #~ path: /var/lib/letsencrypt
+      #~ state: directory
+      #~ mode: '0755'
+  #~ - name: Generate certificate with certbot
+    #~ shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt -d {{ domains |first }}
+  #~ when: ssl.stat.exists == true
+
+#~ - name: (Re)check if SSL certificate is present and register result
+  #~ stat:
+    #~ path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+  #~ register: ssl
+
+- name: (Re)template conf file for nginx vhost with SSL
+  template:
+    src: "vhost.conf.j2"
+    dest: "/etc/nginx/sites-available/{{ service }}.conf"
+
+- name: Enable nginx vhost for mattermost
+  file:
+    src: "/etc/nginx/sites-available/{{ service }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ service }}.conf"
+    state: link
+
+- name: Reload nginx conf
+  service:
+    name: nginx
+    state: reloaded
