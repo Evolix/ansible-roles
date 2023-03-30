@@ -1,15 +1,15 @@
 scope: {{ cluster_name }}
-name: {{ cluster_name }}
+name: {{ cluster_name_host }}
 
 restapi:
-    listen: {{ patroni_restapi_listen }}:{{ patroni_port }}
-    connect_address: {{ patroni_restapi_listen }}:{{ patroni_port }}
+    listen: {{ patroni_restapi_listen }}:{{ patroni_restapi_port }}
+    connect_address: {{ patroni_restapi_listen }}:{{ patroni_restapi_port }}
 
 etcd:
     hosts:
-    - {{ etcd_hosts }}:{{ etcd_port }}
-    - {{ etcd_hosts }}:{{ etcd_port }}
-    - {{ etcd_hosts }}:{{ etcd_port }}
+{% for server in groups['etcd'] %}
+    - {{ hostvars[server]['etcd_host'] }}:{{ etcd_client_port }}
+{% endfor %}
 
 bootstrap:
     dcs:
@@ -34,35 +34,35 @@ bootstrap:
 
     pg_hba:
     - host replication repl 127.0.0.1/32 md5
-    - host replication repl {{ postgresql_hosts_cluster }}/0 md5
-    - host replication repl {{ postgresql_hosts_cluster }}/0 md5
-    - host replication repl {{ postgresql_hosts_cluster }}/0 md5
+{% for server in groups['patroni'] %}
+    - host replication repl {{ hostvars[server]['postgresql_hosts_cluster'] }}/0 md5
+{% endfor %}
     - host all all 0.0.0.0/0 md5
 
    users:
         {{ postgresql_superuser }}:
-            password: {{ postgresql_superuser_password }}
+            password: {{ postgresql_superuser_password.stdout }}
             options:
              - createrole
              - createdb
         {{ postgresql_replication_user }}:
-           password: {{ postgresql_replication_password }}
+           password: {{ postgresql_replication_password.stdout }}
            options:
             - replication
 
 postgresql:
     listen: {{ postgresql_host }}:{{ postgresql_port }}
     connect_address: {{ postgresql_host }}:{{ postgresql_port }}
-    bin_dir: /usr/lib/postgresql/{{ postgresql_version }}/bin/
-    data_dir: /home/{{ cluster_name }}
-    pgpass: /tmp/{{ cluster_name }}-pgpass
+    bin_dir: /var/lib/postgresql/{{ postgresql_version }}/bin/
+    data_dir: /home/{{ cluster_name_host }}
+    pgpass: /tmp/{{ cluster_name_host }}-pgpass
     authentication:
         replication:
             username: {{ postgresql_replication_user }}
-            password: {{ postgresql_replication_password }}
+            password: {{ postgresql_replication_password.stdout }}
         superuser:
             username: {{ postgresql_superuser }}
-            password: {{ postgresql_superuser_password }}
+            password: {{ postgresql_superuser_password.stdout }}
     parameters:
         unix_socket_directories: '/tmp'
 
