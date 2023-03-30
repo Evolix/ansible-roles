@@ -7,11 +7,14 @@
   ansible.builtin.lineinfile:
     path: /etc/default/pgbouncer
     line: ulimit -n 65536
+  notify: Restart PgBouncer
 - name: Add config file for PgBouncer
   ansible.builtin.template:
     src: pgbouncer.ini.j2
     dest: /etc/pgbouncer/pgbouncer.ini
+  notify: Restart PgBouncer
 - name: Populate userlist.txt
   ansible.builtin.template:
     src: userlist.txt.j2
     dest: /etc/pgbouncer/userlist.txt
+  notify: Restart PgBouncer
