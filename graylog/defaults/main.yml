@@ -1,0 +1,5 @@
+---
+graylog_version: "5.0"
+graylog_listen_ip: "127.0.0.1"
+graylog_listen_port: 9000
+graylog_custom_datadir: ""

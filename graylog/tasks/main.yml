@@ -1,0 +1,100 @@
+---
+
+- name: Dependencies are installed
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - openjdk-11-jre-headless
+      - uuid-runtime
+      - pwgen
+      - dirmngr
+      - gnupg
+      - wget
+    update_cache: yes
+
+- name: Elasticsearch is configured
+  ansible.builtin.lineinfile:
+    dest: '/etc/elasticsearch/elasticsearch.yml'
+    line: 'action.auto_create_index: false'
+  register: es_config
+
+- name: Elasticsearch is restarted
+  ansible.builtin.systemd:
+    name: elasticsearch
+    state: restarted
+  when: es_config is changed
+
+- name: Graylog repository is installed
+  ansible.builtin.apt:
+    deb: 'https://packages.graylog2.org/repo/packages/graylog-{{ graylog_version }}-repository_latest.deb'
+
+- name: Graylog is installed
+  ansible.builtin.apt:
+    name:
+      - graylog-server
+    update_cache: yes
+
+- name: Graylog password_secret is set
+  ansible.builtin.replace:
+    dest: '/etc/graylog/server/server.conf'
+    regexp: '^(password_secret =)$'
+    replace: '\1 {{ lookup("ansible.builtin.password", "/dev/null chars=ascii_lowercase,digits length=96") }}'
+
+- name: Graylog root_password_sha2 is set
+  ansible.builtin.replace:
+    dest: '/etc/graylog/server/server.conf'
+    regexp: '^(root_password_sha2 =)$'
+    replace: '\1 {{ graylog_root_password_sha2 }}'
+  when: graylog_root_password_sha2 is defined
+
+- name: Graylog http_bind_address is set
+  ansible.builtin.lineinfile:
+    dest: '/etc/graylog/server/server.conf'
+    line: 'http_bind_address = {{ graylog_listen_ip }}:{{ graylog_listen_port }}'
+
+- block:
+  - name: "Is {{ graylog_custom_datadir }} present ?"
+    ansible.builtin.stat:
+      path: "{{ graylog_custom_datadir }}"
+    check_mode: no
+    register: graylog_custom_datadir_test
+
+  - name: "read the real datadir"
+    ansible.builtin.command:
+      cmd: readlink -f /var/lib/graylog-server
+    changed_when: False
+    check_mode: no
+    register: graylog_current_real_datadir_test
+  when: graylog_custom_datadir is defined and graylog_custom_datadir | length > 0
+
+- block:
+  - name: Graylog is stopped
+    ansible.builtin.service:
+      name: graylog-server
+      state: stopped
+
+  - name: Move Graylog datadir to {{ graylog_custom_datadir }}
+    ansible.builtin.command:
+      cmd: mv {{ graylog_current_real_datadir_test.stdout }} {{ graylog_custom_datadir }}
+    args:
+      creates: "{{ graylog_custom_datadir }}"
+
+  - name: Symlink {{ graylog_custom_datadir }} to /var/lib/graylog-server
+    ansible.builtin.file:
+      src: "{{ graylog_custom_datadir }}"
+      dest: '/var/lib/graylog-server'
+      state: link
+  when:
+    - graylog_custom_datadir | length > 0
+    - graylog_custom_datadir != graylog_current_real_datadir_test.stdout
+    - not graylog_custom_datadir_test.stat.exists
+
+- name: Graylog is started
+  ansible.builtin.service:
+    name: graylog-server
+    state: started
+
+- name: Graylog is enabled
+  ansible.builtin.service:
+    name: graylog-server
+    enabled: yes
