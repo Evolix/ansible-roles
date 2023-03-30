@@ -1,6 +1,7 @@
 ---
 
-- ansible.builtin.import_tasks: packages.yml
-
 - ansible.builtin.import_tasks: backports.yml
-  when: patroni_backport: | bool
+  when: patroni_backport | bool
+
+- ansible.builtin.import_tasks: packages.yml
+- ansible.builtin.import_tasks: config.yml
