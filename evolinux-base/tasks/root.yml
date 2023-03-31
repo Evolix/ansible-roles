@@ -102,7 +102,7 @@
     - ansible_distribution_major_version is version('11', '<=')
 
 - name: disable SSH access for root (Debian <= 12)
-  replace:
+  ansible.builtin.replace:
     path: /etc/ssh/sshd_config.d/z-evolinux-defaults.conf
     line: "PermitRootLogin no"
     create: yes
