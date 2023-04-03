@@ -8,3 +8,12 @@
     group: root
     mode: "0644"
 
+- name: Create etcd datadir
+  ansible.builtin.file:
+    name: "/var/lib/etcd/{{ etcd_cluster_token }}"
+    state: directory
+    owner: etcd
+    group: etcd
+    mode: "0700"
+
+
