@@ -9,7 +9,8 @@ cluster_name: "mycluster"
 patroni_restapi_listen: "127.0.0.1"
 patroni_port: "8008"
 postgresql_hosts_cluster: []
-postgresql_host: 127.0.0.1
+postgresql_listen_ips: 127.0.0.1
+postgresql_connect_ip: 127.0.0.1
 postgresql_version: ''
 postgresql_replication_user: 'repl'
 postgresql_superuser: 'admin'

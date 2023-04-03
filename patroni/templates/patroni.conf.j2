@@ -51,8 +51,8 @@ bootstrap:
             - replication
 
 postgresql:
-    listen: {{ postgresql_host }}:{{ postgresql_port }}
-    connect_address: {{ postgresql_host }}:{{ postgresql_port }}
+    listen: {{ postgresql_listen_ips }}:{{ postgresql_port }}
+    connect_address: {{ postgresql_connect_ip }}:{{ postgresql_port }}
     bin_dir: /usr/lib/postgresql/{{ postgresql_version }}/bin/
     data_dir: /home/{{ cluster_name_host }}
     pgpass: /tmp/{{ cluster_name_host }}-pgpass
