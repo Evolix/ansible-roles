@@ -53,7 +53,7 @@ bootstrap:
 postgresql:
     listen: {{ postgresql_host }}:{{ postgresql_port }}
     connect_address: {{ postgresql_host }}:{{ postgresql_port }}
-    bin_dir: /var/lib/postgresql/{{ postgresql_version }}/bin/
+    bin_dir: /usr/lib/postgresql/{{ postgresql_version }}/bin/
     data_dir: /home/{{ cluster_name_host }}
     pgpass: /tmp/{{ cluster_name_host }}-pgpass
     authentication:
