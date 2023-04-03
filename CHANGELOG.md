@@ -14,6 +14,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Added
 
 * graylog: new role
+* Patroni: new role for install Patroni cluster 
 
 ### Changed
 
