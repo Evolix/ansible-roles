@@ -1,0 +1,11 @@
+---
+
+# Define variable for etcd
+etcd_listen_ip: []
+etcd_cluster_ips: []
+etcd_client_port: "2379"
+etcd_peer_port: "2380"
+etcd_local_name : ""
+etcd_cluster_token : ""
+etcd_datadir : "/var/lib/etcd/{{ etcd_cluster_token }}"
+etcd_initial_cluster: ""
