@@ -1,6 +1,7 @@
 ---
 
 # Define variable for etcd
+patroni_install_dependencies: "True"
 etcd_listen_ip: []
 etcd_cluster_ips: []
 etcd_client_port: "2379"
