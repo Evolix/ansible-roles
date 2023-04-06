@@ -8,12 +8,19 @@
     target: "~/{{ service }}_production.sql.gz"
   become_user: postgres
 
+- name: Install Ruby for service user (rbenv)
+  include_role:
+    name: rbenv
+  vars:
+    - username: "{{ service }}"
+    - rbenv_ruby_version: "{{ ruby_version }}"
+
 - name: Checkout (git)
   git:
     repo: "{{ git_url }}"
     dest: "~/mastodon/"
     version: "{{ git_version | default(omit) }}"
-    #force: yes
+    force: yes
     update: yes
   become_user: "{{ service }}"
 
@@ -30,6 +37,11 @@
       executable: /bin/bash # fails with /bin/sh
   - name: Install javascript dependencies
     shell: ". ~/.profile && yarn install --pure-lockfile"
+    args:
+      chdir: "~/mastodon"
+      executable: /bin/bash # fails with /bin/sh
+  - name: Upgrade browsers list db
+    shell: ". ~/.profile && npx update-browserslist-db@latest"
     args:
       chdir: "~/mastodon"
       executable: /bin/bash # fails with /bin/sh
@@ -57,7 +69,7 @@
     state: restarted
 
 - name: Run database migrations, this time including post-deployment
-  shell: ". ~/.profile && SKIP_POST_DEPLOYMENT_MIGRATIONS=true RAILS_ENV=production bundle exec rails db:migrate"
+  shell: ". ~/.profile && RAILS_ENV=production bundle exec rails db:migrate"
   args:
     chdir: "~/mastodon"
     executable: /bin/bash # fails with /bin/sh
