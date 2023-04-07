@@ -1,0 +1,75 @@
+---
+# tasks file for peertube upgrade
+
+- name: Stop peertube systemd unit
+  service:
+    name: "{{ service }}"
+    state: stopped
+
+- name: Dump database to a file with compression
+  postgresql_db:
+    name: "{{ db_name }}"
+    state: dump
+    target: "~/{{ db_name }}.sql.gz"
+  become_user: postgres
+
+- name: Unarchive new peertube archive
+  unarchive:
+    src: "{{ download_url }}"
+    dest: ~/versions
+    remote_src: yes
+  become_user: "{{ service }}"
+
+- name: Symbolic link to new version
+  file:
+    src: "~/versions/peertube-{{ version }}"
+    dest:  "~/peertube-latest"
+    state: link
+  become_user: "{{ service }}"
+
+- name: Install PeerTube nodejs deps (via yarn)
+  shell: "yarn install --production --pure-lockfile"
+  args:
+    chdir: "~/peertube-latest"
+  become_user: "{{ service }}"
+
+- name: Copy default.yaml to prod dir
+  copy:
+    src: "~/peertube-latest/config/default.yaml"
+    dest: "~/config/default.yaml"
+    remote_src: true
+  become_user: "{{ service }}"
+
+- name: Template peertube conf file
+  template: 
+    src: "production.yaml.j2"
+    dest: "~/config/production.yaml"
+  become_user: "{{ service }}"
+
+- name: Restart peertube systemd unit
+  systemd:
+    name: "{{ service }}"
+    daemon_reload: true
+    state: restarted
+
+- name: Retemplate conf file for nginx vhost
+  template:
+    src: "vhost.conf.j2"
+    dest: "/etc/nginx/sites-available/{{ service }}.conf"
+
+- name: Reload nginx conf
+  service:
+    name: nginx
+    state: reloaded
+
+- name: Define variable to skip next task by default
+  set_fact:
+    keep_db_dump: true
+
+- name: Remove database dump
+  file:
+    path: "~/{{ db_name }}.sql.gz"
+    state: absent
+  become_user: postgres
+  when: keep_db_dump is undefined
+  tags: clean

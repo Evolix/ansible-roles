@@ -1,15 +1,2 @@
 ---
-- name: reload php-fpm
-  service:
-    name: php7.3-fpm
-    state: reloaded
-
-- name: reload nginx
-  service:
-    name: nginx
-    state: reloaded
-
-- name: reload apache
-  service:
-    name: apache2
-    state: reloaded
+# handlers file

@@ -1,24 +1,143 @@
 ---
-- name: Install dependencies
-  apt:
+# tasks file for peertube install
+
+- name: Add bullseye-backports repo into sources list (for redis)
+  apt_repository:
+    repo: deb http://mirror.evolix.org/debian bullseye-backports main
     state: present
-    name:
-    - ffmpeg
-    - python3-dev
-    - python-is-python3
-    - g++
-    - make
-  tags:
-    - peertube
 
-- include: apache-system.yml
+- name: Install main system dependencies
+  apt:
+    name: "{{ system_dep }}"
 
-- include: user.yml
+- name: Upgrade redis-server to the latest version from bullseye-backports
+  apt:
+    name: redis-server
+    state: latest
+    default_release: bullseye-backports
+    update_cache: yes
 
-- include: archive.yml
+- name: Add UNIX account
+  user:
+    name: "{{ service }}"
+    home: "{{ service_home }}"
+    shell: /bin/bash
 
-- include: apache-vhost.yml
+- name: Add PostgreSQL user
+  postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    no_password_changes: true
+  become_user: postgres
 
-- include: mysql-user.yml
+- name: Add PostgreSQL database
+  postgresql_db:
+    name: "{{ db_name }}"
+    owner: "{{ db_user }}"
+    template: template0
+    encoding: UTF-8
+  become_user: postgres
 
-- include: config.yml
+- name: Add dirs required by peertube
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "~/config"
+    - "~/storage"
+    - "~/versions"
+  become_user: "{{ service }}"
+
+- name: Unarchive peertube archive
+  unarchive:
+    src: "{{ download_url }}"
+    dest: ~/versions
+    remote_src: yes
+  become_user: "{{ service }}"
+
+- name: Symbolic link to unarchived version
+  file:
+    src: "~/versions/peertube-{{ version }}"
+    dest:  "~/peertube-latest"
+    state: link
+  become_user: "{{ service }}"
+
+- name: Install PeerTube nodejs deps (via yarn)
+  shell: "yarn install --production --pure-lockfile"
+  args:
+    chdir: "~/peertube-latest"
+  become_user: "{{ service }}"
+
+- name: Copy default.yaml to prod dir
+  copy:
+    src: "~/peertube-latest/config/default.yaml"
+    dest: "~/config/default.yaml"
+    remote_src: true
+  become_user: "{{ service }}"
+
+- name: Template peertube conf file
+  template: 
+    src: "production.yaml.j2"
+    dest: "~/config/production.yaml"
+  become_user: "{{ service }}"
+
+- name: Template peertube systemd unit
+  template: 
+    src: "peertube.service.j2"
+    dest: "/etc/systemd/system/{{ service }}.service"
+
+- name: Start peertube systemd unit
+  service:
+    name: "{{ service }}"
+    enabled: true
+    state: started
+
+#~ - name: Check if SSL certificate is present and register result
+  #~ stat:
+    #~ path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+  #~ register: ssl
+
+#~ - name: Generate certificate only if required (first time)
+  #~ block:
+  #~ - name: Template vhost without SSL for successfull LE challengce
+    #~ template: 
+      #~ src: "vhost.conf.j2"
+      #~ dest: "/etc/nginx/sites-available/{{ service }}.conf"
+  #~ - name: Enable temporary nginx vhost for peertube
+    #~ file:
+      #~ src: "/etc/nginx/sites-available/{{ service }}.conf"
+      #~ dest: "/etc/nginx/sites-enabled/{{ service }}.conf"
+      #~ state: link
+  #~ - name: Reload nginx conf
+    #~ service:
+      #~ name: nginx
+      #~ state: reloaded
+  #~ - name: Make sure /var/lib/letsencrypt exists and has correct permissions
+    #~ file: 
+      #~ path: /var/lib/letsencrypt
+      #~ state: directory
+      #~ mode: '0755'
+  #~ - name: Generate certificate with certbot
+    #~ shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt -d {{ domains |first }}
+  #~ when: ssl.stat.exists == true
+
+#~ - name: (Re)check if SSL certificate is present and register result
+  #~ stat:
+    #~ path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+  #~ register: ssl
+
+- name: (Re)template conf file for nginx vhost with SSL
+  template:
+    src: "vhost.conf.j2"
+    dest: "/etc/nginx/sites-available/{{ service }}.conf"
+
+- name: Enable nginx vhost for peertube
+  file:
+    src: "/etc/nginx/sites-available/{{ service }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ service }}.conf"
+    state: link
+
+- name: Reload nginx conf
+  service:
+    name: nginx
+    state: reloaded

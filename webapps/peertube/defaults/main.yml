@@ -1,18 +1,14 @@
 ---
-peertube_version: "latest-24"
-peertube_archive_name: "{{ peertube_version }}.tar.bz2"
-peertube_releases_baseurl: ""
-
-peertube_instance_name: "peertube"
-peertube_user: "{{ peertube_instance_name }}"
-peertube_domains: []
-
-peertube_home: "/home/{{ peertube_user }}"
-peertube_webroot: "{{ peertube_home }}/peertube"
-peertube_data: "{{ peertube_webroot }}/data"
-
-peertube_db_user: "{{ peertube_user }}"
-peertube_db_name: "{{ peertube_instance_name }}"
-
-peertube_admin_login: "admin"
-peertube_admin_password: ""
+# defaults file for vars
+system_dep: "['curl', 'python3-dev', 'python-is-python3', 'python3-psycopg2','certbot', 'nginx', 'ffmpeg', 'postgresql', 'postgresql-contrib', 'openssl', 'g++', 'make', 'redis-server', 'git', 'unzip', 'acl']"
+version: 'v5.1.0'
+download_url: "https://github.com/Chocobozzz/PeerTube/releases/download/{{ version }}/peertube-{{ version }}.zip"
+domains: ['example.domain.org']
+service_home: '/var/www/peertube'
+db_host: 'localhost'
+db_port: '5432'
+db_name: "{{ service }}"
+db_user: "{{ service }}"
+db_password: 'UQ6_CHANGE_ME_Gzb'
+pt_secret: 'd98a73_CHANGE_ME_c00c7c'
+pt_host: '127.0.0.1:9000'
