@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian) server
 # powered by Evolix
 
-VERSION="23.04"
+VERSION="23.04.01"
 readonly VERSION
 
 # base functions
@@ -151,10 +151,10 @@ check_postfix_mydestination() {
     if ! grep mydestination /etc/postfix/main.cf | grep --quiet -E 'localhost([[:blank:]]|$)'; then
         failed "IS_POSTFIX_MYDESTINATION" "'localhost' s missing in Postfix mydestination option."
     fi
-    if ! grep mydestination /etc/postfix/main.cf | grep --quiet -E 'localhost.localdomain'; then
+    if ! grep mydestination /etc/postfix/main.cf | grep --quiet 'localhost\.localdomain'; then
         failed "IS_POSTFIX_MYDESTINATION" "'localhost.localdomain' is missing in Postfix mydestination option."
     fi
-    if ! grep mydestination /etc/postfix/main.cf | grep --quiet -E 'localhost.$mydomain'; then
+    if ! grep mydestination /etc/postfix/main.cf | grep --quiet 'localhost\.\$mydomain'; then
         failed "IS_POSTFIX_MYDESTINATION" "'localhost.\$mydomain' is missing in Postfix mydestination option."
     fi
 }
