@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian) server
 # powered by Evolix
 
-VERSION="23.03.01"
+VERSION="23.04"
 readonly VERSION
 
 # base functions
@@ -146,10 +146,16 @@ check_dpkgwarning() {
         || failed "IS_DPKGWARNING" "/etc/apt/apt.conf.d/z-evolinux.conf is missing"
 }
 # Check if localhost, localhost.localdomain and localhost.$mydomain are set in Postfix mydestination option.
-check_localhost_in_postfix_mydestination() {
+check_postfix_mydestination() {
     # shellcheck disable=SC2016
-    if ! grep mydestination /etc/postfix/main.cf | grep --quiet --extended-regexp '(localhost[^\\.]|localhost.localdomain|localhost.$mydomain)'; then
-        failed "IS_LOCALHOST_IN_POSTFIX_MYDESTINATION" "'localhost' and/or 'localhost.localdomain' and/or 'localhost.\$mydomain' are missing in Postfix mydestination option. Consider adding then."
+    if ! grep mydestination /etc/postfix/main.cf | grep --quiet -E 'localhost([[:blank:]]|$)'; then
+        failed "IS_POSTFIX_MYDESTINATION" "'localhost' s missing in Postfix mydestination option."
+    fi
+    if ! grep mydestination /etc/postfix/main.cf | grep --quiet -E 'localhost.localdomain'; then
+        failed "IS_POSTFIX_MYDESTINATION" "'localhost.localdomain' is missing in Postfix mydestination option."
+    fi
+    if ! grep mydestination /etc/postfix/main.cf | grep --quiet -E 'localhost.$mydomain'; then
+        failed "IS_POSTFIX_MYDESTINATION" "'localhost.\$mydomain' is missing in Postfix mydestination option."
     fi
 }
 # Verifying check_mailq in Nagios NRPE config file. (Option "-M postfix" need to be set if the MTA is Postfix)
@@ -1389,7 +1395,7 @@ main() {
 
     test "${IS_LSBRELEASE:=1}" = 1 && check_lsbrelease
     test "${IS_DPKGWARNING:=1}" = 1 && check_dpkgwarning
-    test "${IS_LOCALHOST_IN_POSTFIX_MYDESTINATION:=1}" = 1 && check_localhost_in_postfix_mydestination
+    test "${IS_POSTFIX_MYDESTINATION:=1}" = 1 && check_postfix_mydestination
     test "${IS_NRPEPOSTFIX:=1}" = 1 && check_nrpepostfix
     test "${IS_CUSTOMSUDOERS:=1}" = 1 && check_customsudoers
     test "${IS_VARTMPFS:=1}" = 1 && check_vartmpfs

@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian) server
 # powered by Evolix
 
-VERSION="23.03.01"
+VERSION="23.04"
 readonly VERSION
 
 # base functions
