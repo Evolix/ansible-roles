@@ -66,15 +66,31 @@
     - evolinux_root_disable_ssh | bool
     - ansible_distribution_major_version is version('11', '<=')
 
+- name: verify PermitRootLogin directive
+  ansible.builtin.command:
+    cmd: "grep -Er '^PermitRootLogin' /etc/ssh"
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: grep_permitrootlogin_ssh
+  when:
+    - ansible_distribution_major_version is version('12', '>=')
+
+# TODO avertir lorsque PermitRootLogin est déjà configuré?
+- ansible.builtin.debug:
+    var: grep_permitrootlogin_ssh
+    verbosity: 1
+
 - name: disable root login (Debian <= 12)
   ansible.builtin.replace:
     path: /etc/ssh/sshd_config.d/z-evolinux-defaults.conf
     line: "PermitRootLogin no"
     create: yes
-    validate: '/usr/sbin/sshd -t -f %s'
+    validate: '/usr/sbin/sshd -t -f /etc/ssh/sshd_config.d/z-evolinux-defaults.conf'
   notify: reload sshd
   when:
     - evolinux_root_disable_ssh | bool
     - ansible_distribution_major_version is version('12', '>=')
+    - grep_permitrootlogin_ssh.rc != 1
 
 - ansible.builtin.meta: flush_handlers
