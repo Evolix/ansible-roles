@@ -1,5 +1,7 @@
 Port 22
+{% if evolinux_root_disable_ssh %}
 PermitRootLogin no
+{% endif %}
 LogLevel VERBOSE
 SetEnv LC_ALL=en_US.UTF-8
 
