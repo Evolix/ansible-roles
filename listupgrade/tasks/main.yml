@@ -45,6 +45,12 @@
     owner: root
     group: root
 
+- name: Remove old lisupgrade typo
+  cron:
+    name: "lisupgrade.sh"
+    cron_file: "listupgrade"
+    state: absent
+
 - name: Enable listupgrade cron
   cron:
     name: "listupgrade.sh"
@@ -57,12 +63,6 @@
     day: "{{ listupgrade_cron_day }}"
     month: "{{ listupgrade_cron_month }}"
     state: "{{ listupgrade_cron_enabled | bool | ternary('present','absent') }}"
-
-- name: Remove old lisupgrade typo
-  cron:
-    name: "lisupgrade.sh"
-    cron_file: "listupgrade"
-    state: absent
 
 - name: old-kernel-autoremoval script is present
   copy:
