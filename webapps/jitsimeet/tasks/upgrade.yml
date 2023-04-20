@@ -1,0 +1,35 @@
+---
+# tasks file for jitsimeet upgrade
+
+- name: "Stop running services via docker-compose"
+  docker_compose:
+    project_src: "/var/opt/{{ utilisateur_unix }}/docker-jitsi-meet-{{ version_old }}"
+    state: absent
+  become_user: "{{ utilisateur_unix }}"
+
+- name: "Download and uncompress new Docker Compose project for Jitsi Meet"
+  unarchive: 
+    src: "https://github.com/jitsi/docker-jitsi-meet/archive/refs/tags/{{ version }}.tar.gz"
+    dest: "/var/opt/{{ utilisateur_unix }}"
+    remote_src: yes
+  become_user: "{{ utilisateur_unix }}"
+
+- name: "Template .env for Jitsi Meet's Docker Compose project"
+  template:
+    src: "env.j2"
+    dest: "/var/opt/{{ utilisateur_unix }}/docker-jitsi-meet-{{ version }}/.env"
+    owner: "{{ utilisateur_unix }}"
+    group: "{{ utilisateur_unix }}"
+    mode: 0644
+
+- name: "(Re)generate strong passwords using dev provided script"
+  command: ./gen-passwords.sh
+  args:
+    chdir: "/var/opt/{{ utilisateur_unix }}/docker-jitsi-meet-{{ version }}/"
+  become_user: "{{ utilisateur_unix }}"
+  
+- name: "Start services via docker-compose"
+  docker_compose:
+    project_src: "/var/opt/{{ utilisateur_unix }}/docker-jitsi-meet-{{ version }}"
+    state: present
+  become_user: "{{ utilisateur_unix }}"
