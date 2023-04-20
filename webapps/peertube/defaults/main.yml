@@ -4,6 +4,7 @@ system_dep: "['curl', 'python3-dev', 'python-is-python3', 'python3-psycopg2','ce
 version: 'v5.1.0'
 download_url: "https://github.com/Chocobozzz/PeerTube/releases/download/{{ version }}/peertube-{{ version }}.zip"
 domains: ['example.domain.org']
+certbot_admin_email: 'mgauthier@evolix.ca'
 service_home: '/var/www/peertube'
 db_host: 'localhost'
 db_port: '5432'
