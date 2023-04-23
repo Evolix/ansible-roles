@@ -1,21 +1,21 @@
 ---
 - name: reload varnish
-  systemd:
+  ansible.builtin.systemd:
     name: varnish
     state: reloaded
     daemon_reload: yes
 
 - name: restart varnish
-  systemd:
+  ansible.builtin.systemd:
     name: varnish
     state: restarted
     daemon_reload: yes
 
 - name: reload systemd
-  systemd:
+  ansible.builtin.systemd:
     daemon-reload: yes
 
 - name: restart munin-node
-  service:
+  ansible.builtin.service:
     name: munin-node
     state: restarted

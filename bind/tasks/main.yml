@@ -1,6 +1,6 @@
 # Until chroot-bind.sh is migrated to ansible, we hardcode the chroot paths.
 - name: set chroot variables
-  set_fact:
+  ansible.builtin.set_fact:
     bind_log_file: /var/log/bind.log
     bind_query_file: /var/log/bind_queries.log
     bind_cache_dir: /var/cache/bind
@@ -9,14 +9,15 @@
   when: bind_chroot_set | bool
 
 - name: Check AppArmor
-  shell: systemctl is-active apparmor || systemctl is-enabled apparmor
+  ansible.builtin.shell:
+    cmd: systemctl is-active apparmor || systemctl is-enabled apparmor
   failed_when: False
   changed_when: False
   check_mode: no
   register: check_apparmor
 
 - name: configure apparmor
-  template:
+  ansible.builtin.template:
     src: apparmor.usr.sbin.named.j2
     dest: /etc/apparmor.d/usr.sbin.named
     owner: root
@@ -27,20 +28,20 @@
   when: check_apparmor.rc == 0
 
 - name: package are installed
-  apt:
+  ansible.builtin.apt:
     name:
       - bind9
       - dnstop
     state: present
 
-- include: authoritative.yml
+- ansible.builtin.include: authoritative.yml
   when: bind_authoritative_server | bool
 
-- include: recursive.yml
+- ansible.builtin.include: recursive.yml
   when: bind_recursive_server | bool
 
 - name: Create systemd service for Debian 8 (Jessie)
-  template:
+  ansible.builtin.template:
     src: bind9.service.jessie.j2
     dest: "{{ bind_systemd_service_path }}"
     owner: root
@@ -53,7 +54,7 @@
   when: ansible_distribution_release == "jessie"
 
 - name: "touch {{ bind_log_file }} if non chroot"
-  file:
+  ansible.builtin.file:
     path: "{{ bind_log_file }}"
     owner: bind
     group: adm
@@ -62,7 +63,7 @@
   when: not (bind_chroot_set | bool)
 
 - name: "touch {{ bind_query_file }} if non chroot"
-  file:
+  ansible.builtin.file:
     path: "{{ bind_query_file }}"
     owner: bind
     group: adm
@@ -71,7 +72,7 @@
   when: not (bind_chroot_set | bool)
 
 - name: send chroot-bind.sh in /root
-  copy:
+  ansible.builtin.copy:
     src: chroot-bind.sh
     dest: /root/chroot-bind.sh
     mode: "0700"
@@ -81,19 +82,20 @@
   when: bind_chroot_set | bool
 
 - name: exec chroot-bind.sh
-  command: "/root/chroot-bind.sh"
+  ansible.builtin.command:
+    cmd: "/root/chroot-bind.sh"
   register: chrootbind_run
   changed_when: False
   when: bind_chroot_set | bool
 
-- debug:
+- ansible.builtin.debug:
     var: chrootbind_run.stdout_lines
   when:
     - bind_chroot_set | bool
     - chrootbind_run.stdout | length > 0
 
 - name: Modify OPTIONS in /etc/default/bind9 for chroot
-  replace:
+  ansible.builtin.replace:
     dest: /etc/default/bind9
     regexp: '^OPTIONS=.*'
     replace: 'OPTIONS="-u bind -t {{ bind_chroot_path }}"'
@@ -101,7 +103,7 @@
   when: bind_chroot_set | bool
 
 - name: logrotate for bind
-  template:
+  ansible.builtin.template:
     src: logrotate_bind.j2
     dest: /etc/logrotate.d/bind9
     owner: root
@@ -110,4 +112,4 @@
     force: yes
   notify: restart bind
 
-- include: munin.yml
+- ansible.builtin.include: munin.yml

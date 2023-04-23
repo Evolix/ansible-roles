@@ -2,7 +2,7 @@
 
 
 - name: Set bind configuration for recursive server
-  template:
+  ansible.builtin.template:
     src: named.conf.options_recursive.j2
     dest: /etc/bind/named.conf.options
     owner: bind
@@ -12,7 +12,7 @@
   notify: restart bind
 
 - name: enable zones.rfc1918 for recursive server
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/bind/named.conf.local
     line: 'include "/etc/bind/zones.rfc1918";'
     regexp: "zones.rfc1918"

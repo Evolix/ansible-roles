@@ -1,4 +1,4 @@
 ---
-- include: packages.yml
+- ansible.builtin.include: packages.yml
 
-- include: nagios.yml
+- ansible.builtin.include: nagios.yml

@@ -1,7 +1,7 @@
 ---
 - name: Check if cron is installed
-  shell: "set -o pipefail && dpkg -l cron 2>/dev/null | grep -q -E '^(i|h)i'"
-  args:
+  ansible.builtin.shell:
+    cmd: "set -o pipefail && dpkg -l cron 2>/dev/null | grep -q -E '^(i|h)i'"
     executable: /bin/bash
   check_mode: no
   failed_when: False
@@ -9,7 +9,7 @@
   register: is_cron_installed
 
 - name: "log rotation script"
-  template:
+  ansible.builtin.template:
     src: rotate_logstash_logs.j2
     dest: /etc/cron.daily/rotate_logstash_logs
     owner: root
@@ -18,12 +18,12 @@
   when: is_cron_installed.rc == 0
 
 - name: "Create a system config directory for systemd overrides"
-  file:
+  ansible.builtin.file:
     path: /etc/systemd/system/logstash.service.d
     state: directory
 
 - name: "disable syslog"
-  ini_file:
+  community.general.ini_file:
     path: /etc/systemd/system/logstash.service.d/override.conf
     section: Service
     option: "{{ item.option }}"

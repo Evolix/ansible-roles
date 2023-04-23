@@ -1,15 +1,15 @@
 ---
 - name: restart imapproxy
-  systemd:
+  ansible.builtin.systemd:
     name: imapproxy
     state: restarted
 
 - name: reload apache2
-  service:
+  ansible.builtin.service:
     name: apache2
     state: reloaded
 
 - name: reload nginx
-  service:
+  ansible.builtin.service:
     name: nginx
     state: reloaded

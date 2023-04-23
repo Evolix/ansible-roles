@@ -1,8 +1,8 @@
-- debug:
+- ansible.builtin.debug:
     msg: "Online DNS servers fails sometimes! Please change them in /etc/resolv.conf."
 
 - name: custom NTP server for Online servers
-  set_fact:
+  ansible.builtin.set_fact:
     nagios_nrpe_default_ntp_server: "ntp.online.net"
 
-# - meta: flush_handlers
+# - ansible.builtin.meta: flush_handlers

@@ -1,32 +1,35 @@
 ---
 
 - name: upload ldap initial config
-  template:
+  ansible.builtin.template:
     src: config_ldapvi.j2
     dest: /root/evolinux_ldap_config.ldapvi
     mode: "0640"
 
 - name: upload ldap initial entries
-  template:
+  ansible.builtin.template:
     src: first-entries.ldif.j2
     dest: /root/evolinux_ldap_first-entries.ldif
     mode: "0640"
 
 - name: inject config
-  command: ldapvi -Y EXTERNAL -h ldapi:// --ldapmodify /root/evolinux_ldap_config.ldapvi
+  ansible.builtin.command:
+    cmd: ldapvi -Y EXTERNAL -h ldapi:// --ldapmodify /root/evolinux_ldap_config.ldapvi
   environment:
     TERM: xterm
 
 - name: inject first entries
-  command: slapadd -l /root/evolinux_ldap_first-entries.ldif
+  ansible.builtin.command:
+    cmd: slapadd -l /root/evolinux_ldap_first-entries.ldif
 
 - name: upload custom schema
-  copy:
+  ansible.builtin.copy:
     src: "{{ ldap_schema }}"
     dest: "/root/{{ ldap_schema }}"
     mode: "0640"
   when: ldap_schema is defined
 
 - name: inject custom schema
-  command: "ldapadd -Y EXTERNAL -H ldapi:/// -f /root/{{ ldap_schema }}"
+  ansible.builtin.command:
+    cmd: "ldapadd -Y EXTERNAL -H ldapi:/// -f /root/{{ ldap_schema }}"
   when: ldap_schema is defined

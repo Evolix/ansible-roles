@@ -1,7 +1,7 @@
 ---
 
 - name: Is there a Minifirewall ?
-  stat:
+  ansible.builtin.stat:
     path: /etc/default/minifirewall
   register: evobackup_client__minifirewall
   tags:
@@ -9,7 +9,7 @@
     - evobackup_client_backup_firewall
 
 - name: Add backup SSH port in /etc/default/minifirewall
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/default/minifirewall
     marker: "# {mark} {{ item.name }}"
     block: |

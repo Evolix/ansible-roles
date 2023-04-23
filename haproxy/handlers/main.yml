@@ -1,15 +1,15 @@
 ---
 - name: reload haproxy
-  service:
+  ansible.builtin.service:
     name: haproxy
     state: reloaded
 
 - name: restart haproxy
-  service:
+  ansible.builtin.service:
     name: haproxy
     state: restarted
 
 - name: restart munin-node
-  service:
+  ansible.builtin.service:
     name: munin-node
     state: restarted

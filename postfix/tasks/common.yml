@@ -1,7 +1,8 @@
 ---
 
 - name: check if main.cf is default
-  shell: 'grep -v -E "^(myhostname|mydestination|mailbox_command)" /etc/postfix/main.cf | md5sum -'
+  ansible.builtin.shell:
+    cmd: 'grep -v -E "^(myhostname|mydestination|mailbox_command)" /etc/postfix/main.cf | md5sum -'
   changed_when: False
   check_mode: no
   register: default_main_cf
@@ -9,7 +10,7 @@
     - postfix
 
 - name: add lines in /etc/.gitignore
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/.gitignore
     line: '{{ item }}'
     state: present

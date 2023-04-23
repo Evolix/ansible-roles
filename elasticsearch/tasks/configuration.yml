@@ -1,7 +1,7 @@
 ---
 
 - name: Configure cluster name
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
     line: "cluster.name: {{ elasticsearch_cluster_name }}"
     regexp: "^cluster.name:"
@@ -11,7 +11,7 @@
     - config
 
 - name: Configure node name
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
     line: "node.name: {{ elasticsearch_node_name }}"
     regexp: "^node.name:"
@@ -20,7 +20,7 @@
     - config
 
 - name: Configure network host
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
     line: "network.host: {{ elasticsearch_network_host  }}"
     regexp: "^network.host:"
@@ -30,7 +30,7 @@
     - config
 
 - name: Configure network publish_host
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
     line: "network.publish_host: {{ elasticsearch_network_publish_host  }}"
     regexp: "^network.publish_host:"
@@ -40,7 +40,7 @@
     - config
 
 - name: Configure http publish_host
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
     line: "http.publish_host: {{ elasticsearch_http_publish_host  }}"
     regexp: "^http.publish_host:"
@@ -50,7 +50,7 @@
     - config
 
 - name: Configure discovery seed hosts
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
     line: "discovery.seed_hosts: {{ elasticsearch_discovery_seed_hosts | to_yaml(default_flow_style=True) }}"
     regexp: "^discovery.seed_hosts:"
@@ -59,7 +59,7 @@
     - config
 
 - name: Configure empty discovery seed hosts
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
     regexp: "^discovery.seed_hosts:"
     state: absent
@@ -68,7 +68,7 @@
     - config
 
 - name: Configure initial master nodes
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
     line: "cluster.initial_master_nodes: {{ elasticsearch_cluster_initial_master_nodes | to_yaml(default_flow_style=True) }}"
     regexp: "^cluster.initial_master_nodes:"
@@ -77,7 +77,7 @@
     - config
 
 - name: Configure empty initial master nodes
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
     regexp: "^cluster.initial_master_nodes:"
     state: absent
@@ -86,7 +86,7 @@
     - config
 
 - name: Configure RESTART_ON_UPGRADE
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/default/elasticsearch
     line: "RESTART_ON_UPGRADE={{ elasticsearch_restart_on_upgrade | bool | ternary('true','false') }}"
     regexp: "^RESTART_ON_UPGRADE="
@@ -95,7 +95,7 @@
     - config
 
 - name: JVM Heap size (min) is set
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/jvm.options.d/evolinux.options
     regexp: "^-Xms"
     line: "-Xms{{ elasticsearch_jvm_xms }}"
@@ -107,7 +107,7 @@
     - config
 
 - name: JVM Heap size (max) is set
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/jvm.options.d/evolinux.options
     regexp: "^-Xmx"
     line: "-Xmx{{ elasticsearch_jvm_xmx }}"
@@ -119,7 +119,7 @@
     - config
 
 - name: Disable garbage collector logs (JDK >= 9)
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/jvm.options
     regexp: "Xlog:gc"
     line: "#9-:-Xlog:gc*,gc+age=trace,safepoint:file=/opt/my-app/gc.log:utctime,pid,tags:filecount=32,filesize=64m"
@@ -130,7 +130,7 @@
     - config
 
 - name: Configure cluster members
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
     line: "discovery.zen.ping.unicast.hosts: {{ elasticsearch_cluster_members }}"
     regexp: "^discovery.zen.ping.unicast.hosts:"
@@ -140,7 +140,7 @@
     - config
 
 - name: Configure minimum master nodes
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
     line: "discovery.zen.minimum_master_nodes: {{ elasticsearch_minimum_master_nodes }}"
     regexp: "^discovery.zen.minimum_master_nodes:"

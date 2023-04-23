@@ -1,11 +1,11 @@
 ---
-- include: accounts_password.yml
+- ansible.builtin.include: accounts_password.yml
   when: item.password is undefined
   loop: "{{ proftpd_accounts }}"
   tags:
     - proftpd
 
-- set_fact:
+- ansible.builtin.set_fact:
     proftpd_accounts_final: "{{ proftpd_accounts_final + [ item ] }}"
   when: item.password is defined
   loop: "{{ proftpd_accounts }}"
@@ -13,7 +13,7 @@
     - proftpd
 
 - name: Create FTP account
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/proftpd/vpasswd
     state: present
     create: yes
@@ -26,7 +26,7 @@
     - proftpd
 
 - name: Allow FTP account (FTP)
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/proftpd/conf.d/z-evolinux.conf
     state: present
     line: "\tAllowUser {{ item.name }}"
@@ -38,7 +38,7 @@
     - proftpd
 
 - name: Allow FTP account (FTPS)
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/proftpd/conf.d/ftps.conf
     state: present
     line: "\tAllowUser {{ item.name }}"
@@ -50,7 +50,7 @@
     - proftpd
 
 - name: Allow FTP account (SFTP)
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/proftpd/conf.d/sftp.conf
     state: present
     line: "\tAllowUser {{ item.name }}"
@@ -62,7 +62,7 @@
     - proftpd
 
 - name: Allow keys for SFTP account
-  template:
+  ansible.builtin.template:
     dest: "/etc/proftpd/sftp.authorized_keys/{{ _proftpd_account.name }}"
     src: authorized_keys.j2
     mode: 0644

@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+
+Types: deb
+URIs: https://downloads.linux.hpe.com/SDR/repo/mcp
+Suites: {{ ansible_distribution_release }}/current
+Components: non-free
+Signed-by: {{ apt_keyring_dir }}/hpePublicKey2048_key1.asc
+Enabled: yes

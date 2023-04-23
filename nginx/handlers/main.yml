@@ -1,15 +1,15 @@
 ---
 - name: restart nginx
-  service:
+  ansible.builtin.service:
     name: nginx
     state: restarted
 
 - name: reload nginx
-  service:
+  ansible.builtin.service:
     name: nginx
     state: reloaded
 
 - name: restart munin
-  service:
+  ansible.builtin.service:
     name: munin-node
     state: restarted

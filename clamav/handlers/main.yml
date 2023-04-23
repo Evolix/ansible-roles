@@ -1,5 +1,5 @@
 ---
 - name: restart clamav
-  service:
+  ansible.builtin.service:
     name: clamav-daemon
     state: restarted

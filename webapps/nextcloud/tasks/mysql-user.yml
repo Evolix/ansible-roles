@@ -1,6 +1,7 @@
 ---
 - name: Get actual Mysql password
-  shell: "grep password {{ nextcloud_home }}/.my.cnf | awk '{ print $3 }'"
+  ansible.builtin.shell:
+    cmd: "grep password {{ nextcloud_home }}/.my.cnf | awk '{ print $3 }'"
   register: nextcloud_db_pass_grep
   check_mode: no
   changed_when: False
@@ -9,7 +10,8 @@
     - nextcloud
 
 - name: Generate Mysql password
-  command: 'apg -n 1 -m 16 -M lcN'
+  ansible.builtin.command:
+    cmd: 'apg -n 1 -m 16 -M lcN'
   register: nextcloud_db_pass_apg
   check_mode: no
   changed_when: False
@@ -17,17 +19,17 @@
     - nextcloud
 
 - name: Set Mysql password
-  set_fact:
+  ansible.builtin.set_fact:
     nextcloud_db_pass: "{{ nextcloud_db_pass_grep.stdout | default(nextcloud_db_pass_apg.stdout, True) }}"
   tags:
     - nextcloud
 
-- debug:
+- ansible.builtin.debug:
     var: nextcloud_db_pass
     verbosity: 1
 
 - name: Create Mysql database
-  mysql_db:
+  community.mysql.mysql_db:
     name: "{{ nextcloud_db_name }}"
     config_file: "/root/.my.cnf"
     state: present
@@ -35,7 +37,7 @@
     - nextcloud
 
 - name: Create Mysql user
-  mysql_user:
+  community.mysql.mysql_user:
     name: "{{ nextcloud_db_user }}"
     password: '{{ nextcloud_db_pass }}'
     priv: "{{ nextcloud_db_name }}.*:ALL"
@@ -46,7 +48,7 @@
     - nextcloud
 
 - name: Store credentials in my.cnf
-  ini_file:
+  community.general.ini_file:
     dest: "{{ nextcloud_home }}/.my.cnf"
     owner: "{{ nextcloud_user }}"
     group: "{{ nextcloud_user }}"

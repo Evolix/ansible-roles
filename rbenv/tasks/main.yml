@@ -1,7 +1,7 @@
 ---
 
 - name: "Rbenv dependencies are installed"
-  apt:
+  ansible.builtin.apt:
     name:
       - build-essential
       - git
@@ -19,7 +19,7 @@
     - packages
 
 - name: "gemrc for {{ username }}"
-  copy:
+  ansible.builtin.copy:
     src: gemrc
     dest: "~{{ username }}/.gemrc"
     owner: '{{ username }}'
@@ -28,7 +28,7 @@
     - rbenv
 
 - name: "Rbenv repository is checked out for {{ username }}"
-  git:
+  ansible.builtin.git:
     repo: '{{ rbenv_repo }}'
     dest: '{{ rbenv_root }}'
     version: '{{ rbenv_version }}'
@@ -40,7 +40,7 @@
     - rbenv
 
 - name: "default gems are installed for {{ username }}"
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '{{ rbenv_root }}/default-gems'
     line: "{{ item }}"
     owner: '{{ username }}'
@@ -53,7 +53,7 @@
     - rbenv
 
 - name: "plugins directory for {{ username }}"
-  file:
+  ansible.builtin.file:
     path: '{{ rbenv_root }}/plugins'
     state: directory
   become_user: "{{ username }}"
@@ -62,7 +62,7 @@
     - rbenv
 
 - name: "plugins are installed for {{ username }}"
-  git:
+  ansible.builtin.git:
     repo: '{{ item.repo }}'
     dest: '{{ rbenv_root }}/plugins/{{ item.name }}'
     version: '{{ item.version }}'
@@ -75,7 +75,7 @@
     - rbenv
 
 - name: "Rbenv is initialized in profile for {{ username }}"
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: '~{{ username }}/.profile'
     marker: "# {mark} ANSIBLE MANAGED RBENV INIT"
     block: |
@@ -87,7 +87,8 @@
     - rbenv
 
 - name: "is Ruby {{ rbenv_ruby_version }} available for {{ username }} ?"
-  shell: /bin/bash -lc "rbenv versions | grep {{ rbenv_ruby_version }}"
+  ansible.builtin.shell:
+    cmd: /bin/bash -lc "rbenv versions | grep {{ rbenv_ruby_version }}"
   failed_when: False
   changed_when: False
   check_mode: False
@@ -98,7 +99,8 @@
     - rbenv
 
 - name: "Ruby {{ rbenv_ruby_version }} is available for {{ username }} (be patient... could be long)"
-  shell: /bin/bash -lc "TMPDIR=~/tmp rbenv install {{ rbenv_ruby_version }}"
+  ansible.builtin.shell:
+    cmd: /bin/bash -lc "TMPDIR=~/tmp rbenv install {{ rbenv_ruby_version }}"
   when: ruby_installed.rc != 0
   become_user: "{{ username }}"
   become: yes
@@ -106,7 +108,8 @@
     - rbenv
 
 - name: "is Ruby {{ rbenv_ruby_version }} selected for {{ username }} ?"
-  shell: /bin/bash -lc "rbenv version | cut -d ' ' -f 1 | grep -Fx '{{ rbenv_ruby_version }}'"
+  ansible.builtin.shell:
+    cmd: /bin/bash -lc "rbenv version | cut -d ' ' -f 1 | grep -Fx '{{ rbenv_ruby_version }}'"
   register: ruby_selected
   changed_when: False
   failed_when: False
@@ -117,7 +120,8 @@
     - rbenv
 
 - name: "select Ruby {{ rbenv_ruby_version }} for {{ username }}"
-  shell: /bin/bash -lc "rbenv global {{ rbenv_ruby_version }} && rbenv rehash"
+  ansible.builtin.shell:
+    cmd: /bin/bash -lc "rbenv global {{ rbenv_ruby_version }} && rbenv rehash"
   when: ruby_selected.rc != 0
   become_user: "{{ username }}"
   become: yes

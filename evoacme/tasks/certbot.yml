@@ -1,27 +1,29 @@
 ---
 - name: Do no install certbot crontab
-  set_fact:
+  ansible.builtin.set_fact:
     certbot_custom_crontab: False
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/certbot
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 
 - name: Disable /etc/cron.d/certbot
-  command: mv -f /etc/cron.d/certbot /etc/cron.d/certbot.disabled
+  ansible.builtin.command:
+    cmd: mv -f /etc/cron.d/certbot /etc/cron.d/certbot.disabled
   args:
     removes: /etc/cron.d/certbot
 
 - name: Disable /etc/cron.daily/certbot
-  command: mv -f /etc/cron.daily/certbot /etc/cron.daily/certbot.disabled
+  ansible.builtin.command:
+    cmd: mv -f /etc/cron.daily/certbot /etc/cron.daily/certbot.disabled
   args:
     removes: /etc/cron.daily/certbot
 
 - name: Install evoacme custom cron
-  copy:
+  ansible.builtin.copy:
     src: evoacme.cron
     dest: /etc/cron.daily/evoacme
     mode: "0755"

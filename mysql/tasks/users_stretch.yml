@@ -1,7 +1,8 @@
 ---
 
 - name: create a password for mysqladmin
-  command: "apg -n 1 -m 16 -M lcN"
+  ansible.builtin.command:
+    cmd: "apg -n 1 -m 16 -M lcN"
   register: mysql_admin_password
   changed_when: False
   check_mode: False
@@ -9,7 +10,7 @@
     - mysql
 
 - name: there is a mysqladmin user
-  mysql_user:
+  community.mysql.mysql_user:
     name: mysqladmin
     password: '{{ mysql_admin_password.stdout }}'
     priv: "*.*:ALL,GRANT"
@@ -21,7 +22,7 @@
     - mysql
 
 - name: mysqladmin is the default user
-  ini_file:
+  community.general.ini_file:
     dest: /root/.my.cnf
     mode: "0600"
     section: client
@@ -36,7 +37,8 @@
     - mysql
 
 - name: create a password for debian-sys-maint
-  command: "apg -n 1 -m 16 -M lcN"
+  ansible.builtin.command:
+    cmd: "apg -n 1 -m 16 -M lcN"
   register: mysql_debian_password
   changed_when: False
   check_mode: False
@@ -44,7 +46,7 @@
     - mysql
 
 - name: there is a debian-sys-maint user
-  mysql_user:
+  community.mysql.mysql_user:
     name: debian-sys-maint
     password: '{{ mysql_debian_password.stdout }}'
     priv: "*.*:ALL,GRANT"
@@ -56,7 +58,7 @@
     - mysql
 
 - name: store debian-sys-maint user credentials
-  ini_file:
+  community.general.ini_file:
     dest: /etc/mysql/debian.cnf
     mode: "0600"
     section: "{{ item[0] }}"
@@ -74,7 +76,7 @@
     - mysql
 
 - name: root user is absent
-  mysql_user:
+  community.mysql.mysql_user:
     name: root
     host_all: yes
     config_file: "/root/.my.cnf"

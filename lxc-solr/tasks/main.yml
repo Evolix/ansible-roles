@@ -1,16 +1,16 @@
 ---
 - name: LXC configuration
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/lxc
 
 - name: Ensure containers root directory is 755
-  file:
+  ansible.builtin.file:
     path: "/var/lib/lxc/{{ item.name }}/rootfs"
     state: directory
     mode: '0755'
   loop: "{{ lxc_containers }}"
 
-- include: solr.yml
+- ansible.builtin.include: solr.yml
   args:
     name: "{{ item.name }}"
     solr_version: "{{ item.solr_version }}"

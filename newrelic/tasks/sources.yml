@@ -1,19 +1,7 @@
 ---
 
-- name: Look for legacy apt keyring
-  stat:
-    path: /etc/apt/trusted.gpg
-  register: _trusted_gpg_keyring
-
-- name: NewRelic embedded GPG key is absent
-  apt_key:
-    id: "548C16BF"
-    keyring: /etc/apt/trusted.gpg
-    state: absent
-  when: _trusted_gpg_keyring.stat.exists
-
 - name: Add NewRelic GPG key
-  copy:
+  ansible.builtin.copy:
     src: newrelic.asc
     dest: "{{ apt_keyring_dir }}/newrelic.asc"
     force: yes
@@ -21,16 +9,23 @@
     owner: root
     group: root
 
-- name: Install NewRelic repository
-  apt_repository:
+- name: Install NewRelic repository (Debian <12)
+  ansible.builtin.apt_repository:
     repo: "deb [signed-by={{ apt_keyring_dir }}/newrelic.asc] http://apt.newrelic.com/debian/ newrelic non-free"
     state: present
     filename: newrelic
     update_cache: yes
+  when: ansible_distribution_major_version is version('12', '<')
 
-- name: Desinstall unsigned NewRelic repository
-  apt_repository:
-    repo: "deb http://apt.newrelic.com/debian/ newrelic non-free"
-    state: absent
-    filename: newrelic
+- name: Add NewRelic repository (Debian >=12)
+  ansible.builtin.template:
+    src: newrelic.sources.j2
+    dest: /etc/apt/sources.list.d/newrelic.sources
+    state: present
+  register: newrelic_sources
+  when: ansible_distribution_major_version is version('12', '>=')
+
+- name: Update APT cache
+  ansible.builtin.apt:
     update_cache: yes
+  when: newrelic_sources is changed

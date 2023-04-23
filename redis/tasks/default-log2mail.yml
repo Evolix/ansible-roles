@@ -1,7 +1,7 @@
 ---
 
 - name: log2mail config is present
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/log2mail/config/redis.conf
     owner: log2mail
     group: adm
@@ -19,7 +19,7 @@
     - log2mail
 
 - name: log2mail user is in redis group
-  user:
+  ansible.builtin.user:
     name: log2mail
     groups: redis
     append: yes

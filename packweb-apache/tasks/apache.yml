@@ -1,14 +1,15 @@
 ---
 
 - name: Check if Apache envvars have a PATH
-  command: "grep -E '^export PATH ' /etc/apache2/envvars"
+  ansible.builtin.command:
+    cmd: "grep -E '^export PATH ' /etc/apache2/envvars"
   failed_when: False
   changed_when: False
   register: envvar_grep_path
   check_mode: no
 
 - name: Add a PATH envvar for Apache
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/apache2/envvars
     marker: "## {mark} ANSIBLE MANAGED BLOCK FOR PATH"
     block: |
@@ -17,7 +18,7 @@
   when: envvar_grep_path.rc != 0
 
 - name: Additional packages are installed
-  apt:
+  ansible.builtin.apt:
     name:
       - libapache2-mod-security2
       - modsecurity-crs
@@ -25,7 +26,7 @@
     state: present
 
 - name: Additional modules are enabled
-  apache2_module:
+  community.general.apache2_module:
     name: '{{ item }}'
     state: present
   loop:
@@ -36,7 +37,7 @@
     - log_forensic
 
 - name: Copy Apache settings for modules
-  copy:
+  ansible.builtin.copy:
     src: "evolinux-modsec.conf"
     dest: "/etc/apache2/conf-available/evolinux-modsec.conf"
     owner: root
@@ -45,7 +46,7 @@
     force: no
 
 - name: Copy Apache settings for modules
-  template:
+  ansible.builtin.template:
     src: "evolinux-evasive.conf.j2"
     dest: "/etc/apache2/conf-available/evolinux-evasive.conf"
     owner: root
@@ -54,7 +55,8 @@
     force: no
 
 - name: Ensure Apache modules configs are enabled
-  command: "a2enconf {{ item }}"
+  ansible.builtin.command:
+    cmd: "a2enconf {{ item }}"
   register: command_result
   changed_when: "'Enabling' in command_result.stderr"
   loop:

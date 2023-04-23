@@ -1,7 +1,7 @@
 ---
 
 - name: Redis is configured.
-  template:
+  ansible.builtin.template:
     src: redis.conf.j2
     dest: "{{ redis_conf_dir }}/redis.conf"
     mode: "0640"
@@ -12,7 +12,7 @@
     - redis
 
 - name: Config directory permissions are set
-  file:
+  ansible.builtin.file:
     dest: "{{ redis_conf_dir }}"
     mode: "0750"
     owner: redis
@@ -21,7 +21,7 @@
     - redis
 
 - name: Redis is running and enabled on boot.
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ redis_systemd_name }}"
     enabled: yes
     state: started

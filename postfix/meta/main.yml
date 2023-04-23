@@ -25,8 +25,8 @@ galaxy_info:
     # alphanumeric characters. Maximum 20 tags per role.
 
 dependencies:
-  - { role: evolix/ldap, ldap_schema: 'cn4evolix.ldif', when: postfix_packmail == True }
-  - { role: evolix/spamassasin, when: postfix_packmail == True }
-  - { role: evolix/clamav, when: postfix_packmail == True }
-  - { role: evolix/opendkim, when: postfix_packmail == True }
-  - { role: evolix/dovecot, when: postfix_packmail == True }
+  - { role: evolix/ldap, ldap_schema: 'cn4evolix.ldif', when: postfix_packmail | bool }
+  - { role: evolix/spamassasin, when: postfix_packmail | bool }
+  - { role: evolix/clamav, when: postfix_packmail | bool }
+  - { role: evolix/opendkim, when: postfix_packmail | bool }
+  - { role: evolix/dovecot, when: postfix_packmail | bool }

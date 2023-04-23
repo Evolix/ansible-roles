@@ -1,7 +1,7 @@
 ---
 
 - name: add IP addresses to private IP whitelist
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/nginx/snippets/ipaddr_whitelist
     line: "allow {{ item }};"
     state: present
@@ -12,7 +12,7 @@
     - ips
 
 - name: remove IP addresses from private IP whitelist
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/nginx/snippets/ipaddr_whitelist
     line: "allow {{ item }};"
     state: absent

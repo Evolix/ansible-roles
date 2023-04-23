@@ -1,18 +1,18 @@
 ---
 - name: Install munin check dependencies
-  apt:
+  ansible.builtin.apt:
     name: libswitch-perl
     state: present
   tags:
     - redis
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   tags:
     - redis
 
 - name: Create plugin directory
-  file:
+  ansible.builtin.file:
     name: /usr/local/share/munin/
     state: directory
     mode: "0755"
@@ -20,7 +20,7 @@
     - redis
 
 - name: Create plugin directory
-  file:
+  ansible.builtin.file:
     name: /usr/local/share/munin/plugins/
     state: directory
     mode: "0755"
@@ -28,7 +28,7 @@
     - redis
 
 - name: Copy redis munin plugin
-  copy:
+  ansible.builtin.copy:
     src: munin_redis
     dest: /usr/local/share/munin/plugins/redis_
     mode: "0755"
@@ -37,7 +37,7 @@
     - redis
 
 - name: Enable redis munin plugin
-  file:
+  ansible.builtin.file:
     src: /usr/local/share/munin/plugins/redis_
     dest: "/etc/munin/plugins/{{ redis_instance_name }}_redis_{{ plugin_name }}"
     state: link
@@ -56,7 +56,7 @@
     - redis
 
 - name: Configure redis plugin for munin
-  template:
+  ansible.builtin.template:
     src: templates/munin-plugin-instances.conf.j2
     dest: '/etc/munin/plugin-conf.d/evolinux.redis_{{ redis_instance_name }}'
     mode: "0740"

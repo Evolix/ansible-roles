@@ -1,7 +1,7 @@
 ---
 
 - name: Check if Munin plugins exists
-  stat:
+  ansible.builtin.stat:
     path: /etc/munin/plugins/
   register: munin_plugins_dir
   check_mode: no
@@ -10,7 +10,7 @@
 
 # https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/drbd/drbd
 - name: Get Munin plugin
-  copy:
+  ansible.builtin.copy:
     src: munin/drbd-plugin
     dest: /etc/munin/plugins/drbd
     mode: "0755"
@@ -20,7 +20,7 @@
   - drbd
 
 - name: Copy Munin plugin conf
-  copy:
+  ansible.builtin.copy:
     src: munin/drbd-config
     dest: /etc/munin/plugin-conf.d/drbd
     mode: "0644"

@@ -2,13 +2,14 @@
 
 - block:
   - name: "Is {{ mysql_custom_datadir }} present ?"
-    stat:
+    ansible.builtin.stat:
       path: "{{ mysql_custom_datadir }}"
     check_mode: no
     register: mysql_custom_datadir_test
 
   - name: "read the real datadir"
-    command: readlink -f /var/lib/mysql
+    ansible.builtin.command:
+      cmd: readlink -f /var/lib/mysql
     changed_when: False
     check_mode: no
     register: mysql_current_real_datadir_test
@@ -18,23 +19,24 @@
 
 - block:
   - name: MySQL is stopped
-    service:
+    ansible.builtin.service:
       name: mysql
       state: stopped
 
   - name: Move MySQL datadir to {{ mysql_custom_datadir }}
-    command: mv {{ mysql_current_real_datadir_test.stdout }} {{ mysql_custom_datadir }}
+    ansible.builtin.command:
+      cmd: mv {{ mysql_current_real_datadir_test.stdout }} {{ mysql_custom_datadir }}
     args:
       creates: "{{ mysql_custom_datadir }}"
 
   - name: Symlink {{ mysql_custom_datadir }} to /var/lib/mysql
-    file:
+    ansible.builtin.file:
       src: "{{ mysql_custom_datadir }}"
       dest: '/var/lib/mysql'
       state: link
 
   - name: MySQL is started
-    service:
+    ansible.builtin.service:
       name: mysql
       state: started
   tags:

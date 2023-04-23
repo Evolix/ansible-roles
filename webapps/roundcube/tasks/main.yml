@@ -1,6 +1,6 @@
 ---
 - name: configure roundcube-core
-  debconf:
+  ansible.builtin.debconf:
     name: roundcube-core
     question: "{{ item.key }}"
     value: "{{ item.value }}"
@@ -12,7 +12,7 @@
     - roundcube
 
 - name: install Roundcube
-  apt:
+  ansible.builtin.apt:
     name:
       - imapproxy
       - roundcube
@@ -25,7 +25,7 @@
     - roundcube
 
 - name: configure imapproxy imap host
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/imapproxy.conf
     regexp: "^server_hostname"
     line: "server_hostname {{ roundcube_imap_host }}"
@@ -34,7 +34,7 @@
     - roundcube
 
 - name: configure imapproxy imap port
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/imapproxy.conf
     regexp: "^server_port"
     line: "server_port {{ roundcube_imap_port }}"
@@ -43,7 +43,7 @@
     - roundcube
 
 - name: enable and start imapproxy
-  service:
+  ansible.builtin.service:
     name: imapproxy
     state: started
     enabled: True
@@ -51,7 +51,7 @@
     - roundcube
 
 - name: configure roundcube imap host
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/roundcube/config.inc.php
     regexp: "\\$config\\['default_host'\\]"
     line: "$config['default_host'] = array('127.0.0.1');"
@@ -59,7 +59,7 @@
     - roundcube
 
 - name: configure roudcube imap port
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/roundcube/config.inc.php
     regexp: "\\$config\\['default_port'\\]"
     insertafter: "\\$config\\['default_host'\\]"
@@ -68,7 +68,7 @@
     - roundcube
 
 - name: configure managesieve plugin
-  copy:
+  ansible.builtin.copy:
     src: /usr/share/roundcube/plugins/managesieve/config.inc.php.dist
     dest: /etc/roundcube/plugins/managesieve/config.inc.php
     mode: "0644"
@@ -77,7 +77,7 @@
     - roundcube
 
 - name: enable default plugins
-  replace:
+  ansible.builtin.replace:
     dest: /etc/roundcube/config.inc.php
     regexp: "^\\$config\\['plugins'\\] = array\\($"
     replace: "$config['plugins'] = array('zipdownload','managesieve'"
@@ -85,7 +85,7 @@
     - roundcube
 
 - name: deploy apache roundcube vhost
-  template:
+  ansible.builtin.template:
     src: apache2.conf.j2
     dest: /etc/apache2/sites-available/roundcube.conf
     mode: "0640"
@@ -95,7 +95,7 @@
     - roundcube
 
 - name: enable apache roundcube vhost
-  file:
+  ansible.builtin.file:
     src: /etc/apache2/sites-available/roundcube.conf
     dest: /etc/apache2/sites-enabled/roundcube.conf
     state: link
@@ -105,14 +105,14 @@
     - roundcube
 
 - name: deploy Nginx roundcube vhost
-  template:
+  ansible.builtin.template:
     src: nginx.conf.j2
     dest: /etc/nginx/sites-available/roundcube.conf
   when: roundcube_webserver == "nginx"
   notify: reload nginx
 
 - name: enable Nginx roundcube vhost
-  file:
+  ansible.builtin.file:
     src: "/etc/nginx/sites-available/roundcube.conf"
     dest: "/etc/nginx/sites-enabled/roundcube.conf"
     state: link
@@ -120,7 +120,7 @@
   notify: reload nginx
 
 - name: enable roundcube link in default site index
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /var/www/index.html
     state: present
     regexp: "Webmail"

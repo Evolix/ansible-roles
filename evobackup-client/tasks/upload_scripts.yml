@@ -1,7 +1,7 @@
 ---
 
 - name: Upload evobackup script
-  template:
+  ansible.builtin.template:
     src: "{{ item }}"
     dest: "{{ evobackup_client__cron_path }}"
     force: true

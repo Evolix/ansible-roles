@@ -1,15 +1,15 @@
 ---
 - name: reload apache2
-  service:
+  ansible.builtin.service:
     name: apache2
     state: reloaded
 
 - name: reload nginx
-  service:
+  ansible.builtin.service:
     name: nginx
     state: reloaded
 
 - name: reload php-fpm
-  service:
+  ansible.builtin.service:
     name: php7.0-fpm
     state: reloaded

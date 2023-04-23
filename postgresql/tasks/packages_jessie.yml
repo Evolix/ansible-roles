@@ -1,17 +1,17 @@
 ---
 
 - name: "Set variables (Debian 8)"
-  set_fact:
+  ansible.builtin.set_fact:
     postgresql_version: '9.4'
   when: postgresql_version is none or postgresql_version | length == 0
 
-- include: pgdg-repo.yml
+- ansible.builtin.include: pgdg-repo.yml
   when: postgresql_version != '9.4'
 
 - name: Install postgresql package
-  apt:
-    name: '{{ item }}'
-  loop:
-    - "postgresql-{{ postgresql_version }}"
-    - ptop
-    - libdbd-pg-perl
+  ansible.builtin.apt:
+    name:
+      - "postgresql-{{ postgresql_version }}"
+      - ptop
+      - libdbd-pg-perl
+    update_cache: yes

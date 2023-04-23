@@ -1,18 +1,18 @@
 ---
 
 - name: Remount /usr RW
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - name: Install evoadmin-mail package
-  apt:
+  ansible.builtin.apt:
     deb: /tmp/evoadmin-mail.deb
     state: present
   tags:
     - evoadmin-mail
 
 - name: Configure contact mail
-  ini_file:
+  community.general.ini_file:
     dest: /etc/evoadmin-mail/config.ini
     section: global
     option: mail
@@ -20,16 +20,16 @@
   tags:
     - evoadmin-mail
 
-- include: ssl.yml
+- ansible.builtin.include: ssl.yml
 
-- include: apache.yml
+- ansible.builtin.include: apache.yml
   when: evoadminmail_webserver == "apache"
 
-- include: nginx.yml
+- ansible.builtin.include: nginx.yml
   when: evoadminmail_webserver == "nginx"
 
 - name: enable evoadmin-mail link in default site index
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /var/www/index.html
     state: present
     regexp: "EvoAdmin-mail"

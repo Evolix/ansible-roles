@@ -1,14 +1,14 @@
 ---
 
 - name: chmod 700 /root
-  file:
+  ansible.builtin.file:
     path: /root
     state: directory
     mode: "0700"
   when: evolinux_root_chmod | bool
 
 - name: "Customize root's bashrc..."
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /root/.bashrc
     line: "{{ item }}"
     create: yes
@@ -24,34 +24,35 @@
 ## .bash_history should be append-only
 
 - name: Create .bash_history if missing
-  copy:
+  ansible.builtin.copy:
     content: ""
     dest: "/root/.bash_history"
     force: no
   when: evolinux_root_bash_history | bool
 
 - name: Set umask in /root/.profile
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/root/.profile"
     line: "umask 0077"
     regexp: "umask [0-9]+"
   when: evolinux_root_umask | bool
 
 - name: "/usr/share/scripts is present in root's PATH"
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/root/.profile"
     line: "PATH=\"${PATH}:/usr/share/scripts\""
   when: ansible_distribution_major_version is version('10', '>=')
 
 - name: Custom git config for root
-  copy:
+  ansible.builtin.copy:
     src: root/gitconfig
     dest: "/root/.gitconfig"
     force: no
   when: evolinux_root_gitconfig | bool
 
 - name: Is .bash_history append-only
-  shell: lsattr /root/.bash_history | grep -E "^.*a.* "
+  ansible.builtin.shell:
+    cmd: lsattr /root/.bash_history | grep -E "^.*a.* "
   check_mode: no
   register: bash_history_append_only
   failed_when: "'Inappropriate ioctl' in bash_history_append_only.stderr"
@@ -59,14 +60,15 @@
   changed_when: False
 
 - name: Set .bash_history append-only
-  command: chattr +a /root/.bash_history
+  ansible.builtin.command:
+    cmd: chattr +a /root/.bash_history
   when:
-  - evolinux_root_bash_history_appendonly | bool
-  - bash_history_append_only.rc != 0
-  - "'Inappropriate ioctl' not in bash_history_append_only.stderr"
+    - evolinux_root_bash_history_appendonly | bool
+    - bash_history_append_only.rc != 0
+    - "'Inappropriate ioctl' not in bash_history_append_only.stderr"
 
 - name: Setting vim as selected-editor
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /root/.selected_editor
     regexp: '^SELECTED_EDITOR='
     line: "SELECTED_EDITOR=\"/usr/bin/vim.basic\""
@@ -74,7 +76,7 @@
   when: evolinux_root_vim_default | bool
 
 - name: Setting vim root configuration
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /root/.vimrc
     line: "{{ item }}"
     create: yes
@@ -89,7 +91,7 @@
   when: evolinux_root_vim_conf | bool
 
 - name: disable SSH access for root
-  replace:
+  ansible.builtin.replace:
     dest: /etc/ssh/sshd_config
     regexp: '^#?PermitRootLogin (yes|without-password|prohibit-password)'
     replace: "PermitRootLogin no"
@@ -99,7 +101,7 @@
 
 ### Disabled : it seems useless and too dangerous for now
 # - name: remove root from AllowUsers directive
-#   replace:
+#   ansible.builtin.replace:
 #     dest: /etc/ssh/sshd_config
 #     regexp: '^(AllowUsers ((?!root(?:@\S+)?).)*)(\sroot(?:@\S+)?|root(?:@\S+)?\s)(.*)$'
 #     replace: '\1\4'
@@ -107,4 +109,4 @@
 #   notify: reload sshd
 #   when: evolinux_root_disable_ssh
 
-- meta: flush_handlers
+- ansible.builtin.meta: flush_handlers

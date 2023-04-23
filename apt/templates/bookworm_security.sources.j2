@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+
+Types: deb
+URIs: https://security.debian.org/debian-security
+Suites: bookworm-security
+Components: {{ apt_basics_components | mandatory }} 
+Enabled: yes

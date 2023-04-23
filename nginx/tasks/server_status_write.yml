@@ -1,19 +1,19 @@
 ---
 
 - name: replace server-status suffix in default site index
-  replace:
+  ansible.builtin.replace:
     dest: /var/www/index.html
     regexp: '__SERVERSTATUS_SUFFIX__'
     replace: "{{ nginx_serverstatus_suffix }}"
 
 - name: add server-status suffix in default site index if missing
-  replace:
+  ansible.builtin.replace:
     dest: /var/www/index.html
     regexp: '"/server-status-?"'
     replace: '"/server-status-{{ nginx_serverstatus_suffix }}"'
 
 - name: add server-status suffix in default VHost
-  replace:
+  ansible.builtin.replace:
     dest: /etc/nginx/sites-available/evolinux-default.conf
     regexp: 'location /server-status-? {'
     replace: 'location /server-status-{{ nginx_serverstatus_suffix }} {'

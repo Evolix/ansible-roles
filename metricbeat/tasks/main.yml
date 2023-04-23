@@ -1,65 +1,14 @@
 ---
-
-- name: APT https transport is enabled
-  apt:
-    name: apt-transport-https
-    state: present
-  tags:
-    - metricbeat
-    - packages
-
-- name: Look for legacy apt keyring
-  stat:
-    path: /etc/apt/trusted.gpg
-  register: _trusted_gpg_keyring
-  tags:
-    - metricbeat
-    - packages
-
-- name: Elastic embedded GPG key is absent
-  apt_key:
-    id: "D88E42B4"
-    keyring: /etc/apt/trusted.gpg
-    state: absent
-  when: _trusted_gpg_keyring.stat.exists
-  tags:
-    - metricbeat
-    - packages
-
-- name: Elastic GPG key is installed
-  copy:
-    src: elastic.asc
-    dest: "{{ apt_keyring_dir }}/elastic.asc"
-    force: yes
-    mode: "0644"
-    owner: root
-    group: root
-  tags:
-    - metricbeat
-    - packages
-
-- name: Elastic sources list is available
-  apt_repository:
-    repo: "deb [signed-by={{ apt_keyring_dir }}/elastic.asc] https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
-    filename: elastic
-    state: present
-    update_cache: yes
-  tags:
-    - metricbeat
-    - packages
-
-- name: Elastic sources list is available
-  apt_repository:
-    repo: "deb https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
-    filename: elastic
-    state: absent
-    update_cache: yes
-  tags:
-    - metricbeat
-    - packages
+- name: APT sources
+  ansible.builtin.import_tasks: apt_sources.yml
+  args:
+    apply:
+      tags:
+        - metricbeat
+        - packages
 
 - name: Metricbeat is installed
-  apt:
+  ansible.builtin.apt:
     name: metricbeat
     state: "{% if metribeat_upgrade_package %}latest{% else %}present{% endif %}"
   notify: restart metricbeat
@@ -68,7 +17,7 @@
     - packages
 
 - name: Metricbeat service is enabled
-  systemd:
+  ansible.builtin.systemd:
     name: metricbeat
     enabled: yes
   notify: restart metricbeat
@@ -76,7 +25,7 @@
 # When we don't use a config template (default)
 - block:
   - name: Metricbeat knows where to find Elasticsearch
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/metricbeat/metricbeat.yml
       regexp: '^  hosts: .*'
       line: "  hosts: [\"{{ metricbeat_elasticsearch_hosts | join('\", \"') }}\"]"
@@ -85,7 +34,7 @@
     when: metricbeat_elasticsearch_hosts | length > 0
 
   - name: Metricbeat protocol for Elasticsearch
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/metricbeat/metricbeat.yml
       regexp: '^  #?protocol: .*'
       line: "  protocol: \"{{ metricbeat_elasticsearch_protocol }}\""
@@ -94,7 +43,7 @@
     when: metricbeat_elasticsearch_protocol == "http" or metricbeat_elasticsearch_protocol == "https"
 
   - name: Metricbeat auth/username for Elasticsearch are configured
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/metricbeat/metricbeat.yml
       regexp: '{{ item.regexp }}'
       line: '{{ item.line }}'
@@ -108,7 +57,7 @@
       - metricbeat_elasticsearch_auth_password | length > 0
 
   - name: Metricbeat api_key for Elasticsearch are configured
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/metricbeat/metricbeat.yml
       regexp: '^  #?api_key: .*'
       line: '  api_key: "{{ metricbeat_elasticsearch_auth_api_key }}"'
@@ -117,7 +66,7 @@
     when: metricbeat_elasticsearch_auth_api_key | length > 0
 
   - name: disable cloud_metadata
-    replace:
+    ansible.builtin.replace:
       dest: /etc/metricbeat/metricbeat.yml
       regexp: '^(\s+)(- add_cloud_metadata:)'
       replace: '\1# \2'
@@ -125,7 +74,7 @@
     when: not (metricbeat_processors_cloud_metadata | bool)
 
   - name: cloud_metadata processor is disabled
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/metricbeat/metricbeat.yml
       line: "  - add_cloud_metadata: ~"
       insert_after: '^processors:'
@@ -136,7 +85,7 @@
 # When we use a config template
 - block:
   - name: Configuration is up-to-date
-    template:
+    ansible.builtin.template:
       src: "{{ item }}"
       dest: /etc/metricbeat/metricbeat.yml
       force: "{{ metricbeat_force_config }}"

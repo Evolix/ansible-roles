@@ -1,13 +1,13 @@
 ---
 - name: ensure packages are installed
-  apt:
+  ansible.builtin.apt:
     name: postfix
     state: present
   tags:
   - postfix
 
 - name: create minimal main.cf
-  template:
+  ansible.builtin.template:
     src: evolinux_main.cf.j2
     dest: /etc/postfix/main.cf
     owner: root

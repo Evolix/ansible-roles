@@ -1,29 +1,7 @@
 ---
 
-- name: Look for legacy apt keyring
-  stat:
-    path: /etc/apt/trusted.gpg
-  register: _trusted_gpg_keyring
-  tags:
-    - system
-    - packages
-    - nodejs
-    - yarn
-
-- name: Yarn embedded GPG key is absent
-  apt_key:
-    id: "86E50310"
-    keyring: /etc/apt/trusted.gpg
-    state: absent
-  when: _trusted_gpg_keyring.stat.exists
-  tags:
-    - system
-    - packages
-    - nodejs
-    - yarn
-
 - name: Yarn GPG key is installed
-  copy:
+  ansible.builtin.copy:
     src: yarn.asc
     dest: "{{ apt_keyring_dir }}/yarn.asc"
     mode: "0644"
@@ -35,32 +13,39 @@
     - nodejs
     - yarn
 
-- name: Yarn sources list is available
-  apt_repository:
+- name: Add Yarn repository (Debian <12)
+  ansible.builtin.apt_repository:
     repo: "deb [signed-by={{ apt_keyring_dir }}/yarn.asc] https://dl.yarnpkg.com/debian/ stable main"
     filename: yarn
-    update_cache: yes
     state: present
   tags:
     - system
     - packages
     - nodejs
     - yarn
+  when: ansible_distribution_major_version is version('12', '<')
 
-- name: Unsigned Yarn sources list is not available
-  apt_repository:
-    repo: "deb https://dl.yarnpkg.com/debian/ stable main"
-    filename: yarn
+- name: Add Yarn repository (Debian >=12)
+  ansible.builtin.template:
+    src: yarn.sources.j2
+    dest: /etc/apt/sources.list.d/yarn.sources
+    state: present
     update_cache: yes
-    state: absent
+  register: yarn_sources
   tags:
     - system
     - packages
     - nodejs
     - yarn
+  when: ansible_distribution_major_version is version('12', '>=')
+
+- name: Update APT cache
+  ansible.builtin.apt:
+    update_cache: yes
+  when: yarn_sources is changed
 
 - name: Yarn is installed
-  apt:
+  ansible.builtin.apt:
     name: yarn
     state: present
   tags:

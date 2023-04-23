@@ -1,5 +1,5 @@
 ---
-- ini_file:
+- community.general.ini_file:
     dest: "{{ evoacme_crt_dir }}/openssl.cnf"
     section: 'req'
     option: "{{ item.name }}"
@@ -11,7 +11,7 @@
      - { name: 'prompt', var: 'no' }
 
 - name: Update openssl conf
-  ini_file:
+  community.general.ini_file:
     dest: "{{ evoacme_crt_dir }}/openssl.cnf"
     section: 'req_dn'
     option: "{{ item.name }}"
@@ -25,7 +25,7 @@
      - { name: 'emailAddress', var: "{{ evoacme_ssl_email }}" }
 
 - name: Copy new evoacme conf
-  template:
+  ansible.builtin.template:
     src: templates/evoacme.conf.j2
     dest: /etc/default/evoacme
     owner: root

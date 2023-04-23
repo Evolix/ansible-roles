@@ -1,14 +1,14 @@
 ---
 
 - name: is log2mail installed?
-  stat:
+  ansible.builtin.stat:
     path: /etc/log2mail/config/
   check_mode: no
   register: log2mail_config
 
 - block:
   - name: log2mail proxy config is present
-    template:
+    ansible.builtin.template:
       src: log2mail.j2
       dest: /etc/log2mail/config/squid.conf
       mode: "0640"
@@ -17,7 +17,7 @@
     notify: restart log2mail
 
   - name: log2mail user is in proxy group
-    user:
+    ansible.builtin.user:
       name: log2mail
       groups: proxy
       append: yes

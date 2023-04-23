@@ -1,11 +1,11 @@
 ---
 
 - name: restart nagios-nrpe-server
-  service:
+  ansible.builtin.service:
     name: nagios-nrpe-server
     state: restarted
 
 - name: restart nrpe
-  service:
+  ansible.builtin.service:
     name: nrpe
     state: restarted

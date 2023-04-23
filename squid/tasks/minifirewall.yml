@@ -1,20 +1,20 @@
 ---
 - name: Check if Minifirewall is present
-  stat:
+  ansible.builtin.stat:
     path: "/etc/default/minifirewall"
   check_mode: no
   register: minifirewall_test
 
 - block:
   - name: HTTPSITES list is commented in minifirewall
-    replace:
+    ansible.builtin.replace:
       dest: "/etc/default/minifirewall"
       regexp: "^(HTTPSITES='[^0-9])"
       replace: '#\1'
     notify: restart minifirewall
 
   - name: all HTTPSITES are authorized in minifirewall
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: "/etc/default/minifirewall"
       line: "HTTPSITES='0.0.0.0/0'"
       regexp: "HTTPSITES='.*'"
@@ -23,14 +23,15 @@
 
   # The PROXY variable means that minifirewall is "modern"
   - name: Look for PROXY variable
-    shell: "grep -E '^\\s*PROXY=' /etc/default/minifirewall"
+    ansible.builtin.shell:
+      cmd: "grep -E '^\\s*PROXY=' /etc/default/minifirewall"
     failed_when: False
     changed_when: False
     check_mode: False
     register: _minifirewall_proxy_var_check
 
   - name: Set proxy configuration for minifirewall (legacy mode)
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: "/etc/default/minifirewall"
       regexp: "^#? *{{ item }}"
       line: "{{ item }}"
@@ -44,7 +45,7 @@
     when: _minifirewall_proxy_var_check.rc == 1
 
   - name: remove minifirewall example rule for the proxy (legacy mode)
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: "/etc/default/minifirewall"
       regexp: '^#.*(-t nat).*(-d X\.X\.X\.X)'
       state: absent
@@ -52,7 +53,7 @@
     when: _minifirewall_proxy_var_check.rc == 1
 
   - name: Set proxy configuration for minifirewall (modern mode)
-    replace:
+    ansible.builtin.replace:
       dest: "/etc/default/minifirewall"
       replace: "PROXY='on'"
       regexp: "PROXY='.*'"

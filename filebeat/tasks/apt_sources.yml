@@ -1,0 +1,36 @@
+---
+- name: APT https transport is enabled (Debian <10)
+  ansible.builtin.apt:
+    name: apt-transport-https
+    state: present
+  when: ansible_distribution_major_version is version('10', '<')
+
+- name: Elastic GPG key is installed
+  ansible.builtin.copy:
+    src: elastic.asc
+    dest: "{{ apt_keyring_dir }}/elastic.asc"
+    force: yes
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Add Elastic repository (Debian <12)
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by={{ apt_keyring_dir }}/elastic.asc] https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
+    filename: elastic
+    state: present
+    update_cache: yes
+  when: ansible_distribution_major_version is version('12', '<')
+
+- name: Add Elastic repository (Debian >=12)
+  ansible.builtin.template:
+    src: elastic.sources.j2
+    dest: /etc/apt/sources.list.d/elastic.sources
+    state: present
+  register: elastic_sources
+  when: ansible_distribution_major_version is version('12', '>=')
+
+- name: Update APT cache
+  ansible.builtin.apt:
+    update_cache: yes
+  when: elastic_sources is changed

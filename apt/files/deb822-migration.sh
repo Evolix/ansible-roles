@@ -10,39 +10,40 @@ if [ ! -x "${deb822_migrate_script}" ]; then
     exit 1
 fi
 
-dest_dir="/etc/apt/sources.list.d"
-rc=0
-
-migrate_file() {
-    legacy_file=$1
-    deb822_file=$2
-
-    if [ -f "${legacy_file}" ]; then
-        if [ -f "${deb822_file}" ]; then
-            >&2 echo "ERROR: '${deb822_file}' already exists"
-            rc=2
-        else
-            ${deb822_migrate_script} "${legacy_file}" > "${deb822_file}"
-            if [ $? -eq 0 ] && [ -f "${deb822_file}" ]; then
-                mv "${legacy_file}" "${legacy_file}.bak"
-                echo "Migrated ${legacy_file} to ${deb822_file} and renamed to ${legacy_file}.bak"
-            else
-                >&2 echo "ERROR: failed to convert '${legacy_file}' to '${deb822_file}'"
-                rc=2
-            fi
-        fi
-    else
-        >&2 echo "ERROR: '${legacy_file}' not found"
-        rc=2
-    fi
+sources_from_file() {
+    grep --extended-regexp "^\s*(deb|deb-src) " $1
 }
 
-migrate_file "/etc/apt/sources.list" "${dest_dir}/system.sources"
+rc=0
+count=0
 
-# shellcheck disable=SC2044
-for legacy_file in $(find /etc/apt/sources.list.d -mindepth 1 -maxdepth 1 -type f -name '*.list'); do
-    deb822_file=$(basename "${legacy_file}" .list)
-    migrate_file "${legacy_file}" "${dest_dir}/${deb822_file}.sources"
+if [ -f /etc/apt/sources.list ]; then
+    sources_from_file /etc/apt/sources.list | ${deb822_migrate_script} 
+    python_rc=$?
+
+    if [ ${python_rc} -eq 0 ]; then
+        mv /etc/apt/sources.list /etc/apt/sources.list.bak
+        echo "OK: /etc/apt/sources.list"
+        count=$(( count + 1 ))
+    else
+        >&2 echo "ERROR: failed migration for /etc/apt/sources.list"
+        rc=1
+    fi
+fi
+
+for file in $(find /etc/apt/sources.list.d -mindepth 1 -maxdepth 1 -type f -name '*.list'); do
+    sources_from_file "${file}" | ${deb822_migrate_script}
+    python_rc=$?
+
+    if [ ${python_rc} -eq 0 ]; then
+        mv "${file}" "${file}.bak"
+        echo "OK: ${file}"
+        count=$(( count + 1 ))
+    else
+        >&2 echo "ERROR: failed migration for ${file}"
+        rc=1
+    fi
 done
 
+echo "${count} file(s) migrated"
 exit ${rc}

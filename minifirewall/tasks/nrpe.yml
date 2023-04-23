@@ -1,10 +1,10 @@
 ---
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - name: /usr/share/scripts exists
-  file:
+  ansible.builtin.file:
     dest: /usr/share/scripts
     mode: "0700"
     owner: root
@@ -12,7 +12,7 @@
     state: directory
 
 - name: minifirewall_status is installed
-  copy:
+  ansible.builtin.copy:
     src: minifirewall_status
     dest: /usr/share/scripts/minifirewall_status
     force: "{{ minifirewall_force_update_nrpe_scripts | bool }}"
@@ -21,7 +21,7 @@
     group: root
 
 - name: /usr/local/lib/nagios/plugins/ exists
-  file:
+  ansible.builtin.file:
     dest: "{{ nagios_plugins_directory }}"
     mode: "02755"
     owner: root
@@ -29,7 +29,7 @@
     state: directory
 
 - name: check_minifirewall is installed
-  copy:
+  ansible.builtin.copy:
     src: check_minifirewall
     dest: "{{ nagios_plugins_directory }}/check_minifirewall"
     force: "{{ minifirewall_force_update_nrpe_scripts | bool }}"
@@ -38,12 +38,12 @@
     group: staff
 
 - name: Is NRPE installed?
-  stat:
+  ansible.builtin.stat:
     path: /etc/nagios/nrpe.d/evolix.cfg
   register: nrpe_evolix_cfg
 
 - name: check_minifirewall is available for NRPE
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: 'command\[check_minifirewall\]'
     line: 'command[check_minifirewall]=sudo {{ nagios_plugins_directory }}/check_minifirewall'
@@ -51,12 +51,12 @@
   when: nrpe_evolix_cfg.stat.exists
 
 - name: Is evolinux sudoers installed?
-  stat:
+  ansible.builtin.stat:
     path: /etc/sudoers.d/evolinux
   register: sudoers_evolinux
 
 - name: sudo without password for nagios
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/sudoers.d/evolinux
     regexp: 'check_minifirewall'
     line: 'nagios          ALL = NOPASSWD: {{ nagios_plugins_directory }}/check_minifirewall'

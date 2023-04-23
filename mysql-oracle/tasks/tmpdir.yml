@@ -2,7 +2,7 @@
 
 - block:
   - name: "Create {{ mysql_custom_tmpdir }}"
-    file:
+    ansible.builtin.file:
       path: "{{ mysql_custom_tmpdir }}"
       owner: mysql
       group: mysql
@@ -12,7 +12,7 @@
       - mysql
 
   - name: Configure tmpdir
-    ini_file:
+    community.general.ini_file:
       dest: "{{ mysql_config_directory }}/zzz-evolinux-custom.cnf"
       section: mysqld
       option: tmpdir

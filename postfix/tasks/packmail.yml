@@ -1,6 +1,6 @@
 ---
 - name: ensure packages are installed
-  apt:
+  ansible.builtin.apt:
     name:
       - postfix
       - postfix-ldap
@@ -11,7 +11,7 @@
   - postfix
 
 - name: make /var/lib/mailgraph accessible by www-data
-  file:
+  ansible.builtin.file:
     path: "/var/lib/mailgraph"
     state: directory
     owner: www-data
@@ -19,13 +19,13 @@
     mode: '0755'
 
 - name: make sure a service Mailgraph is running
-  systemd:
+  ansible.builtin.systemd:
     name: mailgraph.service
-    state: started  
+    state: started
     enabled: true
 
 - name: create packmail main.cf
-  template:
+  ansible.builtin.template:
     src: packmail_main.cf.j2
     dest: /etc/postfix/main.cf
     owner: root
@@ -38,7 +38,7 @@
   - postfix
 
 - name: deploy packmail master.cf
-  template:
+  ansible.builtin.template:
     src: packmail_master.cf.j2
     dest: /etc/postfix/master.cf
     mode: "0644"
@@ -47,7 +47,7 @@
   - postfix
 
 - name: copy default filter files
-  copy:
+  ansible.builtin.copy:
     src: filter
     dest: "/etc/postfix/{{ item }}"
     force: no
@@ -68,7 +68,8 @@
   - postfix
 
 - name: postmap filter files
-  command: "postmap /etc/postfix/{{ item }}"
+  ansible.builtin.command:
+    cmd: "postmap /etc/postfix/{{ item }}"
   loop:
     - virtual
     - client.access
@@ -86,7 +87,7 @@
   - postfix
 
 - name: deploy ldap postfix config
-  template:
+  ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "/etc/postfix/{{ item }}"
     mode: "0644"
@@ -98,13 +99,13 @@
   tags:
   - postfix
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   tags:
   - postfix
 
 - name: copy spam.sh script
-  copy:
+  ansible.builtin.copy:
     src: spam.sh
     dest: /usr/share/scripts/spam.sh
     mode: "0700"
@@ -112,8 +113,8 @@
   - postfix
 
 - name: Check if cron is installed
-  shell: "set -o pipefail && dpkg -l cron 2>/dev/null | grep -q -E '^(i|h)i'"
-  args:
+  ansible.builtin.shell:
+    cmd: "set -o pipefail && dpkg -l cron 2>/dev/null | grep -q -E '^(i|h)i'"
     executable: /bin/bash
   check_mode: no
   failed_when: False
@@ -121,7 +122,7 @@
   register: is_cron_installed
 
 - name: enable spam.sh cron
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/cron.d/spam
     line: "42 * * * * root /usr/share/scripts/spam.sh"
     create: yes
@@ -132,7 +133,8 @@
   - postfix
 
 - name: update antispam list
-  command: /usr/share/scripts/spam.sh
+  ansible.builtin.command:
+    cmd: /usr/share/scripts/spam.sh
   changed_when: False
   tags:
   - postfix

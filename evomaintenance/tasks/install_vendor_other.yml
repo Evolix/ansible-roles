@@ -1,12 +1,12 @@
 ---
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   tags:
     - evomaintenance
 
 - name: /usr/share/scripts exists
-  file:
+  ansible.builtin.file:
     dest: /usr/share/scripts
     mode: "0700"
     owner: root
@@ -16,7 +16,7 @@
     - evomaintenance
 
 - name: Evomaintenance script and template are installed
-  copy:
+  ansible.builtin.copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: root

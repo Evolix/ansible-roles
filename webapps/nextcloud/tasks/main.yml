@@ -1,6 +1,6 @@
 ---
 - name: Install dependencies
-  apt:
+  ansible.builtin.apt:
     state: present
     name:
     - bzip2
@@ -23,7 +23,7 @@
 
 # dependency for mysql_user and mysql_db - python2
 - name: python modules is installed (Ansible dependency)
-  apt:
+  ansible.builtin.apt:
     name:
       - python-mysqldb
       - python-pymysql
@@ -34,7 +34,7 @@
 
 # dependency for mysql_user and mysql_db - python3
 - name: python3 modules is installed (Ansible dependency)
-  apt:
+  ansible.builtin.apt:
     name:
       - python3-mysqldb
       - python3-pymysql
@@ -43,14 +43,14 @@
     - nextcloud
   when: ansible_python_version is version('3', '>=')
 
-- include: apache-system.yml
+- ansible.builtin.include: apache-system.yml
 
-- include: user.yml
+- ansible.builtin.include: user.yml
 
-- include: archive.yml
+- ansible.builtin.include: archive.yml
 
-- include: apache-vhost.yml
+- ansible.builtin.include: apache-vhost.yml
 
-- include: mysql-user.yml
+- ansible.builtin.include: mysql-user.yml
 
-- include: config.yml
+- ansible.builtin.include: config.yml

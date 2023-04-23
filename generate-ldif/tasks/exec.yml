@@ -1,6 +1,7 @@
 ---
 - name: run generateldif
-  command: '{{ general_scripts_dir }}/generateldif.sh'
+  ansible.builtin.command:
+    cmd: '{{ general_scripts_dir }}/generateldif.sh'
   register: generateldif_run
   changed_when: False
   failed_when: False
@@ -8,7 +9,7 @@
   tags:
     - generateldif-exec
 
-- debug:
+- ansible.builtin.debug:
     var: generateldif_run.stdout_lines
     verbosity: 1
   tags:

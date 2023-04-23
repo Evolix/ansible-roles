@@ -1,6 +1,6 @@
 ---
 - name: install Amavis
-  apt:
+  ansible.builtin.apt:
     name:
       - postgrey
       - amavisd-new
@@ -9,7 +9,7 @@
   - amavis
 
 - name: configure Amavis
-  template:
+  ansible.builtin.template:
     src: amavis.conf.j2
     dest: /etc/amavis/conf.d/49-evolinux-defaults
     mode: "0644"

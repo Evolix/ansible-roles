@@ -1,10 +1,10 @@
 ---
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - name: /usr/share/scripts exists
-  file:
+  ansible.builtin.file:
     dest: /usr/share/scripts
     mode: "0700"
     owner: root
@@ -12,7 +12,7 @@
     state: directory
 
 - name: blacklist-countries.sh is copied
-  copy:
+  ansible.builtin.copy:
     src: blacklist-countries.sh
     dest: /usr/share/scripts/blacklist-countries.sh
     force: "no"

@@ -1,45 +1,13 @@
 ---
-- name: No backports config in default sources.list
-  lineinfile:
-    dest: /etc/apt/sources.list
-    regexp: "backports"
-    state: absent
-  tags:
-    - apt
 
-- name: Backports sources list is installed
-  template:
-    src: '{{ ansible_distribution_release }}_backports.list.j2'
-    dest: /etc/apt/sources.list.d/backports.list
-    force: yes
-    mode: "0640"
-  register: apt_backports_list
-  tags:
-    - apt
+# Backward compatibility task file
 
-- name: Backports configuration
-  copy:
-    src: '{{ ansible_distribution_release }}_backports_preferences'
-    dest: /etc/apt/preferences.d/0-backports-defaults
-    force: yes
-    mode: "0640"
-  register: apt_backports_config
-  tags:
-    - apt
+- name: Install backports repositories (Debian <12)
+  ansible.builtin.import_tasks: backports.oneline.yml
+  when:
+    - ansible_distribution_major_version is version('12', '<')
 
-- name: Archived backport are accepted (jessie)
-  lineinfile:
-    dest: '/etc/apt/apt.conf.d/99no-check-valid-until'
-    line: 'Acquire::Check-Valid-Until no;'
-    create: yes
-    state: present
-  when: ansible_distribution_release == "jessie"
-  tags:
-    - apt
-
-- name: Apt update
-  apt:
-    update_cache: yes
-  when: apt_backports_list is changed or apt_backports_config is changed
-  tags:
-    - apt
+- name: Install backports repositories (Debian >=12)
+  ansible.builtin.import_tasks: backports.deb822.yml
+  when:
+    - ansible_distribution_major_version is version('12', '>=')

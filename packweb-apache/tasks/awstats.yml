@@ -1,11 +1,11 @@
 ---
 - name: Install awstats
-  apt:
+  ansible.builtin.apt:
     name: awstats
     state: present
 
 - name: Configure awstats
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/awstats/awstats.conf.local
     marker: "## {mark} ANSIBLE MANAGED BLOCK FOR PACKWEB"
     block: |
@@ -24,7 +24,7 @@
     mode: "0644"
 
 - name: Create conf-available/awstats-icon.conf file
-  copy:
+  ansible.builtin.copy:
     dest: /etc/apache2/conf-available/awstats-icon.conf
     content: |
       Alias /awstats-icon/ /usr/share/awstats/icon/
@@ -35,20 +35,21 @@
     mode: "0644"
 
 - name: Enable apache awstats-icon configuration
-  command: "a2enconf awstats-icon"
+  ansible.builtin.command:
+    cmd: "a2enconf awstats-icon"
   register: command_result
   changed_when: "'Enabling' in command_result.stderr"
   notify: reload apache
 
 - name: Create awstats cron
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/cron.d/awstats
     create: yes
     regexp: '-config=awstats'
     line: "10 */6 * * * root umask 033; [ -x /usr/lib/cgi-bin/awstats.pl -a -f /etc/awstats/awstats.conf -a -r /var/log/apache2/access.log ] && /usr/lib/cgi-bin/awstats.pl -config=awstats -update >/dev/null"
 
 - name: Comment default awstat cron's tasks
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/cron.d/awstats
     regexp: "(?i)^([^#]*update\\.sh.*)"
     line: '#\1'

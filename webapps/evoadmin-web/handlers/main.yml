@@ -1,14 +1,15 @@
 ---
 
 - name: reload apache2
-  service:
+  ansible.builtin.service:
     name: apache2
     state: reloaded
 
 - name: restart apache2
-  service:
+  ansible.builtin.service:
     name: apache2
     state: restarted
 
 - name: newaliases
-  command: newaliases
+  ansible.builtin.command:
+    cmd: newaliases

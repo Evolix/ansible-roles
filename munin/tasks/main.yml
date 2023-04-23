@@ -1,7 +1,7 @@
 ---
 
 - name: Ensure that Munin (and useful dependencies) is installed
-  apt:
+  ansible.builtin.apt:
     name:
       - munin
       - munin-node
@@ -14,19 +14,20 @@
     - packages
 
 - name: Ensure /usr is still writable
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - block:
   - name: Replace localdomain in Munin config
-    replace:
+    ansible.builtin.replace:
       dest: /etc/munin/munin.conf
       regexp: 'localhost.localdomain'
       replace: '{{ ansible_fqdn }}'
     notify: restart munin-node
 
   - name: Rename the localdomain data dir
-    shell: "mv /var/lib/munin/localdomain /var/lib/munin/{{ ansible_domain }} && rename \"s/localhost.localdomain/{{ ansible_fqdn }}/\" /var/lib/munin/{{ ansible_domain }}/*"
+    ansible.builtin.shell:
+      cmd: "mv /var/lib/munin/localdomain /var/lib/munin/{{ ansible_domain }} && rename \"s/localhost.localdomain/{{ ansible_fqdn }}/\" /var/lib/munin/{{ ansible_domain }}/*"
     args:
       creates: /var/lib/munin/{{ ansible_domain }}
       removes: /var/lib/munin/localdomain
@@ -36,11 +37,11 @@
   tags:
     - munin
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - name: Install some Munin plugins (disabled)
-  copy:
+  ansible.builtin.copy:
     src: 'plugins/{{ item }}'
     dest: '/usr/share/munin/plugins/{{ item }}'
   loop:
@@ -49,7 +50,7 @@
     - munin
 
 - name: Ensure some Munin plugins are disabled
-  file:
+  ansible.builtin.file:
     path: '/etc/munin/plugins/{{ item }}'
     state: absent
   loop:
@@ -65,7 +66,7 @@
     - munin
 
 - name: Ensure some Munin plugins are enabled
-  file:
+  ansible.builtin.file:
     src: "/usr/share/munin/plugins/{{ item }}"
     dest: "/etc/munin/plugins/{{ item }}"
     state: link
@@ -81,7 +82,7 @@
     - munin
 
 - name: Enable sensors_ plugin on dedicated hardware
-  file:
+  ansible.builtin.file:
     src: /usr/share/munin/plugins/sensors_
     dest: "/etc/munin/plugins/sensors_{{ item }}"
     state: link
@@ -94,7 +95,7 @@
     - munin
 
 - name: Enable ipmi_ plugin on dedicated hardware
-  file:
+  ansible.builtin.file:
     src: /usr/share/munin/plugins/ipmi_
     dest: "/etc/munin/plugins/ipmi_{{ item }}"
     state: link
@@ -107,7 +108,7 @@
     - volts
 
 - name: adjustments for grsec kernel
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/munin/plugin-conf.d/munin-node
     marker: "# {mark} ANSIBLE MANAGED GRSECURITY CUSTOMIZATIONS"
     block: |
@@ -123,13 +124,13 @@
   when: ansible_kernel is search("-grs-")
 
 - name: Create override directory for munin-node unit
-  file:
+  ansible.builtin.file:
     name: /etc/systemd/system/munin-node.service.d/
     state: directory
     mode: "0755"
 
 - name: Override is present for protected home
-  ini_file:
+  community.general.ini_file:
     dest: "/etc/systemd/system/munin-node.service.d/override.conf"
     section: "Service"
     option: "ProtectHome"

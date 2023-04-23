@@ -1,10 +1,10 @@
 ---
 - name: restart fluentd
-  systemd:
+  ansible.builtin.systemd:
     name: td-agent
     state: restarted
 
 - name: restart nagios-nrpe-server
-  service:
+  ansible.builtin.service:
     name: nagios-nrpe-server
     state: restarted

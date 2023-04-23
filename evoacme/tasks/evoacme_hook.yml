@@ -1,18 +1,19 @@
 ---
 
 - name: "Create {{ hook_name }} hook directory"
-  file:
+  ansible.builtin.file:
     dest: "{{ evoacme_hooks_dir }}"
     state: directory
 
 - name: "Search for {{ hook_name }} hook"
-  command: "find {{ evoacme_hooks_dir }} -type f \\( -name '{{ hook_name }}' -o -name '{{ hook_name }}.*' \\)"
+  ansible.builtin.command:
+    cmd: "find {{ evoacme_hooks_dir }} -type f \\( -name '{{ hook_name }}' -o -name '{{ hook_name }}.*' \\)"
   check_mode: no
   changed_when: False
   register: _find_hook
 
 - name: "Copy {{ hook_name }} hook if missing"
-  copy:
+  ansible.builtin.copy:
     src: "hooks/{{ hook_name }}"
     dest: "{{ evoacme_hooks_dir }}/{{ hook_name }}"
     mode: "0750"

@@ -1,22 +1,22 @@
 ---
 
-- set_fact:
+- ansible.builtin.set_fact:
     percona__apt_config_package_file: "percona-release_latest.{{ ansible_distribution_release }}_all.deb"
 
 - name: Look for legacy apt keyring
-  stat:
+  ansible.builtin.stat:
     path: /etc/apt/trusted.gpg
   register: _trusted_gpg_keyring
 
 - name: Percona embedded GPG key is absent
-  apt_key:
+  ansible.builtin.apt_key:
     id: "8507EFA5"
     keyring: /etc/apt/trusted.gpg
     state: absent
   when: _trusted_gpg_keyring.stat.exists
 
 - name: Add Percona GPG key
-  copy:
+  ansible.builtin.copy:
     src: percona.asc
     dest: "{{ apt_keyring_dir }}/percona.asc"
     force: yes
@@ -25,8 +25,8 @@
     group: root
 
 - name: Check if percona-release is installed
-  shell: "set -o pipefail && dpkg -l percona-release 2>/dev/null | grep -q -E '^(i|h)i'"
-  args:
+  ansible.builtin.shell:
+    cmd: "set -o pipefail && dpkg -l percona-release 2>/dev/null | grep -q -E '^(i|h)i'"
     executable: /bin/bash
   check_mode: no
   failed_when: False
@@ -34,7 +34,7 @@
   register: percona__apt_config_package_installed
 
 - name: Percona APT config package is available
-  copy:
+  ansible.builtin.copy:
     src: "{{ percona__apt_config_package_file }}"
     dest: "/root/{{ percona__apt_config_package_file }}"
   when: not (percona__apt_config_package_installed | bool)
@@ -43,23 +43,23 @@
 #     name: evolix/remount-usr
 
 - name: Percona APT config package is installed from deb file
-  apt:
+  ansible.builtin.apt:
     deb: "/root/{{ percona__apt_config_package_file }}"
     state: present
   register: percona__apt_config_deb
   when: not (percona__apt_config_package_installed | bool)
 
 - name: Percona APT config package is installed from repository
-  apt:
+  ansible.builtin.apt:
     name: percona-release
     state: latest
   register: percona__apt_config_deb
   when: percona__apt_config_package_installed | bool
 
 - name: APT cache is up-to-date
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
   when: percona__apt_config_deb is changed
 
-- include: xtrabackup.yml
+- ansible.builtin.include: xtrabackup.yml
   when: percona__install_xtrabackup | bool

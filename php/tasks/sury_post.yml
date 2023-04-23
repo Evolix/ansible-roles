@@ -1,7 +1,7 @@
 ---
 
 - name: Symlink Evolix CLI config files from 7.4 to 7.0
-  file:
+  ansible.builtin.file:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     force: yes
@@ -11,12 +11,12 @@
     - { src: "{{ php_cli_custom_ini_file }}", dest: "/etc/php/7.4/cli/conf.d/zzz-evolinux-custom.ini" }
 
 - name: Enforce permissions on PHP 7.4/cli directory
-  file:
+  ansible.builtin.file:
     dest: /etc/php/7.4/cli
     mode: "0755"
 
 - name: Symlink Evolix Apache config files from 7.4 to 7.0
-  file:
+  ansible.builtin.file:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     force: yes
@@ -27,13 +27,13 @@
   when: php_apache_enable | bool
 
 - name: Enforce permissions on PHP 7.4/cli directory
-  file:
+  ansible.builtin.file:
     dest: /etc/php/7.4/apache2
     mode: "0755"
   when: php_apache_enable | bool
 
 - name: Symlink Evolix FPM config files from 7.4 to 7.0
-  file:
+  ansible.builtin.file:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     force: yes
@@ -46,7 +46,7 @@
   when: php_fpm_enable | bool
 
 - name: Enforce permissions on PHP 7.4/cli directory
-  file:
+  ansible.builtin.file:
     dest: /etc/php/7.4/fpm
     mode: "0755"
   when: php_fpm_enable | bool

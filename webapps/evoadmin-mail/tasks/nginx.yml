@@ -1,6 +1,6 @@
 ---
 - name: Copy php-fpm evoadmin-mail pool
-  copy:
+  ansible.builtin.copy:
     src: pool.evoadmin-mail.conf
     dest: /etc/php/7.0/fpm/pool.d/evoadmin-mail.conf
   notify: reload php-fpm
@@ -8,7 +8,7 @@
     - evoadmin-mail
 
 - name: Install evoadminmail VHost
-  template:
+  ansible.builtin.template:
     src: nginx_evoadminmail.conf.j2
     dest: /etc/nginx/sites-available/evoadminmail.conf
   notify: reload nginx
@@ -16,7 +16,7 @@
     - evoadmin-mail
 
 - name: Active evoadminmail VHost
-  file:
+  ansible.builtin.file:
     src: "/etc/nginx/sites-available/evoadminmail.conf"
     dest: "/etc/nginx/sites-enabled/evoadminmail.conf"
     state: link
@@ -26,7 +26,7 @@
     - evoadmin-mail
 
 - name: Disable evoadminmail vhost
-  file:
+  ansible.builtin.file:
     dest: "/etc/nginx/sites-enabled/evoadminmail.conf"
     state: absent
   notify: reload nginx

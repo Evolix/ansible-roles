@@ -1,13 +1,13 @@
 ---
 - name: /var/www is present
-  file:
+  ansible.builtin.file:
     path: /var/www
     state: directory
     mode: "0755"
   when: evolinux_default_www_files | bool
 
 - name: images are copied
-  copy:
+  ansible.builtin.copy:
     src: default_www/img
     dest: /var/www/
     mode: "0644"
@@ -16,7 +16,7 @@
   when: evolinux_default_www_files | bool
 
 - name: index is copied
-  template:
+  ansible.builtin.template:
     src: default_www/index.html.j2
     dest: /var/www/index.html
     mode: "0644"
@@ -28,21 +28,23 @@
 - name: Default certificate is present
   block:
     - name: Create private key and csr for default site ({{ ansible_fqdn }})
-      command: openssl req -newkey rsa:2048 -sha256 -nodes -keyout /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/{{ ansible_fqdn }}.csr -batch -subj "/CN={{ ansible_fqdn }}"
+      ansible.builtin.command:
+        cmd: openssl req -newkey rsa:2048 -sha256 -nodes -keyout /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/{{ ansible_fqdn }}.csr -batch -subj "/CN={{ ansible_fqdn }}"
       args:
         creates: "/etc/ssl/private/{{ ansible_fqdn }}.key"
 
     - name: Adjust rights on private key
-      file:
+      ansible.builtin.file:
         path: /etc/ssl/private/{{ ansible_fqdn }}.key
         owner: root
         group: ssl-cert
         mode: "0640"
 
     - name: Create certificate for default site
-      command: openssl x509 -req -days 3650 -sha256 -in /etc/ssl/{{ ansible_fqdn }}.csr -signkey /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/certs/{{ ansible_fqdn }}.crt
+      ansible.builtin.command:
+        cmd: openssl x509 -req -days 3650 -sha256 -in /etc/ssl/{{ ansible_fqdn }}.csr -signkey /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/certs/{{ ansible_fqdn }}.crt
       args:
         creates: "/etc/ssl/certs/{{ ansible_fqdn }}.crt"
   when: evolinux_default_www_ssl_cert | bool
 
-- meta: flush_handlers
+- ansible.builtin.meta: flush_handlers

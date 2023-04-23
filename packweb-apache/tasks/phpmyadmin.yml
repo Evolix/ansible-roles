@@ -1,18 +1,18 @@
 ---
 
 - name: Install apg
-  apt:
+  ansible.builtin.apt:
     name: apg
 
 # On Debian 10, we need to install the package from buster-backports
 - name: Enable backports (Debian 10)
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/apt
     tasks_from: backports.yml
   when: ansible_distribution_major_version is version('10', '=')
 
 - name: Prefer phpMyAdmin package from backports (Debian 10)
-  template:
+  ansible.builtin.template:
     src: phpmyadmin_apt_preferences.j2
     dest: /etc/apt/preferences.d/999-phpmyadmin
     force: yes
@@ -20,27 +20,28 @@
   when: ansible_distribution_major_version is version('10', '=')
 
 - name: Install phpmyadmin
-  apt:
+  ansible.builtin.apt:
     name: phpmyadmin
     update_cache: yes
 
 - name: Check if phpmyadmin default configuration is present
-  stat:
+  ansible.builtin.stat:
     path: /etc/apache2/conf-enabled/phpmyadmin.conf
   register: pma_default_config
 
-- debug:
+- ansible.builtin.debug:
     var: pma_default_config
     verbosity: 1
 
 - name: Disable phpmyadmin default configuration
-  command: "a2disconf phpmyadmin"
+  ansible.builtin.command:
+    cmd: "a2disconf phpmyadmin"
   register: command_result
   changed_when: "'Disabling' in command_result.stderr"
   when: pma_default_config.stat.exists
 
 - name: "phpmyadmin suffix dirname '{{ packweb_phpmyadmin_suffix_file | dirname }}' exists"
-  file:
+  ansible.builtin.file:
     dest: "{{ packweb_phpmyadmin_suffix_file | dirname }}"
     mode: "0700"
     owner: root
@@ -48,7 +49,7 @@
     state: directory
 
 - name: set phpmyadmin suffix if provided
-  copy:
+  ansible.builtin.copy:
     dest: "{{ packweb_phpmyadmin_suffix_file }}"
     # The last character "\u000A" is a line feed (LF), it's better to keep it
     content: "{{ packweb_phpmyadmin_suffix }}\u000A"
@@ -56,26 +57,28 @@
   when: packweb_phpmyadmin_suffix | length > 0
 
 - name: generate random string for phpmyadmin suffix
-  shell: "apg -a 1 -M N -n 1 > {{ packweb_phpmyadmin_suffix_file }}"
+  ansible.builtin.shell:
+    cmd: "apg -a 1 -M N -n 1 > {{ packweb_phpmyadmin_suffix_file }}"
   args:
     creates: "{{ packweb_phpmyadmin_suffix_file }}"
 
 - name: read phpmyadmin suffix
-  command: "tail -n 1 {{ packweb_phpmyadmin_suffix_file }}"
+  ansible.builtin.command:
+    cmd: "tail -n 1 {{ packweb_phpmyadmin_suffix_file }}"
   changed_when: False
   check_mode: no
   register: new_packweb_phpmyadmin_suffix
 
 - name: overwrite packweb_phpmyadmin_suffix
-  set_fact:
+  ansible.builtin.set_fact:
     packweb_phpmyadmin_suffix: "{{ new_packweb_phpmyadmin_suffix.stdout }}"
 
-- debug:
+- ansible.builtin.debug:
     var: packweb_phpmyadmin_suffix
     verbosity: 1
 
 - name: enable phpMyAdmin config
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/apache2/sites-available/000-evolinux-default.conf
     marker: "# {mark} phpMyAdmin section"
     block: |
@@ -88,13 +91,13 @@
       </Directory>
 
 - name: enable phpmyadmin link in default site index
-  replace:
+  ansible.builtin.replace:
     dest: /var/www/index.html
     regexp:  '<!-- <li><a href="/phpmyadmin-__PHPMYADMIN_SUFFIX__/">Accès PhpMyAdmin</a></li> -->'
     replace: '     <li><a href="/phpmyadmin-__PHPMYADMIN_SUFFIX__/">Accès PhpMyAdmin</a></li>'
 
 - name: replace phpmyadmin suffix in default site index
-  replace:
+  ansible.builtin.replace:
     dest: /var/www/index.html
     regexp: '__PHPMYADMIN_SUFFIX__'
     replace: "{{ packweb_phpmyadmin_suffix }}"

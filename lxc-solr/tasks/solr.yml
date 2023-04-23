@@ -1,7 +1,7 @@
 ---
 
 - name: "Set values for Solr < 9.0.0"
-  set_fact:
+  ansible.builtin.set_fact:
     tarball_url: https://archive.apache.org/dist/lucene/solr/{{ solr_version }}/solr-{{ solr_version }}.tgz
     tarball_path: /var/lib/lxc/{{ name }}/rootfs/root/solr-{{ solr_version }}.tgz
     start_command: "/etc/init.d/solr start"
@@ -9,7 +9,7 @@
   when: "solr_version is version('9.0.0', '<')"
 
 - name: "Set values for Solr >= 9.0.0"
-  set_fact:
+  ansible.builtin.set_fact:
     tarball_url: https://archive.apache.org/dist/solr/solr/{{ solr_version }}/solr-{{ solr_version }}.tgz
     tarball_path: /var/lib/lxc/{{ name }}/rootfs/root/solr-{{ solr_version }}.tgz
     start_command: "systemctl start solr"
@@ -17,26 +17,28 @@
   when: "solr_version is version('9.0.0', '>=')"
 
 - name: Install java and lsof packages
-  command: "lxc-attach -n {{ name }} -- apt-get install -y default-jre-headless lsof"
+  ansible.builtin.command:
+    cmd: "lxc-attach -n {{ name }} -- apt-get install -y default-jre-headless lsof"
 
 - name: "Download Solr {{ solr_version }}"
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ tarball_url }}"
     dest: "{{ tarball_path }}"
     mode: '0644'
 
 - name: "Extract solr-{{ solr_version }}.tgz"
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ tarball_path }}"
     dest: /var/lib/lxc/{{ name }}/rootfs/root/
     remote_src: yes
 
 - name: "Make sure /home/solr exists"
-  file:
+  ansible.builtin.file:
     path: /home/solr/{{ name }}
     recurse: yes
     state: directory
     mode: '0755'
 
 - name: "Install Solr {{ solr_version }}"
-  command: "lxc-attach -n {{ name }} -- /root/solr-{{ solr_version }}/bin/install_solr_service.sh /root/solr-{{ solr_version }}.tgz -d /home/solr/{{ name }} -p {{ solr_port }}"
+  ansible.builtin.command:
+    cmd: "lxc-attach -n {{ name }} -- /root/solr-{{ solr_version }}/bin/install_solr_service.sh /root/solr-{{ solr_version }}.tgz -d /home/solr/{{ name }} -p {{ solr_port }}"

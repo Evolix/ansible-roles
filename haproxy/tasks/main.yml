@@ -1,6 +1,6 @@
 ---
 - name: ssl-cert package is installed
-  apt:
+  ansible.builtin.apt:
     name: ssl-cert
     state: present
   tags:
@@ -8,7 +8,7 @@
     - packages
 
 - name: HAProxy SSL directory is present
-  file:
+  ansible.builtin.file:
     path: /etc/haproxy/ssl
     owner: root
     group: root
@@ -19,7 +19,8 @@
     - ssl
 
 - name: Self-signed certificate is present in HAProxy ssl directory
-  shell: "cat /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/private/ssl-cert-snakeoil.key > /etc/haproxy/ssl/ssl-cert-snakeoil.pem"
+  ansible.builtin.shell:
+    cmd: "cat /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/private/ssl-cert-snakeoil.key > /etc/haproxy/ssl/ssl-cert-snakeoil.pem"
   args:
     creates: /etc/haproxy/ssl/ssl-cert-snakeoil.pem
   notify: reload haproxy
@@ -28,7 +29,7 @@
     - ssl
 
 - name: HAProxy stats_access_ips are present
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/haproxy/stats_access_ips
     create: yes
     block: |
@@ -42,7 +43,7 @@
     - update-config
 
 - name: HAProxy stats_admin_ips are present
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/haproxy/stats_admin_ips
     create: yes
     block: |
@@ -56,7 +57,7 @@
     - update-config
 
 - name: HAProxy maintenance_ips are present
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/haproxy/maintenance_ips
     create: yes
     block: |
@@ -70,7 +71,7 @@
     - update-config
 
 - name: HAProxy deny_ips are present
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/haproxy/deny_ips
     create: yes
     block: |
@@ -83,11 +84,11 @@
     - config
     - update-config
 
-- include: packages_backports.yml
+- ansible.builtin.include: packages_backports.yml
   when: haproxy_backports | bool
 
 - name: Install HAProxy package
-  apt:
+  ansible.builtin.apt:
     name: haproxy
     state: present
   tags:
@@ -95,7 +96,7 @@
     - packages
 
 - name: Copy HAProxy configuration
-  template:
+  ansible.builtin.template:
     src: "{{ item }}"
     dest: /etc/haproxy/haproxy.cfg
     force: "{{ haproxy_force_config }}"
@@ -115,7 +116,7 @@
     - update-config
 
 - name: Rotate logs with dateext
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/logrotate.d/haproxy
     line: '    dateext'
     regexp: '^\s*#*\s*(no)?dateext'
@@ -125,7 +126,7 @@
     - logrotate
 
 - name: Rotate logs with nodelaycompress
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/logrotate.d/haproxy
     line: '    nodelaycompress'
     regexp: '^\s*#*\s*(no)?delaycompress'
@@ -135,7 +136,7 @@
     - logrotate
 
 - name: Set net.ipv4.ip_nonlocal_bind
-  sysctl:
+  ansible.posix.sysctl:
     name: net.ipv4.ip_nonlocal_bind
     value: "{{ haproxy_allow_ip_nonlocal_bind | ternary('1','0') }}"
     sysctl_file: "{{ evolinux_kernel_sysctl_path | default('/etc/sysctl.d/evolinux.conf') }}"
@@ -147,4 +148,4 @@
     - haproxy_allow_ip_nonlocal_bind is defined
     - haproxy_allow_ip_nonlocal_bind is not none
 
-- include: munin.yml
+- ansible.builtin.include: munin.yml

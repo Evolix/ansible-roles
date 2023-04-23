@@ -1,11 +1,11 @@
 ---
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - name: "hold packages (apt)"
-  shell: "set -o pipefail && (dpkg -l {{ item }} 2>/dev/null | grep -q -E '^(i|h)i') && ((apt-mark showhold | grep --quiet {{ item }}) || apt-mark hold {{ item }})"
-  args:
+  ansible.builtin.shell:
+    cmd: "set -o pipefail && (dpkg -l {{ item }} 2>/dev/null | grep -q -E '^(i|h)i') && ((apt-mark showhold | grep --quiet {{ item }}) || apt-mark hold {{ item }})"
     executable: /bin/bash
   check_mode: no
   register: apt_mark
@@ -18,7 +18,7 @@
     - apt
 
 - name: "/etc/evolinux is present"
-  file:
+  ansible.builtin.file:
     dest: /etc/evolinux
     mode: "0700"
     state: directory
@@ -26,7 +26,7 @@
     - apt
 
 - name: "hold packages (config)"
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/evolinux/apt_hold_packages.cf
     line: "{{ item }}"
     create: True
@@ -36,8 +36,8 @@
     - apt
 
 - name: "unhold packages (apt)"
-  shell: "set -o pipefail && (dpkg -l {{ item }} 2>/dev/null | grep -q -E '^(i|h)i') && ((apt-mark showhold | grep --quiet {{ item }}) && apt-mark unhold {{ item }})"
-  args:
+  ansible.builtin.shell:
+    cmd: "set -o pipefail && (dpkg -l {{ item }} 2>/dev/null | grep -q -E '^(i|h)i') && ((apt-mark showhold | grep --quiet {{ item }}) && apt-mark unhold {{ item }})"
     executable: /bin/bash
   check_mode: no
   register: apt_mark
@@ -48,7 +48,7 @@
     - apt
 
 - name: "unhold packages (config)"
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/evolinux/apt_hold_packages.cf
     line: "{{ item }}"
     create: True
@@ -58,7 +58,7 @@
     - apt
 
 - name: /usr/share/scripts exists
-  file:
+  ansible.builtin.file:
     dest: /usr/share/scripts
     mode: "0700"
     owner: root
@@ -68,7 +68,7 @@
     - apt
 
 - name: Check scripts is installed
-  copy:
+  ansible.builtin.copy:
     src: check_held_packages.sh
     dest: /usr/share/scripts/check_held_packages.sh
     force: yes
@@ -77,7 +77,8 @@
     - apt
 
 - name: Check if Cron is installed
-  shell: "dpkg --list 'cron' 2>/dev/null | grep -q -E '^(i|h)i'"
+  ansible.builtin.shell:
+    cmd: "dpkg --list 'cron' 2>/dev/null | grep -q -E '^(i|h)i'"
   register: is_cron
   changed_when: False
   failed_when: False
@@ -86,7 +87,7 @@
     - apt
 
 - name: Check for held packages (script)
-  cron:
+  ansible.builtin.cron:
     cron_file: apt-hold-packages
     name: check_held_packages
     job: "/usr/share/scripts/check_held_packages.sh"
@@ -97,6 +98,6 @@
     day: "{{ apt_check_hold_cron_day }}"
     month: "{{ apt_check_hold_cron_month }}"
     state: "present"
-  when: is_cron.rc == 0
   tags:
     - apt
+  when: is_cron.rc == 0

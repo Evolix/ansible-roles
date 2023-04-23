@@ -1,46 +1,46 @@
 ---
 
 - name: Dependencies are satisfied
-  include_tasks: dependencies.yml
+  ansible.builtin.include_tasks: dependencies.yml
 
-- fail:
+- ansible.builtin.fail:
     msg: only compatible with Debian >= 8
   when:
     - ansible_distribution != "Debian" or ansible_distribution_major_version is version('8', '<')
 
 - name: Additional packages are installed
-  apt:
+  ansible.builtin.apt:
     name:
       - zip
       - unzip
     state: present
 
 - name: install info.php
-  copy:
+  ansible.builtin.copy:
     src: info.php
     dest: /var/www/info.php
     mode: "0644"
 
 - name: enable info.php link in default site index
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /var/www/index.html
     line: '            <li><a href="/info.php">Infos PHP</a></li>'
     regexp: "Infos PHP"
 
 - name: install opcache.php
-  copy:
+  ansible.builtin.copy:
     src: opcache.php
     dest: /var/www/opcache.php
     mode: "0644"
 
 - name: enable opcache.php link in default site index
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /var/www/index.html
     line: '            <li><a href="/opcache.php">Infos OpCache PHP</a></li>'
     regexp: "Infos OpCache PHP"
 
 - name: Add elements to user account template
-  file:
+  ansible.builtin.file:
     path: "/etc/skel/{{ item.path }}"
     state: "{{ item.state }}"
     mode: "{{ item.mode }}"
@@ -50,7 +50,8 @@
     - { path: www, mode: "0750", state: directory }
 
 - name: Apache log file (templates) are present
-  command: "touch /etc/skel/log/{{ item }}"
+  ansible.builtin.command:
+    cmd: "touch /etc/skel/log/{{ item }}"
   args:
     creates: "/etc/skel/log/{{ item }}"
   loop:
@@ -58,37 +59,37 @@
     - error.log
 
 - name: Apache log file (templates) have the proper permissions
-  file:
+  ansible.builtin.file:
     dest: "/etc/skel/log/{{ item }}"
     mode: "0644"
   loop:
     - access.log
     - error.log
 
-- include_role:
+- ansible.builtin.include_role:
     name: userlogrotate
 
 - name: Force DIR_MODE to 0750 in /etc/adduser.conf
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/adduser.conf
     regexp: '^DIR_MODE='
     line: 'DIR_MODE=0750'
 
-- include: apache.yml
+- ansible.builtin.include: apache.yml
 
-- include: phpmyadmin.yml
+- ansible.builtin.include: phpmyadmin.yml
 
-- include: awstats.yml
+- ansible.builtin.include: awstats.yml
 
-- include: fhs_retrictions.yml
+- ansible.builtin.include: fhs_retrictions.yml
   when: packweb_fhs_retrictions | bool
 
 - name: Periodically cache ftp directory sizes for ftpadmin.sh
-  cron:
+  ansible.builtin.cron:
     name: "ProFTPd directory size caching"
     special_time: daily
     job: "/usr/share/scripts/evoadmin/stats.sh"
 
-- include: multiphp.yml
+- ansible.builtin.include: multiphp.yml
   when: packweb_multiphp_versions | length > 0
 

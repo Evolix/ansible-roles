@@ -1,11 +1,11 @@
 ---
 
 - name: reload monit
-  service:
+  ansible.builtin.service:
     name: monit
     state: reloaded
 
 - name: restart monit
-  service:
+  ansible.builtin.service:
     name: monit
     state: restarted

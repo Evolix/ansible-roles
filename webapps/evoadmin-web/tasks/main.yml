@@ -1,24 +1,24 @@
 ---
 
 - name: "Ensure that evoadmin_contact_email is defined"
-  fail:
+  ansible.builtin.fail:
     msg: Please configure var evoadmin_contact_email
   when: evoadmin_contact_email is none or evoadmin_contact_email | length == 0
 
-- include: packages.yml
+- ansible.builtin.include: packages.yml
 
-- include: user.yml
+- ansible.builtin.include: user.yml
 
-- include: config.yml
+- ansible.builtin.include: config.yml
 
-- include: ssl.yml
+- ansible.builtin.include: ssl.yml
 
-- include: web.yml
+- ansible.builtin.include: web.yml
 
-- include: ftp.yml
+- ansible.builtin.include: ftp.yml
 
 - name: enable evoadmin-web link in default site index
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /var/www/index.html
     marker: "<!-- {mark} evoadmin-web section -->"
     block: |

@@ -1,11 +1,11 @@
 ---
 
 - name: Check state of /etc/network/interfaces
-  stat:
+  ansible.builtin.stat:
     path: /etc/network/interfaces
   register: interfaces_file
 
-- debug:
+- ansible.builtin.debug:
     msg: A /etc/network/interfaces file already exists, nothing is done.
   when:
     - interfaces_file.stat.exists
@@ -13,29 +13,29 @@
 
 - block:
   - name: "Look for systemd network config"
-    stat:
+    ansible.builtin.stat:
       path: /etc/systemd/network/50-default.network
     register: systemd_network_file
 
   - name: Set interface name
-    set_fact:
+    ansible.builtin.set_fact:
       eni_interface_name: "{{ ansible_default_ipv4.interface }}"
 
-  - include: set_facts_from_systemd.yml
+  - ansible.builtin.include: set_facts_from_systemd.yml
     when: systemd_network_file.stat.exists
 
-  - include: set_facts_from_ansible.yml
+  - ansible.builtin.include: set_facts_from_ansible.yml
     when: not systemd_network_file.stat.exists
 
   - name: Check config (IPv4)
-    assert:
+    ansible.builtin.assert:
       that:
         - eni_ipv4_address | ipv4
         - eni_ipv4_gateway | ipv4
       msg: "IPv4 configuration is invalid"
 
   - name: Check config (IPV6)
-    assert:
+    ansible.builtin.assert:
       that:
         - eni_ipv6_address | ipv6
         - eni_ipv6_gateway | ipv6
@@ -43,7 +43,7 @@
     when: (eni_ipv6_address | length > 0) or (eni_ipv6_gateway | length > 0)
 
   - name: "A new /etc/network/interfaces is generated"
-    template:
+    ansible.builtin.template:
       src: interfaces.j2
       dest: /etc/network/interfaces
       mode: "0644"
@@ -51,18 +51,18 @@
       group: root
 
   - name: "Systemd 'networkd' unit is stopped and disabled"
-    systemd:
+    ansible.builtin.systemd:
       name: systemd-networkd.service
       enabled: False
       state: stopped
 
   - name: "Systemd 'networking' unit is restarted (it often results in error)"
-    systemd:
+    ansible.builtin.systemd:
       name: networking
       enabled: True
       state: restarted
     ignore_errors: True
 
-  - debug:
+  - ansible.builtin.debug:
       msg: You should verify your configuration, then reboot the server.
   when: (force_update_eni_file | bool) or (not interfaces_file.stat.exists)

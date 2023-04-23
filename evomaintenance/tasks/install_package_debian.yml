@@ -1,14 +1,14 @@
 ---
 
 - name: Evolix public repositry is installed
-  include_role:
+  ansible.builtin.include_role:
     name: evolix/apt
     tasks_from: evolix_public.yml
   tags:
     - evomaintenance
 
 - name: Package is installed
-  apt:
+  ansible.builtin.apt:
     name: evomaintenance
     allow_unauthenticated: yes
   tags:

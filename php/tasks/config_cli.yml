@@ -1,6 +1,6 @@
 ---
 - name: "Set default php.ini values for CLI"
-  ini_file:
+  community.general.ini_file:
     dest: "{{ php_cli_defaults_ini_file }}"
     section: PHP
     option: "{{ item.option }}"
@@ -13,7 +13,7 @@
     - { option: "disable_functions", value: "" }
 
 - name: Custom php.ini for CLI
-  copy:
+  ansible.builtin.copy:
     dest: "{{ php_cli_custom_ini_file }}"
     content: |
       ; Put customized values here.
@@ -22,12 +22,12 @@
 # This task is not merged with the above copy
 # because "force: no" prevents any fix after the fact
 - name: "Permissions for custom php.ini for CLI"
-  file:
+  ansible.builtin.file:
     dest: "{{ php_cli_custom_ini_file }}"
     mode: "0644"
 
 - name: "Set custom values for PHP to enable Symfony"
-  ini_file:
+  community.general.ini_file:
     dest: "{{ php_cli_custom_ini_file }}"
     section: PHP
     option: "{{ item.option }}"

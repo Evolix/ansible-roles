@@ -1,9 +1,10 @@
 ---
 - name: reload sshd
-  service:
+  ansible.builtin.service:
     name: sshd
     state: reloaded
 
 - name: newaliases
-  command: newaliases
+  ansible.builtin.command:
+    cmd: newaliases
   changed_when: False

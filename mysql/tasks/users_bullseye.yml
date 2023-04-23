@@ -1,7 +1,7 @@
 ---
 
 - name: Populate the .my.cnf of root with default user
-  ini_file:
+  community.general.ini_file:
     dest: /root/.my.cnf
     mode: "0600"
     section: client

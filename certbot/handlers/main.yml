@@ -1,23 +1,24 @@
 ---
 
 - name: reload nginx
-  service:
+  ansible.builtin.systemd:
     name: nginx
     state: reloaded
 
 - name: reload apache
-  service:
+  ansible.builtin.systemd:
     name: apache2
     state: reloaded
 
 - name: reload haproxy
-  service:
+  ansible.builtin.systemd:
     name: haproxy
     state: reloaded
 
 - name: systemd daemon-reload
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: yes
 
 - name: install letsencrypt-auto
-  command: /usr/local/bin/letsencrypt-auto --noninteractive --install-only --no-self-upgrade
+  ansible.builtin.command:
+    cmd: /usr/local/bin/letsencrypt-auto --noninteractive --install-only --no-self-upgrade

@@ -1,6 +1,7 @@
 ---
 - name: Get actual Mysql password
-  shell: "grep password /home/{{ redmine_user }}/.my.cnf | awk '{ print $3 }'"
+  ansible.builtin.shell:
+    cmd: "grep password /home/{{ redmine_user }}/.my.cnf | awk '{ print $3 }'"
   register: redmine_get_mysql_password
   check_mode: no
   changed_when: False
@@ -9,7 +10,8 @@
     - redmine
 
 - name: Generate Mysql password
-  shell: perl -e 'print map{("a".."z","A".."Z",0..9)[int(rand(62))]}(1..16)'
+  ansible.builtin.shell:
+    cmd: perl -e 'print map{("a".."z","A".."Z",0..9)[int(rand(62))]}(1..16)'
   register: redmine_generate_mysql_password
   check_mode: no
   changed_when: False
@@ -18,13 +20,13 @@
   - redmine
 
 - name: Set Mysql password
-  set_fact:
+  ansible.builtin.set_fact:
     redmine_db_pass: "{{ redmine_generate_mysql_password.stdout | default(redmine_get_mysql_password.stdout) }}"
   tags:
     - redmine
 
 - name: Create Mysql database
-  mysql_db:
+  community.mysql.mysql_db:
     name: "{{ redmine_db_name }}"
     config_file: "/root/.my.cnf"
     state: present
@@ -34,7 +36,7 @@
     - redmine
 
 - name: Store credentials in my.cnf
-  ini_file:
+  community.general.ini_file:
     dest: "/home/{{ redmine_user }}/.my.cnf"
     owner: "{{ redmine_user }}"
     group: "{{ redmine_user }}"
@@ -51,7 +53,7 @@
     - redmine
 
 - name: Create Mysql user
-  mysql_user:
+  community.mysql.mysql_user:
     name: "{{ redmine_db_username }}"
     password: '{{ redmine_db_pass }}'
     priv: "{{ redmine_user }}.*:ALL"

@@ -1,15 +1,15 @@
 ---
 - name: "Assert that we have been called with `container` defined"
-  assert:
+  ansible.builtin.assert:
     that:
       - container is defined
 
 - name: "Define path to /etc in {{ container }} container"
-  set_fact:
+  ansible.builtin.set_fact:
     container_etc: "{{ ('/var/lib/lxc', container, 'rootfs/etc') | path_join }}"
 
 - name: "Check if /etc is a git repository in {{ container }}"
-  stat:
+  ansible.builtin.stat:
     path: "{{ (container_etc, '.git') | path_join }}"
     get_attributes: no
     get_checksum: no
@@ -17,7 +17,7 @@
   register: "container_etc_git"
 
 - name: "Evocommit /etc of {{ container }}"
-  command:
+  ansible.builtin.command:
     argv:
       - /usr/local/bin/evocommit
       - '--ansible'

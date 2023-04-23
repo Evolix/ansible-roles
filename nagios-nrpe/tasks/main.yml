@@ -1,6 +1,6 @@
 ---
 - name: base nrpe & plugins packages are installed
-  apt:
+  ansible.builtin.apt:
     name:
       - nagios-nrpe-server
       - monitoring-plugins
@@ -14,7 +14,7 @@
 
 
 - name: custom plugin dependencies packages are installed
-  apt:
+  ansible.builtin.apt:
     name:
       - libfcgi-client-perl
     state: present
@@ -25,7 +25,7 @@
     - nagios-plugins
 
 - name: custom configuration is present
-  template:
+  ansible.builtin.template:
     src: evolix.cfg.j2
     dest: /etc/nagios/nrpe.d/evolix.cfg
     group: nagios
@@ -36,7 +36,7 @@
     - nagios-nrpe
 
 - name: update allowed_hosts lists
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     line: "allowed_hosts={{ nagios_nrpe_allowed_hosts | join(',') }}"
     regexp: '^allowed_hosts='
@@ -47,7 +47,7 @@
     - nagios-nrpe
 
 - name: Nagios config is secured
-  file:
+  ansible.builtin.file:
     dest: /etc/nagios/
     mode: "0750"
     group: nagios
@@ -56,7 +56,7 @@
   tags:
     - nagios-nrpe
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   when: nagios_plugins_directory is search("/usr")
   tags:
@@ -64,7 +64,7 @@
     - nagios-plugins
 
 - name: Nagios plugins are installed
-  copy:
+  ansible.builtin.copy:
     src: plugins/
     dest: "{{ nagios_plugins_directory }}/"
     mode: "0755"
@@ -74,7 +74,7 @@
   - nagios-plugins
 
 - name: Nagios lib is secured
-  file:
+  ansible.builtin.file:
     dest: /usr/local/lib/nagios/
     mode: "0755"
     group: nagios
@@ -84,4 +84,4 @@
   tags:
     - nagios-nrpe
 
-- include_tasks: wrapper.yml
+- ansible.builtin.include_tasks: wrapper.yml

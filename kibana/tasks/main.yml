@@ -1,73 +1,23 @@
 ---
-
-- name: APT https transport is enabled
-  apt:
-    name: apt-transport-https
-    state: present
-  tags:
-    - kibana
-    - packages
-
-- name: Look for legacy apt keyring
-  stat:
-    path: /etc/apt/trusted.gpg
-  register: _trusted_gpg_keyring
-  tags:
-    - kibana
-    - packages
-
-- name: Elastic embedded GPG key is absent
-  apt_key:
-    id: "D88E42B4"
-    keyring: /etc/apt/trusted.gpg
-    state: absent
-  when: _trusted_gpg_keyring.stat.exists
-  tags:
-    - kibana
-    - packages
-
-- name: Elastic GPG key is installed
-  copy:
-    src: elastic.asc
-    dest: "{{ apt_keyring_dir }}/elastic.asc"
-    force: yes
-    mode: "0644"
-    owner: root
-    group: root
-  tags:
-    - kibana
-    - packages
-
-- name: Elastic sources list is available
-  apt_repository:
-    repo: "deb [signed-by={{ apt_keyring_dir }}/elastic.asc] https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
-    filename: elastic
-    state: present
-    update_cache: yes
-  tags:
-    - kibana
-    - packages
-
-- name: Unsigned Elastic sources list is not available
-  apt_repository:
-    repo: "deb https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
-    filename: elastic
-    state: absent
-    update_cache: yes
-  tags:
-    - kibana
-    - packages
+- name: APT sources
+  ansible.builtin.import_tasks: apt_sources.yml
+  args:
+    apply:
+      tags:
+        - kibana
+        - packages
 
 - name: Kibana is installed
-  apt:
+  ansible.builtin.apt:
     name: kibana
     state: present
+    update_cache: yes
   tags:
     - kibana
     - packages
 
 - name: kibana server host configuration
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/kibana/kibana.yml
     line: "server.host: \"{{ kibana_server_host }}\""
     regexp: '^server.host:'
@@ -77,7 +27,7 @@
     - kibana
 
 - name: kibana server basepath configuration
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/kibana/kibana.yml
     line: "server.basePath: \"{{ kibana_server_basepath }}\""
     regexp: '^server.basePath:'
@@ -87,7 +37,7 @@
     - kibana
 
 - name: kibana log destination is present
-  file:
+  ansible.builtin.file:
     dest: /var/log/kibana
     owner: kibana
     group: kibana
@@ -97,7 +47,7 @@
     - kibana
 
 - name: kibana log messages go to custom file
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/kibana/kibana.yml
     line: "logging.dest: \"/var/log/kibana/kibana.log\""
     regexp: '^logging.dest:'
@@ -107,7 +57,7 @@
     - kibana
 
 - name: Kibana service is enabled and started
-  systemd:
+  ansible.builtin.systemd:
     name: kibana
     enabled: yes
     state: started
@@ -115,7 +65,7 @@
     - kibana
 
 - name: Logrotate configuration is enabled
-  copy:
+  ansible.builtin.copy:
     src: logrotate
     dest: /etc/logrotate.d/kibana
     mode: "0644"
@@ -144,7 +94,7 @@
 #       - optimize
 #       - data
 
-- include: proxy_nginx.yml
+- ansible.builtin.include: proxy_nginx.yml
   when: kibana_proxy_nginx | bool
   tags:
     - kibana

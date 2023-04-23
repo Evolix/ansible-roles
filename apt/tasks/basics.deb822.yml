@@ -1,0 +1,45 @@
+---
+
+- name: Change basics repositories
+  ansible.builtin.template:
+    src: "{{ ansible_distribution_release }}_basics.sources.j2"
+    dest: /etc/apt/sources.list.d/system.sources
+    mode: "0644"
+    force: yes
+  register: apt_basic_sources
+  tags:
+    - apt
+
+- name: Change security repositories
+  ansible.builtin.template:
+    src: "{{ ansible_distribution_release }}_security.sources.j2"
+    dest: /etc/apt/sources.list.d/security.sources
+    mode: "0644"
+    force: yes
+  register: apt_security_sources
+  tags:
+    - apt
+
+- name: Find one-line APT sources
+  ansible.builtin.find:
+    paths: /etc/apt
+    patterns: '*.list'
+  register: list_files
+
+- name: Disable one-line-formatted sources
+  ansible.builtin.command:
+    cmd: "mv --verbose {{ item.path }} {{ item.path }}.bak"
+  environment:
+    LC_ALL: C
+  loop: "{{ list_files.files }}"
+  register: rename_cmd
+  changed_when: "'renamed' in rename_cmd.stdout"
+  tags:
+    - apt
+
+- name: Apt update
+  ansible.builtin.apt:
+    update_cache: yes
+  tags:
+    - apt
+  when: apt_basic_list is changed or apt_security_sources is changed

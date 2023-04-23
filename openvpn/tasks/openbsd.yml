@@ -1,12 +1,12 @@
 ---
 
 - name: Install OpenVPN
-  openbsd_pkg:
+  community.general.openbsd_pkg:
     name: openvpn--
   when: ansible_distribution == 'OpenBSD'
 
 - name: Create /etc/openvpn
-  file:
+  ansible.builtin.file:
     dest: "/etc/openvpn"
     state: directory
     owner: root
@@ -14,7 +14,7 @@
     mode: "0755"
 
 - name: Create the shellpki user
-  user:
+  ansible.builtin.user:
     name: _shellpki
     system: yes
     create_home: no
@@ -22,7 +22,7 @@
     shell: "/sbin/nologin"
 
 - name: Create /etc/shellpki
-  file:
+  ansible.builtin.file:
     dest: "/etc/shellpki"
     state: directory
     owner: _shellpki
@@ -30,7 +30,7 @@
     mode: "0755"
 
 - name: Copy shellpki files
-  copy:
+  ansible.builtin.copy:
     src: "shellpki/{{ item.source }}"
     dest: "{{ item.destination }}"
     mode: "{{ item.mode }}"
@@ -41,14 +41,14 @@
      - { source: "shellpki", destination: "/usr/local/sbin/shellpki", mode: "0750", owner: "root", group: "wheel" }
 
 - name: Add sudo rights
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/sudoers"
     regexp: '/usr/local/sbin/shellpki'
     line: "%_shellpki ALL = (root) /usr/local/sbin/shellpki"
     validate: 'visudo -cf %s'
 
 - name: Deploy OpenVPN client config template
-  template:
+  ansible.builtin.template:
     src: "ovpn.conf.j2"
     dest: "/etc/shellpki/ovpn.conf"
     mode: "0640"
@@ -56,12 +56,12 @@
     group: _shellpki
 
 - name: Generate dhparam
-  openssl_dhparam:
+  community.crypto.openssl_dhparam:
     path: /etc/shellpki/dh2048.pem
     size: 2048
 
 - name: Deploy OpenVPN server config
-  template:
+  ansible.builtin.template:
     src: "server.conf.j2"
     dest: "/etc/openvpn/server.conf"
     mode: "0600"
@@ -69,7 +69,7 @@
     group: wheel
 
 - name: Configure PacketFilter
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/pf.conf"
     line: "{{ item }}"
     validate: 'pfctl -nf %s'
@@ -79,7 +79,7 @@
      - "pass in quick on $ext_if proto udp from any to self port 1194"
 
 - name: Create a cron to rotate the logs
-  cron:
+  ansible.builtin.cron:
     name: "OpenVPN logs rotation"
     weekday: "6"
     hour: "4"
@@ -87,11 +87,11 @@
     job: "cp /var/log/openvpn.log /var/log/openvpn.log.$(date +\\%F) && echo \"$(date +\\%F' '\\%R) - logfile turned over via cron\" > /var/log/openvpn.log && gzip /var/log/openvpn.log.$(date +\\%F) && find /var/log/ -type f -name \"openvpn.log.*\" -mtime +365 -exec rm {} \\+"
 
 - name: Generate a password for the management interface
-  set_fact:
+  ansible.builtin.set_fact:
     management_pwd: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters,digits') }}"
 
 - name: Set the management password
-  copy:
+  ansible.builtin.copy:
     dest: "/etc/openvpn/management-pwd"
     content: "{{ management_pwd }}"
     mode: "0600"
@@ -99,30 +99,30 @@
     group: wheel
 
 - name: Enable openvpn service
-  service:
+  ansible.builtin.service:
     name: openvpn
     enabled: yes
 
 - name: Set openvpn flags
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/rc.conf.local
     regexp: "^openvpn_flags="
     line: "openvpn_flags=--daemon --config /etc/openvpn/server.conf"
     create: yes
 
 - name: Is NRPE installed ?
-  stat:
+  ansible.builtin.stat:
     path: "/etc/nrpe.d/evolix.cfg"
   check_mode: no
   register: nrpe_evolix_config
 
 - name: Install NRPE check dependencies
-  openbsd_pkg:
+  community.general.openbsd_pkg:
     name: p5-Net-Telnet
   when: nrpe_evolix_config.stat.exists
 
 - name: Install OpenVPN NRPE check
-  copy:
+  ansible.builtin.copy:
     src: "files/check_openvpn_openbsd.pl"
     dest: "/usr/local/libexec/nagios/plugins/check_openvpn.pl"
     mode: "0755"
@@ -131,7 +131,7 @@
   when: nrpe_evolix_config.stat.exists
 
 - name: Configure NRPE OpenVPN check
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/nrpe.d/evolix.cfg"
     regexp: '^command\[check_openvpn\]='
     line: "command[check_openvpn]=/usr/local/libexec/nagios/plugins/check_openvpn.pl -H 127.0.0.1 -p 1195 -P {{ management_pwd }}"
@@ -143,7 +143,7 @@
   when: nrpe_evolix_config.stat.exists
 
 - name: Install OpenVPN certificates NRPE check
-  copy:
+  ansible.builtin.copy:
     src: "files/check_openvpn_certificates.sh"
     dest: "/usr/local/libexec/nagios/plugins/check_openvpn_certificates.sh"
     mode: "0755"
@@ -152,7 +152,7 @@
   when: nrpe_evolix_config.stat.exists
 
 - name: Add doas rights for NRPE check
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/doas.conf"
     regexp: 'check_openvpn_certificates.sh'
     line: "permit nopass _nrpe as root cmd /usr/local/libexec/nagios/plugins/check_openvpn_certificates.sh"
@@ -160,7 +160,7 @@
   when: nrpe_evolix_config.stat.exists
 
 - name: Configure NRPE certificates check
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/nrpe.d/evolix.cfg"
     regexp: '^command\[check_openvpn_certificates\]='
     line: "command[check_openvpn_certificates]=doas /usr/local/libexec/nagios/plugins/check_openvpn_certificates.sh"
@@ -168,7 +168,7 @@
   when: nrpe_evolix_config.stat.exists
 
 - name: Copy script to check expirations
-  copy:
+  ansible.builtin.copy:
     src: "shellpki/cert-expirations.sh"
     dest: "/usr/share/scripts/cert-expirations.sh"
     mode: "0700"
@@ -176,42 +176,45 @@
     group: wheel
 
 - name: Install cron to warn about certificates expiration
-  cron:
+  ansible.builtin.cron:
     name: "OpenVPN certificates expiration"
     special_time: monthly
     job: '/usr/share/scripts/cert-expirations.sh | mail -E -s "PKI OpenVPN {{ ansible_hostname }} : recapitulatif expirations" {{ client_email }}'
 
 - name: Generate the CA password
-  set_fact:
+  ansible.builtin.set_fact:
     ca_pwd: "{{ lookup('password', '/dev/null length=25 chars=ascii_letters,digits') }}"
   check_mode: no
   changed_when: no
 
 - name: Initialization of the CA
-  shell: 'CA_PASSWORD="{{ ca_pwd }}" shellpki init --non-interactive {{ ansible_fqdn }}'
+  ansible.builtin.shell:
+    cmd: 'CA_PASSWORD="{{ ca_pwd }}" shellpki init --non-interactive {{ ansible_fqdn }}'
 
 - name: Creation of the server's certificate
-  shell: 'CA_PASSWORD="{{ ca_pwd }}" shellpki create --days 3650 --non-interactive {{ ansible_fqdn }}'
+  ansible.builtin.shell:
+    cmd: 'CA_PASSWORD="{{ ca_pwd }}" shellpki create --days 3650 --non-interactive {{ ansible_fqdn }}'
 
 - name: Get the server key
-  shell: 'ls -tr /etc/shellpki/private/ | tail -1'
+  ansible.builtin.shell:
+    cmd: 'ls -tr /etc/shellpki/private/ | tail -1'
   register: ca_key
   check_mode: no
   changed_when: no
 
 - name: Configure the server key
-  replace:
+  ansible.builtin.replace:
     path: /etc/openvpn/server.conf
     regexp: 'key  /etc/shellpki/private/TO_COMPLETE'
     replace: 'key  /etc/shellpki/private/{{ ca_key.stdout }}'
 
 - name: Restart OpenVPN
-  service:
+  ansible.builtin.service:
     name: openvpn
     state: restarted
 
 - name: Warn the user about manual checks
-  pause:
+  ansible.builtin.pause:
     prompt: |
       /!\ WARNING /!\
       You must check and adjust if necessary the configuration file "/etc/openvpn/server.conf", and then restart the OpenVPN service with "rcctl restart openvpn".

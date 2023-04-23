@@ -1,15 +1,15 @@
 ---
 - name: restart memcached
-  service:
+  ansible.builtin.service:
     name: memcached
     state: restarted
 
 - name: restart munin-node
-  service:
+  ansible.builtin.service:
     name: munin-node
     state: restarted
 
 - name: restart nagios-nrpe-server
-  service:
+  ansible.builtin.service:
     name: nagios-nrpe-server
     state: restarted

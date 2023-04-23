@@ -1,7 +1,7 @@
 ---
 
 - name: Dependencies are installed
-  apt:
+  ansible.builtin.apt:
     name:
       - sudo
       - curl
@@ -10,7 +10,7 @@
     - evomaintenance
 
 - name: PG dependencies are installed
-  apt:
+  ansible.builtin.apt:
     name:
       - postgresql-client
     state: present
@@ -18,13 +18,13 @@
   tags:
     - evomaintenance
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   tags:
     - evomaintenance
 
 - name: /usr/share/scripts exists
-  file:
+  ansible.builtin.file:
     dest: /usr/share/scripts
     mode: "0700"
     owner: root
@@ -34,7 +34,7 @@
     - evomaintenance
 
 - name: Evomaintenance script and template are installed
-  copy:
+  ansible.builtin.copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: root

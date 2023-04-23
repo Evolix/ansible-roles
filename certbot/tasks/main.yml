@@ -1,28 +1,28 @@
 ---
 
 - name: "System compatibility checks"
-  assert:
+  ansible.builtin.assert:
     that:
       - ansible_distribution == "Debian"
       - ansible_distribution_major_version is version('8', '>=')
     msg: only compatible with Debian 9+
 
 - name: Install legacy script on Debian 8
-  include: install-legacy.yml
+  ansible.builtin.include: install-legacy.yml
   when:
     - ansible_distribution == "Debian"
     - ansible_distribution_major_version is version('9', '<')
 
 - name: Install package on Debian 9+
-  include: install-package.yml
+  ansible.builtin.include: install-package.yml
   when:
     - ansible_distribution == "Debian"
     - ansible_distribution_major_version is version('9', '>=')
 
-- include: acme-challenge.yml
+- ansible.builtin.include: acme-challenge.yml
 
 - name: Deploy hooks are present
-  copy:
+  ansible.builtin.copy:
     src: hooks/deploy/
     dest: /etc/letsencrypt/renewal-hooks/deploy/
     mode: "0700"
@@ -30,7 +30,7 @@
     group: root
 
 - name: Manual deploy hook is present
-  copy:
+  ansible.builtin.copy:
     src: hooks/manual-deploy.sh
     dest: /etc/letsencrypt/renewal-hooks/manual-deploy.sh
     mode: "0700"
@@ -38,7 +38,7 @@
     group: root
 
 - name: "sync_remote is configured with servers"
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/letsencrypt/renewal-hooks/deploy/sync_remote.cf
     regexp: "^servers="
     line: "servers=\"{{ certbot_hooks_sync_remote_servers | join(' ') }}\""
@@ -46,14 +46,15 @@
 
 # begining of backward compatibility tasks
 - name: Move deploy/commit-etc.sh to deploy/z-commit-etc.sh if present
-  command: "mv /etc/letsencrypt/renewal-hooks/deploy/commit-etc.sh /etc/letsencrypt/renewal-hooks/deploy/z-commit-etc.sh"
+  ansible.builtin.command:
+    cmd: "mv /etc/letsencrypt/renewal-hooks/deploy/commit-etc.sh /etc/letsencrypt/renewal-hooks/deploy/z-commit-etc.sh"
   args:
     removes: /etc/letsencrypt/renewal-hooks/deploy/commit-etc.sh
     creates: /etc/letsencrypt/renewal-hooks/deploy/z-commit-etc.sh
 # end of backward compatibility tasks
 
 - name: "certbot lock is ignored by Git"
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/.gitignore
     line: letsencrypt/.certbot.lock
     create: yes

@@ -1,6 +1,6 @@
 ---
 - name: install SpamAssasin
-  apt:
+  ansible.builtin.apt:
     name:
       - spamassassin
     state: present
@@ -8,7 +8,7 @@
     - spamassassin
 
 - name: configure SpamAssasin
-  copy:
+  ansible.builtin.copy:
     src: spamassassin.cf
     dest: /etc/spamassassin/local_evolix.cf
     mode: "0644"
@@ -17,7 +17,7 @@
     - spamassassin
 
 - name: enable SpamAssasin
-  replace:
+  ansible.builtin.replace:
     dest: /etc/default/spamassassin
     regexp: 'ENABLED=0'
     replace: 'ENABLED=1'
@@ -26,7 +26,7 @@
     - spamassassin
 
 - name: add amavis user to debian-spamd group
-  user:
+  ansible.builtin.user:
     name: amavis
     groups: debian-spamd
     append: yes
@@ -34,31 +34,31 @@
     - spamassassin
 
 - name: fix right on /var/lib/spamassassin
-  file:
+  ansible.builtin.file:
     dest: /var/lib/spamassassin
     state: directory
     mode: "0750"
   tags:
     - spamassassin
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   tags:
     - spamassassin
 
 - name: Check evomaintenance config
-  stat:
+  ansible.builtin.stat:
     path: /etc/evomaintenance.cf
   register: _evomaintenance_config
 
 - name: Verify sa-update dependency
-  assert:
+  ansible.builtin.assert:
     that:
       - _evomaintenance_config.stat.exists
     msg: sa-update.sh needs /etc/evomaintenance.cf
 
 - name: copy sa-update.sh script
-  copy:
+  ansible.builtin.copy:
     src: sa-update.sh
     dest: /usr/share/scripts/sa-update.sh
     mode: "0750"
@@ -66,8 +66,8 @@
     - spamassassin
 
 - name: Check if cron is installed
-  shell: "set -o pipefail && dpkg -l cron 2>/dev/null | grep -q -E '^(i|h)i'"
-  args:
+  ansible.builtin.shell:
+    cmd: "set -o pipefail && dpkg -l cron 2>/dev/null | grep -q -E '^(i|h)i'"
     executable: /bin/bash
   check_mode: no
   failed_when: False
@@ -75,7 +75,7 @@
   register: is_cron_installed
 
 - name: enable sa-update.sh cron
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/cron.d/sa-update
     line: "42 6 5 1,4,7,10 * root /usr/share/scripts/sa-update.sh"
     create: yes
@@ -86,13 +86,14 @@
     - spamassassin
 
 - name: update SpamAssasin's rules
-  command: "/usr/share/scripts/sa-update.sh"
+  ansible.builtin.command:
+    cmd: "/usr/share/scripts/sa-update.sh"
   changed_when: False
   tags:
     - spamassassin
 
 - name: ensure SpamAssasin is started and enabled
-  systemd:
+  ansible.builtin.systemd:
     name: spamassassin
     state: started
     enabled: True

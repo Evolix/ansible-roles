@@ -1,0 +1,8 @@
+# {{ansible_managed }}
+
+Types: deb
+URIs: http://repo.mongodb.org/apt/debian
+Suites: bookworm/mongodb-org/{{ mongodb_version }}
+Components: main
+Signed-by: {{ apt_keyring_dir }}/mongodb-server-{{ mongodb_version }}.asc
+Enabled: yes

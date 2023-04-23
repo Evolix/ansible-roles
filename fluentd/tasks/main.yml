@@ -1,27 +1,9 @@
 ---
 
-- name: Look for legacy apt keyring
-  stat:
-    path: /etc/apt/trusted.gpg
-  register: _trusted_gpg_keyring
-  tags:
-    - packages
-    - fluentd
-
-- name: Fluentd embedded GPG key is absent
-  apt_key:
-    id: "AB97ACBE"
-    keyring: /etc/apt/trusted.gpg
-    state: absent
-  when: _trusted_gpg_keyring.stat.exists
-  tags:
-    - packages
-    - fluentd
-
 - name: Add Fluentd GPG key
-  copy:
-    src: fluentd.asc
-    dest: "{{ apt_keyring_dir }}/fluentd.asc"
+  ansible.builtin.copy:
+    src: treasuredata.asc
+    dest: "{{ apt_keyring_dir }}/treasuredata.asc"
     force: yes
     mode: "0644"
     owner: root
@@ -30,28 +12,35 @@
     - packages
     - fluentd
 
-- name: Fluentd sources list is available
-  apt_repository:
-    repo: "deb [signed-by={{ apt_keyring_dir }}/fluentd.asc] http://packages.treasuredata.com/3/debian/{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} contrib"
+- name: Add Treasuredata repository (Debian <12)
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by={{ apt_keyring_dir }}/treasuredata.asc] http://packages.treasuredata.com/3/debian/{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} contrib"
     filename: treasuredata
-    update_cache: yes
     state: present
-  tags:
-    - packages
-    - fluentd
-
-- name: Unsigned Fluentd sources list is not available
-  apt_repository:
-    repo: "deb http://packages.treasuredata.com/3/debian/{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} contrib"
-    filename: treasuredata
     update_cache: yes
-    state: absent
   tags:
     - packages
     - fluentd
+  when: ansible_distribution_major_version is version('12', '<')
+
+- name: Add Treasuredata repository (Debian >=12)
+  ansible.builtin.template:
+    src: treasuredata.sources.j2
+    dest: /etc/apt/sources.list.d/treasuredata.sources
+    state: present
+  register: treasuredata_sources
+  tags:
+    - packages
+    - fluentd
+  when: ansible_distribution_major_version is version('12', '>=')
+
+- name: Update APT cache
+  ansible.builtin.apt:
+    update_cache: yes
+  when: treasuredata_sources is changed
 
 - name: Fluentd is installed.
-  apt:
+  ansible.builtin.apt:
     name: td-agent
     state: present
   tags:
@@ -59,7 +48,7 @@
     - packages
 
 - name: Fluentd is configured.
-  template:
+  ansible.builtin.template:
     src: td-agent.conf.j2
     dest: "{{ fluentd_conf_path }}"
     mode: "0644"
@@ -68,7 +57,7 @@
     - fluentd
 
 - name: Fluentd is running and enabled on boot.
-  systemd:
+  ansible.builtin.systemd:
     name: td-agent
     enabled: yes
     state: started
@@ -76,7 +65,7 @@
     - fluentd
 
 - name: NRPE check is configured
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/nagios/nrpe.d/evolix.cfg
     line: 'command[check_fluentd]=/usr/lib/nagios/plugins/check_tcp -p {{ fluentd_port }}'
   notify: "restart nagios-nrpe-server"

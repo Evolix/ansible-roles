@@ -21,6 +21,7 @@ lxc_php_container_releases:
   php74: "bullseye"
   php80: "bullseye"
   php81: "bullseye"
+  php82: "bullseye"
 
 lxc_php_services:
   php56: 'php5-fpm.service'
@@ -29,5 +30,6 @@ lxc_php_services:
   php74: 'php7.4-fpm.service'
   php80: 'php8.0-fpm.service'
   php81: 'php8.1-fpm.service'
+  php82: 'php8.2-fpm.service'
 
 apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"

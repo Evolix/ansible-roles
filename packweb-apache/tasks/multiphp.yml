@@ -1,16 +1,16 @@
 ---
 
 - name: Enable proxy_fcgi
-  apache2_module:
+  community.general.apache2_module:
     state: present
     name: proxy_fcgi
   notify: restart apache2
 
-- include_role:
+- ansible.builtin.include_role:
     name: remount-usr
 
 - name: Copy phpContainer script
-  copy:
+  ansible.builtin.copy:
     src: phpContainer
     dest: /usr/local/bin/phpContainer
     mode: "0755"
@@ -27,7 +27,7 @@
 #     line: "alias php='sudo /usr/local/bin/phpContainer'"
 
 - name: Add multiphp sudoers file
-  copy:
+  ansible.builtin.copy:
     src: multiphp-sudoers
     dest: /etc/sudoers.d/multiphp
     mode: "0600"

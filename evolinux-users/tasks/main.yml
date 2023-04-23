@@ -1,18 +1,18 @@
 ---
 
 - name: "System compatibility checks"
-  assert:
+  ansible.builtin.assert:
     that:
       - ansible_distribution == "Debian"
       - ansible_distribution_major_version is version('8', '>=')
     msg: only compatible with Debian >= 8
 
-- debug:
+- ansible.builtin.debug:
     msg: "Warning: empty 'evolinux_users' variable, tasks will be skipped!"
   when: evolinux_users | length == 0
 
 - name: Create user accounts
-  include: user.yml
+  ansible.builtin.include: user.yml
   vars:
     user: "{{ item.value }}"
   loop: "{{ evolinux_users | dict2items }}"
@@ -21,8 +21,8 @@
     - evolinux_users | length > 0
 
 - name: Configure sudo
-  include: sudo.yml
+  ansible.builtin.include: sudo.yml
 
 - name: Configure SSH
-  include: ssh.yml
+  ansible.builtin.include: ssh.yml
   when: evolinux_users | length > 0

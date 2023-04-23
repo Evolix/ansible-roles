@@ -3,7 +3,7 @@
 # TODO: voir comment faire des backups initiaux des fichiers
 
 - name: Copy rsyslog.conf
-  copy:
+  ansible.builtin.copy:
     src: logs/rsyslog.conf
     dest: /etc/rsyslog.conf
     mode: "0644"
@@ -11,7 +11,8 @@
   when: evolinux_logs_rsyslog_conf | bool
 
 - name: Disable logrotate default conf
-  command: mv /etc/logrotate.d/rsyslog /etc/logrotate.d/rsyslog.disabled
+  ansible.builtin.command:
+    cmd: mv /etc/logrotate.d/rsyslog /etc/logrotate.d/rsyslog.disabled
   args:
     removes: /etc/logrotate.d/rsyslog
     creates: /etc/logrotate.d/rsyslog.disabled
@@ -19,33 +20,33 @@
   when: evolinux_logs_disable_logrotate_rsyslog | bool
 
 - name: Copy many logrotate files
-  copy:
+  ansible.builtin.copy:
     src: logs/logrotate.d/
     dest: /etc/logrotate.d/
   when: evolinux_logs_logrotate_confs | bool
 
 - name: Copy rsyslog logrotate file
-  template:
+  ansible.builtin.template:
     src: logs/zsyslog.j2
     dest: /etc/logrotate.d/zsyslog
   when: evolinux_logs_logrotate_confs | bool
 
 - name: Configure logrotate.conf default rotate value
-  replace:
+  ansible.builtin.replace:
     dest: /etc/logrotate.conf
     regexp: "rotate [0-9]+"
     replace: "rotate 12"
   when: evolinux_logs_default_rotate | bool
 
 - name: Enable logrotate.conf dateext option
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/logrotate.conf
     line: "dateext"
     regexp: "^#?\\s*dateext"
   when: evolinux_logs_default_dateext | bool
 
 - name: Enable logrotate.conf dateformat option
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/logrotate.conf
     line: "dateformat {{ evolinux_logrotate_dateformat | mandatory }}"
     regexp: "^#?\\s*dateformat.*"
@@ -53,11 +54,11 @@
   when: evolinux_logs_default_dateext | bool
 
 - name: Disable logrotate.conf dateyesterday option
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/logrotate.conf
     line: "# dateyesterday"
     regexp: "^\\s*dateyesterday"
     insertafter: 'dateext'
   when: evolinux_logs_default_dateext | bool
 
-- meta: flush_handlers
+- ansible.builtin.meta: flush_handlers

@@ -1,7 +1,7 @@
 ---
 
 - name: is NRPE present ?
-  stat:
+  ansible.builtin.stat:
     path: /etc/nagios/nrpe.d/evolix.cfg
   check_mode: no
   register: nrpe_evolix_config
@@ -10,7 +10,7 @@
     - nrpe
 
 - name: NRPE user exists for MySQL ?
-  stat:
+  ansible.builtin.stat:
     path: ~nagios/.my.cnf
   check_mode: no
   register: nrpe_my_cnf
@@ -20,13 +20,14 @@
 
 - block:
   - name: Create a password for NRPE
-    command: "apg -n 1 -m 16 -M lcN"
+    ansible.builtin.command:
+      cmd: "apg -n 1 -m 16 -M lcN"
     register: mysql_nrpe_password
     check_mode: no
     changed_when: False
 
   - name: Create nrpe user
-    mysql_user:
+    community.mysql.mysql_user:
       name: nrpe
       password: '{{ mysql_nrpe_password.stdout }}'
       priv: "*.*:REPLICATION CLIENT"
@@ -36,7 +37,7 @@
     register: create_nrpe_user
 
   - name: Store credentials in nagios home
-    ini_file:
+    community.general.ini_file:
       dest: "~nagios/.my.cnf"
       owner: nagios
       group: nagios

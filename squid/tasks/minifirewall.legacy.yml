@@ -1,20 +1,20 @@
 ---
 - name: Check if Minifirewall is present
-  stat:
+  ansible.builtin.stat:
     path: "/etc/default/minifirewall"
   check_mode: no
   register: minifirewall_test
 
 - block:
   - name: HTTPSITES list is commented in minifirewall
-    replace:
+    ansible.builtin.replace:
       dest: "/etc/default/minifirewall"
       regexp: "^(HTTPSITES='[^0-9])"
       replace: '#\1'
     notify: restart minifirewall
 
   - name: all HTTPSITES are authorized in minifirewall
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: "/etc/default/minifirewall"
       line: "HTTPSITES='0.0.0.0/0'"
       regexp: "HTTPSITES='.*'"
@@ -22,7 +22,7 @@
     notify: restart minifirewall
 
   - name: add iptables rules for the proxy
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: "/etc/default/minifirewall"
       regexp: "^#? *{{ item }}"
       line: "{{ item }}"
@@ -35,7 +35,7 @@
     notify: restart minifirewall
 
   - name: remove minifirewall example rule for the proxy
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: "/etc/default/minifirewall"
       regexp: '^#.*(-t nat).*(-d X\.X\.X\.X)'
       state: absent

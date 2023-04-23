@@ -1,26 +1,26 @@
 ---
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/apt
     tasks_from: backports.yml
   tags:
     - haproxy
     - packages
 
-- set_fact:
+- ansible.builtin.set_fact:
     haproxy_backports_packages: "{{ haproxy_backports_packages_stretch }}"
   when: ansible_distribution_release == 'stretch'
 
-- set_fact:
+- ansible.builtin.set_fact:
     haproxy_backports_packages: "{{ haproxy_backports_packages_buster }}"
   when: ansible_distribution_release == 'buster'
 
-- set_fact:
+- ansible.builtin.set_fact:
     haproxy_backports_packages: "{{ haproxy_backports_packages_bullseye }}"
   when: ansible_distribution_release == 'bullseye'
 
 - name: Prefer HAProxy package from backports
-  template:
+  ansible.builtin.template:
     src: haproxy_apt_preferences.j2
     dest: /etc/apt/preferences.d/999-haproxy
     force: yes
@@ -31,7 +31,7 @@
     - packages
 
 - name: update apt
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
   when: haproxy_apt_preferences is changed
   tags:

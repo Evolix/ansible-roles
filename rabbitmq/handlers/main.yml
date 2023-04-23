@@ -1,15 +1,15 @@
 ---
 - name: restart rabbitmq
-  service:
+  ansible.builtin.service:
     name: rabbitmq-server
     state: restarted
 
 - name: restart nagios-nrpe-server
-  service:
+  ansible.builtin.service:
     name: nagios-nrpe-server
     state: restarted
 
 - name: restart munin-node
-  service:
+  ansible.builtin.service:
     name: munin-node
     state: restarted

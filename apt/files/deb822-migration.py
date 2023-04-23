@@ -3,20 +3,36 @@
 import re
 import sys
 import os
+import select
+import apt
+import apt_pkg
 
-if len(sys.argv) > 1:
-    src_file = sys.argv[1]
-else:
-    print("You must provide a source file as first argument", file=sys.stderr)
-    sys.exit(1)
+# Order matters !
+destinations = {
+    "debian-security": "security.sources",
+    ".*-backports": "backports.sources",
+    ".debian.org": "system.sources",
+    "mirror.evolix.org": "system.sources",
+    "pub.evolix.net": "evolix_public_old.sources",
+    "pub.evolix.org": "evolix_public.sources",
+    "artifacts.elastic.co": "elastic.sources",
+    "download.docker.com": "docker.sources",
+    "downloads.linux.hpe.com": "hp.sources",
+    "pkg.jenkins-ci.org": "jenkins.sources",
+    "packages.sury.org": "sury.sources",
+    "repo.mongodb.org": "mongodb.sources",
+    "apt.newrelic.com": "newrelic.sources",
+    "deb.nodesource.com": "nodesource.sources",
+    "dl.yarnpkg.com": "yarn.sources",
+    "apt.postgresql.org": "postgresql.sources",
+    "packages.microsoft.com/repos/vscode": "microsoft-vscode.sources",
+    "packages.microsoft.com/repos/ms-teams": "microsoft-teams.sources",
+    "updates.signal.org": "signal.sources",
+    "downloads.1password.com/linux/debian": "1password.sources",
+    "download.virtualbox.org": "virtualbox.sources"
+}
 
-if not os.access(src_file, os.R_OK):
-    print(src_file, "is not readable", file=sys.stderr)
-    sys.exit(2)
-
-pattern = re.compile('^(?P<type>deb|deb-src) +(?P<options>\[.+\] ?)*(?P<uri>\w+:\/\/\S+) +(?P<suite>\S+)(?: +(?P<components>.*))?$')
-
-sources = {}
+sources_parts = apt_pkg.config.find_dir('Dir::Etc::sourceparts')
 
 def split_options(raw):
     table = str.maketrans({
@@ -27,25 +43,44 @@ def split_options(raw):
 
     return options
 
-with open(src_file,'r') as file:
-    for line in file:
-        matches = re.match(pattern, line)
-        if matches is not None:
-            # print(matches.groupdict())
-            uri = matches['uri']
+def auto_destination(uri):
+    basename = uri
+    basename = re.sub('\[[^\]]+\]', '', basename)
+    basename = re.sub('\w+://', '', basename)
+    basename = '_'.join(re.sub('[^a-zA-Z0-9]', ' ', basename).split())
+    return '%s.sources' % basename
 
+
+def destination(matches):
+    for search_str in destinations.keys():
+        search_pattern = re.compile(f'{search_str}(/|\s|$)')
+        if re.search(search_pattern, matches['uri']) or re.search(search_pattern, matches["suite"]):
+            return destinations[search_str]
+    # fallback if nothing matches
+    return auto_destination(matches['uri'])
+
+def prepare_sources(lines):
+    sources = {}
+    pattern = re.compile('^(?: *(?P<type>deb|deb-src)) +(?P<options>\[.+\] ?)*(?P<uri>\w+:\/\/\S+) +(?P<suite>\S+)(?: +(?P<components>.*))?$')
+
+    for line in lines:
+        matches = re.match(pattern, line)
+
+        if matches is not None:
+            dest = destination(matches)
             options = {}
+
             if matches.group('options'):
                 for option in split_options(matches['options']):
                     if "=" in option:
                         key, value = option.split("=")
                         options[key] = value
 
-            if uri in sources:
-                sources[uri]["Types"].add(matches["type"])
-                sources[uri]["URIs"] = matches["uri"]
-                sources[uri]["Suites"].add(matches["suite"])
-                sources[uri]["Components"].update(matches["components"].split(' '))
+            if dest in sources:
+                sources[dest]["Types"].add(matches["type"])
+                sources[dest]["URIs"] = matches["uri"]
+                sources[dest]["Suites"].add(matches["suite"])
+                sources[dest]["Components"].update(matches["components"].split(' '))
             else:
                 source = {
                     "Types": {matches['type']},
@@ -83,14 +118,35 @@ with open(src_file,'r') as file:
                     else:
                         source["Targets"] = {options["target"]}
 
-                sources[uri] = source
+                sources[dest] = source
+    return sources
 
-for i, (uri, source) in enumerate(sources.items()):
-    if i > 0:
-        print("")
-    for key, value in source.items():
-        if isinstance(value, str):
-            print("{}: {}".format(key, value) )
-        else:
-            print("{}: {}".format(key, ' '.join(value)) )
-    i += 1
+def save_sources(sources, output_dir):
+    # print(output_dir)
+    # print(sources)
+    for dest, source in sources.items():
+        source_path = output_dir + dest
+
+        with open(source_path, 'w') as file:
+            for key, value in source.items():
+                if isinstance(value, str):
+                    file.write("{}: {}\n".format(key, value))
+                else:
+                    file.write("{}: {}\n".format(key, ' '.join(value)))
+
+def main():
+    if select.select([sys.stdin, ], [], [], 0.0)[0]:
+        sources = prepare_sources(sys.stdin)
+    # elif len(sys.argv) > 1:
+    #     sources = prepare_sources([sys.argv[1]])
+    else:
+        print("You must provide source lines to stdin", file=sys.stderr)
+        sys.exit(1)
+
+    output_dir = apt_pkg.config.find_dir('Dir::Etc::sourceparts')
+    save_sources(sources, output_dir)
+
+if __name__ == "__main__":
+    main()
+
+sys.exit(0)

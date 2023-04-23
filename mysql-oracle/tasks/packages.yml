@@ -1,43 +1,43 @@
 ---
 
-- set_fact:
+- ansible.builtin.set_fact:
     mysql_apt_config_package: mysql-apt-config_0.8.9-1_all.deb
 
 - name: Set default MySQL version to 5.7
-  debconf:
+  ansible.builtin.debconf:
     name: mysql-apt-config
     question: mysql-apt-config/enable-repo
     value: mysql-5.7
     vtype: select
 
 - name: MySQL APT config package is available
-  copy:
+  ansible.builtin.copy:
     src: "{{ mysql_apt_config_package }}"
     dest: "/root/{{ mysql_apt_config_package }}"
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - name: MySQL APT config package is installed
-  apt:
+  ansible.builtin.apt:
     deb: "/root/{{ mysql_apt_config_package }}"
     state: present
   register: mysql_apt_config_deb
 
 - name: Open firewall for MySQL.com repository
-  replace:
+  ansible.builtin.replace:
     name: /etc/default/minifirewall
     regexp: "^(HTTPSITES='((?!(repo\\.mysql\\.com|0\\.0\\.0\\.0)).)*)'$"
     replace: "\\1 repo.mysql.com'"
   notify: Restart minifirewall
 
-- meta: flush_handlers
+- ansible.builtin.meta: flush_handlers
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 - name: /usr/share/mysql exists
-  file:
+  ansible.builtin.file:
     dest: /usr/share/mysql/
     mode: "0755"
     owner: root
@@ -45,7 +45,7 @@
     state: directory
 
 - name: mysql-systemd-start scripts is installed
-  copy:
+  ansible.builtin.copy:
     src: debian/mysql-systemd-start
     dest: /usr/share/mysql/mysql-systemd-start
     mode: "0755"
@@ -54,7 +54,7 @@
     force: yes
 
 - name: systemd unit is installed
-  copy:
+  ansible.builtin.copy:
     src: debian/mysql-server-5.7.mysql.service
     dest: /etc/systemd/system/mysql.service
     mode: "0644"
@@ -64,12 +64,12 @@
   register: mysql_systemd_unit
 
 - name: APT cache is up-to-date
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
   when: mysql_apt_config_deb is changed
 
 - name: Install MySQL packages
-  apt:
+  ansible.builtin.apt:
     name:
       - mysql-server
       - mysql-client
@@ -80,7 +80,7 @@
     - packages
 
 - name: Install MySQL dev packages
-  apt:
+  ansible.builtin.apt:
     name: libmysqlclient20
     update_cache: yes
     state: present
@@ -90,7 +90,7 @@
   when: mysql_install_libclient | bool
 
 - name: MySQL is started
-  systemd:
+  ansible.builtin.systemd:
     name: mysql
     daemon_reload: yes
     state: started
@@ -99,7 +99,7 @@
     - services
 
 - name: apg package is installed
-  apt:
+  ansible.builtin.apt:
     name: apg
     state: present
   tags:

@@ -1,6 +1,6 @@
 ---
 - name: Install Unbound package
-  apt:
+  ansible.builtin.apt:
     name: unbound
     state: present
   when: ansible_distribution == "Debian"
@@ -8,7 +8,7 @@
   - unbound
 
 - name: Retrieve list of root DNS servers
-  get_url:
+  ansible.builtin.get_url:
     url: https://www.internic.net/domain/named.cache
     dest: /etc/unbound/root.hints
     force: yes
@@ -18,7 +18,7 @@
   - unbound
 
 - name: Copy Unbound config
-  template:
+  ansible.builtin.template:
     src: unbound.conf.j2
     dest: /etc/unbound/unbound.conf
     owner: root
@@ -30,7 +30,7 @@
   - unbound
 
 - name: Starting and enabling Unbound
-  service:
+  ansible.builtin.service:
     name: unbound
     enabled: yes
     state: started

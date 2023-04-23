@@ -1,34 +1,36 @@
 ---
 - name: Create bin dir
-  file:
+  ansible.builtin.file:
     state: directory
     dest: "{{ ansible_env.HOME }}/bin"
     mode: "0750"
 
 - name: Download wp-cli
-  get_url:
+  ansible.builtin.get_url:
     url: "https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar"
     dest: "{{ ansible_env.HOME }}/bin/wp-cli.phar"
     mode: "0750"
 
 - name: Download Wordpress
-  shell: '{{ wordpress_wpcli }} core download --locale=fr_FR --version={{ wordpress_version }}'
+  ansible.builtin.shell:
+    cmd: '{{ wordpress_wpcli }} core download --locale=fr_FR --version={{ wordpress_version }}'
   args:
     creates: "{{ ansible_env.HOME }}/www/index.php"
 
 - name: Retrieve .my.cnf
-  fetch:
+  ansible.builtin.fetch:
     src: "{{ ansible_env.HOME }}/.my.cnf"
     dest: "/tmp/wordpress-{{ ansible_user }}.cnf"
     flat: yes
 
 - name: Generate random password
-  command: apg -n1 -m 12 -M LCN
+  ansible.builtin.command:
+    cmd: apg -n1 -m 12 -M LCN
   register: shell_password
   changed_when: False
 
 - name: Read mysql config from .my.cnf
-  set_fact:
+  ansible.builtin.set_fact:
     db_host: "{{ lookup('ini', 'host section=client file=/tmp/wordpress-{{ ansible_user }}.cnf default=127.0.0.1') }}"
     db_user: "{{ lookup('ini', 'user section=client file=/tmp/wordpress-{{ ansible_user }}.cnf default={{ ansible_user }}') }}"
     db_pwd: "{{ lookup('ini', 'password section=client file=/tmp/wordpress-{{ ansible_user }}.cnf') }}"
@@ -36,50 +38,57 @@
     admin_pwd: "{{ shell_password.stdout }}"
 
 - name: Remove local .my.cnf
-  file:
+  ansible.builtin.file:
     path: "/tmp/wordpress-{{ ansible_user }}.cnf"
     state: absent
   delegate_to: localhost
 
 - name: Configure Wordpress (wp-config.php)
-  shell: '{{ wordpress_wpcli }} core config --dbhost={{ db_host }} --dbuser={{ db_user }} --dbpass={{ db_pwd }} --dbname={{ db_name }}'
+  ansible.builtin.shell:
+    cmd: '{{ wordpress_wpcli }} core config --dbhost={{ db_host }} --dbuser={{ db_user }} --dbpass={{ db_pwd }} --dbname={{ db_name }}'
   args:
     creates: "{{ ansible_env.HOME }}/www/wp-config.php"
 
 - name: Configure site
-  shell: '{{ wordpress_wpcli }} core install --url={{ wordpress_host | quote }} --title={{ wordpress_title | quote }} --admin_user=admin --admin_password="{{ admin_pwd | quote }}" --admin_email={{ wordpress_email }} --skip-email'
+  ansible.builtin.shell:
+    cmd: '{{ wordpress_wpcli }} core install --url={{ wordpress_host | quote }} --title={{ wordpress_title | quote }} --admin_user=admin --admin_password="{{ admin_pwd | quote }}" --admin_email={{ wordpress_email }} --skip-email'
   changed_when: False
 
 - name: Check if Wordpress is up to date
-  shell: '{{ wordpress_wpcli }} core check-update | grep -q Success'
+  ansible.builtin.shell:
+    cmd: '{{ wordpress_wpcli }} core check-update | grep -q Success'
   register: check_version
   check_mode: no
   failed_when: False
   changed_when: check_version.rc == 1
 
 - name: Update Wordpress
-  shell: '{{ wordpress_wpcli }} core update --version={{ wordpress_version }}'
+  ansible.builtin.shell:
+    cmd: '{{ wordpress_wpcli }} core update --version={{ wordpress_version }}'
   args:
     removes: "{{ ansible_env.HOME }}/www/index.php"
   when: check_version.rc == 1
 
 - name: Install default plugin
-  shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} || {{ wordpress_wpcli }} plugin install {{ item }}'
+  ansible.builtin.shell:
+    cmd: '{{ wordpress_wpcli }} plugin is-installed {{ item }} || {{ wordpress_wpcli }} plugin install {{ item }}'
   changed_when: False
   loop: "{{ wordpress_plugins }}"
 
 - name: Update default plugins
-  shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} && {{ wordpress_wpcli }} plugin update {{ item }}'
+  ansible.builtin.shell:
+    cmd: '{{ wordpress_wpcli }} plugin is-installed {{ item }} && {{ wordpress_wpcli }} plugin update {{ item }}'
   changed_when: False
   loop: "{{ wordpress_plugins }}"
 
 - name: Activate default plugins
-  shell: '{{ wordpress_wpcli }} plugin is-installed {{ item }} && {{ wordpress_wpcli }} plugin activate {{ item }}'
+  ansible.builtin.shell:
+    cmd: '{{ wordpress_wpcli }} plugin is-installed {{ item }} && {{ wordpress_wpcli }} plugin activate {{ item }}'
   changed_when: False
   loop: "{{ wordpress_plugins }}"
 
 - name: Send a summary mail
-  mail:
+  community.general.mail:
     host: 'localhost'
     port: 25
     to: "{{ wordpress_email }}"

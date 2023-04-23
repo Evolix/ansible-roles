@@ -1,18 +1,18 @@
 ---
 
 - name: Postfix packages are installed
-  apt:
+  ansible.builtin.apt:
     name:
       - postfix
       - mailgraph
     state: present
-  when: evolinux_postfix_packages | bool
   tags:
     - packages
     - postfix
+  when: evolinux_postfix_packages | bool
 
 - name: configure postfix myhostname
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/postfix/main.cf
     state: present
     line: "myhostname = {{ evolinux_fqdn }}"
@@ -22,7 +22,7 @@
     - postfix
 
 - name: configure postfix mynetworks
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/postfix/main.cf
     state: present
     line: "mydestination = {{ [evolinux_fqdn, evolinux_internal_fqdn] | unique | join(' ') }} localhost.localdomain localhost"
@@ -32,8 +32,8 @@
     - postfix
 
 - name: fetch users list
-  shell: "set -o pipefail && getent passwd | cut -d':' -f 1 | grep -v root"
-  args:
+  ansible.builtin.shell:
+    cmd: "set -o pipefail && getent passwd | cut -d':' -f 1 | grep -v root"
     executable: /bin/bash
   check_mode: no
   register: non_root_users_list
@@ -42,18 +42,18 @@
     - postfix
 
 - name: each user is aliased to root
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/aliases
     regexp: "^{{ item }}:.*"
     line: "{{ item }}: root"
   loop: "{{ non_root_users_list.stdout_lines }}"
   notify: newaliases
-  when: evolinux_postfix_users_alias_root | bool
   tags:
     - postfix
+  when: evolinux_postfix_users_alias_root | bool
 
 - name: additional users address aliased to root
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/aliases
     regexp: "^{{ item }}:.*"
     line: "{{ item }}: root"
@@ -65,24 +65,24 @@
     - error
     - bounce
   notify: newaliases
-  when: evolinux_postfix_mailer_alias_root | bool
   tags:
     - postfix
+  when: evolinux_postfix_mailer_alias_root | bool
 
 - name: root alias is configured
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/aliases
     regexp: "^root:"
     line: "root: {{ postfix_alias_email or general_alert_email | mandatory }}"
   notify: newaliases
-  when: evolinux_postfix_root_alias | bool
   tags:
     - postfix
+  when: evolinux_postfix_root_alias | bool
 
-- meta: flush_handlers
+- ansible.builtin.meta: flush_handlers
 
 - name: exim4 is absent
-  apt:
+  ansible.builtin.apt:
     name:
       - exim4
       - exim4-base
@@ -90,9 +90,9 @@
       - exim4-daemon-light
     purge: yes
     state: absent
-  when: evolinux_postfix_purge_exim | bool
   tags:
     - packages
     - postfix
+  when: evolinux_postfix_purge_exim | bool
 
-- meta: flush_handlers
+- ansible.builtin.meta: flush_handlers

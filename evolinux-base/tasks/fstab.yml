@@ -4,69 +4,70 @@
 # TODO: try to use the custom mount_uuid module for a different approach
 
 - name: Fetch fstab content
-  command: "grep -v '^#' /etc/fstab"
+  ansible.builtin.command:
+    cmd: "grep -v '^#' /etc/fstab"
   check_mode: no
   register: fstab_content
   failed_when: False
   changed_when: False
 
 - name: /home partition is customized
-  replace:
+  ansible.builtin.replace:
     dest: /etc/fstab
     regexp: '([^#]\s+/home\s+\S+\s+)([a-z,]+)(\s+)'
     replace: '\1{{ evolinux_fstab_home_options | mandatory }}\3'
   notify: remount /home
   when:
-  - fstab_content.stdout | regex_search('\s/home\s')
-  - evolinux_fstab_home | bool
+    - fstab_content.stdout | regex_search('\s/home\s')
+    - evolinux_fstab_home | bool
 
 - name: /tmp partition is customized
-  replace:
+  ansible.builtin.replace:
     dest: /etc/fstab
     regexp: '([^#]\s+/tmp\s+\S+\s+)([a-z,]+)(\s+)'
     replace: '\1{{ evolinux_fstab_tmp_options | mandatory }}\3'
   when:
-  - fstab_content.stdout | regex_search('\s/tmp\s')
-  - evolinux_fstab_tmp | bool
+    - fstab_content.stdout | regex_search('\s/tmp\s')
+    - evolinux_fstab_tmp | bool
 
 - name: /usr partition is customized
-  replace:
+  ansible.builtin.replace:
     dest: /etc/fstab
     regexp: '([^#]\s+/usr\s+\S+\s+)([a-z,]+)(\s+)'
     replace: '\1{{ evolinux_fstab_usr_options | mandatory }}\3'
   when:
-  - fstab_content.stdout | regex_search('\s/usr\s')
-  - evolinux_fstab_usr | bool
+    - fstab_content.stdout | regex_search('\s/usr\s')
+    - evolinux_fstab_usr | bool
 
 - name: /var partition is customized
-  replace:
+  ansible.builtin.replace:
     dest: /etc/fstab
     regexp: '([^#]\s+/var\s+\S+\s+)([a-z,]+)(\s+)'
     replace: '\1{{ evolinux_fstab_var_options | mandatory }}\3'
   notify: remount /var
   when:
-  - fstab_content.stdout | regex_search('\s/var\s')
-  - evolinux_fstab_var | bool
+    - fstab_content.stdout | regex_search('\s/var\s')
+    - evolinux_fstab_var | bool
 
 - name: /var/tmp is created
-  mount:
+  ansible.posix.mount:
     src: tmpfs
     name: /var/tmp
     fstype: tmpfs
     opts: "{{ evolinux_fstab_var_tmp_options | mandatory }}"
     state: mounted
   when:
-  - evolinux_fstab_var_tmp | bool
+    - evolinux_fstab_var_tmp | bool
 
 - name: /dev/shm is created (Debian 10 and later)
-  mount:
+  ansible.posix.mount:
     src: tmpfs
     name: /dev/shm
     fstype: tmpfs
     opts: "{{ evolinux_fstab_dev_shm_options | mandatory }}"
     state: mounted
   when:
-  - evolinux_fstab_dev_shm | bool
-  - ansible_distribution_major_version is version('10', '>=')
+    - evolinux_fstab_dev_shm | bool
+    - ansible_distribution_major_version is version('10', '>=')
 
-- meta: flush_handlers
+- ansible.builtin.meta: flush_handlers

@@ -1,6 +1,6 @@
 ---
 - name: Create tomcat dirs
-  file:
+  ansible.builtin.file:
     path: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/{{ item }}"
     state: directory
     mode: "u=rwx,g=rwxs,o="
@@ -15,7 +15,7 @@
     - 'lib'
 
 - name: Templating of env file
-  template:
+  ansible.builtin.template:
     src: 'templates/env.j2'
     dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/env"
     mode: "0660"
@@ -24,7 +24,7 @@
     force: no
 
 - name: Templating of server.xml file
-  template:
+  ansible.builtin.template:
     src: 'templates/server.xml-tomcat{{ tomcat_version }}.j2'
     dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/server.xml"
     mode: "0660"
@@ -33,7 +33,7 @@
     force: no
 
 - name: Copy config file
-  copy:
+  ansible.builtin.copy:
     src: "{{ item }}"
     dest: "{{ tomcat_instance_root }}/{{ tomcat_instance_name }}/conf/{{ item | basename }}"
     mode: "0660"

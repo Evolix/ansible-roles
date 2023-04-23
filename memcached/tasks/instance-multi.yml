@@ -1,14 +1,14 @@
 ---
 
 - name: Add systemd unit template
-  copy:
+  ansible.builtin.copy:
     src: memcached@.service
     dest: /etc/systemd/system/memcached@.service
   tags:
     - memcached
 
 - name: Disable default memcached systemd unit
-  systemd:
+  ansible.builtin.systemd:
     name: memcached
     enabled: false
     state: stopped
@@ -16,14 +16,14 @@
     - memcached
 
 - name: Make sure memcached.conf is absent
-  file:
+  ansible.builtin.file:
     path: /etc/memcached.conf
     state: absent
   tags:
     - memcached
 
 - name: "Create a configuration file for instance ({{ memcached_instance_name }})"
-  template:
+  ansible.builtin.template:
     src: memcached.conf.j2
     dest: /etc/memcached_{{ memcached_instance_name }}.conf
     mode: "0644"
@@ -31,7 +31,7 @@
     - memcached
 
 - name: "Enable and start the memcached instance ({{ memcached_instance_name }})"
-  systemd:
+  ansible.builtin.systemd:
     name: memcached@{{ memcached_instance_name }}
     enabled: yes
     state: started

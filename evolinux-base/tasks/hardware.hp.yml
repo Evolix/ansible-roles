@@ -1,0 +1,87 @@
+---
+
+- name: HPE GPG key is installed
+  ansible.builtin.copy:
+    src: hpePublicKey2048_key1.asc
+    dest: "{{ apt_keyring_dir }}/hpePublicKey2048_key1.asc"
+    force: yes
+    mode: "0644"
+    owner: root
+    group: root
+  tags:
+    - packages
+
+- name: Add HPE repository (Debian <12)
+  ansible.builtin.apt_repository:
+    repo: 'deb [signed-by={{ apt_keyring_dir }}/hpePublicKey2048_key1.asc] https://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_distribution_release }}/current non-free'
+    state: present
+  tags:
+    - packages
+  when:
+    - ansible_distribution_major_version is version('12', '<')
+
+- name: Add HPE repository (Debian >=12)
+  ansible.builtin.template:
+    src: hardware/hp.sources.j2
+    dest: /etc/apt/sources.list.d/hp.sources
+  tags:
+    - packages
+  when:
+    - ansible_distribution_major_version is version('12', '>=')
+
+- name: Install HPE Smart Storage Administrator (ssacli)
+  ansible.builtin.apt:
+    name: ssacli
+  tags:
+    - packages
+
+# NOTE: check_hpraid cron use check_hpraid from nagios-nrpe role
+# So, if nagios-nrpe role is not installed it will not work
+- name: Install and configure check_hpraid cron (HP gen >=10)
+  block:
+    - name: check_hpraid cron is present (HP gen >=10)
+      ansible.builtin.copy:
+        src: check_hpraid.cron.sh
+        dest: /etc/cron.{{ evolinux_cron_checkhpraid_frequency | mandatory }}/check_hpraid
+        mode: "0755"
+      tags:
+        - config
+  when:
+    - "'Adaptec Smart Storage PQI' in raidmodel.stdout"
+
+- name: Install and configure cciss-vol-status (HP gen <10)
+  block:
+    - name: Install cciss-vol-status (HP gen <10)
+      ansible.builtin.apt:
+        name: cciss-vol-status
+        state: present
+      tags:
+        - packages
+
+    - name: cciss-vol-statusd init script is present (HP gen <10)
+      ansible.builtin.template:
+        src: hardware/cciss-vol-statusd.j2
+        dest: /etc/init.d/cciss-vol-statusd
+        mode: "0755"
+      tags:
+        - packages
+
+    - name: Configure cciss-vol-statusd (HP gen <10)
+      ansible.builtin.lineinfile:
+        dest: /etc/default/cciss-vol-statusd
+        line: 'MAILTO="{{ raid_alert_email or general_alert_email | mandatory }}"'
+        regexp: 'MAILTO='
+        create: yes
+      tags:
+        - config
+
+    - name: Enable cciss-vol-status in systemd (HP gen <10)
+      ansible.builtin.systemd:
+        name: cciss-vol-statusd
+        enabled: true
+        state: restarted
+      tags:
+        - packages
+        - config
+  when:
+    - "'Hewlett-Packard Company Smart Array' in raidmodel.stdout"

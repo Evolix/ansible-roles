@@ -1,53 +1,54 @@
 ---
 
-- debug:
+- ansible.builtin.debug:
     var: minifirewall_trusted_ips
     verbosity: 1
-- debug:
+- ansible.builtin.debug:
     var: minifirewall_privilegied_ips
     verbosity: 1
 
 - name: Stat minifirewall config file (before)
-  stat:
+  ansible.builtin.stat:
     path: "{{ minifirewall_main_file }}"
   register: minifirewall_before
 
 - name: Check if minifirewall is running
-  shell: /sbin/iptables -L -n | grep -E "^(DROP\s+udp|ACCEPT\s+icmp)\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
+  ansible.builtin.shell:
+    cmd: /sbin/iptables -L -n | grep -E "^(DROP\s+udp|ACCEPT\s+icmp)\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
   changed_when: False
   failed_when: False
   check_mode: no
   register: minifirewall_is_running
 
-- debug:
+- ansible.builtin.debug:
     var: minifirewall_is_running
     verbosity: 1
 
 - name: Begin marker for IP addresses
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ minifirewall_main_file }}"
     line: "# BEGIN ANSIBLE MANAGED BLOCK FOR IPS"
     insertbefore: '^# Main interface'
     create: no
 
 - name: End marker for IP addresses
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ minifirewall_main_file }}"
     create: no
     line: "# END ANSIBLE MANAGED BLOCK FOR IPS"
     insertafter: '^PRIVILEGIEDIPS='
 
 - name: Verify that at least 1 trusted IP is provided
-  assert:
+  ansible.builtin.assert:
     that: minifirewall_trusted_ips | length > 0
     msg: You must provide at least 1 trusted IP
 
-- debug:
+- ansible.builtin.debug:
     msg: "Warning: minifirewall_trusted_ips='0.0.0.0/0', the firewall is useless!"
   when: minifirewall_trusted_ips == ["0.0.0.0/0"]
 
 - name: Configure IP addresses
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: "{{ minifirewall_main_file }}"
     marker: "# {mark} ANSIBLE MANAGED BLOCK FOR IPS"
     block: |
@@ -77,21 +78,21 @@
   register: minifirewall_config_ips
 
 - name: Begin marker for ports
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ minifirewall_main_file }}"
     line: "# BEGIN ANSIBLE MANAGED BLOCK FOR PORTS"
     insertbefore: '^# Protected services'
     create: no
 
 - name: End marker for ports
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ minifirewall_main_file }}"
     line: "# END ANSIBLE MANAGED BLOCK FOR PORTS"
     insertafter: '^SERVICESUDP3='
     create: no
 
 - name: Configure ports
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: "{{ minifirewall_main_file }}"
     marker: "# {mark} ANSIBLE MANAGED BLOCK FOR PORTS"
     block: |
@@ -115,7 +116,7 @@
   register: minifirewall_config_ports
 
 - name: Configure DNSSERVEURS
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ minifirewall_main_file }}"
     line: "DNSSERVEURS='{{ minifirewall_dns_servers | join(' ') }}'"
     regexp: "DNSSERVEURS='.*'"
@@ -123,7 +124,7 @@
   when: minifirewall_dns_servers is not none
 
 - name: Configure HTTPSITES
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ minifirewall_main_file }}"
     line: "HTTPSITES='{{ minifirewall_http_sites | join(' ') }}'"
     regexp: "HTTPSITES='.*'"
@@ -131,7 +132,7 @@
   when: minifirewall_http_sites is not none
 
 - name: Configure HTTPSSITES
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ minifirewall_main_file }}"
     line: "HTTPSSITES='{{ minifirewall_https_sites | join(' ') }}'"
     regexp: "HTTPSSITES='.*'"
@@ -139,7 +140,7 @@
   when: minifirewall_https_sites is not none
 
 - name: Configure FTPSITES
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ minifirewall_main_file }}"
     line: "FTPSITES='{{ minifirewall_ftp_sites | join(' ') }}'"
     regexp: "FTPSITES='.*'"
@@ -147,7 +148,7 @@
   when: minifirewall_ftp_sites is not none
 
 - name: Configure SSHOK
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ minifirewall_main_file }}"
     line: "SSHOK='{{ minifirewall_ssh_ok | join(' ') }}'"
     regexp: "SSHOK='.*'"
@@ -155,7 +156,7 @@
   when: minifirewall_ssh_ok is not none
 
 - name: Configure SMTPOK
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ minifirewall_main_file }}"
     line: "SMTPOK='{{ minifirewall_smtp_ok | join(' ') }}'"
     regexp: "SMTPOK='.*'"
@@ -163,7 +164,7 @@
   when: minifirewall_smtp_ok is not none
 
 - name: Configure SMTPSECUREOK
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ minifirewall_main_file }}"
     line: "SMTPSECUREOK='{{ minifirewall_smtp_secure_ok | join(' ') }}'"
     regexp: "SMTPSECUREOK='.*'"
@@ -171,7 +172,7 @@
   when: minifirewall_smtp_secure_ok is not none
 
 - name: Configure NTPOK
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ minifirewall_main_file }}"
     line: "NTPOK='{{ minifirewall_ntp_ok | join(' ') }}'"
     regexp: "NTPOK='.*'"
@@ -179,26 +180,27 @@
   when: minifirewall_ntp_ok is not none
 
 - name: evomaintenance
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ minifirewall_main_file }}"
     line: "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s {{ item }} -m state --state ESTABLISHED,RELATED -j ACCEPT"
     insertafter: "^# EvoMaintenance"
   loop: "{{ evomaintenance_hosts }}"
 
 - name: remove minifirewall example rule for the evomaintenance
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ minifirewall_main_file }}"
     regexp: '^#.*(--sport 5432).*(-s X\.X\.X\.X)'
     state: absent
   when: evomaintenance_hosts | length > 0
 
 - name: Stat minifirewall config file (after)
-  stat:
+  ansible.builtin.stat:
     path: "{{ minifirewall_main_file }}"
   register: minifirewall_after
 
 - name: Schedule minifirewall restart (legacy)
-  command: /bin/true
+  ansible.builtin.command:
+    cmd: /bin/true
   notify: "restart minifirewall (legacy)"
   when:
     - minifirewall_install_mode == 'legacy'
@@ -207,6 +209,6 @@
     - minifirewall_before.stat.checksum != minifirewall_after.stat.checksum or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed
 
 
-- debug:
+- ansible.builtin.debug:
     var: minifirewall_init_restart
     verbosity: 2

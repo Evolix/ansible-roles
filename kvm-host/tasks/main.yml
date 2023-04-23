@@ -1,16 +1,16 @@
 ---
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/drbd
   when: kvm_install_drbd
 
 ## TODO: check why it's disabled
-- include: ssh.yml
+- ansible.builtin.include: ssh.yml
 
-- include: packages.yml
+- ansible.builtin.include: packages.yml
 
-- include: munin.yml
+- ansible.builtin.include: munin.yml
 
-- include: images.yml
+- ansible.builtin.include: images.yml
 
-- include: tools.yml
+- ansible.builtin.include: tools.yml

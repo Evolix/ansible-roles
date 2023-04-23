@@ -1,20 +1,20 @@
 ---
 - name: Remove openntpd package
-  apt:
+  ansible.builtin.apt:
     name: openntpd
     state: absent
   tags:
   - ntp
 
 - name: Install ntp package
-  apt:
+  ansible.builtin.apt:
     name: ntp
     state: present
   tags:
   - ntp
 
 - name: Copy ntp config
-  template:
+  ansible.builtin.template:
     src: ntp.conf.j2
     dest: /etc/ntp.conf
     mode: "0644"

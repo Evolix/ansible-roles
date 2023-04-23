@@ -1,51 +1,53 @@
 ---
 
 - name: verify AllowGroups directive
-  command: "grep -E '^AllowGroups' /etc/ssh/sshd_config"
+  ansible.builtin.command:
+    cmd: "grep -E '^AllowGroups' /etc/ssh/sshd_config"
   changed_when: False
   failed_when: False
   check_mode: no
   register: grep_allowgroups_ssh
 
-- debug:
+- ansible.builtin.debug:
     var: grep_allowgroups_ssh
     verbosity: 1
 
 - name: verify AllowUsers directive
-  command: "grep -E '^AllowUsers' /etc/ssh/sshd_config"
+  ansible.builtin.command:
+    cmd: "grep -E '^AllowUsers' /etc/ssh/sshd_config"
   changed_when: False
   failed_when: False
   check_mode: no
   register: grep_allowusers_ssh
 
-- debug:
+- ansible.builtin.debug:
     var: grep_allowusers_ssh
     verbosity: 1
 
-- assert:
+- ansible.builtin.assert:
     that: "not (grep_allowusers_ssh.rc == 0 and grep_allowgroups_ssh.rc == 0)"
     msg: "We can't deal with AllowUsers and AllowGroups at the same time"
 
-- set_fact:
+- ansible.builtin.set_fact:
     # If "AllowGroups is present" or "AllowUsers is absent and Debian 10+",
     ssh_allowgroups: "{{ (grep_allowgroups_ssh.rc == 0) or (grep_allowusers_ssh.rc != 0 and (ansible_distribution_major_version is version('10', '>='))) }}"
     # If "AllowGroups is absent" and "AllowUsers is absent or Debian <10"
     ssh_allowusers:  "{{ (grep_allowusers_ssh.rc == 0) or (grep_allowgroups_ssh.rc != 0 and (ansible_distribution_major_version is version('10', '<'))) }}"
 
-- debug:
+- ansible.builtin.debug:
     var: ssh_allowgroups
     verbosity: 1
 
-- debug:
+- ansible.builtin.debug:
     var: ssh_allowusers
     verbosity: 1
 
-- include: ssh_allowgroups.yml
+- ansible.builtin.include: ssh_allowgroups.yml
   when:
     - ssh_allowgroups
     - not ssh_allowusers
 
-- include: ssh_allowusers.yml
+- ansible.builtin.include: ssh_allowusers.yml
   vars:
     user: "{{ item.value }}"
   loop: "{{ evolinux_users | dict2items }}"
@@ -55,11 +57,11 @@
     - not ssh_allowgroups
 
 - name: disable root login
-  replace:
+  ansible.builtin.replace:
     dest: /etc/ssh/sshd_config
     regexp: '^#PermitRootLogin (yes|without-password|prohibit-password)'
     replace: "PermitRootLogin no"
   notify: reload sshd
   when: evolinux_root_disable_ssh | bool
 
-- meta: flush_handlers
+- ansible.builtin.meta: flush_handlers

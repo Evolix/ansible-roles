@@ -1,22 +1,22 @@
 ---
 
-- set_fact:
+- ansible.builtin.set_fact:
     mysql_restart_handler_name: "{{ mysql_restart_if_needed | bool | ternary('restart mysql', 'restart mysql (noop)') }}"
 
-- include: packages.yml
+- ansible.builtin.include: packages.yml
 
-- include: users.yml
+- ansible.builtin.include: users.yml
 
-- include: config.yml
+- ansible.builtin.include: config.yml
 
-- include: datadir.yml
+- ansible.builtin.include: datadir.yml
 
-- include: tmpdir.yml
+- ansible.builtin.include: tmpdir.yml
 
-- include: nrpe.yml
+- ansible.builtin.include: nrpe.yml
 
-- include: munin.yml
+- ansible.builtin.include: munin.yml
 
-- include: log2mail.yml
+- ansible.builtin.include: log2mail.yml
 
-- include: utils.yml
+- ansible.builtin.include: utils.yml

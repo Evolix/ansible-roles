@@ -1,6 +1,6 @@
 ---
 - name: Create log directory
-  file:
+  ansible.builtin.file:
     state: directory
     dest: /var/log/redmine
     owner: root
@@ -10,7 +10,7 @@
     - redmine
 
 - name: Copy syslog configuration
-  copy:
+  ansible.builtin.copy:
     src: syslog.conf
     dest: /etc/rsyslog.d/redmine.conf
     mode: "0644"
@@ -19,7 +19,7 @@
     - redmine
 
 - name: Copy logrotate configuration
-  copy:
+  ansible.builtin.copy:
     src: logrotate
     dest: /etc/logrotate.d/redmine
     mode: "0644"

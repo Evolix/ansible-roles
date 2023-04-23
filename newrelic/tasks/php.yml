@@ -1,7 +1,7 @@
 ---
 
 - name: Pre-seed package configuration with app name
-  debconf:
+  ansible.builtin.debconf:
     name: newrelic-php5
     question: "newrelic-php5/application-name"
     value: "{{ newrelic_appname }}"
@@ -9,7 +9,7 @@
   when: newrelic_appname | length > 0
 
 - name: Pre-seed package configuration with license
-  debconf:
+  ansible.builtin.debconf:
     name: newrelic-php5
     question: "newrelic-php5/license-key"
     value: "{{ newrelic_license }}"
@@ -17,26 +17,27 @@
   when: newrelic_license | length > 0
 
 - name: list newrelic config files
-  shell: "find /etc/php* -type f -name newrelic.ini"
+  ansible.builtin.shell:
+    cmd: "find /etc/php* -type f -name newrelic.ini"
   changed_when: False
   check_mode: no
   register: find_newrelic_ini
 
 - name: Disable AWS detection
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ item }}"
     regexp: '^;?newrelic.daemon.utilization.detect_aws'
     line: 'newrelic.daemon.utilization.detect_aws = false'
   loop: "{{ find_newrelic_ini.stdout_lines }}"
 
 - name: Disable Docker detection
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ item }}"
     regexp: '^;?newrelic.daemon.utilization.detect_docker'
     line: 'newrelic.daemon.utilization.detect_docker = false'
   loop: "{{ find_newrelic_ini.stdout_lines }}"
 
 - name: Install package for PHP
-  apt:
+  ansible.builtin.apt:
     name: newrelic-php5
     state: present

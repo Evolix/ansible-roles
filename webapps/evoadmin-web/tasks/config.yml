@@ -1,13 +1,13 @@
 ---
 
 - name: "Create /etc/evolinux"
-  file:
+  ansible.builtin.file:
     dest: "/etc/evolinux"
     recurse: True
     state: directory
 
 - name: Configure web-add config file
-  template:
+  ansible.builtin.template:
     src: "{{ item }}"
     dest: /etc/evolinux/web-add.conf
     force: "{{ evoadmin_add_conf_force }}"
@@ -21,7 +21,7 @@
   register: evoadmin_add_conf_template
 
 - name: Configure web-add template file for mail
-  template:
+  ansible.builtin.template:
     src: "{{ item }}"
     dest: "{{ evoadmin_scripts_dir }}/web-mail.tpl"
     force: "{{ evoadmin_mail_tpl_force }}"

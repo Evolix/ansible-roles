@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+
+Types:deb
+URIs: http://pub.evolix.org/evolix
+Suites: {{ ansible_distribution_release }}
+Components: main
+Signed-by: {{ apt_keyring_dir }}/pub_evolix.asc
+Enabled: yes

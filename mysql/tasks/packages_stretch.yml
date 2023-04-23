@@ -1,44 +1,57 @@
 ---
 
 - name: Install MySQL packages
-  apt:
+  ansible.builtin.apt:
     name:
       - mariadb-server
       - mariadb-client
     update_cache: yes
     state: present
   tags:
-  - mysql
-  - packages
+    - mysql
+    - packages
+
+- name: Default log directory is present
+  ansible.builtin.file:
+    path: /var/log/mysql
+    owner: mysql
+    group: adm
+    mode: "2750"
+    state: directory
+  notify: restart mysql
+  tags:
+    - mysql
+    - packages
+  when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Install MySQL dev packages
-  apt:
+  ansible.builtin.apt:
     name: default-libmysqlclient-dev
     update_cache: yes
     state: present
   tags:
-  - mysql
-  - packages
+    - mysql
+    - packages
   when: mysql_install_libclient | bool
 
 - name: MySQL is started
-  service:
+  ansible.builtin.service:
     name: mysql
     state: started
   tags:
-  - mysql
-  - services
+    - mysql
+    - services
 
 - name: apg package is installed
-  apt:
+  ansible.builtin.apt:
     name: apg
     state: present
   tags:
-  - mysql
-  - packages
+    - mysql
+    - packages
 
 - name: Python2 dependencies for Ansible are installed
-  apt:
+  ansible.builtin.apt:
     name:
       - python-mysqldb
       - python-pymysql
@@ -49,7 +62,7 @@
   when: ansible_python_version is version('3', '<')
 
 - name: Python3 dependencies for Ansible are installed
-  apt:
+  ansible.builtin.apt:
     name:
       - python3-mysqldb
       - python3-pymysql

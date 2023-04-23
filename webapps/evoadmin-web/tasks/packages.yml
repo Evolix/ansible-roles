@@ -1,16 +1,16 @@
 ---
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/apt
     tasks_from: evolix_public.yml
 
 # /!\ Warning, this is a temporary hack
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 # /!\ Warning, this is a temporary hack
 - name: Install PHP packages from sid (Debian 10)
-  apt:
+  ansible.builtin.apt:
     deb: '{{ item }}'
     state: present
   loop:
@@ -18,7 +18,7 @@
   when: ansible_distribution_major_version is version('10', '=')
 
 - name: Install PHP packages from sid (Debian 12)
-  apt:
+  ansible.builtin.apt:
     deb: '{{ item }}'
     state: present
   loop:
@@ -26,14 +26,14 @@
   when: ansible_distribution_major_version is version('12', '=')
 
 - name: Install PHP packages
-  apt:
+  ansible.builtin.apt:
     name:
       - php-pear
       - php-log
     state: present
 
 - name: Install PHP5 packages (jessie)
-  apt:
+  ansible.builtin.apt:
     name: php5-pam
     state: present
     allow_unauthenticated: True

@@ -1,49 +1,49 @@
 ---
 
-- fail:
+- ansible.builtin.fail:
     msg: only compatible with Debian >= 8
   when:
   - ansible_distribution != "Debian" or ansible_distribution_major_version is version('8', '<')
 
 - name: "Set squid name (jessie)"
-  set_fact:
+  ansible.builtin.set_fact:
     squid_daemon_name: squid3
   when: ansible_distribution_release == "jessie"
 
 - name: "Set squid name (Debian 9 or later)"
-  set_fact:
+  ansible.builtin.set_fact:
     squid_daemon_name: squid
   when: ansible_distribution_major_version is version('9', '>=')
 
 - name: "Install Squid packages"
-  apt:
+  ansible.builtin.apt:
     name:
       - "{{ squid_daemon_name }}"
       - squidclient
     state: present
 
 - name: Fetch packages
-  package_facts:
+  ansible.builtin.package_facts:
     manager: auto
 
-- debug:
+- ansible.builtin.debug:
     var: ansible_facts.packages[squid_daemon_name]
 
 - name: "Set alternative config file (Debian 9 or later)"
-  copy:
+  ansible.builtin.copy:
     src: default_squid
     dest: /etc/default/squid
   when: ansible_distribution_major_version is version('9', '>=')
 
 - name: "squid.conf is present (jessie)"
-  template:
+  ansible.builtin.template:
     src: squid.conf.j2
     dest: /etc/squid3/squid.conf
   notify: "restart squid3"
   when: ansible_distribution_release == "jessie"
 
 - name: "evolix whitelist is present (jessie)"
-  copy:
+  ansible.builtin.copy:
     src: whitelist-evolinux.conf
     dest: /etc/squid3/whitelist.conf
     force: no
@@ -51,21 +51,21 @@
   when: ansible_distribution_release == "jessie"
 
 - name: "evolinux defaults squid file (Debian 9 or later)"
-  copy:
+  ansible.builtin.copy:
     src: evolinux-defaults.conf
     dest: /etc/squid/evolinux-defaults.conf
   notify: "restart squid"
   when: ansible_distribution_major_version is version('9', '>=')
 
 - name: "evolinux defaults whitelist (Debian 9 or later)"
-  copy:
+  ansible.builtin.copy:
     src: evolinux-whitelist-defaults.conf
     dest: /etc/squid/evolinux-whitelist-defaults.conf
   notify: "reload squid"
   when: ansible_distribution_major_version is version('9', '>=')
 
 - name: "evolinux custom whitelist (Debian 9 or later)"
-  copy:
+  ansible.builtin.copy:
     dest: /etc/squid/evolinux-whitelist-custom.conf
     content: |
       # Put customized values here.
@@ -73,7 +73,7 @@
   when: ansible_distribution_major_version is version('9', '>=')
 
 - name: "evolinux acl for local proxy (Debian 9 or later)"
-  template:
+  ansible.builtin.template:
     src: evolinux-acl.conf.j2
     dest: /etc/squid/evolinux-acl.conf
     force: no
@@ -83,7 +83,7 @@
     - ansible_distribution_major_version is version('9', '>=')
 
 - name: "evolinux custom acl (Debian 9 or later)"
-  copy:
+  ansible.builtin.copy:
     dest: /etc/squid/evolinux-acl.conf
     content: |
       # Put customized values here.
@@ -93,7 +93,7 @@
     - ansible_distribution_major_version is version('9', '>=')
 
 - name: "evolinux http_access for local proxy (Debian 9 or later)"
-  copy:
+  ansible.builtin.copy:
     src: evolinux-httpaccess.conf
     dest: /etc/squid/evolinux-httpaccess.conf
     force: no
@@ -103,7 +103,7 @@
     - ansible_distribution_major_version is version('9', '>=')
 
 - name: "evolinux custom http_access (Debian 9 or later)"
-  copy:
+  ansible.builtin.copy:
     dest: /etc/squid/evolinux-httpaccess.conf
     content: |
       # Put customized values here.
@@ -113,7 +113,7 @@
     - ansible_distribution_major_version is version('9', '>=')
 
 - name: "evolinux overrides for local proxy (Debian 9 or later)"
-  template:
+  ansible.builtin.template:
     src: evolinux-custom.conf.j2
     dest: /etc/squid/evolinux-custom.conf
     force: no
@@ -123,7 +123,7 @@
     - ansible_distribution_major_version is version('9', '>=')
 
 - name: "evolinux custom overrides (Debian 9 or later)"
-  copy:
+  ansible.builtin.copy:
     dest: /etc/squid/evolinux-custom.conf
     content: |
       # Put customized values here.
@@ -133,7 +133,7 @@
     - ansible_distribution_major_version is version('9', '>=')
 
 - name: add some URL in whitelist (Debian 8)
-  lineinfile:
+  ansible.builtin.lineinfile:
     insertafter: EOF
     dest: /etc/squid3/whitelist.conf
     line: "{{ item }}"
@@ -143,7 +143,7 @@
   when: ansible_distribution_major_version == '8'
 
 - name: add some URL in whitelist (Debian 9 or later)
-  lineinfile:
+  ansible.builtin.lineinfile:
     insertafter: EOF
     dest: /etc/squid/evolinux-whitelist-custom.conf
     line: "{{ item }}"
@@ -152,15 +152,15 @@
   notify: "reload squid"
   when: ansible_distribution_major_version is version('9', '>=')
 
-- include: systemd.yml
+- ansible.builtin.include: systemd.yml
   when: ansible_distribution_major_version is version('10', '>=')
 
-- include: logrotate_jessie.yml
+- ansible.builtin.include: logrotate_jessie.yml
   when: ansible_distribution_release == "jessie"
 
-- include: logrotate_stretch.yml
+- ansible.builtin.include: logrotate_stretch.yml
   when: ansible_distribution_major_version is version('9', '>=')
 
-- include: minifirewall.yml
+- ansible.builtin.include: minifirewall.yml
 
-- include: log2mail.yml
+- ansible.builtin.include: log2mail.yml

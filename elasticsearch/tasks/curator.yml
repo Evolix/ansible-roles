@@ -1,11 +1,11 @@
 ---
 
 - name: Use the correct debian repository
-  set_fact:
+  ansible.builtin.set_fact:
     curator_debian_repository: '{% if ansible_distribution_release == "jessie" %}debian{% else %}debian9{% endif %}'
 
 - name: Curator sources list is available
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: "deb https://packages.elastic.co/curator/5/{{ curator_debian_repository }} stable main"
     filename: curator
     update_cache: yes
@@ -15,7 +15,7 @@
     - packages
 
 - name: Curator package is installed
-  apt:
+  ansible.builtin.apt:
     name: elasticsearch-curator
     state: present
   tags:

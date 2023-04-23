@@ -1,13 +1,14 @@
 ---
 - name: restart postfix
-  service:
+  ansible.builtin.service:
     name: postfix
     state: restarted
 
 - name: reload postfix
-  service:
+  ansible.builtin.service:
     name: postfix
     state: reloaded
 
 - name: postmap transport
-  command: postmap /etc/postfix/transport
+  ansible.builtin.command:
+    cmd: postmap /etc/postfix/transport

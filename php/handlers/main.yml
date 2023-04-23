@@ -1,36 +1,36 @@
 ---
 
 - name: restart php5-fpm
-  service:
+  ansible.builtin.service:
     name: php5-fpm
     state: restarted
 
 - name: restart php5.6-fpm
-  service:
+  ansible.builtin.service:
     name: php5.6-fpm
     state: restarted
 
 - name: restart php7.0-fpm
-  service:
+  ansible.builtin.service:
     name: php7.0-fpm
     state: restarted
 
 - name: restart php7.3-fpm
-  service:
+  ansible.builtin.service:
     name: php7.3-fpm
     state: restarted
 
 - name: restart php7.4-fpm
-  service:
+  ansible.builtin.service:
     name: php7.4-fpm
     state: restarted
 
 - name: restart php8.1-fpm
-  service:
+  ansible.builtin.service:
     name: php8.1-fpm
     state: restarted
 
 - name: restart php8.2-fpm
-  service:
+  ansible.builtin.service:
     name: php8.2-fpm
     state: restarted

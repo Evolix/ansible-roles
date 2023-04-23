@@ -2,13 +2,14 @@
 
 - block:
   - name: "Is {{ mysql_custom_logdir }} present ?"
-    stat:
+    ansible.builtin.stat:
       path: "{{ mysql_custom_logdir }}"
     check_mode: no
     register: mysql_custom_logdir_test
 
   - name: "read the real logdir"
-    command: readlink -f /var/log/mysql
+    ansible.builtin.command:
+      cmd: readlink -f /var/log/mysql
     changed_when: False
     check_mode: no
     register: mysql_current_real_logdir_test
@@ -18,23 +19,24 @@
 
 - block:
   - name: MySQL is stopped
-    service:
+    ansible.builtin.service:
       name: mysql
       state: stopped
 
   - name: Move MySQL logdir to {{ mysql_custom_logdir }}
-    command: mv {{ mysql_current_real_logdir_test.stdout }} {{ mysql_custom_logdir }}
+    ansible.builtin.command:
+      cmd: mv {{ mysql_current_real_logdir_test.stdout }} {{ mysql_custom_logdir }}
     args:
       creates: "{{ mysql_custom_logdir }}"
 
   - name: Symlink {{ mysql_custom_logdir }} to /var/log/mysql
-    file:
+    ansible.builtin.file:
       src: "{{ mysql_custom_logdir }}"
       dest: '/var/log/mysql'
       state: link
 
   - name: MySQL is started
-    service:
+    ansible.builtin.service:
       name: mysql
       state: started
   tags:

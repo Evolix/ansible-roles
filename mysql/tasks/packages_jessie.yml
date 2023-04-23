@@ -1,7 +1,7 @@
 ---
 
 - name: Choose packages (Oracle)
-  set_fact:
+  ansible.builtin.set_fact:
     mysql_packages: "{{ mysql_packages_oracle }}"
   when: mysql_variant == "oracle"
   tags:
@@ -9,7 +9,7 @@
   - packages
 
 - name: Choose packages (MariaDB)
-  set_fact:
+  ansible.builtin.set_fact:
     mysql_packages: "{{ mysql_packages_mariadb }}"
   when: mysql_variant == "mariadb"
   tags:
@@ -17,7 +17,7 @@
   - packages
 
 - name: Install MySQL packages
-  apt:
+  ansible.builtin.apt:
     name: "{{ mysql_packages }}"
     update_cache: yes
     state: present
@@ -26,7 +26,7 @@
   - packages
 
 - name: Install MySQL dev packages
-  apt:
+  ansible.builtin.apt:
     name: libmysqlclient-dev
     update_cache: yes
     state: present
@@ -36,7 +36,7 @@
   when: mysql_install_libclient | bool
 
 - name: MySQL is started
-  service:
+  ansible.builtin.service:
     name: mysql
     state: started
   tags:
@@ -44,7 +44,7 @@
   - services
 
 - name: apg package is installed
-  apt:
+  ansible.builtin.apt:
     name: apg
     state: present
   tags:
@@ -52,7 +52,7 @@
   - packages
 
 - name: Python dependencies for Ansible are installed
-  apt:
+  ansible.builtin.apt:
     name: python-mysqldb
     state: present
   tags:

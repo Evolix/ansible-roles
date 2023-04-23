@@ -1,16 +1,16 @@
 ---
 
-- debug:
+- ansible.builtin.debug:
     msg: "Nginx minimal mode has been removed, falling back to normal mode."
   when: not nginx_minimal | bool
 
-- debug:
+- ansible.builtin.debug:
     msg: "Nginx minimal mode has been set, using minimal mode."
   when: nginx_minimal | bool
 
-- include: packages.yml
+- ansible.builtin.include: packages.yml
 
-- include: server_status_read.yml
+- ansible.builtin.include: server_status_read.yml
   tags:
     - nginx
 
@@ -18,7 +18,7 @@
 # without touching the main file
 
 - name: customize worker_connections
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/nginx/nginx.conf
     regexp: '^(\s*worker_connections)\s+.+;'
     line: '    worker_connections 1024;'
@@ -27,7 +27,7 @@
     - nginx
 
 - name: use epoll
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/nginx/nginx.conf
     regexp: '^(\s*use)\s+.+;'
     line: '    use epoll;'
@@ -36,7 +36,7 @@
     - nginx
 
 - name: Install Nginx http configuration
-  copy:
+  ansible.builtin.copy:
     src: nginx/evolinux-defaults.conf
     dest: /etc/nginx/conf.d/z-evolinux-defaults.conf
     mode: "0640"
@@ -50,7 +50,7 @@
 # and not too loose for private_htpasswd
 
 - name: Copy ipaddr_whitelist
-  copy:
+  ansible.builtin.copy:
     src: nginx/snippets/ipaddr_whitelist
     dest: /etc/nginx/snippets/ipaddr_whitelist
     owner: www-data
@@ -64,10 +64,10 @@
     - ips
 
 - name: Include IP address whitelist task
-  include: ip_whitelist.yml
+  ansible.builtin.include: ip_whitelist.yml
 
 - name: Copy evolinux_server_custom
-  copy:
+  ansible.builtin.copy:
     src: nginx/snippets/evolinux_server_custom
     dest: /etc/nginx/snippets/evolinux_server_custom
     owner: www-data
@@ -81,7 +81,7 @@
     - ips
 
 - name: Copy private_htpasswd
-  copy:
+  ansible.builtin.copy:
     src: nginx/snippets/private_htpasswd
     dest: /etc/nginx/snippets/private_htpasswd
     owner: www-data
@@ -94,7 +94,7 @@
     - nginx
 
 - name: add user:pwd to private htpasswd
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/nginx/snippets/private_htpasswd
     line: "{{ item }}"
     state: present
@@ -104,7 +104,7 @@
     - nginx
 
 - name: remove user:pwd from private htpasswd
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/nginx/snippets/private_htpasswd
     line: "{{ item }}"
     state: absent
@@ -114,7 +114,7 @@
     - nginx
 
 - name: nginx vhost is installed
-  template:
+  ansible.builtin.template:
     src: "{{ nginx_default_template_regular }}"
     dest: /etc/nginx/sites-available/evolinux-default.conf
     mode: "0640"
@@ -124,7 +124,7 @@
     - nginx
 
 - name: default vhost is enabled
-  file:
+  ansible.builtin.file:
     src: /etc/nginx/sites-available/evolinux-default.conf
     dest: /etc/nginx/sites-enabled/default
     state: link
@@ -134,12 +134,12 @@
   tags:
     - nginx
 
-- include: server_status_write.yml
+- ansible.builtin.include: server_status_write.yml
   tags:
     - nginx
 
 - name: Verify that the service is enabled and started
-  service:
+  ansible.builtin.service:
     name: nginx
     enabled: yes
     state: started
@@ -147,7 +147,7 @@
     - nginx
 
 - name: Check if Munin is installed
-  stat:
+  ansible.builtin.stat:
     path: /etc/munin/plugin-conf.d/munin-node
   check_mode: no
   register: stat_munin_node
@@ -155,16 +155,16 @@
     - nginx
     - munin
 
-- include: munin_vhost.yml
+- ansible.builtin.include: munin_vhost.yml
   when: stat_munin_node.stat.exists
   tags:
     - nginx
     - munin
 
-- include: munin_graphs.yml
+- ansible.builtin.include: munin_graphs.yml
   when: stat_munin_node.stat.exists
   tags:
     - nginx
     - munin
 
-- include: logrotate.yml
+- ansible.builtin.include: logrotate.yml

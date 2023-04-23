@@ -1,15 +1,15 @@
 ---
 - name: restart apache
-  service:
+  ansible.builtin.service:
     name: apache2
     state: restarted
 
 - name: reload apache
-  service:
+  ansible.builtin.service:
     name: apache2
     state: reloaded
 
 - name: restart munin-node
-  service:
+  ansible.builtin.service:
     name: munin-node
     state: restarted

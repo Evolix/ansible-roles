@@ -27,8 +27,4 @@ galaxy_info:
 
 allow_duplicates: yes
 
-dependencies:
-  - { role: evolix/lxc,
-      lxc_containers: [ { name: "{{ lxc_php_version }}", release: "{{ lxc_php_container_releases[lxc_php_version] }}" } ],
-      when: lxc_php_version is defined
-    }
+dependencies: []

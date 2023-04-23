@@ -1,75 +1,81 @@
 ---
 - name: dpkg-reconfigure-debconf
-  command: dpkg-reconfigure --frontend noninteractive debconf
+  ansible.builtin.command:
+    cmd: dpkg-reconfigure --frontend noninteractive debconf
 
 - name: dpkg-reconfigure-locales
-  command: dpkg-reconfigure --frontend noninteractive locales
+  ansible.builtin.command:
+    cmd: dpkg-reconfigure --frontend noninteractive locales
 
 - name: dpkg-reconfigure-apt
-  command: dpkg-reconfigure --frontend noninteractive apt-listchanges
+  ansible.builtin.command:
+    cmd: dpkg-reconfigure --frontend noninteractive apt-listchanges
 
 # - name: debconf-set-selections
 #   command: debconf-set-selections /root/debconf-preseed
 
 - name: apt update
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
 
 - name: restart rsyslog
-  service:
+  ansible.builtin.service:
     name: rsyslog
     state: restarted
 
 
 - name: remount /home
-  command: mount -o remount /home
+  ansible.builtin.command:
+    cmd: mount -o remount /home
 
 - name: remount /var
-  command: mount -o remount /var
+  ansible.builtin.command:
+    cmd: mount -o remount /var
 
 
 - name: restart nginx
-  service:
+  ansible.builtin.service:
     name: nginx
     state: restarted
 
 - name: reload nginx
-  service:
+  ansible.builtin.service:
     name: nginx
     state: reloaded
 
 - name: restart apache
-  service:
+  ansible.builtin.service:
     name: apache2
     state: restarted
 
 - name: reload apache
-  service:
+  ansible.builtin.service:
     name: apache2
     state: reloaded
 
 - name: restart cron
-  service:
+  ansible.builtin.service:
     name: cron
     state: restarted
 
 - name: newaliases
-  command: newaliases
+  ansible.builtin.command:
+    cmd: newaliases
   changed_when: False
 
 
 - name: reload sshd
-  service:
+  ansible.builtin.service:
     name: ssh
     state: reloaded
 
 - name: reload postfix
-  service:
+  ansible.builtin.service:
     name: postfix
     state: reloaded
 
 - name: restart log2mail
-  service:
+  ansible.builtin.service:
     name: log2mail
     state: restarted
 

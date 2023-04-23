@@ -1,7 +1,7 @@
 ---
 
 - name: packages are installed (Debian 9 or later)
-  apt:
+  ansible.builtin.apt:
     name:
       - apache2
       - libapache2-mod-evasive
@@ -14,7 +14,7 @@
   when: ansible_distribution_major_version is version('9', '>=')
 
 - name: itk package is installed if required (Debian 9 or later)
-  apt:
+  ansible.builtin.apt:
     name:
       - libapache2-mpm-itk
     state: present
@@ -26,7 +26,7 @@
     - apache_mpm == "itk"
 
 - name: packages are installed (jessie)
-  apt:
+  ansible.builtin.apt:
     name:
       - apache2-mpm-itk
       - libapache2-mod-evasive
@@ -39,7 +39,7 @@
   when: ansible_distribution_release == "jessie"
 
 - name: basic modules are enabled
-  apache2_module:
+  community.general.apache2_module:
     name: '{{ item }}'
     state: present
   loop:
@@ -55,7 +55,7 @@
     - apache
 
 - name: basic modules are enabled
-  apache2_module:
+  community.general.apache2_module:
     name: '{{ item }}'
     state: present
   loop:
@@ -67,7 +67,7 @@
 
 
 - name: Copy Apache defaults config file
-  copy:
+  ansible.builtin.copy:
     src: evolinux-defaults.conf
     dest: "/etc/apache2/conf-available/z-evolinux-defaults.conf"
     owner: root
@@ -79,7 +79,7 @@
   - apache
 
 - name: Copy Apache custom config file
-  copy:
+  ansible.builtin.copy:
     src: evolinux-custom.conf
     dest: "/etc/apache2/conf-available/zzz-evolinux-custom.conf"
     owner: root
@@ -91,7 +91,7 @@
   - apache
 
 - name: disable status.conf
-  file:
+  ansible.builtin.file:
     dest: /etc/apache2/mods-enabled/status.conf
     state: absent
   notify: reload apache
@@ -99,7 +99,8 @@
     - apache
 
 - name: Ensure Apache config files are enabled
-  command: "a2enconf {{ item }}"
+  ansible.builtin.command:
+    cmd: "a2enconf {{ item }}"
   register: command_result
   changed_when: "'Enabling' in command_result.stderr"
   loop:
@@ -109,12 +110,12 @@
   tags:
     - apache
 
-- include: auth.yml
+- ansible.builtin.include: auth.yml
   tags:
   - apache
 
 - name: default vhost is installed
-  template:
+  ansible.builtin.template:
     src: evolinux-default.conf.j2
     dest: /etc/apache2/sites-available/000-evolinux-default.conf
     mode: "0640"
@@ -124,7 +125,7 @@
     - apache
 
 - name: default vhost is enabled
-  file:
+  ansible.builtin.file:
     src: /etc/apache2/sites-available/000-evolinux-default.conf
     dest: /etc/apache2/sites-enabled/000-default.conf
     state: link
@@ -134,12 +135,13 @@
   tags:
     - apache
 
-- include: server_status.yml
+- ansible.builtin.include: server_status.yml
   tags:
     - apache
 
 - name: is umask already present?
-  command: "grep -E '^umask ' /etc/apache2/envvars"
+  ansible.builtin.command:
+    cmd: "grep -E '^umask ' /etc/apache2/envvars"
   failed_when: False
   changed_when: False
   register: envvar_grep_umask
@@ -148,7 +150,7 @@
     - apache
 
 - name: Add a mark in envvars for umask
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/apache2/envvars
     marker: "## {mark} ANSIBLE MANAGED BLOCK"
     block: |
@@ -159,13 +161,13 @@
   tags:
     - apache
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   tags:
     - apache
 
 - name: /usr/share/scripts exists
-  file:
+  ansible.builtin.file:
     dest: /usr/share/scripts
     mode: "0700"
     owner: root
@@ -175,7 +177,7 @@
     - apache
 
 - name: "Install save_apache_status.sh"
-  copy:
+  ansible.builtin.copy:
     src: save_apache_status.sh
     dest: /usr/share/scripts/save_apache_status.sh
     mode: "0755"
@@ -184,7 +186,7 @@
     - apache
 
 - name: "logrotate: {{ apache_logrotate_frequency }}"
-  replace:
+  ansible.builtin.replace:
     dest: /etc/logrotate.d/apache2
     regexp: "(daily|weekly|monthly)"
     replace: "{{ apache_logrotate_frequency }}"
@@ -192,19 +194,19 @@
     - apache
 
 - name: "logrotate: rotate {{ apache_logrotate_rotate }}"
-  replace:
+  ansible.builtin.replace:
     dest: /etc/logrotate.d/apache2
     regexp: '^(\s+rotate) \d+$'
     replace: '\1 {{ apache_logrotate_rotate }}'
   tags:
     - apache
 
-- include: log2mail.yml
+- ansible.builtin.include: log2mail.yml
   when: apache_log2mail_include
   tags:
     - apache
 
-- include: munin.yml
+- ansible.builtin.include: munin.yml
   when: apache_munin_include | bool
   tags:
     - apache

@@ -1,7 +1,7 @@
 ---
 
 - name: "Install munin-node and core plugins packages"
-  apt:
+  ansible.builtin.apt:
     name:
       - munin-node
       - munin-plugins-core
@@ -11,7 +11,7 @@
     - munin
 
 - name: "Enable Munin plugins"
-  file:
+  ansible.builtin.file:
     src: "/usr/share/munin/plugins/{{ item }}"
     dest: "/etc/munin/plugins/{{ item }}"
     state: link
@@ -25,7 +25,7 @@
     - munin
 
 - name: "Install fcgi packages for Munin graphs"
-  apt:
+  ansible.builtin.apt:
     name:
       - libapache2-mod-fcgid
       - libcgi-fast-perl
@@ -36,7 +36,8 @@
     - munin
 
 - name: "Enable libapache2-mod-fcgid"
-  command: a2enmod fcgid
+  ansible.builtin.command:
+    cmd: a2enmod fcgid
   register: cmd_enable_fcgid
   changed_when: "'Module fcgid already enabled' not in cmd_enable_fcgid.stdout"
   notify: restart apache
@@ -45,7 +46,7 @@
     - munin
 
 - name: "Apache has access to /var/log/munin/"
-  file:
+  ansible.builtin.file:
     path: /var/log/munin/
     group: www-data
   tags:

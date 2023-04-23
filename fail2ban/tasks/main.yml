@@ -3,7 +3,7 @@
 # or we risk being jailed by fail2ban
 
 - name: Prepare fail2ban hierarchy
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     owner: root
@@ -16,13 +16,13 @@
   tags:
     - fail2ban
 
-- set_fact:
+- ansible.builtin.set_fact:
     fail2ban_ignore_ips: "{{ ['127.0.0.1/8'] | union(fail2ban_default_ignore_ips) | union(fail2ban_additional_ignore_ips) | unique }}"
   tags:
     - fail2ban
 
 - name: local jail is installed
-  template:
+  ansible.builtin.template:
     src: jail.local.j2
     dest: /etc/fail2ban/jail.local
     mode: "0644"
@@ -32,13 +32,13 @@
     - fail2ban
 
 - name: Include ignoredips update task
-  include: ip_whitelist.yml
+  ansible.builtin.include: ip_whitelist.yml
   when: fail2ban_force_update_ignore_ips | bool
   tags:
     - fail2ban
 
 - name: custom filters are installed
-  copy:
+  ansible.builtin.copy:
     src: "{{ item }}"
     dest: /etc/fail2ban/filter.d/
     mode: "0644"
@@ -53,7 +53,7 @@
     - fail2ban
 
 - name: package fail2ban is installed
-  apt:
+  ansible.builtin.apt:
     name: fail2ban
     state: present
   tags:
@@ -61,7 +61,7 @@
     - packages
 
 - name: is Munin present ?
-  stat:
+  ansible.builtin.stat:
     path: /etc/munin/plugins
   check_mode: no
   register: etc_munin_plugins
@@ -70,7 +70,7 @@
     - munin
 
 - name: is fail2ban Munin plugin available ?
-  stat:
+  ansible.builtin.stat:
     path: /usr/share/munin/plugins/fail2ban
   check_mode: no
   register: fail2ban_munin_plugin
@@ -79,7 +79,7 @@
     - munin
 
 - name: Enable Munin plugins
-  file:
+  ansible.builtin.file:
     src: "/usr/share/munin/plugins/fail2ban"
     dest: "/etc/munin/plugins/fail2ban"
     state: link
@@ -92,7 +92,7 @@
     - munin
 
 - name: "Extend dbpurgeage if recidive jail is enabled"
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/fail2ban/fail2ban.d/recidive_dbpurgeage
     marker: "# ANSIBLE MANAGED"
     block: |
@@ -106,7 +106,7 @@
     - fail2ban_recidive
 
 - name: Fix dbpurgeage for stretch and buster
-  include: fix-dbpurgeage.yml
+  ansible.builtin.include: fix-dbpurgeage.yml
   when:
     - ansible_distribution_release == "stretch" or ansible_distribution_release == "buster"
   tags:

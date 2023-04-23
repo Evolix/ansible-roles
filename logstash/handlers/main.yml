@@ -1,11 +1,11 @@
 ---
 
 - name: restart logstash
-  systemd:
+  ansible.builtin.systemd:
     name: logstash
     state: restarted
     daemon_reload: yes
 
 - name: reload systemd
-  systemd:
+  ansible.builtin.systemd:
     daemon-reload: yes

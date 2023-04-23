@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+
+Types: deb
+URIs: http://mirror.evolix.org/debian
+Suites: bookworm bookworm-updates
+Components: {{ apt_basics_components | mandatory }} 
+Enabled: yes

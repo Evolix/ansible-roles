@@ -1,6 +1,6 @@
 ---
 - name: Install dependency
-  apt:
+  ansible.builtin.apt:
     name:
       - libpam-systemd
       - imagemagick
@@ -20,7 +20,7 @@
 
 # dependency for mysql_user and mysql_db
 - name: python modules is installed (Ansible dependency)
-  apt:
+  ansible.builtin.apt:
     name:
       - python-mysqldb
       - python-pymysql
@@ -31,7 +31,7 @@
 
 # dependency for mysql_user and mysql_db
 - name: python3 modules is installed (Ansible dependency)
-  apt:
+  ansible.builtin.apt:
     name:
       - python3-mysqldb
       - python3-pymysql

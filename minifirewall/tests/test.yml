@@ -3,7 +3,7 @@
   vars:
     - minifirewall_trusted_ips: ["{{ ansible_default_ipv4.address }}/24"]
   pre_tasks:
-    - apt:
+    - ansible.builtin.apt:
         name: git
   roles:
     - role: minifirewall

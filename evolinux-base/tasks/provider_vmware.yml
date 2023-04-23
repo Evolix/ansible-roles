@@ -1,6 +1,7 @@
 ---
 - name: Check if the virtual machine on VMWare Host
-  shell: "dmidecode | grep -q 'VMware'"
+  ansible.builtin.shell:
+    cmd: "dmidecode | grep -q 'VMware'"
   check_mode: no
   register: vmware_provider
   failed_when: False
@@ -9,7 +10,7 @@
     - packages
 
 - name: OpenVM Tools are installed for vmware
-  apt:
+  ansible.builtin.apt:
     state: present
     name: open-vm-tools
   tags:

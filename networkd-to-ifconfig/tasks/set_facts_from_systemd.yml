@@ -1,17 +1,19 @@
 ---
 
 - name: "Parse addresses"
-  shell: "grep Address= /etc/systemd/network/50-default.network | cut -d'=' -f2"
+  ansible.builtin.shell:
+    cmd: "grep Address= /etc/systemd/network/50-default.network | cut -d'=' -f2"
   register: network_address_grep
   check_mode: no
 
 - name: "Parse gateways"
-  shell: "grep Gateway= /etc/systemd/network/50-default.network | cut -d'=' -f2"
+  ansible.builtin.shell:
+    cmd: "grep Gateway= /etc/systemd/network/50-default.network | cut -d'=' -f2"
   register: network_gateway_grep
   check_mode: no
 
 - name: Prepare variables
-  set_fact:
+  ansible.builtin.set_fact:
     eni_ipv4_address: "{{ network_address_grep.stdout_lines | ipv4 | first }}"
     eni_ipv4_gateway: "{{ network_gateway_grep.stdout_lines | ipv4 | first }}"
     eni_ipv6_address: "{{ network_address_grep.stdout_lines | ipv6 | first }}"

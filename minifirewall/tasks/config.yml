@@ -1,58 +1,58 @@
 ---
 
-- debug:
+- ansible.builtin.debug:
     var: minifirewall_trusted_ips
     verbosity: 1
-- debug:
+- ansible.builtin.debug:
     var: minifirewall_privilegied_ips
     verbosity: 1
 
 - name: Stat minifirewall config file (before)
-  stat:
+  ansible.builtin.stat:
     path: "/etc/default/minifirewall"
   register: minifirewall_before
 
 - name: Check if minifirewall is running
-  shell:
+  ansible.builtin.shell:
     cmd: /sbin/iptables -L -n | grep -E "^(DROP\s+udp|ACCEPT\s+icmp)\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
   changed_when: False
   failed_when: False
   check_mode: no
   register: minifirewall_is_running
 
-- debug:
+- ansible.builtin.debug:
     var: minifirewall_is_running
     verbosity: 1
 
 - name: Begin marker for IP addresses
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "# BEGIN ANSIBLE MANAGED BLOCK FOR IPS"
     insertbefore: '^# Main interface'
     create: no
 
 - name: End marker for IP addresses
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     create: no
     line: "# END ANSIBLE MANAGED BLOCK FOR IPS"
     insertafter: '^PRIVILEGIEDIPS='
 
 - name: Verify that at least 1 trusted IP is provided
-  assert:
+  ansible.builtin.assert:
     that: minifirewall_trusted_ips | length > 0
     msg: You must provide at least 1 trusted IP
 
-- debug:
+- ansible.builtin.debug:
     msg: "Warning: minifirewall_trusted_ips contains '0.0.0.0/0', the firewall is useless on IPv4!"
   when: "'0.0.0.0/0' in minifirewall_trusted_ips"
 
-- debug:
+- ansible.builtin.debug:
     msg: "Warning: minifirewall_trusted_ips contains '::/0', the firewall is useless on IPv6!"
   when: "'::/0' in minifirewall_trusted_ips"
 
 - name: Configure IP addresses
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: "/etc/default/minifirewall"
     marker: "# {mark} ANSIBLE MANAGED BLOCK FOR IPS"
     block: |
@@ -86,21 +86,21 @@
   register: minifirewall_config_ips
 
 - name: Begin marker for ports
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "# BEGIN ANSIBLE MANAGED BLOCK FOR PORTS"
     insertbefore: '^# Protected services'
     create: no
 
 - name: End marker for ports
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "# END ANSIBLE MANAGED BLOCK FOR PORTS"
     insertafter: '^SERVICESUDP3='
     create: no
 
 - name: Configure ports
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: "/etc/default/minifirewall"
     marker: "# {mark} ANSIBLE MANAGED BLOCK FOR PORTS"
     block: |
@@ -124,7 +124,7 @@
   register: minifirewall_config_ports
 
 - name: Configure DNSSERVEURS
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "DNSSERVEURS='{{ minifirewall_dns_servers | join(' ') }}'"
     regexp: "DNSSERVEURS=('|\").*('|\")"
@@ -132,7 +132,7 @@
   when: minifirewall_dns_servers is not none
 
 - name: Configure HTTPSITES
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "HTTPSITES='{{ minifirewall_http_sites | join(' ') }}'"
     regexp: "HTTPSITES=('|\").*('|\")"
@@ -140,7 +140,7 @@
   when: minifirewall_http_sites is not none
 
 - name: Configure HTTPSSITES
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "HTTPSSITES='{{ minifirewall_https_sites | join(' ') }}'"
     regexp: "HTTPSSITES=('|\").*('|\")"
@@ -148,7 +148,7 @@
   when: minifirewall_https_sites is not none
 
 - name: Configure FTPSITES
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "FTPSITES='{{ minifirewall_ftp_sites | join(' ') }}'"
     regexp: "FTPSITES=('|\").*('|\")"
@@ -156,7 +156,7 @@
   when: minifirewall_ftp_sites is not none
 
 - name: Configure SSHOK
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "SSHOK='{{ minifirewall_ssh_ok | join(' ') }}'"
     regexp: "SSHOK=('|\").*('|\")"
@@ -164,7 +164,7 @@
   when: minifirewall_ssh_ok is not none
 
 - name: Configure SMTPOK
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "SMTPOK='{{ minifirewall_smtp_ok | join(' ') }}'"
     regexp: "SMTPOK=('|\").*('|\")"
@@ -172,7 +172,7 @@
   when: minifirewall_smtp_ok is not none
 
 - name: Configure SMTPSECUREOK
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "SMTPSECUREOK='{{ minifirewall_smtp_secure_ok | join(' ') }}'"
     regexp: "SMTPSECUREOK=('|\").*('|\")"
@@ -180,7 +180,7 @@
   when: minifirewall_smtp_secure_ok is not none
 
 - name: Configure NTPOK
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "NTPOK='{{ minifirewall_ntp_ok | join(' ') }}'"
     regexp: "NTPOK=('|\").*('|\")"
@@ -188,7 +188,7 @@
   when: minifirewall_ntp_ok is not none
 
 - name: Configure PROXY
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "PROXY='{{ minifirewall_proxy }}'"
     regexp: "PROXY=('|\").*('|\")"
@@ -196,7 +196,7 @@
   when: minifirewall_proxy is not none
 
 - name: Configure PROXYPORT
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "PROXYPORT='{{ minifirewall_proxyport }}'"
     regexp: "PROXYPORT=('|\").*('|\")"
@@ -206,7 +206,7 @@
 # Warning: keep double quotes for the value,
 # since we often reference a shell variable that needs to be interpolated
 - name: Configure PROXYBYPASS
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "PROXYBYPASS=\"{{ minifirewall_proxybypass | join(' ') }}\""
     regexp: "PROXYBYPASS=('|\").*('|\")"
@@ -214,7 +214,7 @@
   when: minifirewall_proxybypass is not none
 
 - name: Configure BACKUPSERVERS
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "BACKUPSERVERS='{{ minifirewall_backupservers | join(' ') }}'"
     regexp: "BACKUPSERVERS=('|\").*('|\")"
@@ -222,7 +222,7 @@
   when: minifirewall_backupservers is not none
 
 - name: Configure SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS='{{ minifirewall_sysctl_icmp_echo_ignore_broadcasts }}'"
     regexp: "SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS=('|\").*('|\")"
@@ -230,7 +230,7 @@
   when: minifirewall_sysctl_icmp_echo_ignore_broadcasts is not none
 
 - name: Configure SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES='{{ minifirewall_sysctl_icmp_ignore_bogus_error_responses }}'"
     regexp: "SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES=('|\").*('|\")"
@@ -238,7 +238,7 @@
   when: minifirewall_sysctl_icmp_ignore_bogus_error_responses is not none
 
 - name: Configure SYSCTL_ACCEPT_SOURCE_ROUTE
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "SYSCTL_ACCEPT_SOURCE_ROUTE='{{ minifirewall_sysctl_accept_source_route }}'"
     regexp: "SYSCTL_ACCEPT_SOURCE_ROUTE=('|\").*('|\")"
@@ -246,7 +246,7 @@
   when: minifirewall_sysctl_accept_source_route is not none
 
 - name: Configure SYSCTL_TCP_SYNCOOKIES
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "SYSCTL_TCP_SYNCOOKIES='{{ minifirewall_sysctl_tcp_syncookies }}'"
     regexp: "SYSCTL_TCP_SYNCOOKIES=('|\").*('|\")"
@@ -254,7 +254,7 @@
   when: minifirewall_sysctl_tcp_syncookies is not none
 
 - name: Configure SYSCTL_ICMP_REDIRECTS
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "SYSCTL_ICMP_REDIRECTS='{{ minifirewall_sysctl_icmp_redirects }}'"
     regexp: "SYSCTL_ICMP_REDIRECTS=('|\").*('|\")"
@@ -262,7 +262,7 @@
   when: minifirewall_sysctl_icmp_redirects is not none
 
 - name: Configure SYSCTL_RP_FILTER
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "SYSCTL_RP_FILTER='{{ minifirewall_sysctl_rp_filter }}'"
     regexp: "SYSCTL_RP_FILTER=('|\").*('|\")"
@@ -270,7 +270,7 @@
   when: minifirewall_sysctl_rp_filter is not none
 
 - name: Configure SYSCTL_LOG_MARTIANS
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
     line: "SYSCTL_LOG_MARTIANS='{{ minifirewall_sysctl_log_martians }}'"
     regexp: "SYSCTL_LOG_MARTIANS=('|\").*('|\")"
@@ -278,12 +278,13 @@
   when: minifirewall_sysctl_log_martians is not none
 
 - name: Stat minifirewall config file (after)
-  stat:
+  ansible.builtin.stat:
     path: "/etc/default/minifirewall"
   register: minifirewall_after
 
 - name: Schedule minifirewall restart (modern)
-  command: /bin/true
+  ansible.builtin.command:
+    cmd: /bin/true
   notify: "restart minifirewall (modern)"
   when:
     - minifirewall_install_mode != 'legacy'
@@ -291,6 +292,6 @@
     - minifirewall_is_running.rc == 0
     - minifirewall_before.stat.checksum != minifirewall_after.stat.checksum or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed
 
-- debug:
+- ansible.builtin.debug:
     var: minifirewall_init_restart
     verbosity: 2

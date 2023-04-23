@@ -1,65 +1,14 @@
 ---
-
-- name: APT https transport is enabled
-  apt:
-    name: apt-transport-https
-    state: present
-  tags:
-    - logstash
-    - packages
-
-- name: Look for legacy apt keyring
-  stat:
-    path: /etc/apt/trusted.gpg
-  register: _trusted_gpg_keyring
-  tags:
-    - logstash
-    - packages
-
-- name: Elastic embedded GPG key is absent
-  apt_key:
-    id: "D88E42B4"
-    keyring: /etc/apt/trusted.gpg
-    state: absent
-  when: _trusted_gpg_keyring.stat.exists
-  tags:
-    - logstash
-    - packages
-
-- name: Elastic GPG key is installed
-  copy:
-    src: elastic.asc
-    dest: "{{ apt_keyring_dir }}/elastic.asc"
-    force: yes
-    mode: "0644"
-    owner: root
-    group: root
-  tags:
-    - logstash
-    - packages
-
-- name: Elastic sources list is available
-  apt_repository:
-    repo: "deb [signed-by={{ apt_keyring_dir }}/elastic.asc] https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
-    filename: elastic
-    state: present
-    update_cache: yes
-  tags:
-    - logstash
-    - packages
-
-- name: Unsigned Elastic sources list is not available
-  apt_repository:
-    repo: "deb https://artifacts.elastic.co/packages/{{ elastic_stack_version | mandatory }}/apt stable main"
-    filename: elastic
-    state: absent
-    update_cache: yes
-  tags:
-    - logstash
-    - packages
+- name: APT sources
+  ansible.builtin.import_tasks: apt_sources.yml
+  args:
+    apply:
+      tags:
+        - logstash
+        - packages
 
 - name: Logstash is installed
-  apt:
+  ansible.builtin.apt:
     name: logstash
     state: present
   tags:
@@ -67,14 +16,14 @@
     - packages
 
 - name: Logstash service is enabled
-  systemd:
+  ansible.builtin.systemd:
     name: logstash
     enabled: yes
   tags:
     - logstash
 
 - name: JVM Heap size (min) is set
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/logstash/jvm.options
     regexp: "^-Xms"
     line: "-Xms{{ logstash_jvm_xms }}"
@@ -83,7 +32,7 @@
     - config
 
 - name: JVM Heap size (max) is set
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/logstash/jvm.options
     regexp: "^-Xmx"
     line: "-Xmx{{ logstash_jvm_xmx }}"
@@ -92,7 +41,7 @@
     - config
 
 - name: Add a configuration
-  template:
+  ansible.builtin.template:
     src: "{{ item }}"
     dest: /etc/logstash/conf.d/logstash.conf
     owner: logstash
@@ -111,10 +60,10 @@
     - logstash
     - config
 
-- debug:
+- ansible.builtin.debug:
     var: logstash_template
     verbosity: 1
 
-- include: logs.yml
+- ansible.builtin.include: logs.yml
 
-- include: tmpdir.yml
+- ansible.builtin.include: tmpdir.yml

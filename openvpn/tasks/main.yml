@@ -1,15 +1,15 @@
 ---
 
 - name: System compatibility checks
-  assert:
+  ansible.builtin.assert:
     that: "ansible_distribution == 'Debian' or ansible_distribution == 'OpenBSD'"
     msg: "Only compatible with Debian and OpenBSD"
 
 - name: Include Debian version
-  include: debian.yml
+  ansible.builtin.include: debian.yml
   when: ansible_distribution == "Debian"
 
 - name: Include OpenBSD version
-  include: openbsd.yml
+  ansible.builtin.include: openbsd.yml
   when: ansible_distribution == "OpenBSD"
 

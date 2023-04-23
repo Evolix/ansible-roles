@@ -1,7 +1,7 @@
 ---
 
 - name: Create default security group
-  ec2_group:
+  amazon.aws.ec2_group:
     name: "{{ ec2_security_group.name }}"
     state: present
     aws_access_key: "{{ aws_access_key }}"
@@ -12,7 +12,7 @@
     rules_egress: "{{ ec2_security_group.rules_egress }}"
 
 - name: Create key pair
-  ec2_key:
+  amazon.aws.ec2_key:
     name: "{{ ec2_keyname }}"
     state: present
     aws_access_key: "{{ aws_access_key }}"

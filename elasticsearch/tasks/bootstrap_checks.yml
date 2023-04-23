@@ -1,7 +1,8 @@
 ---
 
 - name: Read maximum map count
-  command: "sysctl -n vm.max_map_count"
+  ansible.builtin.command:
+    cmd: "sysctl -n vm.max_map_count"
   register: max_map_count
   failed_when: False
   changed_when: False
@@ -9,7 +10,7 @@
   - config
 
 - name: Maximum map count check
-  sysctl:
+  ansible.posix.sysctl:
     name: vm.max_map_count
     value: 262144
     sysctl_file: /etc/sysctl.d/elasticsearch.conf
@@ -18,7 +19,7 @@
   - config
 
 - name: bootstrap.memory_lock
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
     line: "bootstrap.memory_lock: true"
     regexp: "^bootstrap.memory_lock:"
@@ -27,12 +28,12 @@
   - config
 
 - name: Create a system config directory for systemd overrides
-  file:
+  ansible.builtin.file:
     path: /etc/systemd/system/elasticsearch.service.d
     state: directory
 
 - name: Override memory config in systemd unit
-  ini_file:
+  community.general.ini_file:
     dest: /etc/systemd/system/elasticsearch.service.d/elasticsearch.conf
     section: Service
     option: "LimitMEMLOCK"

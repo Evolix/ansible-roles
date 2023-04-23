@@ -1,12 +1,12 @@
 ---
 
-- include: common.yml
+- ansible.builtin.include: common.yml
 
-- include: minimal.yml
+- ansible.builtin.include: minimal.yml
   when: not (postfix_packmail | bool)
 
-- include: packmail.yml
+- ansible.builtin.include: packmail.yml
   when: postfix_packmail | bool
 
-- include: slow_transport.yml
+- ansible.builtin.include: slow_transport.yml
   when: postfix_slow_transport_include | bool

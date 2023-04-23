@@ -1,23 +1,23 @@
 ---
 
 - name: python-requests is installed (check_rabbitmq dependency)
-  apt:
+  ansible.builtin.apt:
     name: python-requests
     state: present
   when: ansible_python_version is version('3', '<')
 
 - name: python3-requests is installed (check_rabbitmq dependency)
-  apt:
+  ansible.builtin.apt:
     name: python3-requests
     state: present
   when: ansible_python_version is version('3', '>=')
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
 
 # https://raw.githubusercontent.com/CaptPhunkosis/check_rabbitmq/master/check_rabbitmq
 - name: check_rabbitmq is installed
-  copy:
+  ansible.builtin.copy:
     src: check_rabbitmq
     dest: /usr/local/lib/nagios/plugins/check_rabbitmq
     owner: root
@@ -27,7 +27,7 @@
   when: ansible_distribution_major_version is version('11', '<=')
 
 - name: check_rabbitmq (Python 3 version) is installed
-  copy:
+  ansible.builtin.copy:
     src: check_rabbitmq.python3
     dest: /usr/local/lib/nagios/plugins/check_rabbitmq
     owner: root
@@ -37,14 +37,14 @@
   when: ansible_distribution_major_version is version('11', '>=')
 
 - name: check_rabbitmq is available for NRPE
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: 'command\[check_rab_connection_count\]'
     line: 'command[check_rab_connection_count]=sudo /usr/local/lib/nagios/plugins/check_rabbitmq -a connection_count -C {{ rabbitmq_connections_critical }} -W {{ rabbitmq_connections_warning }}'
   notify: restart nagios-nrpe-server
 
 - name: sudo without password for nagios
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/sudoers.d/evolinux
     regexp: 'check_rabbitmq'
     line: 'nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_rabbitmq'

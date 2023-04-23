@@ -1,16 +1,16 @@
 ---
 - name: restart dovecot
-  service:
+  ansible.builtin.service:
     name: dovecot
     state: restarted
 
 - name: reload dovecot
-  service:
+  ansible.builtin.service:
     name: dovecot
     state: reloaded
 
 - name: restart log2mail
-  service:
+  ansible.builtin.service:
     name: log2mail
     state: restarted
 

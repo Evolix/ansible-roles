@@ -1,12 +1,12 @@
 ---
 
 - name: "{{ lxc_php_version }} - Install ssmtp"
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends -y ssmtp "
 
 - name: "{{ lxc_php_version }} - Configure ssmtp"
-  template:
+  ansible.builtin.template:
     src: ssmtp.conf.j2
-    dest: "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/ssmtp/ssmtp.conf"
+    dest: "{{ lxc_rootfs }}/etc/ssmtp/ssmtp.conf"
     mode: "0644"

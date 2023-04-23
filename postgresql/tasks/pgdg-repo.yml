@@ -1,27 +1,15 @@
 ---
 - name: Open firewall for PGDG repository
-  replace:
+  ansible.builtin.replace:
     name: /etc/default/minifirewall
     regexp: "^(HTTPSITES='((?!apt\\.postgresql\\.org|0\\.0\\.0\\.0).)*)'$"
     replace: "\\1 apt.postgresql.org'"
   notify: Restart minifirewall
 
-- meta: flush_handlers
-
-- name: Look for legacy apt keyring
-  stat:
-    path: /etc/apt/trusted.gpg
-  register: _trusted_gpg_keyring
-
-- name: PGDG embedded GPG key is absent
-  apt_key:
-    id: "ACCC4CF8"
-    keyring: /etc/apt/trusted.gpg
-    state: absent
-  when: _trusted_gpg_keyring.stat.exists
+- ansible.builtin.meta: flush_handlers
 
 - name: Add PGDG GPG key
-  copy:
+  ansible.builtin.copy:
     src: postgresql.asc
     dest: "{{ apt_keyring_dir }}/postgresql.asc"
     force: yes
@@ -29,19 +17,28 @@
     owner: root
     group: root
 
-- name: Add PGDG repository
-  apt_repository:
+- name: Add PGDG repository (Debian <12)
+  ansible.builtin.apt_repository:
     repo: "deb [signed-by={{ apt_keyring_dir }}/postgresql.asc] http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main"
+    filename: postgresql
     update_cache: yes
+  when: ansible_distribution_major_version is version('12', '<')
 
-- name: Remove unsigned PGDG repository
-  apt_repository:
-    repo: "deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main"
+- name: Add PGDG repository (Debian >=12)
+  ansible.builtin.template:
+    src: postgresql.sources.j2
+    dest: /etc/apt/sources.list.d/postgresql.sources
+    state: present
+  register: postgresql_sources
+  when: ansible_distribution_major_version is version('12', '>=')
+
+- name: Update APT cache
+  ansible.builtin.apt:
     update_cache: yes
-    state: absent
+  when: elastic_sources is changed
 
 - name: Add APT preference file
-  template:
+  ansible.builtin.template:
     src: postgresql.pref.j2
     dest: /etc/apt/preferences.d/postgresql.pref
     mode: "0644"

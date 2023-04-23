@@ -1,14 +1,14 @@
 ---
 
 - name: install Keepalived service
-  apt:
+  ansible.builtin.apt:
     pkg: keepalived
     state: present
   tags:
     - keepalived
 
 - name: Add notify.sh script for NRPE check
-  file:
+  ansible.builtin.file:
     src: notify.sh
     dest: /etc/keepalived/notify.sh
     mode: "0755"
@@ -21,7 +21,7 @@
     - nrpe
 
 - name: check_keepalived is installed
-  file:
+  ansible.builtin.file:
     src: check_keepalived
     dest: /usr/local/lib/nagios/plugins/check_keepalived
     mode: "0755"
@@ -33,7 +33,7 @@
     - nrpe
 
 - name: Use check_keepalived for NRPE
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: 'command\[check_keepalived\]'
     replace: 'command[check_keepalived]=/usr/local/lib/nagios/plugins/check_keepalived'
@@ -43,7 +43,7 @@
     - nrpe
 
 - name: generate Keepalived configuration
-  template:
+  ansible.builtin.template:
     src: keepalived.conf.j2
     dest: /etc/keepalived/keepalived.conf
     mode: "0644"
@@ -52,7 +52,7 @@
     - keepalived
 
 - name: enable and restart Keepalived service
-  systemd:
+  ansible.builtin.systemd:
     name: keepalived
     daemon_reload: yes
     state: started

@@ -1,0 +1,103 @@
+---
+
+- ansible.builtin.fail:
+    msg: MongoDB is not compatible with Debian 12 (Bookworm)
+  when:
+  - ansible_distribution_release == "bookworm"
+
+# - fail:
+#     msg:  MongoDB version <5 are not compatible with Debian 12 (Bookworm)
+#   when:
+#   - ansible_distribution_release == "bookworm"
+#   - mongodb_version is version('5.0', '<')
+
+- name: Add MongoDB repository
+  ansible.builtin.template:
+    src: mongodb.sources.j2
+    dest: /etc/apt/sources.list.d/mongodb.sources
+    state: present
+  register: mongodb_sources
+
+- name: Update APT cache
+  ansible.builtin.apt:
+    update_cache: yes
+  when: mongodb_sources is changed
+
+- name: Install packages
+  ansible.builtin.apt:
+    name: mongodb-org
+    state: present
+  register: _mongodb_install_package
+
+- name: MongoDB service in enabled and started
+  ansible.builtin.systemd:
+    name: mongod
+    enabled: yes
+    state: started
+  when: _mongodb_install_package is changed
+
+- name: install dependency for monitoring
+  ansible.builtin.apt:
+    name: python3-pymongo
+    state: present
+
+- name: Custom configuration
+  ansible.builtin.template:
+    src: mongodb_bullseye.conf.j2
+    dest: "/etc/mongod.conf"
+    force: "{{ mongodb_force_config | bool | ternary('yes', 'no') }}"
+  notify: restart mongod
+
+- name: Configure logrotate
+  ansible.builtin.template:
+    src: logrotate_bullseye.j2
+    dest: /etc/logrotate.d/mongodb
+    force: yes
+    backup: no
+
+- ansible.builtin.include_role:
+    name: evolix/remount-usr
+
+- name: Create plugin directory
+  ansible.builtin.file:
+    name: /usr/local/share/munin/
+    state: directory
+    mode: "0755"
+
+- name: Create plugin directory
+  ansible.builtin.file:
+    name: /usr/local/share/munin/plugins/
+    state: directory
+    mode: "0755"
+
+- name: Munin plugins are present
+  ansible.builtin.copy:
+    src: "munin/{{ item }}"
+    dest: '/usr/local/share/munin/plugins/{{ item }}'
+    force: yes
+  loop:
+    - mongo_btree
+    - mongo_collections
+    - mongo_conn
+    - mongo_docs
+    - mongo_lock
+    - mongo_mem
+    - mongo_ops
+    - mongo_page_faults
+  notify: restart munin-node
+
+- name: Enable core Munin plugins
+  ansible.builtin.file:
+    src: '/usr/local/share/munin/plugins/{{ item }}'
+    dest: /etc/munin/plugins/{{ item }}
+    state: link
+  loop:
+    - mongo_btree
+    - mongo_collections
+    - mongo_conn
+    - mongo_docs
+    - mongo_lock
+    - mongo_mem
+    - mongo_ops
+    - mongo_page_faults
+  notify: restart munin-node

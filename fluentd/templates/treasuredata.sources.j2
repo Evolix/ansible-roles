@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+
+Types: deb
+URIs: http://packages.treasuredata.com/3/debian/{{ ansible_distribution_release }}/
+Suites: {{ ansible_distribution_release }}
+Components: contrib
+Signed-by: {{ apt_keyring_dir }}/treasuredata.asc
+Enabled: yes

@@ -1,11 +1,11 @@
 ---
 - name: Choose packages (Oracle)
-  set_fact:
+  ansible.builtin.set_fact:
      multi: "multi_"
   when: memcached_instance_name is defined
 
 - name: is Munin present ?
-  stat:
+  ansible.builtin.stat:
     path: /etc/munin/plugin-conf.d/munin-node
   check_mode: no
   register: munin_node_plugins_config
@@ -15,14 +15,14 @@
 
 - block:
   - name: Install munin-plugins-extra and libcache-memcached-perl for Munin
-    apt:
+    ansible.builtin.apt:
       name:
         - 'munin-plugins-extra'
         - 'libcache-memcached-perl'
       state: present
 
   - name: Enable core Munin plugins
-    file:
+    ansible.builtin.file:
       src: '/usr/share/munin/plugins/memcached_'
       dest: /etc/munin/plugins/{{ multi }}{{ item }}
       state: link

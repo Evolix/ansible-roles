@@ -1,12 +1,12 @@
 ---
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   when: evocheck_bin_dir is search("/usr")
   tags:
     - evocheck
 
 - name: Scripts dir is present
-  file:
+  ansible.builtin.file:
     path: "{{ evocheck_bin_dir }}"
     state: directory
     owner: root
@@ -16,22 +16,22 @@
     - evocheck
 
 - name: Script for Debian 7 and earlier
-  set_fact:
+  ansible.builtin.set_fact:
     evocheck_script_src: evocheck.wheezy.sh
   when: ansible_distribution_major_version is version('7', '<=')
 
 - name: Script for Debian 8
-  set_fact:
+  ansible.builtin.set_fact:
     evocheck_script_src: evocheck.jessie.sh
   when: ansible_distribution_major_version is version('8', '=')
 
 - name: Script for Debian 9 and later
-  set_fact:
+  ansible.builtin.set_fact:
     evocheck_script_src: evocheck.sh
   when: ansible_distribution_major_version is version('9', '>=')
 
 - name: Copy evocheck.sh
-  copy:
+  ansible.builtin.copy:
     src: "{{ evocheck_script_src }}"
     dest: "{{ evocheck_bin_dir }}/evocheck.sh"
     mode: "0700"
@@ -41,7 +41,7 @@
     - evocheck
 
 - name: Copy evocheck.cf
-  copy:
+  ansible.builtin.copy:
     src: evocheck.cf
     dest: /etc/evocheck.cf
     force: no

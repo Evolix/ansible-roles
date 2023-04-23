@@ -1,25 +1,25 @@
 ---
 - name: restart munin-node
-  service:
+  ansible.builtin.service:
     name: munin-node
     state: restarted
 
 - name: restart mysql
-  service:
+  ansible.builtin.service:
     name: mysql
     state: restarted
 
 - name: restart mysql (noop)
-  meta: noop
+  ansible.builtin.meta: noop
   failed_when: False
   changed_when: False
 
 - name: reload systemd
-  systemd:
+  ansible.builtin.systemd:
     name: mysql
     daemon_reload: yes
 
 - name: 'restart xinetd'
-  service:
+  ansible.builtin.service:
     name: 'xinetd'
     state: 'restarted'

@@ -1,13 +1,13 @@
 ---
 - name: Add munin to hosts
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/hosts
     regexp: 'munin$'
     line: '127.0.0.1        munin'
     insertafter: EOF
 
 - name: Packages for Munin CGI are installed
-  apt:
+  ansible.builtin.apt:
     name:
       - liblwp-useragent-determined-perl
       - libcgi-fast-perl
@@ -15,22 +15,24 @@
     state: present
 
 - name: Owner for munin-cgi is set to www-data:munin
-  shell: "chown --verbose www-data:munin /var/log/munin/munin-cgi-*"
+  ansible.builtin.shell:
+    cmd: "chown --verbose www-data:munin /var/log/munin/munin-cgi-*"
   register: command_result
   changed_when: "'changed' in command_result.stdout"
 
 - name: Mode for munin-cgi is set to 660
-  shell: "chmod --verbose 660 /var/log/munin/munin-cgi-*"
+  ansible.builtin.shell:
+    cmd: "chmod --verbose 660 /var/log/munin/munin-cgi-*"
   register: command_result
   changed_when: "'changed' in command_result.stdout"
 
 - name: Systemd unit for Munin-fcgi is installed
-  copy:
+  ansible.builtin.copy:
     src: systemd/spawn-fcgi-munin-graph.service
     dest: /etc/systemd/system/spawn-fcgi-munin-graph.service
 
 - name: Systemd unit for Munin-fcgi is started
-  systemd:
+  ansible.builtin.systemd:
     name: spawn-fcgi-munin-graph
     daemon_reload: yes
     enabled: yes

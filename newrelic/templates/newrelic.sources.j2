@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+
+Types: deb
+URIs: http://apt.newrelic.com/debian/
+Suites: newrelic
+Components: non-free
+Signed-by: {{ apt_keyring_dir }}/newrelic.asc
+Enabled: yes

@@ -1,14 +1,14 @@
 ---
 
-- set_fact:
+- ansible.builtin.set_fact:
     _mysql_scripts_dir: "{{ mysql_scripts_dir | default(general_scripts_dir, True) | mandatory }}"
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   when: _mysql_scripts_dir is search("/usr")
 
 - name: Scripts directory exists
-  file:
+  ansible.builtin.file:
     dest: "{{ _mysql_scripts_dir }}"
     mode: "0700"
     state: directory
@@ -18,7 +18,7 @@
 # mytop
 
 - name: "mytop is installed (Debian 9)"
-  apt:
+  ansible.builtin.apt:
     name: mytop
     state: present
   tags:
@@ -33,7 +33,7 @@
 #   when: ansible_distribution_major_version is version('9', '>=')
 
 - name: "mytop dependencies are installed (Buster)"
-  apt:
+  ansible.builtin.apt:
     name:
       - libconfig-inifiles-perl
       - libdbd-mysql-perl
@@ -47,7 +47,7 @@
   when: ansible_distribution_release == "stretch"
 
 - name: "Install dependencies for mytop (Debian 10)"
-  apt:
+  ansible.builtin.apt:
     name:
       - mariadb-client-10.3
       - libconfig-inifiles-perl
@@ -55,21 +55,21 @@
   when: ansible_distribution_release == "buster"
 
 - name: "Install dependencies for mytop (Debian 11 or later)"
-  apt:
+  ansible.builtin.apt:
     name:
       - mariadb-client-10.5
       - libconfig-inifiles-perl
       - libterm-readkey-perl
   when: ansible_distribution_major_version is version('11', '>=')
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   tags:
     - mytop
     - mysql
 
 - name: "mytop is installed (Debian 9 or later)"
-  copy:
+  ansible.builtin.copy:
     src: mytop
     dest: /usr/local/bin/mytop
     mode: "0755"
@@ -82,7 +82,8 @@
   when: ansible_distribution_major_version is version('9', '>=')
 
 - name: Read debian-sys-maint password
-  shell: 'cat /etc/mysql/debian.cnf | grep -m1 "password = .*" | cut -d" " -f3'
+  ansible.builtin.shell:
+    cmd: 'cat /etc/mysql/debian.cnf | grep -m1 "password = .*" | cut -d" " -f3'
   register: mysql_debian_password
   changed_when: False
   check_mode: no
@@ -91,7 +92,7 @@
     - mysql
 
 - name: mytop configuration is copied
-  template:
+  ansible.builtin.template:
     src: mytop-config.j2
     dest: /root/.mytop
     mode: "0600"
@@ -102,7 +103,7 @@
 
 # mysqltuner
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   tags:
     - mysql
@@ -113,7 +114,7 @@
   #   src: mysqltuner.pl
   #   dest: "{{ _mysql_scripts_dir }}/mysqltuner.pl"
   #   mode: "0700"
-  apt:
+  ansible.builtin.apt:
     name: mysqltuner
     state: present
   tags:
@@ -121,21 +122,21 @@
     - mysqltuner
 
 - name: aha is installed
-  apt:
+  ansible.builtin.apt:
     name: aha
   tags:
     - mysql
 
 # automatic optimizations
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   tags:
     - mysql
   when: _mysql_scripts_dir is search("/usr")
 
 - name: mysql-optimize.sh is installed
-  copy:
+  ansible.builtin.copy:
     src: mysql-optimize.sh
     dest: "{{ _mysql_scripts_dir }}/mysql-optimize.sh"
     mode: "0700"
@@ -143,7 +144,7 @@
     - mysql
 
 - name: "Cron dir for optimize is present"
-  file:
+  ansible.builtin.file:
     path: "/etc/cron.{{ mysql_cron_optimize_frequency | mandatory }}"
     state: directory
     mode: "0755"
@@ -153,7 +154,7 @@
     - mysql
 
 - name: "Enable cron to optimize MySQL"
-  file:
+  ansible.builtin.file:
     src: "{{ _mysql_scripts_dir }}/mysql-optimize.sh"
     dest: /etc/cron.{{ mysql_cron_optimize_frequency | mandatory }}/mysql-optimize.sh
     state: link
@@ -162,7 +163,7 @@
     - mysql
 
 - name: "Disable cron to optimize MySQL"
-  file:
+  ansible.builtin.file:
     dest: /etc/cron.{{ mysql_cron_optimize_frequency | mandatory }}/mysql-optimize.sh
     state: absent
   when: not (mysql_cron_optimize | bool)
@@ -170,7 +171,7 @@
     - mysql
 
 - name: "Cron dir for mysqltuner is present"
-  file:
+  ansible.builtin.file:
     path: "/etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}"
     state: directory
     mode: "0755"
@@ -181,7 +182,7 @@
     - mysqltuner
 
 - name: "Enable mysqltuner in cron"
-  copy:
+  ansible.builtin.copy:
     src: mysqltuner.cron.sh
     dest: /etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}/mysqltuner.sh
     mode: "0755"
@@ -191,7 +192,7 @@
     - mysqltuner
 
 - name: "Disable mysqltuner in cron"
-  file:
+  ansible.builtin.file:
     dest: /etc/cron.{{ mysql_cron_mysqltuner_frequency | mandatory }}/mysqltuner.sh
     state: absent
   when: not (mysql_cron_mysqltuner | bool)
@@ -201,12 +202,12 @@
 
 # my-add.sh
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/remount-usr
   when: _mysql_scripts_dir is search("/usr")
 
 - name: Install my-add.sh
-  copy:
+  ansible.builtin.copy:
     src: my-add.sh
     dest: "{{ _mysql_scripts_dir }}/my-add.sh"
     mode: "0700"

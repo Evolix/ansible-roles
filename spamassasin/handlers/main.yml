@@ -1,5 +1,5 @@
 ---
 - name: restart spamassassin
-  service:
+  ansible.builtin.service:
     name: spamassassin
     state: restarted

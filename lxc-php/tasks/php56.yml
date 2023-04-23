@@ -1,20 +1,20 @@
 ---
 
 - name: "{{ lxc_php_version }} - Install PHP packages"
-  lxc_container:
+  community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php5-fpm php5-cli php5-gd php5-imap php5-ldap php5-mcrypt php5-mysql php5-pgsql php5-sqlite php-gettext php5-intl php5-curl php5-ssh2 libphp-phpmailer"
 
 - name: "{{ lxc_php_version }} - Copy evolinux PHP configuration"
-  template:
+  ansible.builtin.template:
     src: z-evolinux-defaults.ini.j2
     dest: "{{ line_item }}"
     mode: "0644"
   notify: "Reload {{ lxc_php_version }}-fpm"
   loop:
-    - "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/php5/fpm/conf.d/z-evolinux-defaults.ini"
-    - "/var/lib/lxc/{{ lxc_php_version }}/rootfs/etc/php5/cli/conf.d/z-evolinux-defaults.ini"
+    - "{{ lxc_rootfs }}/etc/php5/fpm/conf.d/z-evolinux-defaults.ini"
+    - "{{ lxc_rootfs }}/etc/php5/cli/conf.d/z-evolinux-defaults.ini"
   loop_control:
     loop_var: line_item
 
-- include: "mail_ssmtp.yml"
+- ansible.builtin.include: "mail_ssmtp.yml"
