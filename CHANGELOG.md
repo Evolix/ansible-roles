@@ -13,11 +13,24 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [23.04] 2023-04-23
+
+### Added
+
 * graylog: new role
 * lxc-php: add support for PHP 8.2 container
 
 ### Changed
 
+* Use FQCN (Fully Qualified Collection Name)
 * apt: with Debian 12, backports are installed but disabled by default
 * openvpn: updated the README file
 * pgbouncer: add handler to restart the service
@@ -25,10 +38,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Fixed
 
 * generate-ldif: Support for Debian 12
-
-### Removed
-
-### Security
 
 ## [23.03.1] 2023-03-16
 
