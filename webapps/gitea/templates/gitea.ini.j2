@@ -9,7 +9,7 @@ HTTP_ADDR              = /home/{{ service }}/gitea.sock
 UNIX_SOCKET_PERMISSION = 660
 OFFLINE_MODE           = true
 SSH_DOMAIN             = {{ domains | first }}
-ROOT_URL               = http://{{ domains | first }}/
+ROOT_URL               = https://{{ domains | first }}/
 
 [repository]
 ROOT = /home/{{ service }}/repositories
