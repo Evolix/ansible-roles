@@ -14,8 +14,10 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Added
 
 ### Changed
+* evolinux-users: remove Stretch references in tasks that also apply to next Debian versions.
 
 ### Fixed
+* packweb-apache,nagios-nrpe: add missing task and config fo PHP 8.2 container
 
 ### Removed
 

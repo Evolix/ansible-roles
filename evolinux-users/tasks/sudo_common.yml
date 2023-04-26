@@ -10,7 +10,7 @@
 
 - name: "Verify 'evolinux' sudoers file presence (Debian 9 or later)"
   ansible.builtin.template:
-    src: sudoers_stretch.j2
+    src: sudoers.j2
     dest: /etc/sudoers.d/evolinux
     force: no
     mode: "0440"
