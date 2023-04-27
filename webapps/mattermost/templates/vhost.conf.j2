@@ -3,18 +3,31 @@ upstream backend_{{ service }} {
    keepalive 32;
 }
 
-#proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=mattermost_cache:10m max_size=3g inactive=120m use_temp_path=off;
-
 server {
-   listen 80;
-   listen [::]:80;
-   #listen 443 ssl;
-   #listen [::]:443 ssl;
+  listen 80;
+  listen [::]:80;
+  server_name {{ domains | first }};
+  
+  # For certbot
+  include /etc/nginx/snippets/letsencrypt.conf;
+ 
+  {% if ssl.stat.exists %}
+  location / { return 301 https://$host$request_uri; }
+  {% endif %}
+}
+
+{% if ssl.stat.exists %}
+server {
+   listen 443 ssl;
+   listen [::]:443 ssl;
 
    server_name {{ domains | first }};
+   
+    access_log /var/log/nginx/{{ service }}.access.log;
+    error_log  /var/log/nginx/{{ service }}.error.log;
 
-   #ssl_certificate /etc/ssl/certs/mattermost.example.com.pem;
-   #ssl_certificate_key /etc/ssl/private/mattermost.example.com.pem;
+    include /etc/nginx/snippets/letsencrypt.conf;
+    include /etc/nginx/ssl/{{ domains | first }}.conf;
 
    location ~ /api/v[0-9]+/(users/)?websocket$ {
        proxy_set_header Upgrade $http_upgrade;
@@ -47,6 +60,7 @@ server {
        proxy_buffers 256 16k;
        proxy_buffer_size 16k;
        proxy_read_timeout 600s;
+       #proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=mattermost_cache:10m max_size=3g inactive=120m use_temp_path=off;
        #proxy_cache mattermost_cache;
        #proxy_cache_revalidate on;
        #proxy_cache_min_uses 2;
@@ -56,3 +70,4 @@ server {
        proxy_pass http://backend_{{ service }};
    }
 }
+{% endif %}
