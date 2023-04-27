@@ -15,7 +15,7 @@ user_for() {
   stat -L -c '%G' $homedir
 }
 
-for log in access.log access-*.log error.log; do
+for log in access.log access-*.log error.log php.log; do
   for i in $(ls -1 -d $HOMEPREFIX/*/log/$log 2>/dev/null | grep -v \.bak\.); do
     USER="$(user_for $i)"
     rotate $i root:$USER

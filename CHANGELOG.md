@@ -12,6 +12,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ## [Unreleased]
 
 ### Added
+* userlogrotate: rotate also php.log.
 
 ### Changed
 * evolinux-users: remove Stretch references in tasks that also apply to next Debian versions.
