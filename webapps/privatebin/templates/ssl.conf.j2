@@ -1,0 +1,3 @@
+SSLEngine On
+SSLCertificateFile /etc/letsencrypt/live/{{ domains |first }}/fullchain.pem
+SSLCertificateKeyFile /etc/letsencrypt/live/{{ domains |first }}/privkey.pem

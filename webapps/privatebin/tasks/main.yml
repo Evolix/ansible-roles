@@ -4,6 +4,7 @@
 - name: Install main system dependencies
   apt:
     name: "{{ system_dep }}"
+    update_cache: yes
 
 - name: Add UNIX account
   user:
@@ -19,6 +20,20 @@
     force: true
     umask: '0022'
   become_user: "{{ service }}"
+
+#- name: Create the conf-available dir if needed
+#  file:
+#    path: /etc/apache2/conf-available
+#    state: directory
+#    mode: '0750'
+
+- name: Template apache conf for Let's Encrypt/Certbot
+  template: 
+    src: "letsencrypt.conf.j2"
+    dest: "/etc/apache2/conf-available/letsencrypt.conf"
+
+- name: Enable apache conf for Let's Encrypt/Certbot
+  command: "/usr/sbin/a2enconf letsencrypt.conf"
 
 - name: Check if SSL certificate is present and register result
   stat:
@@ -43,8 +58,17 @@
       state: directory
       mode: '0755'
   - name: Generate certificate with certbot
-    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt -d {{ domains |first }}
-  when: ssl.stat.exists == true
+    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ certbot_admin_email }} -d {{ domains |first }}
+  - name: Create the ssl dir if needed
+    file:
+      path: /etc/apache2/ssl
+      state: directory
+      mode: '0750'
+  - name: Template ssl block for apache vhost
+    template: 
+      src: "ssl.conf.j2"
+      dest: "/etc/apache2/ssl/{{ service }}.conf"
+  when: ssl.stat.exists != true
 
 - name: (Re)check if SSL certificate is present and register result
   stat:
@@ -57,7 +81,7 @@
     dest: "/etc/apache2/sites-available/{{ service }}.conf"
 
 - name: Enable apache mode_rewrite
-  command: "/usr/sbin/a2enmod rewrite"
+  command: "/usr/sbin/a2enmod ssl rewrite"
   
 - name: Enable .htaccess configuration
   copy:
