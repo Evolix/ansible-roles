@@ -1,7 +1,7 @@
 <VirtualHost *:80>
     ServerName {{ domains |first }}
     
-    {% if not ssl.stat.exists %}
+    {% if ssl.stat.exists %}
     RewriteEngine On
     RewriteCond %{HTTPS} !=on
     RewriteCond %{HTTP:X-Forwarded-Proto} !=https
@@ -10,7 +10,7 @@
 
 </VirtualHost>
 
-{% if not ssl.stat.exists %}
+{% if ssl.stat.exists %}
 <VirtualHost *:443>
     ServerName {{ domains |first }}
 
@@ -24,16 +24,7 @@
     
     AssignUserID {{ service }} {{ service }}
 
-    SSLEngine On
-    #SSLCertificateFile /etc/letsencrypt/live/{{ domains |first }}/fullchain.pem
-    #SSLCertificateKeyFile /etc/letsencrypt/live/{{ domains |first }}/privkey.pem
-    SSLCertificateFile /etc/ssl/certs/ssl-cert-snakeoil.pem
-    SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
-    
-    RewriteEngine On
-    RewriteCond %{HTTPS} !=on
-    RewriteCond %{HTTP:X-Forwarded-Proto} !=https
-    RewriteRule ^/(.*) https://%{SERVER_NAME}/$1 [L,R=permanent]
+    IncludeOptional /etc/apache2/ssl/{{ service }}.conf
 
 </VirtualHost>
 {% endif %}

@@ -1,6 +1,7 @@
 ---
 # defaults file for vars
-system_dep: "['apt-transport-https', 'git', 'certbot', 'libapache2-mod-php', 'libapache2-mpm-itk', 'php-gd']"
+system_dep: "['apt-transport-https', 'git', 'certbot', 'acl', 'apache2', 'libapache2-mpm-itk', 'libapache2-mod-php', 'php-gd']"
 git_url: 'https://github.com/PrivateBin/PrivateBin'
 git_version: '1.5.1'
 domains: ['example.domain.org']
+certbot_admin_email: 'mgauthier@evolix.ca'
