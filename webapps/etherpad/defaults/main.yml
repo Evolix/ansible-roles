@@ -7,6 +7,7 @@ node_version: 'node_18.x'
 node_port: '9001'
 service: 'example'
 domains: ['example.domain.org']
+certbot_admin_email: 'mgauthier@evolix.ca'
 
 db_host: 'localhost'
 db_port: '/run/mysqld/mysqld.sock'
