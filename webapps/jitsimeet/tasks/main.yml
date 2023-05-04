@@ -7,7 +7,14 @@
     groups: docker
     home: "/var/opt/{{ utilisateur_unix }}"
     shell: /bin/bash
+#    umask: "0022" requires ansible-core 2.12
     append: yes
+
+#- name: "Set the value of umask for unix user"
+#  lineinfile:
+#    path: "/var/opt/{{ utilisateur_unix }}/.profile"
+#    regexp: '^#umask'
+#    line: umask 022
     
 - name: "Download and uncompress Docker Compose project for Jitsi Meet"
   unarchive: 
@@ -22,7 +29,7 @@
     dest: "/var/opt/{{ utilisateur_unix }}/docker-jitsi-meet-{{ version }}/.env"
     owner: "{{ utilisateur_unix }}"
     group: "{{ utilisateur_unix }}"
-    mode: 0644
+    mode: '644'
 
 - name: "(Re)generate strong passwords using dev provided script"
   command: ./gen-passwords.sh
@@ -34,6 +41,7 @@
   file:
     path: "{{ item }}"
     state: directory
+    mode: '755'
   loop: "{{ repertoires_config }}"
   become_user: "{{ utilisateur_unix }}"
 
@@ -42,4 +50,3 @@
     project_src: "/var/opt/{{ utilisateur_unix }}/docker-jitsi-meet-{{ version }}"
     state: present
   become_user: "{{ utilisateur_unix }}"
-
