@@ -2,11 +2,12 @@
 # defaults file for mastodon
 system_dep: "['apt-transport-https', 'postgresql', 'python3-psycopg2', 'nginx', 'git', 'wget', 'certbot']"
 git_url: 'https://github.com/hedgedoc/hedgedoc.git'
-git_version: '1.9.6'
-node_version: 'node_16.x'
+git_version: '1.9.7'
+node_version: 'node_16.x' # Node 18 is NOT supported as of May 2023; See https://docs.hedgedoc.org/setup/manual-setup/
 node_port: '3000'
 service: 'example'
 domains: ['example.domain.org']
+certbot_admin_email: 'mgauthier@evolix.ca'
 
 db_host: 'localhost'
 db_user: "{{ service }}"
