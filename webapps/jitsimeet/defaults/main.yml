@@ -1,18 +1,18 @@
 ---
 # defaults file for main vars
 
-version: "stable-8319" # 7 mars 2023
+version: "stable-8319" # 7 March 2023
 version_old: "stable-8252" # used by jitsimeet/tasks/upgrade.yml
-utilisateur_unix: "jitsi_user362"
-repertoires_config: "['~/.jitsi-meet-cfg/web', '~/.jitsi-meet-cfg/web/letsencrypt', '~/.jitsi-meet-cfg/transcripts', '~/.jitsi-meet-cfg/prosody', '~/.jitsi-meet-cfg/prosody/config', '~/.jitsi-meet-cfg/prosody/prosody-plugins-custom', '~/.jitsi-meet-cfg/jicofo', '~/.jitsi-meet-cfg/jvb', '~/.jitsi-meet-cfg/jigasi', '~/.jitsi-meet-cfg/jibri']"
+unix_user: "jitsi_user362"
+config_dirs: "['~/.jitsi-meet-cfg/web', '~/.jitsi-meet-cfg/web/letsencrypt', '~/.jitsi-meet-cfg/transcripts', '~/.jitsi-meet-cfg/prosody', '~/.jitsi-meet-cfg/prosody/config', '~/.jitsi-meet-cfg/prosody/prosody-plugins-custom', '~/.jitsi-meet-cfg/jicofo', '~/.jitsi-meet-cfg/jvb', '~/.jitsi-meet-cfg/jigasi', '~/.jitsi-meet-cfg/jibri']"
 
 # Variables for the Jitsi Meet docker-compose .env du projet 
-port_http: "80"
-port_https: "443"
-fuseau_horaire: "UTC"
-url_publique: "https://jitsi.mondomaine.net"
+http_port: "80"
+https_port: "443"
+time_zone: "UTC"
+public_url: "https://jitsi.mydomain.net"
 letsencrypt: "1"
-letsencrypt_domaine: "jitsi.mondomaine.net"
-letsencrypt_courriel: "un_nom@mondomaine.net"
-redir_http: "1"
+letsencrypt_domain: "jitsi.mydomain.net"
+letsencrypt_email: "somename@mmydomain.net"
+http_redir: "1"
 hsts: "1"

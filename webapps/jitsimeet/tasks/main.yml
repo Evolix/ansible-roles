@@ -3,50 +3,50 @@
 
 - name: "Add unix user for docker/docker-compose"
   user:
-    name: "{{ utilisateur_unix }}"
+    name: "{{ unix_user }}"
     groups: docker
-    home: "/var/opt/{{ utilisateur_unix }}"
+    home: "/var/opt/{{ unix_user }}"
     shell: /bin/bash
 #    umask: "0022" requires ansible-core 2.12
     append: yes
 
 #- name: "Set the value of umask for unix user"
 #  lineinfile:
-#    path: "/var/opt/{{ utilisateur_unix }}/.profile"
+#    path: "/var/opt/{{ unix_user }}/.profile"
 #    regexp: '^#umask'
 #    line: umask 022
     
 - name: "Download and uncompress Docker Compose project for Jitsi Meet"
   unarchive: 
     src: "https://github.com/jitsi/docker-jitsi-meet/archive/refs/tags/{{ version }}.tar.gz"
-    dest: "/var/opt/{{ utilisateur_unix }}"
+    dest: "/var/opt/{{ unix_user }}"
     remote_src: yes
-  become_user: "{{ utilisateur_unix }}"
+  become_user: "{{ unix_user }}"
 
 - name: "Template .env for Jitsi Meet's Docker Compose project"
   template:
     src: "env.j2"
-    dest: "/var/opt/{{ utilisateur_unix }}/docker-jitsi-meet-{{ version }}/.env"
-    owner: "{{ utilisateur_unix }}"
-    group: "{{ utilisateur_unix }}"
+    dest: "/var/opt/{{ unix_user }}/docker-jitsi-meet-{{ version }}/.env"
+    owner: "{{ unix_user }}"
+    group: "{{ unix_user }}"
     mode: '644'
 
 - name: "(Re)generate strong passwords using dev provided script"
   command: ./gen-passwords.sh
   args:
-    chdir: "/var/opt/{{ utilisateur_unix }}/docker-jitsi-meet-{{ version }}/"
-  become_user: "{{ utilisateur_unix }}"
+    chdir: "/var/opt/{{ unix_user }}/docker-jitsi-meet-{{ version }}/"
+  become_user: "{{ unix_user }}"
 
 - name: "Add required config directories" 
   file:
     path: "{{ item }}"
     state: directory
     mode: '755'
-  loop: "{{ repertoires_config }}"
-  become_user: "{{ utilisateur_unix }}"
+  loop: "{{ config_dirs }}"
+  become_user: "{{ unix_user }}"
 
 - name: "Start services via docker-compose"
   docker_compose:
-    project_src: "/var/opt/{{ utilisateur_unix }}/docker-jitsi-meet-{{ version }}"
+    project_src: "/var/opt/{{ unix_user }}/docker-jitsi-meet-{{ version }}"
     state: present
-  become_user: "{{ utilisateur_unix }}"
+  become_user: "{{ unix_user }}"
