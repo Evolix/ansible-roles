@@ -5,15 +5,35 @@ patroni_backport: false
 
 # Define variable for Patroni
 
-cluster_name: "mycluster"
-patroni_restapi_listen: "127.0.0.1"
-patroni_port: "8008"
-postgresql_hosts_cluster: []
-postgresql_listen_ips: 127.0.0.1
-postgresql_connect_ip: 127.0.0.1
-postgresql_version: ''
-postgresql_replication_user: 'repl'
-postgresql_superuser: 'admin'
+patroni_scope: "mycluster"
+patroni_name: "{{ patroni_scope }}-{{ ansible_hostname }}"
+
+# Binding host:port for the cluster (must not be localhost)
+patroni_restapi_connect_address_host: "0.0.0.0"
+patroni_restapi_connect_address_port: "8008"
+patroni_restapi_connect_address: "{{ patroni_restapi_connect_address_host }}:{{ patroni_restapi_connect_address_port }}"
+# Additional binding for health-checks…
+patroni_restapi_listen_host: "127.0.0.1"
+patroni_restapi_listen_port: "8008"
+patroni_restapi_listen: "{{ patroni_restapi_listen_host }}:{{ patroni_restapi_listen_port }}"
+
+patroni_postgresql_connect_address_host: "0.0.0.0"
+patroni_postgresql_connect_address_port: "5432"
+patroni_postgresql_connect_address: "{{ patroni_postgresql_connect_address_host }}:{{ patroni_postgresql_connect_address_port }}"
+
+patroni_postgresql_listen_hosts:
+  - "127.0.0.1"
+patroni_postgresql_listen_port: "5432"
+patroni_postgresql_listen: "{{ patroni_postgresql_listen_hosts | join(',') }}:{{ patroni_postgresql_listen_port }}"
+
+patroni_postgresql_datadir: "/home/{{ patroni_name }}"
+patroni_postgresql_pgpass: "/tmp/{{ patroni_name }}-pgpass"
+patroni_postgresql_hosts_cluster: []
+patroni_postgresql_listen_ips: 127.0.0.1
+patroni_postgresql_connect_ip: 127.0.0.1
+patroni_postgresql_version: ''
+patroni_postgresql_replication_user: 'repl'
+patroni_postgresql_superuser: 'admin'
 
 # Define variable for etcd
 etcd_hosts: []
