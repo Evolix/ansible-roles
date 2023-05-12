@@ -1,0 +1,12 @@
+#!/usr/bin/bash
+
+if ! test -f /usr/lib/nagios/plugins/check_nrpe; then
+    echo '/usr/lib/nagios/plugins/check_nrpe is missing, please install nagios-nrpe-plugin package.'
+    exit 1
+fi
+
+
+
+/usr/lib/nagios/plugins/check_nrpe -H 127.0.0.1 -c check_$1
+
+

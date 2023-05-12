@@ -1,0 +1,24 @@
+---
+# Install check-local utilitary
+# This task is for Debian >= 10 only!
+
+- name: Package nagios-nrpe-plugin is intalled
+  ansible.builtin.apt:
+    name: nagios-nrpe-plugin
+  when: ansible_distribution_major_version is version('10', '>=')
+
+- name: Utilitary check-local is installed
+  ansible.builtin.copy:
+    src: check-local
+    dest: /usr/local/bin/check-local
+    mode: "0755"
+  when: ansible_distribution_major_version is version('10', '>=')
+
+- name: Completion for utilitary check-local is installed
+  ansible.builtin.copy:
+    src: check-local_completion
+    dest: /etc/bash_completion.d/check-local
+    mode: "0755"
+  when: ansible_distribution_major_version is version('10', '>=')
+
+

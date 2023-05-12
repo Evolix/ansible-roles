@@ -13,6 +13,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 * userlogrotate: rotate also php.log.
+* nagios-nrpe: add a NRPE check-local command with completion.
 
 ### Changed
 * evolinux-users: remove Stretch references in tasks that also apply to next Debian versions.
