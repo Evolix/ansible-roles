@@ -7,6 +7,6 @@ fi
 
 
 
-/usr/lib/nagios/plugins/check_nrpe -H 127.0.0.1 -c check_$1
+/usr/lib/nagios/plugins/check_nrpe -H 127.0.0.1 -c "check_$1"
 
 
