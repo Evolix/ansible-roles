@@ -2,25 +2,18 @@
 
 - name: Create a password for PostgreSQL repl user
   command: "apg -M LCN -n1 -m 16"
-  register: postgresql_replication_password 
+  register: patroni_postgresql_replication_password
+  check_mode: no
 
 - name: Create a password for PostgreSQL superuser user
   command: "apg -M LCN -n1 -m 16"
-  register: postgresql_superuser_password
+  register: patroni_postgresql_superuser_password
+  check_mode: no
 
 - name: Create Patroni config file
   ansible.builtin.template:
-    src: patroni.conf.j2
-    dest: /etc/patroni/config-{{ cluster_name }}.yml
+    src: config.j2
+    dest: /etc/patroni/config.yml
     owner: root
     group: root
     mode: "0644"
-
-- mane: Create Systemd Unit for Patroni
-  ansible.builtin.template:
-    src: patroni.service.j2
-    dest: /etc/systemd/system/patroni.service
-    owner: root
-    group: root
-    mode: "0644"
-

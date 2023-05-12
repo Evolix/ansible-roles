@@ -1,9 +1,9 @@
-scope: {{ cluster_name }}
-name: {{ cluster_name_host }}
+scope: {{ patroni_scope }}
+name: {{ patroni_name }}
 
 restapi:
-    listen: {{ patroni_restapi_listen }}:{{ patroni_restapi_port }}
-    connect_address: {{ patroni_restapi_listen }}:{{ patroni_restapi_port }}
+    listen: {{ patroni_restapi_listen }}
+    connect_address: {{ patroni_restapi_connect_address }}
 
 etcd:
     hosts:
@@ -40,29 +40,29 @@ bootstrap:
     - host all all 0.0.0.0/0 md5
 
    users:
-        {{ postgresql_superuser }}:
-            password: {{ postgresql_superuser_password.stdout }}
+        {{ patroni_postgresql_superuser }}:
+            password: {{ patroni_postgresql_superuser_password.stdout }}
             options:
              - createrole
              - createdb
-        {{ postgresql_replication_user }}:
-           password: {{ postgresql_replication_password.stdout }}
+        {{ patroni_postgresql_replication_user }}:
+           password: {{ patroni_postgresql_replication_password.stdout }}
            options:
             - replication
 
 postgresql:
-    listen: {{ postgresql_listen_ips }}:{{ postgresql_port }}
-    connect_address: {{ postgresql_connect_ip }}:{{ postgresql_port }}
-    bin_dir: /usr/lib/postgresql/{{ postgresql_version }}/bin/
-    data_dir: /home/{{ cluster_name_host }}
-    pgpass: /tmp/{{ cluster_name_host }}-pgpass
+    listen: {{ patroni_postgresql_listen }}
+    connect_address: {{ patroni_postgresql_connect_address }}
+    bin_dir: /usr/lib/postgresql/{{ patroni_postgresql_version }}/bin/
+    data_dir: {{ patroni_postgresql_datadir }}
+    pgpass: {{ patroni_postgresql_pgpass }}
     authentication:
         replication:
-            username: {{ postgresql_replication_user }}
-            password: {{ postgresql_replication_password.stdout }}
+            username: {{ patroni_postgresql_replication_user }}
+            password: {{ patroni_postgresql_replication_password.stdout }}
         superuser:
-            username: {{ postgresql_superuser }}
-            password: {{ postgresql_superuser_password.stdout }}
+            username: {{ patroni_postgresql_superuser }}
+            password: {{ patroni_postgresql_superuser_password.stdout }}
     parameters:
         unix_socket_directories: '/tmp'
 
