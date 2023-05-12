@@ -5,10 +5,20 @@ elasticsearch_cluster_name: Null
 elasticsearch_cluster_members: Null
 elasticsearch_minimum_master_nodes: Null
 elasticsearch_node_name: "${HOSTNAME}"
-elasticsearch_network_host:
-  - "_local_"
+
+# https://www.elastic.co/guide/en/elasticsearch/reference/8.7/modules-network.html
+elasticsearch_network_host: "_local_"
 elasticsearch_network_publish_host: Null
+elasticsearch_network_port: Null
+
+elasticsearch_http_host: Null
 elasticsearch_http_publish_host: Null
+elasticsearch_http_port: Null
+
+elasticsearch_transport_host: Null
+elasticsearch_transport_publish_host: Null
+elasticsearch_transport_port: Null
+
 elasticsearch_discovery_seed_hosts: Null
 elasticsearch_cluster_initial_master_nodes: Null
 elasticsearch_custom_datadir: Null
