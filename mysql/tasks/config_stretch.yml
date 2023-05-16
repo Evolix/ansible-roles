@@ -11,6 +11,7 @@
     group: root
     mode: "0644"
     force: yes
+  notify: "{{ mysql_restart_handler_name }}"
   tags:
     - mysql
 
@@ -22,6 +23,7 @@
     group: root
     mode: "0644"
     force: "{{ mysql_force_custom_config }}"
+  notify: "{{ mysql_restart_handler_name }}"
   tags:
     - mysql
 
