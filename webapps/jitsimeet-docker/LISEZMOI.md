@@ -1,9 +1,9 @@
-jitsimeet
+jitsimeet-docker
 =====
 
-Ce rôle installe un serveur jitsimeet. 
+Ce rôle installe un serveur jitsimeet via docker-compose. 
 
-Notez qu'hormis le présent fichier LISEZMOI.md, tous les fichiers du rôle jitsimeet sont rédigés en anglais afin de suivre les conventions de la communauté Ansible, favoriser sa réutilisation et son amélioration, etc. Libre à vous cependant de faire appel à ce role dans un playbook rédigé principalement en français ou toute autre langue.
+Notez qu'hormis le présent fichier LISEZMOI.md, tous les fichiers du rôle jitsimeet-docker sont rédigés en anglais afin de suivre les conventions de la communauté Ansible, favoriser sa réutilisation et son amélioration, etc. Libre à vous cependant de faire appel à ce role dans un playbook rédigé principalement en français ou toute autre langue.
 
 Requis
 ------
@@ -24,7 +24,7 @@ Exemple de playbook
 -------------------
 
 ```
-- name: "Déployer un serveur jitsimeet"
+- name: "Déployer un serveur jitsimeet (via docker-compose)"
   hosts: 
     - all
   vars:
@@ -33,7 +33,7 @@ Exemple de playbook
     service: 'mon-jitsimeet'
 
   roles:
-    - { role: webapps/jitsimeet , tags: "jitsimeet" }
+    - { role: webapps/jitsimeet-docker , tags: "jitsimeet-docker" }
 ```
 
 Licence

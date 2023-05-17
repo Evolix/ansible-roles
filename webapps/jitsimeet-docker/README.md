@@ -1,7 +1,7 @@
-jitsimeet
+jitsimeet-docker
 =====
 
-This role installs or upgrades the server for jitsimeet. 
+This role installs or upgrades the server for jitsimeet (via docker-compose). 
 
 FRENCH: Voir le fichier LISEZMOI.md pour le français.
 
@@ -24,7 +24,7 @@ Example Playbook
 ----------------
 
 ```
-- name: "Deploy a jitsimeet server"
+- name: "Deploy a jitsimeet server (via docker_compose)"
   hosts: 
     - all
   vars:
@@ -33,7 +33,7 @@ Example Playbook
     service: 'my-jitsimeet'
 
   roles:
-    - { role: webapps/jitsimeet , tags: "jitsimeet" }
+    - { role: webapps/jitsimeet-docker , tags: "jitsimeet-docker" }
 ```
 
 License
