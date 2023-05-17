@@ -1,0 +1,10 @@
+---
+# defaults file for main vars
+
+system_dep: "['gnupg2', 'curl', 'apt-transport-https', 'default-jdk', 'nginx-full', 'lua5.2']"
+
+domains: ['bullseye.domaine-fictif.org']
+
+version: "stable-8319" # 7 March 2023
+version_old: "stable-8252" # used by jitsimeet/tasks/upgrade.yml
+

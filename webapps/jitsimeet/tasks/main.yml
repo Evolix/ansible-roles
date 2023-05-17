@@ -1,0 +1,47 @@
+---
+# tasks file for jitsimeet install
+
+- name: Set FQDN
+  command: "hostnamectl set-hostname {{ domains | first }}"
+
+- name: Set FQDN in /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: "{{ ansible_default_ipv4.address }} {{ domains | first }}"
+
+# Ouvrir les ports
+
+- name: Add Prosody apt repository key
+  ansible.builtin.get_url:
+    url: https://prosody.im/files/prosody-debian-packages.key
+    dest: /etc/apt/trusted.gpg.d/prosody.gpg
+    mode: '0644'
+    force: true
+
+- name: Add Jitsi Meet apt repository key
+  ansible.builtin.get_url:
+    url: https://download.jitsi.org/jitsi-key.gpg.key
+    dest: /etc/apt/trusted.gpg.d/jitsimeet.asc
+    mode: '0644'
+    force: true
+
+- name: Add Prosody apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb http://packages.prosody.im/debian bullseye main"
+    state: present
+
+- name: Add Jitsi Meet apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb https://download.jitsi.org stable/"
+    state: present
+
+- name: Install system dependencies
+  ansible.builtin.apt:
+    name: "{{ system_dep }}"
+    state: present
+    update_cache: true
+
+- name: Install Jitsi Meet
+  ansible.builtin.apt:
+    name: jitsi-meet
+    state: present
