@@ -41,7 +41,60 @@
     state: present
     update_cache: true
 
+- name: Set debconf options for jitsi-meet
+  ansible.builtin.debconf:
+    name: "{{ item.name }}"
+    question: "{{ item.question }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.vtype }}"
+  loop:
+    - name: jitsi-videobridge2
+      question: jitsi-videobridge/jvb-hostname
+      value: "{{ domains | first }}"
+      vtype: string
+    - name: jitsi-meet-web-config
+      question: jitsi-meet/cert-choice
+      value: "{{ jitsi_meet_cert_choice }}"
+      vtype: string
+    - name: jitsi-meet-web-config
+      question: jitsi-meet/cert-path-crt
+      value: "{{ jitsi_meet_ssl_cert_path }}"
+      vtype: string
+    - name: jitsi-meet-web-config
+      question: jitsi-meet/cert-path-key
+      value: "{{ jitsi_meet_ssl_key_path }}"
+      vtype: string
+    - name: jitsi-meet-prosody
+      question: jitsi-meet-prosody/turn-secret
+      value: "{{ jitsi_meet_turn_secret }}"
+      vtype: string
+
 - name: Install Jitsi Meet
   ansible.builtin.apt:
     name: jitsi-meet
     state: present
+    install_recommends: no
+
+- name: Template config files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { src: 'videobridge/jvb.conf.j2', dest: "/etc/jitsi/videobridge/jvb.conf", owner: "jvb", group: "jitsi", mode: "0640" }
+    - { src: 'videobridge/logging.properties.j2', dest: "/etc/jitsi/videobridge/jlogging.properties", owner: "jvb", group: "jitsi", mode: "0640" }
+    - { src: 'videobridge/sip-communicator.properties.j2', dest: "/etc/jitsi/videobridge/sip-communicator.properties", owner: "jvb", group: "jitsi", mode: "0640" }
+    - { src: 'jicofo/logging.properties.j2', dest: "/etc/jitsi/jicofo/logging.properties", owner: "jicofo", group: "jitsi", mode: "0640" }
+    - { src: 'meet/config.js.j2', dest: "/etc/jitsi/meet/{{ domains | first }}-config.js", owner: "root", group: "root", mode: "0644" }
+    - { src: 'prosody/prosody.cfg.lua.j2', dest: "/etc/prosody/prosody.cfg.lua", owner: "root", group: "prosody", mode: "0640" }
+    - { src: 'prosody/virtualhost.cfg.lua.j2', dest: "/etc/prosody/conf.avail/{{ domains | first }}.cfg.lua", owner: "root", group: "root", mode: "0644" }
+
+#- name: Install Jitsi Meet
+#  ansible.builtin.apt:
+#    name: 
+#       - nginx-full
+#       - python3-certbot-nginx
+#    state: present
+#    install_recommends: no
