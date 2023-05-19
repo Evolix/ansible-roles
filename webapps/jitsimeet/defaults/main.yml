@@ -1,7 +1,7 @@
 ---
 # defaults file for main vars
 
-system_dep: "['gnupg2', 'curl', 'apt-transport-https', 'default-jdk', 'lua5.2']"
+system_dep: "['gnupg2', 'curl', 'apt-transport-https', 'default-jdk', 'lua5.2', 'lua-unbound']"
 
 domains: ['bullseye.domaine-fictif.org']
 
