@@ -91,6 +91,12 @@
     - { src: 'prosody/prosody.cfg.lua.j2', dest: "/etc/prosody/prosody.cfg.lua", owner: "root", group: "prosody", mode: "0640" }
     - { src: 'prosody/virtualhost.cfg.lua.j2', dest: "/etc/prosody/conf.avail/{{ domains | first }}.cfg.lua", owner: "root", group: "root", mode: "0644" }
 
+- name: Unregister default jvb account in prosody
+  ansible.builtin.command: prosodyctl unregister jvb@auth.{{ domains | first }}
+
+- name: Register jvb account in prosody (with proper secret)
+  ansible.builtin.command: prosodyctl register jvb auth.{{ domains | first }} {{ jitsi_meet_jvb_secret }}
+
 #- name: Install Jitsi Meet
 #  ansible.builtin.apt:
 #    name: 
