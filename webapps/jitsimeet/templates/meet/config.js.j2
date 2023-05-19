@@ -30,31 +30,31 @@ var config = {
 
     hosts: {
         // XMPP domain.
-        domain: 'bullseye.domaine-fictif.org',
+        domain: '{{ domains | first }}',
 
         // When using authentication, domain for guest users.
         // anonymousdomain: 'guest.example.com',
 
         // Domain for authenticated users. Defaults to <domain>.
-        // authdomain: 'bullseye.domaine-fictif.org',
+        // authdomain: '{{ domains | first }}',
 
         // Focus component domain. Defaults to focus.<domain>.
-        // focus: 'focus.bullseye.domaine-fictif.org',
+        // focus: 'focus.{{ domains | first }}',
 
         // XMPP MUC domain. FIXME: use XEP-0030 to discover it.
-        muc: 'conference.' + subdomain + 'bullseye.domaine-fictif.org',
+        muc: 'conference.' + subdomain + '{{ domains | first }}',
     },
 
     // BOSH URL. FIXME: use XEP-0156 to discover it.
-    bosh: 'https://bullseye.domaine-fictif.org/' + subdir + 'http-bind',
+    bosh: 'https://{{ domains | first }}/' + subdir + 'http-bind',
 
     // Websocket URL (XMPP)
-    // websocket: 'wss://bullseye.domaine-fictif.org/' + subdir + 'xmpp-websocket',
+    // websocket: 'wss://{{ domains | first }}/' + subdir + 'xmpp-websocket',
 
     // The real JID of focus participant - can be overridden here
     // Do not change username - FIXME: Make focus username configurable
     // https://github.com/jitsi/jitsi-meet/issues/7376
-    // focusUserJid: 'focus@auth.bullseye.domaine-fictif.org',
+    // focusUserJid: 'focus@auth.{{ domains | first }}',
 
     // Options related to the bridge (colibri) data channel
     bridgeChannel: {
@@ -302,9 +302,9 @@ var config = {
     //     appKey: '<APP_KEY>', // Specify your app key here.
     //     // A URL to redirect the user to, after authenticating
     //     // by default uses:
-    //     // 'https://bullseye.domaine-fictif.org/static/oauth.html'
+    //     // 'https://{{ domains | first }}/static/oauth.html'
     //     redirectURI:
-    //          'https://bullseye.domaine-fictif.org/subfolder/static/oauth.html',
+    //          'https://{{ domains | first }}/subfolder/static/oauth.html',
     // },
 
     // recordingService: {
@@ -946,7 +946,7 @@ var config = {
         // The STUN servers that will be used in the peer to peer connections
         stunServers: [
 
-            // { urls: 'stun:bullseye.domaine-fictif.org:3478' },
+            // { urls: 'stun:{{ domains | first }}:3478' },
             { urls: 'stun:meet-jit-si-turnrelay.jitsi.net:443' },
         ],
     },
@@ -1300,7 +1300,7 @@ var config = {
     // The URL of the moderated rooms microservice, if available. If it
     // is present, a link to the service will be rendered on the welcome page,
     // otherwise the app doesn't render it.
-    // moderatedRoomServiceUrl: 'https://moderated.bullseye.domaine-fictif.org',
+    // moderatedRoomServiceUrl: 'https://moderated.{{ domains | first }}',
 
     // If true, tile view will not be enabled automatically when the participants count threshold is reached.
     // disableTileView: true,
