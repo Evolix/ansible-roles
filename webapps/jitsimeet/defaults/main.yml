@@ -8,8 +8,6 @@ domains: ['bullseye.domaine-fictif.org']
 jitsi_meet_cert_choice: "Generate a new self-signed certificate (You will later get a chance to obtain a Let's encrypt certificate)"
 jitsi_meet_ssl_cert_path: "/etc/ssl/certs/ssl-cert-snakeoil.pem"
 jitsi_meet_ssl_key_path: "/etc/ssl/private/ssl-cert-snakeoil.key"
-jitsi_meet_turn_secret: "QZItKTo4iJ2vqrMWoZgN"
-
-version: "stable-8319" # 7 March 2023
-version_old: "stable-8252" # used by jitsimeet/tasks/upgrade.yml
-
+jitsi_meet_turn_secret: "YOU_ABSOLUTELY_MUST_CHANGE_ME"
+jitsi_meet_jvb_secret: "NOT_CHANGING_ME_IS_SUPER_UNCOOL"
+jitsi_meet_jvb_muc_nick: "1899aaf3-3991-4770-9c8c-113906dc0a2e"
