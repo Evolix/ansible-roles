@@ -12,15 +12,18 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ## [Unreleased]
 
 ### Added
+
 * userlogrotate: rotate also php.log.
 * nagios-nrpe: add a NRPE check-local command with completion.
 
 ### Changed
 
 * elasticsearch: improve networking configuration
-* evolinux-users: remove Stretch references in tasks that also apply to next Debian versions.
+* evolinux-users: remove Stretch references in tasks that also apply to next Debian versions
+* mysql: improve shell syntax for mysql_skip script
 
 ### Fixed
+
 * packweb-apache,nagios-nrpe: add missing task and config for PHP 8.2 container
 * potsfix: add missing `localhost.$mydomain` to mydestination
 
