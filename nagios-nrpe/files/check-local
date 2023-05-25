@@ -7,10 +7,11 @@ fi
 
 if [ -r /etc/nagios/nrpe.d/evolix.cfg ]; then
     command=$(grep "check_$1" /etc/nagios/nrpe.d/evolix.cfg | tail -n1 | cut -d'=' -f2-)
-    printf "Command:\n    $command\n"
+    echo "Command:"
+    echo "    $command"
 fi
 
-printf "NRPE daemon output:"
+echo "NRPE daemon output:"
 /usr/lib/nagios/plugins/check_nrpe -H 127.0.0.1 -c "check_$1"
 
 
