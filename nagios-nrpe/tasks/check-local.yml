@@ -1,6 +1,9 @@
 ---
 # Install check-local utilitary
 # This task is for Debian >= 10 only!
+- name: "Remount /usr if needed"
+  ansible.builtin.include_role:
+    name: remount-usr
 
 - name: Package nagios-nrpe-plugin is intalled
   ansible.builtin.apt:

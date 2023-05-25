@@ -3,9 +3,8 @@
 _check_local_dynamic_completion() {
     local cur;
     cur=${COMP_WORDS[COMP_CWORD]};
-    check_list=$(grep 'check_' /etc/nagios/nrpe.d/evolix.cfg | grep -vE '^[[:blank:]]*#' | awk -F'[\[\]=_]' '{print $3}')
     COMPREPLY=();
-    COMPREPLY=( $( compgen -W '$(grep check_ /etc/nagios/nrpe.d/evolix.cfg | grep -vE "^[[:blank:]]*#" | awk -F"[\[\]=_]" "{print \$3}")' -- $cur ) );
+    COMPREPLY=( $( compgen -W '$(grep check_ /etc/nagios/nrpe.d/evolix.cfg | grep -vE "^[[:blank:]]*#" | awk -F"[\\\[\\\]=_]" "{print \$3}")' -- $cur ) );
 }
 
 complete -F _check_local_dynamic_completion check-local
