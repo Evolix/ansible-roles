@@ -1,0 +1,88 @@
+---
+#
+# -password       [success=1 default=ignore]      pam_unix.so obscure yescrypt
+# +password       requisite                       pam_pwquality.so retry=3
+# +password       [success=1 default=ignore]      pam_unix.so obscure use_authtok try_first_pass yescrypt
+
+
+
+# PAM -- pam_pwquality
+
+- name: libpam-pwquality is installed
+  apt:
+    state: present
+    name:
+      - libpam-pwquality
+      - cracklib-runtime
+  when: policy_pam_pwquality
+
+- name: Enable pam_pwquality
+  ansible.builtin.lineinfile:
+    dest: /etc/pam.d/common-password
+    regexp: '^password\s+requisite\s+pam_pwquality.so'
+    line: "password       requisite                       pam_pwquality.so retry=3"
+    insertafter: '(the "Primary" block)'
+  when: policy_pam_pwquality
+
+- name: Disable pam_pwquality
+  ansible.builtin.lineinfile:
+    dest: /etc/pam.d/common-password
+    regexp: '^password\s+requisite\s+pam_pwquality.so'
+    state: absent
+  when: policy_pam_pwquality is false
+
+- name: Configure pam_pwquality
+  replace:
+    dest: /etc/security/pwquality.conf
+    regexp: "^#? ?{{ item.name }} = .*"
+    replace: "{{ item.name }} = {{ item.value }}"
+  with_items:
+    - { name: minlen, value: "{{ policy_pam_pwquality_minlen }}" }
+    - { name: dcredit, value: "{{ policy_pam_pwquality_dcredit }}" }
+    - { name: ucredit, value: "{{ policy_pam_pwquality_ucredit }}" }
+    - { name: lcredit, value: "{{ policy_pam_pwquality_lcredit }}" }
+    - { name: ocredit, value: "{{ policy_pam_pwquality_ocredit }}" }
+  when: policy_pam_pwquality
+
+
+
+# PAM -- pam_pwhistory
+
+- name: Enable pam_pwhistory
+  ansible.builtin.lineinfile:
+    dest: /etc/pam.d/common-password
+    regexp: '^password\s+required\s+pam_pwhistory.so'
+    line: "password       required           pam_pwhistory.so  remember={{ policy_pam_pwhistory_length }} {{ 'use_authtok' if policy_pam_pwquality}}"
+    insertbefore: 'pam_unix.so'
+  when: policy_pam_pwhistory
+
+# LATER : Enforce a password min age 
+# - name: Change PASS_MIN_DAYS
+#   replace:
+#     dest: /etc/login.defs
+#     replace: "PASS_MIN_DAYS  7"
+#     regexp: '^PASS_MIN_DAYS.*'
+
+- name: Disable pam_pwhistory
+  ansible.builtin.lineinfile:
+    dest: /etc/pam.d/common-password
+    regexp: '^password\s+required\s+pam_pwhistory.so'
+    state: absent
+  when: policy_pam_pwhistory is false
+
+
+
+# PAM -- pam_unix
+- name: Update pam_unix if previous modules were enabled
+  ansible.builtin.lineinfile:
+    dest: /etc/pam.d/common-password
+    regexp: 'pam_unix.so obscure'
+    line: "password       [success=1 default=ignore]      pam_unix.so obscure use_authtok try_first_pass yescrypt"
+  when: policy_pam_pwhistory or policy_pam_pwquality
+
+- name: Update pam_unix if previous modules are all disabled
+  ansible.builtin.lineinfile:
+    dest: /etc/pam.d/common-password
+    regexp: 'pam_unix.so obscure'
+    line: "password       [success=1 default=ignore]      pam_unix.so obscure yescrypt"
+  when: policy_pam_pwhistory is false and policy_pam_pwquality is false
