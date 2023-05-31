@@ -14,6 +14,7 @@ Main variables are :
 * `pgbouncer_listen_port`: the listen post for PgBouncer (default: `6432`),
 * `pgbouncer_databases`: the databases that clients of PgBouncer can connect to,
 * `pgbouncer_account_list`: the accounts that clients of PgBouncer can connect to.
+* `pgbouncer_auth_type`: the variable `auth_type` define by default to `scram-sha-256`, if you installed PgBouncer on PostgreSQL version inferior to 14, set this variable to `md5`.
 
 The variable `pgbouncer_databases` must have the `name`, `host` and `port` attributes. The variable can be defined like this:
 
