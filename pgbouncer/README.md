@@ -36,4 +36,18 @@ The value of `hash` can be obtained by running this command on the PostgreSQL se
 
 > These accounts must exist on the PostegreSQL server.
 
+The variables `pgbouncer_admin_users` and `pgbouncer_stats_users` list the SQL user can be access on pgbouncer console. This variables can be defines like this :
+
+```
+pgbouncer_admin_users:
+   - account1
+   - account2
+```
+
+```
+pgbouncer_stats_users:
+   - account1
+   - account2
+```
+
 The full list of variables (with default values) can be found in `defaults/main.yml`.

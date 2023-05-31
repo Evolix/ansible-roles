@@ -6,4 +6,8 @@ pgbouncer_auth_type: "scram-sha-256"
 
 pgbouncer_databases: []
 
+pgbouncer_admin_users: []
+
+pgbouncer_stats_users: []
+
 pgbouncer_account_list: []
