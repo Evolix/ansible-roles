@@ -32,9 +32,13 @@ pgbouncer_account_list:
   - { name: "account2", hash: "<hash>" }
 ```
 
-The value of `hash` can be obtained by running this command on the PostgreSQL server: `select passwd from pg_shadow where usename='account1';`
+The value of `hash` can be obtained by running this command on the PostgreSQL server:
 
-> These accounts must exist on the PostegreSQL server.
+```
+select passwd from pg_shadow where usename='account1';
+```
+
+> These accounts must exist on the PostgreSQL server.
 
 The variables `pgbouncer_admin_users` and `pgbouncer_stats_users` list the SQL user can be access on pgbouncer console. This variables can be defines like this :
 

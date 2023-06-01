@@ -7,7 +7,7 @@
 logfile = /var/log/postgresql/pgbouncer.log
 pidfile = /var/run/postgresql/pgbouncer.pid
 
-listen_addr = {{ pgbouncer_listen_addr }}
+listen_addr = {{ pgbouncer_listen_addr | join(',') }}
 listen_port = {{ pgbouncer_listen_port }}
 unix_socket_dir =
 
