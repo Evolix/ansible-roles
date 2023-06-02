@@ -87,4 +87,3 @@
 - ansible.builtin.include_tasks: wrapper.yml
 
 - ansible.builtin.include_tasks: check-local.yml
-  when: ansible_distribution_major_version is version('10', '>=')
