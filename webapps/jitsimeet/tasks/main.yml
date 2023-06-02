@@ -4,13 +4,6 @@
 - name: Set FQDN
   command: "hostnamectl set-hostname {{ domains | first }}"
 
-- name: Set FQDN in /etc/hosts
-  ansible.builtin.lineinfile:
-    path: /etc/hosts
-    line: "{{ ansible_default_ipv4.address }} {{ domains | first }}"
-
-# Ouvrir les ports
-
 - name: Add Prosody apt repository key
   ansible.builtin.get_url:
     url: https://prosody.im/files/prosody-debian-packages.key
@@ -84,18 +77,40 @@
     mode: "{{ item.mode }}"
   loop:
     - { src: 'videobridge/jvb.conf.j2', dest: "/etc/jitsi/videobridge/jvb.conf", owner: "jvb", group: "jitsi", mode: "0640" }
-    - { src: 'videobridge/logging.properties.j2', dest: "/etc/jitsi/videobridge/jlogging.properties", owner: "jvb", group: "jitsi", mode: "0640" }
     - { src: 'videobridge/sip-communicator.properties.j2', dest: "/etc/jitsi/videobridge/sip-communicator.properties", owner: "jvb", group: "jitsi", mode: "0640" }
-    - { src: 'jicofo/logging.properties.j2', dest: "/etc/jitsi/jicofo/logging.properties", owner: "jicofo", group: "jitsi", mode: "0640" }
     - { src: 'meet/config.js.j2', dest: "/etc/jitsi/meet/{{ domains | first }}-config.js", owner: "root", group: "root", mode: "0644" }
-    - { src: 'prosody/prosody.cfg.lua.j2', dest: "/etc/prosody/prosody.cfg.lua", owner: "root", group: "prosody", mode: "0640" }
     - { src: 'prosody/virtualhost.cfg.lua.j2', dest: "/etc/prosody/conf.avail/{{ domains | first }}.cfg.lua", owner: "root", group: "root", mode: "0644" }
 
+- name: Add bloc to jicofo.conf to disable sctp
+  ansible.builtin.blockinfile:
+    path: /etc/jitsi/jicofo/jicofo.conf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    insertafter: 'jicofo {'
+    block: |
+        sctp: {
+          enabled: false
+        }
+
 - name: Unregister default jvb account in prosody
-  ansible.builtin.command: prosodyctl unregister jvb@auth.{{ domains | first }}
+  ansible.builtin.command: prosodyctl unregister jvb auth.{{ domains | first }}
 
 - name: Register jvb account in prosody (with proper secret)
   ansible.builtin.command: prosodyctl register jvb auth.{{ domains | first }} {{ jitsi_meet_jvb_secret }}
+
+- name: Restart prosody
+  ansible.builtin.service:
+    name: prosody
+    state: restarted
+
+- name: Restart jvb
+  ansible.builtin.service:
+    name: jitsi-videobridge2
+    state: restarted
+
+- name: Restart jicofo
+  ansible.builtin.service:
+    name: jicofo
+    state: restarted
 
 #- name: Install Jitsi Meet
 #  ansible.builtin.apt:
