@@ -30,3 +30,8 @@ policy_pam_pwhistory: true
 
 # How many old passwords to retain
 policy_pam_pwhistory_length: 5
+
+# How (days) old the password should be before allowing user to change it's password
+# It is to prevent circumvention of pam_pwhistory
+# Set to 0 to disable
+policy_pam_password_min_days: 0

@@ -56,13 +56,6 @@
     insertbefore: 'pam_unix.so'
   when: policy_pam_pwhistory
 
-# LATER : Enforce a password min age 
-# - name: Change PASS_MIN_DAYS
-#   replace:
-#     dest: /etc/login.defs
-#     replace: "PASS_MIN_DAYS  7"
-#     regexp: '^PASS_MIN_DAYS.*'
-
 - name: Disable pam_pwhistory
   ansible.builtin.lineinfile:
     dest: /etc/pam.d/common-password
@@ -70,6 +63,12 @@
     state: absent
   when: policy_pam_pwhistory is false
 
+# Enforce password minimal age to prevent pam_pwhistory to be circumvented by multiples password changes
+- name: Change PASS_MIN_DAYS
+  replace:
+    dest: /etc/login.defs
+    replace: 'PASS_MIN_DAYS\g<1>{{ policy_pam_password_min_days }}'
+    regexp:  '^PASS_MIN_DAYS(\s+).*'
 
 
 # PAM -- pam_unix
