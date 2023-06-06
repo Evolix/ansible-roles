@@ -1,7 +1,6 @@
 ---
 
 # Define variable for etcd
-patroni_install_dependencies: "True"
 etcd_listen_ip: []
 etcd_cluster_ips: []
 etcd_client_port: "2379"
@@ -10,3 +9,4 @@ etcd_local_name : ""
 etcd_cluster_token : ""
 etcd_datadir : "/var/lib/etcd/{{ etcd_cluster_token }}"
 etcd_initial_cluster: ""
+etcd_install_dependencies_for_patroni: False
