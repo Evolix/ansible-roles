@@ -3,39 +3,49 @@
 # Install Patroni from backport Evolix
 patroni_backport: false
 
-# Define variable for Patroni
+etcd_install_dependencies_for_patroni: True
 
-patroni_scope: "mycluster"
-patroni_name: "{{ patroni_scope }}-{{ ansible_hostname }}"
+#########################################################################
+# Disabled for now
+# It's too much work to completely manage a Patroni cluster from Ansible
+##########
+# # Define variable for Patroni
 
-# Binding host:port for the cluster (must not be localhost)
-patroni_restapi_connect_address_host: "0.0.0.0"
-patroni_restapi_connect_address_port: "8008"
-patroni_restapi_connect_address: "{{ patroni_restapi_connect_address_host }}:{{ patroni_restapi_connect_address_port }}"
-# Additional binding for health-checks…
-patroni_restapi_listen_host: "127.0.0.1"
-patroni_restapi_listen_port: "8008"
-patroni_restapi_listen: "{{ patroni_restapi_listen_host }}:{{ patroni_restapi_listen_port }}"
+# patroni_scope: "13-main"
+# patroni_name: "{{ ansible_hostname }}"
 
-patroni_postgresql_connect_address_host: "0.0.0.0"
-patroni_postgresql_connect_address_port: "5432"
-patroni_postgresql_connect_address: "{{ patroni_postgresql_connect_address_host }}:{{ patroni_postgresql_connect_address_port }}"
+# # Binding host:port for the cluster (must not be localhost)
+# patroni_restapi_connect_address_host: "0.0.0.0"
+# patroni_restapi_connect_address_port: "8008"
+# patroni_restapi_connect_address: "{{ patroni_restapi_connect_address_host }}:{{ patroni_restapi_connect_address_port }}"
+# # Additional binding for health-checks…
+# patroni_restapi_listen_host: "127.0.0.1"
+# patroni_restapi_listen_port: "8008"
+# patroni_restapi_listen: "{{ patroni_restapi_listen_host }}:{{ patroni_restapi_listen_port }}"
 
-patroni_postgresql_listen_hosts:
-  - "127.0.0.1"
-patroni_postgresql_listen_port: "5432"
-patroni_postgresql_listen: "{{ patroni_postgresql_listen_hosts | join(',') }}:{{ patroni_postgresql_listen_port }}"
+# patroni_postgresql_connect_address_host: "0.0.0.0"
+# patroni_postgresql_connect_address_port: "5432"
+# patroni_postgresql_connect_address: "{{ patroni_postgresql_connect_address_host }}:{{ patroni_postgresql_connect_address_port }}"
 
-patroni_postgresql_datadir: "/home/{{ patroni_name }}"
-patroni_postgresql_pgpass: "/tmp/{{ patroni_name }}-pgpass"
-patroni_postgresql_hosts_cluster: []
-patroni_postgresql_listen_ips: 127.0.0.1
-patroni_postgresql_connect_ip: 127.0.0.1
-patroni_postgresql_version: ''
-patroni_postgresql_replication_user: 'repl'
-patroni_postgresql_superuser: 'admin'
+# patroni_postgresql_listen_hosts:
+#   - "127.0.0.1"
+# patroni_postgresql_listen_port: "5432"
+# patroni_postgresql_listen: "{{ patroni_postgresql_listen_hosts | join(',') }}:{{ patroni_postgresql_listen_port }}"
 
-# Define variable for etcd
-etcd_hosts: []
-etcd_port: "2379"
+# patroni_postgresql_datadir: "/home/{{ patroni_scope }}"
+# patroni_postgresql_pgpass: "/tmp/{{ patroni_scope }}-pgpass"
+# patroni_postgresql_listen_ips: 127.0.0.1
+# patroni_postgresql_connect_ip: 127.0.0.1
+# patroni_postgresql_version: ''
+# patroni_postgresql_replication_user: 'repl'
+# patroni_postgresql_superuser: 'admin'
+
+# # Each entry must look like this :
+# # { name: replication, user: foo, host: "1.2.3.4/32", hash_type: md5/scram-sha-256 }
+# patroni_postgresql_hba_roles: []
+
+# # Define variable for etcd
+# etcd_hosts: []
+# etcd_port: "2379"
+#########################################################################
 

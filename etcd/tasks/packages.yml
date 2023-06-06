@@ -6,3 +6,10 @@
       - etcd-client
       - etcd-server
     update_cache: yes
+
+- name: Install python dependencies for Patroni
+  ansible.builtin.apt:
+    name:
+      - python3-etcd
+      - python3-psycopg2
+  when: etcd_install_dependencies_for_patroni | bool

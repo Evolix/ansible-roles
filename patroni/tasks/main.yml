@@ -1,7 +1,14 @@
 ---
 
 - ansible.builtin.import_tasks: backports.yml
-  when: patroni_backport | bool
+  when: patroni_backport | bool | default(False)
 
 - ansible.builtin.import_tasks: packages.yml
-- ansible.builtin.import_tasks: config.yml
+
+
+#########################################################################
+# Disabled for now
+# It's too much work to completely manage a Patroni cluster from Ansible
+##########
+# - ansible.builtin.import_tasks: config.yml
+#########################################################################

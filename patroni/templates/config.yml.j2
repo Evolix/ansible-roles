@@ -29,26 +29,26 @@ bootstrap:
               checkpoint_timeout: 30
 
     initdb:
-    - encoding: UTF8
-    - data-checksums
+      - encoding: UTF8
+      - data-checksums
 
     pg_hba:
-    - host replication repl 127.0.0.1/32 md5
-{% for server in groups['patroni'] %}
-    - host replication repl {{ hostvars[server]['postgresql_hosts_cluster'] }}/0 md5
+      - host replication repl 127.0.0.1/32 md5
+{% for host in patroni_postgresql_replication_hosts %}
+      - host {{ patroni_postgresql_replication_role }} {{ patroni_postgresql_replication_user }} {{ host }} {{ patroni_postgresql_replication_hash_type }}
 {% endfor %}
-    - host all all 0.0.0.0/0 md5
+      - host all all 0.0.0.0/0 md5
 
    users:
         {{ patroni_postgresql_superuser }}:
             password: {{ patroni_postgresql_superuser_password.stdout }}
             options:
-             - createrole
-             - createdb
+              - createrole
+              - createdb
         {{ patroni_postgresql_replication_user }}:
            password: {{ patroni_postgresql_replication_password.stdout }}
            options:
-            - replication
+             - replication
 
 postgresql:
     listen: {{ patroni_postgresql_listen }}
