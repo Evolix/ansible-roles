@@ -2,3 +2,4 @@
 .kateproject.d
 .vagrant/
 *.swp
+.vscode
