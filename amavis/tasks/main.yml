@@ -16,3 +16,12 @@
   notify: restart amavis
   tags:
   - amavis
+
+- name: Install purge custom cron
+  ansible.builtin.copy:
+    src: amavis_purge_virusmails
+    dest: /etc/cron.daily/amavis_purge_virusmails
+    mode: "0755"
+  tags:
+  - amavis
+  - amavis_purge_cron
