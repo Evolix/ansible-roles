@@ -80,6 +80,7 @@
   when:
     - varnish_package_facts['version'] is version('4', '>=')
     - varnish_package_facts['version'] is version('6', '<')
+    - varnish_systemd_override_template | length == 0
   tags:
     - varnish
     - config
@@ -91,6 +92,7 @@
   when:
     - varnish_package_facts['version'] is version('6', '>=')
     - varnish_package_facts['version'] is version('7', '<')
+    - varnish_systemd_override_template | length == 0
   tags:
     - varnish
     - config
@@ -101,6 +103,7 @@
     varnish_systemd_override_template: override.conf.varnish7.j2
   when:
     - varnish_package_facts['version'] is version('7', '>=')
+    - varnish_systemd_override_template | length == 0
   tags:
     - varnish
     - config

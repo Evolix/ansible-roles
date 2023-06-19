@@ -23,6 +23,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-users: remove Stretch references in tasks that also apply to next Debian versions
 * mysql: improve shell syntax for mysql_skip script
 * pbbouncer: minor fixes
+* varnish: Allow the systemd template to be overriden with a template outside of the role
 
 ### Fixed
 

@@ -16,8 +16,10 @@ varnish_thread_pool_max: 5000
 varnish_jail: "unix,user=vcache"
 varnish_additional_options: ""
 
+varnish_systemd_override_template: Null
+
 varnish_config_file: /etc/varnish/default.vcl
-varnish_update_config: True
+varnish_update_config: true
 varnish_secret_file: /etc/varnish/secret
 
 varnish_tmp_dir: /var/tmp-vcache
