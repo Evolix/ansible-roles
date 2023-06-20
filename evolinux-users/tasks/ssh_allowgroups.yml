@@ -39,6 +39,6 @@
     path: /etc/ssh/sshd_config.d/z-evolinux-users
     line: "AllowGroups {{ evolinux_ssh_group }}"
     create: yes
-    validate: '/usr/sbin/sshd -t -f /etc/ssh/sshd_config.d/z-evolinux-users'
+    validate: '/usr/sbin/sshd -t -f %s'
   when:
     - ansible_distribution_major_version is version('12', '>=')
