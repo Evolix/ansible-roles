@@ -50,7 +50,7 @@
     name: "listupgrade.sh"
     cron_file: "listupgrade"
     user: root
-    job: "/usr/share/scripts/listupgrade.sh --cron {{ listupgrade_cron_force | bool | ternary('--force','') }}"
+    job: "/usr/share/scripts/listupgrade.sh --cron{{ listupgrade_cron_force | bool | ternary(' --force','') }}"
     minute: "{{ listupgrade_cron_minute }}"
     hour: "{{ listupgrade_cron_hour }}"
     weekday: "{{ listupgrade_cron_weekday }}"
