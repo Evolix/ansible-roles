@@ -16,6 +16,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * userlogrotate: rotate also php.log.
 * nagios-nrpe: add a NRPE check-local command with completion.
 * policy_pam: New role allowing to manage password policy with pam_pwquality & pam_pwhistory
+* dovecot: fix old_stats plugin for Dovecot 2.3.
+* dovecot: add Munin plugins dovecot1 and dovecot_stats (patched)
 
 ### Changed
 
@@ -33,6 +35,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * potsfix: add missing `localhost.$mydomain` to mydestination
 
 ### Removed
+
+* dovecot: remove Munin plugin dovecot (not working)
 
 ### Security
 

@@ -14,3 +14,7 @@
     name: log2mail
     state: restarted
 
+- name: restart munin-node
+  ansible.builtin.systemd:
+    name: munin-node
+    state: restarted
