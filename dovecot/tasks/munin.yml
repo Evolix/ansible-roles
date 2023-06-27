@@ -60,6 +60,8 @@
         regex: '^[[:blank:]]*user root[[:blank:]]*$'
         insertafter: '\[{{ item }}\]'
         line: 'user root'
+        create: yes
+        mode: '0644'
       loop: ['dovecot1', 'dovecot_stats_*']
       notify: restart munin-node
 
