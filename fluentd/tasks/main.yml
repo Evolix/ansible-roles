@@ -4,7 +4,7 @@
   ansible.builtin.copy:
     src: treasuredata.asc
     dest: "{{ apt_keyring_dir }}/treasuredata.asc"
-    force: yes
+    force: true
     mode: "0644"
     owner: root
     group: root

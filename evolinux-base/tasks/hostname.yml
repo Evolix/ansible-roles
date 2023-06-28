@@ -41,7 +41,7 @@
   ansible.builtin.copy:
     dest: /etc/mailname
     content: "{{ evolinux_fqdn }}\n"
-    force: yes
+    force: true
   when: evolinux_hostname_mailname | bool
 
 # Override facts

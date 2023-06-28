@@ -76,7 +76,7 @@
     src: mytop.j2
     dest: /root/.mytop
     mode: "0600"
-    force: yes
+    force: true
   tags:
     - mytop
     - mysql
@@ -87,7 +87,7 @@
     src: mytop.bullseye.j2
     dest: /root/.mytop
     mode: "0600"
-    force: yes
+    force: true
   tags:
     - mytop
     - mysql
@@ -220,7 +220,7 @@
     src: save_mysql_processlist.sh
     dest: "{{ _mysql_scripts_dir }}/save_mysql_processlist.sh"
     mode: "0755"
-    force: no
+    force: false
   tags:
     - mysql
 
@@ -229,7 +229,7 @@
     src: mysql_connections.sh
     dest: "{{ _mysql_scripts_dir }}/mysql_connections"
     mode: "0755"
-    force: no
+    force: false
   tags:
     - mysql
 
@@ -238,7 +238,7 @@
     src: mysql-queries-killer.sh
     dest: "{{ _mysql_scripts_dir }}/mysql-queries-killer.sh"
     mode: "0755"
-    force: no
+    force: false
   tags:
     - mysql
 
@@ -247,6 +247,6 @@
     src: evomariabackup.sh
     dest: "{{ _mysql_scripts_dir }}/evomariabackup"
     mode: "0755"
-    force: no
+    force: false
   tags:
     - mysql

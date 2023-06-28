@@ -40,7 +40,7 @@
     src: nginx/evolinux-defaults.conf
     dest: /etc/nginx/conf.d/z-evolinux-defaults.conf
     mode: "0640"
-    # force: yes
+    # force: true
   notify: reload nginx
   tags:
     - nginx
@@ -57,7 +57,7 @@
     group: www-data
     directory_mode: "0640"
     mode: "0640"
-    force: no
+    force: false
   notify: reload nginx
   tags:
     - nginx
@@ -74,7 +74,7 @@
     group: www-data
     directory_mode: "0640"
     mode: "0640"
-    force: no
+    force: false
   notify: reload nginx
   tags:
     - nginx
@@ -88,7 +88,7 @@
     group: www-data
     directory_mode: "0640"
     mode: "0640"
-    force: no
+    force: false
   notify: reload nginx
   tags:
     - nginx
@@ -128,7 +128,7 @@
     src: /etc/nginx/sites-available/evolinux-default.conf
     dest: /etc/nginx/sites-enabled/default
     state: link
-    force: yes
+    force: true
   notify: reload nginx
   when: nginx_evolinux_default_enabled | bool
   tags:

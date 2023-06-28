@@ -18,7 +18,7 @@
     mode: "0700"
     owner: root
     group: root
-    force: yes
+    force: true
 
 - name: Create /etc/evolinux
   ansible.builtin.file:
@@ -35,7 +35,7 @@
     mode: "0600"
     owner: root
     group: root
-    force: no
+    force: false
 
 - name: Cron.d is present
   ansible.builtin.file:

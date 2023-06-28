@@ -4,7 +4,7 @@
   ansible.builtin.file:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
-    force: yes
+    force: true
     state: link
   loop:
     - { src: "{{ php_cli_defaults_ini_file }}", dest: "/etc/php/7.4/cli/conf.d/z-evolinux-defaults.ini" }
@@ -19,7 +19,7 @@
   ansible.builtin.file:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
-    force: yes
+    force: true
     state: link
   loop:
     - { src: "{{ php_apache_defaults_ini_file }}", dest: "/etc/php/7.4/apache2/conf.d/z-evolinux-defaults.ini" }
@@ -36,7 +36,7 @@
   ansible.builtin.file:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
-    force: yes
+    force: true
     state: link
   loop:
     - { src: "{{ php_fpm_defaults_ini_file }}", dest: "/etc/php/7.4/fpm/conf.d/z-evolinux-defaults.ini" }

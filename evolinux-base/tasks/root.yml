@@ -27,7 +27,7 @@
   ansible.builtin.copy:
     content: ""
     dest: "/root/.bash_history"
-    force: no
+    force: false
   when: evolinux_root_bash_history | bool
 
 - name: Set umask in /root/.profile
@@ -47,7 +47,7 @@
   ansible.builtin.copy:
     src: root/gitconfig
     dest: "/root/.gitconfig"
-    force: no
+    force: false
   when: evolinux_root_gitconfig | bool
 
 - name: Is .bash_history append-only

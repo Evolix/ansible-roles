@@ -24,7 +24,7 @@
   ansible.builtin.template:
     src: logrotate_stretch.j2
     dest: /etc/logrotate.d/{{ squid_daemon_name }}
-    force: yes
+    force: true
   when: squid_logrotate_md5.rc == 0
   tags:
     - squid

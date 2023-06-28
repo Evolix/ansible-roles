@@ -60,7 +60,7 @@
     src: opendkim-evolix.conf
     dest: /etc/opendkim-evolix.conf
     mode: "0644"
-    force: yes
+    force: true
   notify: restart opendkim
   tags:
   - opendkim
@@ -72,7 +72,7 @@
     owner: opendkim
     group: opendkim
     mode: "0750"
-    force: yes
+    force: true
   tags:
   - opendkim
 

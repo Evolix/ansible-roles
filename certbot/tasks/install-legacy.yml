@@ -16,7 +16,7 @@
     mode: '0755'
     owner: root
     group: root
-    force: yes
+    force: true
   notify: install letsencrypt-auto
 
 - name: Check certbot script
@@ -49,7 +49,7 @@
   ansible.builtin.copy:
     src: cron_jessie
     dest: /etc/cron.d/certbot
-    force: yes
+    force: true
   when: certbot_custom_crontab | bool
 
 - name: disable self-upgrade

@@ -12,4 +12,4 @@
     src: /usr/local/sbin/dump-server-state
     dest: /usr/local/sbin/backup-server-state
     state: link
-    force: yes
+    force: true

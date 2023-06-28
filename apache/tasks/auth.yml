@@ -7,7 +7,7 @@
     owner: root
     group: root
     mode: "0640"
-    force: no
+    force: false
   tags:
     - apache
 
@@ -30,7 +30,7 @@
     owner: root
     group: root
     mode: "0640"
-    force: no
+    force: false
   notify: reload apache
   tags:
     - apache

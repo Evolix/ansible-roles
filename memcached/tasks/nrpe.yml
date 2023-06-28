@@ -25,7 +25,7 @@
     ansible.builtin.copy:
       src: check_memcached_instances.sh
       dest: /usr/local/lib/nagios/plugins/check_memcached_instances
-      force: yes
+      force: true
       mode: "0755"
       owner: root
       group: root

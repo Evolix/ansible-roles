@@ -12,7 +12,7 @@
   ansible.builtin.template:
     src: apt/nginx_preferences
     dest: /etc/apt/preferences.d/999-nginx
-    force: yes
+    force: true
     mode: "0640"
   register: nginx_apt_preferences
   tags:

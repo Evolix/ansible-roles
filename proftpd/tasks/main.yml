@@ -76,7 +76,7 @@
   ansible.builtin.copy:
     src: vpasswd
     dest: /etc/proftpd/vpasswd
-    force: no
+    force: false
   notify: restart proftpd
   tags:
     - proftpd

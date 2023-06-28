@@ -12,7 +12,7 @@
   ansible.builtin.copy:
     src: postgresql.asc
     dest: "{{ apt_keyring_dir }}/postgresql.asc"
-    force: yes
+    force: true
     mode: "0644"
     owner: root
     group: root

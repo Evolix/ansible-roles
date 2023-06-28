@@ -46,7 +46,7 @@
   ansible.builtin.copy:
     src: whitelist-evolinux.conf
     dest: /etc/squid3/whitelist.conf
-    force: no
+    force: false
   notify: "reload squid3"
   when: ansible_distribution_release == "jessie"
 
@@ -69,14 +69,14 @@
     dest: /etc/squid/evolinux-whitelist-custom.conf
     content: |
       # Put customized values here.
-    force: no
+    force: false
   when: ansible_distribution_major_version is version('9', '>=')
 
 - name: "evolinux acl for local proxy (Debian 9 or later)"
   ansible.builtin.template:
     src: evolinux-acl.conf.j2
     dest: /etc/squid/evolinux-acl.conf
-    force: no
+    force: false
   notify: "reload squid"
   when:
     - squid_localproxy_enable | bool
@@ -87,7 +87,7 @@
     dest: /etc/squid/evolinux-acl.conf
     content: |
       # Put customized values here.
-    force: no
+    force: false
   when:
     - not (squid_localproxy_enable | bool)
     - ansible_distribution_major_version is version('9', '>=')
@@ -96,7 +96,7 @@
   ansible.builtin.copy:
     src: evolinux-httpaccess.conf
     dest: /etc/squid/evolinux-httpaccess.conf
-    force: no
+    force: false
   notify: "reload squid"
   when:
     - squid_localproxy_enable | bool
@@ -107,7 +107,7 @@
     dest: /etc/squid/evolinux-httpaccess.conf
     content: |
       # Put customized values here.
-    force: no
+    force: false
   when:
     - not (squid_localproxy_enable | bool)
     - ansible_distribution_major_version is version('9', '>=')
@@ -116,7 +116,7 @@
   ansible.builtin.template:
     src: evolinux-custom.conf.j2
     dest: /etc/squid/evolinux-custom.conf
-    force: no
+    force: false
   notify: "reload squid"
   when:
     - squid_localproxy_enable | bool
@@ -127,7 +127,7 @@
     dest: /etc/squid/evolinux-custom.conf
     content: |
       # Put customized values here.
-    force: no
+    force: false
   when:
     - not (squid_localproxy_enable | bool)
     - ansible_distribution_major_version is version('9', '>=')

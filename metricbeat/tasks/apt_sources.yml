@@ -9,7 +9,7 @@
   ansible.builtin.copy:
     src: elastic.asc
     dest: "{{ apt_keyring_dir }}/elastic.asc"
-    force: yes
+    force: true
     mode: "0644"
     owner: root
     group: root

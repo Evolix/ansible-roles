@@ -47,7 +47,7 @@
       ansible.builtin.copy:
         src: hwraid.le-vert.net.asc
         dest: "{{ apt_keyring_dir }}/hwraid.le-vert.net.asc"
-        force: yes
+        force: true
         mode: "0644"
         owner: root
         group: root

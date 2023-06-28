@@ -20,7 +20,7 @@
     src: default_www/index.html.j2
     dest: /var/www/index.html
     mode: "0644"
-    force: no
+    force: false
   when: evolinux_default_www_files | bool
 
 # SSL cert

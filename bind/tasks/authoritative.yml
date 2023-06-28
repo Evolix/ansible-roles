@@ -7,5 +7,5 @@
     owner: bind
     group: bind
     mode: "0644"
-    force: yes
+    force: true
   notify: restart bind

@@ -10,7 +10,7 @@
     owner: rabbitmq
     group: rabbitmq
     mode: "0600"
-    force: no
+    force: false
 
 - name: Create rabbitmq.config
   ansible.builtin.copy:
@@ -19,7 +19,7 @@
     owner: rabbitmq
     group: rabbitmq
     mode: "0600"
-    force: no
+    force: false
 
 - name: Adjust ulimit
   ansible.builtin.lineinfile:

@@ -31,7 +31,7 @@
       <Directory /usr/share/awstats/icon/>
         Require all granted
       </Directory>
-    force: no
+    force: false
     mode: "0644"
 
 - name: Enable apache awstats-icon configuration

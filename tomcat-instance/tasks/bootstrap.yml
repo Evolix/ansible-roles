@@ -21,7 +21,7 @@
     mode: "0660"
     owner: "{{ tomcat_instance_name }}"
     group: "{{ tomcat_instance_name }}"
-    force: no
+    force: false
 
 - name: Templating of server.xml file
   ansible.builtin.template:
@@ -30,7 +30,7 @@
     mode: "0660"
     owner: "{{ tomcat_instance_name }}"
     group: "{{ tomcat_instance_name }}"
-    force: no
+    force: false
 
 - name: Copy config file
   ansible.builtin.copy:
@@ -39,6 +39,6 @@
     mode: "0660"
     owner: "{{ tomcat_instance_name }}"
     group: "{{ tomcat_instance_name }}"
-    force: no
+    force: false
   with_fileglob:
     - "tomcat{{ tomcat_version }}/*"

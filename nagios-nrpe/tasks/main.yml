@@ -30,7 +30,7 @@
     dest: /etc/nagios/nrpe.d/evolix.cfg
     group: nagios
     mode: "0640"
-    force: no
+    force: false
   notify: restart nagios-nrpe-server
   tags:
     - nagios-nrpe

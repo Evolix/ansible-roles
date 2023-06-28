@@ -32,7 +32,7 @@
     dest: "{{ php_fpm_custom_ini_file }}"
     content: |
       ; Put customized values here.
-    force: no
+    force: false
   notify: "restart {{ php_fpm_service_name }}"
 
 - name: Set default PHP FPM values
@@ -66,7 +66,7 @@
       ; Put customized values here.
       ; default_charset = "ISO-8859-1"
     mode: "0644"
-    force: no
+    force: false
   notify: "restart {{ php_fpm_service_name }}"
 
 - name: "Set custom values for PHP to enable Symfony"

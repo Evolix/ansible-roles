@@ -20,7 +20,7 @@
   ansible.builtin.copy:
     src: pub_evolix.asc
     dest: "{{ apt_keyring_dir }}/pub_evolix.asc"
-    force: yes
+    force: true
     mode: "0644"
     owner: root
     group: root
@@ -31,7 +31,7 @@
   ansible.builtin.template:
     src: evolix_public.list.j2
     dest: /etc/apt/sources.list.d/evolix_public.list
-    force: yes
+    force: true
     mode: "0640"
   register: apt_evolix_public
   tags:

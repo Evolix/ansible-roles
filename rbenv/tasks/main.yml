@@ -33,7 +33,7 @@
     dest: '{{ rbenv_root }}'
     version: '{{ rbenv_version }}'
     accept_hostkey: yes
-    force: yes
+    force: true
   become_user: "{{ username }}"
   become: yes
   tags:
@@ -67,7 +67,7 @@
     dest: '{{ rbenv_root }}/plugins/{{ item.name }}'
     version: '{{ item.version }}'
     accept_hostkey: yes
-    force: yes
+    force: true
   loop: "{{ rbenv_plugins }}"
   become_user: "{{ username }}"
   become: yes

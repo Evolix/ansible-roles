@@ -9,7 +9,7 @@
   ansible.builtin.copy:
     src: jenkins.asc
     dest: "{{ apt_keyring_dir }}/jenkins.asc"
-    force: yes
+    force: true
     mode: "0644"
     owner: root
     group: root

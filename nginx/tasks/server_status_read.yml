@@ -13,7 +13,7 @@
     dest: "{{ nginx_serverstatus_suffix_file }}"
     # The last character "\u000A" is a line feed (LF), it's better to keep it
     content: "{{ nginx_serverstatus_suffix }}\u000A"
-    force: yes
+    force: true
   when: nginx_serverstatus_suffix | length > 0
 
 - name: generate random string for server-status suffix

@@ -13,7 +13,7 @@
     src: evolinux-defaults.conf.j2
     dest: /etc/monit/conf.d/z-evolinux-defaults.conf
     mode: "0640"
-    force: yes
+    force: true
   notify: restart monit
   tags:
   - monit

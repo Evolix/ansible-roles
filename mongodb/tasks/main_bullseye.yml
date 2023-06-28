@@ -10,7 +10,7 @@
   ansible.builtin.copy:
     src: "server-{{ mongodb_version }}.asc"
     dest: "{{ apt_keyring_dir }}/mongodb-server-{{ mongodb_version }}.asc"
-    force: yes
+    force: true
     mode: "0644"
     owner: root
     group: root
@@ -51,7 +51,7 @@
   ansible.builtin.template:
     src: logrotate_bullseye.j2
     dest: /etc/logrotate.d/mongodb
-    force: yes
+    force: true
     backup: no
 
 - ansible.builtin.include_role:
@@ -73,7 +73,7 @@
   ansible.builtin.copy:
     src: "munin/{{ item }}"
     dest: '/usr/local/share/munin/plugins/{{ item }}'
-    force: yes
+    force: true
   loop:
     - mongo_btree
     - mongo_collections

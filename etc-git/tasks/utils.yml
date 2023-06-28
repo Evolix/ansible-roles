@@ -10,7 +10,7 @@
     src: evocommit
     dest: /usr/local/bin/evocommit
     mode: "0755"
-    force: yes
+    force: true
   tags:
     - etc-git
 
@@ -19,7 +19,7 @@
     src: ansible-commit
     dest: /usr/local/bin/ansible-commit
     mode: "0755"
-    force: yes
+    force: true
   tags:
     - etc-git
 
@@ -28,7 +28,7 @@
     src: etc-git-optimize
     dest: /usr/share/scripts/etc-git-optimize
     mode: "0755"
-    force: yes
+    force: true
   tags:
     - etc-git
 
@@ -37,7 +37,7 @@
     src: etc-git-status
     dest: /usr/share/scripts/etc-git-status
     mode: "0755"
-    force: yes
+    force: true
   tags:
     - etc-git
 

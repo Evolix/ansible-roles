@@ -23,7 +23,7 @@
     owner: root
     group: root
     mode: "0644"
-    force: yes
+    force: true
   notify: restart apparmor
   when: check_apparmor.rc == 0
 
@@ -47,7 +47,7 @@
     owner: root
     group: root
     mode: "0644"
-    force: yes
+    force: true
   notify:
     - reload systemd
     - restart bind
@@ -77,7 +77,7 @@
     dest: /root/chroot-bind.sh
     mode: "0700"
     owner: root
-    force: yes
+    force: true
     backup: yes
   when: bind_chroot_set | bool
 
@@ -109,7 +109,7 @@
     owner: root
     group: root
     mode: "0644"
-    force: yes
+    force: true
   notify: restart bind
 
 - ansible.builtin.include: munin.yml

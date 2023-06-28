@@ -19,7 +19,7 @@
   ansible.builtin.copy:
     src: percona.asc
     dest: "{{ apt_keyring_dir }}/percona.asc"
-    force: yes
+    force: true
     mode: "0644"
     owner: root
     group: root

@@ -21,6 +21,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* all: change syntax "force: [yes,no]" → "force [true,false]"
 * elasticsearch: improve networking configuration
 * evolinux-users: remove Stretch references in tasks that also apply to next Debian versions
 * mysql: improve shell syntax for mysql_skip script

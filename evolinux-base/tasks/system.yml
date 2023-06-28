@@ -138,7 +138,7 @@
   ansible.builtin.template:
     src: system/alert5.sysvinit.j2
     dest: /etc/init.d/alert5
-    force: no
+    force: false
     mode: "0755"
   when:
     - evolinux_system_alert5_init | bool
@@ -159,7 +159,7 @@
   ansible.builtin.template:
     src: system/alert5.sh.j2
     dest: /usr/share/scripts/alert5.sh
-    force: no
+    force: false
     mode: "0755"
   when:
     - evolinux_system_alert5_init | bool
@@ -169,7 +169,7 @@
   ansible.builtin.copy:
     src: alert5.service
     dest: /etc/systemd/system/alert5.service
-    force: yes
+    force: true
     mode: "0644"
   when:
     - evolinux_system_alert5_init | bool

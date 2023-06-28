@@ -33,7 +33,7 @@
       ; Put customized values here.
       ; default_charset = "ISO-8859-1"
     mode: "0644"
-    force: no
+    force: false
 
 - name: "Set custom values for PHP to enable Symfony"
   community.general.ini_file:

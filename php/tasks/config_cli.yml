@@ -17,10 +17,10 @@
     dest: "{{ php_cli_custom_ini_file }}"
     content: |
       ; Put customized values here.
-    force: no
+    force: false
 
 # This task is not merged with the above copy
-# because "force: no" prevents any fix after the fact
+# because "force: false" prevents any fix after the fact
 - name: "Permissions for custom php.ini for CLI"
   ansible.builtin.file:
     dest: "{{ php_cli_custom_ini_file }}"

@@ -12,7 +12,7 @@
   ansible.builtin.copy:
     src: check_redis.pl
     dest: /usr/local/lib/nagios/plugins/check_redis
-    force: yes
+    force: true
     mode: "0755"
     owner: root
     group: root
@@ -87,7 +87,7 @@
   ansible.builtin.copy:
     src: check_redis_instances.sh
     dest: /usr/local/lib/nagios/plugins/check_redis_instances
-    force: yes
+    force: true
     mode: "0755"
     owner: root
     group: root

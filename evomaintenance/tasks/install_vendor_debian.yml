@@ -40,7 +40,7 @@
     owner: root
     group: root
     mode: "{{ item.mode }}"
-    force: yes
+    force: true
     backup: yes
   loop:
     - { src: 'evomaintenance.sh', dest: '/usr/share/scripts/', mode: '0700' }

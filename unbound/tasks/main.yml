@@ -11,7 +11,7 @@
   ansible.builtin.get_url:
     url: https://www.internic.net/domain/named.cache
     dest: /etc/unbound/root.hints
-    force: yes
+    force: true
     mode: "0644"
   notify: reload unbound
   tags:

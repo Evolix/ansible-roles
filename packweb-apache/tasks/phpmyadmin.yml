@@ -15,7 +15,7 @@
   ansible.builtin.template:
     src: phpmyadmin_apt_preferences.j2
     dest: /etc/apt/preferences.d/999-phpmyadmin
-    force: yes
+    force: true
     mode: "0644"
   when: ansible_distribution_major_version is version('10', '=')
 
@@ -53,7 +53,7 @@
     dest: "{{ packweb_phpmyadmin_suffix_file }}"
     # The last character "\u000A" is a line feed (LF), it's better to keep it
     content: "{{ packweb_phpmyadmin_suffix }}\u000A"
-    force: yes
+    force: true
   when: packweb_phpmyadmin_suffix | length > 0
 
 - name: generate random string for phpmyadmin suffix

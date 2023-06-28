@@ -9,7 +9,7 @@
   ansible.builtin.copy:
     src: postgresql.service.override.conf
     dest: /etc/systemd/system/postgresql@.service.d/override.conf
-    force: yes
+    force: true
     mode: "0644"
   notify:
     - reload systemd

@@ -20,7 +20,7 @@
     url: "https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/libvirt/{{ item }}"
     dest: "/usr/local/share/munin/plugins/"
     mode: "0755"
-    force: no
+    force: false
   loop:
     - kvm_cpu
     - kvm_io
@@ -32,7 +32,7 @@
     src: "/usr/local/share/munin/plugins/{{ plugin_name }}"
     dest: "/etc/munin/plugins/{{ plugin_name }}"
     state: link
-    force: yes
+    force: true
   loop:
     - kvm_cpu
     - kvm_io
