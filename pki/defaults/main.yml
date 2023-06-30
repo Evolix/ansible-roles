@@ -1,0 +1,15 @@
+---
+pki_dir: /etc/pki         # Where to store PKI files
+
+pki_ca_cn: Null           # Certificate Authority Commmon Name
+pki_ca_host: Null         # Host where the CA is located
+pki_ca_filename: Null     # Filename used to created CA related file
+pki_ca_password: Null     # Password for the key of the CA
+
+
+# Private variable, please don't customize them
+pki_ca_key: "{{ pki_dir }}/private/{{ pki_ca_filename | mandatory }}.key"
+# pki_ca_csr: "{{ pki_dir }}/certs/{{ pki_ca_filename | mandatory }}.crt"
+pki_ca_crt: "{{ pki_dir }}/certs/{{ pki_ca_filename | mandatory }}.crt"
+pki_certificate_crt: "{{ pki_dir }}/certs/{{ ansible_fqdn }}.crt"
+pki_certificate_key: "{{ pki_dir }}/private/{{ ansible_fqdn }}.key"

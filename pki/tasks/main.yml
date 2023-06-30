@@ -1,0 +1,33 @@
+---
+
+# Prerequisites
+# TODO Python packages may need to be differente based on debian version
+- name: Install python 2 cryptography
+  apt:
+    name: python-cryptography
+    state: present
+  when: ansible_python['executable'] == "/usr/bin/python"
+
+- name: Install python 3 cryptography
+  apt:
+    name: python3-cryptography
+    state: present
+  when: ansible_python['executable'] == "/usr/bin/python3"
+
+- name: Creates PKI tree directories
+  file:
+    path: "{{ item }}"
+    mode: 0700
+    state: directory
+  loop:
+    - "{{ pki_dir }}/certs"
+    - "{{ pki_dir }}/private"
+
+
+# Create Certificat Authority (CA)
+- include: ca.yml
+  when: inventory_hostname == pki_ca_host and not ansible_check_mode
+
+
+# Create a certificate signed by the CA
+- include: signed_certificate.yml

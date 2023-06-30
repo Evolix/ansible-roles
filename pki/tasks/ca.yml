@@ -1,0 +1,28 @@
+---
+- name: Create private key with password protection
+  community.crypto.openssl_privatekey:
+    path: "{{ pki_ca_key }}"
+    passphrase: "{{ pki_ca_password | mandatory }}"
+    cipher: auto
+
+- name: Create certificate signing request (CSR) for CA certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ pki_ca_key }}"
+    privatekey_passphrase: "{{ pki_ca_password | mandatory }}"
+    common_name: "{{ pki_ca_cn | mandatory }}"
+    use_common_name_for_san: false
+    basic_constraints:
+      - 'CA:TRUE'
+    basic_constraints_critical: yes
+    key_usage:
+      - keyCertSign
+    key_usage_critical: true
+  register: ca_csr
+
+- name: Create self-signed CA certificate from CSR
+  community.crypto.x509_certificate:
+    path: "{{ pki_ca_crt }}"
+    csr_content: "{{ ca_csr.csr }}"
+    privatekey_path: "{{ pki_ca_key }}"
+    privatekey_passphrase: "{{ pki_ca_password | mandatory }}"
+    provider: selfsigned
