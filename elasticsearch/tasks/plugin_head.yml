@@ -32,7 +32,7 @@
       environment:
         TMPDIR: "{{ elasticsearch_plugin_head_tmp_dir }}"
   become_user: "{{ elasticsearch_plugin_head_owner }}"
-  become: yes
+  become: true
 
 - name: Elasticsearch HTTP/CORS are enabled
   ansible.builtin.lineinfile:

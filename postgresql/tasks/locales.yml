@@ -8,7 +8,7 @@
     state: present
   loop:
     - "fr_FR.UTF-8"
-  become: yes
+  become: true
   notify: reconfigure locales
 
 - name: set default locale

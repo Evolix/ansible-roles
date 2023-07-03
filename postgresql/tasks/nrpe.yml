@@ -29,7 +29,7 @@
 
 - block:
   - name: Create nrpe user
-    become: yes
+    become: true
     become_user: postgres
     community.postgresql.postgresql_user:
       name: nrpe

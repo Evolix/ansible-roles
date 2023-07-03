@@ -35,7 +35,7 @@
     accept_hostkey: yes
     force: true
   become_user: "{{ username }}"
-  become: yes
+  become: true
   tags:
     - rbenv
 
@@ -48,7 +48,7 @@
     create: yes
   loop: '{{ rbenv_default_gems }}'
   become_user: "{{ username }}"
-  become: yes
+  become: true
   tags:
     - rbenv
 
@@ -57,7 +57,7 @@
     path: '{{ rbenv_root }}/plugins'
     state: directory
   become_user: "{{ username }}"
-  become: yes
+  become: true
   tags:
     - rbenv
 
@@ -70,7 +70,7 @@
     force: true
   loop: "{{ rbenv_plugins }}"
   become_user: "{{ username }}"
-  become: yes
+  become: true
   tags:
     - rbenv
 
@@ -82,7 +82,7 @@
       export PATH="{{ rbenv_root }}/bin:$PATH"
       eval "$(rbenv init -)"
   become_user: "{{ username }}"
-  become: yes
+  become: true
   tags:
     - rbenv
 
@@ -94,7 +94,7 @@
   check_mode: False
   register: ruby_installed
   become_user: "{{ username }}"
-  become: yes
+  become: true
   tags:
     - rbenv
 
@@ -103,7 +103,7 @@
     cmd: /bin/bash -lc "TMPDIR=~/tmp rbenv install {{ rbenv_ruby_version }}"
   when: ruby_installed.rc != 0
   become_user: "{{ username }}"
-  become: yes
+  become: true
   tags:
     - rbenv
 
@@ -115,7 +115,7 @@
   failed_when: False
   check_mode: False
   become_user: "{{ username }}"
-  become: yes
+  become: true
   tags:
     - rbenv
 
@@ -124,6 +124,6 @@
     cmd: /bin/bash -lc "rbenv global {{ rbenv_ruby_version }} && rbenv rehash"
   when: ruby_selected.rc != 0
   become_user: "{{ username }}"
-  become: yes
+  become: true
   tags:
     - rbenv
