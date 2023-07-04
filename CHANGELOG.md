@@ -27,6 +27,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * all: change syntax "become: [yes,no]" → "become: [true,false]"
 * elasticsearch: improve networking configuration
 * evolinux-users: remove Stretch references in tasks that also apply to next Debian versions
+* minifirewall: upstream release 23.07
 * mysql: improve shell syntax for mysql_skip script
 * pbbouncer: minor fixes
 * varnish: Allow the systemd template to be overriden with a template outside of the role
