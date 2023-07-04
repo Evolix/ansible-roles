@@ -47,4 +47,4 @@ fail2ban_roundcube_maxretry: 5
 fail2ban_roundcube_bantime: "{{ fail2ban_default_bantime }}"
 fail2ban_roundcube_findtime: "{{ fail2ban_default_findtime }}"
 
-dbpurgeage_default: "86400 second"
+fail2ban_dbpurgeage_default: "86400 second"

@@ -14,12 +14,12 @@
 
 - name:
   ansible.builtin.set_fact:
-    dbpurgeage_default : "{{ dbpurgeage.stdout }}"
+    fail2ban_dbpurgeage_default : "{{ dbpurgeage.stdout }}"
   when: dbpurgeage.stdout | regex_search("^\\d+\w+$")
 
 - name:
   ansible.builtin.set_fact:
-    dbpurgeage_default : "{{ dbpurgeage.stdout }} second"
+    fail2ban_dbpurgeage_default : "{{ dbpurgeage.stdout }} second"
   when: dbpurgeage.stdout | regex_search("^\\d+$")
 
 - name: Add crontab

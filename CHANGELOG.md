@@ -19,6 +19,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * docker-host: added var for user namespace setting
 * dovecot: fix old_stats plugin for Dovecot 2.3.
 * dovecot: add Munin plugins dovecot1 and dovecot_stats (patched)
+* fail2ban: add default variable fail2ban_dbpurgeage_default
 
 ### Changed
 
