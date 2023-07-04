@@ -29,6 +29,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * mysql: improve shell syntax for mysql_skip script
 * pbbouncer: minor fixes
 * varnish: Allow the systemd template to be overriden with a template outside of the role
+* postfix (packmail or when postfix_slow_transport_include is True): change `minimal_backoff_time` from 2h to 15m (see HowtoPostfix)
 
 ### Fixed
 

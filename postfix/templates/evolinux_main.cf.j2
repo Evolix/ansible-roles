@@ -24,7 +24,7 @@ smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_una
 
 {% if postfix_slow_transport_include == True %}
 # Slow transports configuration
-minimal_backoff_time = 2h
+minimal_backoff_time = 15m
 maximal_backoff_time = 6h
 maximal_queue_lifetime = 4d
 queue_run_delay = 100s
