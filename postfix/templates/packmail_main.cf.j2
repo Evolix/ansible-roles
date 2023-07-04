@@ -410,11 +410,15 @@ broken_sasl_auth_clients = yes
 smtpd_sasl_type = dovecot
 smtpd_sasl_path = private/auth-client
 
-# Amavis and OpenDKIM
+# Amavis
 content_filter = smtp-amavis:[127.0.0.1]:10024
+smtp-amavis_destination_concurrency_failed_cohort_limit = 0
+smtp-amavis_destination_concurrency_negative_feedback = 0
+smtp-amavis_destination_concurrency_limit = 2
+
+# OpenDKIM
 smtpd_milters = inet:[127.0.0.1]:8891
 non_smtpd_milters = inet:[127.0.0.1]:8891
-smtp-amavis_destination_concurrency_failed_cohort_limit = 0
 
 {% if postfix_slow_transport_include == True %}
 # Slow transports configuration
