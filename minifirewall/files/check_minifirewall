@@ -106,6 +106,7 @@ main() {
           fi
         fi
       else
+        append_details "minifirewall is stopped"
         summary_critical "minifirewall is stopped, but enabled in alert5 or systemd"
       fi
     else
@@ -130,10 +131,6 @@ main() {
       summary_ok "minifirewall is stopped and alert5 is disabled"
     fi
   fi
-
-  [ "${return}" -ge 0 ] && header="OK"
-  [ "${return}" -ge 1 ] && header="WARNING"
-  [ "${return}" -ge 2 ] && header="CRITICAL"
 
   printf "%s\n\n%s\n" "${summary}" "${details}"
 

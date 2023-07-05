@@ -111,6 +111,10 @@ STATE_FILE_DIFF='/var/run/minifirewall_state_diff'
 ACTIVE_CONFIG='/var/run/minifirewall_active_config'
 ACTIVE_CONFIG_DIFF="${ACTIVE_CONFIG}.diff"
 
+SAFETY_LOCK='/var/run/minifirewall_safety.lock'
+SAFETY_OUTPUT='/var/run/minifirewall_safety.out'
+SAFETY_TIMER=30
+
 LOGGER_BIN=$(command -v logger)
 
 # No colors by default
@@ -123,8 +127,10 @@ CYAN=''
 WHITE=''
 BOLD=''
 RESET=''
+
 # check if stdout is a terminal...
 if [ -t 1 ]; then
+    INTERACTIVE=1
 
     # see if it supports colors...
     ncolors=$(tput colors)
@@ -141,7 +147,10 @@ if [ -t 1 ]; then
         BOLD=$(tput bold)
         RESET='\e[m'
     fi
+else
+    INTERACTIVE=0
 fi
+readonly INTERACTIVE
 
 ## pseudo dry-run :
 ## Uncomment and call these functions instead of the real iptables and ip6tables commands
@@ -155,6 +164,9 @@ fi
 # }
 ## Beware that commands executed from included files are not modified by this trick.
 
+is_interactive() {
+    test "${INTERACTIVE}" = "1"
+}
 remove_colors() {
     sed -r 's/\x1B\[(;?[0-9]{1,3})+[mGK]//g'
 }
@@ -1143,6 +1155,58 @@ reset() {
     syslog_info "reset"
     printf "${GREEN}${BOLD}${PROGNAME} reset${RESET}\n"
 }
+
+stop_if_locked() {
+    count=0
+
+    while [ ${count} -lt ${SAFETY_TIMER} ] && [ -f "${SAFETY_LOCK}" ]; do
+        count=$(( count + 1 ))
+        sleep 1
+    done
+
+    if [ -f "${SAFETY_LOCK}" ]; then
+        syslog_error "safety lock is still here after ${SAFETY_TIMER} seconds, we need to stop"
+
+        stop
+
+        syslog_info "remove safety lock"
+        rm -f "${SAFETY_LOCK}"
+    else
+        syslog_info "safety lock is not there anymore, life goes on"
+    fi
+}
+
+safe_start() {
+    # start the firewall
+    start
+
+    # create the lock file
+    syslog_info "add safety lock"
+    touch "${SAFETY_LOCK}"
+
+    # run the special background command
+    nohup "${0}" stop-if-locked > "${SAFETY_OUTPUT}" 2>&1 &
+
+    if is_interactive; then
+        syslog_info "safe-restart in interactive mode ; if safety lock (${SAFETY_LOCK}) is not removed in the next ${SAFETY_TIMER} seconds, minifirewall will be stopped."
+        # Ask for input
+        confirm_default="I'm locked out, please stop the firewall"
+        # printf "If the restart has locked you out you might see this but you shouldn't be able to type anything.\n"
+        printf "Minifirewall will be stopped in ${SAFETY_TIMER} seconds if you do nothing.\n"
+        printf "Remove \`${SAFETY_LOCK}' or type anything to keep minifirewall started: "
+
+        read -r confirm
+
+        if [ ! -f "${SAFETY_LOCK}" ]; then
+            printf "Safety lock is not there anymore.\nYou've probably been rescued by the safety checks.\n"
+        elif [ "${confirm}" != "${confirm_default}" ]; then
+            rm -f "${SAFETY_LOCK}" && printf "OK. Safety lock is removed.\n"
+        fi
+    else
+        syslog_info "safe-restart in non-interactive mode ; if safety lock (${SAFETY_LOCK}) is not removed in the next ${SAFETY_TIMER} seconds, minifirewall will be stopped."
+    fi
+}
+
 show_version() {
     cat <<END
 ${PROGNAME} version ${VERSION}
@@ -1169,8 +1233,10 @@ Usage: ${PROGNAME} [COMMAND]
 
 Commands
  start                  Start minifirewall
+ safe-start             Start minifirewall, with baground safety checks
  stop                   Stop minifirewall
  restart                Stop then start minifirewall
+ safe-restart           Restart minifirewall, with background safety checks
  status                 Print minifirewall status
  reset                  Reset iptables tables
  check-active-config    Check if active config is up-to-date with stored config
@@ -1185,6 +1251,13 @@ case "${1:-''}" in
         check_unpersisted_state
 
         start
+    ;;
+
+    safe-start)
+        source_configuration
+        check_unpersisted_state
+
+        safe_start
     ;;
 
     stop)
@@ -1214,6 +1287,20 @@ case "${1:-''}" in
 
         stop
         start
+    ;;
+
+    safe-restart)
+        source_configuration
+        check_unpersisted_state
+
+        stop
+        safe_start
+    ;;
+
+    stop-if-locked)
+        source_configuration
+
+        stop_if_locked
     ;;
 
     check-active-config)
