@@ -13,7 +13,7 @@
 
 - name: Create plugin directory
   ansible.builtin.file:
-    name: /usr/local/share/munin/
+    name: /usr/local/lib/munin/
     state: directory
     mode: "0755"
   tags:
@@ -21,7 +21,7 @@
 
 - name: Create plugin directory
   ansible.builtin.file:
-    name: /usr/local/share/munin/plugins/
+    name: /usr/local/lib/munin/plugins/
     state: directory
     mode: "0755"
   tags:
@@ -30,7 +30,7 @@
 - name: Copy redis munin plugin
   ansible.builtin.copy:
     src: munin_redis
-    dest: /usr/local/share/munin/plugins/redis_
+    dest: /usr/local/lib/munin/plugins/redis_
     mode: "0755"
   notify: restart munin-node
   tags:
@@ -38,7 +38,7 @@
 
 - name: Enable redis munin plugin
   ansible.builtin.file:
-    src: /usr/local/share/munin/plugins/redis_
+    src: /usr/local/lib/munin/plugins/redis_
     dest: "/etc/munin/plugins/{{ redis_instance_name }}_redis_{{ plugin_name }}"
     state: link
   loop:
