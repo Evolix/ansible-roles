@@ -6,6 +6,13 @@
   register: find_logrotate
   check_mode: no
 
+- name: "Is userlogpurge active ?"
+  ansible.builtin.find:
+    paths: ["/etc/cron.weekly", "/etc/cron.daily"]
+    patterns: ["userlogpurge"]
+  register: find_logpurge
+  check_mode: no
+
 - name: "Update userlogrotate"
   ansible.builtin.copy:
     src: userlogrotate
@@ -13,6 +20,14 @@
     mode: "0755"
   loop: "{{ find_logrotate.files }}"
   when: find_logrotate.files | length>0
+
+- name: "Update userlogpurge"
+  ansible.builtin.copy:
+    src: userlogpurge
+    dest: "{{ item.path }}"
+    mode: "0755"
+  loop: "{{ find_logpurge.files }}"
+  when: find_logpurge.files | length>0
 
 - name: "Install userlogrotate (jessie)"
   ansible.builtin.copy:
@@ -31,4 +46,12 @@
   when:
     - ansible_distribution_major_version is version('9', '>=')
     - find_logrotate.files | length==0
+
+- name: "Install userlogpurge"
+  ansible.builtin.copy:
+    src: userlogpurge
+    dest: /etc/cron.weekly/userlogpurge.disabled
+    mode: "0755"
+  when:
+    - find_logpurge.files | length==0
 
