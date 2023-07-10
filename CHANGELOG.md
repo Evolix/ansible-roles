@@ -39,6 +39,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Fixed
 
 * elasticsearch: comment the Xlog:gc line instead of changing it completely
+* fail2ban: Fix cron fail2ban_dbpurge (should be bash instead of sh)
 * nagios-nrpe: remount /usr **after** installing the packages
 * packweb-apache,nagios-nrpe: add missing task and config for PHP 8.2 container
 * potsfix: add missing `localhost.$mydomain` to mydestination
