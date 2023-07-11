@@ -35,6 +35,12 @@
   tags:
     - packages
 
+- name: Install HPE Agentless Management Service (amsd)
+  ansible.builtin.apt:
+    name: amsd
+  tags:
+    - packages
+
 # NOTE: check_hpraid cron use check_hpraid from nagios-nrpe role
 # So, if nagios-nrpe role is not installed it will not work
 - name: Install and configure check_hpraid cron (HP gen >=10)

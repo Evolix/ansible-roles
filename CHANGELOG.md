@@ -13,13 +13,14 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
-* userlogrotate: rotate also php.log.
+* docker-host: added var for user namespace setting
+* dovecot: add Munin plugins dovecot1 and dovecot_stats (patched)
+* dovecot: fix old_stats plugin for Dovecot 2.3.
+* evolinux: Install HPE Agentless Management Service (amsd)
+* fail2ban: add default variable fail2ban_dbpurgeage_default
 * nagios-nrpe: add a NRPE check-local command with completion.
 * policy_pam: New role allowing to manage password policy with pam_pwquality & pam_pwhistory
-* docker-host: added var for user namespace setting
-* dovecot: fix old_stats plugin for Dovecot 2.3.
-* dovecot: add Munin plugins dovecot1 and dovecot_stats (patched)
-* fail2ban: add default variable fail2ban_dbpurgeage_default
+* userlogrotate: rotate also php.log.
 
 ### Changed
 
