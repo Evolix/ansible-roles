@@ -1,12 +1,12 @@
 server {
-    listen [::]:80;
-    listen 80;
+    listen [::]:80 default_server;
+    listen 80 default_server;
     server_name {{ ansible_fqdn }};
 
     return 301 https://{{ ansible_fqdn }}$request_uri;
 }
 server {
-    listen 443 ssl;
+    listen 443 ssl default_server;
     # listen [::]:80 default_server ipv6only=on; ## listen for ipv6
 
     ssl_certificate /etc/ssl/certs/{{ ansible_fqdn }}.crt;
