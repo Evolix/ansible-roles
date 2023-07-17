@@ -1,0 +1,14 @@
+---
+
+- name: "Customize common bashrc"
+  ansible.builtin.lineinfile:
+    dest: /etc/bash.bashrc
+    line: "{{ item }}"
+    create: yes
+    state: present
+  loop:
+    - "export HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoreboth,erasedups"
+    - "export HISTSIZE=65535"
+    - "export HISTTIMEFORMAT=\"%c : \""
+    - "shopt -s histappend"
+    - "PROMPT_COMMAND=\"history -a;${PROMPT_COMMAND}\""
