@@ -52,6 +52,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * potsfix: add missing `localhost.$mydomain` to mydestination
 * nagios-nrpe: check\_ssl\_local now has an output that nrpe can understand when it isn't OK
 * nginx: set default server directive in default vhost
+* opendkim: update apt cache before install
 
 ### Removed
 
