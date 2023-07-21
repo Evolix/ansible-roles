@@ -83,10 +83,11 @@
 
 - name: disable root login (Debian >= 12)
   ansible.builtin.lineinfile:
-    path: /etc/ssh/sshd_config.d/z-evolinux-defaults.conf
+    path: /etc/ssh/sshd_config.d/z-evolinux-users.conf
     line: "PermitRootLogin no"
     create: yes
     validate: '/usr/sbin/sshd -t -f %s'
+    insertbefore: "BOF"
   notify: reload sshd
   when:
     - evolinux_root_disable_ssh | bool
