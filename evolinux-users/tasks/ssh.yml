@@ -92,6 +92,6 @@
   when:
     - evolinux_root_disable_ssh | bool
     - ansible_distribution_major_version is version('12', '>=')
-    - grep_permitrootlogin_ssh.rc != 1
+    - grep_permitrootlogin_ssh.rc == 1
 
 - ansible.builtin.meta: flush_handlers
