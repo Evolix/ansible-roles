@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# Script utilitaire pour tester et recharger facilement un domaine dans Bind
+# Usage : reload-zone <DOMAINE>
+#
+# TODO:
+# - vérifier le serial
+# - prendre en charge plusieurs 
+# - ajouter le script dans le role bind
+
+named-checkzone "$1" /etc/bind/db."$1" && rndc reload "$1"
+

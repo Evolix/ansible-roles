@@ -27,6 +27,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * fail2ban: add default variable fail2ban_dbpurgeage_default
 * userlogrotate: add a userlogpurge script disabled by default
 * evolinux-base: configure bashrc for all users
+* bind: Add reload-zone helper
 
 ### Changed
 
