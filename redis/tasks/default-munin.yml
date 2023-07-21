@@ -13,14 +13,6 @@
 
 - name: Create plugin directory
   ansible.builtin.file:
-    name: /usr/local/lib/munin/
-    state: directory
-    mode: "0755"
-  tags:
-    - redis
-
-- name: Create plugin directory
-  ansible.builtin.file:
     name: /usr/local/lib/munin/plugins/
     state: directory
     mode: "0755"
@@ -63,19 +55,17 @@
   changed_when: False
   check_mode: no
 
-- name: Add redis password for munin (if no more than 1 config block)
-  community.general.ini_file:
-    dest: /etc/munin/plugin-conf.d/munin-node
-    section: 'redis_*'
-    option: env.password
-    value: '{{ redis_password }}'
-  notify: restart munin-node
+- name: Configure redis plugin for munin
+  ansible.builtin.template:
+    src: templates/munin-plugin-default.conf.j2
+    dest: '/etc/munin/plugin-conf.d/z-evolinux-redis'
+    mode: "0740"
   when:
     - redis_password is not none
     - redis_password | length > 0
     - (munin_redis_blocs_in_config.stdout | int) <= 1
+  notify: restart munin-node
   tags: redis
-
 
 - name: Warn if multiple instance in munin-plugins configuration
   ansible.builtin.debug:
