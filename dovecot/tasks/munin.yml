@@ -44,25 +44,11 @@
         mode: "0755"
       tags: dovecot_stats_
 
-    - name: Sections dovecot1 and dovecot_stats_ are in /etc/munin/plugin-conf.d/zzz-evolinux
-      ansible.builtin.lineinfile:
-        path: /etc/munin/plugin-conf.d/zzz-evolinux
-        regex: '\[{{ item }}\]'
-        line: '[{{ item }}]'
-        create: yes
+    - name: Copy Munin config
+      ansible.builtin.copy:
+        src: z-evolinux-dovecot.conf
+        dest: /etc/munin/plugin-conf.d/z-evolinux-dovecot
         mode: '0644'
-      loop: ['dovecot1', 'dovecot_stats_*']
-      notify: restart munin-node
-
-    - name: User root is set for plugins in /etc/munin/plugin-conf.d/zzz-evolinux
-      ansible.builtin.lineinfile:
-        path: /etc/munin/plugin-conf.d/zzz-evolinux
-        regex: '^[[:blank:]]*user root[[:blank:]]*$'
-        insertafter: '\[{{ item }}\]'
-        line: 'user root'
-        create: yes
-        mode: '0644'
-      loop: ['dovecot1', 'dovecot_stats_*']
       notify: restart munin-node
 
     - name: Enable dovecot1 plugin
