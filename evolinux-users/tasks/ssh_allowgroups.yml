@@ -36,7 +36,7 @@
 
 - name: "Add AllowGroups sshd directive with '{{ evolinux_ssh_group }}'"
   ansible.builtin.lineinfile:
-    path: /etc/ssh/sshd_config.d/z-evolinux-users
+    path: /etc/ssh/sshd_config.d/z-evolinux-users.conf
     line: "AllowGroups {{ evolinux_ssh_group }}"
     create: yes
     validate: '/usr/sbin/sshd -t -f %s'
