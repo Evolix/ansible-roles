@@ -6,7 +6,7 @@ if ! test -f /usr/lib/nagios/plugins/check_nrpe; then
 fi
 
 if [ -r /etc/nagios/nrpe.d/evolix.cfg ]; then
-    command=$(grep "check_$1" /etc/nagios/nrpe.d/evolix.cfg | grep -v '^[[:blank:]]*#' | tail -n1 | cut -d'=' -f2-)
+    command=$(grep "\[check_$1\]" /etc/nagios/nrpe.d/evolix.cfg | grep -v '^[[:blank:]]*#' | tail -n1 | cut -d'=' -f2-)
     echo "Command:"
     echo "    $command"
 fi
