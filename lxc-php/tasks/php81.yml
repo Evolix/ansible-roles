@@ -26,6 +26,14 @@
     - "deb [signed-by={{ lxc_apt_keyring_dir }}/sury.gpg] https://packages.sury.org/php/ bullseye main"
     - "deb [signed-by={{ lxc_apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix bullseye-php81 main"
 
+- name: "Ensure {{ lxc_rootfs }}{{ apt_keyring_dir }} directory exists"
+  file:
+    path: "{{ lxc_rootfs }}{{ apt_keyring_dir }}"
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+
 - name: copy pub.evolix.net GPG key
   ansible.builtin.copy:
     src: pub_evolix.asc

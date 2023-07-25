@@ -1,5 +1,13 @@
 ---
 
+- name: "Ensure {{ apt_keyring_dir }} directory exists"
+  file:
+    path: "{{ apt_keyring_dir }}"
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+
 - name: Add NewRelic GPG key
   ansible.builtin.copy:
     src: newrelic.asc

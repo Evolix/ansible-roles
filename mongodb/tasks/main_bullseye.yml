@@ -6,6 +6,14 @@
   - ansible_distribution_release == "bullseye"
   - mongodb_version is version('5.2', '<')
 
+- name: "Ensure {{ apt_keyring_dir }} directory exists"
+  file:
+    path: "{{ apt_keyring_dir }}"
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+
 - name: Add MongoDB GPG key
   ansible.builtin.copy:
     src: "server-{{ mongodb_version }}.asc"

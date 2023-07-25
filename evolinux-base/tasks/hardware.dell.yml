@@ -41,6 +41,14 @@
         state: absent
   when: perc_hba11_search.rc == 0
 
+- name: "Ensure {{ apt_keyring_dir }} directory exists"
+  file:
+    path: "{{ apt_keyring_dir }}"
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+
 - name: MegaCLI SAS package is present
   block:
     - name: HWRaid GPG key is installed

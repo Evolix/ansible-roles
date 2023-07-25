@@ -1,5 +1,13 @@
 ---
 
+- name: "Ensure {{ apt_keyring_dir }} directory exists"
+  file:
+    path: "{{ apt_keyring_dir }}"
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+
 - name: HPE GPG key is installed
   ansible.builtin.copy:
     src: hpePublicKey2048_key1.asc
