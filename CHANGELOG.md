@@ -43,6 +43,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * postfix (packmail or when postfix_slow_transport_include is True): change `minimal_backoff_time` from 2h to 15m (see HowtoPostfix)
 * postfix (packmail) : optimize Amavis integration
 * redis: standardize plugins path from /usr/local/share/munin/ to /usr/local/lib/munin/plugins/
+* postfix: new spam.sh update script that avoids reloading if files did not change.
 
 ### Fixed
 
