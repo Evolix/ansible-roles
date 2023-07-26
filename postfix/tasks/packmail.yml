@@ -18,11 +18,11 @@
     group: www-data
     mode: '0755'
 
-- name: make sure a service Mailgraph is running
+- name: make sure a service Mailgraph is running and enabled
   ansible.builtin.systemd:
     name: mailgraph.service
+    enabled: yes
     state: started
-    enabled: true
 
 - name: create packmail main.cf
   ansible.builtin.template:
