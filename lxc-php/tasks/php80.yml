@@ -35,7 +35,7 @@
     owner: root
     group: root
 
-- name: copy pub.evolix.net GPG key
+- name: copy pub.evolix.org GPG key
   ansible.builtin.copy:
     src: pub_evolix.asc
     dest: "{{ lxc_rootfs }}{{ lxc_apt_keyring_dir }}/pub_evolix.asc"
