@@ -25,7 +25,7 @@ function is_new {
 function download {
     cd "${tmp_dir}"
     wget -q -t 3 "${data_url}/${1}" -O "${1}"
-    wget -q -t 3 "${data_url}/${1}.md5" -O "${1}.md5"    
+    wget -q -t 3 "${data_url}/${1}.md5" -O "${1}.md5"
 }
 
 function check_integrity {
@@ -39,6 +39,7 @@ function cleanup {
     rm -f "$tmp_dir"/*.md5.new
 }
 
+# Postfix
 postfix_dbs="client.access sender.access recipient.access header_kill sa-blacklist.access spamd.cidr"
 for db in ${postfix_dbs}; do
     if is_new "${db}"; then
@@ -61,7 +62,7 @@ if is_installed spamassassin; then
     if is_new "${sa_db}"; then
         download "${sa_db}"
         if check_integrity "${sa_db}"; then
-            cp ${tmp_dir}/evolix_rules.cf /etc/spamassassin
+            cp "${tmp_dir}/${sa_db}" /etc/spamassassin/
             /etc/init.d/spamassassin reload > /dev/null
             if [ -d /etc/spamassassin/sa-update-hooks.d ]; then
                 run-parts --lsbsysinit /etc/spamassassin/sa-update-hooks.d
