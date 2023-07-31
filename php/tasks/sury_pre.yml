@@ -57,7 +57,8 @@
   ansible.builtin.template:
     src: sury.sources.j2
     dest: /etc/apt/sources.list.d/sury.sources
-    state: present
+    mode: "0644"
+    force: true
   register: sury_sources
   when: ansible_distribution_major_version is version('12', '>=')
 
