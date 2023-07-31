@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+
+Types: deb
+URIs: https://packages.sury.org/php/
+Suites: {{ ansible_distribution_release }}
+Components: main
+Signed-by: {{ apt_keyring_dir }}/sury.gpg
+Enabled: yes
