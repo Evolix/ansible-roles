@@ -3,7 +3,7 @@
 PROGNAME="dump-server-state"
 REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
 
-VERSION="22.04.3"
+VERSION="23.08"
 readonly VERSION
 
 dump_dir=
@@ -15,7 +15,7 @@ show_version() {
     cat <<END
 ${PROGNAME} version ${VERSION}
 
-Copyright 2018-2022 Evolix <info@evolix.fr>,
+Copyright 2018-2023 Evolix <info@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>,
                     Éric Morino <emorino@evolix.fr>,
                     Brice Waegeneire <bwaegeneire@evolix.fr>
@@ -23,7 +23,7 @@ Copyright 2018-2022 Evolix <info@evolix.fr>,
 
 ${REPOSITORY}
 
-${PROGNAME} comes with ABSOLUTELY NO WARRANTY.This is free software,
+${PROGNAME} comes with ABSOLUTELY NO WARRANTY. This is free software,
 and you are welcome to redistribute it under certain conditions.
 See the GNU General Public License v3.0 for details.
 END
@@ -442,14 +442,14 @@ task_iptables() {
                 printf "\n#### ip6tables --table mangle --list ###############\n"
                 ${ip6tables_bin} --table mangle --list --numeric --verbose --line-numbers
             fi
-        } > "${dump_dir}/iptables-v.txt")
+        } > "${dump_dir}/iptables-v.txt") 2> "${dump_dir}/iptables-v.err"
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
             debug "* iptables -v OK"
         else
             debug "* iptables -v ERROR"
-            debug "${last_result}"
+            debug "$(cat ${dump_dir}/iptables-v.err)"
             # Ignore errors because we don't know if this is nft related or a real error
             # rc=10
         fi
@@ -467,14 +467,14 @@ task_iptables() {
                 printf "\n#### ip6tables --table mangle --list ###############\n"
                 ${ip6tables_bin} --table mangle --list --numeric
             fi
-        } > "${dump_dir}/iptables.txt")
+        } > "${dump_dir}/iptables.txt") 2> "${dump_dir}/iptables.err"
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
             debug "* iptables OK"
         else
             debug "* iptables ERROR"
-            debug "${last_result}"
+            debug "$(cat ${dump_dir}/iptables.err)"
             # Ignore errors because we don't know if this is nft related or a real error
             # rc=10
         fi
@@ -485,14 +485,14 @@ task_iptables() {
     iptables_save_bin=$(command -v iptables-save)
 
     if [ -n "${iptables_save_bin}" ]; then
-        last_result=$(${iptables_save_bin} > "${dump_dir}/iptables-save.txt")
+        ${iptables_save_bin} > "${dump_dir}/iptables-save.txt" 2> "${dump_dir}/iptables-save.err"
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
             debug "* iptables-save OK"
         else
             debug "* iptables-save ERROR"
-            debug "${last_result}"
+            debug "$(cat ${dump_dir}/iptables-save.err)"
             # Ignore errors because we don't know if this is nft related or a real error
             # rc=10
         fi
@@ -503,14 +503,14 @@ task_iptables() {
     nft_bin=$(command -v nft)
 
     if [ -n "${nft_bin}" ]; then
-        last_result=$(${nft_bin} list ruleset > "${dump_dir}/nft-ruleset.txt")
+        ${nft_bin} list ruleset > "${dump_dir}/nft-ruleset.txt" 2> "${dump_dir}/nft-ruleset.err"
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
             debug "* nft ruleset OK"
         else
             debug "* nft ruleset ERROR"
-            debug "${last_result}"
+            debug "$(cat ${dump_dir}/nft-ruleset.err)"
             rc=10
         fi
     fi
@@ -762,6 +762,10 @@ task_systemctl() {
     fi
 }
 
+clean_empty_error_file() {
+    find "${dump_dir}" -type f -name "*.err" -size 0 -delete
+}
+
 main() {
     if [ -z "${dump_dir}" ]; then
         echo "ERROR: You must provide the --dump-dir argument" >&2
@@ -841,6 +845,7 @@ main() {
         task_systemctl
     fi
 
+    clean_empty_error_file
 
     debug "=> Your dump is available at ${dump_dir}"
     exit ${rc}
