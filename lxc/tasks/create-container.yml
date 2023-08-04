@@ -69,3 +69,8 @@
     src: "/etc/profile.d/evolinux.sh"
     remote_src: true
     dest: "/var/lib/lxc/{{ name }}/rootfs/etc/profile.d/evolinux.sh"
+
+- name: "Purge OpenSSH in container {{ name }}"
+  community.general.lxc_container:
+    name: "{{ name }}"
+    container_command: "apt-get purge openssh"
