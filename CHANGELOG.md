@@ -46,6 +46,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * redis: standardize plugins path from /usr/local/share/munin/ to /usr/local/lib/munin/plugins/
 * postfix: new spam.sh update script that avoids reloading if files did not change.
 * postgresql: fix task "update apt cache" for PGDG repo
+* postgresql: fix file postgresql.pref.j2 for exclude package
 
 ### Fixed
 

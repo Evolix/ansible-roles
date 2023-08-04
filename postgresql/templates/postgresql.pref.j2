@@ -1,3 +1,8 @@
 Package: postgresql-{{ postgresql_version }} postgresql-client-common postgresql-common libpq5 ptop
 Pin: release a={{ ansible_distribution_release }}-pgdg
 Pin-Priority: 999
+
+Package: * 
+Pin: release a=buster-pgdg
+Pin-Priority: 1
+
