@@ -43,7 +43,7 @@
 - name: Update APT cache
   ansible.builtin.apt:
     update_cache: yes
-  when: elastic_sources is changed
+  when: postgresql_sources is changed
 
 - name: Add APT preference file
   ansible.builtin.template:
