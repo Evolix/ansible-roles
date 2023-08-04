@@ -131,6 +131,8 @@
 
 - ansible.builtin.include_role:
     name: evolix/ntpd
+  when:
+    - evolinux_system_include_ntpd | bool
 
 ## alert5
 
