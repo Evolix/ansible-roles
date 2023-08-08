@@ -4,7 +4,7 @@ _check_local_dynamic_completion() {
     local cur;
     cur=${COMP_WORDS[COMP_CWORD]};
     COMPREPLY=();
-    COMPREPLY=( $( compgen -W '$(grep "\[check_ /etc/nagios/nrpe.d/evolix.cfg | grep -vE "^[[:blank:]]*#" | awk -F"[\\\[\\\]=]" "{print \$2}" | sed "s/check_//")' -- $cur ) );
+    COMPREPLY=( $( compgen -W '$(grep "\[check_" /etc/nagios/nrpe.d/evolix.cfg | grep -vE "^[[:blank:]]*#" | awk -F"[\\\[\\\]=]" "{print \$2}" | sed "s/check_//")' -- $cur ) );
 }
 
 complete -F _check_local_dynamic_completion check-local
