@@ -74,7 +74,7 @@ server {
   add_header Strict-Transport-Security "max-age=63072000" always;
   set $prefix "";
   set $custom_index "";
-  set $config_js_location /etc/jitsi/meet/atlantide-3.evolix.eu-config.js;
+  set $config_js_location /etc/jitsi/meet/{{ domains | first }}-config.js;
 
   ##
   # Certificates
