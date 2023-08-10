@@ -1,9 +1,10 @@
 ---
 # defaults file for main vars
 
-system_dep: "['gnupg2', 'curl', 'apt-transport-https', 'default-jdk', 'lua5.2', 'lua-unbound']"
+system_dep: "['gnupg2', 'curl', 'apt-transport-https', 'default-jdk', 'lua5.2', 'lua-unbound', 'certbot', 'python3-certbot-nginx']"
 
 domains: ['bullseye.domaine-fictif.org']
+certbot_admin_email: 'support@evolix.fr'
 
 jitsi_meet_cert_choice: "Generate a new self-signed certificate (You will later get a chance to obtain a Let's encrypt certificate)"
 jitsi_meet_ssl_cert_path: "/etc/ssl/certs/ssl-cert-snakeoil.pem"
