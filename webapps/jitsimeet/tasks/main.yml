@@ -151,7 +151,7 @@
     src: "vhost.conf.j2"
     dest: "/etc/nginx/sites-available/{{ domains |first }}.conf"
 
-- name: Enable nginx vhost for peertube
+- name: Enable nginx vhost
   file:
     src: "/etc/nginx/sites-available/{{ domains |first }}.conf"
     dest: "/etc/nginx/sites-enabled/{{ domains |first }}.conf"
@@ -161,12 +161,4 @@
   service:
     name: nginx
     state: reloaded
-
-- name: Adjust permissions of files/folders for nginx
-  file:
-    path: "~/"
-    state: directory
-    mode: 'o=rX'
-    recurse: true
-  become_user: "{{ service }}"
 
