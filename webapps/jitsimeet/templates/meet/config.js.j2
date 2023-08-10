@@ -49,7 +49,7 @@ var config = {
     bosh: 'https://{{ domains | first }}/' + subdir + 'http-bind',
 
     // Websocket URL (XMPP)
-    // websocket: 'wss://{{ domains | first }}/' + subdir + 'xmpp-websocket',
+    websocket: 'wss://{{ domains | first }}/' + subdir + 'xmpp-websocket',
 
     // The real JID of focus participant - can be overridden here
     // Do not change username - FIXME: Make focus username configurable
