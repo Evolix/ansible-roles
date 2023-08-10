@@ -112,10 +112,61 @@
     name: jicofo
     state: restarted
 
-#- name: Install Jitsi Meet
-#  ansible.builtin.apt:
-#    name: 
-#       - nginx-full
-#       - python3-certbot-nginx
-#    state: present
-#    install_recommends: no
+- name: Check if SSL certificate is present and register result
+  stat:
+    path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+  register: ssl
+
+- name: Generate certificate only if required (first time)
+  block:
+  - name: Template vhost without SSL for successfull LE challengce
+    template: 
+      src: "vhost.conf.j2"
+      dest: "/etc/nginx/sites-available/{{ domains |first }}.conf"
+  - name: Enable temporary nginx vhost for peertube
+    file:
+      src: "/etc/nginx/sites-available/{{ domains |first }}.conf"
+      dest: "/etc/nginx/sites-enabled/{{ domains |first }}.conf"
+      state: link
+  - name: Reload nginx conf
+    service:
+      name: nginx
+      state: reloaded
+  - name: Make sure /var/lib/letsencrypt exists and has correct permissions
+    file: 
+      path: /var/lib/letsencrypt
+      state: directory
+      mode: '0755'
+  - name: Generate certificate with certbot
+    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ certbot_admin_email }} -d {{ domains |first }}
+  when: ssl.stat.exists != true
+
+- name: (Re)check if SSL certificate is present and register result
+  stat:
+    path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+  register: ssl
+
+- name: (Re)template conf file for nginx vhost with SSL
+  template:
+    src: "vhost.conf.j2"
+    dest: "/etc/nginx/sites-available/{{ domains |first }}.conf"
+
+- name: Enable nginx vhost for peertube
+  file:
+    src: "/etc/nginx/sites-available/{{ domains |first }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ domains |first }}.conf"
+    state: link
+
+- name: Reload nginx conf
+  service:
+    name: nginx
+    state: reloaded
+
+- name: Adjust permissions of files/folders for nginx
+  file:
+    path: "~/"
+    state: directory
+    mode: 'o=rX'
+    recurse: true
+  become_user: "{{ service }}"
+
