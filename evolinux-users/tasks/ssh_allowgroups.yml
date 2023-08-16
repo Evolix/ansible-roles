@@ -4,7 +4,7 @@
 # even if it's been done before
 - name: verify AllowGroups directive
   ansible.builtin.command:
-    cmd: "grep -E '^AllowGroups' /etc/ssh"
+    cmd: "grep -Er '^AllowGroups' /etc/ssh"
   changed_when: False
   failed_when: False
   check_mode: no
