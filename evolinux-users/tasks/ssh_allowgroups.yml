@@ -4,11 +4,13 @@
 # even if it's been done before
 - name: verify AllowGroups directive
   ansible.builtin.command:
-    cmd: "grep -E '^AllowGroups' /etc/ssh/sshd_config"
+    cmd: "grep -Er '^AllowGroups' /etc/ssh"
   changed_when: False
   failed_when: False
   check_mode: no
   register: grep_allowgroups_ssh
+  when:
+    - ansible_distribution_major_version is version('11', '<=')
 
 - name: "Add AllowGroups sshd directive with '{{ evolinux_ssh_group }}'"
   ansible.builtin.lineinfile:
@@ -17,7 +19,9 @@
     insertafter: 'Subsystem'
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
-  when: grep_allowgroups_ssh.rc != 0
+  when:
+    - ansible_distribution_major_version is version('11', '<=')
+    - grep_allowgroups_ssh.rc != 0
 
 - name: "Append '{{ evolinux_ssh_group }}' to AllowGroups sshd directive"
   ansible.builtin.replace:
@@ -26,4 +30,15 @@
     replace: '\1 {{ evolinux_ssh_group }}'
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
-  when: grep_allowgroups_ssh.rc == 0
+  when:
+    - ansible_distribution_major_version is version('11', '<=')
+    - grep_allowgroups_ssh.rc == 0
+
+- name: "Add AllowGroups sshd directive with '{{ evolinux_ssh_group }}'"
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config.d/z-evolinux-users.conf
+    line: "AllowGroups {{ evolinux_ssh_group }}"
+    create: yes
+    validate: '/usr/sbin/sshd -t -f %s'
+  when:
+    - ansible_distribution_major_version is version('12', '>=')

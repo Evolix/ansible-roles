@@ -231,8 +231,15 @@ check_customcrontab() {
     test "$found_lines" = 4 && failed "IS_CUSTOMCRONTAB" "missing custom field in crontab"
 }
 check_sshallowusers() {
-    grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d \
-        || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
+    if is_debian_bookworm; then
+        grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config.d \
+            || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config.d/*"
+        grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config \
+            || failed "IS_SSHALLOWUSERS" "AllowUsers or AllowGroups directive present in sshd_config"
+    else
+        grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d \
+            || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
+    fi
 }
 check_diskperf() {
     perfFile="/root/disk-perf.txt"
