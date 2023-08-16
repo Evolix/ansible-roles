@@ -7,6 +7,7 @@
   ansible.builtin.template:
     src: sshd/defaults.j2
     dest: /etc/ssh/sshd_config.d/z-evolinux-defaults.conf
+    mode: "0644"
 
 - name: "Get current user's group"
   ansible.builtin.command:
@@ -27,7 +28,7 @@
 
 - name: "Add AllowUsers sshd directive for current user"
   ansible.builtin.lineinfile:
-    dest: /etc/ssh/sshd_config.d/allow_evolinux_user
+    dest: /etc/ssh/sshd_config.d/allow_evolinux_user.conf
     line: "AllowUsers {{ logname.stdout }}"
     insertafter: 'Subsystem'
     validate: '/usr/sbin/sshd -t -f %s'

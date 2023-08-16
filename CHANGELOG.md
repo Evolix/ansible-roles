@@ -64,6 +64,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nginx: set default server directive in default vhost
 * opendkim: update apt cache before install
 * redis: replace errorneous ini_file module for Munin config, fix dedicted Munin config filename (z-XXX).
+* evolinux-base, evolinux-users: Fix files mode under /etc/ssh/sshd_config.d
+* evolinux-base: Fix file extension
 
 ### Removed
 

@@ -106,6 +106,7 @@
     path: /etc/ssh/sshd_config.d/z-evolinux-defaults.conf
     line: "PermitRootLogin no"
     create: yes
+    mode: "0644"
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
   when:
