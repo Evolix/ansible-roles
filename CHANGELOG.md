@@ -13,6 +13,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* apt: Explicit "signed-by" directives for official sources
 * apt: Disable NonFreeFirmware warning for VM on Debian 12+
 * bind: Add reload-zone helper
 * docker-host: added var for user namespace setting
