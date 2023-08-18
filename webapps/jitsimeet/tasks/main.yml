@@ -66,7 +66,20 @@
   ansible.builtin.apt:
     name: jitsi-meet
     state: present
-    install_recommends: no
+    install_recommends: yes
+
+- name: Add certs dir for coturn/letsencrypt if needed
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '700'
+    owner: 'turnserver'
+    group: 'turnserver'
+  loop: 
+    - /etc/coturn
+    - /etc/coturn/certs
+    - /etc/letsencrypt/renewal-hooks
+    - /etc/letsencrypt/renewal-hooks/deploy
 
 - name: Template config files
   template:
@@ -80,6 +93,8 @@
     - { src: 'videobridge/sip-communicator.properties.j2', dest: "/etc/jitsi/videobridge/sip-communicator.properties", owner: "jvb", group: "jitsi", mode: "0640" }
     - { src: 'meet/config.js.j2', dest: "/etc/jitsi/meet/{{ domains | first }}-config.js", owner: "root", group: "root", mode: "0644" }
     - { src: 'prosody/virtualhost.cfg.lua.j2', dest: "/etc/prosody/conf.avail/{{ domains | first }}.cfg.lua", owner: "root", group: "root", mode: "0644" }
+    - { src: 'coturn/turnserver.conf.j2', dest: "/etc/turnserver.conf", owner: "root", group: "turnserver", mode: "0640" }
+    - { src: 'certbot/coturn-certbot-deploy.sh.j2', dest: "/etc/letsencrypt/renewal-hooks/deploy/coturn-certbot-deploy.sh", owner: "root", group: "turnserver", mode: "0700" }
 
 - name: Add bloc to jicofo.conf to disable sctp
   ansible.builtin.blockinfile:
@@ -121,9 +136,9 @@
   block:
   - name: Template vhost without SSL for successfull LE challengce
     template: 
-      src: "vhost.conf.j2"
+      src: "nginx/vhost.conf.j2"
       dest: "/etc/nginx/sites-available/{{ domains |first }}.conf"
-  - name: Enable temporary nginx vhost for peertube
+  - name: Enable temporary nginx vhost
     file:
       src: "/etc/nginx/sites-available/{{ domains |first }}.conf"
       dest: "/etc/nginx/sites-enabled/{{ domains |first }}.conf"
@@ -148,7 +163,7 @@
 
 - name: (Re)template conf file for nginx vhost with SSL
   template:
-    src: "vhost.conf.j2"
+    src: "nginx/vhost.conf.j2"
     dest: "/etc/nginx/sites-available/{{ domains |first }}.conf"
 
 - name: Enable nginx vhost
