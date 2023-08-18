@@ -13,6 +13,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* apt: Disable NonFreeFirmware warning for VM on Debian 12+
 * docker-host: added var for user namespace setting
 * dovecot: add Munin plugins dovecot1 and dovecot_stats (patched)
 * dovecot: fix old_stats plugin for Dovecot 2.3.
