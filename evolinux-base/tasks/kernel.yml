@@ -4,6 +4,7 @@
   ansible.builtin.apt:
     name: "linux-image-cloud-amd64"
     state: present
+  register: _use_cloud_kernel
   when:
     - ansible_machine == "x86_64"
     - ansible_virtualization_role == "guest"
@@ -17,6 +18,14 @@
     - ansible_machine == "x86_64"
     - ansible_virtualization_role == "guest"
     - evolinux_kernel_cloud_auto | bool
+   
+- name: "Reboot the server to enable the new kernel"
+  ansible.builtin.reboot:
+    reboot_timeout: 600
+    search_paths: ['/lib/molly-guard', '/sbin']
+  when:
+    - _use_cloud_kernel | changed
+    - evolinux_kernel_cloud_reboot | bool
 
 - name: Reboot after panic
   ansible.posix.sysctl:

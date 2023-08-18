@@ -14,27 +14,28 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Added
 
 * apt: Disable NonFreeFirmware warning for VM on Debian 12+
+* bind: Add reload-zone helper
+* docker-host: added var for user namespace setting
 * docker-host: added var for user namespace setting
 * dovecot: add Munin plugins dovecot1 and dovecot_stats (patched)
+* dovecot: add Munin plugins dovecot1 and dovecot_stats (patched)
 * dovecot: fix old_stats plugin for Dovecot 2.3.
-* evolinux: Install HPE Agentless Management Service (amsd)
+* dovecot: fix old_stats plugin for Dovecot 2.3.
+* evocheck: add support for Debian >= 12 splitted SSH configuration
+* evolinux-base: add splitted SSH configuration for Debian >= 12
+* evolinux-base: configure bashrc for all users
 * evolinux-base: New variable "evolinux_system_include_ntpd" to chose wether or not to include ntpd role
+* evolinux-base: reboot the server if the Cloud kernel has been installed
+* evolinux-users: add splitted SSH configuration for Debian >= 12
+* evolinux: Install HPE Agentless Management Service (amsd)
+* fail2ban: add default variable fail2ban_dbpurgeage_default
 * fail2ban: add default variable fail2ban_dbpurgeage_default
 * fail2ban: add variable fail2ban_sshd_port to configure sshd port
 * nagios-nrpe: add a NRPE check-local command with completion.
 * policy_pam: New role allowing to manage password policy with pam_pwquality & pam_pwhistory
-* userlogrotate: rotate also php.log.
-* userlogrotate: new version, with separate conf file
-* docker-host: added var for user namespace setting
-* dovecot: fix old_stats plugin for Dovecot 2.3.
-* dovecot: add Munin plugins dovecot1 and dovecot_stats (patched)
-* fail2ban: add default variable fail2ban_dbpurgeage_default
 * userlogrotate: add a userlogpurge script disabled by default
-* evolinux-base: configure bashrc for all users
-* bind: Add reload-zone helper
-* evolinux-base: add splitted SSH configuration for Debian >= 12
-* evolinux-users: add splitted SSH configuration for Debian >= 12
-* evocheck: add support for Debian >= 12 splitted SSH configuration
+* userlogrotate: new version, with separate conf file
+* userlogrotate: rotate also php.log.
 
 ### Changed
 
