@@ -24,7 +24,7 @@
     reboot_timeout: 600
     search_paths: ['/lib/molly-guard', '/sbin']
   when:
-    - _use_cloud_kernel | changed
+    - _use_cloud_kernel is changed
     - evolinux_kernel_cloud_reboot | bool
 
 - name: Reboot after panic
