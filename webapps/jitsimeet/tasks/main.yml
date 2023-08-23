@@ -153,7 +153,7 @@
       state: directory
       mode: '0755'
   - name: Generate certificate with certbot
-    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ certbot_admin_email }} -d {{ domains |first }}
+    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/coturn-certbot-deploy.sh --agree-tos --email {{ certbot_admin_email }} -d {{ domains |first }}
   when: ssl.stat.exists != true
 
 - name: (Re)check if SSL certificate is present and register result
