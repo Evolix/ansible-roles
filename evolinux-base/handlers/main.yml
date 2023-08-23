@@ -79,3 +79,7 @@
     name: log2mail
     state: restarted
 
+- name: restart systemd-journald
+  ansible.builtin.service:
+    name: systemd-journald.service
+    state: restarted

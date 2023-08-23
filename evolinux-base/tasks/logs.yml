@@ -69,4 +69,20 @@
     regexp: "^journal"
   when: evolinux_logs_disable_logcheck_journald | bool
 
+# Journald
+- name: /etc/systemd/journald.conf.d/ is present
+  ansible.builtin.file:
+    path: /etc/systemd/journald.conf.d/
+    state: directory
+    mode: "0755"
+  when: evolinux_logs_journald_conf | bool
+
+- name: Copy journald.conf
+  ansible.builtin.copy:
+    src: logs/journald.conf
+    dest: /etc/systemd/journald.conf.d/00-evolinux-default.conf
+    mode: "0644"
+  notify: restart systemd-journald
+  when: evolinux_logs_journald_conf | bool
+
 - ansible.builtin.meta: flush_handlers

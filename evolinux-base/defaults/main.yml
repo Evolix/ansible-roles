@@ -175,6 +175,7 @@ evolinux_logs_disable_logrotate_rsyslog: True
 evolinux_logs_rsyslog_conf: True
 evolinux_logrotate_dateformat: "-%Y%m%d%H"
 evolinux_logs_disable_logcheck_journald: True
+evolinux_logs_journald_conf: True
 
 # default www
 
