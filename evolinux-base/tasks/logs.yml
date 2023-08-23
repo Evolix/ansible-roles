@@ -61,4 +61,12 @@
     insertafter: 'dateext'
   when: evolinux_logs_default_dateext | bool
 
+# Logcheck
+- name: Disable logcheck monitoring of journald
+  ansible.builtin.lineinfile:
+    dest: /etc/logrotate.conf
+    line: "#journal"
+    regexp: "^journal"
+  when: evolinux_logs_disable_logcheck_journald | bool
+
 - ansible.builtin.meta: flush_handlers
