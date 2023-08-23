@@ -69,6 +69,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * redis: replace errorneous ini_file module for Munin config, fix dedicted Munin config filename (z-XXX).
 * evolinux-base, evolinux-users: Fix files mode under /etc/ssh/sshd_config.d
 * evolinux-base: Fix file extension
+* evocheck: Fix IS_SSHALLOWUSERS condition
 
 ### Removed
 

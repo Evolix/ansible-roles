@@ -235,7 +235,7 @@ check_sshallowusers() {
         grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config.d \
             || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config.d/*"
         grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config \
-            || failed "IS_SSHALLOWUSERS" "AllowUsers or AllowGroups directive present in sshd_config"
+            && failed "IS_SSHALLOWUSERS" "AllowUsers or AllowGroups directive present in sshd_config"
     else
         grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d \
             || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
