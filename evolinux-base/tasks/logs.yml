@@ -2,6 +2,7 @@
 
 # TODO: voir comment faire des backups initiaux des fichiers
 
+# RSyslog
 - name: Copy rsyslog.conf
   ansible.builtin.copy:
     src: logs/rsyslog.conf
@@ -10,6 +11,7 @@
   notify: restart rsyslog
   when: evolinux_logs_rsyslog_conf | bool
 
+# Logrotate
 - name: Disable logrotate default conf
   ansible.builtin.command:
     cmd: mv /etc/logrotate.d/rsyslog /etc/logrotate.d/rsyslog.disabled
