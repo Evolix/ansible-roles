@@ -134,6 +134,11 @@
   when:
     - evolinux_system_include_ntpd | bool
 
+- ansible.builtin.include_role:
+    name: evolix/timesyncd
+  when:
+    - evolinux_system_include_timesyncd | bool
+
 ## alert5
 
 - name: Install alert5 init script (jessie/stretch)
