@@ -21,7 +21,7 @@ lxc_php_container_releases:
   php74: "bullseye"
   php80: "bullseye"
   php81: "bullseye"
-  php82: "bullseye"
+  php82: "bookworm"
 
 lxc_php_services:
   php56: 'php5-fpm.service'

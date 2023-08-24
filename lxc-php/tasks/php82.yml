@@ -1,46 +1,23 @@
 ---
 
-- name: set APT keyring (Debian <12)
-  ansible.builtin.set_fact:
-    lxc_apt_keyring_dir: /etc/apt/trusted.gpg.d
-  when: ansible_distribution_major_version is version('12', '<')
-
-- name: set APT keyring (Debian >=12)
-  ansible.builtin.set_fact:
-    lxc_apt_keyring_dir: /etc/apt/keyrings
-  when: ansible_distribution_major_version is version('12', '>=')
-
-- name: "{{ lxc_php_version }} - Install dependency packages"
+- name: "{{ lxc_php_version }} - Install PHP packages"
   community.general.lxc_container:
     name: "{{ lxc_php_version }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y wget apt-transport-https gnupg"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer"
 
-- name: "{{ lxc_php_version }} - fix bullseye repository"
-  ansible.builtin.replace:
-    dest: "{{ lxc_rootfs }}/etc/apt/sources.list"
-    regexp: 'bullseye/updates'
-    replace: 'bullseye-security'
-
-- name: "{{ lxc_php_version }} - Add sury repo (Debian >=12)"
+- name: "{{ lxc_php_version }} - system bookworm repository"
   ansible.builtin.template:
-    src: sury.sources.j2
-    dest: /etc/apt/sources.list.d/sury.sources
-    mode: "0644"
+    src: bookworm_basics.sources.j2
+    dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/system.sources"
     force: true
-  register: sury_sources
-  when: ansible_distribution_major_version is version('12', '>=')
-
-- name: "{{ lxc_php_version }} - Add sury repo (Debian <12)"
-  ansible.builtin.lineinfile:
-    dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/sury.list"
-    line: "{{ item }}"
-    state: present
-    create: yes
     mode: "0644"
-  loop:
-    - "deb [signed-by={{ apt_keyring_dir }}/sury.gpg] https://packages.sury.org/php/ bullseye main"
-    - "deb [signed-by={{ apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix bullseye-php82 main"
-  when: ansible_distribution_major_version is version('12', '<')
+
+- name: "{{ lxc_php_version }} - security bookworm repository"
+  ansible.builtin.template:
+    src: bookworm_security.sources.j2
+    dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/security.sources"
+    force: true
+    mode: "0644"
 
 - name: "Ensure {{ lxc_rootfs }}{{ apt_keyring_dir }} directory exists"
   file:
@@ -53,16 +30,7 @@
 - name: copy pub.evolix.org GPG key
   ansible.builtin.copy:
     src: pub_evolix.asc
-    dest: /var/lib/lxc/{{ lxc_php_version }}/rootfs{{ apt_keyring_dir }}/pub_evolix.asc
-    mode: "0644"
-    owner: root
-    group: root
-  when: ansible_distribution_major_version is version('12', '<')
-
-- name: copy packages.sury.org GPG Key
-  ansible.builtin.copy:
-    src: sury.gpg
-    dest: /var/lib/lxc/{{ lxc_php_version }}/rootfs{{ apt_keyring_dir }}/sury.gpg
+    dest: "{{ lxc_rootfs }}{{ lxc_apt_keyring_dir }}/pub_evolix.asc"
     mode: "0644"
     owner: root
     group: root
@@ -71,11 +39,6 @@
   community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt update"
-
-- name: "{{ lxc_php_version }} - Install PHP packages"
-  community.general.lxc_container:
-    name: "{{ lxc_php_version }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer"
 
 - name: "{{ lxc_php_version }} - Copy evolinux PHP configuration"
   ansible.builtin.template:
