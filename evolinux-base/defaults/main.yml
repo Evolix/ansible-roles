@@ -104,7 +104,8 @@ evolinux_system_locales: True
 
 evolinux_system_set_timezone: True
 evolinux_system_timezone: "Europe/Paris"
-evolinux_system_include_ntpd: true
+evolinux_system_include_ntpd: False
+evolinux_system_include_timesyncd: True
 
 evolinux_system_vim_skip_defaults: True
 evolinux_system_vim_default_editor: True

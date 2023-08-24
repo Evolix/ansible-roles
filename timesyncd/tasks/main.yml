@@ -1,0 +1,40 @@
+---
+- name: Install systemd-timesyncd package
+  ansible.builtin.apt:
+    name: systemd-timesyncd
+    state: present
+  tags:
+  - timesyncd
+
+- name: Remove openntpd package
+  ansible.builtin.apt:
+    name: openntpd
+    state: absent
+  tags:
+  - timesyncd
+
+- name: Remove ntp package
+  ansible.builtin.apt:
+    name: ntp
+    state: absent
+  tags:
+  - timesyncd
+
+- name: Ensure /etc/systemd/timesyncd.conf.d directory exists
+  file:
+    path: /etc/systemd/timesyncd.conf.d
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+  tags:
+  - timesyncd
+
+- name: Copy timesyncd config
+  ansible.builtin.template:
+    src: timesyncd.conf.j2
+    dest: /etc/systemd/timesyncd.conf.d/evolix.conf
+    mode: "0644"
+  notify: Restart timesyncd
+  tags:
+  - timesyncd
