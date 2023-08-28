@@ -35,7 +35,7 @@
     force: false
   notify: "restart {{ php_fpm_service_name }}"
 
-- name: Set default PHP FPM values
+- name: Set default pool (www) config values
   community.general.ini_file:
     dest: "{{ php_fpm_default_pool_file }}"
     section: www
@@ -57,7 +57,9 @@
     - { option: "pm.status_path", value: "/fpm_status" }
     - { option: "request_terminate_timeout", value: "60s" }
   notify: "restart {{ php_fpm_service_name }}"
-  when: ansible_distribution_major_version is version('9', '>=')
+  when: 
+    - ansible_distribution_major_version is version('9', '>=')
+    - php_fpm_override_default_pool
 
 - name: Custom PHP FPM values
   ansible.builtin.copy:
