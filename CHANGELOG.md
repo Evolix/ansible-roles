@@ -56,6 +56,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * postfix: new spam.sh update script that avoids reloading if files did not change.
 * postgresql: fix task "update apt cache" for PGDG repo
 * postgresql: fix file postgresql.pref.j2 for exclude package
+* lxc-php: Change lxc container in bookworm for php82
 
 ### Fixed
 
