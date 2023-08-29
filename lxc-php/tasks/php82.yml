@@ -1,9 +1,18 @@
 ---
 
-- name: "{{ lxc_php_version }} - Install PHP packages"
+- name: set APT keyring
+  ansible.builtin.set_fact:
+    lxc_apt_keyring_dir: /etc/apt/trusted.gpg.d
+
+- name: "{{ lxc_php_version }} - Install dependency packages"
   community.general.lxc_container:
     name: "{{ lxc_php_version }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y wget gnupg"
+
+- name: "{{ lxc_php_version }} - delete sources.list bookworm repository"
+  ansible.builtin.file:
+    path: "{{ lxc_rootfs }}/etc/apt/sources.list"
+    state: absent
 
 - name: "{{ lxc_php_version }} - system bookworm repository"
   ansible.builtin.template:
@@ -39,6 +48,11 @@
   community.general.lxc_container:
     name: "{{ lxc_php_version }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt update"
+
+- name: "{{ lxc_php_version }} - Install PHP packages"
+  community.general.lxc_container:
+    name: "{{ lxc_php_version }}"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer"
 
 - name: "{{ lxc_php_version }} - Copy evolinux PHP configuration"
   ansible.builtin.template:

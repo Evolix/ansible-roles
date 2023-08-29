@@ -33,3 +33,5 @@ lxc_php_services:
   php82: 'php8.2-fpm.service'
 
 apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"
+apt_basics_components: "{{ (ansible_virtualization_role == 'host') | ternary('main contrib non-free', 'main') }}"
+
