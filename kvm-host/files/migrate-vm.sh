@@ -11,7 +11,7 @@
 # * migrate "from"
 # * switch to Bash to use local and readonly variables
 
-VERSION="21.04.1"
+VERSION="23.08"
 
 show_version() {
     cat <<END
