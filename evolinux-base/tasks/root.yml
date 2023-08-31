@@ -101,6 +101,16 @@
     - evolinux_root_disable_ssh | bool
     - ansible_distribution_major_version is version('11', '<=')
 
+- name: files under /etc/ssh/sshd_config.d are included (Debian >= 12)
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    line: "Include /etc/ssh/sshd_config.d/*.conf"
+    insertbefore: BOF
+  notify: reload ssh
+  when:
+    - evolinux_root_disable_ssh | bool
+    - ansible_distribution_major_version is version('12', '>=')
+
 - name: disable SSH access for root (Debian >= 12)
   ansible.builtin.replace:
     path: /etc/ssh/sshd_config.d/z-evolinux-defaults.conf

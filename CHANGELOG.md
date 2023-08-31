@@ -58,6 +58,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * postgresql: fix task "update apt cache" for PGDG repo
 * postgresql: fix file postgresql.pref.j2 for exclude package
 * lxc-php: Change lxc container in bookworm for php82
+* evolinux-base: include files under `sshd_config.d`
 
 ### Fixed
 

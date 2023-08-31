@@ -3,6 +3,13 @@
     msg: "Warning: empty 'evolinux_ssh_password_auth_addresses' variable, some configuration elements won't be set!"
   when: evolinux_ssh_password_auth_addresses == []
 
+- name: files under /etc/ssh/sshd_config.d are included
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    line: "Include /etc/ssh/sshd_config.d/*.conf"
+    insertbefore: BOF
+  notify: reload ssh
+
 - name: add SSH server configuration template
   ansible.builtin.template:
     src: sshd/defaults.j2
