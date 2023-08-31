@@ -88,7 +88,7 @@ execute_remotely() {
     command=${*}
 
     # shellcheck disable=SC2029
-    ssh "${remote}" "${command}"
+    ssh -n -o BatchMode=yes "${remote}" "${command}"
 }
 
 set_drbd_role() {

@@ -32,6 +32,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * fail2ban: add default variable fail2ban_dbpurgeage_default
 * fail2ban: add default variable fail2ban_dbpurgeage_default
 * fail2ban: add variable fail2ban_sshd_port to configure sshd port
+* kvm-host: add batch-mode and ignore stdin for SSH command in migrate-vm.sh
 * nagios-nrpe: add a NRPE check-local command with completion.
 * php: add new variable to disable oveeriding settings of php-fpm default pool (www)
 * policy_pam: New role allowing to manage password policy with pam_pwquality & pam_pwhistory
