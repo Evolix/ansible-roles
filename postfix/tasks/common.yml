@@ -9,6 +9,19 @@
   tags:
     - postfix
 
+- name: exim4 is absent
+  ansible.builtin.apt:
+    name:
+      - exim4
+      - exim4-base
+      - exim4-config
+      - exim4-daemon-light
+    purge: yes
+    state: absent
+  tags:
+    - postfix
+  when: postfix_purge_exim | bool
+
 - name: check if main.cf is default
   ansible.builtin.shell:
     cmd: 'grep -v -E "^(myhostname|mydestination|mailbox_command)" /etc/postfix/main.cf | md5sum -'
