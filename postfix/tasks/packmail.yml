@@ -1,11 +1,9 @@
 ---
-- name: ensure packages are installed
+- name: Complementary packmail packages are installed
   ansible.builtin.apt:
     name:
-      - postfix
       - postfix-ldap
       - postfix-policyd-spf-python
-      - mailgraph
     state: present
   tags:
   - postfix
