@@ -1,14 +1,5 @@
 ---
 
-- name: Postfix packages are installed
-  ansible.builtin.apt:
-    name:
-      - postfix
-      - mailgraph
-    state: present
-  tags:
-    - postfix
-
 - name: check if main.cf is default
   ansible.builtin.shell:
     cmd: 'grep -v -E "^(myhostname|mydestination|mailbox_command)" /etc/postfix/main.cf | md5sum -'

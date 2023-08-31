@@ -1,4 +1,10 @@
 ---
+- name: ensure packages are installed
+  ansible.builtin.apt:
+    name: postfix
+    state: present
+  tags:
+  - postfix
 
 - name: create minimal main.cf
   ansible.builtin.template:
