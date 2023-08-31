@@ -162,7 +162,6 @@ evolinux_postfix_packages: True
 evolinux_postfix_users_alias_root: True
 evolinux_postfix_mailer_alias_root: True
 evolinux_postfix_root_alias: True
-evolinux_postfix_purge_exim: True
 
 # logs
 

@@ -1,33 +1,7 @@
 ---
 
-- name: Postfix packages are installed
-  ansible.builtin.apt:
-    name:
-      - postfix
-      - mailgraph
-    state: present
-  tags:
-    - packages
-    - postfix
-  when: evolinux_postfix_packages | bool
-
-- name: configure postfix myhostname
-  ansible.builtin.lineinfile:
-    dest: /etc/postfix/main.cf
-    state: present
-    line: "myhostname = {{ evolinux_fqdn }}"
-    regexp: '^myhostname'
-  notify: reload postfix
-  tags:
-    - postfix
-
-- name: configure postfix mynetworks
-  ansible.builtin.lineinfile:
-    dest: /etc/postfix/main.cf
-    state: present
-    line: "mydestination = {{ [evolinux_fqdn, evolinux_internal_fqdn] | unique | join(' ') }} localhost.localdomain localhost localhost.$mydomain"
-    regexp: '^mydestination'
-  notify: reload postfix
+- ansible.builtin.include_role:
+    name: evolix/postfix
   tags:
     - postfix
 
@@ -81,18 +55,3 @@
 
 - ansible.builtin.meta: flush_handlers
 
-- name: exim4 is absent
-  ansible.builtin.apt:
-    name:
-      - exim4
-      - exim4-base
-      - exim4-config
-      - exim4-daemon-light
-    purge: yes
-    state: absent
-  tags:
-    - packages
-    - postfix
-  when: evolinux_postfix_purge_exim | bool
-
-- ansible.builtin.meta: flush_handlers
