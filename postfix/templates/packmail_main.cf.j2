@@ -66,7 +66,7 @@ smtpd_banner = $myhostname ESMTP mail server
 
 # Indique le nom d'hote pleinement qualifie ou se trouve postfix [OBLIGATOIRE]
 #par defaut, = [retour de la commande Unix hostname]
-myhostname = {{ postfix_hostname }}
+myhostname = {{ ansible_fqdn }}
 
 # Variable indiquant le domaine dans lequel se trouve la machine
 #par defaut, = [partie domain de la variable $myhostname]
