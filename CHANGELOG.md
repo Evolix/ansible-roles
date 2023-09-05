@@ -60,6 +60,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * postgresql: fix file postgresql.pref.j2 for exclude package
 * lxc-php: Change lxc container in bookworm for php82
 * evolinux-base: include files under `sshd_config.d`
+* postfix: disable sending mails via IPv6
 
 ### Fixed
 
