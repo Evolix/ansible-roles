@@ -17,6 +17,7 @@
   ansible.builtin.apt:
     name:
       - libfcgi-client-perl
+      - ruby-crack
     state: present
   when:
     - ansible_distribution == "Debian"
