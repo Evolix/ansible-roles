@@ -7,7 +7,7 @@
 allowed_hosts={{ nagios_nrpe_allowed_hosts | join(',') }}
 
 command[check_users]=/usr/local/libexec/nagios/check_users -w 5 -c 10
-command[check_load]=/usr/local/libexec/nagios/check_load -w 15,10,5 -c 30,25,20
+command[check_load]=/usr/local/libexec/nagios/check_load --percpu -w 0.7,0.6,0.5 -c 0.9,0.8,0.7
 command[check_disk1]=/usr/local/libexec/nagios/check_disk -x /lib/init/rw -x /dev -x /dev/shm -w 10% -c 3% -W 10% -K  3% -C -w 5% -c 2% -W 5% -K 2% -p /home
 command[check_zombie_procs]=/usr/local/libexec/nagios/check_procs -w 5 -c 10 -s Z
 command[check_total_procs]=/usr/local/libexec/nagios/check_procs -w 150 -c 200
