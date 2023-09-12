@@ -11,13 +11,13 @@
 # * migrate "from"
 # * switch to Bash to use local and readonly variables
 
-VERSION="23.08"
+VERSION="23.09"
 
 show_version() {
     cat <<END
 migrate-vm version ${VERSION}
 
-Copyright 2018-2021 Evolix <info@evolix.fr>,
+Copyright 2018-2023 Evolix <info@evolix.fr>,
                Jérémy Lecour <jlecour@evolix.fr>,
                Victor Laborie <vlaborie@evolix.fr>
                and others.
@@ -68,6 +68,20 @@ drbd_config_file() {
 is_drbd_resource() {
     resource=${1:-}
     test -f "$(drbd_config_file "${resource}")" && drbdadm role "${resource}" >/dev/null 2>&1
+}
+
+check_drbd_sync() {
+    resource=${1:-}
+
+    set +e
+    dstate=$(drbdadm dstate "${resource}" | grep -vF 'UpToDate/UpToDate')
+    cstate=$(drbdadm cstate "${resource}" | grep -vF 'Connected')
+    set -e
+
+    if [ -n "${dstate}" ] || [ -n "${cstate}" ]; then
+        echo "DRBD resource ${resource} is not up-to-date" >&2
+        exit 1
+    fi
 }
 
 drbd_peers() {
@@ -226,6 +240,8 @@ migrate_to() {
     remote_host=${4:-}
 
     echo "Start migration of ${vm} to ${remote_ip} (${remote_host})"
+
+    check_drbd_sync "${resource}"
 
     set_drbd_role primary "${resource}" "${remote_ip}"
     migrate_vm_to "${vm}" "${remote_ip}"
