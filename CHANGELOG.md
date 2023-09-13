@@ -32,6 +32,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * fail2ban: add default variable fail2ban_dbpurgeage_default
 * fail2ban: add default variable fail2ban_dbpurgeage_default
 * fail2ban: add variable fail2ban_sshd_port to configure sshd port
+* metricbeat/logstash: fix Ansible syntax
 * kvm-host: release 23.09 for migrate-vm.sh
 * nagios-nrpe: add a NRPE check-local command with completion.
 * nagios-nrpe: add a proper monitoring plugin for glusterfs (on servers, not for clients)
