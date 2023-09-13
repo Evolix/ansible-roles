@@ -51,6 +51,7 @@ evolinux_internal_fqdn:     "{{ evolinux_internal_hostname }}.{{ evolinux_intern
 evolinux_kernel_include: True
 
 evolinux_kernel_cloud_auto: True
+evolinux_kernel_cloud_reboot: True
 evolinux_kernel_reboot_after_panic: True
 evolinux_kernel_disable_tcp_timestamps: True
 evolinux_kernel_customize_swappiness: True
