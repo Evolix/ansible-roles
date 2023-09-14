@@ -78,6 +78,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-base, evolinux-users: Fix files mode under /etc/ssh/sshd_config.d
 * evolinux-base: Fix file extension
 * evocheck: Fix IS_SSHALLOWUSERS condition
+* lxc-php: Fix /etc/profile.d/evolinux.sh mode in containers (defauft umask -> 644)
 
 ### Removed
 
