@@ -69,3 +69,4 @@
     src: "/etc/profile.d/evolinux.sh"
     remote_src: true
     dest: "/var/lib/lxc/{{ name }}/rootfs/etc/profile.d/evolinux.sh"
+    mode: '0644'
