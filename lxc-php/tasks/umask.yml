@@ -13,7 +13,6 @@
     path: "{{ systemd_path.path }}/evolinux.conf"
     regex: "\\[Service\\]"
     line: "[Service]"
-    mode: '0644'
     create: yes
 
 - name: "UMask=0007 est présent dans la surchage des services PHP-FPM des conteneurs LXC."
