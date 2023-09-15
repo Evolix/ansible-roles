@@ -15,6 +15,10 @@
     dest: /usr/local/bin/check-local
     mode: "0755"
 
+- name: Package bash-completion is intalled
+  ansible.builtin.apt:
+    name: bash-completion
+
 - name: Completion for utilitary check-local is installed
   ansible.builtin.copy:
     src: check-local_completion
