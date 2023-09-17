@@ -11,7 +11,7 @@
 # * migrate "from"
 # * switch to Bash to use local and readonly variables
 
-VERSION="23.09"
+VERSION="23.09.1"
 
 show_version() {
     cat <<END
@@ -81,6 +81,22 @@ check_drbd_sync() {
     if [ -n "${dstate}" ] || [ -n "${cstate}" ]; then
         echo "DRBD resource ${resource} is not up-to-date" >&2
         exit 1
+    fi
+}
+
+drbd_interface() {
+    drbd_peer=${1:-}
+    ip route get "${drbd_peer}" | grep --only-matching --extended-regexp 'dev\s+\S+' | awk '{print $2}'
+}
+
+interface_speed() {
+    interface=${1:-}
+    file="/sys/class/net/${interface}/speed"
+    if [ -e "${file}" ]; then
+        head -n 1 "${file}"
+    else
+        # fallback on 1Gb/s if unknown
+        echo "1000"
     fi
 }
 
@@ -209,6 +225,13 @@ migrate_vm_from() {
 migrate_vm_to() {
     vm=${1:-}
     remote_ip=${2:-}
+
+    drbd_interface=$(drbd_interface "${remote_ip}")
+    interface_speed=$(interface_speed "${drbd_interface}")
+    migrate_speed=$(echo "${interface_speed}*0.8/8" | bc)
+
+    # echo "Migration speed set to ${migrate_speed}MiB/s"
+    virsh --quiet migrate-setspeed "${vm}" "${migrate_speed}"
 
     export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
     virsh migrate --live --unsafe --verbose "${vm}" "qemu+ssh://${remote_ip}/system" "tcp://${remote_ip}/"
