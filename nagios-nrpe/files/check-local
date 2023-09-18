@@ -2,6 +2,8 @@
 
 CHECK_BIN=/usr/lib/nagios/plugins/check_nrpe
 
+server_address="127.0.0.1"
+
 if ! test -f "${CHECK_BIN}"; then
     echo "${CHECK_BIN} is missing, please install nagios-nrpe-plugin package."
     exit 1
@@ -9,10 +11,17 @@ fi
 
 for file in /etc/nagios/{nrpe.cfg,nrpe_local.cfg,nrpe.d/evolix.cfg}; do
     if [ -r ${file} ]; then
-        found_command=$(grep "\[check_$1\]" "${file}" | grep -v '^[[:blank:]]*#' | tail -n1 | cut -d'=' -f2-)
+        command_search=$(grep "\[check_$1\]" "${file}" | grep -v '^[[:blank:]]*#' | tail -n1 | cut -d'=' -f2-)
     fi
-    if [ -n "${found_command}" ]; then
-        command="${found_command}"
+    if [ -n "${command_search}" ]; then
+        command="${command_search}"
+    fi
+
+    if [ -r ${file} ]; then
+        server_address_search=$(grep "server_address" "${file}" | grep -v '^[[:blank:]]*#' | cut -d'=' -f2)
+    fi
+    if [ -n "${server_address_search}" ]; then
+        server_address="${server_address_search}"
     fi
 done
 
@@ -22,6 +31,6 @@ if [ -n "${command}" ]; then
 fi
 
 echo "NRPE daemon output:"
-"${CHECK_BIN}" -H 127.0.0.1 -c "check_$1"
+"${CHECK_BIN}" -H "${server_address}" -c "check_$1"
 
 
