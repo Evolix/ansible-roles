@@ -13,71 +13,67 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
-* apt: Explicit "signed-by" directives for official sources
-* apt: Disable NonFreeFirmware warning for VM on Debian 12+
-* bind: Add reload-zone helper
-* docker-host: added var for user namespace setting
+* apt: disable `NonFreeFirmware` warning for VM on Debian 12+
+* apt: explicit `signed-by` directives for official sources
+* bind: add reload-zone helper
 * docker-host: added var for user namespace setting
 * dovecot: add Munin plugins dovecot1 and dovecot_stats (patched)
-* dovecot: add Munin plugins dovecot1 and dovecot_stats (patched)
-* dovecot: fix old_stats plugin for Dovecot 2.3.
-* dovecot: fix old_stats plugin for Dovecot 2.3.
-* evocheck: add support for Debian >= 12 splitted SSH configuration
-* evolinux-base: add splitted SSH configuration for Debian >= 12
-* evolinux-base: configure bashrc for all users
-* evolinux-base: New variable "evolinux_system_include_ntpd" to chose wether or not to include ntpd role
+* dovecot: fix old_stats plugin for Dovecot 2.3
+* evocheck: add support for Debian >= 12 split SSH configuration
+* evolinux-base: add split SSH configuration for Debian >= 12
+* evolinux-base: configure `.bashrc` for all users
+* evolinux-base: New variable `evolinux_system_include_ntpd` to chose wether or not to include `ntpd` role
 * evolinux-base: reboot the server if the Cloud kernel has been installed
-* evolinux-users: add splitted SSH configuration for Debian >= 12
-* evolinux: Install HPE Agentless Management Service (amsd)
+* evolinux-users: add split SSH configuration for Debian >= 12
+* evolinux: install HPE Agentless Management Service (amsd)
 * fail2ban: add default variable fail2ban_dbpurgeage_default
-* fail2ban: add default variable fail2ban_dbpurgeage_default
-* fail2ban: add variable fail2ban_sshd_port to configure sshd port
-* metricbeat/logstash: fix Ansible syntax
+* fail2ban: add `fail2ban_sshd_port` variable to configure sshd port
 * kvm-host: release 23.09.1 for migrate-vm.sh
+* metricbeat/logstash: fix Ansible syntax
 * nagios-nrpe: add a NRPE check-local command with completion.
-* nagios-nrpe: add a proper monitoring plugin for glusterfs (on servers, not for clients)
-* php: add new variable to disable oveeriding settings of php-fpm default pool (www)
-* policy_pam: New role allowing to manage password policy with pam_pwquality & pam_pwhistory
-* userlogrotate: add a userlogpurge script disabled by default
+* nagios-nrpe: add a proper monitoring plugin for GlusterFS (on servers, not for clients)
+* php: add new variable to disable overriding settings of php-fpm default pool (www)
+* policy_pam: New role to manage password policy with `pam_pwquality` & `pam_pwhistory`
+* userlogrotate: add a `userlogpurge` script disabled by default
 * userlogrotate: new version, with separate conf file
-* userlogrotate: rotate also php.log.
+* userlogrotate: rotate also php.log
 
 ### Changed
 
-* all: change syntax "force: [yes,no]" → "force: [true,false]"
 * all: change syntax "become: [yes,no]" → "become: [true,false]"
+* all: change syntax "force: [yes,no]" → "force: [true,false]"
 * elasticsearch: improve networking configuration
+* evolinux-base: include files under `sshd_config.d`
 * evolinux-users: remove Stretch references in tasks that also apply to next Debian versions
-* minifirewall: upstream release 23.07
+* lxc-php: change LXC container in bookworm for php82
 * minifirewall: update nrpe script to check active configuration
+* minifirewall: upstream release 23.07
 * mysql: improve shell syntax for mysql_skip script
-* pbbouncer: minor fixes
-* varnish: Allow the systemd template to be overriden with a template outside of the role
+* nagios-nrpe: set default check_load --per-cpu for BSD
+* pgbouncer: minor fixes
 * postfix (packmail or when postfix_slow_transport_include is True): change `minimal_backoff_time` from 2h to 15m (see HowtoPostfix)
 * postfix (packmail) : optimize Amavis integration
-* redis: standardize plugins path from /usr/local/share/munin/ to /usr/local/lib/munin/plugins/
-* postfix: new spam.sh update script that avoids reloading if files did not change.
-* postgresql: fix task "update apt cache" for PGDG repo
-* postgresql: fix file postgresql.pref.j2 for exclude package
-* lxc-php: Change lxc container in bookworm for php82
-* evolinux-base: include files under `sshd_config.d`
 * postfix: disable sending mails via IPv6
-* nagios-nrpe: set default check_load --per-cpu for BSD
+* postfix: new spam.sh update script that avoids reloading if files did not change.
+* postgresql: fix file `postgresql.pref.j2` for exclude package
+* postgresql: fix task `update apt cache` for PGDG repo
+* redis: standardize plugins path from `/usr/local/share/munin/` to `/usr/local/lib/munin/plugins/`
+* varnish: allow the systemd template to be overridden with a template outside of the role
 
 ### Fixed
 
-* elasticsearch: comment the Xlog:gc line instead of changing it completely
-* fail2ban: Fix cron fail2ban_dbpurge (should be bash instead of sh)
-* nagios-nrpe: remount /usr **after** installing the packages
-* packweb-apache,nagios-nrpe: add missing task and config for PHP 8.2 container
-* potsfix: add missing `localhost.$mydomain` to mydestination
-* nagios-nrpe: check\_ssl\_local now has an output that nrpe can understand when it isn't OK
+* elasticsearch: comment the `Xlog:gc` line instead of changing it completely
+* evocheck: fix IS_SSHALLOWUSERS condition
+* evolinux-base, evolinux-users: Fix files mode under `/etc/ssh/sshd_config.d`
+* evolinux-base: fix file extension
+* fail2ban: fix cron `fail2ban_dbpurge` (should be bash instead of sh)
+* nagios-nrpe: `check_ssl_local` now has an output that nrpe can understand when it isn't OK
+* nagios-nrpe: remount `/usr` **after** installing the packages
 * nginx: set default server directive in default vhost
 * opendkim: update apt cache before install
-* redis: replace errorneous ini_file module for Munin config, fix dedicted Munin config filename (z-XXX).
-* evolinux-base, evolinux-users: Fix files mode under /etc/ssh/sshd_config.d
-* evolinux-base: Fix file extension
-* evocheck: Fix IS_SSHALLOWUSERS condition
+* packweb-apache,nagios-nrpe: add missing task and config for PHP 8.2 container
+* postfix: add missing `localhost.$mydomain` to `mydestination`
+* redis: replace erroneous `ini_file` module for Munin config, fix dedicated Munin config filename (z-XXX).
 
 ### Removed
 
