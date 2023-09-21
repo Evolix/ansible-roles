@@ -6,27 +6,29 @@
   apt:
     name: python-cryptography
     state: present
-  when: ansible_python['executable'] == "/usr/bin/python"
+  when: ansible_python_version is version('3', '<')
 
 - name: Install python 3 cryptography
   apt:
     name: python3-cryptography
     state: present
-  when: ansible_python['executable'] == "/usr/bin/python3"
+  when: ansible_python_version is version('3', '>=')
 
 - name: Creates PKI tree directories
   file:
     path: "{{ item }}"
-    mode: 0700
+    mode: "0700"
     state: directory
   loop:
     - "{{ pki_dir }}/certs"
     - "{{ pki_dir }}/private"
 
 
-# Create Certificat Authority (CA)
+# Create Certificate Authority (CA)
 - include: ca.yml
-  when: inventory_hostname == pki_ca_host and not ansible_check_mode
+  when:
+    - not ansible_check_mode
+    - inventory_hostname == pki_ca_host
 
 
 # Create a certificate signed by the CA
