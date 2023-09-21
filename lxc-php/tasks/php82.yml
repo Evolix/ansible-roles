@@ -28,9 +28,9 @@
     force: true
     mode: "0644"
 
-- name: "Ensure {{ lxc_rootfs }}{{ apt_keyring_dir }} directory exists"
+- name: "Ensure {{ lxc_rootfs }}{{ lxc_apt_keyring_dir }} directory exists"
   file:
-    path: "{{ lxc_rootfs }}{{ apt_keyring_dir }}"
+    path: "{{ lxc_rootfs }}{{ lxc_apt_keyring_dir }}"
     state: directory
     mode: "755"
     owner: root

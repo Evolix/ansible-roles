@@ -26,9 +26,9 @@
     - "deb [signed-by={{ lxc_apt_keyring_dir }}/sury.gpg] https://packages.sury.org/php/ bullseye main"
     - "deb [signed-by={{ lxc_apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix bullseye-php81 main"
 
-- name: "Ensure {{ lxc_rootfs }}{{ apt_keyring_dir }} directory exists"
+- name: "Ensure {{ lxc_rootfs }}{{ lxc_apt_keyring_dir }} directory exists"
   file:
-    path: "{{ lxc_rootfs }}{{ apt_keyring_dir }}"
+    path: "{{ lxc_rootfs }}{{ lxc_apt_keyring_dir }}"
     state: directory
     mode: "755"
     owner: root

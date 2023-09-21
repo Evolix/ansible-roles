@@ -16,6 +16,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * apt: disable `NonFreeFirmware` warning for VM on Debian 12+
 * apt: explicit `signed-by` directives for official sources
 * bind: add reload-zone helper
+* certbot: deploy-hook for proftpd
 * docker-host: added var for user namespace setting
 * dovecot: add Munin plugins dovecot1 and dovecot_stats (patched)
 * dovecot: fix old_stats plugin for Dovecot 2.3
@@ -51,7 +52,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * mysql: improve shell syntax for mysql_skip script
 * nagios-nrpe: set default check_load --per-cpu for BSD
 * pgbouncer: minor fixes
-* postfix (packmail or when postfix_slow_transport_include is True): change `minimal_backoff_time` from 2h to 15m (see HowtoPostfix)
+* postfix (packmail or when postfix_slow_transport_include is True): change `miniprofmal_backoff_time` from 2h to 15m (see HowtoPostfix)
 * postfix (packmail) : optimize Amavis integration
 * postfix: disable sending mails via IPv6
 * postfix: new spam.sh update script that avoids reloading if files did not change.
@@ -67,6 +68,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-base, evolinux-users: Fix files mode under `/etc/ssh/sshd_config.d`
 * evolinux-base: fix file extension
 * fail2ban: fix cron `fail2ban_dbpurge` (should be bash instead of sh)
+* lxc-php: fix APT keyring path inside containers
 * nagios-nrpe: `check_ssl_local` now has an output that nrpe can understand when it isn't OK
 * nagios-nrpe: remount `/usr` **after** installing the packages
 * nginx: set default server directive in default vhost
