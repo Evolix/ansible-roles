@@ -75,6 +75,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * lxc-php: fix APT keyring path inside containers
 * nagios-nrpe: `check_ssl_local` now has an output that nrpe can understand when it isn't OK
 * nagios-nrpe: remount `/usr` **after** installing the packages
+* nagios-nrpe: sync Redis check from redis roles
 * nginx: set default server directive in default vhost
 * opendkim: update apt cache before install
 * packweb-apache,nagios-nrpe: add missing task and config for PHP 8.2 container
