@@ -31,6 +31,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * fail2ban: add `fail2ban_sshd_port` variable to configure sshd port
 * kvm-host: release 23.09.1 for migrate-vm.sh
 * metricbeat/logstash: fix Ansible syntax
+* mysql: new munin graph to follow binlog_days over time
 * nagios-nrpe: add a NRPE check-local command with completion.
 * nagios-nrpe: add a proper monitoring plugin for GlusterFS (on servers, not for clients)
 * php: add new variable to disable overriding settings of php-fpm default pool (www)

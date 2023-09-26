@@ -1,0 +1,44 @@
+#!/bin/sh
+
+output_config() {
+    echo "graph_title MySQL - Value of expire_logs_days variable"
+    echo "graph_category mysql"
+    echo "binlogdays.label Number of days of storage of binary logs"
+    echo "binlogdays.draw AREA"
+    echo 'graph_args -l 0'
+    echo 'graph_scale no'    
+}
+
+output_values() {
+    printf "binlogdays.value %d\n" $(binlog_days)
+}
+
+binlog_days() {
+    mysql --skip-column-names --silent --execute "show variables like 'expire_logs_days';" | awk '{print $2}'
+}
+
+output_usage() {
+    printf >&2 "%s - munin plugin to graph value of MySQL expire_logs_days system variable\n" ${0##*/}
+    printf >&2 "Usage: %s [config]\n" ${0##*/}
+}
+
+case $# in
+    0)
+        output_values
+        ;;
+    1)
+        case $1 in
+            config)
+                output_config
+                ;;
+            *)
+                output_usage
+                exit 1
+                ;;
+        esac
+        ;;
+    *)
+        output_usage
+        exit 1
+        ;;
+esac
