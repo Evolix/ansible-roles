@@ -61,6 +61,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * postgresql: fix task `update apt cache` for PGDG repo
 * redis: standardize plugins path from `/usr/local/share/munin/` to `/usr/local/lib/munin/plugins/`
 * varnish: allow the systemd template to be overridden with a template outside of the role
+* lxc: purge openssh-server from container on install
 
 ### Fixed
 
