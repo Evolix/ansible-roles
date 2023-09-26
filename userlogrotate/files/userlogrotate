@@ -40,8 +40,13 @@ rotate () {
 }
 
 user_for() {
+  stat -L -c '%U' $1
+}
+
+group_for() {
   stat -L -c '%G' $1
 }
+
 
 delete_old() {
     if [ ${DELETE_AFTER_RETENTION_DAYS} == "true" ]; then
@@ -67,7 +72,8 @@ for path in ${SYSTEM_LOGS_SEARCH_PATHS[@]}; do
         log_paths=$(ls -1 -d ${path}/${log_name} 2>/dev/null | grep -v \.bak\.)
         for file in ${log_paths}; do
             user="$(user_for "${file}")"
-            rotate "${file}" root:"${user}"
+            group="$(group_for "${file}")"
+            rotate "${file}" "${group}":"${user}"
             delete_old "$(dirname "${file}")"
         done
     done
@@ -78,7 +84,8 @@ for path in ${APPLICATIVE_LOGS_SEARCH_PATHS[@]}; do
         log_paths=$(ls -1 -d ${path}/${log_name} 2>/dev/null | grep -v \.bak\.)
         for file in ${log_paths}; do
             user="$(user_for "${file}")"
-            rotate "${file}" "${user}":"${user}"
+            group="$(group_for "${file}")"
+            rotate "${file}" "${group}":"${user}"
             delete_old "$(dirname "${file}")"
         done
     done
