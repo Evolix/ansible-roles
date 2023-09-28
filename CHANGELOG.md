@@ -40,6 +40,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * userlogrotate: new version, with separate conf file
 * userlogrotate: rotate also php.log
 * java: allow version 17
+* timesyncd: new role, used instead of ntpd by default
 
 ### Changed
 
