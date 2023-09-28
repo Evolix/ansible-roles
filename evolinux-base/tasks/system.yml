@@ -160,7 +160,8 @@
     - evolinux_system_alert5_enable | bool
     - ansible_distribution_release == "jessie" or ansible_distribution_release == "stretch"
 
-
+- ansible.builtin.include_role:
+    name: evolix/remount-usr
 
 - name: Install alert5 init script (buster and later)
   ansible.builtin.template:
