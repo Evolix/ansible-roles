@@ -68,18 +68,23 @@
     state: present
     install_recommends: yes
 
+- name: Install stream module for nginx
+  ansible.builtin.apt:
+    name: libnginx-mod-stream
+    state: present
+
 - name: Add certs dir for coturn/letsencrypt if needed
   file:
-    path: "{{ item }}"
+    path: "{{ item.path }}"
     state: directory
-    mode: '700'
-    owner: 'turnserver'
-    group: 'turnserver'
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
   loop: 
-    - /etc/coturn
-    - /etc/coturn/certs
-    - /etc/letsencrypt/renewal-hooks
-    - /etc/letsencrypt/renewal-hooks/deploy
+    - { path: '/etc/coturn', owner: "turnserver", group: "turnserver", mode: "0700" }
+    - { path: '/etc/coturn/certs', owner: "turnserver", group: "turnserver", mode: "0700" }
+    - { path: '/etc/letsencrypt/renewal-hooks', owner: "root", group: "root", mode: "0700" }
+    - { path: '/etc/letsencrypt/renewal-hooks/deploy', owner: "root", group: "root", mode: "0700" }
 
 - name: Template config files
   template:
@@ -92,9 +97,11 @@
     - { src: 'videobridge/jvb.conf.j2', dest: "/etc/jitsi/videobridge/jvb.conf", owner: "jvb", group: "jitsi", mode: "0640" }
     - { src: 'videobridge/sip-communicator.properties.j2', dest: "/etc/jitsi/videobridge/sip-communicator.properties", owner: "jvb", group: "jitsi", mode: "0640" }
     - { src: 'meet/config.js.j2', dest: "/etc/jitsi/meet/{{ domains | first }}-config.js", owner: "root", group: "root", mode: "0644" }
+    - { src: 'meet/interface_config.js.j2', dest: "/etc/jitsi/meet/{{ domains | first }}-interface_config.js", owner: "root", group: "root", mode: "0644" }
+    - { src: 'meet/welcomePageAdditionalContent.html.j2', dest: "/usr/share/jitsi-meet/static/welcomePageAdditionalContent.html", owner: "root", group: "root", mode: "0644" }
     - { src: 'prosody/virtualhost.cfg.lua.j2', dest: "/etc/prosody/conf.avail/{{ domains | first }}.cfg.lua", owner: "root", group: "root", mode: "0644" }
     - { src: 'coturn/turnserver.conf.j2', dest: "/etc/turnserver.conf", owner: "root", group: "turnserver", mode: "0640" }
-    - { src: 'certbot/coturn-certbot-deploy.sh.j2', dest: "/etc/letsencrypt/renewal-hooks/deploy/coturn-certbot-deploy.sh", owner: "root", group: "turnserver", mode: "0700" }
+    - { src: 'certbot/coturn-certbot-deploy.sh.j2', dest: "/etc/letsencrypt/renewal-hooks/deploy/coturn-certbot-deploy.sh", owner: "root", group: "root", mode: "0700" }
 
 - name: Add bloc to jicofo.conf to disable sctp
   ansible.builtin.blockinfile:
@@ -153,7 +160,7 @@
       state: directory
       mode: '0755'
   - name: Generate certificate with certbot
-    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/coturn-certbot-deploy.sh --agree-tos --email {{ certbot_admin_email }} -d {{ domains |first }}
+    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ certbot_admin_email }} -d {{ domains |first }}
   when: ssl.stat.exists != true
 
 - name: (Re)check if SSL certificate is present and register result
@@ -163,8 +170,17 @@
 
 - name: (Re)template conf file for nginx vhost with SSL
   template:
-    src: "nginx/vhost.conf.j2"
-    dest: "/etc/nginx/sites-available/{{ domains |first }}.conf"
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - { src: 'nginx/vhost.conf.j2', dest: "/etc/nginx/sites-available/{{ domains |first }}.conf" }
+    - { src: 'nginx/multiplex.conf.j2', dest: '/etc/nginx/modules-available/multiplex.conf' }
+
+- name: Enable multiplex module conf
+  file:
+    src: '/etc/nginx/modules-available/multiplex.conf'
+    dest: '/etc/nginx/modules-enabled/multiplex.conf'
+    state: link
 
 - name: Enable nginx vhost
   file:
@@ -177,3 +193,11 @@
     name: nginx
     state: reloaded
 
+- name: Check if SSL certificate for coturn is present and register result
+  stat:
+    path: "/etc/coturn/certs/{{ turn_domains |first }}.crt"
+  register: ssl_coturn
+
+- name: Generate certificate for coturn with certbot
+  shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/coturn-certbot-deploy.sh --agree-tos --email {{ certbot_admin_email }} -d {{ turn_domains |first }}
+  when: ssl_coturn.stat.exists != true 

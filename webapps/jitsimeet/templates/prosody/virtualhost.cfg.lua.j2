@@ -5,9 +5,9 @@ muc_mapper_domain_base = "{{ domains | first }}";
 
 external_service_secret = "{{ jitsi_meet_turn_secret }}";
 external_services = {
-     { type = "stun", host = "{{ domains | first }}", port = 3478 },
-     { type = "turn", host = "{{ domains | first }}", port = 3478, transport = "udp", secret = true, ttl = 86400, algorithm = "turn" },
-     { type = "turns", host = "{{ domains | first }}", port = 5349, transport = "tcp", secret = true, ttl = 86400, algorithm = "turn" }
+     { type = "stun", host = "{{ turn_domains | first }}", port = 3478 },
+     { type = "turn", host = "{{ turn_domains | first }}", port = 3478, transport = "udp", secret = true, ttl = 86400, algorithm = "turn" },
+     { type = "turns", host = "{{ turn_domains | first }}", port = 443, transport = "tcp", secret = true, ttl = 86400, algorithm = "turn" }
 };
 
 cross_domain_bosh = false;

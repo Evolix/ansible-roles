@@ -33,7 +33,7 @@ map $arg_vnode $prosody_node {
 server {
   listen 80;
   listen [::]:80;
-  server_name {{ domains | first }};
+  server_name {{ domains | first }} {{ turn_domains | first }};
 
   # For certbot
   location ~ /.well-known/acme-challenge {
@@ -48,8 +48,8 @@ server {
 
 {% if ssl.stat.exists %}
 server {
-  listen 443 ssl http2;
-  listen [::]:443 ssl http2;
+  listen 8088 ssl http2;
+  listen [::]:8088 ssl http2;
   server_name {{ domains | first }};
   
   access_log /var/log/nginx/{{ service }}.access.log; # reduce I/0 with buffer=10m flush=5m
@@ -75,6 +75,7 @@ server {
   set $prefix "";
   set $custom_index "";
   set $config_js_location /etc/jitsi/meet/{{ domains | first }}-config.js;
+  set $interface_config_js_location /etc/jitsi/meet/{{ domains | first }}-interface_config.js;
 
   ##
   # Certificates
@@ -102,6 +103,10 @@ server {
 
   location = /config.js {
       alias $config_js_location;
+  }
+  
+  location = /interface_config.js {
+      alias $interface_config_js_location;
   }
 
   location = /external_api.js {
