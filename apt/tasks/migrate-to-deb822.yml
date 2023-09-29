@@ -30,3 +30,21 @@
   ignore_errors: yes
   tags:
     - apt
+
+- name: Add signed-by when relevant for bookworm
+  ansible.builtin.lineinfile:
+    dest: /etc/apt/sources.list.d/system.sources
+    line: "Signed-by: /usr/share/keyrings/debian-archive-keyring.gpg"
+    insertafter: "Suites: bookworm bookworm-updates"
+    state: present
+  tags:
+    - apt
+
+- name: Add signed-by when relevant for bookworm-security
+  ansible.builtin.lineinfile:
+    dest: /etc/apt/sources.list.d/security.sources
+    line: "Signed-by: /usr/share/keyrings/debian-archive-keyring.gpg"
+    insertafter: "Suites: bookworm-security"
+    state: present
+  tags:
+    - apt
