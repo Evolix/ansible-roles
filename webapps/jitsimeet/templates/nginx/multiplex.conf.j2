@@ -1,0 +1,27 @@
+stream {
+    map $ssl_preread_server_name $name {
+        {{ domains | first }} web_backend;
+        {{ turn_domains | first }} turn_backend;
+    }
+
+    upstream web_backend {
+        server 127.0.0.1:8088;
+    }
+
+    upstream turn_backend {
+        server {{ ansible_default_ipv4.address }}:5349;
+    }
+
+    server {
+        listen 443;
+        listen [::]:443;
+
+        # since 1.11.5
+        ssl_preread on;
+
+        proxy_pass $name;
+
+        # Increase buffer to serve video
+        proxy_buffer_size 10m;
+    }
+}

@@ -2,9 +2,9 @@
 use-auth-secret
 keep-address-family
 static-auth-secret={{ jitsi_meet_turn_secret }}
-realm={{ domains | first }}
-cert=/etc/coturn/certs/{{ domains | first }}.crt
-pkey=/etc/coturn/certs/{{ domains | first }}.key
+realm={{ turn_domains | first }}
+cert=/etc/coturn/certs/{{ turn_domains | first }}.crt
+pkey=/etc/coturn/certs/{{ turn_domains | first }}.key
 no-multicast-peers
 no-cli
 #no-loopback-peers
