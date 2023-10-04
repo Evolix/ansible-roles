@@ -98,7 +98,7 @@
     - { src: 'videobridge/sip-communicator.properties.j2', dest: "/etc/jitsi/videobridge/sip-communicator.properties", owner: "jvb", group: "jitsi", mode: "0640" }
     - { src: 'meet/config.js.j2', dest: "/etc/jitsi/meet/{{ domains | first }}-config.js", owner: "root", group: "root", mode: "0644" }
     - { src: 'meet/interface_config.js.j2', dest: "/etc/jitsi/meet/{{ domains | first }}-interface_config.js", owner: "root", group: "root", mode: "0644" }
-    - { src: 'meet/welcomePageAdditionalContent.html.j2', dest: "/usr/share/jitsi-meet/static/welcomePageAdditionalContent.html", owner: "root", group: "root", mode: "0644" }
+    - { src: 'meet/welcomePageAdditionalContent.html.j2', dest: "/etc/jitsi/meet/welcomePageAdditionalContent.html", owner: "root", group: "root", mode: "0644" }
     - { src: 'prosody/virtualhost.cfg.lua.j2', dest: "/etc/prosody/conf.avail/{{ domains | first }}.cfg.lua", owner: "root", group: "root", mode: "0644" }
     - { src: 'coturn/turnserver.conf.j2', dest: "/etc/turnserver.conf", owner: "root", group: "turnserver", mode: "0640" }
     - { src: 'certbot/coturn-certbot-deploy.sh.j2', dest: "/etc/letsencrypt/renewal-hooks/deploy/coturn-certbot-deploy.sh", owner: "root", group: "root", mode: "0700" }

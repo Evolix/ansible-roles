@@ -76,6 +76,7 @@ server {
   set $custom_index "";
   set $config_js_location /etc/jitsi/meet/{{ domains | first }}-config.js;
   set $interface_config_js_location /etc/jitsi/meet/{{ domains | first }}-interface_config.js;
+  set $welcome_page_additional_content_location /etc/jitsi/meet/welcomePageAdditionalContent.html;
 
   ##
   # Certificates
@@ -111,6 +112,10 @@ server {
 
   location = /external_api.js {
       alias /usr/share/jitsi-meet/libs/external_api.min.js;
+  }
+  
+  location = /static/welcomePageAdditionalContent.html {
+      alias $welcome_page_additional_content_location;
   }
 
   location = /_api/room-info {
