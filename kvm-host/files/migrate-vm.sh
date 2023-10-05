@@ -249,11 +249,11 @@ migrate_from() {
 
     set_drbd_role primary "${resource}"
     migrate_vm_from "${vm}" "${remote_ip}" "${current_ip}"
-    set_drbd_role secondary "${resource}" "${remote_ip}"
     if persistent; then
         define_vm "${vm}"
         undefine_vm "${vm}" "${remote_ip}"
     fi
+    set_drbd_role secondary "${resource}" "${remote_ip}"
 }
 
 migrate_to() {
@@ -268,11 +268,11 @@ migrate_to() {
 
     set_drbd_role primary "${resource}" "${remote_ip}"
     migrate_vm_to "${vm}" "${remote_ip}"
-    set_drbd_role secondary "${resource}"
     if persistent; then
         define_vm "${vm}" "${remote_ip}"
         undefine_vm "${vm}"
     fi
+    set_drbd_role secondary "${resource}"
 }
 
 main() {
