@@ -29,7 +29,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux: install HPE Agentless Management Service (amsd)
 * fail2ban: add default variable fail2ban_dbpurgeage_default
 * fail2ban: add `fail2ban_sshd_port` variable to configure sshd port
-* kvm-host: release 23.09.1 for migrate-vm.sh
+* kvm-host: release 23.10 for migrate-vm.sh
 * metricbeat/logstash: fix Ansible syntax
 * mysql: new munin graph to follow binlog_days over time
 * nagios-nrpe: add a NRPE check-local command with completion.

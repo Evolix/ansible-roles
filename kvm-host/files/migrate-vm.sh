@@ -11,7 +11,7 @@
 # * migrate "from"
 # * switch to Bash to use local and readonly variables
 
-VERSION="23.09.1"
+VERSION="23.10"
 
 show_version() {
     cat <<END
@@ -91,12 +91,49 @@ drbd_interface() {
 
 interface_speed() {
     interface=${1:-}
-    file="/sys/class/net/${interface}/speed"
-    if [ -e "${file}" ]; then
-        head -n 1 "${file}"
+    fallback_speed="1000"
+    speed_path="/sys/class/net/${interface}/speed"
+    bridge_path="/sys/class/net/${interface}/brif"
+
+    if [ -e "${bridge_path}" ]; then
+        # echo "${interface} is a bridge" >&2
+        case "$(ls "${bridge_path}" | wc -l)" in
+        0)
+            # echo "${interface} bridge is empty, fallback to ${fallback_speed}" >&2
+            echo "${fallback_speed}"
+            ;;
+        1)
+            bridge_iface="$(ls "${bridge_path}" | head -n 1)"
+            # echo "${interface} bridge has 1 interface: ${bridge_iface}" >&2
+            interface_speed "${bridge_iface}"
+            ;;
+        *)
+            # echo "${interface} bridge has many interfaces" >&2
+            min_speed=""
+            for bridge_iface in $(ls "${bridge_path}"); do
+                if realpath "/sys/class/net/${bridge_iface}" | grep --quiet --invert-match virtual; then
+                    speed=$(head -n 1 "/sys/class/net/${bridge_iface}/speed")
+                    # echo "${bridge_iface} is a physical interface, keep" >&2
+                    if [ -z "${min_speed}" ] || [ "${min_speed}" -gt "${speed}" ]; then
+                        # echo "new min speed with ${bridge_iface}: ${speed}" >&2
+                        min_speed="${speed}"
+                    fi
+                else
+                    # echo "${bridge_iface} is a virtual interface, skip" >&2
+                    : # noop
+                fi
+            done
+            if [ -n "${min_speed}" ] && [ "${min_speed}" -gt "0" ]; then
+                echo "${min_speed}"
+            else
+                echo "${fallback_speed}"
+            fi
+            ;;
+        esac
+    elif [ -e "${speed_path}" ]; then
+        head -n 1 "${speed_path}"
     else
-        # fallback on 1Gb/s if unknown
-        echo "1000"
+        echo "${fallback_speed}"
     fi
 }
 
@@ -230,7 +267,7 @@ migrate_vm_to() {
     interface_speed=$(interface_speed "${drbd_interface}")
     migrate_speed=$(echo "${interface_speed}*0.8/8" | bc)
 
-    # echo "Migration speed set to ${migrate_speed}MiB/s"
+    echo "Migration speed set to ${migrate_speed}MiB/s"
     virsh --quiet migrate-setspeed "${vm}" "${migrate_speed}"
 
     export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
