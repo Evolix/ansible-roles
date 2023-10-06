@@ -8,10 +8,9 @@
 # * logging (stdout/stderr + syslog)
 # * more checks, rollback if needed…
 # * different return codes for different errors
-# * migrate "from"
 # * switch to Bash to use local and readonly variables
 
-VERSION="23.10"
+VERSION="23.10.1"
 
 show_version() {
     cat <<END
@@ -39,22 +38,14 @@ show_usage() {
     cat <<END
 Usage: migrate-vm --vm <vm-name>
   or   migrate-vm --vm <vm-name> --resource <drbd-resource-name>
-  or   migrate-vm --persistent <vm-name>
-  or   migrate-vm --transient <vm-name>
 
 Options
   --vm              VM name (from libvirt point of view)
   --resource        DRBD resource name (default to VM name)
-  --transient       Leave VM as defined on hosts
-  --persistent      Undefine the VM on the source
                     and define it on the destination (default)
   --help            Print this message and exit
   --version         Print version and exit
 END
-}
-
-persistent() {
-    test "${persistent}" -eq 1
 }
 
 server_ips() {
@@ -147,6 +138,11 @@ is_vm_running_locally() {
     vm=${1:-}
 
     virsh list --state-running --name | grep --fixed-strings --line-regexp --quiet "${vm}"
+}
+is_vm_defined_locally() {
+    vm=${1:-}
+
+    virsh list --all --name | grep --fixed-strings --line-regexp --quiet "${vm}"
 }
 
 execute_remotely() {
@@ -250,15 +246,6 @@ undefine_vm() {
     fi
 }
 
-migrate_vm_from() {
-    vm=${1:-}
-    remote_ip=${2:-}
-    current_ip=${3:-}
-
-    export VIRSH_DEFAULT_CONNECT_URI="qemu+ssh://${remote_ip}/system"
-    virsh migrate --live --unsafe --verbose "${vm}" "qemu:///system" "tcp://${current_ip}/"
-}
-
 migrate_vm_to() {
     vm=${1:-}
     remote_ip=${2:-}
@@ -274,24 +261,28 @@ migrate_vm_to() {
     virsh migrate --live --unsafe --verbose "${vm}" "qemu+ssh://${remote_ip}/system" "tcp://${remote_ip}/"
 }
 
-migrate_from() {
-    vm=${1:-}
-    resource=${2:-}
-    remote_ip=${3:-}
-    remote_host=${4:-}
-    current_ip=${5:-}
-    current_host=${6:-}
+# start_vm() {
+#     vm=${1:-}
+#     remote_ip=${2:-}
 
-    echo "Start migration of ${vm} from ${remote_ip} (${remote_host})"
+#     command="virsh start ${vm}"
 
-    set_drbd_role primary "${resource}"
-    migrate_vm_from "${vm}" "${remote_ip}" "${current_ip}"
-    if persistent; then
-        define_vm "${vm}"
-        undefine_vm "${vm}" "${remote_ip}"
-    fi
-    set_drbd_role secondary "${resource}" "${remote_ip}"
-}
+#     if [ -z "${remote}" ]; then
+#         retval=$(eval "${command}")
+#         retcode=$?
+#         if [ ${retcode} != 0 ]; then
+#             echo "An error occured while starting ${vm} : ${retval}" >&2
+#             exit 1
+#         fi
+#     else
+#         retval=$(execute_remotely "${remote}" "${command}")
+#         retcode=$?
+#         if [ ${retcode} != 0 ]; then
+#             echo "An error occured while remotely starting ${vm}: ${retval}" >&2
+#             exit 1
+#         fi
+#     fi
+# }
 
 migrate_to() {
     vm=${1:-}
@@ -304,11 +295,18 @@ migrate_to() {
     check_drbd_sync "${resource}"
 
     set_drbd_role primary "${resource}" "${remote_ip}"
-    migrate_vm_to "${vm}" "${remote_ip}"
-    if persistent; then
-        define_vm "${vm}" "${remote_ip}"
-        undefine_vm "${vm}"
+    sleep 1
+
+    if is_vm_running_locally "${vm}"; then
+        migrate_vm_to "${vm}" "${remote_ip}"
+    else
+        echo "${vm} is not running locally, so it won't be started on ${remote_host}"
     fi
+
+    define_vm "${vm}" "${remote_ip}"
+    undefine_vm "${vm}"
+
+    sleep 1
     set_drbd_role secondary "${resource}"
 }
 
@@ -336,14 +334,21 @@ main() {
         fi
     done
 
-    if is_vm_running_locally "${vm}"; then
+    if is_vm_defined_locally "${vm}"; then
         migrate_to "${vm}" "${resource}" "${remote_ip}" "${remote_host}"
     else
-        echo "Migrating \"from\" is not supported yet" >&2
+        echo "VM \"${vm}\" is not defined." >&2
         exit 1
-
-        migrate_from "${vm}" "${resource}" "${remote_ip}" "${remote_host}" "${current_ip}" "${current_host}"
     fi
+
+    # if is_vm_running_locally "${vm}"; then
+    #     migrate_to "${vm}" "${resource}" "${remote_ip}" "${remote_host}"
+    # else
+    #     echo "Migrating \"from\" is not supported yet" >&2
+    #     exit 1
+
+    #     migrate_from "${vm}" "${resource}" "${remote_ip}" "${remote_host}" "${current_ip}" "${current_host}"
+    # fi
 }
 
 if [ "$(id -u)" -ne "0" ] ; then
@@ -364,12 +369,11 @@ while :; do
             exit 0
             ;;
         --transient)
-            transient=1
-            persistent=0
+            printf 'WARNING: "transient" mode has been removed.\n' >&2
+            exit 1
             ;;
         --persistent)
-            transient=0
-            persistent=1
+            printf 'WARNING: "persistent" mode is the only one available. You can remove this argument from your command.\n' >&2
             ;;
         --vm)
             # with value separated by space
@@ -433,8 +437,6 @@ done
 # Initial values
 vm=${vm:-}
 resource=${resource:-${vm}}
-transient=${transient:-0}
-persistent=${persistent:-1}
 
 set -u
 set -e
