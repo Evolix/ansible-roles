@@ -49,7 +49,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * elasticsearch: improve networking configuration
 * evolinux-base: include files under `sshd_config.d`
 * evolinux-users: remove Stretch references in tasks that also apply to next Debian versions
-* evomaintenance: upstream release 23.10
+* evomaintenance: upstream release 23.10.1
 * lxc-php: change LXC container in bookworm for php82
 * minifirewall: update nrpe script to check active configuration
 * minifirewall: upstream release 23.07

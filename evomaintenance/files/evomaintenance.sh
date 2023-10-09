@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION="23.10"
+VERSION="23.10.1"
 
 show_version() {
     cat <<END
@@ -122,8 +122,8 @@ get_now() {
 }
 
 get_user() {
-    if [ -n "${USER}" ]; then
-	    echo "${USER}"
+    if [ -n "${FORCE_USER}" ]; then
+	    echo "${FORCE_USER}"
     else
 	    logname
     fi
@@ -399,7 +399,7 @@ AUTO=${AUTO:-"0"}
 EVOCHECK=${EVOCHECK:-"0"}
 GIT_STATUS_MAX_LINES=${GIT_STATUS_MAX_LINES:-20}
 API_ENDPOINT=${API_ENDPOINT:-""}
-USER=${USER:-""}
+FORCE_USER=${FORCE_USER:-""}
 
 # initialize variables
 MESSAGE=""
@@ -481,12 +481,12 @@ while :; do
             # Deprecated, backward compatibility
             # author change as autosysadmin
             printf 'WARNING: "--autosysadmin" is deprecated, use "--user autosysadmin".\n' >&2
-            USER="autosysadmin"
+            FORCE_USER="autosysadmin"
             ;;
         -u|--user)
             # user options, with value speparated by space
             if [ -n "$2" ]; then
-                USER=$2
+                FORCE_USER=$2
                 shift
             else
                 printf 'ERROR: "--user" requires a non-empty option argument.\n' >&2
@@ -495,7 +495,7 @@ while :; do
             ;;
         --user=?*)
             # message options, with value speparated by =
-            USER=${1#*=}
+            FORCE_USER=${1#*=}
             ;;
         --user=)
             # message options, without value
