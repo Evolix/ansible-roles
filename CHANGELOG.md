@@ -82,6 +82,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * packweb-apache,nagios-nrpe: add missing task and config for PHP 8.2 container
 * postfix: add missing `localhost.$mydomain` to `mydestination`
 * redis: replace erroneous `ini_file` module for Munin config, fix dedicated Munin config filename (z-XXX).
+* evolinux-base: use lineinfile instead of replace under root task
 
 ### Removed
 
