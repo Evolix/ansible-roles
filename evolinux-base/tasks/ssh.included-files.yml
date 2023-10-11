@@ -36,6 +36,7 @@
 - name: "Add AllowUsers sshd directive for current user"
   ansible.builtin.lineinfile:
     dest: /etc/ssh/sshd_config.d/allow_evolinux_user.conf
+    create: yes
     line: "AllowUsers {{ logname.stdout }}"
     insertafter: 'Subsystem'
     validate: '/usr/sbin/sshd -t -f %s'

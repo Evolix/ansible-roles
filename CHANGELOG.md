@@ -83,6 +83,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * postfix: add missing `localhost.$mydomain` to `mydestination`
 * redis: replace erroneous `ini_file` module for Munin config, fix dedicated Munin config filename (z-XXX).
 * evolinux-base: use lineinfile instead of replace under root task
+* evolinux-base: Corriger autorisation pour evolinux_user
 
 ### Removed
 
