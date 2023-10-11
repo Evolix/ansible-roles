@@ -84,6 +84,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * redis: replace erroneous `ini_file` module for Munin config, fix dedicated Munin config filename (z-XXX).
 * evolinux-base: use lineinfile instead of replace under root task
 * evolinux-base: Corriger autorisation pour evolinux_user
+* docker-host: Retirer directive state en trop
 
 ### Removed
 

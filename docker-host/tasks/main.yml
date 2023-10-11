@@ -51,7 +51,6 @@
   ansible.builtin.template:
     src: docker.sources.j2
     dest: /etc/apt/sources.list.d/docker.sources
-    state: present
   register: docker_sources
   when: ansible_distribution_major_version is version('12', '>=')
 
