@@ -45,6 +45,5 @@
 
 - ansible.builtin.meta: flush_handlers
 
-# TODO vérifier présence de Include /etc/ssh/sshd_config.d/*.conf
 # TODO si allowusers et allowgroups, ajouter utilisateur aux deux
 # TODO si allowgroups, ajouter groupe de l’utilisateur
