@@ -13,6 +13,7 @@
       - libxslt1-dev
       - zlib1g-dev
       - pkg-config
+      - libyaml-dev
     state: present
   tags:
     - rbenv
