@@ -1,0 +1,104 @@
+---
+
+# System compatibility check.
+# Untested on old (Jessie & older) Debian versions
+- name: "System compatibility check"
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution == "Debian"
+      - ansible_distribution_major_version is version_compare('9', '>=')
+    msg: pam_policy is only compatible with Debian >= 9
+
+# yescrypt, Debian 11 default hashing alg isn't present on Debian 10 and lower
+- name: "Set hashing alg (sha512 - Debian <= 10)"
+  ansible.builtin.set_fact:
+    pam_policy_hashing_alg: 'sha512'
+  when:
+    ansible_distribution_major_version is version_compare('10', '<=')
+
+- name: "Set hashing alg (yescrypt - Debian >= 11 )"
+  ansible.builtin.set_fact:
+    pam_policy_hashing_alg: 'yescrypt'
+  when:
+    ansible_distribution_major_version is version_compare('11', '>=')
+
+
+# PAM -- pam_pwquality
+
+- name: libpam-pwquality is installed
+  ansible.builtin.apt:
+    state: present
+    name:
+      - libpam-pwquality
+      - cracklib-runtime
+  when: policy_pam_pwquality
+
+- name: Enable pam_pwquality
+  ansible.builtin.lineinfile:
+    dest: /etc/pam.d/common-password
+    regexp: '^password\s+requisite\s+pam_pwquality.so'
+    line: "password       requisite                       pam_pwquality.so retry=3"
+    insertafter: '(the "Primary" block)'
+  when: policy_pam_pwquality
+
+- name: Disable pam_pwquality
+  ansible.builtin.lineinfile:
+    dest: /etc/pam.d/common-password
+    regexp: '^password\s+requisite\s+pam_pwquality.so'
+    state: absent
+  when: policy_pam_pwquality is false
+
+- name: Configure pam_pwquality
+  ansible.builtin.replace:
+    dest: /etc/security/pwquality.conf
+    regexp: "^#? ?{{ item.name }} = .*"
+    replace: "{{ item.name }} = {{ item.value }}"
+  with_items:
+    - { name: minlen, value: "{{ policy_pam_pwquality_minlen }}" }
+    - { name: dcredit, value: "{{ policy_pam_pwquality_dcredit }}" }
+    - { name: ucredit, value: "{{ policy_pam_pwquality_ucredit }}" }
+    - { name: lcredit, value: "{{ policy_pam_pwquality_lcredit }}" }
+    - { name: ocredit, value: "{{ policy_pam_pwquality_ocredit }}" }
+  when: policy_pam_pwquality
+
+
+
+# PAM -- pam_pwhistory
+
+- name: Enable pam_pwhistory
+  ansible.builtin.lineinfile:
+    dest: /etc/pam.d/common-password
+    regexp: '^password\s+required\s+pam_pwhistory.so'
+    line: "password       required           pam_pwhistory.so  remember={{ policy_pam_pwhistory_length }} {{ 'use_authtok' if policy_pam_pwquality}}"
+    insertbefore: 'pam_unix.so'
+  when: policy_pam_pwhistory
+
+- name: Disable pam_pwhistory
+  ansible.builtin.lineinfile:
+    dest: /etc/pam.d/common-password
+    regexp: '^password\s+required\s+pam_pwhistory.so'
+    state: absent
+  when: policy_pam_pwhistory is false
+
+# Enforce password minimal age to prevent pam_pwhistory to be circumvented by multiples password changes
+- name: Change PASS_MIN_DAYS
+  ansible.builtin.replace:
+    dest: /etc/login.defs
+    replace: 'PASS_MIN_DAYS\g<1>{{ policy_pam_password_min_days }}'
+    regexp:  '^PASS_MIN_DAYS(\s+).*'
+
+
+# PAM -- pam_unix
+- name: Update pam_unix if previous modules were enabled
+  ansible.builtin.lineinfile:
+    dest: /etc/pam.d/common-password
+    regexp: 'pam_unix.so obscure'
+    line: "password       [success=1 default=ignore]      pam_unix.so obscure use_authtok try_first_pass {{ pam_policy_hashing_alg }}"
+  when: policy_pam_pwhistory or policy_pam_pwquality
+
+- name: Update pam_unix if previous modules are all disabled
+  ansible.builtin.lineinfile:
+    dest: /etc/pam.d/common-password
+    regexp: 'pam_unix.so obscure'
+    line: "password       [success=1 default=ignore]      pam_unix.so obscure {{ pam_policy_hashing_alg }}"
+  when: policy_pam_pwhistory is false and policy_pam_pwquality is false

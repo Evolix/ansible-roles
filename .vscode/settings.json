@@ -3,5 +3,6 @@
         "*.yml": "ansible",
         "*.yaml": "ansible"
     },
-    "yaml.format.enable": false
+    "yaml.format.enable": false,
+    "ansible.python.interpreterPath": "/bin/python"
 }

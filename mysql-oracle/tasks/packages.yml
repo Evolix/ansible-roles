@@ -51,7 +51,7 @@
     mode: "0755"
     owner: root
     group: root
-    force: yes
+    force: true
 
 - name: systemd unit is installed
   ansible.builtin.copy:
@@ -60,7 +60,7 @@
     mode: "0644"
     owner: root
     group: root
-    force: yes
+    force: true
   register: mysql_systemd_unit
 
 - name: APT cache is up-to-date

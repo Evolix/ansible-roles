@@ -43,7 +43,7 @@
     owner: root
     group: root
     mode: "0644"
-    force: no
+    force: false
 
 - name: Copy Apache settings for modules
   ansible.builtin.template:
@@ -52,7 +52,7 @@
     owner: root
     group: root
     mode: "0644"
-    force: no
+    force: false
 
 - name: Ensure Apache modules configs are enabled
   ansible.builtin.command:

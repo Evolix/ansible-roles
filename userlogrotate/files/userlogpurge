@@ -1,0 +1,6 @@
+#!/usr/bin/bash
+# Purge des logs utilisateurs
+# Ne pas activer sans l'accord du client.
+
+find /home/*/log/ -type f -mtime +365 -delete
+

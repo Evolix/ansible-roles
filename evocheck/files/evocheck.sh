@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian) server
 # powered by Evolix
 
-VERSION="23.04.01"
+VERSION="23.07"
 readonly VERSION
 
 # base functions
@@ -55,7 +55,7 @@ detect_os() {
         DEBIAN_MAIN_VERSION=$(cut -d "." -f 1 < /etc/debian_version)
 
         if [ "${DEBIAN_MAIN_VERSION}" -lt "9" ]; then
-            echo "Debian ${DEBIAN_MAIN_VERSION} is incompatible with this version of evocheck." >&2 
+            echo "Debian ${DEBIAN_MAIN_VERSION} is incompatible with this version of evocheck." >&2
             echo "This version is built for Debian 9 and later." >&2
             exit
         fi
@@ -231,8 +231,15 @@ check_customcrontab() {
     test "$found_lines" = 4 && failed "IS_CUSTOMCRONTAB" "missing custom field in crontab"
 }
 check_sshallowusers() {
-    grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d \
-        || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
+    if is_debian_bookworm; then
+        grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config.d \
+            || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config.d/*"
+        grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config \
+            && failed "IS_SSHALLOWUSERS" "AllowUsers or AllowGroups directive present in sshd_config"
+    else
+        grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d \
+            || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
+    fi
 }
 check_diskperf() {
     perfFile="/root/disk-perf.txt"
@@ -276,7 +283,7 @@ check_alert5minifw() {
     fi
 }
 check_minifw() {
-    /sbin/iptables -L -n | grep -q -E "^ACCEPT\s*all\s*--\s*31\.170\.8\.4\s*0\.0\.0\.0/0\s*$" \
+    /sbin/iptables -L -n | grep -q -E "^ACCEPT\s*(all|0)\s*--\s*31\.170\.8\.4\s*0\.0\.0\.0/0\s*$" \
         || failed "IS_MINIFW" "minifirewall seems not started"
 }
 check_minifw_includes() {
@@ -307,7 +314,7 @@ check_nrpedisks() {
     test "$NRPEDISKS" = "$DFDISKS" || failed "IS_NRPEDISKS" "there must be $DFDISKS check_disk in nrpe.cfg"
 }
 check_nrpepid() {
-    if is_debian_bullseye; then
+    if { is_debian_bullseye || is_debian_bookworm ; }; then
         { test -e /etc/nagios/nrpe.cfg \
             && grep -q "^pid_file=/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
         } || failed "IS_NRPEPID" "missing or wrong pid_file directive in nrpe.cfg"
@@ -874,19 +881,27 @@ check_ldap_backup() {
 check_redis_backup() {
     if is_installed redis-server; then
         # You could change the default path in /etc/evocheck.cf
-        # REDIS_BACKUP_PATH may contain space-separated paths, example:
+        # REDIS_BACKUP_PATH may contain space-separated paths, for example:
         # REDIS_BACKUP_PATH='/home/backup/redis-instance1/dump.rdb /home/backup/redis-instance2/dump.rdb'
-        # Old default path: /home/backup/dump.rdb
-        # New default path: /home/backup/redis/dump.rdb
-        if [ -z "${REDIS_BACKUP_PATH}" ]; then
-            if ! [ -f "/home/backup/dump.rdb" ] && ! [ -f "/home/backup/redis/dump.rdb" ]; then
-                failed "IS_REDIS_BACKUP" "Redis dump is missing (/home/backup/dump.rdb or /home/backup/redis/dump.rdb)."
-            fi
-        else
-            for file in ${REDIS_BACKUP_PATH}; do
-                test -f "${file}" || failed "IS_REDIS_BACKUP" "Redis dump ${file} is missing."
-            done
+        # Warning : this script doesn't handle spaces in file paths !
+
+        REDIS_BACKUP_PATH="${REDIS_BACKUP_PATH:-$(find /home/backup/ -iname "*.rdb*")}"
+
+        # Check number of dumps
+        n_instances=$(pgrep 'redis-server' | wc -l)
+        n_dumps=$(echo $REDIS_BACKUP_PATH | wc -w)
+        if [ ${n_dumps} -lt ${n_instances} ]; then
+            failed "IS_REDIS_BACKUP" "Missing Redis dump : ${n_instances} instance(s) found versus ${n_dumps} dump(s) found."
         fi
+
+        # Check last dump date
+        age_threshold=$(date +"%s" -d "now - 2 days")
+        for dump in ${REDIS_BACKUP_PATH}; do
+            last_update=$(stat -c "%Z" $dump)
+            if [ "${last_update}" -lt "${age_threshold}" ]; then
+                failed "IS_REDIS_BACKUP" "Redis dump ${dump} is older than 2 days."
+            fi
+        done
     fi
 }
 check_elastic_backup() {
@@ -1076,14 +1091,14 @@ check_usrsharescripts() {
 check_sshpermitrootno() {
     sshd_args="-C addr=,user=,host=,laddr=,lport=0"
     if is_debian_stretch; then
-	    # Noop, we'll use the default $sshd_args
+        # Noop, we'll use the default $sshd_args
         :
     elif is_debian_buster; then
-	    sshd_args="${sshd_args},rdomain="
+        sshd_args="${sshd_args},rdomain="
     else
-	    # NOTE: From Debian Bullseye 11 onward, with OpenSSH 8.1, the argument
+        # NOTE: From Debian Bullseye 11 onward, with OpenSSH 8.1, the argument
         # -T doesn't require the additional -C.
-	    sshd_args=
+        sshd_args=
     fi
     # shellcheck disable=SC2086
     if ! (sshd -T ${sshd_args} 2> /dev/null | grep -qi 'permitrootlogin no'); then
@@ -1216,7 +1231,7 @@ check_lxc_container_resolv_conf() {
             else
                 failed "IS_LXC_CONTAINER_RESOLV_CONF" "resolv.conf missing in container ${container}"
             fi
-        done 
+        done
     fi
 }
 # Check that there are containers if lxc is installed.
@@ -1302,7 +1317,7 @@ get_version() {
     case "${program}" in
         ## Special case if `command --version => 'command` is not the standard way to get the version
         # my_command)
-        #    /path/to/my_command --get-version 
+        #    /path/to/my_command --get-version
         #    ;;
 
         add-vm)

@@ -21,7 +21,7 @@ action = %({{ fail2ban_default_action }})s
 
 [sshd]
 enabled = {{ fail2ban_sshd }}
-port    = ssh,2222,22222
+port    = {{ fail2ban_sshd_port }}
 
 maxretry = {{ fail2ban_sshd_maxretry }}
 findtime = {{ fail2ban_sshd_findtime }}

@@ -8,16 +8,15 @@
 # * logging (stdout/stderr + syslog)
 # * more checks, rollback if needed…
 # * different return codes for different errors
-# * migrate "from"
 # * switch to Bash to use local and readonly variables
 
-VERSION="21.04.1"
+VERSION="23.10.1"
 
 show_version() {
     cat <<END
 migrate-vm version ${VERSION}
 
-Copyright 2018-2021 Evolix <info@evolix.fr>,
+Copyright 2018-2023 Evolix <info@evolix.fr>,
                Jérémy Lecour <jlecour@evolix.fr>,
                Victor Laborie <vlaborie@evolix.fr>
                and others.
@@ -39,22 +38,14 @@ show_usage() {
     cat <<END
 Usage: migrate-vm --vm <vm-name>
   or   migrate-vm --vm <vm-name> --resource <drbd-resource-name>
-  or   migrate-vm --persistent <vm-name>
-  or   migrate-vm --transient <vm-name>
 
 Options
   --vm              VM name (from libvirt point of view)
   --resource        DRBD resource name (default to VM name)
-  --transient       Leave VM as defined on hosts
-  --persistent      Undefine the VM on the source
                     and define it on the destination (default)
   --help            Print this message and exit
   --version         Print version and exit
 END
-}
-
-persistent() {
-    test "${persistent}" -eq 1
 }
 
 server_ips() {
@@ -70,6 +61,73 @@ is_drbd_resource() {
     test -f "$(drbd_config_file "${resource}")" && drbdadm role "${resource}" >/dev/null 2>&1
 }
 
+check_drbd_sync() {
+    resource=${1:-}
+
+    set +e
+    dstate=$(drbdadm dstate "${resource}" | grep -vF 'UpToDate/UpToDate')
+    cstate=$(drbdadm cstate "${resource}" | grep -vF 'Connected')
+    set -e
+
+    if [ -n "${dstate}" ] || [ -n "${cstate}" ]; then
+        echo "DRBD resource ${resource} is not up-to-date" >&2
+        exit 1
+    fi
+}
+
+drbd_interface() {
+    drbd_peer=${1:-}
+    ip route get "${drbd_peer}" | grep --only-matching --extended-regexp 'dev\s+\S+' | awk '{print $2}'
+}
+
+interface_speed() {
+    interface=${1:-}
+    fallback_speed="1000"
+    speed_path="/sys/class/net/${interface}/speed"
+    bridge_path="/sys/class/net/${interface}/brif"
+
+    if [ -e "${bridge_path}" ]; then
+        # echo "${interface} is a bridge" >&2
+        case "$(ls "${bridge_path}" | wc -l)" in
+        0)
+            # echo "${interface} bridge is empty, fallback to ${fallback_speed}" >&2
+            echo "${fallback_speed}"
+            ;;
+        1)
+            bridge_iface="$(ls "${bridge_path}" | head -n 1)"
+            # echo "${interface} bridge has 1 interface: ${bridge_iface}" >&2
+            interface_speed "${bridge_iface}"
+            ;;
+        *)
+            # echo "${interface} bridge has many interfaces" >&2
+            min_speed=""
+            for bridge_iface in $(ls "${bridge_path}"); do
+                if realpath "/sys/class/net/${bridge_iface}" | grep --quiet --invert-match virtual; then
+                    speed=$(head -n 1 "/sys/class/net/${bridge_iface}/speed")
+                    # echo "${bridge_iface} is a physical interface, keep" >&2
+                    if [ -z "${min_speed}" ] || [ "${min_speed}" -gt "${speed}" ]; then
+                        # echo "new min speed with ${bridge_iface}: ${speed}" >&2
+                        min_speed="${speed}"
+                    fi
+                else
+                    # echo "${bridge_iface} is a virtual interface, skip" >&2
+                    : # noop
+                fi
+            done
+            if [ -n "${min_speed}" ] && [ "${min_speed}" -gt "0" ]; then
+                echo "${min_speed}"
+            else
+                echo "${fallback_speed}"
+            fi
+            ;;
+        esac
+    elif [ -e "${speed_path}" ]; then
+        head -n 1 "${speed_path}"
+    else
+        echo "${fallback_speed}"
+    fi
+}
+
 drbd_peers() {
     drbd_config_file=$(drbd_config_file "${1:-}")
 
@@ -81,6 +139,11 @@ is_vm_running_locally() {
 
     virsh list --state-running --name | grep --fixed-strings --line-regexp --quiet "${vm}"
 }
+is_vm_defined_locally() {
+    vm=${1:-}
+
+    virsh list --all --name | grep --fixed-strings --line-regexp --quiet "${vm}"
+}
 
 execute_remotely() {
     remote=${1:-}
@@ -88,7 +151,7 @@ execute_remotely() {
     command=${*}
 
     # shellcheck disable=SC2029
-    ssh "${remote}" "${command}"
+    ssh -n -o BatchMode=yes "${remote}" "${command}"
 }
 
 set_drbd_role() {
@@ -183,41 +246,43 @@ undefine_vm() {
     fi
 }
 
-migrate_vm_from() {
-    vm=${1:-}
-    remote_ip=${2:-}
-    current_ip=${3:-}
-
-    export VIRSH_DEFAULT_CONNECT_URI="qemu+ssh://${remote_ip}/system"
-    virsh migrate --live --unsafe --verbose "${vm}" "qemu:///system" "tcp://${current_ip}/"
-}
-
 migrate_vm_to() {
     vm=${1:-}
     remote_ip=${2:-}
+
+    drbd_interface=$(drbd_interface "${remote_ip}")
+    interface_speed=$(interface_speed "${drbd_interface}")
+    migrate_speed=$(echo "${interface_speed}*0.8/8" | bc)
+
+    echo "Migration speed set to ${migrate_speed}MiB/s"
+    virsh --quiet migrate-setspeed "${vm}" "${migrate_speed}"
 
     export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
     virsh migrate --live --unsafe --verbose "${vm}" "qemu+ssh://${remote_ip}/system" "tcp://${remote_ip}/"
 }
 
-migrate_from() {
-    vm=${1:-}
-    resource=${2:-}
-    remote_ip=${3:-}
-    remote_host=${4:-}
-    current_ip=${5:-}
-    current_host=${6:-}
+# start_vm() {
+#     vm=${1:-}
+#     remote_ip=${2:-}
 
-    echo "Start migration of ${vm} from ${remote_ip} (${remote_host})"
+#     command="virsh start ${vm}"
 
-    set_drbd_role primary "${resource}"
-    migrate_vm_from "${vm}" "${remote_ip}" "${current_ip}"
-    set_drbd_role secondary "${resource}" "${remote_ip}"
-    if persistent; then
-        define_vm "${vm}"
-        undefine_vm "${vm}" "${remote_ip}"
-    fi
-}
+#     if [ -z "${remote}" ]; then
+#         retval=$(eval "${command}")
+#         retcode=$?
+#         if [ ${retcode} != 0 ]; then
+#             echo "An error occured while starting ${vm} : ${retval}" >&2
+#             exit 1
+#         fi
+#     else
+#         retval=$(execute_remotely "${remote}" "${command}")
+#         retcode=$?
+#         if [ ${retcode} != 0 ]; then
+#             echo "An error occured while remotely starting ${vm}: ${retval}" >&2
+#             exit 1
+#         fi
+#     fi
+# }
 
 migrate_to() {
     vm=${1:-}
@@ -227,13 +292,22 @@ migrate_to() {
 
     echo "Start migration of ${vm} to ${remote_ip} (${remote_host})"
 
+    check_drbd_sync "${resource}"
+
     set_drbd_role primary "${resource}" "${remote_ip}"
-    migrate_vm_to "${vm}" "${remote_ip}"
-    set_drbd_role secondary "${resource}"
-    if persistent; then
-        define_vm "${vm}" "${remote_ip}"
-        undefine_vm "${vm}"
+    sleep 1
+
+    if is_vm_running_locally "${vm}"; then
+        migrate_vm_to "${vm}" "${remote_ip}"
+    else
+        echo "${vm} is not running locally, so it won't be started on ${remote_host}"
     fi
+
+    define_vm "${vm}" "${remote_ip}"
+    undefine_vm "${vm}"
+
+    sleep 1
+    set_drbd_role secondary "${resource}"
 }
 
 main() {
@@ -260,14 +334,21 @@ main() {
         fi
     done
 
-    if is_vm_running_locally "${vm}"; then
+    if is_vm_defined_locally "${vm}"; then
         migrate_to "${vm}" "${resource}" "${remote_ip}" "${remote_host}"
     else
-        echo "Migrating \"from\" is not supported yet" >&2
+        echo "VM \"${vm}\" is not defined." >&2
         exit 1
-
-        migrate_from "${vm}" "${resource}" "${remote_ip}" "${remote_host}" "${current_ip}" "${current_host}"
     fi
+
+    # if is_vm_running_locally "${vm}"; then
+    #     migrate_to "${vm}" "${resource}" "${remote_ip}" "${remote_host}"
+    # else
+    #     echo "Migrating \"from\" is not supported yet" >&2
+    #     exit 1
+
+    #     migrate_from "${vm}" "${resource}" "${remote_ip}" "${remote_host}" "${current_ip}" "${current_host}"
+    # fi
 }
 
 if [ "$(id -u)" -ne "0" ] ; then
@@ -288,12 +369,11 @@ while :; do
             exit 0
             ;;
         --transient)
-            transient=1
-            persistent=0
+            printf 'WARNING: "transient" mode has been removed.\n' >&2
+            exit 1
             ;;
         --persistent)
-            transient=0
-            persistent=1
+            printf 'WARNING: "persistent" mode is the only one available. You can remove this argument from your command.\n' >&2
             ;;
         --vm)
             # with value separated by space
@@ -357,8 +437,6 @@ done
 # Initial values
 vm=${vm:-}
 resource=${resource:-${vm}}
-transient=${transient:-0}
-persistent=${persistent:-1}
 
 set -u
 set -e

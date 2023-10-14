@@ -18,7 +18,7 @@
 
 - name: Install Evolinux
   hosts: launched-instances
-  become: yes
+  become: true
 
   vars_files:
   - 'vars/secrets.yml'

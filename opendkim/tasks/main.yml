@@ -7,6 +7,7 @@
       - ssl-cert
       - dns-root-data
     state: present
+    update_cache: yes
   tags:
   - opendkim
 
@@ -45,12 +46,22 @@
   tags:
   - opendkim
 
+- name: Add Include in opendkim.conf
+  ansible.builtin.lineinfile:
+    dest: /etc/opendkim.conf
+    line: 'Include /etc/opendkim-evolix.conf'
+    state: present
+    create: no
+    mode: "0644"
+  tags:
+  - opendkim
+
 - name: copy OpenDKIM config
   ansible.builtin.copy:
-    src: opendkim.conf
-    dest: /etc/opendkim.conf
+    src: opendkim-evolix.conf
+    dest: /etc/opendkim-evolix.conf
     mode: "0644"
-    force: yes
+    force: true
   notify: restart opendkim
   tags:
   - opendkim
@@ -62,7 +73,7 @@
     owner: opendkim
     group: opendkim
     mode: "0750"
-    force: yes
+    force: true
   tags:
   - opendkim
 

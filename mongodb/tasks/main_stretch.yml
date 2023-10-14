@@ -28,7 +28,7 @@
   ansible.builtin.template:
     src: logrotate_stretch.j2
     dest: /etc/logrotate.d/mongodb-server
-    force: yes
+    force: true
     backup: no
 
 - name: disable previous logrotate

@@ -1,5 +1,11 @@
 #!/bin/sh
 
+set -u
+
+return=0
+summary=""
+details=""
+
 is_alert5_enabled() {
   # It's not very clear how to reliably detect if a SysVinit script
   # wrapped in a systemd unit is enabled or not.
@@ -39,48 +45,96 @@ is_minifirewall_started() {
     if test -x /usr/share/scripts/minifirewall_status; then
       /usr/share/scripts/minifirewall_status > /dev/null
     else
-      /sbin/iptables -L -n | grep -q -E "^(DROP\s+(udp|17)|ACCEPT\s+(icmp|1)))\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
+      /sbin/iptables -L -n | grep -q -E "^(DROP\s+(udp|17)|ACCEPT\s+(icmp|1))\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
     fi
   fi
 }
 
-return_critical() {
-  echo "CRITICAL: $1"
-  exit 2
+summary_critical() {
+  summary="CRITICAL: $1"
+  [ "${return}" -le 2 ] && return=2
 }
-
-return_warning() {
-  echo "WARNING: $1"
-  exit 1
+summary_warning() {
+  summary="WARNING: $1"
+  [ "${return}" -le 1 ] && return=1
 }
-
-return_ok() {
-  echo "OK: $1"
-  exit 0
+summary_ok() {
+  summary="OK: $1"
+  [ "${return}" -le 0 ] && return=0
+}
+append_details() {
+  if [ -z "${details}" ]; then
+    details="${1}\n"
+  else
+    details="${details}$1\n"
+  fi
 }
 
 main() {
   if is_alert5_enabled; then
-    if  is_minifirewall_enabled; then
+    append_details "alert5 is enabled"
+
+    if is_minifirewall_enabled; then
+      append_details "minifirewall is enabled"
+
       if is_minifirewall_started; then
-        return_ok "Minifirewall is started."
+        append_details "minifirewall is started"
+
+        check_result=$(/etc/init.d/minifirewall check-active-config)
+        check_rc=$?
+
+        if [ ${check_rc} -eq 0 ]; then
+          append_details "configuration is up-to-date"
+          summary_ok "minifirewall is started and configuration is up-to-date"
+        else
+          if echo "${check_result}" | grep --quiet --regexp 'usage'; then
+            append_details "minifirewall is too old to check active configuration"
+          else
+            case "${check_rc}" in
+                1)
+                  summary_warning "minifirewall is started, but unknown configuration state"
+                ;;
+                2)
+                  summary_critical "minifirewall is started, but configuration is outdated"
+                  append_details "configuration is outdated"
+                ;;
+                *)
+                  summary_unchk "minifirewall is started, but unknown configuration state"
+                ;;
+            esac
+            append_details "=> run '/etc/init.d/minifirewall check-active-config' for details"
+          fi
+        fi
       else
-        return_critical "Minifirewall is not started."
+        append_details "minifirewall is stopped"
+        summary_critical "minifirewall is stopped, but enabled in alert5 or systemd"
       fi
     else
+      append_details "minifirewall is disabled"
+
       if is_minifirewall_started; then
-        return_warning "Minifirewall is started, but disabled in alert5 or systemd."
+        append_details "minifirewall is started"
+        summary_warning "minifirewall is started, but disabled in alert5 or systemd"
       else
-        return_ok "Minifirewall is not started, but disabled in alert5 or systemd."
+        append_details "minifirewall is stopped"
+        summary_ok "minifirewall is stopped, but disabled in alert5 or systemd"
       fi
     fi
   else
+    append_details "alert5 is disabled"
+
     if is_minifirewall_started; then
-      return_warning "Minifirewall is started, but Alert5 script is not enabled."
+      append_details "minifirewall is started"
+      summary_warning "minifirewall is started, but alert5 is disabled"
     else
-      return_ok "Minifirewall is not started and Alert5 script is not enabled."
+      append_details "minifirewall is stopped"
+      summary_ok "minifirewall is stopped and alert5 is disabled"
     fi
   fi
+
+  printf "%s\n\n%s\n" "${summary}" "${details}"
+
+  exit "${return}"
 }
 
 main

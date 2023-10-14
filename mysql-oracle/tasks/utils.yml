@@ -75,7 +75,7 @@
     mode: "0755"
     owner: root
     group: staff
-    force: yes
+    force: true
   tags:
     - mytop
     - mysql
@@ -96,7 +96,7 @@
     src: mytop-config.j2
     dest: /root/.mytop
     mode: "0600"
-    force: yes
+    force: true
   tags:
     - mytop
     - mysql

@@ -17,7 +17,7 @@
     mode: "0700"
     owner: root
     group: root
-    force: yes
+    force: true
 
 - name: migrate-vm script is present
   ansible.builtin.copy:
@@ -26,7 +26,7 @@
     mode: "0700"
     owner: root
     group: root
-    force: yes
+    force: true
 
 - name: kvmstats script is present
   ansible.builtin.copy:
@@ -35,7 +35,7 @@
     mode: "0700"
     owner: root
     group: root
-    force: yes
+    force: true
 
 - name: kvmstats cron is present
   ansible.builtin.template:

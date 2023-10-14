@@ -5,11 +5,19 @@
     state: present
   when: ansible_distribution_major_version is version('10', '<')
 
+- name: "Ensure {{ apt_keyring_dir }} directory exists"
+  file:
+    path: "{{ apt_keyring_dir }}"
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+
 - name: Elastic GPG key is installed
   ansible.builtin.copy:
     src: elastic.asc
     dest: "{{ apt_keyring_dir }}/elastic.asc"
-    force: yes
+    force: true
     mode: "0644"
     owner: root
     group: root

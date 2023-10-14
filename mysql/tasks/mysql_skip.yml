@@ -7,7 +7,7 @@
     owner: root
     group: root
     mode: "0700"
-    force: yes
+    force: true
   tags:
     - mysql_skip
 
@@ -45,7 +45,7 @@
   ansible.builtin.template:
     src: mysql_skip.systemd.j2
     dest: /etc/systemd/system/mysql_skip.service
-    force: yes
+    force: true
 
 - name: "Start or stop systemd unit"
   ansible.builtin.systemd:

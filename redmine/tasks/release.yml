@@ -62,7 +62,7 @@
   args:
     chdir: "/home/{{ redmine_user }}/www"
   become_user: "{{ redmine_user }}"
-  become: yes
+  become: true
   tags:
     - redmine
 
@@ -72,7 +72,7 @@
   args:
     chdir: "/home/{{ redmine_user }}/www"
   become_user: "{{ redmine_user }}"
-  become: yes
+  become: true
   tags:
     - redmine
 

@@ -1,21 +1,16 @@
 #!/bin/sh
 
-# EvoMaintenance script
-# Dependencies (all OS): git postgresql-client
-# Dependencies (Debian): sudo
-
-# Copyright 2007-2022 Evolix <info@evolix.fr>, Gregory Colpart <reg@evolix.fr>,
-#                     Jérémy Lecour <jlecour@evolix.fr> and others.
-
-VERSION="22.07"
+VERSION="23.10.1"
 
 show_version() {
     cat <<END
 evomaintenance version ${VERSION}
 
-Copyright 2007-2022 Evolix <info@evolix.fr>,
+Copyright 2007-2023 Evolix <info@evolix.fr>,
                     Gregory Colpart <reg@evolix.fr>,
-                    Jérémy Lecour <jlecour@evolix.fr>
+                    Jérémy Lecour <jlecour@evolix.fr>,
+                    Brice Waegeneire <bwaegeneire@evolix.fr>,
+                    Mathieu Trossevin <mtrossevin@evolix.fr>
                     and others.
 
 evomaintenance comes with ABSOLUTELY NO WARRANTY.  This is free software,
@@ -47,11 +42,11 @@ Options
      --no-evocheck           disable evocheck execution
      --auto                  use "auto" mode
      --no-auto               use "manual" mode (default)
-     --autosysadmin          author change as autosysadmin
+ -u, --user=USER             force USER value (default: logname(1))
  -v, --verbose               increase verbosity
  -n, --dry-run               actions are not executed
      --help                  print this message and exit
-     --version               print version and exit
+ -V, --version               print version and exit
 END
 }
 
@@ -109,7 +104,7 @@ get_begin_date() {
 
 get_ip() {
     ip=$(get_who | cut -d" " -f6 | sed -e "s/^(// ; s/)$//")
-    if  is_autosysadmin || [ "${ip}" = ":0" ]; then
+    if is_autosysadmin || [ "${ip}" = ":0" ]; then
 	    ip="localhost"
     elif [ -z "${ip}" ]; then
 	    ip="unknown (no tty)"
@@ -127,8 +122,8 @@ get_now() {
 }
 
 get_user() {
-    if is_autosysadmin; then
-	    echo autosysadmin
+    if [ -n "${FORCE_USER}" ]; then
+	    echo "${FORCE_USER}"
     else
 	    logname
     fi
@@ -193,7 +188,7 @@ print_session_data() {
 }
 
 is_autosysadmin() {
-    test "${AUTOSYSADMIN}" -eq 1
+    test "${USER}" = "autosysadmin"
 }
 
 is_repository_readonly() {
@@ -404,7 +399,7 @@ AUTO=${AUTO:-"0"}
 EVOCHECK=${EVOCHECK:-"0"}
 GIT_STATUS_MAX_LINES=${GIT_STATUS_MAX_LINES:-20}
 API_ENDPOINT=${API_ENDPOINT:-""}
-AUTOSYSADMIN=${AUTOSYSADMIN:-0}
+FORCE_USER=${FORCE_USER:-""}
 
 # initialize variables
 MESSAGE=""
@@ -481,6 +476,31 @@ while :; do
         --auto)
             # use "auto" mode
             AUTO=1
+            ;;
+        --autosysadmin)
+            # Deprecated, backward compatibility
+            # author change as autosysadmin
+            printf 'WARNING: "--autosysadmin" is deprecated, use "--user autosysadmin".\n' >&2
+            FORCE_USER="autosysadmin"
+            ;;
+        -u|--user)
+            # user options, with value speparated by space
+            if [ -n "$2" ]; then
+                FORCE_USER=$2
+                shift
+            else
+                printf 'ERROR: "--user" requires a non-empty option argument.\n' >&2
+                exit 1
+            fi
+            ;;
+        --user=?*)
+            # message options, with value speparated by =
+            FORCE_USER=${1#*=}
+            ;;
+        --user=)
+            # message options, without value
+            printf 'ERROR: "--user" requires a non-empty option argument.\n' >&2
+            exit 1
             ;;
         -n|--dry-run)
             # disable actual commands

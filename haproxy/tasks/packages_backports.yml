@@ -23,7 +23,7 @@
   ansible.builtin.template:
     src: haproxy_apt_preferences.j2
     dest: /etc/apt/preferences.d/999-haproxy
-    force: yes
+    force: true
     mode: "0640"
   register: haproxy_apt_preferences
   tags:

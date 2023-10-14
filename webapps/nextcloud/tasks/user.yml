@@ -32,3 +32,11 @@
     - "{{ nextcloud_home }}/data"
   tags:
     - nextcloud
+
+- name: Mount up Ceph volume by UUID
+  ansible.posix.mount:
+    path: "{{ nextcloud_data }}"
+    src: "{{ nextcloud_data_uuid }}"
+    fstype: ext4
+    opts: defaults,noexec,nosuid,nodev,relatime,lazytime
+    state: present

@@ -26,6 +26,10 @@ dryRun() {
     fi
 }
 
+isSolo() {
+    test -z "$slaveKVMIP"
+}
+
 critical() {
     echo -ne "\e[31m${1}\e[39m\n" && exit 1
 }
@@ -50,6 +54,7 @@ defaultVCPU="${defaultVCPU:-"2"}"
 defaultRAM="${defaultRAM:-"4G"}"
 defaultRootSize="${defaultRootSize:-"20G"}"
 defaultHomeSize="${defaultHomeSize:-"40G"}"
+defaultVmName="${defaultVmName:-}"
 
 DIALOGOUT=$(mktemp --tmpdir=/tmp addvm.XXX)
 export DIALOGOUT
@@ -62,7 +67,9 @@ HELPFILE=$(mktemp --tmpdir=/tmp addvm.XXX)
 export HELPFILE
 tmpResFile=$(mktemp --tmpdir=/tmp addvm.XXX)
 masterKVM="$(hostname -s)"
-slaveKVM="$(ssh "${slaveKVMIP}" hostname -s)"
+if ! isSolo; then
+    slaveKVM="$(ssh "${slaveKVMIP}" hostname -s)"
+fi
 
 # Exit & Cleanup function.
 clean() {
@@ -81,7 +88,7 @@ ${DIALOG} \
     "memory" 2 1 "${defaultRAM}" 2 10 20 0 \
     "volRoot" 3 1 "${disks[0]}-${defaultRootSize}" 3 10 20 0 \
     "volHome" 4 1 "${disks[1]}-${defaultHomeSize}" 4 10 20 0 \
-    "vmName" 5 1 "" 5 10 20 0 \
+    "vmName" 5 1 "${defaultVmName}" 5 10 20 0 \
     2> "${DIALOGOUT}"
 
 vCPU=$(sed 1'q;d' "${DIALOGOUT}")
@@ -114,7 +121,9 @@ else
         critical "Unknow disk ${volRootDisk} !"
     fi
     dryRun lvcreate -L"${volRootSize}" -n"${vmName}_root" "${volRootDisk}"
-    dryRun ssh "${slaveKVMIP}" "lvcreate -L$volRootSize -n${vmName}_root ${volRootDisk}"
+    if ! isSolo; then
+        dryRun ssh "${slaveKVMIP}" "lvcreate -L$volRootSize -n${vmName}_root ${volRootDisk}"
+    fi
 fi
 
 if ! [[ "${volHome}" =~ ([^-]+)-([0-9]+G) ]]; then
@@ -127,10 +136,12 @@ else
         critical "Unknow disk ${volHomeDisk} !"
     fi
     dryRun lvcreate -L"${volHomeSize}" -n"${vmName}_home" "${volHomeDisk}"
-    dryRun ssh "${slaveKVMIP}" "lvcreate -L$volHomeSize -n${vmName}_home ${volHomeDisk}"
+    if ! isSolo; then
+        dryRun ssh "${slaveKVMIP}" "lvcreate -L$volHomeSize -n${vmName}_home ${volHomeDisk}"
+    fi
 fi
 
-if [ -f "/etc/drbd.d/${vmName}.res" ]; then
+if ! isSolo && [ -f "/etc/drbd.d/${vmName}.res" ]; then
     warn "The DRBD resource file ${vmName}.res is already present! Continue? [y/N]"
     read -r
     if ! [[ "${REPLY}" =~ (Y|y) ]]; then
@@ -138,22 +149,23 @@ if [ -f "/etc/drbd.d/${vmName}.res" ]; then
     fi
 fi
 
-# Generates drbd resource file.
+if ! isSolo; then
+    # Generates drbd resource file.
 
-# shellcheck disable=SC2012
-if [ "$(ls /etc/drbd.d/ | wc -l)" -gt 1 ]; then
-    lastdrbdPort=$(grep -hEo ':[0-9]{4}' /etc/drbd.d/*.res | sort | uniq | tail -1 | sed 's/://')
-    drbdPort=$((lastdrbdPort+1))
-    lastMinor=$(grep -hEo 'minor [0-9]{1,}' /etc/drbd.d/*.res | sed 's/minor //' | sort -n | tail -1)
-    minorvol0=$((lastMinor+1))
-    minorvol1=$((lastMinor+2))
-else
-    drbdPort=7900
-    minorvol0=0
-    minorvol1=1
-fi
+    # shellcheck disable=SC2012
+    if [ "$(ls /etc/drbd.d/ | wc -l)" -gt 1 ]; then
+        lastdrbdPort=$(grep -hEo ':[0-9]{4}' /etc/drbd.d/*.res | sort | uniq | tail -1 | sed 's/://')
+        drbdPort=$((lastdrbdPort+1))
+        lastMinor=$(grep -hEo 'minor [0-9]{1,}' /etc/drbd.d/*.res | sed 's/minor //' | sort -n | tail -1)
+        minorvol0=$((lastMinor+1))
+        minorvol1=$((lastMinor+2))
+    else
+        drbdPort=7900
+        minorvol0=0
+        minorvol1=1
+    fi
 
-cat << EOT > "${tmpResFile}"
+    cat << EOT > "${tmpResFile}"
 resource "${vmName}" {
     net {
         cram-hmac-alg "sha1";
@@ -178,16 +190,16 @@ resource "${vmName}" {
         meta-disk internal;
     }
 EOT
-if [[ "${volHomeDisk}" != "none" ]]; then
-    cat << EOT >> "${tmpResFile}"
+    if [[ "${volHomeDisk}" != "none" ]]; then
+        cat << EOT >> "${tmpResFile}"
     volume 1 {
         device minor ${minorvol1};
         disk /dev/${volHomeDisk}/${vmName}_home;
         meta-disk internal;
     }
 EOT
-fi
-cat << EOT >> "${tmpResFile}"
+    fi
+    cat << EOT >> "${tmpResFile}"
     on ${masterKVM} {
         address ${masterKVMIP}:${drbdPort};
     }
@@ -197,45 +209,52 @@ cat << EOT >> "${tmpResFile}"
 }
 EOT
 
-# Create/Activate the new drbd resources.
-drbdadm="$(command -v drbdadm)"
-if isDryRun; then
-    drbdadm="${drbdadm} --dry-run"
-fi
+    # Create/Activate the new drbd resources.
+    drbdadm="$(command -v drbdadm)"
+    if isDryRun; then
+        drbdadm="${drbdadm} --dry-run"
+    fi
 
-if isDryRun; then
-    # shellcheck disable=SC2064
-    trap "rm /etc/drbd.d/${vmName}.res && ssh ${slaveKVMIP} rm /etc/drbd.d/${vmName}.res" 0
-fi
-install -m 600 "${tmpResFile}" "/etc/drbd.d/${vmName}.res"
-scp "/etc/drbd.d/${vmName}.res" "${slaveKVMIP}:/etc/drbd.d/"
-${drbdadm} create-md "${vmName}"
-# shellcheck disable=SC2029
-ssh "${slaveKVMIP}" "${drbdadm} create-md ${vmName}"
-${drbdadm} adjust "${vmName}"
-# shellcheck disable=SC2029
-ssh "${slaveKVMIP}" "${drbdadm} adjust ${vmName}"
-${drbdadm} -- --overwrite-data-of-peer primary "${vmName}"
+    if isDryRun; then
+        # shellcheck disable=SC2064
+        trap "rm /etc/drbd.d/${vmName}.res && ssh ${slaveKVMIP} rm /etc/drbd.d/${vmName}.res" 0
+    fi
+    install -m 600 "${tmpResFile}" "/etc/drbd.d/${vmName}.res"
+    scp "/etc/drbd.d/${vmName}.res" "${slaveKVMIP}:/etc/drbd.d/"
+    ${drbdadm} create-md "${vmName}"
+    # shellcheck disable=SC2029
+    ssh "${slaveKVMIP}" "${drbdadm} create-md ${vmName}"
+    ${drbdadm} adjust "${vmName}"
+    # shellcheck disable=SC2029
+    ssh "${slaveKVMIP}" "${drbdadm} adjust ${vmName}"
+    ${drbdadm} -- --overwrite-data-of-peer primary "${vmName}"
 
-if ! isDryRun; then
-    sleep 5
-    drbdadm status | tail -4
+    if ! isDryRun; then
+        sleep 5
+        drbdadm status | tail -4
 
-    drbdDiskPath="/dev/drbd/by-res/${vmName}/0"
-    if ! [ -b "${drbdDiskPath}" ]; then
-        warn "${drbdDiskPath} not found! Continue? [y/N]"
-        read -r
-        if ! [[ "${REPLY}" =~ (Y|y) ]]; then
-            exit 1
+        drbdDiskPath="/dev/drbd/by-res/${vmName}/0"
+        if ! [ -b "${drbdDiskPath}" ]; then
+            warn "${drbdDiskPath} not found! Continue? [y/N]"
+            read -r
+            if ! [[ "${REPLY}" =~ (Y|y) ]]; then
+                exit 1
+            fi
         fi
     fi
 fi
 
-virtRootDisk="--disk path=/dev/drbd/by-disk/${volRootDisk}/${vmName}_root,bus=virtio,io=threads,cache=none,format=raw"
-virtHomeDisk=""
-if [ "${volHomeDisk}" != "none" ]; then
-    virtHomeDisk="--disk path=/dev/drbd/by-disk/${volHomeDisk}/${vmName}_home,bus=virtio,io=threads,cache=none,format=raw"
+if isSolo; then
+    virtRootDisk="--disk path=/dev/${volRootDisk}/${vmName}_root,bus=virtio,io=threads,cache=none,format=raw"
+    virtHomeDisk="--disk path=/dev/${volHomeDisk}/${vmName}_home,bus=virtio,io=threads,cache=none,format=raw"
+else
+    virtRootDisk="--disk path=/dev/drbd/by-disk/${volRootDisk}/${vmName}_root,bus=virtio,io=threads,cache=none,format=raw"
+    virtHomeDisk=""
+    if [ "${volHomeDisk}" != "none" ]; then
+        virtHomeDisk="--disk path=/dev/drbd/by-disk/${volHomeDisk}/${vmName}_home,bus=virtio,io=threads,cache=none,format=raw"
+    fi
 fi
+
 if [ -n "${preseedURL}" ]; then
     bootMode="--location https://deb.debian.org/debian/dists/${debianVersion}/main/installer-amd64/ --extra-args auto=true priority=critical url=${preseedURL} hostname=${vmName}"
 fi
@@ -269,5 +288,3 @@ fi
 if ! isDryRun && [ -x /usr/share/scripts/evomaintenance.sh ]; then
     echo "Install VM ${vmName} (add-vm.sh)" | /usr/share/scripts/evomaintenance.sh
 fi
-
-

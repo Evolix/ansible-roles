@@ -15,7 +15,7 @@
   ansible.builtin.template:
     src: acme-challenge/nginx.conf.j2
     dest: /etc/nginx/snippets/letsencrypt.conf
-    force: yes
+    force: true
   notify: reload nginx
   when: is_nginx.stat.exists
 
@@ -30,7 +30,7 @@
       ansible.builtin.template:
         src: acme-challenge/apache.conf.j2
         dest: /etc/apache2/conf-available/letsencrypt.conf
-        force: yes
+        force: true
       notify: reload apache
 
     - name: ACME challenge for Apache is enabled

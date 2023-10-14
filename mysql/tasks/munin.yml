@@ -66,6 +66,15 @@
       - replication
     notify: restart munin-node
 
+  - name: Install custom plugin for binlog retention tracking
+    ansible.builtin.copy:
+      src: mysql_binlog_days
+      dest: /etc/munin/plugins/mysql_binlog_days
+      owner: root
+      group: root
+      mode: "0755"
+    notify: restart munin-node
+
   - name: verify Munin configuration for mysql < Debian 11
     ansible.builtin.replace:
       dest: /etc/munin/plugin-conf.d/munin-node

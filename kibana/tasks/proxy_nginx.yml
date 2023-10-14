@@ -4,13 +4,13 @@
   ansible.builtin.template:
     src: nginx_proxy_kibana_ssl.j2
     dest: /etc/nginx/sites-available/kibana_ssl.conf
-    force: no
+    force: false
 
 - name: Example proxy for Kibana with Nginx (without SSL)
   ansible.builtin.template:
     src: nginx_proxy_kibana_nossl.j2
     dest: /etc/nginx/sites-available/kibana_nossl.conf
-    force: no
+    force: false
 
 # - name: Kibana host in Nginx is enabled
 #   file:

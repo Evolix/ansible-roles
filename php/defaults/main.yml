@@ -1,12 +1,13 @@
 ---
 
-php_sury_enable: False
-php_fpm_enable: False
-php_apache_enable: False
-php_symfony_requirements: False
+php_sury_enable: false
+php_fpm_enable: false
+php_apache_enable: false
+php_symfony_requirements: false
 
-php_modules_mysqlnd: False
+php_modules_mysqlnd: false
 
-php_fpm_remove_default_pool: False
+php_fpm_remove_default_pool: false
+php_fpm_override_default_pool: true
 
 apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"

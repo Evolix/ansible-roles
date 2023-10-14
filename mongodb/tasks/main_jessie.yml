@@ -16,7 +16,7 @@
   ansible.builtin.copy:
     src: "server-{{ mongodb_version }}.asc"
     dest: "/etc/apt/trusted.gpg.d/mongodb-server-{{ mongodb_version }}.asc"
-    force: yes
+    force: true
     mode: "0644"
     owner: root
     group: root
@@ -57,5 +57,5 @@
   ansible.builtin.template:
     src: logrotate_jessie.j2
     dest: /etc/logrotate.d/mongodb
-    force: yes
+    force: true
     backup: no

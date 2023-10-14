@@ -1,10 +1,18 @@
 ---
 
+- name: "Ensure {{ apt_keyring_dir }} directory exists"
+  file:
+    path: "{{ apt_keyring_dir }}"
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+
 - name: HPE GPG key is installed
   ansible.builtin.copy:
     src: hpePublicKey2048_key1.asc
     dest: "{{ apt_keyring_dir }}/hpePublicKey2048_key1.asc"
-    force: yes
+    force: true
     mode: "0644"
     owner: root
     group: root
@@ -32,6 +40,12 @@
 - name: Install HPE Smart Storage Administrator (ssacli)
   ansible.builtin.apt:
     name: ssacli
+  tags:
+    - packages
+
+- name: Install HPE Agentless Management Service (amsd)
+  ansible.builtin.apt:
+    name: amsd
   tags:
     - packages
 

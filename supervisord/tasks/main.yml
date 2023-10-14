@@ -10,7 +10,7 @@
     src: http.conf
     dest: /etc/supervisor/conf.d/
     mode: "0644"
-    force: no
+    force: false
   notify: restart supervisor
   when: supervisord_enable_http | bool
   tags:

@@ -24,7 +24,7 @@
     owner: root
     group: root
     mode: "0750"
-    force: yes
+    force: true
 
 - name: "symlink for backward compatibility"
   ansible.builtin.file:
@@ -40,4 +40,4 @@
     owner: root
     group: staff
     mode: "0755"
-    force: yes
+    force: true

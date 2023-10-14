@@ -41,13 +41,21 @@
         state: absent
   when: perc_hba11_search.rc == 0
 
+- name: "Ensure {{ apt_keyring_dir }} directory exists"
+  file:
+    path: "{{ apt_keyring_dir }}"
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+
 - name: MegaCLI SAS package is present
   block:
     - name: HWRaid GPG key is installed
       ansible.builtin.copy:
         src: hwraid.le-vert.net.asc
         dest: "{{ apt_keyring_dir }}/hwraid.le-vert.net.asc"
-        force: yes
+        force: true
         mode: "0644"
         owner: root
         group: root

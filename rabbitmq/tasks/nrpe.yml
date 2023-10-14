@@ -23,7 +23,7 @@
     owner: root
     group: root
     mode: "0755"
-    force: yes
+    force: true
   when: ansible_distribution_major_version is version('11', '<=')
 
 - name: check_rabbitmq (Python 3 version) is installed
@@ -33,7 +33,7 @@
     owner: root
     group: root
     mode: "0755"
-    force: yes
+    force: true
   when: ansible_distribution_major_version is version('11', '>=')
 
 - name: check_rabbitmq is available for NRPE

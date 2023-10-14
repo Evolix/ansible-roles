@@ -16,11 +16,19 @@
     - apt
   when: _trusted_gpg_keyring.stat.exists
 
+- name: "Ensure {{ apt_keyring_dir }} directory exists"
+  file:
+    path: "{{ apt_keyring_dir }}"
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+
 - name: Add Evolix GPG key
   ansible.builtin.copy:
     src: pub_evolix.asc
     dest: "{{ apt_keyring_dir }}/pub_evolix.asc"
-    force: yes
+    force: true
     mode: "0644"
     owner: root
     group: root
@@ -31,7 +39,7 @@
   ansible.builtin.template:
     src: evolix_public.sources.j2
     dest: /etc/apt/sources.list.d/evolix_public.sources
-    force: yes
+    force: true
     mode: "0640"
   register: apt_evolix_public
   tags:

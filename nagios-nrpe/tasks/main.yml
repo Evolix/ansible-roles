@@ -17,6 +17,7 @@
   ansible.builtin.apt:
     name:
       - libfcgi-client-perl
+      - ruby-crack
     state: present
   when:
     - ansible_distribution == "Debian"
@@ -30,7 +31,7 @@
     dest: /etc/nagios/nrpe.d/evolix.cfg
     group: nagios
     mode: "0640"
-    force: no
+    force: false
   notify: restart nagios-nrpe-server
   tags:
     - nagios-nrpe
@@ -85,3 +86,5 @@
     - nagios-nrpe
 
 - ansible.builtin.include_tasks: wrapper.yml
+
+- ansible.builtin.include_tasks: check-local.yml

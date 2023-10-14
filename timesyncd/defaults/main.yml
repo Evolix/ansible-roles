@@ -1,0 +1,3 @@
+---
+timesyncd_ntp_servers:
+  - 'ntp.evolix.net'

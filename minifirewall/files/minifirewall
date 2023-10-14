@@ -5,7 +5,7 @@
 # It uses netfilter/iptables http://netfilter.org/ designed for recent Linux kernel
 # See https://gitea.evolix.org/evolix/minifirewall
 
-# Copyright (c) 2007-2022 Evolix
+# Copyright (c) 2007-2023 Evolix
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 3
@@ -29,13 +29,18 @@
 # Description:       Firewall designed for standalone server
 ### END INIT INFO
 
-VERSION="23.02"
+VERSION="23.07"
 
-NAME="minifirewall"
+PROGNAME="minifirewall"
 # shellcheck disable=SC2034
 DESC="Firewall designed for standalone server"
 
 set -u
+
+if [ "$(id -u)" -ne "0" ] ; then
+    echo "${PROGNAME} must be run as root." >&2
+    exit 1
+fi
 
 # Variables configuration
 #########################
@@ -103,6 +108,13 @@ STATE_FILE_CURRENT='/var/run/minifirewall_state_current'
 STATE_FILE_PREVIOUS='/var/run/minifirewall_state_previous'
 STATE_FILE_DIFF='/var/run/minifirewall_state_diff'
 
+ACTIVE_CONFIG='/var/run/minifirewall_active_config'
+ACTIVE_CONFIG_DIFF="${ACTIVE_CONFIG}.diff"
+
+SAFETY_LOCK='/var/run/minifirewall_safety.lock'
+SAFETY_OUTPUT='/var/run/minifirewall_safety.out'
+SAFETY_TIMER=30
+
 LOGGER_BIN=$(command -v logger)
 
 # No colors by default
@@ -115,8 +127,10 @@ CYAN=''
 WHITE=''
 BOLD=''
 RESET=''
+
 # check if stdout is a terminal...
 if [ -t 1 ]; then
+    INTERACTIVE=1
 
     # see if it supports colors...
     ncolors=$(tput colors)
@@ -133,7 +147,10 @@ if [ -t 1 ]; then
         BOLD=$(tput bold)
         RESET='\e[m'
     fi
+else
+    INTERACTIVE=0
 fi
+readonly INTERACTIVE
 
 ## pseudo dry-run :
 ## Uncomment and call these functions instead of the real iptables and ip6tables commands
@@ -147,17 +164,20 @@ fi
 # }
 ## Beware that commands executed from included files are not modified by this trick.
 
+is_interactive() {
+    test "${INTERACTIVE}" = "1"
+}
 remove_colors() {
     sed -r 's/\x1B\[(;?[0-9]{1,3})+[mGK]//g'
 }
 syslog_info() {
     if [ -x "${LOGGER_BIN}" ]; then
-        ${LOGGER_BIN} -t "${NAME}" -p daemon.info "$1"
+        ${LOGGER_BIN} -t "${PROGNAME}" -p daemon.info "$1"
     fi
 }
 syslog_error() {
     if [ -x "${LOGGER_BIN}" ]; then
-        ${LOGGER_BIN} -t "${NAME}" -p daemon.error "$1"
+        ${LOGGER_BIN} -t "${PROGNAME}" -p daemon.error "$1"
     fi
 }
 sort_values() {
@@ -254,13 +274,90 @@ source_configuration() {
         source_file_or_error "${config_file}"
     fi
 }
+include_files() {
+    if [ -d "${includes_dir}" ]; then
+        find ${includes_dir} -type f -readable -not -name '*.*' | sort -h
+    else
+        echo ""
+    fi
+}
 source_includes() {
     if [ -d "${includes_dir}" ]; then
-        include_files=$(find ${includes_dir} -type f -readable -not -name '*.*' | sort -h)
-        for include_file in ${include_files}; do
+        for include_file in $(include_files); do
             source_file_or_error "${include_file}"
         done
     fi
+}
+filter_config_file() {
+    # Remove lines with:
+    # * empty or only whitespaces
+    # * comments
+    grep --extended-regexp --invert-match -e "^(\s*#)" -e "^\s*$" "${1}"
+}
+save_active_configuration() {
+    dest_file=${1}
+    rm -f "${dest_file}"
+
+    echo "# ${config_file}" >> "${dest_file}"
+    filter_config_file "${config_file}" >> "${dest_file}"
+
+    found_include_files=$(include_files)
+    if [ -n "${found_include_files}" ]; then
+        for include_file in ${found_include_files}; do
+            echo "# ${include_file}" >> "${dest_file}"
+            filter_config_file "${include_file}" >> "${dest_file}"
+        done
+    fi
+}
+check_active_configuration() {
+    # NRPE-compatible return codes
+    # 0: OK
+    # 1: WARNING
+    # 2: CRITICAL
+    # 3: UNKNOWN 
+    rc=0
+
+    if [ -f "${ACTIVE_CONFIG}" ]; then
+        cmp_bin=$(command -v cmp)
+        diff_bin=$(command -v diff)
+
+        if [ -z "${cmp_bin}" ]; then
+            printf "${YELLOW}WARNING: Skipped active configuration check (Can't find cmp(1) command)${RESET}\n"
+            rc=1
+        elif [ -z "${diff_bin}" ]; then
+            printf "${YELLOW}WARNING: Skipped active configuration check (Can't find diff(1) command)${RESET}\n"
+            rc=1
+        else
+            rm -f "${ACTIVE_CONFIG_DIFF}"
+
+            tmp_config_file=$(mktemp --tmpdir=/tmp minifirewall.XXX)
+            save_active_configuration "${tmp_config_file}"
+
+            cmp_result=$(cmp "${ACTIVE_CONFIG}" "${tmp_config_file}" 2>&1)
+            cmp_rc=$?
+
+            if [ ${cmp_rc} -eq 0 ]; then
+                # echo "   config has not changed since latest start"
+                printf "${GREEN}OK: Active configuration is up-to-date.${RESET}\n"
+                rc=0
+            elif [ ${cmp_rc} -eq 1 ]; then
+                diff -u "${ACTIVE_CONFIG}" "${tmp_config_file}" > "${ACTIVE_CONFIG_DIFF}"
+
+                printf "${RED}CRITICAL: Active configuration is not up-to-date (minifirewall not restarted after config change?), check %s${RESET}\n" "${ACTIVE_CONFIG_DIFF}"
+                rc=2
+            else
+                printf "${RED}CRITICAL: Error while comparing rules:${RESET}\n"
+                printf "${cmp_result}\n"
+                rc=2
+            fi
+
+            rm -f "${tmp_config_file}"
+        fi
+    else
+        printf "${YELLOW}WARNING: Skipped active configuration check (missing file ${ACTIVE_CONFIG})${RESET}\n"
+        rc=1
+    fi
+    exit ${rc}
 }
 check_unpersisted_state() {
     cmp_bin=$(command -v cmp)
@@ -279,7 +376,7 @@ check_unpersisted_state() {
         rm -f "${STATE_FILE_DIFF}"
 
         if [ -f "${STATE_FILE_LATEST}" ]; then
-            cmp_result=$(cmp "${STATE_FILE_LATEST}" "${STATE_FILE_CURRENT}")
+            cmp_result=$(cmp "${STATE_FILE_LATEST}" "${STATE_FILE_CURRENT}" 2>&1)
             cmp_rc=$?
 
             if [ ${cmp_rc} -eq 0 ]; then
@@ -320,7 +417,7 @@ report_state_changes() {
         # But if there is a previous known state
         # let's compare with the new known state
         if [ -f "${STATE_FILE_PREVIOUS}" ]; then
-            cmp_result=$(cmp "${STATE_FILE_PREVIOUS}" "${STATE_FILE_LATEST}")
+            cmp_result=$(cmp "${STATE_FILE_PREVIOUS}" "${STATE_FILE_LATEST}" 2>&1)
             cmp_rc=$?
 
             if [ ${cmp_rc} -eq 0 ]; then
@@ -339,11 +436,11 @@ report_state_changes() {
 
 start() {
     syslog_info "starting"
-    printf "${BOLD}${NAME} starting${RESET}\n"
+    printf "${BOLD}${PROGNAME} starting${RESET}\n"
 
     # Stop and warn if error!
     set -e
-    trap 'printf "${RED}${NAME} failed : an error occured during startup.${RESET}\n"; syslog_error "failed" ' INT TERM EXIT
+    trap 'printf "${RED}${PROGNAME} failed : an error occured during startup.${RESET}\n"; syslog_error "failed" ' INT TERM EXIT
 
     # sysctl network security settings
     ##################################
@@ -909,17 +1006,20 @@ start() {
     trap - INT TERM EXIT
 
     syslog_info "started"
-    printf "${GREEN}${BOLD}${NAME} started${RESET}\n"
+    printf "${GREEN}${BOLD}${PROGNAME} started${RESET}\n"
 
     # No need to exit on error anymore
     set +e
+
+    # save active configuration
+    save_active_configuration "${ACTIVE_CONFIG}"
 
     report_state_changes
 }
 
 stop() {
     syslog_info "stopping"
-    printf "${BOLD}${NAME} stopping${RESET}\n"
+    printf "${BOLD}${PROGNAME} stopping${RESET}\n"
 
     printf "${BLUE}flushing all rules and accepting everything${RESET}\n"
 
@@ -1000,10 +1100,10 @@ stop() {
         ${IPT6} -X NEEDRESTRICT
     fi
 
-    rm -f "${STATE_FILE_LATEST}" "${STATE_FILE_CURRENT}"
+    rm -f "${STATE_FILE_LATEST}" "${STATE_FILE_CURRENT}" "${ACTIVE_CONFIG}"
 
     syslog_info "stopped"
-    printf "${GREEN}${BOLD}${NAME} stopped${RESET}\n"
+    printf "${GREEN}${BOLD}${PROGNAME} stopped${RESET}\n"
 }
 
 status() {
@@ -1038,7 +1138,7 @@ status_without_numbers() {
 
 reset() {
     syslog_info "resetting"
-    printf "${BOLD}${NAME} resetting${RESET}\n"
+    printf "${BOLD}${PROGNAME} resetting${RESET}\n"
 
     ${IPT} -Z
     if is_ipv6_enabled; then
@@ -1053,19 +1153,95 @@ reset() {
     fi
 
     syslog_info "reset"
-    printf "${GREEN}${BOLD}${NAME} reset${RESET}\n"
+    printf "${GREEN}${BOLD}${PROGNAME} reset${RESET}\n"
 }
+
+stop_if_locked() {
+    count=0
+
+    while [ ${count} -lt ${SAFETY_TIMER} ] && [ -f "${SAFETY_LOCK}" ]; do
+        count=$(( count + 1 ))
+        sleep 1
+    done
+
+    if [ -f "${SAFETY_LOCK}" ]; then
+        syslog_error "safety lock is still here after ${SAFETY_TIMER} seconds, we need to stop"
+
+        stop
+
+        syslog_info "remove safety lock"
+        rm -f "${SAFETY_LOCK}"
+    else
+        syslog_info "safety lock is not there anymore, life goes on"
+    fi
+}
+
+safe_start() {
+    # start the firewall
+    start
+
+    # create the lock file
+    syslog_info "add safety lock"
+    touch "${SAFETY_LOCK}"
+
+    # run the special background command
+    nohup "${0}" stop-if-locked > "${SAFETY_OUTPUT}" 2>&1 &
+
+    if is_interactive; then
+        syslog_info "safe-restart in interactive mode ; if safety lock (${SAFETY_LOCK}) is not removed in the next ${SAFETY_TIMER} seconds, minifirewall will be stopped."
+        # Ask for input
+        confirm_default="I'm locked out, please stop the firewall"
+        # printf "If the restart has locked you out you might see this but you shouldn't be able to type anything.\n"
+        printf "Minifirewall will be stopped in ${SAFETY_TIMER} seconds if you do nothing.\n"
+        printf "Remove \`${SAFETY_LOCK}' or type anything to keep minifirewall started: "
+
+        read -r confirm
+
+        if [ ! -f "${SAFETY_LOCK}" ]; then
+            printf "Safety lock is not there anymore.\nYou've probably been rescued by the safety checks.\n"
+        elif [ "${confirm}" != "${confirm_default}" ]; then
+            rm -f "${SAFETY_LOCK}" && printf "OK. Safety lock is removed.\n"
+        fi
+    else
+        syslog_info "safe-restart in non-interactive mode ; if safety lock (${SAFETY_LOCK}) is not removed in the next ${SAFETY_TIMER} seconds, minifirewall will be stopped."
+    fi
+}
+
 show_version() {
     cat <<END
-${NAME} version ${VERSION}
+${PROGNAME} version ${VERSION}
 
-Copyright 2007-2022 Evolix <info@evolix.fr>.
+Copyright 2007-2023 Evolix <info@evolix.fr>.
 
-${NAME} comes with ABSOLUTELY NO WARRANTY.
+${PROGNAME} comes with ABSOLUTELY NO WARRANTY.
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 3
 of the License.
+END
+}
+show_help() {
+    cat <<END
+${PROGNAME} ${DESC}
+
+END
+    show_usage
+}
+show_usage() {
+    cat <<END
+Usage: ${PROGNAME} [COMMAND]
+
+Commands
+ start                  Start minifirewall
+ safe-start             Start minifirewall, with baground safety checks
+ stop                   Stop minifirewall
+ restart                Stop then start minifirewall
+ safe-restart           Restart minifirewall, with background safety checks
+ status                 Print minifirewall status
+ reset                  Reset iptables tables
+ check-active-config    Check if active config is up-to-date with stored config
+ version                Print version and exit
+ help                   Print this message and exit
 END
 }
 
@@ -1075,6 +1251,13 @@ case "${1:-''}" in
         check_unpersisted_state
 
         start
+    ;;
+
+    safe-start)
+        source_configuration
+        check_unpersisted_state
+
+        safe_start
     ;;
 
     stop)
@@ -1106,13 +1289,36 @@ case "${1:-''}" in
         start
     ;;
 
+    safe-restart)
+        source_configuration
+        check_unpersisted_state
+
+        stop
+        safe_start
+    ;;
+
+    stop-if-locked)
+        source_configuration
+
+        stop_if_locked
+    ;;
+
+    check-active-config)
+        check_active_configuration
+    ;;
+
     version)
         show_version
     ;;
 
+    help)
+        show_help
+    ;;
+
     *)
-        echo "Usage: $0 {start|stop|restart|status|reset|version}" 
-        exit 1
+        printf "%s: %s: unknown option\n" "${PROGNAME}" "${1}"
+        show_usage
+        exit 128
     ;;
 esac
 

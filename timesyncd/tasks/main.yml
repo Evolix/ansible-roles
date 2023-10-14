@@ -1,0 +1,41 @@
+---
+
+- name: Verify that at least 1 NTP server is provided
+  ansible.builtin.assert:
+    that: timesyncd_ntp_servers | length > 0
+    msg: The variable timesyncd_ntp_servers must contain at least 1 element
+
+- name: Install systemd-timesyncd package
+  ansible.builtin.apt:
+    name: systemd-timesyncd
+    state: present
+  tags:
+    - timesyncd
+
+- name: Remove other NTP packages
+  ansible.builtin.apt:
+    name:
+      - openntpd
+      - ntp
+    state: absent
+  tags:
+    - timesyncd
+
+- name: Ensure /etc/systemd/timesyncd.conf.d directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/timesyncd.conf.d
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+  tags:
+    - timesyncd
+
+- name: Copy timesyncd config
+  ansible.builtin.template:
+    src: timesyncd.conf.j2
+    dest: /etc/systemd/timesyncd.conf.d/evolix.conf
+    mode: "0644"
+  notify: Restart timesyncd
+  tags:
+    - timesyncd

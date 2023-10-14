@@ -80,6 +80,7 @@
   when:
     - varnish_package_facts['version'] is version('4', '>=')
     - varnish_package_facts['version'] is version('6', '<')
+    - varnish_systemd_override_template is none or varnish_systemd_override_template | length == 0
   tags:
     - varnish
     - config
@@ -91,6 +92,7 @@
   when:
     - varnish_package_facts['version'] is version('6', '>=')
     - varnish_package_facts['version'] is version('7', '<')
+    - varnish_systemd_override_template is none or varnish_systemd_override_template | length == 0
   tags:
     - varnish
     - config
@@ -101,6 +103,7 @@
     varnish_systemd_override_template: override.conf.varnish7.j2
   when:
     - varnish_package_facts['version'] is version('7', '>=')
+    - varnish_systemd_override_template is none or varnish_systemd_override_template | length == 0
   tags:
     - varnish
     - config
@@ -110,7 +113,7 @@
   ansible.builtin.template:
     src: "{{ varnish_systemd_override_template }}"
     dest: /etc/systemd/system/varnish.service.d/override.conf
-    force: yes
+    force: true
   notify:
     - reload systemd
     - restart varnish
@@ -136,7 +139,7 @@
     src: "{{ item }}"
     dest: "{{ varnish_config_file }}"
     mode: "0644"
-    force: yes
+    force: true
   when: varnish_update_config | bool
   loop: "{{ query('first_found', templates) }}"
   vars:
@@ -169,7 +172,7 @@
   ansible.builtin.template:
     src: "{{ item }}"
     dest: /etc/varnish/conf.d/
-    force: yes
+    force: true
     mode: "0644"
   with_fileglob:
     - "templates/varnish/conf.d/*.vcl"

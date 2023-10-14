@@ -13,7 +13,7 @@
     mode: "0700"
     owner: root
     group: root
-    force: no
+    force: false
 
 - name: update-evobackup-canary script is present
   ansible.builtin.copy:

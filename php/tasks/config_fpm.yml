@@ -32,10 +32,10 @@
     dest: "{{ php_fpm_custom_ini_file }}"
     content: |
       ; Put customized values here.
-    force: no
+    force: false
   notify: "restart {{ php_fpm_service_name }}"
 
-- name: Set default PHP FPM values
+- name: Set default pool (www) config values
   community.general.ini_file:
     dest: "{{ php_fpm_default_pool_file }}"
     section: www
@@ -57,7 +57,9 @@
     - { option: "pm.status_path", value: "/fpm_status" }
     - { option: "request_terminate_timeout", value: "60s" }
   notify: "restart {{ php_fpm_service_name }}"
-  when: ansible_distribution_major_version is version('9', '>=')
+  when: 
+    - ansible_distribution_major_version is version('9', '>=')
+    - php_fpm_override_default_pool
 
 - name: Custom PHP FPM values
   ansible.builtin.copy:
@@ -66,7 +68,7 @@
       ; Put customized values here.
       ; default_charset = "ISO-8859-1"
     mode: "0644"
-    force: no
+    force: false
   notify: "restart {{ php_fpm_service_name }}"
 
 - name: "Set custom values for PHP to enable Symfony"

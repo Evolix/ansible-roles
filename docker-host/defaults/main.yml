@@ -12,6 +12,9 @@ docker_conf_no_newprivileges: False
 # Toggle live restore (need to be disabled in swarm mode)
 docker_conf_live_restore: True
 
+# Toggle user namespace
+docker_conf_user_namespace: True
+
 # Disable all default network connectivity
 docker_conf_disable_default_networking: False
 

@@ -14,7 +14,7 @@
     mode: "0755"
     owner: root
     group: root
-    force: yes
+    force: true
   notify: restart keepalived
   tags:
     - keepalived
@@ -27,7 +27,7 @@
     mode: "0755"
     owner: root
     group: root
-    force: yes
+    force: true
   tags:
     - keepalived
     - nrpe

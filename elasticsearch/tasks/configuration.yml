@@ -22,7 +22,7 @@
 - name: Configure network host
   ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
-    line: "network.host: {{ elasticsearch_network_host  }}"
+    line: "network.host: {{ elasticsearch_network_host }}"
     regexp: "^network.host:"
     insertafter: "^# *network.host:"
   when: elasticsearch_network_host | default("", True) | length > 0
@@ -32,20 +32,80 @@
 - name: Configure network publish_host
   ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
-    line: "network.publish_host: {{ elasticsearch_network_publish_host  }}"
+    line: "network.publish_host: {{ elasticsearch_network_publish_host }}"
     regexp: "^network.publish_host:"
     insertafter: "^network.host:"
   when: elasticsearch_network_publish_host | default("", True) | length > 0
   tags:
     - config
 
+- name: Configure network port
+  ansible.builtin.lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "network.port: {{ elasticsearch_network_port }}"
+    regexp: "^network.port:"
+    insertafter: "^network.host:"
+  when: elasticsearch_network_port | default("", True) | length > 0
+  tags:
+    - config
+
+- name: Configure http host
+  ansible.builtin.lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "http.host: {{ elasticsearch_http_host }}"
+    regexp: "^http.host:"
+    insertafter: "^# *http.host:"
+  when: elasticsearch_http_host | default("", True) | length > 0
+  tags:
+    - config
+
 - name: Configure http publish_host
   ansible.builtin.lineinfile:
     dest: /etc/elasticsearch/elasticsearch.yml
-    line: "http.publish_host: {{ elasticsearch_http_publish_host  }}"
+    line: "http.publish_host: {{ elasticsearch_http_publish_host }}"
     regexp: "^http.publish_host:"
     insertafter: "^http.port:"
   when: elasticsearch_http_publish_host | default("", True) | length > 0
+  tags:
+    - config
+
+- name: Configure http port
+  ansible.builtin.lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "http.port: {{ elasticsearch_http_port }}"
+    regexp: "^http.port:"
+    insertafter: "^http.host:"
+  when: elasticsearch_http_port | default("", True) | length > 0
+  tags:
+    - config
+
+- name: Configure transport host
+  ansible.builtin.lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "transport.host: {{ elasticsearch_transport_host }}"
+    regexp: "^transport.host:"
+    insertafter: "^# *transport.host:"
+  when: elasticsearch_transport_host | default("", True) | length > 0
+  tags:
+    - config
+
+- name: Configure transport publish_host
+  ansible.builtin.lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "transport.publish_host: {{ elasticsearch_transport_publish_host }}"
+    regexp: "^transport.publish_host:"
+    insertafter: "^transport.host:"
+  when: elasticsearch_transport_publish_host | default("", True) | length > 0
+  tags:
+    - config
+
+- name: Configure transport port
+  ansible.builtin.lineinfile:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    line: "transport.port: {{ elasticsearch_transport_port }}"
+    regexp: "^transport.port:"
+    insertafter: "^transport.host:"
+  when: elasticsearch_transport_port | default("", True) | length > 0
   tags:
     - config
 
@@ -54,6 +114,7 @@
     dest: /etc/elasticsearch/elasticsearch.yml
     line: "discovery.seed_hosts: {{ elasticsearch_discovery_seed_hosts | to_yaml(default_flow_style=True) }}"
     regexp: "^discovery.seed_hosts:"
+    insertafter: "^# *discovery.seed_hosts:"
   when: elasticsearch_discovery_seed_hosts | default([], True) | length > 0
   tags:
     - config
@@ -118,14 +179,11 @@
   tags:
     - config
 
-- name: Disable garbage collector logs (JDK >= 9)
-  ansible.builtin.lineinfile:
+- name: Disable garbage collector logs
+  ansible.builtin.replace:
     dest: /etc/elasticsearch/jvm.options
-    regexp: "Xlog:gc"
-    line: "#9-:-Xlog:gc*,gc+age=trace,safepoint:file=/opt/my-app/gc.log:utctime,pid,tags:filecount=32,filesize=64m"
-    owner: root
-    group: elasticsearch
-    mode: "0640"
+    regexp: '^([^#]*-Xlog:gc.+)'
+    replace: '#\1'
   tags:
     - config
 

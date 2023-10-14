@@ -4,7 +4,7 @@
   ansible.builtin.get_url:
     url: "{{ nextcloud_releases_baseurl }}{{ nextcloud_archive_name }}"
     dest: "{{ nextcloud_home }}/{{ nextcloud_archive_name }}"
-    force: no
+    force: false
   tags:
     - nextcloud
 
@@ -12,7 +12,7 @@
   ansible.builtin.get_url:
     url: "{{ nextcloud_releases_baseurl }}{{ nextcloud_archive_name }}.sha256"
     dest: "{{ nextcloud_home }}/{{ nextcloud_archive_name }}.sha256"
-    force: no
+    force: false
   tags:
     - nextcloud
 

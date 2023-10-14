@@ -1,7 +1,18 @@
 ---
-pgbouncer_listen_addr: "127.0.0.1"
+pgbouncer_listen_addr:
+  - "127.0.0.1"
 pgbouncer_listen_port: "6432"
 
+# For PostgreSQL version  < 14, use "md5"
+# For PostgreSQL version >= 14, use "scram-sha-256"
+pgbouncer_auth_type: "scram-sha-256"
+
+# Each entry must have "name", "host" and "port" keys
 pgbouncer_databases: []
 
+pgbouncer_admin_users: []
+
+pgbouncer_stats_users: []
+
+# Each entry must have "name" and "hash" keys
 pgbouncer_account_list: []

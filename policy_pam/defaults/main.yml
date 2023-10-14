@@ -1,0 +1,37 @@
+---
+
+# PAM -- pam_pwquality
+# Ensure password meet a given quality/complexity requirement
+policy_pam_pwquality: false
+
+# Configuration settings for pam_pwquality
+# For more in depth info, see man pam_pwquality(8)
+
+# Minimum password lengh/credit
+policy_pam_pwquality_minlen: 16
+
+# Credits values for char types
+# Value : Interger N with :
+#         N >= 0 - Maximum credit given for each char type in the password
+#         N <  0 - Minimum number of chars of given type in the password
+# digit chars
+policy_pam_pwquality_dcredit: -1
+# uppercase chars
+policy_pam_pwquality_ucredit: 0
+# lowercase chars
+policy_pam_pwquality_lcredit: -1
+# other chars
+policy_pam_pwquality_ocredit: -1
+
+
+# PAM -- pam_pwhistory
+# Prevent old password re-use
+policy_pam_pwhistory: false
+
+# How many old passwords to retain
+policy_pam_pwhistory_length: 5
+
+# How (days) old the password should be before allowing user to change it's password
+# It is to prevent circumvention of pam_pwhistory
+# Set to 0 to disable
+policy_pam_password_min_days: 0

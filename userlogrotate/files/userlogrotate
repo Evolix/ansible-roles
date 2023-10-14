@@ -1,58 +1,132 @@
 #!/bin/bash
 
+# Userlogrotate rotates logs in custom paths.
+# The difference with logrotate is that it sets
+# the owner:group according to the location of each log.
+
+CONF_PATH="/etc/evolinux/userlogrotate.conf"  # optional file
+
+# Default conf
+DELETE_AFTER_RETENTION_DAYS="false" # values: true | false
+RETENTION_DAYS=365                  # only applies if $RETENTION_DAYS == "true"
+SYSTEM_LOGS_SEARCH_PATHS=(          # will chown root:$user
+    /home/*/log
+)
+APPLICATIVE_LOGS_SEARCH_PATHS=(     # will chown $user:$user
+    /home/*/www/{,current/}log
+)
+SYSTEM_LOG_NAMES=(access.log access-*.log error.log php.log)
+APPLICATIVE_LOG_NAMES=(production.log delayed_job.log development.log test.log)
+DRY_RUN=false                       # do echo instead of executing, values: true | false
+
+############################################################
+
 DATE="$(/bin/date +"%Y-%m-%d")"
-HOMEPREFIX="/home"
+
+if [ -f "${CONF_PATH}" ]; then
+    source "${CONF_PATH}"
+fi
 
 rotate () {
-  mv $1 $1.$DATE
-  touch $1
-  chown $2 $1
-  chmod g+r $1
+    if [ ${DRY_RUN} == "false" ]; then
+        mv $1 $1.${DATE}
+        touch $1
+        chown $2 $1
+        chmod g+r $1
+    else
+        echo "Move $1 to $1.${DATE}"
+        echo "Change $1 owner to $2"
+    fi
 }
 
 user_for() {
-  homedir="$(echo $1 | sed "s#\($HOMEPREFIX/\([^/]\+\)\).*#\1#")"
-  stat -L -c '%G' $homedir
+  stat -L -c '%U' $1
 }
 
-for log in access.log access-*.log error.log; do
-  for i in $(ls -1 -d $HOMEPREFIX/*/log/$log 2>/dev/null | grep -v \.bak\.); do
-    USER="$(user_for $i)"
-    rotate $i root:$USER
-  done
+group_for() {
+  stat -L -c '%G' $1
+}
+
+
+delete_old() {
+    if [ ${DELETE_AFTER_RETENTION_DAYS} == "true" ]; then
+        if [ ${DRY_RUN} == "false" ]; then
+            find $1/ -ctime +${RETENTION_DAYS} -delete  # slash is needed!
+        else
+            echo "Delete files:"
+            find $1/ -ctime +${RETENTION_DAYS}
+        fi
+    fi
+}
+
+compress() {
+    if [ ${DRY_RUN} == "false" ]; then
+        gzip "$1"
+    else
+        echo "Gzipping $1"
+    fi
+}
+
+for path in ${SYSTEM_LOGS_SEARCH_PATHS[@]}; do
+    for log_name in ${SYSTEM_LOG_NAMES[@]}; do
+        log_paths=$(ls -1 -d ${path}/${log_name} 2>/dev/null | grep -v \.bak\.)
+        for file in ${log_paths}; do
+            user="$(user_for "${file}")"
+            group="$(group_for "${file}")"
+            rotate "${file}" "${group}":"${user}"
+            delete_old "$(dirname "${file}")"
+        done
+    done
 done
 
-for log in production.log delayed_job.log development.log test.log; do
-  for i in $(ls -1 -d $HOMEPREFIX/*/www/{,current/}log/$log 2>/dev/null | grep -v \.bak\.); do
-    USER="$(user_for $i)"
-    rotate $i $USER:$USER
-  done
+for path in ${APPLICATIVE_LOGS_SEARCH_PATHS[@]}; do
+    for log_name in ${APPLICATIVE_LOG_NAMES[@]}; do
+        log_paths=$(ls -1 -d ${path}/${log_name} 2>/dev/null | grep -v \.bak\.)
+        for file in ${log_paths}; do
+            user="$(user_for "${file}")"
+            group="$(group_for "${file}")"
+            rotate "${file}" "${group}":"${user}"
+            delete_old "$(dirname "${file}")"
+        done
+    done
 done
 
-test -x /usr/sbin/apache2ctl && if /etc/init.d/apache2 status > /dev/null ; then \
-    /etc/init.d/apache2 reload > /dev/null; \
-fi;
+if [ -x /usr/sbin/apache2ctl ] && /etc/init.d/apache2 status > /dev/null ; then
+    if [ ${DRY_RUN} == "false" ]; then
+        /etc/init.d/apache2 reload > /dev/null
+    else
+        echo "Reloading Apache"
+    fi
+fi
 
-test -x /usr/sbin/nginx && invoke-rc.d nginx rotate >/dev/null 2>&1
+if [ -x /usr/sbin/nginx ]; then
+    if [ ${DRY_RUN} == "false" ]; then
+        invoke-rc.d nginx rotate >/dev/null 2>&1
+    else
+        echo "Reloading Nginx"
+    fi
+fi
 
 # Zipping is done after web server reload, so that the file descriptor is released.
 # Else, an error is raised (gzip file size changed while zipping)
 # and logs written during the zipping process might be lost.
 
-for log in access.log*[!\.gz] access-*.log*[!\.gz] error.log*[!\.gz]; do
-  for i in $(ls -1 -d $HOMEPREFIX/*/log/$log 2>/dev/null | grep -v \.bak\.); do
-    if test -f "$i"; then
-      gzip "$i"
-    fi
-  done
+for path in ${SYSTEM_LOGS_SEARCH_PATHS[@]}; do
+    for log_name in ${SYSTEM_LOG_NAMES[@]}; do
+        to_compress_paths=$(ls -1 -d ${path}/${log_name}*[!\.gz] 2>/dev/null | grep -v \.bak\.)
+        for file in ${to_compress_paths}; do
+            compress "${file}"
+        done
+    done
 done
 
-for log in production.log*[!\.gz] delayed_job.log*[!\.gz] development.log*[!\.gz] test.log*[!\.gz]; do
-  for i in $(ls -1 -d $HOMEPREFIX/*/www/{,current/}log/$log 2>/dev/null | grep -v \.bak\.); do
-    if test -f "$i"; then
-      gzip "$i"
-    fi
-  done
+for path in ${APPLICATIVE_LOGS_SEARCH_PATHS[@]}; do
+    for log_name in ${APPLICATIVE_LOG_NAMES[@]}; do
+        compressed_paths=$(ls -1 -d ${path}/${log_name}*[!\.gz] 2>/dev/null | grep -v \.bak\.)
+        for file in ${compressed_paths}; do
+            compress "${file}"
+        done
+    done
 done
 
 exit 0

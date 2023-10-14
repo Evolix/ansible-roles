@@ -14,6 +14,6 @@
     owner: log2mail
     group: adm
     mode: "0644"
-    force: no
+    force: false
   tags:
     - apache

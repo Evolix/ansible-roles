@@ -4,8 +4,10 @@
   ,"data-root": "{{ docker_home }}"
   {# Keep containers running while docker daemon downtime #}
   ,"live-restore": {{ docker_conf_live_restore | to_json }}
+{% if docker_conf_user_namespace %}
   {# Turn on user namespace remaping #}
   ,"userns-remap": "default"
+{% endif %}
 {% if docker_conf_use_iptables %}
   {# Use iptables instead of docker-proxy #}
   ,"userland-proxy": false

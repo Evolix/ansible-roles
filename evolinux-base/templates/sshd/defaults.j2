@@ -1,0 +1,15 @@
+Port 22
+{% if evolinux_root_disable_ssh %}
+PermitRootLogin no
+{% endif %}
+LogLevel VERBOSE
+SetEnv LC_ALL=en_US.UTF-8
+
+{% if evolinux_ssh_password_auth_addresses %}
+Match Address {{ evolinux_ssh_password_auth_addresses | join(',') }}
+    PasswordAuthentication yes
+{% endif %}
+{% if evolinux_internal_group %}
+Match Group {{ evolinux_internal_group }}
+    PasswordAuthentication no
+{% endif %}

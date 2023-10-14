@@ -5,11 +5,19 @@
 # http://mirrors.jenkins.io/.*
 # http://jenkins.mirror.isppower.de/.*
 
+- name: "Ensure {{ apt_keyring_dir }} directory exists"
+  file:
+    path: "{{ apt_keyring_dir }}"
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+
 - name: Add Jenkins GPG key
   ansible.builtin.copy:
     src: jenkins.asc
     dest: "{{ apt_keyring_dir }}/jenkins.asc"
-    force: yes
+    force: true
     mode: "0644"
     owner: root
     group: root

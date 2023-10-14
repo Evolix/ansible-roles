@@ -25,7 +25,7 @@
   ansible.builtin.lineinfile:
     dest: /etc/postfix/main.cf
     state: present
-    line: "mydestination = {{ [evolinux_fqdn, evolinux_internal_fqdn] | unique | join(' ') }} localhost.localdomain localhost"
+    line: "mydestination = {{ [evolinux_fqdn, evolinux_internal_fqdn] | unique | join(' ') }} localhost.localdomain localhost localhost.$mydomain"
     regexp: '^mydestination'
   notify: reload postfix
   tags:

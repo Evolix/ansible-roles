@@ -36,7 +36,7 @@
   args:
     chdir: /srv/java-package
     creates: /srv/java-package/oracle-java8-server-jre_8u192_amd64.deb
-  become: False
+  become: false
   tags:
   - java
 

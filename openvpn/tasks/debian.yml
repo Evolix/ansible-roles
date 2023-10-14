@@ -154,7 +154,7 @@
   ansible.builtin.copy:
     src: logrotate_openvpn
     dest: /etc/logrotate.d/openvpn
-    force: no
+    force: false
 
 - name: Generate a password for the management interface
   ansible.builtin.set_fact:

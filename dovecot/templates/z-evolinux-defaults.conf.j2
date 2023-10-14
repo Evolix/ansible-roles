@@ -1,5 +1,8 @@
 # {{ ansible_managed }}
 
+# Plugins list (must be before filters {} that modify it)
+mail_plugins = $mail_plugins old_stats
+
 # Autorise les mécanismes PLAIN/LOGIN même sans SSL/TLS
 disable_plaintext_auth = no
 auth_mechanisms = plain login
@@ -36,14 +39,26 @@ service login {
 mail_max_userip_connections = 42
 
 # Configuration pour stats dovecot
-service stats {
-    unix_listener stats-reader {
+protocol imap {
+  mail_plugins = $mail_plugins imap_old_stats
+}
+plugin {
+  old_stats_refresh = 30 secs
+  old_stats_track_cmds = yes
+}
+service old-stats {
+    fifo_listener old-stats-mail {
+        user = vmail
+        group = vmail
+        mode = 0660
+    }
+    unix_listener old-stats-reader {
         user = vmail
         group = vmail
         mode = 0660
     }
 
-    unix_listener stats-writer {
+    unix_listener old-stats-writer {
         user = vmail
         group = vmail
         mode = 0660

@@ -5,7 +5,7 @@
     src: "{{ ansible_distribution_release }}_basics.sources.j2"
     dest: /etc/apt/sources.list.d/system.sources
     mode: "0644"
-    force: yes
+    force: true
   register: apt_basic_sources
   tags:
     - apt
@@ -15,7 +15,7 @@
     src: "{{ ansible_distribution_release }}_security.sources.j2"
     dest: /etc/apt/sources.list.d/security.sources
     mode: "0644"
-    force: yes
+    force: true
   register: apt_security_sources
   tags:
     - apt

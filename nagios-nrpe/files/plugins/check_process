@@ -1,7 +1,13 @@
 #!/bin/bash
 
 rc=0
-for proc in cron rsyslogd ntpd munin-node; do
+if [ $# -gt 0 ]; then
+    procs=$@
+else
+    # We keep this old list to be retro compatible
+    procs="cron rsyslogd ntpd munin-node"
+fi
+for proc in $procs ; do
     sudo /usr/lib/nagios//plugins/check_procs -C $proc -c 1:
     rc=$(($rc|$?))
 done

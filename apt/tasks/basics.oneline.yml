@@ -5,7 +5,7 @@
     src: "{{ ansible_distribution_release }}_basics.list.j2"
     dest: /etc/apt/sources.list
     mode: "0644"
-    force: yes
+    force: true
   register: apt_basic_list
   tags:
     - apt

@@ -4,7 +4,7 @@
   ansible.builtin.template:
     src: sudoers_jessie.j2
     dest: /etc/sudoers.d/evolinux
-    force: no
+    force: false
     mode: "0440"
     validate: '/usr/sbin/visudo -cf %s'
   register: copy_sudoers_evolinux

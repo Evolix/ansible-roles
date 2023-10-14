@@ -16,54 +16,54 @@ critical=0
 warning=0
 
 
-if [[ ! -f "$certs_list_path" ]]; then
-    touch "$certs_list_path" 
+if [[ ! -f "${certs_list_path}" ]]; then
+    touch "${certs_list_path}"
 fi
 
-certs_list=$(cat "$certs_list_path" | sed -E 's/(.*)#.*/\1/g' | grep -v -E '^$')
+certs_list=$(sed -E 's/(.*)#.*/\1/g' "${certs_list_path}" | grep -v -E '^$')
 
-for cert_path in $certs_list; do
-    
-    if [ ! -f "$cert_path" ] && [ ! -d "$cert_path" ]; then
-        >&2 echo "Warning: path '$cert_path' is not a file or a directory."
+for cert_path in ${certs_list}; do
+
+    if [ ! -f "$cert_path" ] && [ ! -d "${cert_path}" ]; then
+        echo "Warning: path '${cert_path}' is not a file or a directory."
         warning=1
         continue
     fi
 
-    enddate=$(openssl x509 -noout -enddate -in "$cert_path" | cut -d'=' -f2)
-    
+    enddate=$(openssl x509 -noout -enddate -in "${cert_path}" | cut -d'=' -f2)
+
     # Check cert expiré (critique)
-    if ! openssl x509 -checkend 0 -in "$cert_path" &> /dev/null; then
+    if ! openssl x509 -checkend 0 -in "${cert_path}" &> /dev/null; then
         critical=1
-        >&2 echo "Critical: Cert '$cert_path' has expired on $enddate."
+        echo "Critical: Cert '${cert_path}' has expired on ${enddate}."
         continue
     fi
 
     # Check cert expire < 10 jours (critique)
-    if ! openssl x509 -checkend "$_10_days" -in "$cert_path" &> /dev/null; then
+    if ! openssl x509 -checkend "${_10_days}" -in "${cert_path}" &> /dev/null; then
         critical=1
-        >&2 echo "Critical: Cert '$cert_path' will expire on $enddate."
+        echo "Critical: Cert '${cert_path}' will expire on ${enddate}."
         continue
     fi
 
     # Check cert expire < 15 jours (warning)
-    if ! openssl x509 -checkend "$_15_days" -in "$cert_path" &> /dev/null; then
+    if ! openssl x509 -checkend "${_15_days}" -in "${cert_path}" &> /dev/null; then
         warning=1
-        >&2 echo "Warning: Cert '$cert_path' will expire on $enddate."
+        echo "Warning: Cert '${cert_path}' will expire on ${enddate}."
         continue
     fi
 
     # Cert expire > 15 jours (OK)
-    echo "Cert '$cert_path' OK."
+    echo "Cert '${cert_path}' OK."
 
 done
 
-if [ $critical -eq 1 ]; then
+if [ "${critical}" -eq 1 ]; then
     exit 2
-elif [ $warning -eq 1 ]; then
+elif [ "${warning}" -eq 1 ]; then
     exit 1
 else
     exit 0
 fi
-   
+
 

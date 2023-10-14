@@ -1,0 +1,97 @@
+#!/bin/bash
+
+usage() {
+cat << EOL
+ Usage :
+
+   $0 --crendentials CREDENTIALS --nodeid NODE_ID
+
+   -c|--crendentials CREDENTIALS     # <user>:<password>
+   -n|--nodeid       NODE_ID         # the <node_id> to check
+EOL
+}
+
+
+return=0
+nb_shards=0
+nb_shards_max=0
+nb_shards_avail=0
+nb_shards_warn=0
+nb_shards_crit=0
+output=""
+
+# If no argument then show usage
+if [ "$#" -eq 0 ]; then
+    usage
+    exit 2
+fi
+
+while :; do
+    case $1 in
+        -h|-\?|--help)   # Call a "usage" function to display a synopsis, then exit.
+            usage
+            exit
+            ;;
+        -c|--crendentials)       # Takes an option argument, ensuring it has been specified.
+            if [ -n "$2" ]; then
+                CREDENTIALS="$2"
+                shift
+            else
+                printf 'ERROR: "--crendentials" requires a non-empty option argument.\n' >&2
+                exit 2
+            fi
+            ;;
+        -n|--nodeid)       # Takes an option argument, ensuring it has been specified.
+            if [ -n "$2" ]; then
+                NODE_ID="$2"
+                shift
+            else
+                printf 'ERROR: "--nodeid" requires a non-empty option argument.\n' >&2
+                exit 2
+            fi
+            ;;
+        -?*)
+            printf 'WARNING: Unknown option (ignored): %s\n' "$1" >&2
+            ;;
+        *)               # Default case: If no more options then break out of the loop.
+            break
+    esac
+    shift
+done
+
+if [ ! -e "/usr/bin/jq" ]; then
+    printf "UNKNWON - jq is not installed"
+    exit 3
+fi
+
+nb_shards=$(curl -s -k -u ${CREDENTIALS} https://127.0.0.1:9200/_cat/allocation/${NODE_ID}?h=shards)
+nb_shards_max=$(curl -s -k -u ${CREDENTIALS} https://127.0.0.1:9200/_cluster/settings?flat_settings | jq -r ".persistent[]" )
+
+nb_shards_avail=$(( $nb_shards_max - $nb_shards ))
+
+if [ "$nb_shards_max" -ge "1000" ]; then
+    nb_shards_warn=$(( $nb_shards_max / 100 ))
+elif [ $nb_shards_max -ge 100 ]; then
+    nb_shards_warn=$(( $nb_shards_max / 10 ))
+else
+    nb_shards_warn=10
+fi
+
+nb_shards_crit=$(( $nb_shards_warn / 4 ))
+
+# debug…
+# printf '%d out of %d, avail: %d, warn: %d, crit: %d' $nb_shards $nb_shards_max $nb_shards_avail $nb_shards_warn $nb_shards_crit
+
+if [ "${nb_shards_avail}" -le "${nb_shards_crit}" ]; then
+    printf "CRITICAL - %d USED / %d MAX" "${nb_shards}" "${nb_shards_max}"
+    exit 2
+elif [ "${nb_shards_avail}" -le "${nb_shards_warn}" ]; then
+    printf "WARNING - %d USED / %d MAX" "${nb_shards}" "${nb_shards_max}"
+    exit 1
+elif [ "${nb_shards_avail}" -ge "${nb_shards_warn}" ]; then
+    printf "OK - %d USED / %d MAX" "${nb_shards}" "${nb_shards_max}"
+    exit 0
+else
+    printf "UNKNWON - %d USED / %d MAX" "${nb_shards}" "${nb_shards_max}"
+    exit 3
+fi

@@ -74,6 +74,9 @@
 #     name: evolix/evolinux-users
 #   when: evolinux_users_include
 
+- name: Bash configuration
+  ansible.builtin.import_tasks: bash.yml
+
 - name: Root user configuration
   ansible.builtin.import_tasks: root.yml
   when: evolinux_root_include | bool

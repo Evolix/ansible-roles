@@ -12,5 +12,5 @@
     src: todo.defaults.txt
     dest: /etc/evolinux/todo.txt
     mode: "0640"
-    force: no
+    force: false
   when: ansible_distribution == "Debian"

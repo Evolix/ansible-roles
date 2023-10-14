@@ -12,7 +12,7 @@
 - name: Maximum map count check
   ansible.posix.sysctl:
     name: vm.max_map_count
-    value: 262144
+    value: "262144"
     sysctl_file: /etc/sysctl.d/elasticsearch.conf
   when: max_map_count | int < 262144
   tags:

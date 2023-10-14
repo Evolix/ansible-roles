@@ -1,0 +1,6 @@
+# Ansible managed
+
+{% if redis_password %}
+[redis_*]
+env.password {{ redis_password | replace("#", "\#") }}
+{% endif %}

@@ -73,7 +73,7 @@
     owner: root
     group: root
     mode: "0640"
-    force: yes
+    force: true
   notify: reload apache
   tags:
   - apache
@@ -85,7 +85,7 @@
     owner: root
     group: root
     mode: "0640"
-    force: no
+    force: false
   notify: reload apache
   tags:
   - apache
@@ -119,7 +119,7 @@
     src: evolinux-default.conf.j2
     dest: /etc/apache2/sites-available/000-evolinux-default.conf
     mode: "0640"
-    force: no
+    force: false
   notify: reload apache
   tags:
     - apache
@@ -129,7 +129,7 @@
     src: /etc/apache2/sites-available/000-evolinux-default.conf
     dest: /etc/apache2/sites-enabled/000-default.conf
     state: link
-    force: yes
+    force: true
   notify: reload apache
   when: apache_evolinux_default_enabled | bool
   tags:
@@ -181,7 +181,7 @@
     src: save_apache_status.sh
     dest: /usr/share/scripts/save_apache_status.sh
     mode: "0755"
-    force: no
+    force: false
   tags:
     - apache
 

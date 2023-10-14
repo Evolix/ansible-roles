@@ -1,4 +1,4 @@
-#!/bin/env python3
+#!/usr/bin/env python3
 
 import re
 import sys
@@ -13,7 +13,7 @@ destinations = {
     ".*-backports": "backports.sources",
     ".debian.org": "system.sources",
     "mirror.evolix.org": "system.sources",
-    "pub.evolix.net": "evolix_public_old.sources",
+    "pub.evolix.net": "evolix_public_old.sources.bak",
     "pub.evolix.org": "evolix_public.sources",
     "artifacts.elastic.co": "elastic.sources",
     "download.docker.com": "docker.sources",

@@ -48,7 +48,7 @@
     owner: root
     group: root
     mode: "0644"
-    force: yes
+    force: true
   notify: restart munin-node
   tags:
     - bind

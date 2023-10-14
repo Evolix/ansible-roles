@@ -22,11 +22,19 @@
     state: present
   when: ansible_distribution_major_version is version('10', '<')
 
+- name: "Ensure {{ apt_keyring_dir }} directory exists"
+  file:
+    path: "{{ apt_keyring_dir }}"
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+
 - name: Add Docker's official GPG key
   ansible.builtin.copy:
     src: docker-debian.asc
     dest: "{{ apt_keyring_dir }}/docker-debian.asc"
-    force: yes
+    force: true
     mode: "0644"
     owner: root
     group: root
@@ -43,7 +51,6 @@
   ansible.builtin.template:
     src: docker.sources.j2
     dest: /etc/apt/sources.list.d/docker.sources
-    state: present
   register: docker_sources
   when: ansible_distribution_major_version is version('12', '>=')
 

@@ -96,6 +96,18 @@
   when: apt_clean_gandi_sourceslist | bool
 
 
+- name: "Disable NonFreeFirmware warning for VM on Debian 12+"
+  ansible.builtin.lineinfile:
+    path: /etc/apt/apt.conf.d/no-bookworm-firmware.conf
+    create: yes
+    line: "APT::Get::Update::SourceListWarnings::NonFreeFirmware \"false\";"
+  tags:
+    - apt
+  when:
+    - ansible_distribution_major_version is version('12', '>=')
+    - ansible_virtualization_role == "guest"
+
+
 - name: Install check for packages marked hold
   ansible.builtin.import_tasks: hold_packages.yml
   when: apt_install_hold_packages | bool

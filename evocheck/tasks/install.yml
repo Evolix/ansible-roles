@@ -36,7 +36,7 @@
     dest: "{{ evocheck_bin_dir }}/evocheck.sh"
     mode: "0700"
     owner: root
-    force: yes
+    force: true
   tags:
     - evocheck
 
@@ -44,6 +44,6 @@
   ansible.builtin.copy:
     src: evocheck.cf
     dest: /etc/evocheck.cf
-    force: no
+    force: false
   tags:
     - evocheck

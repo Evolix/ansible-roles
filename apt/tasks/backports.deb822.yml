@@ -4,7 +4,7 @@
   ansible.builtin.template:
     src: '{{ ansible_distribution_release }}_backports.sources.j2'
     dest: /etc/apt/sources.list.d/backports.sources
-    force: yes
+    force: true
     mode: "0640"
   register: apt_backports_sources
   tags:
@@ -14,7 +14,7 @@
   ansible.builtin.copy:
     src: '{{ ansible_distribution_release }}_backports_preferences'
     dest: /etc/apt/preferences.d/0-backports-defaults
-    force: yes
+    force: true
     mode: "0640"
   register: apt_backports_config
   tags:

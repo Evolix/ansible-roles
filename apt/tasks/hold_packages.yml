@@ -71,7 +71,7 @@
   ansible.builtin.copy:
     src: check_held_packages.sh
     dest: /usr/share/scripts/check_held_packages.sh
-    force: yes
+    force: true
     mode: "0755"
   tags:
     - apt

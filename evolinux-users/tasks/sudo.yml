@@ -11,9 +11,9 @@
 
 
 - block:
-  - ansible.builtin.include: sudo_stretch_common.yml
+  - ansible.builtin.include: sudo_common.yml
 
-  - ansible.builtin.include: sudo_stretch_user.yml
+  - ansible.builtin.include: sudo_user.yml
     vars:
       user: "{{ item.value }}"
     loop: "{{ evolinux_users | dict2items }}"

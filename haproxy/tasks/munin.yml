@@ -12,7 +12,7 @@
   ansible.builtin.file:
     src: /usr/share/munin/plugins/haproxy_ng
     dest: /etc/munin/plugins/haproxy_ng
-    force: yes
+    force: true
     state: link
   notify: restart munin-node
   tags:

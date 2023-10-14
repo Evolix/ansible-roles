@@ -2,7 +2,7 @@
 
 - name: verify AllowGroups directive
   ansible.builtin.command:
-    cmd: "grep -E '^AllowGroups' /etc/ssh/sshd_config"
+    cmd: "grep -Er '^AllowGroups' /etc/ssh"
   changed_when: False
   failed_when: False
   check_mode: no
@@ -14,7 +14,7 @@
 
 - name: verify AllowUsers directive
   ansible.builtin.command:
-    cmd: "grep -E '^AllowUsers' /etc/ssh/sshd_config"
+    cmd: "grep -Er '^AllowUsers' /etc/ssh"
   changed_when: False
   failed_when: False
   check_mode: no
@@ -62,6 +62,37 @@
     regexp: '^#PermitRootLogin (yes|without-password|prohibit-password)'
     replace: "PermitRootLogin no"
   notify: reload sshd
-  when: evolinux_root_disable_ssh | bool
+  when:
+    - evolinux_root_disable_ssh | bool
+    - ansible_distribution_major_version is version('11', '<=')
+
+- name: verify PermitRootLogin directive (Debian >= 12)
+  ansible.builtin.command:
+    cmd: "grep -Er '^PermitRootLogin' /etc/ssh"
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: grep_permitrootlogin_ssh
+  when:
+    - ansible_distribution_major_version is version('12', '>=')
+
+# TODO avertir lorsque PermitRootLogin est déjà configuré?
+- ansible.builtin.debug:
+    var: grep_permitrootlogin_ssh
+    verbosity: 1
+
+- name: disable root login (Debian >= 12)
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config.d/z-evolinux-users.conf
+    line: "PermitRootLogin no"
+    create: yes
+    mode: "0644"
+    validate: '/usr/sbin/sshd -t -f %s'
+    insertbefore: "BOF"
+  notify: reload sshd
+  when:
+    - evolinux_root_disable_ssh | bool
+    - ansible_distribution_major_version is version('12', '>=')
+    - grep_permitrootlogin_ssh.rc == 1
 
 - ansible.builtin.meta: flush_handlers

@@ -15,11 +15,19 @@
     state: absent
   when: _trusted_gpg_keyring.stat.exists
 
+- name: "Ensure {{ apt_keyring_dir }} directory exists"
+  file:
+    path: "{{ apt_keyring_dir }}"
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+
 - name: Add Percona GPG key
   ansible.builtin.copy:
     src: percona.asc
     dest: "{{ apt_keyring_dir }}/percona.asc"
-    force: yes
+    force: true
     mode: "0644"
     owner: root
     group: root

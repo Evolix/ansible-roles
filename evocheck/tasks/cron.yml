@@ -16,5 +16,5 @@
     mode: "0644"
     owner: root
     group: root
-    force: yes
+    force: true
   when: is_cron_installed.rc == 0

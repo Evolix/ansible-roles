@@ -38,7 +38,7 @@
     dest: "{{ repository_path }}/.gitignore"
     owner: root
     mode: "0600"
-    force: no
+    force: false
   tags:
     - etc-git
 

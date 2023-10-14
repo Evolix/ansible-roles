@@ -26,7 +26,7 @@
   when:
     - _usr_share_scripts.stat.isdir
 
-- ansible.builtin.include: repository.yml
+- ansible.builtin.import_tasks: repository.yml
   vars:
     repository_path: "/usr/share/scripts"
     gitignore_items: []
