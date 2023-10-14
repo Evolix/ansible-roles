@@ -1,4 +1,5 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
@@ -7,7 +8,6 @@ This project does not follow semantic versioning.
 The **major** part of the version is the year
 The **minor** part changes is the month
 The **patch** part changes is incremented if multiple releases happen the same month
-
 
 ## [Unreleased]
 
@@ -90,8 +90,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Removed
 
 * dovecot: remove Munin plugin dovecot (not working)
-
-### Security
 
 ## [23.04] 2023-04-23
 
@@ -179,7 +177,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * evolinux-base: subversion is not installed anymore
 
-
 ## [22.12] 2022-12-14
 
 ### Added
@@ -234,7 +231,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * openvpn: Deleted the task fixing the CRL rights since it has been fixed in upstream
 
-
 ## [22.09] 2022-09-19
 
 ### Added
@@ -248,7 +244,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * proftpd: Add options to override configs (and add a warning if file was overriden)
 * proftpd: Allow user auth with ssh keys
 
-
 ### Changed
 
 * evocheck: upstream release 22.09
@@ -256,7 +251,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * generate-ldif: Support any MariaDB version
 * minifirewall: use handlers to restart minifirewall
 * openvpn: automate the initialization of the CA and the creation of the server certificate ; use openssl_dhparam module instead of a command
-* generate-ldif: support any version of MariaDB (instead of only 10.0, 10.1 and 10.3) 
+* generate-ldif: support any version of MariaDB (instead of only 10.0, 10.1 and 10.3)
 * openvpn: Run OpenVPN with the \_openvpn user and group instead of nobody which is originally for NFS
 * nagios-nrpe: Upgrade check_mongo
 
@@ -374,7 +369,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
-* docker : Introduce new default settings + allow to change the docker data directory 
+* docker : Introduce new default settings + allow to change the docker data directory
 * docker : Introduce new variables to tweak daemon settings
 
 ### Changed
@@ -407,7 +402,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * minifirewall: restore "force-restart" and fix "restart-if-needed"
 * minifirewall: tail template follows symlinks
 * minifirewall: upstream release 22.05
-* opendkim : add generate opendkim-genkey in sha256 and key 4096 
+* opendkim : add generate opendkim-genkey in sha256 and key 4096
 * openvpn: use a local copy of files instead of cloning an external git repository
 * openvpn: use a subnet topology instead of the net30 default topology
 * tomcat: Tomcat 9 by default with Debian 11
@@ -770,6 +765,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ## [10.0.0] - 2020-05-13
 
 ### Added
+
 * apache: the default VHost doesn't redirect to https for ".well-known" paths
 * apt: added buster backports prerferences
 * apt: check if cron is installed before adding a cron job
@@ -806,6 +802,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * bind: enable bind9 munin plugin for recursive resolvers
 
 ### Changed
+
 * replace version_compare() with version()s
 * removed some deprecations for Ansible 2.7
 * apache: improve permissions in save_apache_status script
@@ -851,6 +848,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * varnish: remove custom ExecReload= script for Debian 10+
 
 ### Fixed
+
 * etc-git: fix warnings ansible-lint
 * evoadmin-web: Put the php config at the right place for Buster
 * lxc: Don't stop the container if it already exists
@@ -873,16 +871,19 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * packweb-apache: Don't try to install PHPMyAdmin on Buster as it's not available
 
 ### Removed
+
 * clamav : do not install the zoo package anymore
 
 ## [9.10.1] - 2019-06-21
 
 ### Changed
+
 * evocheck : update (version 19.06) from upstream
 
 ## [9.10.0] - 2019-06-21
 
 ### Added
+
 * apache: add server status suffix in VHost (and default site) if missing
 * apache: add a variable to customize the server-status host
 * apt: add a script to manage packages with "hold" mark
@@ -893,6 +894,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * redmine: enable gzip compression in nginx vhost
 
 ### Changed
+
 * evocheck : update (unreleased) from upstream
 * evomaintenance : use the web API instead of PG Insert
 * fluentd: store gpg key locally
@@ -905,23 +907,26 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * apt: Add Debian Buster repositories
 
 ### Fixed
+
 * rbenv: add check_mode for check rbenv and ruby versions
 * nagios-nrpe: fix redis_instances check when Redis port equal 0
 * redmine: fix 500 error on logging
 * evolinux-base: Validate sshd config with "-t" instead of "-T"
 * evolinux-base: Ensure rename is present
 * evolinux-users: Validate sshd config with "-t" instead of "-T"
-* nagios-nrpe: Replace the dummy packages nagios-plugins-* with monitoring-plugins-*
+* nagios-nrpe: Replace the dummy packages nagios-plugins-*with monitoring-plugins-*
 
 ## [9.9.0] - 2019-04-16
 
 ### Added
+
 * etc-git: ignore evobackup/.keep-* files
 * lxc: /home is mounted in the container by default
 * nginx : add "x-frame-options: sameorigin" for Munin
 
 ### Changed
-* changed remote repository to https://gitea.evolix.org/evolix/ansible-roles
+
+* changed remote repository to <https://gitea.evolix.org/evolix/ansible-roles>
 * apt: Ensure jessie-backport from archives.debian.org is accepted
 * apt: Remove jessie-update suite as it's no longer exists
 * apt: Replace mirror.evolix.org by archives.debian.org for jessie-backport
@@ -934,8 +939,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * tomcat: better tomcat version management
 * webapps/evoadmin-web: add dbadmin.sh to sudoers file
 
-
 ### Fixed
+
 * spamassasin: fix sa-update.sh and ensure service is started and enabled
 * tomcat-instance: deploy correct version of config files
 * tomcat-instance: deploy correct version of server.xml
@@ -943,20 +948,24 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ## [9.8.0] - 2019-01-31
 
 ### Added
+
 * filebeat: disable cloud_metadata processor by default
 * metricbeat: disable cloud_metadata processor by default
 * percona : new role to install Percona repositories and tools
 * redis: add variable for configure unixsocketperm
 
 ### Changed
+
 * redmine: refactoring of redmine role with use of rbenv
 
 ### Fixed
+
 * ntpd: Update the restrictions to follow wiki.evolix.org/HowtoNTP client config
 
 ## [9.7.0] - 2019-01-17
 
 ### Added
+
 * apache: add Munin configuration for Apache server-status URL
 * evomaintenance: database variables must be set or the task fails
 * fail2ban: add "ips" tag added to fail2ban/tasks/ip_whitelist.yml
@@ -969,6 +978,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * proftpd: add FTPS and SFTP support
 
 ### Changed
+
 * redis: distinction between main and master password
 * evocheck: update evocheck.sh for source install
 * php: added php-zip in the installed package list for debian 9 (and later)
@@ -976,6 +986,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * java: update Oracle java package to 8u192
 
 ### Fixed
+
 * fail2ban: fix "ignoreip" update
 * metricbeat: fix username/password replacement
 * nagios-nrpe: check_process now return the error code (making the check more usefull than /bin/true)
@@ -984,16 +995,17 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * redis: In instance mode, ensure to replace the nrpe check_redis with the instance check script
 * redis: Don't set the owner of /var/{lib,log}/redis to a redis instance account
 
-
 ## [9.6.0] - 2018-12-04
 
 ### Added
+
 * evolinux-base: deploy custom motd if template are present
 * minifirewall: all variables are configurable (untouched by default)
 * minifirewall: main file is configurable
 * squid: minifirewall main file is configurable
 
 ### Changed
+
 * minifirewall: compare config before/after (for restart condition)
 * squid: better replacement in minifirewall config
 * evoadmin-mail: complete refactoring, use Debian Package
@@ -1001,6 +1013,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ## [9.5.0] - 2018-11-14
 
 ### Added
+
 * apache: separate task to update IP whitelist
 * evolinux-base: install man package
 * evolinux-users: add newaliases handler
@@ -1014,11 +1027,13 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * mysql: logdir can be customized
 
 ### Changed
+
 * evocheck: update script from upstream
 * evomaintenance: update script from upstream
 * mysql: restart service if systemd unit has been patched
 
 ### Fixed
+
 * packweb-apache: mod-security config is already included elsewhere
 * redis: for permissions on log and lib directories
 * redis: fix shell for instance users
@@ -1027,13 +1042,16 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ## [9.4.2] - 2018-10-12
 
 ### Added
+
 * evomaintenance: install dependencies manually when installing vendored version
 * nagios-nrpe: add an option to ignore servers in NOLB status
 
 ### Changed
+
 * haproxy: move check_haproxy_stats to nagios-nrpe role
 
 ### Fixed
+
 * evoacme: better error when apache2ctl fails
 * evomaintenance: fix role compatibility with OpenBSD
 * spamassassin: add missing right for amavis
@@ -1042,16 +1060,19 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ## [9.4.1] - 2018-09-28
 
 ### Added
+
 * redis: set masterauth when redis_password is defined
 * evomaintenance: variable to install a vendored version
 * evomaintenance: tasks/variables to handle minifirewall restarts
 
 ### Changed
+
 * mysql-oracle: better handle packages and users
 
 ## [9.4.0] - 2018-09-20
 
 ### Added
+
 * etc-git: manage a cron job to monitor uncommited changes in /etc/.git (default: `True`)
 * evolinux-base: better shell history
 * evolinux-users: add user to /etc/aliases
@@ -1066,9 +1087,11 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios-nrpe: add check_redis_instances
 
 ### Changed
+
 * dovecot: stronger TLS configuration
 
 ### Fixed
+
 * apache: cleaner way to overwrite the server status suffix
 * packweb-apache: don't regenerate phpMyAdmin suffix each time
 * nginx: cleaner way to overwrite the server status suffix
@@ -1077,11 +1100,13 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ## [9.3.2] - 2018-09-06
 
 ### Added
+
 * minifirewall: add a variable to disable the restart handler
 * minifirewall: add a variable to force a restart of the firewall (even with no change)
 * minifirewall: improve variables values and documentation
 
 ### Changed
+
 * dovecot: enable SSL/TLS by default with snakeoil certificate
 
 ### Fixed
@@ -1091,11 +1116,13 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ## [9.3.1] - 2018-08-30
 
 ### Added
+
 * metricbeat: new variables to configure elasticsearch hosts and auth
 
 ## [9.3.0] - 2018-08-24
 
 ### Added
+
 * elasticsearch: tmpdir configuration compatible with 5.x also
 * elasticsearch: add http.publish_host variable
 * evoacme: disable old certbot cron also in cron.daily
@@ -1116,6 +1143,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios-nrpe: add check_postgrey
 
 ### Changed
+
 * etc-git: some entries of .gitignore are mandatory
 * evocheck: update upstream script
 * evolinux-base: improve hostname configuration (real vs. internal)
@@ -1134,6 +1162,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * kvm-host: install kvm-tools package instead of copying add-vm.sh
 
 ### Fixed
+
 * apache: logrotate replacement is more subtle/precise. It replaces only the proper directive and not every occurence of the word.
 * bind: chroot-bind.sh must not be executed in check mode
 * evoacme: fix module detection in apache config
@@ -1145,12 +1174,14 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ## [9.2.0] - 2018-05-16
 
 ### Changed
+
 * filebeat: install version 6.x by default
 * filebeat: cleanup unused code
 * squid: add some domaine and fix broken restrictions
 * elasticsearch: defaults to version 6.x
 
 ### Fixed
+
 * evolinux-users: secondary groups are comma-separated
 * ntpd: fix configuration (server and ACL)
 * varnish: don't fork the process on startup with systemd
@@ -1160,6 +1191,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Added
 
 ### Changed
+
 * apache: customize logrotate (52 weeks)
 * evolinux: groups for SSH configuration are used with Debian 10 and later
 * evolinux-base: fail2ban is not enabled by default
@@ -1171,9 +1203,11 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ## [9.1.8] - 2018-04-16
 
 ### Changed
+
 * packweb-apache: use dependencies instead of include_role for apache and php roles
 
 ### Fixed
+
 * mysql: use check_mode for apg command (Fix --check)
 * mysql/mysql-oracle: properly reload systemd
 * packweb-apache: use check_mode for apg command (Fix --check)
@@ -1181,6 +1215,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ## [9.1.7] - 2018-04-06
 
 ### Added
+
 * added a few become attributes where missing
 * etc-git: add tags for Ansible
 * evolinux-base: install ncurses-term package
@@ -1198,6 +1233,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * redmine: added missing tags
 
 ### Changed
+
 * elasticsearch: RESTART_ON_UPGRADE is configurable (default: `true`)
 * elasticsearch: use ES_TMPDIR variable for custom tmpdir, (from `/etc/default/elasticsearch` instead of changing `/etc/elesticsearch/jvm.options`).
 * evolinux-base: Exec the firewall tasks sooner (to avoid dependency issues)
@@ -1213,6 +1249,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/evoadmin-web: Fail if variable evoadmin_contact_email isn't defined
 
 ### Fixed
+
 * dovecot: fix support of plus sign
 * mysql/mysql-oracle: mysqltuner cron task is executable
 * nginx: fix basic auth for default vhost
@@ -1221,21 +1258,25 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ## [9.1.6] - 2018-02-02
 
 ### Added
+
 * mongodb: install python-pymongo for monitoring
 * nagios-nrpe: allowed_hosts can be updated
 
 ### Changed
+
 * Changelog: explain the versioning scheme
 * Changelog: add a release date for 9.1.5
 * evoacme: exclude typical certbot directories
 
 ### Fixed
+
 * fail2ban: fix horrible typo, Python is not Ruby
 * nginx: fix servers status dirname
 
 ## [9.1.5] - 2018-01-18
 
 ### Added
+
 * There is a changelog!
 * redis: configuration variable for protected mode (v3.2+)
 * evolinux-users: users are in "adm" group for Debian 9 or later
@@ -1247,41 +1288,49 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * redmine: ability to install themes and plugins
 
 ### Changed
+
 * rbenv: Ruby 2.5 becomes the default version
 * evocheck: update upstream version embedded in role (c993244)
 * bind: keep 52 weeks of logs
 
 ### Fixed
+
 * squid: different logrotate file for Jessie or Stretch+
 * evoacme: don't invoke evoacme if no vhost is found
 * evomaintenance: explicit quotes in config file
 * redmine: force xpath gem < 3.0.0
 
 ### Security
+
 * evomaintenance: fix permissions for config file
 
 ## [9.1.4] - 2017-12-20
 
 ### Added
+
 * php: install php5-intl (for Jessie) and php-intl (for Debian 9 or later)
 * mysql: add a check_mysql_slave in nrpe configuration
 * ldap: slapd tcp port is configurable
 * elasticsearch: broader patterns for log rotation
 
 ### Changed
+
 * split IP lists in 2 – default and additional – for easier customization.
 
 ### Fixed
+
 * minifirewall: allow outgoing SSH connections over IPv6
 * nodejs: rename source.list file
 
 ### Security
+
 * evoadmin-web: change config.local.php file permissions
 * evolinux-base: change default_www file permissions
 
 ## [9.1.3] 2017-12-08
 
 ### Added
+
 * evolinux-base: install traceroute package
 * evolinux-base/ntpd: purge openntpd
 * tomcat: add Tomcat 8 cmpatibility
@@ -1293,6 +1342,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * elastic: option for stack main version
 
 ### Changed
+
 * nginx: rename Let's Encrypt snippet
 * nginx: simpler apt preferences for backports
 * generate-ldif: add clamd service instead of clamav_db
@@ -1304,10 +1354,12 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * mongodb: comatible with Stretch
 
 ### Removed
+
 * mongodb: logfile/pidfile are not configurable on Jessie
 * minifirewall: remove zidane.evolix.net from HTTPSITES
 
 ### Fixed
+
 * nginx: fix munin CGI graphs
 * ntpd: fix default configuration (localhost only)
 * logstash: fix permissions on pipeline configuration
@@ -1318,14 +1370,17 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ## [9.1.2] 2017-12-05
 
 ### Fixed
+
 * listupgrade: remount /usr as rw
 
 ## [9.1.1] 2017-11-21
 
 ### Added
+
 * amazon-ec2: add egress rules
 
 ### Fixed
+
 * evoacme: fix multiple bugs
 
 ## [9.1.0] 2017-11-19
@@ -1333,6 +1388,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 _Warning: huge release, many entries are missing below._
 
 ### Added
+
 * amazon-ec2: new role, for EC2 instances creation
 * Move /usr rw remount into remount-usr role
 * kibana: host and basepath configuration
@@ -1343,6 +1399,7 @@ _Warning: huge release, many entries are missing below._
 * nagios-nrpe: add opendkim check
 
 ### Changed
+
 * Combine evolix and additional trusted IP addresses
 * amazon-ec2: split tasks
 * apt: don't upgrade by default
@@ -1353,6 +1410,7 @@ _Warning: huge release, many entries are missing below._
 * ldap: better variables
 
 ### Fixed
+
 * fail2ban: create config hierarchy beforehand
 * elasticsearch: fix datadir/tmpdir conditions
 * elastic: remove double ".list" suffix
@@ -1363,10 +1421,10 @@ _Warning: huge release, many entries are missing below._
 
 ### Security
 
-
 ## [9.0.1] 2017-10-02
 
 ### Added
+
 * haproxy: add a Nagios check
 * php: add "sury" mode for PHP 7.1 on Stretch
 * minifirewall: explicit dependency on iptables
@@ -1374,9 +1432,11 @@ _Warning: huge release, many entries are missing below._
 * docker-host: new variable for docker home
 
 ### Changed
+
 * php: install php5/php package after fpm/libapache2-mod-php
 
 ### Fixed
+
 * mysql: add "REPLICATION CLIENT" privilege for nrpe
 * evoadmin-web: revert from variables to keywords in the templates
 * evoacme: many fixes
