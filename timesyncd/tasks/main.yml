@@ -4,7 +4,7 @@
     name: systemd-timesyncd
     state: present
   tags:
-  - timesyncd
+    - timesyncd
 
 - name: Remove other NTP packages
   ansible.builtin.apt:
@@ -13,17 +13,17 @@
       - ntp
     state: absent
   tags:
-  - timesyncd
+    - timesyncd
 
 - name: Ensure /etc/systemd/timesyncd.conf.d directory exists
-  file:
+  ansible.builtin.file:
     path: /etc/systemd/timesyncd.conf.d
     state: directory
     mode: "755"
     owner: root
     group: root
   tags:
-  - timesyncd
+    - timesyncd
 
 - name: Copy timesyncd config
   ansible.builtin.template:
@@ -32,4 +32,4 @@
     mode: "0644"
   notify: Restart timesyncd
   tags:
-  - timesyncd
+    - timesyncd
