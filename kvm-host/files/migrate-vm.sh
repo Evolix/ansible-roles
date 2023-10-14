@@ -299,6 +299,12 @@ migrate_to() {
 
     if is_vm_running_locally "${vm}"; then
         migrate_vm_to "${vm}" "${remote_ip}"
+        retcode=$?
+        if [ ${retcode} != 0 ]; then
+            echo "An error occured while migrating ${vm}: ${retval}" >&2
+            set_drbd_role secondary "${resource}" "${remote_ip}"
+            exit 1
+        fi
     else
         echo "${vm} is not running locally, so it won't be started on ${remote_host}"
     fi
