@@ -13,6 +13,18 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [23.10] 2023-10-14
+
+### Added
+
 * apt: disable `NonFreeFirmware` warning for VM on Debian 12+
 * apt: explicit `signed-by` directives for official sources
 * bind: add reload-zone helper
