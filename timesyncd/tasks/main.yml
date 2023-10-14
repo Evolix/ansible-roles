@@ -1,4 +1,10 @@
 ---
+
+- name: Verify that at least 1 NTP server is provided
+  ansible.builtin.assert:
+    that: timesyncd_ntp_servers | length > 0
+    msg: The variable timesyncd_ntp_servers must contain at least 1 element
+
 - name: Install systemd-timesyncd package
   ansible.builtin.apt:
     name: systemd-timesyncd
