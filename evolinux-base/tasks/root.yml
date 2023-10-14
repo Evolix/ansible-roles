@@ -90,7 +90,7 @@
     - "set shiftwidth=4"
   when: evolinux_root_vim_conf | bool
 
-- name: disable SSH access for root
+- name: disable SSH access for root (Debian < 12)
   ansible.builtin.replace:
     dest: /etc/ssh/sshd_config
     regexp: '^#?PermitRootLogin (yes|without-password|prohibit-password)'
@@ -115,6 +115,7 @@
   ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config.d/z-evolinux-defaults.conf
     line: "PermitRootLogin no"
+    regexp: "^#?PermitRootLogin "
     create: yes
     mode: "0644"
     validate: '/usr/sbin/sshd -t -f %s'
