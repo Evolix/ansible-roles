@@ -56,6 +56,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* evolinux-base: use separate default config file for rsyslog
 * all: change syntax "become: [yes,no]" → "become: [true,false]"
 * all: change syntax "force: [yes,no]" → "force: [true,false]"
 * elasticsearch: improve networking configuration
