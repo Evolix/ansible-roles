@@ -13,9 +13,18 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* Preliminary work for php83
+
 ### Changed
 
+* evolinux-base: use separate default config file for rsyslog
+* evocheck: upstream release 23.10
+
 ### Fixed
+
+* nginx: keep indentation
+* evoadmin-web: Fix PHP version for Bookworm
+* Add php-fpm82 to LDAP when relevant
 
 ### Removed
 
@@ -56,7 +65,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
-* evolinux-base: use separate default config file for rsyslog
 * all: change syntax "become: [yes,no]" → "become: [true,false]"
 * all: change syntax "force: [yes,no]" → "force: [true,false]"
 * elasticsearch: improve networking configuration
