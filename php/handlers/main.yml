@@ -34,3 +34,8 @@
   ansible.builtin.service:
     name: php8.2-fpm
     state: restarted
+
+- name: restart php8.3-fpm
+  ansible.builtin.service:
+    name: php8.3-fpm
+    state: restarted

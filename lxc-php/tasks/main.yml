@@ -42,6 +42,9 @@
 - ansible.builtin.import_tasks: "php82.yml"
   when: lxc_php_version == "php82"
 
+- ansible.builtin.import_tasks: "php83.yml"
+  when: lxc_php_version == "php83"
+
 - ansible.builtin.import_tasks: "umask.yml"
 
 - ansible.builtin.import_tasks: "misc.yml"
