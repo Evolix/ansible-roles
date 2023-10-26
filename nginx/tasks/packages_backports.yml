@@ -8,17 +8,6 @@
     - nginx
     - packages
 
-- name: Prefer Nginx packages from backports
-  ansible.builtin.template:
-    src: apt/nginx_preferences
-    dest: /etc/apt/preferences.d/999-nginx
-    force: true
-    mode: "0640"
-  register: nginx_apt_preferences
-  tags:
-    - nginx
-    - packages
-
 - name: APT cache is updated
   ansible.builtin.apt:
     update_cache: yes

@@ -13,6 +13,7 @@
   ansible.builtin.apt:
     name: "{{ nginx_package_name | default(nginx_default_package_name) }}"
     state: present
+    default_release: "{{ ansible_distribution_release }}-backports"
   tags:
     - nginx
     - packages
