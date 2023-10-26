@@ -2,7 +2,7 @@
 
 Types: deb
 URIs: https://packages.sury.org/php/
-Suites: {{ ansible_distribution_release }}
+Suites: {{ lxc_php_container_releases[lxc_php_version] }}
 Components: main
 Signed-by: {{ lxc_apt_keyring_dir }}/sury.gpg
 Enabled: yes

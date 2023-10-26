@@ -2,7 +2,7 @@
 
 Types: deb
 URIs: https://security.debian.org/debian-security
-Suites: bookworm-security
+Suites: {{ lxc_php_container_releases[lxc_php_version] }}-security
 Components: {{ apt_basics_components | mandatory }} 
 Enabled: yes
 Signed-By: /usr/share/keyrings/debian-archive-bookworm-security-automatic.gpg

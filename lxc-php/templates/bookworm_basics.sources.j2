@@ -2,7 +2,7 @@
 
 Types: deb
 URIs: http://mirror.evolix.org/debian
-Suites: bookworm bookworm-updates
+Suites: {{ lxc_php_container_releases[lxc_php_version] }} {{ lxc_php_container_releases[lxc_php_version] }}-updates
 Components: {{ apt_basics_components | mandatory }} 
 Enabled: yes
 Signed-By: /usr/share/keyrings/debian-archive-bookworm-automatic.gpg
