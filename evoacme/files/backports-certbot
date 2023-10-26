@@ -1,3 +1,0 @@
-Package: certbot python-certbot python-acme python-cryptography python-openssl python-setuptools python-ndg-httpsclient python-pyasn1 python-pkg-resources
-Pin: release a=jessie-backports
-Pin-Priority: 999
