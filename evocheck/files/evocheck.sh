@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian) server
 # powered by Evolix
 
-VERSION="23.07"
+VERSION="23.10"
 readonly VERSION
 
 # base functions
@@ -149,7 +149,7 @@ check_dpkgwarning() {
 check_postfix_mydestination() {
     # shellcheck disable=SC2016
     if ! grep mydestination /etc/postfix/main.cf | grep --quiet -E 'localhost([[:blank:]]|$)'; then
-        failed "IS_POSTFIX_MYDESTINATION" "'localhost' s missing in Postfix mydestination option."
+        failed "IS_POSTFIX_MYDESTINATION" "'localhost' is missing in Postfix mydestination option."
     fi
     if ! grep mydestination /etc/postfix/main.cf | grep --quiet 'localhost\.localdomain'; then
         failed "IS_POSTFIX_MYDESTINATION" "'localhost.localdomain' is missing in Postfix mydestination option."
@@ -193,6 +193,24 @@ check_debiansecurity() {
     apt-cache policy | grep "\bl=Debian-Security\b" | grep "\bo=Debian\b" | grep --quiet "\bc=main\b"
     test $? -eq 0 || failed "IS_DEBIANSECURITY" "missing Debian-Security repository"
 }
+check_oldpub() {
+    # Look for enabled pub.evolix.net sources (supersed by pub.evolix.org since Stretch)
+    apt-cache policy | grep --quiet pub.evolix.net
+    test $? -eq 1 || failed "IS_OLDPUB" "Old pub.evolix.net repository is still enabled"
+}
+check_newpub() {
+    # Look for enabled pub.evolix.org sources
+    apt-cache policy | grep "\bl=Evolix\b" | grep --quiet -v php
+    test $? -eq 0 || failed "IS_NEWPUB" "New pub.evolix.org repository is missing"
+}
+check_sury() {
+    # Look for enabled packages.sury.org sources
+    apt-cache policy | grep --quiet packages.sury.org
+    if [ $? -eq 0 ]; then
+         apt-cache policy | grep "\bl=Evolix\b" | grep php --quiet
+	 test $? -eq 0 || failed "IS_SURY" "packages.sury.org is present but our safeguard pub.evolix.org repository is missing"
+    fi
+}
 check_aptitude() {
     test -e /usr/bin/aptitude && failed "IS_APTITUDE" "aptitude may not be installed on Debian >=8"
 }
@@ -231,15 +249,8 @@ check_customcrontab() {
     test "$found_lines" = 4 && failed "IS_CUSTOMCRONTAB" "missing custom field in crontab"
 }
 check_sshallowusers() {
-    if is_debian_bookworm; then
-        grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config.d \
-            || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config.d/*"
-        grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config \
-            && failed "IS_SSHALLOWUSERS" "AllowUsers or AllowGroups directive present in sshd_config"
-    else
-        grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d \
-            || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
-    fi
+    grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d \
+        || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
 }
 check_diskperf() {
     perfFile="/root/disk-perf.txt"
@@ -283,8 +294,17 @@ check_alert5minifw() {
     fi
 }
 check_minifw() {
-    /sbin/iptables -L -n | grep -q -E "^ACCEPT\s*(all|0)\s*--\s*31\.170\.8\.4\s*0\.0\.0\.0/0\s*$" \
-        || failed "IS_MINIFW" "minifirewall seems not started"
+    {
+        if [ -f /etc/systemd/system/minifirewall.service ]; then
+            systemctl is-active minifirewall > /dev/null 2>&1
+        else
+            if test -x /usr/share/scripts/minifirewall_status; then
+                /usr/share/scripts/minifirewall_status > /dev/null 2>&1
+            else
+                /sbin/iptables -L -n 2> /dev/null | grep -q -E "^(DROP\s+(udp|17)|ACCEPT\s+(icmp|1))\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
+            fi
+        fi
+    } || failed "IS_MINIFW" "minifirewall seems not started"
 }
 check_minifw_includes() {
     if is_debian_bullseye; then
@@ -447,7 +467,11 @@ check_log2mailsquid() {
 check_bindchroot() {
     if is_installed bind9; then
         if netstat -utpln | grep "/named" | grep :53 | grep -qvE "(127.0.0.1|::1)"; then
-            if grep -q '^OPTIONS=".*-t' /etc/default/bind9 && grep -q '^OPTIONS=".*-u' /etc/default/bind9; then
+            default_conf=/etc/default/named
+            if is_debian_buster || is_debian_stretch; then
+                default_conf=/etc/default/bind9
+            fi
+            if grep -q '^OPTIONS=".*-t' "${default_conf}" && grep -q '^OPTIONS=".*-u' "${default_conf}"; then
                 md5_original=$(md5sum /usr/sbin/named | cut -f 1 -d ' ')
                 md5_chrooted=$(md5sum /var/chroot-bind/usr/sbin/named | cut -f 1 -d ' ')
                 if [ "$md5_original" != "$md5_chrooted" ]; then
@@ -525,7 +549,16 @@ check_evobackup_exclude_mount() {
             # If rsync is not limited by "one-file-system"
             # then we verify that every mount is excluded
             if ! grep -q -- "^\s*--one-file-system" "${evobackup_file}"; then
-                grep -- "--exclude " "${evobackup_file}" | grep -E -o "\"[^\"]+\"" | tr -d '"' > "${excludes_file}"
+                # old releases of evobackups don't have version
+                if grep -q  "^VERSION=" "${evobackup_file}"; then
+                  evobackup_version=$(sed -E -n 's/VERSION="(.*)"/\1/p' "${evobackup_file}")
+                  # versions over 22.12 use a new syntax to exclude rsync files
+                  if dpkg --compare-versions "$evobackup_version" ge 22.12 ; then
+                    sed -En '/RSYNC_EXCLUDES="/,/"/ {s/(RSYNC_EXCLUDES=|")//g;p}' > "${excludes_file}"
+                  else
+                    grep -- "--exclude " "${evobackup_file}" | grep -E -o "\"[^\"]+\"" | tr -d '"' > "${excludes_file}"
+                  fi
+                fi
                 not_excluded=$(findmnt --type nfs,nfs4,fuse.sshfs, -o target --noheadings | grep -v -f "${excludes_file}")
                 for mount in ${not_excluded}; do
                     failed "IS_EVOBACKUP_EXCLUDE_MOUNT" "${mount} is not excluded from ${evobackup_file} backup script"
@@ -760,10 +793,6 @@ check_apache2evolinuxconf() {
 check_backportsconf() {
     grep -qsE "^[^#].*backports" /etc/apt/sources.list \
         && failed "IS_BACKPORTSCONF" "backports can't be in main sources list"
-    if grep -qsE "^[^#].*backports" /etc/apt/sources.list.d/*.list; then
-        grep -qsE "^[^#].*backports" /etc/apt/preferences.d/* \
-            || failed "IS_BACKPORTSCONF" "backports must have preferences"
-    fi
 }
 check_bind9munin() {
     if is_installed bind9; then
@@ -775,6 +804,19 @@ check_bind9munin() {
 check_bind9logrotate() {
     if is_installed bind9; then
         test -e /etc/logrotate.d/bind9 || failed "IS_BIND9LOGROTATE" "missing bind logrotate file"
+    fi
+}
+check_drbd_two_primaries() {
+    if is_installed drbd-utils; then
+        if command -v drbd-overview >/dev/null; then
+            if drbd-overview 2>&1 | grep -q "Primary/Primary"; then
+                failed "IS_DRBDTWOPRIMARIES" "Some DRBD ressources have two primaries, you risk a split brain!"
+            fi
+        elif command -v drbdadm >/dev/null; then
+            if drbdadm status | grep Primary -A2 | grep peer | grep -q Primary; then
+                failed "IS_DRBDTWOPRIMARIES" "Some DRBD ressources have two primaries, you risk a split brain!"
+            fi
+        fi
     fi
 }
 check_broadcomfirmware() {
@@ -1418,6 +1460,9 @@ main() {
     test "${IS_LOGROTATECONF:=1}" = 1 && check_logrotateconf
     test "${IS_SYSLOGCONF:=1}" = 1 && check_syslogconf
     test "${IS_DEBIANSECURITY:=1}" = 1 && check_debiansecurity
+    test "${IS_OLDPUB:=1}" = 1 && check_oldpub
+    test "${IS_NEWPUB:=1}" = 1 && check_newpub
+    test "${IS_SURY:=1}" = 1 && check_sury
     test "${IS_APTITUDE:=1}" = 1 && check_aptitude
     test "${IS_APTGETBAK:=1}" = 1 && check_aptgetbak
     test "${IS_USRRO:=1}" = 1 && check_usrro
@@ -1479,6 +1524,7 @@ main() {
     test "${IS_BACKPORTSCONF:=1}" = 1 && check_backportsconf
     test "${IS_BIND9MUNIN:=1}" = 1 && check_bind9munin
     test "${IS_BIND9LOGROTATE:=1}" = 1 && check_bind9logrotate
+    test "${IS_DRBDTWOPRIMARIES:=1}" = 1 && check_drbd_two_primaries
     test "${IS_BROADCOMFIRMWARE:=1}" = 1 && check_broadcomfirmware
     test "${IS_HARDWARERAIDTOOL:=1}" = 1 && check_hardwareraidtool
     test "${IS_LOG2MAILSYSTEMDUNIT:=1}" = 1 && check_log2mailsystemdunit
