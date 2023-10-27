@@ -14,6 +14,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Added
 
 * Preliminary work for php83
+* nagios-nrpe: add check_sentinel for monitoring Redis Sentinel
 
 ### Changed
 

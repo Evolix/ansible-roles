@@ -1,0 +1,203 @@
+#!/bin/sh
+#
+# Verify the health of Redis instances using Redis Sentinel.
+#
+# Exemple output:
+# OK - 0 UNCHK / 0 CRIT / 0 WARN / 4 OK
+#
+# OK: Sentinels quorum reached / Active: 2 (quorum: 2)
+# OK: '10.11.24.217:6379' is a 'master' of 'redis'
+# OK: '10.11.24.227:6379' is a 'slave' of 'redis', in sync with '10.11.24.217'
+# OK: '10.11.24.208:6379' is a 'slave' of 'redis', in sync with '10.11.24.217'
+
+set -u
+
+usage() {
+  echo "Usage:"
+  echo " $0 -c <sentinel config file>"
+  exit 1
+}
+
+sentinel_config_file=
+while [ $# -gt 0 ]; do
+  case $1 in
+    -c)
+      sentinel_config_file="$2"
+      shift
+      shift
+      ;;
+    *)
+      echo "Invalid option: $1"
+      usage
+      ;;
+  esac
+done
+test -z "$sentinel_config_file" && usage
+
+# NRPE specific
+
+exit_code=0
+ok_count=0
+warn_count=0
+crit_count=0
+unchk_count=0
+
+output=$(mktemp --tmpdir $(basename "$0").XXXXXXXX)
+
+ok() {
+    message=$1
+    printf "OK: %s\n" "$message" >> "$output"
+    ok_count=$(( ok_count + 1))
+}
+
+warn() {
+    message=$1
+    printf "WARN: %s\n" "$message" >> "$output"
+    warn_count=$(( warn_count + 1))
+    [ "$exit_code" -lt 1 ] && exit_code=1
+}
+
+crit() {
+    message=$1
+    printf "CRIT: %s\n" "$message" >> "$output"
+    crit_count=$(( crit_count + 1))
+    [ "$exit_code" -lt 2 ] && exit_code=2
+}
+
+unchk() {
+    message=$1
+    printf "UNCHK: %s\n" "$message" >> "$output"
+    unchk_count=$(( unchk_count + 1))
+    [ "$exit_code" -lt 3 ] && exit_code=3
+    exit 1
+}
+
+nrpe_output() {
+    case "$exit_code" in
+        0) output_header="OK" ;;
+        1) output_header="WARNING" ;;
+        2) output_header="CRITICAL" ;;
+        *) output_header="UNCHK" ;;
+    esac
+
+    printf "%s - %s UNCHK / %s CRIT / %s WARN / %s OK\n\n" \
+        "${output_header}" "${unchk_count}" "${crit_count}" "${warn_count}" "${ok_count}"
+
+    grep -E "^CRIT" "$output"
+    grep -E "^WARN" "$output"
+    grep -E "^UNCHK" "$output"
+    grep -E "^OK" "$output"
+
+    rm -f "$output"
+
+    exit "$exit_code"
+}
+trap nrpe_output EXIT
+
+# Redis specific
+
+test -r "$sentinel_config_file" || unchk "Can't read file '${sentinel_config_file}'"
+
+command -v redis-cli 1>/dev/null || unchk "Can't find executable 'redis-cli'"
+
+redis_cli_args=''
+sentinel_port=$(awk '/^port/{print $2}' "${sentinel_config_file}")
+! test -z "$sentinel_port" && redis_cli_args="${redis_cli_args} -p ${sentinel_port}"
+sentinel_pass=$(awk '/^requirepass/{print $2}' "${sentinel_config_file}")
+! test -z "$sentinel_pass" && redis_cli_args="${redis_cli_args} --pass ${sentinel_pass}"
+alias _redis-cli="redis-cli ${redis_cli_args}"
+
+# List all masters names known by sentinel
+redis_sentinel_masters() {
+    _redis-cli sentinel masters |
+        sed 'N;s/\n/=/' |
+        awk -F = '$1 ~ /^name$/ { print $2 }'
+}
+
+# Verify redis sentinel master
+check_master() {
+    master=$1
+    input=$(_redis-cli sentinel master "$master" | sed 'N;s/\n/=/')
+
+    for line in $input; do
+        case "$line" in
+            ip=*) ip=${line#ip=} ;;
+            port=*) port=${line#port=} ;;
+            flags=*) flags=${line#flags=} ;;
+            num-other-sentinels=*) num_sentinels=$(( ${line#num-other-sentinels=} + 1)) ;;
+            quorum=*) quorum=${line#quorum=} ;;
+        esac
+    done
+
+
+    if [ "$num_sentinels" -ge "$quorum" ]; then
+        ok "Sentinels quorum reached / Active: ${num_sentinels} (quorum: ${quorum})"
+    else
+        crit "No quorum of sentinels / Active: ${num_sentinels} (quorum: ${quorum})"
+    fi
+
+    if echo "$flags" | grep -q master; then
+        ok "'${ip}:${port}' is a '${flags}' of '${master}'"
+    else
+        crit "'${ip}:${port}' is not  a 'master' of '${master}'"
+    fi
+
+    unset ip port flags status master_host
+}
+
+check_slaves_output() {
+    name=$1
+    flags=$2
+    status=$3
+    master_host=$4
+
+    if [ "$status" = ok ]; then
+        ok "'${name}' is a '${flags}' of '${master}', in sync with '${master_host}'"
+    else
+        crit "'${name}' is a '${flags}' of '${master}', not in sync"
+    fi
+}
+
+# Verify redis slaves are in sync with their master
+check_slaves() {
+    master=$1
+    input=$(_redis-cli sentinel slaves "$master" | sed 'N;s/\n/=/')
+
+    name=
+    flags=
+    status=
+    master_host=
+    for line in $input; do
+        case "$line" in
+            # "name" is the field begining a new record
+            name=*)
+                if [ -n "$name" ]; then
+                    # output for all the slaves record, except the very last one
+                    check_slaves_output "$name" "$flags" "$status" "$master_host"
+                    unset name flags status master_host
+                fi
+                name=${line#name=}
+                ;;
+            flags=*) flags=${line#flags=} ;;
+            master-link-status=*) status=${line#master-link-status=} ;;
+            master-host=*) master_host=${line#master-host=} ;;
+        esac
+    done
+    # output for the last slave record in $input
+    check_slaves_output "$name" "$flags" "$status" "$master_host"
+    unset name flags status master_host
+}
+
+if ! systemctl is-active --quiet redis-sentinel.service; then
+    unchk "'redis-sentinel' process isn't running"
+else
+    masters=$(redis_sentinel_masters)
+    if [ -n "$masters" ]; then
+        for master in $masters; do
+            check_master "$master"
+            check_slaves "$master"
+        done
+    else
+        crit "No Redis master"
+    fi
+fi

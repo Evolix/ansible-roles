@@ -75,6 +75,7 @@ command[check_varnish]={{ nagios_plugins_directory }}/check_varnish_health -i 12
 command[check_haproxy]=sudo {{ nagios_plugins_directory }}/check_haproxy_stats -s /run/haproxy/admin.sock -w 80 -c 90 --ignore-maint --ignore-nolb --ignore-drain
 command[check_minifirewall]=sudo {{ nagios_plugins_directory }}/check_minifirewall
 command[check_redis_instances]={{ nagios_plugins_directory }}/check_redis_instances
+command[check_sentinel]=sudo {{ nagios_plugins_directory }}/check_sentinel -c /etc/redis/sentinel.conf
 command[check_hpraid]={{ nagios_plugins_directory }}/check_hpraid
 command[check_php-fpm]={{ nagios_plugins_directory }}/check_phpfpm_multi
 command[check_php-fpm56]=sudo {{ nagios_plugins_directory }}/check_phpfpm_multi /var/lib/lxc/php56/rootfs/etc/php5/fpm/pool.d/
