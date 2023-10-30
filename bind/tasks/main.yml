@@ -94,13 +94,25 @@
     - bind_chroot_set | bool
     - chrootbind_run.stdout | length > 0
 
-- name: Modify OPTIONS in /etc/default/bind9 for chroot
+- name: Modify OPTIONS in /etc/default/bind9 for chroot (until Buster)
   ansible.builtin.replace:
     dest: /etc/default/bind9
     regexp: '^OPTIONS=.*'
     replace: 'OPTIONS="-u bind -t {{ bind_chroot_path }}"'
   notify: restart bind
-  when: bind_chroot_set | bool
+  when:
+    - bind_chroot_set | bool
+    - ansible_distribution_major_version is version('11', '<')
+
+- name: Modify OPTIONS in /etc/default/named for chroot (since Bullseye)
+  ansible.builtin.replace:
+    dest: /etc/default/named
+    regexp: '^OPTIONS=.*'
+    replace: 'OPTIONS="-u bind -t {{ bind_chroot_path }}"'
+  notify: restart bind
+  when:
+    - bind_chroot_set | bool
+    - ansible_distribution_major_version is version('11', '>=')
 
 - name: logrotate for bind
   ansible.builtin.template:
