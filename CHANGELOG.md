@@ -20,6 +20,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * evolinux-base: use separate default config file for rsyslog
 * evocheck: upstream release 23.10
+* add-vm.sh: allow VM name max length > 20
 
 ### Fixed
 
