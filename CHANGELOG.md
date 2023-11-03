@@ -27,6 +27,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nginx: keep indentation
 * evoadmin-web: Fix PHP version for Bookworm
 * Add php-fpm82 to LDAP when relevant
+* nagios: fix default file to monitor for check_clamav_db
 
 ### Removed
 
