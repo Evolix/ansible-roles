@@ -1,4 +1,11 @@
 ---
+
+- name:
+  ansible.builtin.set_fact:
+    nagios_nrpe_processes: "{{ nagios_nrpe_processes_default_before_debian_12 if ansible_distribution_major_version is version('12', '<') else nagios_nrpe_processes_default }}"
+  when:
+    nagios_nrpe_processes == None or nagios_nrpe_processes|length <= 0
+
 - name: base nrpe & plugins packages are installed
   ansible.builtin.apt:
     name:

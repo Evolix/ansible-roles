@@ -21,6 +21,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-base: use separate default config file for rsyslog
 * evocheck: upstream release 23.10
 * add-vm.sh: allow VM name max length > 20
+* nagios: rename var `nagios_nrpe_process_processes` into `nagios_nrpe_processes` and check systemd-timesyncd instead of ntpd in Debian 12
 
 ### Fixed
 
