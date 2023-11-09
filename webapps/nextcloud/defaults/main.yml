@@ -5,6 +5,7 @@ nextcloud_releases_baseurl: "https://download.nextcloud.com/server/releases/"
 
 nextcloud_instance_name: "nextcloud"
 nextcloud_user: "{{ nextcloud_instance_name }}"
+nextcloud_user_uid: 3000
 nextcloud_domains: []
 
 nextcloud_home: "/home/{{ nextcloud_user }}"
