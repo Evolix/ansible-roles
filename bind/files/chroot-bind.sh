@@ -3,7 +3,7 @@
 # Gregory Colpart <reg@debian.org>
 # chroot (or re-chroot) script for bind9
 
-# tested on Debian Wheezy/Jessie/Stretch
+# tested on Debian Wheezy/Jessie/Stretch/Buster
 # Exec this script after `(apt-get|aptitude|apt) install bind9`
 # and after *each* bind9 upgrade
 
@@ -24,13 +24,18 @@ mkdir -p /var/chroot-bind
 mkdir -p /var/chroot-bind/bin /var/chroot-bind/dev /var/chroot-bind/etc \
         /var/chroot-bind/lib /var/chroot-bind/usr/lib                   \
         /var/chroot-bind/usr/sbin /var/chroot-bind/var/cache/bind       \
-        /var/chroot-bind/var/log /var/chroot-bind/var/run/named/        \
-        /var/chroot-bind/run/named/
+        /var/chroot-bind/var/log /var/chroot-bind/var/run/named         \
+        /var/chroot-bind/run/named /var/chroot-bind/usr/share/dns
 
 # for conf
 if [ ! -h "/etc/bind" ]; then
     mv /etc/bind/ /var/chroot-bind/etc/
     ln -s /var/chroot-bind/etc/bind/ /etc/bind
+fi
+
+# for dns
+if [ -d "/usr/share/dns" ]; then
+    cp -a /usr/share/dns/* /var/chroot-bind/usr/share/dns/
 fi
 
 # for logs
@@ -60,10 +65,15 @@ fi
 #chmod 666 /var/chroot-bind/dev/{null,random}
 
 # essential libs
-for i in `ldd $(which named) | grep -v linux-vdso.so.1 | cut -d">" -f2 | cut -d"(" -f1` \
-         /usr/lib/x86_64-linux-gnu/openssl-1.0.*/engines/libgost.so ; do
-    install -D $i /var/chroot-bind/${i##/}
+for i in `ldd $(which named) | grep -v linux-vdso.so.1 | cut -d">" -f2 | cut -d"(" -f1`
+    do install -D $i /var/chroot-bind/${i##/}
 done
+
+if [ ls /usr/lib/x86_64-linux-gnu/openssl-1.0.*/engines/libgost.so 1>/dev/null 2>&1 ]; then
+    for i in /usr/lib/x86_64-linux-gnu/openssl-1.0.*/engines/libgost.so
+        do install -D $i /var/chroot-bind/${i##/}
+    done
+fi
 
 # essential (hum, bash is required ??)
 #cp /bin/bash /var/chroot-bind/bin/
