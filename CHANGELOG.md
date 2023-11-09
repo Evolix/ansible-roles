@@ -15,7 +15,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * Preliminary work for php83
 * nagios-nrpe: add check_sentinel for monitoring Redis Sentinel
-* webapps/nextcloud Added var nextcloud_user_uid to enforce uid for nextcloud user
+* webapps/nextcloud: Added var nextcloud_user_uid to enforce uid for nextcloud user
 
 ### Changed
 
@@ -30,6 +30,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evoadmin-web: Fix PHP version for Bookworm
 * Add php-fpm82 to LDAP when relevant
 * nagios: fix default file to monitor for check_clamav_db
+* webapps/nextcloud: fix missing gid 
 
 ### Removed
 

@@ -13,6 +13,7 @@
     group: "{{ nextcloud_user | mandatory }}"
     home: "{{ nextcloud_home | mandatory }}"
     uid: "{{ nextcloud_user_uid | mandatory }}"
+    gid: "{{ nextcloud_user_uid | mandatory }}"
     shell: '/bin/bash'
     create_home: True
     state: present
