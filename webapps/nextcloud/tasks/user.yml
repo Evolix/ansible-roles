@@ -1,9 +1,15 @@
 ---
+- name: Check nextcloud user id is over 2999
+  ansible.builtin.assert:
+    that:
+      - nextcloud_user_uid >= 3000
+
 - name: Create {{ nextcloud_user }} unix group
 
   ansible.builtin.group:
     name: "{{ nextcloud_user | mandatory }}"
     state: present
+    gid: "{{ nextcloud_user_uid | mandatory }}"
   tags:
     - nextcloud
 
@@ -13,7 +19,6 @@
     group: "{{ nextcloud_user | mandatory }}"
     home: "{{ nextcloud_home | mandatory }}"
     uid: "{{ nextcloud_user_uid | mandatory }}"
-    gid: "{{ nextcloud_user_uid | mandatory }}"
     shell: '/bin/bash'
     create_home: True
     state: present
