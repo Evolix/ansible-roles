@@ -30,6 +30,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evoadmin-web: Fix PHP version for Bookworm
 * Add php-fpm82 to LDAP when relevant
 * nagios: fix default file to monitor for check_clamav_db
+* php: Bullseye/Sury > Honor the php_version asked in the pub.evolix.org repository
 * webapps/nextcloud: fix missing gid
 * webapps/nextcloud: fix misplaced gid attribute
 * webapps/nextcloud: added check that nexctcloud uid is over 3000
