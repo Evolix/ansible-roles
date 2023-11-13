@@ -3,14 +3,17 @@
 # Gregory Colpart <reg@debian.org>
 # chroot (or re-chroot) script for bind9
 
-# tested on Debian Wheezy/Jessie/Stretch/Buster/Bullseye
+# tested on Debian Wheezy/Jessie/Stretch/Buster/Bullseye/Bookworm
 # Exec this script after `(apt-get|aptitude|apt) install bind9`
 # and after *each* bind9 upgrade
 
-# When the script is finished, ensure you have (since Bullseye)
+# When the script is finished, ensure you have
 # 'OPTIONS="-u bind -t /var/chroot-bind"' in /etc/default/named
-### or (until Buster)
-### 'OPTIONS="-u bind -t /var/chroot-bind"' in /etc/default/bind9
+# (since Bullseye) or, until Buster, in /etc/default/bind9
+#
+# Since Bookmworm, one also needs to handle bind mount points
+# https://wiki.evolix.org/HowtoBind#bind-mount-%C3%A0-partir-de-bookworm-debian-12
+#
 # and /etc/init.d/bind9 (re)start
 #
 # for Jessie/systemd only:
