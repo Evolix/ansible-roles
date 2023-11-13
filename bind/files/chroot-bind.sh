@@ -3,7 +3,7 @@
 # Gregory Colpart <reg@debian.org>
 # chroot (or re-chroot) script for bind9
 
-# tested on Debian Wheezy/Jessie/Stretch/Buster
+# tested on Debian Wheezy/Jessie/Stretch/Buster/Bullseye
 # Exec this script after `(apt-get|aptitude|apt) install bind9`
 # and after *each* bind9 upgrade
 
@@ -26,6 +26,8 @@ mkdir -p /var/chroot-bind/bin /var/chroot-bind/dev /var/chroot-bind/etc \
         /var/chroot-bind/usr/sbin /var/chroot-bind/var/cache/bind       \
         /var/chroot-bind/var/log /var/chroot-bind/var/run/named         \
         /var/chroot-bind/run/named /var/chroot-bind/usr/share/dns
+
+chmod 750 /var/chroot-bind
 
 # for conf
 if [ ! -h "/etc/bind" ]; then
