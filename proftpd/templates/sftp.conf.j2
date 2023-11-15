@@ -27,7 +27,9 @@
 
     SFTPHostKey /etc/ssh/ssh_host_ecdsa_key
     SFTPHostKey /etc/ssh/ssh_host_rsa_key
+    {% if ansible_distribution_major_version is version('11', '>=') %}
     SFTPHostKey /etc/ssh/ssh_host_ed25519_key
+    {% endif %}
     
     RequireValidShell off
     
