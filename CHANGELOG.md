@@ -25,6 +25,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios: rename var `nagios_nrpe_process_processes` into `nagios_nrpe_processes` and check systemd-timesyncd instead of ntpd in Debian 12
 * ProFTPd: in SFTP vhost, enable SSH keys login, enable ed25549 host key for Debian >= 11
 * apache : fix goaway pattern for bad bots 
+* apache : rename MaxRequestsPerChild to MaxConnectionsPerChild (new name)
 
 ### Fixed
 
