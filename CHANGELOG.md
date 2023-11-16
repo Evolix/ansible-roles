@@ -37,6 +37,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: fix misplaced gid attribute
 * webapps/nextcloud: added check that nexctcloud uid is over 3000
 * ProFTPd: set missing default listen IP for SFTP
+* apache: fix MaxRequestsPerChild value to be sync with wiki.e.o
 
 ### Removed
 
