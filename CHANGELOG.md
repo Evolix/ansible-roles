@@ -39,6 +39,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: added check that nexctcloud uid is over 3000
 * ProFTPd: set missing default listen IP for SFTP
 * apache: fix MaxRequestsPerChild value to be sync with wiki.e.o
+* ssl: no not execute haproxy tasks and reload if haproxy is disabled
 
 ### Removed
 

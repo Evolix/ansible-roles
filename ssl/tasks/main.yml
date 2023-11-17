@@ -39,5 +39,12 @@
   tags:
     - ssl
 
+- name: Collect facts about system services
+  service_facts:
+
 - ansible.builtin.include: haproxy.yml
-  when: haproxy_check.rc == 0
+  when:
+    - haproxy_check.rc == 0
+    - ansible_facts.services['haproxy.service']['state'] == "running"
+    - ansible_facts.services['haproxy.service']['status'] == "enabled"
+
