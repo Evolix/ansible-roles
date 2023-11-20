@@ -45,6 +45,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Removed
 
+* evolinux-base: no need to remove update-evobackup-canary from sbin anymore
 * evolinux-base: no need to symlink backup-server-state to dump-server-state anymore
 
 ### Security
