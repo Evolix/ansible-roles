@@ -45,6 +45,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Removed
 
+* evolinux-base: no need to symlink backup-server-state to dump-server-state anymore
+
 ### Security
 
 ## [23.10] 2023-10-14
