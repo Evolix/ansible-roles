@@ -7,7 +7,7 @@ processlist() {
 }
 
 DIR="/var/log/mysql-processlist"
-TS=`date +%Y%m%d%H%M%S`
+TS=$(date +%Y%m%d%H%M%S)
 FILE="${DIR}/${TS}"
 
 if [ ! -d "${DIR}" ]; then
