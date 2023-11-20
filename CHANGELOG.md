@@ -19,13 +19,14 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
-* evolinux-base: use separate default config file for rsyslog
-* evocheck: upstream release 23.10
 * add-vm.sh: allow VM name max length > 20
-* nagios: rename var `nagios_nrpe_process_processes` into `nagios_nrpe_processes` and check systemd-timesyncd instead of ntpd in Debian 12
-* ProFTPd: in SFTP vhost, enable SSH keys login, enable ed25549 host key for Debian >= 11
 * apache : fix goaway pattern for bad bots 
 * apache : rename MaxRequestsPerChild to MaxConnectionsPerChild (new name)
+* evocheck: upstream release 23.10
+* evolinux-base: dump-server-state upstream release 23.11
+* evolinux-base: use separate default config file for rsyslog
+* nagios: rename var `nagios_nrpe_process_processes` into `nagios_nrpe_processes` and check systemd-timesyncd instead of ntpd in Debian 12
+* proftpd: in SFTP vhost, enable SSH keys login, enable ed25549 host key for Debian >= 11
 
 ### Fixed
 

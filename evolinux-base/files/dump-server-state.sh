@@ -3,7 +3,7 @@
 PROGNAME="dump-server-state"
 REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
 
-VERSION="23.08"
+VERSION="23.11"
 readonly VERSION
 
 dump_dir=
@@ -35,43 +35,44 @@ ${PROGNAME} is dumping information related to the state of the server.
 Usage: ${PROGNAME} --dump-dir=/path/to/dump/directory [OPTIONS]
 
 Main options
- -d, --dump-dir        path to the directory where data will be stored
-     --backup-dir      legacy option for dump directory
- -f, --force           keep existing dump directory and its content
- -v, --verbose         print details about each task
- -V, --version         print version and exit
- -h, --help            print this message and exit
+ -d, --dump-dir         path to the directory where data will be stored
+     --backup-dir       legacy option for dump directory
+ -f, --force            keep existing dump directory and its content
+ -v, --verbose          print details about each task
+ -V, --version          print version and exit
+ -h, --help             print this message and exit
 
 Tasks options
- --all                 reset options to execute all tasks
- --none                reset options to execute no task
- --[no-]etc            copy of /etc (default: no)
- --[no-]dpkg-full      copy of /var/lib/dpkg (default: no)
- --[no-]dpkg-status    copy of /var/lib/dpkg/status (default: yes)
- --[no-]apt-states     copy of apt extended states (default: yes)
- --[no-]apt-config     copy of apt configuration (default: yes)
- --[no-]packages       copy of dpkg selections (default: yes)
- --[no-]processes      copy of process list (default: yes)
- --[no-]uname          copy of uname value (default: yes)
- --[no-]uptime         copy of uptime value (default: yes)
- --[no-]netstat        copy of netstat (default: yes)
- --[no-]netcfg         copy of network configuration (default: yes)
- --[no-]iptables       copy of iptables (default: yes)
- --[no-]sysctl         copy of sysctl values (default: yes)
- --[no-]virsh          copy of virsh list (default: yes)
- --[no-]lxc            copy of lxc list (default: yes)
- --[no-]disks          copy of MBR and partitions (default: yes)
- --[no-]mount          copy of mount points (default: yes)
- --[no-]df             copy of disk usage (default: yes)
- --[no-]dmesg          copy of dmesg (default: yes)
- --[no-]mysql          copy of mysql processes (default: yes)
- --[no-]systemctl      copy of systemd services states (default: yes)
+ --all                  reset options to execute all tasks
+ --none                 reset options to execute no task
+ --[no-]etc             copy of /etc (default: no)
+ --[no-]dpkg-full       copy of /var/lib/dpkg (default: no)
+ --[no-]dpkg-status     copy of /var/lib/dpkg/status (default: yes)
+ --[no-]apt-states      copy of apt extended states (default: yes)
+ --[no-]apt-config      copy of apt configuration (default: yes)
+ --[no-]packages        copy of dpkg selections (default: yes)
+ --[no-]processes       copy of process list (default: yes)
+ --[no-]uname           copy of uname value (default: yes)
+ --[no-]uptime          copy of uptime value (default: yes)
+ --[no-]netstat         copy of netstat (default: yes)
+ --[no-]netcfg          copy of network configuration (default: yes)
+ --[no-]iptables        copy of iptables (default: yes)
+ --[no-]sysctl          copy of sysctl values (default: yes)
+ --[no-]virsh           copy of virsh list (default: yes)
+ --[no-]lxc             copy of lxc list (default: yes)
+ --[no-]disks           copy of MBR and partitions (default: yes)
+ --[no-]mount           copy of mount points (default: yes)
+ --[no-]df              copy of disk usage (default: yes)
+ --[no-]dmesg           copy of dmesg (default: yes)
+ --[no-]mysql-processes copy of mysql processes (default: yes)
+ --[no-]mysql-summary   copy of mysql summary (default: yes)
+ --[no-]systemctl       copy of systemd services states (default: yes)
 
 Tasks options order matters. They are evaluated from left to right.
 Examples :
 * "[…] --none --uname" will do only the uname task
 * "[…] --all --no-etc" will do everything but the etc task
-* "[…] --etc --none --mysql" will do only the mysql task
+* "[…] --etc --none --mysql-summary" will do only the mysql task
 END
 }
 debug() {
@@ -741,6 +742,41 @@ task_mysql_processes() {
     fi
 }
 
+task_mysql_summary() {
+    debug "Task: MySQL summary"
+
+    mysqladmin_bin=$(command -v mysqladmin)
+    pt_mysql_summary_bin=$(command -v pt-mysql-summary)
+
+    if [ -n "${mysqladmin_bin}" ] && [ -n "${pt_mysql_summary_bin}" ]; then
+        # Look for local MySQL or MariaDB process
+        if pgrep mysqld > /dev/null || pgrep mariadbd > /dev/null; then
+            if ${mysqladmin_bin} ping > /dev/null 2>&1; then
+                # important to set sleep to 0
+                # because we don't want to block
+                # even if we lose some insight.
+                ${pt_mysql_summary_bin} --sleep 0 > "${dump_dir}/mysql-summary.txt" 2> "${dump_dir}/mysql-summary.err"
+                last_rc=$?
+
+                if [ ${last_rc} -eq 0 ]; then
+                    debug "* pt-mysql-summary OK"
+                else
+                    debug "* pt-mysql-summary ERROR"
+                    debug < "${dump_dir}/mysql-summary.err"
+                    rm "${dump_dir}/mysql-summary.err"
+                    rc=10
+                fi
+            else
+                debug "* unable to ping with mysqladmin"
+            fi
+        else
+            debug "* no mysqld or mariadbd process is running"
+        fi
+    else
+        debug "* pt-mysql-summary not found"
+    fi
+}
+
 task_systemctl() {
     debug "Task: Systemd services"
 
@@ -840,6 +876,9 @@ main() {
     fi
     if [ "${TASK_MYSQL_PROCESSES}" -eq 1 ]; then
         task_mysql_processes
+    fi
+    if [ "${TASK_MYSQL_SUMMARY}" -eq 1 ]; then
+        task_mysql_summary
     fi
     if [ "${TASK_SYSTEMCTL}" -eq 1 ]; then
         task_systemctl
@@ -950,6 +989,7 @@ while :; do
                 TASK_DF \
                 TASK_DMESG \
                 TASK_MYSQL_PROCESSES \
+                TASK_MYSQL_SUMMARY \
                 TASK_SYSTEMCTL
             do
                 eval "${option}=1"
@@ -978,6 +1018,7 @@ while :; do
                 TASK_DF \
                 TASK_DMESG \
                 TASK_MYSQL_PROCESSES \
+                TASK_MYSQL_SUMMARY \
                 TASK_SYSTEMCTL
             do
                 eval "${option}=0"
@@ -1124,6 +1165,13 @@ while :; do
             TASK_MYSQL_PROCESSES=0
             ;;
 
+        --mysql-summary)
+            TASK_MYSQL_SUMMARY=1
+            ;;
+        --no-mysql-summary)
+            TASK_MYSQL_SUMMARY=0
+            ;;
+
         --systemctl)
             TASK_SYSTEMCTL=1
             ;;
@@ -1173,6 +1221,7 @@ done
 : "${TASK_DF:=1}"
 : "${TASK_DMESG:=1}"
 : "${TASK_MYSQL_PROCESSES:=1}"
+: "${TASK_MYSQL_SUMMARY:=1}"
 : "${TASK_SYSTEMCTL:=1}"
 
 export LC_ALL=C
