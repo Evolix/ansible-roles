@@ -410,16 +410,17 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
-* docker : Introduce new default settings + allow to change the docker data directory
-* docker : Introduce new variables to tweak daemon settings
+* docker: Introduce new default settings + allow to change the docker data directory
+* docker: Introduce new variables to tweak daemon settings
 
 ### Changed
 
-* evocheck: upstream release 22.05
+* evocheck: Upstream release 22.05
+* bind: Update role for Buster, Bullseye and Bookworm support
 
 ### Removed
 
-* docker : Removed Debian Jessie support
+* docker: Removed Debian Jessie support
 
 ## [22.05] 2022-05-10
 
