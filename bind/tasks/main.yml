@@ -114,6 +114,48 @@
     - bind_chroot_set | bool
     - ansible_distribution_major_version is version('11', '>=')
 
+- name: Create mount target directory for chroot (since Bookworm)
+  ansible.builtin.file:
+    path: /var/chroot-bind/run/systemd/journal
+    state: directory
+    owner: bind
+    group: bind
+  notify: restart bind
+  when:
+    - bind_chroot_set | bool
+    - ansible_distribution_major_version is version('12', '>=')
+
+- name: Create mount targets for chroot (since Bookworm)
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: touch
+    owner: bind
+    group: bind
+  loop:
+    - /var/chroot-bind/run/systemd/journal/socket
+    - /var/chroot-bind/run/systemd/journal/stdout
+    - /var/chroot-bind/run/systemd/notify
+  notify: restart bind
+  when:
+    - bind_chroot_set | bool
+    - ansible_distribution_major_version is version('12', '>=')
+
+- name: Set up bind mount for chroot (since Bookworm)
+  ansible.posix.mount:
+    src: "{{ item }}"
+    path: "/var/chroot-bind{{ item }}"
+    opts: bind
+    state: mounted
+    fstype: none
+  loop:
+    - /run/systemd/journal/socket
+    - /run/systemd/journal/stdout
+    - /run/systemd/notify
+  notify: restart bind
+  when:
+    - bind_chroot_set | bool
+    - ansible_distribution_major_version is version('12', '>=')
+
 - name: logrotate for bind
   ansible.builtin.template:
     src: logrotate_bind.j2
