@@ -22,7 +22,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * add-vm.sh: allow VM name max length > 20
 * apache : fix goaway pattern for bad bots 
 * apache : rename MaxRequestsPerChild to MaxConnectionsPerChild (new name)
-* evocheck: upstream release 23.10
+* evocheck: upstream release 23.11
 * evolinux-base: dump-server-state upstream release 23.11
 * evolinux-base: use separate default config file for rsyslog
 * log2mail: move custom config in separate file
