@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian) server
 # powered by Evolix
 
-VERSION="23.11"
+VERSION="23.11.1"
 readonly VERSION
 
 # base functions
@@ -596,8 +596,8 @@ check_evobackup_exclude_mount() {
             # then we verify that every mount is excluded
             if ! grep -q -- "^\s*--one-file-system" "${evobackup_file}"; then
                 # old releases of evobackups don't have version
-                if grep -q  "^VERSION="23.11"; then
-                  evobackup_version=$(sed -E -n 's/VERSION="23.11")
+                if grep -q  "^VERSION=" "${evobackup_file}"; then
+                  evobackup_version=$(sed -E -n 's/VERSION="(.*)"/\1/p' "${evobackup_file}")
                   # versions over 22.12 use a new syntax to exclude rsync files
                   if dpkg --compare-versions "$evobackup_version" ge 22.12 ; then
                     sed -En '/RSYNC_EXCLUDES="/,/"/ {s/(RSYNC_EXCLUDES=|")//g;p}' "${evobackup_file}" > "${excludes_file}"
