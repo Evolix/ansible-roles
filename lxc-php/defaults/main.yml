@@ -13,7 +13,7 @@ php_conf_mysql_socket_dir: /mysqld
 php_conf_mysql_default_socket: "{{ php_conf_mysql_socket_dir }}/mysqld.sock"
 
 lxc_php_version: Null
-lxc_php_container_name: "php{{ lxc_php_version }}"
+lxc_php_container_name: "{{ lxc_php_version }}"
 
 lxc_php_container_releases:
   php56: "jessie"
