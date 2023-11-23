@@ -57,7 +57,7 @@ BEGIN {
     if (!mem)
         mem = $2
 }
-/block\.[0-9]+\.physical/ {
+/block\.[0-9]+\.capacity/ {
     disksize += $2
 }
 /state\.state/ {

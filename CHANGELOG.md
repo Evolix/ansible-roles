@@ -29,6 +29,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios: rename var `nagios_nrpe_process_processes` into `nagios_nrpe_processes` and check systemd-timesyncd instead of ntpd in Debian 12
 * proftpd: in SFTP vhost, enable SSH keys login, enable ed25549 host key for Debian >= 11
 * bind: Update role for Buster, Bullseye and Bookworm support
+* kvmstats: use .capacity instead of .physical for disk size
 
 ### Fixed
 
