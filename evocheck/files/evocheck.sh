@@ -747,7 +747,7 @@ check_etcgit_lxc() {
     if is_installed lxc; then
         container_list=$(lxc-ls)
         for container in $container_list; do
-            export GIT_DIR="/var/lib/lxc/${container}/etc/.git" GIT_WORK_TREE="/var/lib/lxc/${container}/etc"
+            export GIT_DIR="/var/lib/lxc/${container}/rootfs/etc/.git" GIT_WORK_TREE="/var/lib/lxc/${container}/rootfs/etc"
             git rev-parse --is-inside-work-tree > /dev/null 2>&1 \
                 || failed "IS_ETCGIT_LXC" "/etc is not a git repository in container ${container}"
         done
@@ -766,7 +766,7 @@ check_gitperms_lxc() {
     if is_installed lxc; then
         container_list=$(lxc-ls)
         for container in $container_list; do
-            GIT_DIR="/var/lib/lxc/${container}/etc/.git"
+            GIT_DIR="/var/lib/lxc/${container}/rootfs/etc/.git"
             if test -d $GIT_DIR; then
                 expected="700"
                 actual=$(stat -c "%a" $GIT_DIR)
