@@ -30,6 +30,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * proftpd: in SFTP vhost, enable SSH keys login, enable ed25549 host key for Debian >= 11
 * bind: Update role for Buster, Bullseye and Bookworm support
 * kvmstats: use .capacity instead of .physical for disk size
+* lxc: Init /etc git repository in lxc container
 
 ### Fixed
 
