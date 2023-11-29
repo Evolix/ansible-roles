@@ -85,7 +85,7 @@ server {
     try_files /dev/null @api;
   }
 
-  location = /api/v1/videos/upload-resumable {
+  location ~ ^/api/v1/videos/(upload-resumable|([^/]+/source/replace-resumable))$ {
     client_max_body_size    0;
     proxy_request_buffering off;
 
@@ -206,29 +206,7 @@ server {
     alias {{ service_home }}/peertube-latest/client/dist/$1;
   }
 
-  # Bypass PeerTube for performance reasons. Optional.
-  location ~ ^/static/(thumbnails|avatars)/ {
-    if ($request_method = 'OPTIONS') {
-      add_header Access-Control-Allow-Origin  '*';
-      add_header Access-Control-Allow-Methods 'GET, OPTIONS';
-      add_header Access-Control-Allow-Headers 'Range,DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
-      add_header Access-Control-Max-Age       1728000; # Preflight request can be cached 20 days
-      add_header Content-Type                 'text/plain charset=UTF-8';
-      add_header Content-Length               0;
-      return 204;
-    }
-
-    add_header Access-Control-Allow-Origin    '*';
-    add_header Access-Control-Allow-Methods   'GET, OPTIONS';
-    add_header Access-Control-Allow-Headers   'Range,DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
-    add_header Cache-Control                  "public, max-age=7200"; # Cache response 2 hours
-
-    rewrite ^/static/(.*)$ /$1 break;
-
-    try_files $uri @api;
-  }
-
-  location ~ ^(/static/(webseed|streaming-playlists)/private/)|^/download {
+  location ~ ^(/static/(webseed|web-videos|streaming-playlists)/private/)|^/download {
     # We can't rate limit a try_files directive, so we need to duplicate @api
 
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -241,16 +219,10 @@ server {
   }
 
   # Bypass PeerTube for performance reasons. Optional.
-  location ~ ^/static/(webseed|redundancy|streaming-playlists)/ {
+  location ~ ^/static/(webseed|web-videos|redundancy|streaming-playlists)/ {
     limit_rate_after            5M;
-
-    # Clients usually have 4 simultaneous webseed connections, so the real limit is 3MB/s per client
-    set $peertube_limit_rate    800k;
-
-    # Increase rate limit in HLS mode, because we don't have multiple simultaneous connections
-    if ($request_uri ~ -fragmented.mp4$) {
-      set $peertube_limit_rate  5M;
-    }
+    
+    set $peertube_limit_rate  5M;
 
     # Use this line with nginx >= 1.17.0
     limit_rate $peertube_limit_rate;

@@ -122,12 +122,13 @@ storage:
   tmp_persistent: '/var/www/peertube/storage/tmp-persistent/' # As tmp but the directory is not cleaned up between PeerTube restarts
   bin: '/var/www/peertube/storage/bin/'
   avatars: '/var/www/peertube/storage/avatars/'
-  videos: '/var/www/peertube/storage/videos/'
+  web_videos: '/var/www/peertube/storage/web-videos/'
   streaming_playlists: '/var/www/peertube/storage/streaming-playlists/'
   redundancy: '/var/www/peertube/storage/redundancy/'
   logs: '/var/www/peertube/storage/logs/'
   previews: '/var/www/peertube/storage/previews/'
   thumbnails: '/var/www/peertube/storage/thumbnails/'
+  storyboards: '/var/www/peertube/storage/storyboards/'
   torrents: '/var/www/peertube/storage/torrents/'
   captions: '/var/www/peertube/storage/captions/'
   cache: '/var/www/peertube/storage/cache/'
@@ -193,7 +194,7 @@ object_storage:
     base_url: '' # Example: 'https://mirror.example.com'
 
   # Same settings but for webtorrent videos
-  videos:
+  web_videos:
     bucket_name: 'videos'
     prefix: ''
     base_url: ''
@@ -468,7 +469,7 @@ transcoding:
   # Generate videos in a WebTorrent format (what we do since the first PeerTube release)
   # If you also enabled the hls format, it will multiply videos storage by 2
   # If disabled, breaks federation with PeerTube instances < 2.1
-  webtorrent:
+  web_videos:
     enabled: false
 
   # /!\ Requires ffmpeg >= 4.1
