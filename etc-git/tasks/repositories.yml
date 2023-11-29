@@ -53,7 +53,7 @@
     gitignore_items: []
   when:
     - _var_chroot_bind.stat.exists and _var_chroot_bind.stat.isdir
-    - ansible_distribution_major_version is version('9', '>=')
+    - ansible_distribution_major_version is version('8', '>=')
   tags:
     - etc-git
 
