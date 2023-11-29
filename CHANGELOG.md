@@ -48,6 +48,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: added check that nexctcloud uid is over 3000
 * webapps/nextcloud: fix misplaced gid attribute
 * webapps/nextcloud: fix missing gid
+* check stat.exists before stat.isdir
 
 ### Removed
 
