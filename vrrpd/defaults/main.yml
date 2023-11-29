@@ -1,4 +1,5 @@
 ---
+vrrp_force_update_switch_script: false
 
 vrrp_addresses: []
 # - {
