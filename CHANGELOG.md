@@ -30,7 +30,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-base: use separate default config file for rsyslog
 * kvmstats: use .capacity instead of .physical for disk size
 * log2mail: move custom config in separate file
-* lxc: Init /etc git repository in lxc container
+* lxc: init /etc git repository in lxc container
 * nagios: rename var `nagios_nrpe_process_processes` into `nagios_nrpe_processes` and check systemd-timesyncd instead of ntpd in Debian 12
 * proftpd: in SFTP vhost, enable SSH keys login, enable ed25549 host key for Debian >= 11
 * vrrpd: variable to force update the switch script (default: false)
@@ -49,7 +49,10 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: fix misplaced gid attribute
 * webapps/nextcloud: fix missing gid
 * check stat.exists before stat.isdir
-* certbot: Fix hook for dovecot when more than one certificate is used (eg. different certificates for POP3 and IMAP)
+* certbot: fix hook for dovecot when more than one certificate is used (eg. different certificates for POP3 and IMAP)
+* evolinux-base: start to install linux-image-cloud-amd64 with Buster
+* apt: use archive.debian.org with Stretch
+
 
 ### Removed
 
