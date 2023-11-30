@@ -44,6 +44,9 @@
   tags:
     - etc-git
 
+- name: /var/chroot-bind/etc/bind is a safe directory
+  ansible.builtin.shell: git config --global --add safe.directory /var/chroot-bind/etc/bind
+
 - ansible.builtin.import_tasks: repository.yml
   vars:
     repository_path: "/var/chroot-bind/etc/bind"
