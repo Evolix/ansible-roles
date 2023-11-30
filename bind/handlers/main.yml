@@ -3,7 +3,6 @@
   ansible.builtin.systemd:
     daemon-reload: yes
 
-
 - name: restart apparmor
   ansible.builtin.systemd:
     name: apparmor
