@@ -44,9 +44,6 @@
   tags:
     - etc-git
 
-- debug:
-    var: _var_chroot_bind.stat
-
 - ansible.builtin.import_tasks: repository.yml
   vars:
     repository_path: "/var/chroot-bind/etc/bind"
