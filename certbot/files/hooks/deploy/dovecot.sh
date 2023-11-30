@@ -16,7 +16,7 @@ config_check() {
     ${doveconf_bin} > /dev/null 2>&1
 }
 letsencrypt_used() {
-    ${doveconf_bin} | grep -E "^ssl_cert[^_]" | grep -q "letsencrypt"
+    ${doveconf_bin} | grep -E "^[[:blank:]]*ssl_cert[^_]" | grep -q "letsencrypt"
 }
 main() {
     if daemon_found_and_running; then

@@ -49,6 +49,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: fix misplaced gid attribute
 * webapps/nextcloud: fix missing gid
 * check stat.exists before stat.isdir
+* certbot: Fix hook for dovecot when more than one certificate is used (eg. different certificates for POP3 and IMAP)
 
 ### Removed
 
