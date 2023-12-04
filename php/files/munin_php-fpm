@@ -1,0 +1,234 @@
+#!/usr/bin/php
+
+<?php
+
+/**
+* @author Devlopnet
+* @author MorbZ
+* @licence CC
+*/
+
+//var_dump(getenv('toto'));
+$skip_pool_www = true;
+list($php_container, , $plugin_output) = explode('-', basename($argv[0]));
+if ($php_container == "php"){
+exec( 'find /etc/php/*/fpm/pool.d/ -name \'*.conf\' | xargs -I{} basename {} ".conf"', $php_static_pools_list);
+exec('ps -eo command | grep php-fpm | grep -v grep | grep -v master | grep -oE \'[^ ]+$\'', $php_active_pools_list);
+exec("ps -eo %cpu,etime,rss,command | grep php-fpm", $result);
+}else{
+exec('lxc-attach -n '.$php_container.' -- bash -c  "find /etc/php/*/fpm/pool.d/ -name \'*.conf\' | xargs -I{} basename {} ".conf""', $php_static_pools_list);
+exec('lxc-attach -n '.$php_container.' -- bash -c "ps -eo command | grep php-fpm | grep -v grep | grep -v master | grep -oE \'[^ ]+$\'"', $php_active_pools_list);
+exec('lxc-attach -n '.$php_container.' -- bash -c "ps -eo %cpu,etime,rss,command | grep php-fpm"', $result);
+}
+//var_dump($php_container);
+//var_dump($plugin_output);
+//var_dump($result);
+
+$php_inactive_pools_list = array_diff($php_static_pools_list, $php_active_pools_list);
+
+//exec('ps -eo pid,lxc,command | grep "php-fpm: master process" | grep '.$php_container.' | awk \'{print $1}\'', $php_master_process_pid);
+//var_dump($php_master_process_pid);
+//exec("ps --ppid ".$php_master_process_pid[0]." -o %cpu,etime,rss,command", $result); 
+//exec("$php_line ps -eo %cpu,etime,rss,command | grep php-fpm", $result);
+
+//iterate through processes
+$groups = array();
+foreach ($result as $line) {
+    //split fields
+    $line = trim($line);
+    $args = preg_split('/\s+/', $line);
+    if (strpos($args[3], 'php-fpm') === false) {
+        continue;
+    }
+    list($cpu, $time, $ram, $type, $poolWord, $poolName) = $args;
+    if ($skip_pool_www == TRUE &&  $poolName == 'www') {
+       continue;
+    }
+    $poolName = str_replace('.', '_', $poolName);
+   
+    //which group
+    if ($poolWord == 'master') {
+        continue;
+    }
+    $groupName = $poolName;
+
+    //add group
+    if (!isset($groups[$groupName])) {
+        $groups[$groupName] = array(
+            'count' => 0,
+            'memory' => 0,
+            'cpu' => 0,
+            'time' => 0
+        );
+    }
+
+    //add values
+    $groups[$groupName]['count']++;
+    $groups[$groupName]['cpu'] += $cpu;
+    $groups[$groupName]['time'] += timeToSeconds($time);
+    $groups[$groupName]['memory'] += $ram / 1024;         
+}    
+foreach ($php_inactive_pools_list as $line) {
+    //split fields
+    $line = trim($line);
+    $groupName = $line;
+    //add group
+    if (!isset($groups[$groupName])) {
+        $groups[$groupName] = array(
+            'count' => 0,
+            'memory' => 0,
+            'cpu' => 0,
+            'time' => 0
+        );
+    }
+}
+
+//check args
+if(!isset($argv) || !isset($argv[0])) {
+    die("Error: No Plugin name provided\n");
+}
+
+$isConfig = isset($argv[1]) && $argv[1] == 'config';
+
+//which plugin?
+switch ($plugin_output) {
+// ------------------------------------------------------       
+    case 'memory':
+// ------------------------------------------------------
+        $elements = array();
+        foreach ($groups as $name=>$array) {
+            $ramMb = 0;
+            if($array['count'] !== 0){
+                $ramMb = $array['memory'] / $array['count'];
+            }
+            $label = 'Pool ' . $name;
+            $elements[$name] = array(
+                'label' =>  $label,
+                'type'  =>  'GAUGE',
+                'value' =>  $ramMb
+            );
+        }
+        $config = array(
+            'params' => array(
+                'graph_title' => "$php_container PHP-FPM Average Process Memory",
+                'graph_vlabel' => 'MB'
+            ),
+            'elements'  =>  $elements
+        );  
+        break;
+// ------------------------------------------------------       
+    case 'cpu':
+// ------------------------------------------------------
+        $elements = array();
+        foreach ($groups as $name=>$array) {
+            $cpu = $array['cpu'];
+            $label = 'Pool ' . $name;
+            $elements[$name] = array(
+                'label' =>  $label,
+                'type'  =>  'GAUGE',
+                'value' =>  $cpu
+            );
+        }
+        $config = array(
+            'params' => array(
+                'graph_title' => "$php_container PHP-FPM CPU",
+                'graph_vlabel' => '%',
+                'graph_scale' => 'no'
+            ),
+            'elements'  =>  $elements
+        );  
+        break;
+// ------------------------------------------------------       
+    case 'count':
+// ------------------------------------------------------
+        $elements = array();
+        foreach ($groups as $name=>$array) {
+            $label = 'Pool ' . $name;
+            $elements[$name] = array(
+                'label' =>  $label,
+                'type'  =>  'GAUGE',
+                'value' =>  $array['count']
+            );
+        }
+        $config = array(
+            'params' => array(
+                'graph_title' => "$php_container PHP-FPM Processes",
+                'graph_vlabel' => 'processes'
+            ),
+            'elements'  =>  $elements
+        );  
+        break;
+// ------------------------------------------------------       
+    case 'time':
+// ------------------------------------------------------
+        $elements = array();
+        foreach ($groups as $name=>$array) {
+            $time=0;
+            if( $array['count'] !== 0){
+                $time = round($array['time'] / $array['count']);
+             }
+            $label = 'Pool ' . $name;
+            $elements[$name] = array(
+                'label' =>  $label,
+                'type'  =>  'GAUGE',
+                'value' =>  $time
+            );
+        }
+        $config = array(
+            'params' => array(
+                'graph_title' => "$php_container PHP-FPM Average Process Age",
+                'graph_vlabel' => 'seconds',
+                'graph_scale' => 'no'
+            ),
+            'elements'  =>  $elements
+        );  
+        break;
+// ------------------------------------------------------
+    default:
+        die("Error: Unrecognized Plugin output name $plugin_output\n");
+}
+
+//output
+ksort($config['elements']);
+if ($isConfig) {
+    //graph params
+    echo "graph_category $php_container PHP-FPM\n";
+    foreach($config['params'] as $key=>$value) {
+        echo $key . ' ' . $value . "\n";
+    }
+    
+    //element params
+    foreach($config['elements'] as $element=>$data) {
+        foreach ($data as $key=>$value) {
+            if ($key == 'value') continue;
+            echo $element . '.' . $key . ' ' . $value . "\n";
+        }
+    }
+} else {
+    //element values
+    foreach ($config['elements'] as $pool=>$element) {
+        echo $pool . '.value ' . $element['value'] . "\n";
+    }
+}
+
+//functions
+function timeToSeconds ($time) {
+    $seconds = 0;
+    
+    //days
+    $parts = explode('-', $time);
+    if(count($parts) == 2) {
+        $seconds += $parts[0] * 86400;
+        $time = $parts[1];
+    }
+    
+    //hours
+    $parts = explode(':', $time);
+    if(count($parts) == 3) {
+        $seconds += array_shift($parts) * 3600;
+    }
+    
+    //minutes/seconds
+    $seconds += $parts[0] * 60 + $parts[1];
+    return $seconds;
+}
