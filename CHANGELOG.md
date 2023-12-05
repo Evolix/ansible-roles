@@ -17,16 +17,17 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * apt: add task file to install ELTS repository (default: False)
 * autosysadmin: Add a role to automatically deploy autosysadmin on evolixisation
 * etc-git: add /var/chroot-bind/etc/bind repo
+* kvm-host: Automatically add an LVM filter when LVM is present
 * lxc-php: Allow one to install php83 on Bookworm container
 * minifirewall: Fix nagios check for old versions of minifirewall
 * mongodb: add gpg key for 7.0
 * nagios-nrpe: add check_sentinel for monitoring Redis Sentinel
 * remount-usr: do not try to remount /usr RW if /usr is not a mounted partition
 * vrrpd: test if interface exists before deleting it
+* webapps/evoadmin-mail: package can be installed via public.evolix.org/evolix repo starting from Bookworm
 * webapps/nextcloud: Add condition for config tasks
 * webapps/nextcloud: Added var nextcloud_user_uid to enforce uid for nextcloud user
 * webapps/nextcloud: Set ownership and permissions of data directory
-* kvm-host: Automatically add an LVM filter when LVM is present
 
 ### Changed
 
@@ -50,6 +51,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios: rename var `nagios_nrpe_process_processes` into `nagios_nrpe_processes` and check systemd-timesyncd instead of ntpd in Debian 12
 * proftpd: in SFTP vhost, enable SSH keys login, enable ed25549 host key for Debian >= 11
 * squid: config directory seems to have changed from /etc/squid3 to /etc/squid in Debian 8
+* spamassassin: Use spamd starting with Bookworm
 * unbound: Add config file to allow configuration reload on Debian 11 and lower
 * unbound: Add munin configuration & setup plugin
 * unbound: Big cleanup

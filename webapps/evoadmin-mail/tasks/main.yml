@@ -4,10 +4,27 @@
   ansible.builtin.include_role:
     name: evolix/remount-usr
 
+- name: Get evoadmin-mail package
+  ansible.builtin.get_url:
+    url: https://pub.evolix.org/evolix/pool/main/e/evoadmin-mail/evoadmin-mail_1.0.9-1_all.deb
+    dest: /tmp/evoadmin-mail.deb
+  when: ansible_distribution_major_version is version('12', '<')
+  tags:
+    - evoadmin-mail
+
 - name: Install evoadmin-mail package
   ansible.builtin.apt:
     deb: /tmp/evoadmin-mail.deb
     state: present
+  when: ansible_distribution_major_version is version('12', '<')
+  tags:
+    - evoadmin-mail
+
+- name: Install evoadmin-mail package
+  ansible.builtin.apt:
+    name: evoadmin-mail
+    state: present
+  when: ansible_distribution_major_version is version('12', '>=')
   tags:
     - evoadmin-mail
 
