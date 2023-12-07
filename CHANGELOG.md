@@ -56,7 +56,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * certbot: fix hook for dovecot when more than one certificate is used (eg. different certificates for POP3 and IMAP)
 * evolinux-base: start to install linux-image-cloud-amd64 with Buster
 * apt: use archive.debian.org with Stretch
-
+* webapps/nextcloud: fix Add Ceph volume to fstab : missing UUID= in src
 
 ### Removed
 
