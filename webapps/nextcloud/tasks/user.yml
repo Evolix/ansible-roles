@@ -47,3 +47,10 @@
     fstype: ext4
     opts: defaults,noexec,nosuid,nodev,relatime,lazytime
     state: mounted
+
+- name: Set volume's root permissions and ownership
+  ansible.builtin.file:
+    path: "{{ nextcloud_data }}"
+    owner: "{{ nextcloud_user }}"
+    group: "{{ nextcloud_user }}"
+    mode: "0700"
