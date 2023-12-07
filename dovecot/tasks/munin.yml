@@ -14,9 +14,14 @@
         path: /etc/munin/plugins/dovecot
         state: absent
 
-    - name: Remove dovecot plugin conf
+    - name: Remove old dovecot plugin conf
       ansible.builtin.file:
         path: /etc/munin/plugin-conf.d/dovecot
+        state: absent
+
+    - name: Remove old dovecot plugin conf
+      ansible.builtin.file:
+        path: /etc/munin/plugin-conf.d/z-evolinux-dovecot
         state: absent
 
     - name: "Remount /usr if needed"
@@ -47,7 +52,7 @@
     - name: Copy Munin config
       ansible.builtin.copy:
         src: z-evolinux-dovecot.conf
-        dest: /etc/munin/plugin-conf.d/z-evolinux-dovecot
+        dest: /etc/munin/plugin-conf.d/zzz-dovecot
         mode: '0644'
       notify: restart munin-node
 
