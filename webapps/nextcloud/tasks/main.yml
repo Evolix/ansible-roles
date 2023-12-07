@@ -54,3 +54,4 @@
 - ansible.builtin.include: mysql-user.yml
 
 - ansible.builtin.include: config.yml
+  when: nextcloud_do_config

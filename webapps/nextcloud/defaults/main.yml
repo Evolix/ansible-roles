@@ -17,3 +17,5 @@ nextcloud_db_name: "{{ nextcloud_instance_name }}"
 
 nextcloud_admin_login: "admin"
 nextcloud_admin_password: ""
+
+nextcloud_do_config: True

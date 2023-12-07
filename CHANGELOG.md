@@ -18,6 +18,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios-nrpe: add check_sentinel for monitoring Redis Sentinel
 * webapps/nextcloud: Added var nextcloud_user_uid to enforce uid for nextcloud user
 * etc-git: add /var/chroot-bind/etc/bind repo
+* webapps/nextcloud: Set ownership and permissions of data directory
+* webapps/nextcloud: Add condition for config tasks
 
 ### Changed
 
@@ -35,6 +37,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * proftpd: in SFTP vhost, enable SSH keys login, enable ed25549 host key for Debian >= 11
 * vrrpd: variable to force update the switch script (default: false)
 * dovecot: Munin plugin conf path is now `/etc/munin/plugin-conf.d/zzz-dovecot` (instead of `z-evolinux-dovecot`)
+* webapps/nextcloud: Add Ceph volume to fstab
 
 ### Fixed
 
