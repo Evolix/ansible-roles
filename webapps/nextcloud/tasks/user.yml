@@ -46,4 +46,4 @@
     src: "{{ nextcloud_data_uuid }}"
     fstype: ext4
     opts: defaults,noexec,nosuid,nodev,relatime,lazytime
-    state: present
+    state: mounted
