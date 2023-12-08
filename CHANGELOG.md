@@ -37,6 +37,11 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * proftpd: in SFTP vhost, enable SSH keys login, enable ed25549 host key for Debian >= 11
 * vrrpd: variable to force update the switch script (default: false)
 * dovecot: Munin plugin conf path is now `/etc/munin/plugin-conf.d/zzz-dovecot` (instead of `z-evolinux-dovecot`)
+* unbound: Big cleanup
+* unbound: Use root hints provided by debian package dns-root-data instead of downloading them
+* unbound: Move generated config file to `/etc/unbound/unbound.conf.d/evolinux.conf`
+* unbound: Add config file to allow configuration reload on Debian 11 and lower
+* unbound: Add munin configuration & setup plugin
 * webapps/nextcloud: Add Ceph volume to fstab
 
 ### Fixed
