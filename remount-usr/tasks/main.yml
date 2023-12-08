@@ -1,17 +1,28 @@
 ---
 # findmnt returns 0 on hit, 1 on miss
 # If the return code is higher than 1, it's a blocking failure
+
+- name: "check if /usr is a mountpoint"
+  ansible.builtin.shell: "findmnt -n /usr &> /dev/null"
+  register: usr_mount_exists
+  failed_when: False
+  check_mode: False
+  changed_when: False
+
 - name: "check if /usr is a read-only partition"
   ansible.builtin.command:
     cmd: 'findmnt /usr --noheadings --options ro'
+  register: usr_partition
+  when: usr_mount_exists.rc == 0
   changed_when: False
   failed_when: usr_partition.rc > 1
-  check_mode: no
-  register: usr_partition
+  check_mode: False
 
 - name: "mount /usr in rw"
   ansible.builtin.command:
     cmd: 'mount -o remount,rw /usr'
-  changed_when: False
-  when: usr_partition.rc == 0
+  when:
+    - usr_mount_exists.rc == 0
+    - usr_partition.rc == 0
   notify: remount usr
+  changed_when: False
