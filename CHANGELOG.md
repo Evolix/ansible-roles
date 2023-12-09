@@ -28,6 +28,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * apache : fix goaway pattern for bad bots 
 * apache : rename MaxRequestsPerChild to MaxConnectionsPerChild (new name)
 * bind: Update role for Buster, Bullseye and Bookworm support
+* dovecot: Munin plugin conf path is now `/etc/munin/plugin-conf.d/zzz-dovecot` (instead of `z-evolinux-dovecot`)
 * evocheck: upstream release 23.11.1
 * evolinux-base: dump-server-state upstream release 23.11
 * evolinux-base: use separate default config file for rsyslog
@@ -36,13 +37,13 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * lxc: init /etc git repository in lxc container
 * nagios: rename var `nagios_nrpe_process_processes` into `nagios_nrpe_processes` and check systemd-timesyncd instead of ntpd in Debian 12
 * proftpd: in SFTP vhost, enable SSH keys login, enable ed25549 host key for Debian >= 11
-* vrrpd: variable to force update the switch script (default: false)
-* dovecot: Munin plugin conf path is now `/etc/munin/plugin-conf.d/zzz-dovecot` (instead of `z-evolinux-dovecot`)
-* unbound: Big cleanup
-* unbound: Use root hints provided by debian package dns-root-data instead of downloading them
-* unbound: Move generated config file to `/etc/unbound/unbound.conf.d/evolinux.conf`
+* squid: config directory seems to have changed from /etc/squid3 to /etc/squid in Debian 8
 * unbound: Add config file to allow configuration reload on Debian 11 and lower
 * unbound: Add munin configuration & setup plugin
+* unbound: Big cleanup
+* unbound: Move generated config file to `/etc/unbound/unbound.conf.d/evolinux.conf`
+* unbound: Use root hints provided by debian package dns-root-data instead of downloading them
+* vrrpd: variable to force update the switch script (default: false)
 * webapps/nextcloud: Add Ceph volume to fstab
 
 ### Fixed
