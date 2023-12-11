@@ -14,6 +14,7 @@ apt_install_backports: False
 apt_backports_components: "main"
 
 apt_install_evolix_public: True
+apt_install_extended_lts: False
 
 apt_clean_gandi_sourceslist: False
 

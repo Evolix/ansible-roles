@@ -80,6 +80,14 @@
     - apt_install_evolix_public | bool
     - ansible_distribution_major_version is version('12', '>=')
 
+- name: Install Extended-LTS repositories (Debian < 10)
+  ansible.builtin.import_tasks: extended-lts.oneline.yml.yml
+  tags:
+    - apt
+  when:
+    - apt_install_extended_lts | bool
+    - ansible_distribution_major_version is version('10', '<')
+
 - name: Clean GANDI sources
   ansible.builtin.file:
     path: '{{ item }}'

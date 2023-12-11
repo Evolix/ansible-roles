@@ -14,6 +14,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Added
 
 * Preliminary work for php83
+* apt: add task file to install ELTS repository (default: False)
 * lxc-php: Allow one to install php83 on Bookworm container
 * nagios-nrpe: add check_sentinel for monitoring Redis Sentinel
 * webapps/nextcloud: Added var nextcloud_user_uid to enforce uid for nextcloud user

@@ -1,0 +1,37 @@
+---
+
+- name: "Ensure {{ apt_keyring_dir }} directory exists"
+  file:
+    path: "{{ apt_keyring_dir }}"
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+
+- name: Add Evolix GPG key
+  ansible.builtin.copy:
+    src: "freexian-archive-extended-lts.gpg"
+    dest: "{{ apt_keyring_dir }}/freexian-archive-extended-lts.gpg"
+    force: true
+    mode: "0644"
+    owner: root
+    group: root
+  tags:
+    - apt
+
+- name: ELTS list is installed
+  ansible.builtin.template:
+    src: "{{ ansible_distribution_release }}_extended-lts.list.j2"
+    dest: /etc/apt/sources.list.d/extended-lts.list
+    force: true
+    mode: "0640"
+  register: apt_extended_lts
+  tags:
+    - apt
+
+- name: Apt update
+  ansible.builtin.apt:
+    update_cache: yes
+  tags:
+    - apt
+  when: apt_extended_lts is changed
