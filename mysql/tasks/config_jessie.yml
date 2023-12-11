@@ -2,6 +2,7 @@
 
 - ansible.builtin.set_fact:
     mysql_config_directory: /etc/mysql/conf.d
+    mysql_performance_schema: False
 
 - name: "Copy MySQL defaults config file (jessie)"
   ansible.builtin.copy:
