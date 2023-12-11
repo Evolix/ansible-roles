@@ -27,6 +27,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * add-vm.sh: allow VM name max length > 20
 * apache : fix goaway pattern for bad bots 
 * apache : rename MaxRequestsPerChild to MaxConnectionsPerChild (new name)
+* apt: use the GPG version of the key for Debian 8-9
 * bind: Update role for Buster, Bullseye and Bookworm support
 * dovecot: Munin plugin conf path is now `/etc/munin/plugin-conf.d/zzz-dovecot` (instead of `z-evolinux-dovecot`)
 * evocheck: upstream release 23.11.1

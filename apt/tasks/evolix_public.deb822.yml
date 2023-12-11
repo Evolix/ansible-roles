@@ -24,10 +24,16 @@
     owner: root
     group: root
 
+- name: Set Evolix GPG key format to ASC
+  set_fact:
+    apt_evolix_public_key: "{{ apt_keyring_dir }}/pub_evolix.asc"
+  tags:
+    - apt
+
 - name: Add Evolix GPG key
   ansible.builtin.copy:
     src: pub_evolix.asc
-    dest: "{{ apt_keyring_dir }}/pub_evolix.asc"
+    dest: "{{ apt_evolix_public_key }}"
     force: true
     mode: "0644"
     owner: root
