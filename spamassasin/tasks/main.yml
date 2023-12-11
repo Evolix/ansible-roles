@@ -4,6 +4,16 @@
     name:
       - spamassassin
     state: present
+  when: ansible_distribution_major_version is version('12', '<')
+  tags:
+    - spamassassin
+
+- name: install spamd
+  ansible.builtin.apt:
+    name:
+      - spamd
+    state: present
+  when: ansible_distribution_major_version is version('12', '>=')
   tags:
     - spamassassin
 
@@ -13,6 +23,17 @@
     dest: /etc/spamassassin/local_evolix.cf
     mode: "0644"
   notify: restart spamassassin
+  when: ansible_distribution_major_version is version('12', '<')
+  tags:
+    - spamassassin
+
+- name: configure spamd
+  ansible.builtin.copy:
+    src: spamassassin.cf
+    dest: /etc/spamassassin/local_evolix.cf
+    mode: "0644"
+  notify: restart spamd
+  when: ansible_distribution_major_version is version('12', '>=')
   tags:
     - spamassassin
 
@@ -22,6 +43,7 @@
     regexp: 'ENABLED=0'
     replace: 'ENABLED=1'
   notify: restart spamassassin
+  when: ansible_distribution_major_version is version('12', '<')
   tags:
     - spamassassin
 
@@ -97,5 +119,15 @@
     name: spamassassin
     state: started
     enabled: True
+  when: ansible_distribution_major_version is version('12', '<')
+  tags:
+    - spamassassin
+
+- name: ensure spamd is started and enabled
+  ansible.builtin.systemd:
+    name: spamd
+    state: started
+    enabled: True
+  when: ansible_distribution_major_version is version('12', '>=')
   tags:
     - spamassassin
