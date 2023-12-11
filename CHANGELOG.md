@@ -28,6 +28,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * add-vm.sh: allow VM name max length > 20
 * apache : fix goaway pattern for bad bots 
 * apache : rename MaxRequestsPerChild to MaxConnectionsPerChild (new name)
+* apache: use backward compatible Redirect directive
 * apt: Disable archive repository for Debian 8
 * apt: Use the GPG version of the key for Debian 8-9
 * bind: Update role for Buster, Bullseye and Bookworm support
