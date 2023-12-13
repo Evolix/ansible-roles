@@ -4,3 +4,5 @@ kvm_install_drbd: True
 kvm_scripts_dir: /usr/local/sbin
 
 kvm_pair: null
+
+kvm_drbd_interface: null
