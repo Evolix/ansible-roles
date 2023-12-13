@@ -11,3 +11,4 @@ lvm_filter:
   - '"a|^/dev/sd[a-zA-Z]+[0-9]*$|"'
   - '"a|^/dev/nvme[0-9]+(n[0-9]+)?(p[0-9]+)?$|"'
   - '"a|^/dev/md[0-9]+$|"'
+kvm_drbd_interface: null

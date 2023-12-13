@@ -16,3 +16,5 @@
 - ansible.builtin.include: images.yml
 
 - ansible.builtin.include: tools.yml
+
+- ansible.builtin.include: firewall.yml
