@@ -12,7 +12,7 @@
   register: videos
 
 - name: Move videos to web-videos (needed when upgrading to version 6)
-  command: "mv {{ service_home }}/storage/videos/ {{ service_home }}/storage/web-videos/"
+  command: "mv {{ service_home }}/storage/videos/{{ service_home }}/storage/web-videos/"
   when: videos.stat.exists
   become_user: "{{ service }}"
 
