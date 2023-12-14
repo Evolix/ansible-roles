@@ -20,7 +20,7 @@
 
 - name: Add Prosody apt repository
   ansible.builtin.apt_repository:
-    repo: "deb http://packages.prosody.im/debian bullseye main"
+    repo: "deb http://packages.prosody.im/debian {{ ansible_distribution_release }} main"
     state: present
 
 - name: Add Jitsi Meet apt repository
