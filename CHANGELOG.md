@@ -70,6 +70,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-base: start to install linux-image-cloud-amd64 with Buster
 * apt: use archive.debian.org with Stretch
 * webapps/nextcloud: fix Add Ceph volume to fstab : missing UUID= in src
+* evolinux-base: fix hardware.yml (wrong repo, missing update cache)
 
 ### Removed
 
