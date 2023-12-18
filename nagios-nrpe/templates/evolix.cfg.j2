@@ -48,7 +48,6 @@ command[check_redis]=/usr/lib/nagios/plugins/check_tcp -p 6379
 command[check_clamd]=/usr/lib/nagios/plugins/check_clamd -H /var/run/clamav/clamd.ctl -v
 command[check_clamav_db]=/usr/lib/nagios/plugins/check_file_age -w 86400 -c 172800 -f /var/lib/clamav/daily.cld
 command[check_ssl]=/usr/lib/nagios/plugins/check_http -f follow -I 127.0.0.1 -S -p 443 -H ssl.evolix.net -C 15,5
-command[check_ssl_local]={{ nagios_plugins_directory }}/check_ssl_local
 command[check_elasticsearch]=/usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /_cat/health?h=st -p 9200 -r 'red' --invert-regex
 command[check_memcached]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 11211
 command[check_opendkim]=/usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 8891
@@ -59,6 +58,8 @@ command[check_bkctld]=sudo /usr/sbin/bkctld check
 command[check_postgrey]=/usr/lib/nagios/plugins/check_tcp -p10023
 command[check_influxdb]=/usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /health -p 8086 -r '"status":"pass"'
 command[check_dhcpd]=/usr/lib/nagios/plugins/check_procs -c1:1 -C dhcpd -t 60
+command[check_ipmi_sensors]=sudo /usr/lib/nagios/plugins/check_ipmi_sensor
+command[check_raid_status]=/usr/lib/nagios/plugins/check_raid
 
 # Local checks (not packaged)
 command[check_mem]={{ nagios_plugins_directory }}/check_mem -f -C -w 20 -c 10
@@ -86,9 +87,8 @@ command[check_php-fpm80]=sudo {{ nagios_plugins_directory }}/check_phpfpm_multi 
 command[check_php-fpm81]=sudo {{ nagios_plugins_directory }}/check_phpfpm_multi /var/lib/lxc/php81/rootfs/etc/php/8.1/fpm/pool.d/
 command[check_php-fpm82]=sudo {{ nagios_plugins_directory }}/check_phpfpm_multi /var/lib/lxc/php82/rootfs/etc/php/8.2/fpm/pool.d/
 command[check_php-fpm83]=sudo {{ nagios_plugins_directory }}/check_phpfpm_multi /var/lib/lxc/php83/rootfs/etc/php/8.3/fpm/pool.d/
-command[check_ipmi_sensors]=sudo /usr/lib/nagios/plugins/check_ipmi_sensor
-command[check_raid_status]=/usr/lib/nagios/plugins/check_raid
 command[check_dhcp_pool]={{ nagios_plugins_directory }}/check_dhcp_pool
+command[check_ssl_local]={{ nagios_plugins_directory }}/check_ssl_local
 
 # Check HTTP "many". Use this to check many websites (http, https, ports, sockets and SSL certificates).
 # Beware! All checks must not take more than 10s!
