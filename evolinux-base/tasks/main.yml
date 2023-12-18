@@ -127,6 +127,11 @@
     name: evolix/nagios-nrpe
   when: evolinux_nagios_nrpe_include | bool
 
+- name: Autosysadmin
+  ansible.builtin.include_role:
+    name: 'evolix/autosysadmin'
+  when: evolinux_autosysadmin_include | bool
+
 - name: fail2ban
   ansible.builtin.include_role:
     name: evolix/fail2ban

@@ -1,0 +1,11 @@
+---
+- name: Custom configuration is present
+  ansible.builtin.template:
+    src: autosysadmin.cfg.j2
+    dest: /etc/nagios/nrpe.d/autosysadmin.cfg
+    group: nagios
+    mode: "0640"
+    force: true
+  notify: Restart nagios-nrpe-server
+  tags:
+    - autosysadmin

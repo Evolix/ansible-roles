@@ -1,0 +1,61 @@
+---
+- name: "Remount /usr if needed"
+  ansible.builtin.import_role:
+    name: remount-usr
+
+- name: Create autosysadmin directory
+  ansible.builtin.file:
+    path: "{{ autosysadmin_dir }}"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "0750"
+  tags:
+    - autosysadmin
+
+- name: Copy scripts
+  ansible.builtin.copy:
+    src: "files/scripts/{{ item }}"
+    dest: "{{ autosysadmin_dir }}/{{ item }}"
+    owner: root
+    group: root
+    mode: "0750"
+  loop:
+    - "functions.sh"
+    - "restart_amavis.sh"
+    - "repair_amavis.sh"
+    - "repair_disk.sh"
+    - "repair_elasticsearch.sh"
+    - "repair_http.sh"
+    - "repair_mysql.sh"
+    - "repair_php_fpm56.sh"
+    - "repair_php_fpm70.sh"
+    - "repair_php_fpm73.sh"
+    - "repair_php_fpm74.sh"
+    - "repair_php_fpm80.sh"
+    - "repair_php_fpm81.sh"
+    - "repair_php_fpm82.sh"
+    - "repair_php_fpm83.sh"
+    - "repair_tomcat_instance.sh"
+  tags:
+    - autosysadmin
+
+- name: Ensure /etc/evolinux folder exists
+  ansible.builtin.file:
+    path: "/etc/evolinux"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "0700"
+  tags:
+    - autosysadmin
+
+- name: Copy the configuration file
+  ansible.builtin.template:
+    src: "autosysadmin.cf.j2"
+    dest: "/etc/evolinux/autosysadmin"
+    owner: root
+    group: root
+    mode: "0640"
+  tags:
+    - autosysadmin

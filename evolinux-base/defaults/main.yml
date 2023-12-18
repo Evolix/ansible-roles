@@ -235,3 +235,6 @@ evolinux_motd_include: True
 
 # Utils
 evolinux_utils_include: True
+
+# Autosysadmin
+evolinux_autosysadmin_include: false

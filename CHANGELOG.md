@@ -23,6 +23,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: Add condition for config tasks
 * remount-usr: do not try to remount /usr RW if /usr is not a mounted partition
 * minifirewall: Fix nagios check for old versions of minifirewall
+* autosysadmin: Add a role to automatically deploy autosysadmin on evolixisation
 
 ### Changed
 
