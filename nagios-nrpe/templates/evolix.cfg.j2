@@ -60,6 +60,7 @@ command[check_influxdb]=/usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /heal
 command[check_dhcpd]=/usr/lib/nagios/plugins/check_procs -c1:1 -C dhcpd -t 60
 command[check_ipmi_sensors]=sudo /usr/lib/nagios/plugins/check_ipmi_sensor
 command[check_raid_status]=/usr/lib/nagios/plugins/check_raid
+command[check_dockerd]=/usr/lib/nagios/plugins/check_tcp -H /var/run/docker.sock --escape -s "GET /_ping HTTP/1.1\nHost: http\n\n" -e OK
 
 # Local checks (not packaged)
 command[check_mem]={{ nagios_plugins_directory }}/check_mem -f -C -w 20 -c 10
