@@ -75,6 +75,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * apt: use archive.debian.org with Stretch
 * webapps/nextcloud: fix Add Ceph volume to fstab : missing UUID= in src
 * evolinux-base: fix hardware.yml (wrong repo, missing update cache)
+* unbound: Add a apt cache validity to enforce an apt update if needed
 
 ### Removed
 

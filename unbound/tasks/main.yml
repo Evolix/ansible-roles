@@ -6,6 +6,7 @@
       - unbound-anchor
       - dns-root-data
     state: present
+    cache_valid_time: 3600
   tags:
     - unbound
 
