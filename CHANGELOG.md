@@ -15,17 +15,17 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * Preliminary work for php83
 * apt: add task file to install ELTS repository (default: False)
+* autosysadmin: Add a role to automatically deploy autosysadmin on evolixisation
+* etc-git: add /var/chroot-bind/etc/bind repo
 * lxc-php: Allow one to install php83 on Bookworm container
+* minifirewall: Fix nagios check for old versions of minifirewall
 * mongodb: add gpg key for 7.0
 * nagios-nrpe: add check_sentinel for monitoring Redis Sentinel
-* webapps/nextcloud: Added var nextcloud_user_uid to enforce uid for nextcloud user
-* etc-git: add /var/chroot-bind/etc/bind repo
-* webapps/nextcloud: Set ownership and permissions of data directory
-* webapps/nextcloud: Add condition for config tasks
 * remount-usr: do not try to remount /usr RW if /usr is not a mounted partition
-* minifirewall: Fix nagios check for old versions of minifirewall
-* autosysadmin: Add a role to automatically deploy autosysadmin on evolixisation
 * vrrpd: test if interface exists before deleting it
+* webapps/nextcloud: Add condition for config tasks
+* webapps/nextcloud: Added var nextcloud_user_uid to enforce uid for nextcloud user
+* webapps/nextcloud: Set ownership and permissions of data directory
 
 ### Changed
 
@@ -44,9 +44,9 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * log2mail: move custom config in separate file
 * lxc: init /etc git repository in lxc container
 * mysql: disable performance schema for Debian 8
-* nagios: rename var `nagios_nrpe_process_processes` into `nagios_nrpe_processes` and check systemd-timesyncd instead of ntpd in Debian 12
-* nagios: cleaning nrpe check template
 * nagios: add dockerd check in nrpe check template
+* nagios: cleaning nrpe check template
+* nagios: rename var `nagios_nrpe_process_processes` into `nagios_nrpe_processes` and check systemd-timesyncd instead of ntpd in Debian 12
 * proftpd: in SFTP vhost, enable SSH keys login, enable ed25549 host key for Debian >= 11
 * squid: config directory seems to have changed from /etc/squid3 to /etc/squid in Debian 8
 * unbound: Add config file to allow configuration reload on Debian 11 and lower
@@ -60,23 +60,23 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Fixed
 
 * Add php-fpm82 to LDAP when relevant
+* check stat.exists before stat.isdir
 * apache: fix MaxRequestsPerChild value to be sync with wiki.e.o
+* apt: use archive.debian.org with Stretch
+* certbot: fix hook for dovecot when more than one certificate is used (eg. different certificates for POP3 and IMAP)
 * evoadmin-web: Fix PHP version for Bookworm
+* evolinux-base: fix hardware.yml (wrong repo, missing update cache)
+* evolinux-base: start to install linux-image-cloud-amd64 with Buster
 * nagios: fix default file to monitor for check_clamav_db
 * nginx: keep indentation
 * php: Bullseye/Sury > Honor the php_version asked in the pub.evolix.org repository
-* ProFTPd: set missing default listen IP for SFTP
+* proftpd: set missing default listen IP for SFTP
 * ssl: no not execute haproxy tasks and reload if haproxy is disabled
-* webapps/nextcloud: added check that nexctcloud uid is over 3000
+* unbound: Add a apt cache validity to enforce an apt update if needed
+* webapps/nextcloud: added check that nextcloud uid is over 3000
+* webapps/nextcloud: fix Add Ceph volume to fstab : missing UUID= in src
 * webapps/nextcloud: fix misplaced gid attribute
 * webapps/nextcloud: fix missing gid
-* check stat.exists before stat.isdir
-* certbot: fix hook for dovecot when more than one certificate is used (eg. different certificates for POP3 and IMAP)
-* evolinux-base: start to install linux-image-cloud-amd64 with Buster
-* apt: use archive.debian.org with Stretch
-* webapps/nextcloud: fix Add Ceph volume to fstab : missing UUID= in src
-* evolinux-base: fix hardware.yml (wrong repo, missing update cache)
-* unbound: Add a apt cache validity to enforce an apt update if needed
 
 ### Removed
 
