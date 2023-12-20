@@ -72,8 +72,10 @@ case "${STATE}" in
     ;;
     
     "slave" )
-        # Delete interface 
-        ip link delete "${VIRTUAL_INTERFACE_NAME}"
+        # Delete interface if it exists
+        if ip link show "${VIRTUAL_INTERFACE_NAME}" >/dev/null 2>&1; then
+            ip link delete "${VIRTUAL_INTERFACE_NAME}"
+        fi
     ;; 
     
     * )
