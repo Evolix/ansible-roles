@@ -1,0 +1,37 @@
+---
+
+- name: 'Figure out if /etc/lvm/lvm.conf exists'
+  ansible.builtin.stat:
+    path: '/etc/lvm/lvm.conf'
+    follow: true
+    get_checksum: false
+    get_mime: false
+    get_attributes: false
+  ignore_errors: true
+  register: lvm_conf_stat
+
+- name: Add LVM filter
+  ansible.builtin.lineinfile:
+    path: '/etc/lvm/lvm.conf'
+    insertafter: '# Configuration option devices/filter.'
+    regexp: '^\s*(#\s*)?filter\s*=\s*\[.*\]'
+    line: "    filter = [ {{ lvm_filter | list | join(', ') }}, \"r|.*/|\" ]"
+    state: present
+    firstmatch: true
+  notify: 'Update initramfs'
+  when:
+    - lvm_conf_stat is succeeded
+    - lvm_conf_stat.stat.exists | bool
+
+- name: Add LVM global_filter
+  ansible.builtin.lineinfile:
+    path: '/etc/lvm/lvm.conf'
+    insertafter: '# Configuration option devices/global_filter.'
+    regexp: '^\s*(#\s*)?global_filter\s*=\s*\[.*\]'
+    line: "    global_filter = [ {{ lvm_filter | list | join(', ') }}, \"r|.*/|\" ]"
+    state: present
+    firstmatch: true
+  notify: 'Update initramfs'
+  when:
+    - lvm_conf_stat is succeeded
+    - lvm_conf_stat.stat.exists | bool

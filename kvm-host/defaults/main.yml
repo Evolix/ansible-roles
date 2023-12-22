@@ -4,3 +4,10 @@ kvm_install_drbd: True
 kvm_scripts_dir: /usr/local/sbin
 
 kvm_pair: null
+
+# A "r|.*/|" is always added in order to make this an allowlist
+# Default = all sata/scsi disks + all nvme + all md (+partitions)
+lvm_filter:
+  - '"a|^/dev/sd[a-zA-Z]+[0-9]*$|"'
+  - '"a|^/dev/nvme[0-9]+(n[0-9]+)?(p[0-9]+)?$|"'
+  - '"a|^/dev/md[0-9]+$|"'

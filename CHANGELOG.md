@@ -26,6 +26,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: Add condition for config tasks
 * webapps/nextcloud: Added var nextcloud_user_uid to enforce uid for nextcloud user
 * webapps/nextcloud: Set ownership and permissions of data directory
+* kvm-host: Automatically add an LVM filter when LVM is present
 
 ### Changed
 

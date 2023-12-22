@@ -3,3 +3,11 @@
   ansible.builtin.service:
     name: munin-node
     state: restarted
+
+- name: Update initramfs
+  ansible.builtin.command:
+    argv:
+      - '/usr/sbin/update-initramfs'
+      - '-k'
+      - 'all'
+      - '-u'
