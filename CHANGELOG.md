@@ -24,7 +24,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios-nrpe: add check_sentinel for monitoring Redis Sentinel
 * remount-usr: do not try to remount /usr RW if /usr is not a mounted partition
 * vrrpd: test if interface exists before deleting it
-* webapps/evoadmin-mail: package can be installed via public.evolix.org/evolix repo starting from Bookworm
+* webapps/evoadmin-mail: package installed via public.evolix.org/evolix repo starting with Bookworm
 * webapps/nextcloud: Add condition for config tasks
 * webapps/nextcloud: Added var nextcloud_user_uid to enforce uid for nextcloud user
 * webapps/nextcloud: Set ownership and permissions of data directory
