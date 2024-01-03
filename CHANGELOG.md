@@ -39,7 +39,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * apt: Use the GPG version of the key for Debian 8-9
 * bind: Update role for Buster, Bullseye and Bookworm support
 * dovecot: Munin plugin conf path is now `/etc/munin/plugin-conf.d/zzz-dovecot` (instead of `z-evolinux-dovecot`)
-* evocheck: upstream release 23.11.1
+* evocheck: upstream release 24.01
 * evolinux-base: dump-server-state upstream release 23.11
 * evolinux-base: use separate default config file for rsyslog
 * kvmstats: use .capacity instead of .physical for disk size

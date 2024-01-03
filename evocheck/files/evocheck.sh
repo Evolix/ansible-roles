@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian) server
 # powered by Evolix
 
-VERSION="23.11.1"
+VERSION="24.01"
 readonly VERSION
 
 # base functions
@@ -156,13 +156,13 @@ check_dpkgwarning() {
 # Check if localhost, localhost.localdomain and localhost.$mydomain are set in Postfix mydestination option.
 check_postfix_mydestination() {
     # shellcheck disable=SC2016
-    if ! grep mydestination /etc/postfix/main.cf | grep --quiet -E 'localhost([[:blank:]]|$)'; then
+    if ! grep mydestination /etc/postfix/main.cf | grep --quiet --extended-regexp 'localhost([[:blank:]]|$)'; then
         failed "IS_POSTFIX_MYDESTINATION" "'localhost' is missing in Postfix mydestination option."
     fi
-    if ! grep mydestination /etc/postfix/main.cf | grep --quiet 'localhost\.localdomain'; then
+    if ! grep mydestination /etc/postfix/main.cf | grep --quiet --fixed-strings 'localhost.localdomain'; then
         failed "IS_POSTFIX_MYDESTINATION" "'localhost.localdomain' is missing in Postfix mydestination option."
     fi
-    if ! grep mydestination /etc/postfix/main.cf | grep --quiet 'localhost\.\$mydomain'; then
+    if ! grep mydestination /etc/postfix/main.cf | grep --quiet --fixed-strings 'localhost.$mydomain'; then
         failed "IS_POSTFIX_MYDESTINATION" "'localhost.\$mydomain' is missing in Postfix mydestination option."
     fi
 }
@@ -205,10 +205,20 @@ check_debiansecurity_lxc() {
     if is_installed lxc; then
         container_list=$(lxc-ls)
         for container in $container_list; do
-            lxc-attach --name $container apt-cache policy | grep "\bl=Debian-Security\b" | grep "\bo=Debian\b" | grep --quiet "\bc=main\b"
-            test $? -eq 0 || failed "IS_DEBIANSECURITY_LXC" "missing Debian-Security repository in container ${container}"
+            DEBIAN_LXC_VERSION=$(cut -d "." -f 1 < /var/lib/lxc/${container}/rootfs/etc/debian_version)
+            if [ $DEBIAN_LXC_VERSION -ge 9 ]; then
+                lxc-attach --name $container apt-cache policy | grep "\bl=Debian-Security\b" | grep "\bo=Debian\b" | grep --quiet "\bc=main\b"
+                test $? -eq 0 || failed "IS_DEBIANSECURITY_LXC" "missing Debian-Security repository in container ${container}"
+            fi
         done
     fi
+}
+check_backports_version() {
+    # Look for enabled "Debian Backports" sources from the "Debian" origin
+    apt-cache policy | grep "\bl=Debian Backports\b" | grep "\bo=Debian\b" | grep --quiet "\bc=main\b"
+    test $? -eq 1 || ( \
+        apt-cache policy | grep "\bl=Debian Backports\b" | grep --quiet "\bn=${DEBIAN_RELEASE}-backports\b" && \
+        test $? -eq 0 || failed "IS_BACKPORTS_VERSION" "Debian Backports enabled for another release than ${DEBIAN_RELEASE}" )
 }
 check_oldpub() {
     # Look for enabled pub.evolix.net sources (supersed by pub.evolix.org since Stretch)
@@ -596,14 +606,10 @@ check_evobackup_exclude_mount() {
             # then we verify that every mount is excluded
             if ! grep -q -- "^\s*--one-file-system" "${evobackup_file}"; then
                 # old releases of evobackups don't have version
-                if grep -q  "^VERSION=" "${evobackup_file}"; then
-                  evobackup_version=$(sed -E -n 's/VERSION="(.*)"/\1/p' "${evobackup_file}")
-                  # versions over 22.12 use a new syntax to exclude rsync files
-                  if dpkg --compare-versions "$evobackup_version" ge 22.12 ; then
-                    sed -En '/RSYNC_EXCLUDES="/,/"/ {s/(RSYNC_EXCLUDES=|")//g;p}' "${evobackup_file}" > "${excludes_file}"
-                  else
-                    grep -- "--exclude " "${evobackup_file}" | grep -E -o "\"[^\"]+\"" | tr -d '"' > "${excludes_file}"
-                  fi
+                if grep -q  "^VERSION=" "${evobackup_file}" && dpkg --compare-versions "$(sed -E -n 's/VERSION="(.*)"/\1/p' "${evobackup_file}")" ge 22.12 ; then
+                  sed -En '/RSYNC_EXCLUDES="/,/"/ {s/(RSYNC_EXCLUDES=|")//g;p}' "${evobackup_file}" > "${excludes_file}"
+                else
+                  grep -- "--exclude " "${evobackup_file}" | grep -E -o "\"[^\"]+\"" | tr -d '"' > "${excludes_file}"
                 fi
                 not_excluded=$(findmnt --type nfs,nfs4,fuse.sshfs, -o target --noheadings | grep -v -f "${excludes_file}")
                 for mount in ${not_excluded}; do
@@ -657,7 +663,7 @@ check_apacheipinallow() {
 check_muninapacheconf() {
     muninconf="/etc/apache2/conf-available/munin.conf"
     if is_installed apache2; then
-        test -e $muninconf && grep -vEq "^( |\t)*#" "$muninconf" \
+        test -e $muninconf && grep --invert-match --extended-regexp --quiet "^( |\t)*#" "$muninconf" \
             && failed "IS_MUNINAPACHECONF" "default munin configuration may be commented or disabled"
     fi
 }
@@ -666,17 +672,17 @@ check_phpmyadminapacheconf() {
     phpmyadminconf0="/etc/apache2/conf-available/phpmyadmin.conf"
     phpmyadminconf1="/etc/apache2/conf-enabled/phpmyadmin.conf"
     if is_installed apache2; then
-        test -e $phpmyadminconf0 && grep -vEq "^( |\t)*#" "$phpmyadminconf0" \
-            && failed "IS_PHPMYADMINAPACHECONF" "default phpmyadmin configuration ($phpmyadminconf0) may be commented or disabled"
-        test -e $phpmyadminconf1 && grep -vEq "^( |\t)*#" "$phpmyadminconf1" \
-            && failed "IS_PHPMYADMINAPACHECONF" "default phpmyadmin configuration ($phpmyadminconf1) may be commented or disabled"
+        test -e $phpmyadminconf0 && grep --invert-match --extended-regexp --quiet "^( |\t)*#" "$phpmyadminconf0" \
+            && failed "IS_PHPMYADMINAPACHECONF" "default phpmyadmin configuration ($phpmyadminconf0) should be commented or disabled"
+        test -e $phpmyadminconf1 && grep --invert-match --extended-regexp --quiet "^( |\t)*#" "$phpmyadminconf1" \
+            && failed "IS_PHPMYADMINAPACHECONF" "default phpmyadmin configuration ($phpmyadminconf1) should be commented or disabled"
     fi
 }
 # Verification si le système doit redémarrer suite màj kernel.
 check_kerneluptodate() {
     if is_installed linux-image*; then
         # shellcheck disable=SC2012
-        kernel_installed_at=$(date -d "$(ls --full-time -lcrt /boot | tail -n1 | awk '{print $6}')" +%s)
+        kernel_installed_at=$(date -d "$(ls --full-time -lcrt /boot/*lin* | tail -n1 | awk '{print $6}')" +%s)
         last_reboot_at=$(($(date +%s) - $(cut -f1 -d '.' /proc/uptime)))
         if [ "$kernel_installed_at" -gt "$last_reboot_at" ]; then
             failed "IS_KERNELUPTODATE" "machine is running an outdated kernel, reboot advised"
@@ -770,7 +776,7 @@ check_gitperms_lxc() {
             if test -d $GIT_DIR; then
                 expected="700"
                 actual=$(stat -c "%a" $GIT_DIR)
-		[ "$expected" = "$actual" ] || failed "IS_GITPERMS_LXC" "$GIT_DIR must be $expected (in container ${container})"
+                [ "$expected" = "$actual" ] || failed "IS_GITPERMS_LXC" "$GIT_DIR must be $expected (in container ${container})"
             fi
         done
     fi
@@ -882,7 +888,7 @@ check_drbd_two_primaries() {
                 failed "IS_DRBDTWOPRIMARIES" "Some DRBD ressources have two primaries, you risk a split brain!"
             fi
         elif command -v drbdadm >/dev/null; then
-            if drbdadm status | grep Primary -A2 | grep peer | grep -q Primary; then
+            if drbdadm role all 2>&1 | grep -q 'Primary/Primary'; then
                 failed "IS_DRBDTWOPRIMARIES" "Some DRBD ressources have two primaries, you risk a split brain!"
             fi
         fi
@@ -893,7 +899,7 @@ check_broadcomfirmware() {
     if [ -x "${LSPCI_BIN}" ]; then
         if ${LSPCI_BIN} | grep -q 'NetXtreme II'; then
             { is_installed firmware-bnx2 \
-                && grep -q "^deb http://mirror.evolix.org/debian.* non-free" /etc/apt/sources.list;
+                && apt-cache policy | grep "\bl=Debian\b" | grep --quiet -v "\b,c=non-free\b"
             } || failed "IS_BROADCOMFIRMWARE" "missing non-free repository"
         fi
     else
@@ -1201,16 +1207,10 @@ check_usrsharescripts() {
     test "$expected" = "$actual" || failed "IS_USRSHARESCRIPTS" "/usr/share/scripts must be $expected"
 }
 check_sshpermitrootno() {
-    sshd_args="-C addr=,user=,host=,laddr=,lport=0"
-    if is_debian_stretch; then
-        # Noop, we'll use the default $sshd_args
-        :
-    elif is_debian_buster; then
+    # You could change the SSH port in /etc/evocheck.cf
+    sshd_args="-C addr=,user=,host=,laddr=,lport=${SSH_PORT:-22}"
+    if is_debian_buster; then
         sshd_args="${sshd_args},rdomain="
-    else
-        # NOTE: From Debian Bullseye 11 onward, with OpenSSH 8.1, the argument
-        # -T doesn't require the additional -C.
-        sshd_args=
     fi
     # shellcheck disable=SC2086
     if ! (sshd -T ${sshd_args} 2> /dev/null | grep -qi 'permitrootlogin no'); then
@@ -1559,6 +1559,7 @@ main() {
     test "${IS_SYSLOGCONF:=1}" = 1 && check_syslogconf
     test "${IS_DEBIANSECURITY:=1}" = 1 && check_debiansecurity
     test "${IS_DEBIANSECURITY_LXC:=1}" = 1 && check_debiansecurity_lxc
+    test "${IS_BACKPORTS_VERSION:=1}" = 1 && check_backports_version
     test "${IS_OLDPUB:=1}" = 1 && check_oldpub
     test "${IS_OLDPUB_LXC:=1}" = 1 && check_oldpub_lxc
     test "${IS_NEWPUB:=1}" = 1 && check_newpub
@@ -1677,7 +1678,7 @@ main() {
 }
 cleanup() {
     # Cleanup tmp files
-    # shellcheck disable=SC2086,SC2317
+    # shellcheck disable=SC2068,SC2317
     rm -f ${files_to_cleanup[@]}
 
     log "$PROGNAME exit."
