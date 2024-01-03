@@ -80,6 +80,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: fix Add Ceph volume to fstab : missing UUID= in src
 * webapps/nextcloud: fix misplaced gid attribute
 * webapps/nextcloud: fix missing gid
+* nginx: fix mistake between "check_mode: no" and "when: not ansible_check_mode" (fail in check mode)
+* nginx: add "when: not ansible_check_mode" in various tasks to prevent fail in check mode
 
 ### Removed
 

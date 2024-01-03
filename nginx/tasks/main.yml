@@ -24,6 +24,7 @@
     line: '\1worker_connections 1024;'
     insertafter: 'events \{'
     backrefs: yes
+  when: not ansible_check_mode
   tags:
     - nginx
 
@@ -34,6 +35,7 @@
     line: '\1use epoll;'
     insertafter: 'events \{'
     backrefs: yes
+  when: not ansible_check_mode
   tags:
     - nginx
 
@@ -145,6 +147,7 @@
     name: nginx
     enabled: yes
     state: started
+  when: not ansible_check_mode
   tags:
     - nginx
 

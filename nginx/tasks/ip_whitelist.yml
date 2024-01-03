@@ -6,6 +6,7 @@
     line: "allow {{ item }};"
     state: present
   loop: "{{ nginx_ipaddr_whitelist_present }}"
+  when: not ansible_check_mode
   notify: reload nginx
   tags:
     - nginx
@@ -17,6 +18,7 @@
     line: "allow {{ item }};"
     state: absent
   loop: "{{ nginx_ipaddr_whitelist_absent }}"
+  when: not ansible_check_mode
   notify: reload nginx
   tags:
     - nginx

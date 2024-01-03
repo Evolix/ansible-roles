@@ -26,13 +26,15 @@
   ansible.builtin.command:
     cmd: "tail -n 1 {{ nginx_serverstatus_suffix_file }}"
   changed_when: False
-  check_mode: no
+  when: not ansible_check_mode
   register: new_nginx_serverstatus_suffix
 
 - name: overwrite nginx_serverstatus_suffix
   ansible.builtin.set_fact:
     nginx_serverstatus_suffix: "{{ new_nginx_serverstatus_suffix.stdout }}"
+  when: not ansible_check_mode
 
 - ansible.builtin.debug:
     var: nginx_serverstatus_suffix
     verbosity: 1
+  when: not ansible_check_mode

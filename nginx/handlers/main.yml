@@ -3,13 +3,16 @@
   ansible.builtin.service:
     name: nginx
     state: restarted
+  when: not ansible_check_mode
 
 - name: reload nginx
   ansible.builtin.service:
     name: nginx
     state: reloaded
+  when: not ansible_check_mode
 
 - name: restart munin
   ansible.builtin.service:
     name: munin-node
     state: restarted
+  when: not ansible_check_mode
