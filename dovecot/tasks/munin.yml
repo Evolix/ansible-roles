@@ -51,7 +51,7 @@
 
     - name: Copy Munin config
       ansible.builtin.copy:
-        src: z-evolinux-dovecot.conf
+        src: munin_plugins.conf
         dest: /etc/munin/plugin-conf.d/zzz-dovecot
         mode: '0644'
       notify: restart munin-node

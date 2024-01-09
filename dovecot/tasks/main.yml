@@ -60,7 +60,7 @@
   tags:
   - dovecot
 
-- name: deploy evolix config
+- name: deploy evolix config for Dovecot
   ansible.builtin.template:
     src: z-evolinux-defaults.conf.j2
     dest: /etc/dovecot/conf.d/z-evolinux-defaults.conf

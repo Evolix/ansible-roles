@@ -1,4 +1,6 @@
 ---
 
+log2mail_alert_email: Null
+
 dovecot_vmail_uid: 5000
 dovecot_vmail_gid: 5000
