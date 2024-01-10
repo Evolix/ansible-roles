@@ -1,6 +1,6 @@
 ---
 # defaults file for etherpad
-system_dep: "['apt-transport-https', 'mariadb-server', 'python3-mysqldb', 'nginx', 'ssl-cert', 'git', 'wget', 'certbot']"
+system_dep: "['apt-transport-https', 'mariadb-server', 'python3-mysqldb', 'nginx', 'ssl-cert', 'git', 'wget', 'certbot', 'npm']"
 git_url: 'https://github.com/ether/etherpad-lite.git'
 git_version: '1.8.18'
 node_version: 'node_18.x'
@@ -10,7 +10,7 @@ domains: ['example.domain.org']
 certbot_admin_email: 'mgauthier@evolix.ca'
 
 db_host: 'localhost'
-db_port: '/run/mysqld/mysqld.sock'
+db_port: '3306'
 db_user: "{{ service }}"
 db_name: "{{ service }}"
 db_password: 'CHANGE_ME'
