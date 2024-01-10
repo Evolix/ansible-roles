@@ -1,0 +1,48 @@
+---
+
+- name: is NRPE present ?
+  ansible.builtin.stat:
+    path: /etc/nagios/nrpe.d/evolix.cfg
+  check_mode: no
+  register: nrpe_evolix_config
+  tags:
+    - elasticsearch
+    - nrpe
+
+- block:
+  - name: Install dependencies
+    ansible.builtin.apt:
+      name:
+      - jq
+
+  - ansible.builtin.include_role:
+      name: evolix/remount-usr
+
+  - name: Copy Nagios check for Elasticsearch shards
+    ansible.builtin.copy:
+      src: check_elasticsearch_shards
+      dest: /usr/local/lib/nagios/plugins/
+      mode: "0755"
+
+        # - name: Create a password for NRPE
+        #   ansible.builtin.command:
+        #     cmd: "apg -n 1 -m 16 -M lcN"
+        #   register: elasticsearch_nrpe_password
+        #   check_mode: no
+        #   changed_when: False
+
+        # - name: Create nrpe user
+        #   todo:
+
+  - name: Add NRPE check
+    ansible.builtin.lineinfile:
+      name: /etc/nagios/nrpe.d/evolix.cfg
+      regexp: '^command\[check_elasticsearch_shards\]='
+      line: 'command[check_elasticsearch_shards]=/usr/local/lib/nagios/plugins/check_elasticsearch_shards --crendentials TODO(user:password) --nodeid TODO(nodeid)'
+    notify: restart nagios-nrpe-server
+
+  when:
+    - nrpe_evolix_config.stat.exists
+  tags:
+    - elasticsearch
+    - nrpe

@@ -64,8 +64,19 @@ if [ ! -e "/usr/bin/jq" ]; then
     exit 3
 fi
 
-nb_shards=$(curl -s -k -u ${CREDENTIALS} https://127.0.0.1:9200/_cat/allocation/${NODE_ID}?h=shards)
-nb_shards_max=$(curl -s -k -u ${CREDENTIALS} https://127.0.0.1:9200/_cluster/settings?flat_settings | jq -r ".persistent[]" )
+if [ -z ${CREDENTIALS} ]; then
+    nb_shards=$(curl -s 127.0.0.1:9200/_cat/allocation/${NODE_ID}?h=shards | head -n1)
+    nb_shards_max=$(curl -s 127.0.0.1:9200/_cluster/settings?flat_settings | jq -r ".persistent[]" )
+else
+    nb_shards=$(curl -s -k -u ${CREDENTIALS} https://127.0.0.1:9200/_cat/allocation/${NODE_ID}?h=shards | head -n1)
+    nb_shards_max=$(curl -s -k -u ${CREDENTIALS} https://127.0.0.1:9200/_cluster/settings?flat_settings | jq -r ".persistent[]" )
+fi
+
+re='^[0-9]+$'
+if ! [[ $nb_shards_max =~ $re ]] ; then
+    printf "UNKNWON - max_shards_per_node (NaN)"
+    exit 3
+fi
 
 nb_shards_avail=$(( $nb_shards_max - $nb_shards ))
 
@@ -79,7 +90,7 @@ fi
 
 nb_shards_crit=$(( $nb_shards_warn / 4 ))
 
-# debug…
+# debug
 # printf '%d out of %d, avail: %d, warn: %d, crit: %d' $nb_shards $nb_shards_max $nb_shards_avail $nb_shards_warn $nb_shards_crit
 
 if [ "${nb_shards_avail}" -le "${nb_shards_crit}" ]; then

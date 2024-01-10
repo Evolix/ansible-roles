@@ -19,3 +19,5 @@
 
 - ansible.builtin.include: curator.yml
   when: elasticsearch_curator | bool
+
+- ansible.builtin.include: nrpe.yml
