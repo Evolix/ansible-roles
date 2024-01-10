@@ -1,11 +1,11 @@
 ---
 # defaults file for vars
 system_dep: "['apt-transport-https', 'git', 'nginx', 'mariadb-server', 'mariadb-client', 'python3-mysqldb', 'redis-server', 'certbot']"
-git_version: '1.18.5'
+git_version: '1.21.3'
 gitea_url: "https://dl.gitea.io/gitea/{{ git_version }}/gitea-{{ git_version }}-linux-amd64"
-gitea_checksum: "sha256:4766ad9310bd39d50676f8199563292ae0bab3a1922b461ece0feb4611e867f2"
+gitea_checksum: "sha256:ccf6cc2077401e382bca0d000553a781a42c9103656bd33ef32bf093cca570eb"
 domains: ['example.domain.org']
-certbot_admin_email: 'mgauthier@evolix.ca'
+certbot_admin_email: 'security@example.domain.org'
 db_host: '127.0.0.1:3306'
 db_name: "{{ service }}"
 db_user: "{{ service }}"
