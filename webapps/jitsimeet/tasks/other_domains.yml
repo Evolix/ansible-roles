@@ -1,0 +1,71 @@
+---
+# tasks file for other domains if any
+
+- name: Template config files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { src: 'meet/config.js.j2', dest: "/etc/jitsi/meet/{{ domain }}-config.js", owner: "root", group: "root", mode: "0644" }
+
+- name: Check if SSL certificate is present and register result
+  stat:
+    path: "/etc/letsencrypt/live/{{ domain }}/fullchain.pem"
+  register: ssl
+
+- name: Generate certificate only if required (first time)
+  block:
+  - name: Template vhost without SSL for successfull LE challengce
+    template: 
+      src: "nginx/vhost.conf.j2"
+      dest: "/etc/nginx/sites-available/{{ domain }}.conf"
+  - name: Enable temporary nginx vhost
+    file:
+      src: "/etc/nginx/sites-available/{{ domain }}.conf"
+      dest: "/etc/nginx/sites-enabled/{{ domain }}.conf"
+      state: link
+  - name: Reload nginx conf
+    service:
+      name: nginx
+      state: reloaded
+  - name: Make sure /var/lib/letsencrypt exists and has correct permissions
+    file: 
+      path: /var/lib/letsencrypt
+      state: directory
+      mode: '0755'
+  - name: Generate certificate with certbot
+    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ certbot_admin_email }} -d {{ domain }}
+  when: ssl.stat.exists != true
+
+- name: (Re)check if SSL certificate is present and register result
+  stat:
+    path: "/etc/letsencrypt/live/{{ domain |first }}/fullchain.pem"
+  register: ssl
+
+- name: (Re)template conf file for nginx vhost with SSL
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - { src: 'nginx/vhost.conf.j2', dest: "/etc/nginx/sites-available/{{ domain }}.conf" }
+    - { src: 'nginx/multiplex.conf.j2', dest: '/etc/nginx/modules-available/multiplex.conf' }
+
+- name: Enable multiplex module conf
+  file:
+    src: '/etc/nginx/modules-available/multiplex.conf'
+    dest: '/etc/nginx/modules-enabled/multiplex.conf'
+    state: link
+
+- name: Enable nginx vhost
+  file:
+    src: "/etc/nginx/sites-available/{{ domain }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ domain }}.conf"
+    state: link
+
+- name: Reload nginx conf
+  service:
+    name: nginx
+    state: reloaded

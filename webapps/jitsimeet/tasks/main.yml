@@ -201,3 +201,9 @@
 - name: Generate certificate for coturn with certbot
   shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/coturn-certbot-deploy.sh --agree-tos --email {{ certbot_admin_email }} -d {{ turn_domains |first }}
   when: ssl_coturn.stat.exists != true 
+
+- name: Setup other domains if any
+  include_tasks: other_domains.yml
+  loop: "{{ domains[1:] }}"
+  loop_control:
+    loop_var: domain
