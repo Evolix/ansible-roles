@@ -18,23 +18,28 @@
 
 - name: generate random string for server-status suffix
   ansible.builtin.shell:
-    cmd: "apg -a 1 -M N -n 1 > {{ nginx_serverstatus_suffix_file }}"
-  args:
+    cmd: "apg -a 1 -M N -n 1 | tee {{ nginx_serverstatus_suffix_file }}"
     creates: "{{ nginx_serverstatus_suffix_file }}"
+  register: generated_nginx_serverstatus_suffix
+
+- name: check if nginx suffix file exists
+  ansible.builtin.stat:
+    path: "{{ nginx_serverstatus_suffix_file }}"
+  register: nginx_serverstatus_suffix_file_check
 
 - name: read nginx server status suffix
   ansible.builtin.command:
     cmd: "tail -n 1 {{ nginx_serverstatus_suffix_file }}"
   changed_when: False
-  when: not ansible_check_mode
-  register: new_nginx_serverstatus_suffix
+  check_mode: no
+  when: nginx_serverstatus_suffix_file_check.stat.exists
+  register: read_nginx_serverstatus_suffix
 
+# If the file exists and the read value is not empty, then use it, otherwhise use the generated value
 - name: overwrite nginx_serverstatus_suffix
   ansible.builtin.set_fact:
-    nginx_serverstatus_suffix: "{{ new_nginx_serverstatus_suffix.stdout }}"
-  when: not ansible_check_mode
+    nginx_serverstatus_suffix: "{{ (nginx_serverstatus_suffix_file_check.stat.exists and (read_nginx_serverstatus_suffix.stdout | length > 0)) | ternary(read_nginx_serverstatus_suffix.stdout, generated_nginx_serverstatus_suffix.stdout) }}"
 
 - ansible.builtin.debug:
     var: nginx_serverstatus_suffix
     verbosity: 1
-  when: not ansible_check_mode

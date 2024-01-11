@@ -81,7 +81,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: fix misplaced gid attribute
 * webapps/nextcloud: fix missing gid
 * nginx: fix mistake between "check_mode: no" and "when: not ansible_check_mode" (fail in check mode)
-* nginx: add "when: not ansible_check_mode" in various tasks to prevent fail in check mode
+* nginx: take care of « already defined » and « not yet defined » server status suffix in check mode
 * dovecot: fix plugin dovecot1
 
 ### Removed
