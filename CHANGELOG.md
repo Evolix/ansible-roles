@@ -67,11 +67,15 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * apache: fix MaxRequestsPerChild value to be sync with wiki.e.o
 * apt: use archive.debian.org with Stretch
 * certbot: fix hook for dovecot when more than one certificate is used (eg. different certificates for POP3 and IMAP)
+* dovecot: fix plugin dovecot1
 * evoadmin-web: Fix PHP version for Bookworm
 * evolinux-base: fix hardware.yml (wrong repo, missing update cache)
 * evolinux-base: start to install linux-image-cloud-amd64 with Buster
+* fail2ban: fix template marker
 * nagios: fix default file to monitor for check_clamav_db
+* nginx: fix mistake between "check_mode: no" and "when: not ansible_check_mode" (fail in check mode)
 * nginx: keep indentation
+* nginx: take care of « already defined » and « not yet defined » server status suffix in check mode
 * php: Bullseye/Sury > Honor the php_version asked in the pub.evolix.org repository
 * proftpd: set missing default listen IP for SFTP
 * ssl: no not execute haproxy tasks and reload if haproxy is disabled
@@ -80,9 +84,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: fix Add Ceph volume to fstab : missing UUID= in src
 * webapps/nextcloud: fix misplaced gid attribute
 * webapps/nextcloud: fix missing gid
-* nginx: fix mistake between "check_mode: no" and "when: not ansible_check_mode" (fail in check mode)
-* nginx: take care of « already defined » and « not yet defined » server status suffix in check mode
-* dovecot: fix plugin dovecot1
 
 ### Removed
 

@@ -94,7 +94,7 @@
 - name: "Extend dbpurgeage if recidive jail is enabled"
   ansible.builtin.blockinfile:
     dest: /etc/fail2ban/fail2ban.d/recidive_dbpurgeage
-    marker: "# ANSIBLE MANAGED"
+    marker: "# {mark} ANSIBLE MANAGED"
     block: |
       [DEFAULT]
       dbpurgeage = {{ fail2ban_recidive_bantime }}
