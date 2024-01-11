@@ -9,7 +9,7 @@ service: 'example'
 domains: ['example.domain.org']
 certbot_admin_email: 'mgauthier@evolix.ca'
 
-db_host: 'localhost'
+db_host: '127.0.0.1'
 db_port: '3306'
 db_user: "{{ service }}"
 db_name: "{{ service }}"
