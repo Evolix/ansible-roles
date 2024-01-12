@@ -4,7 +4,7 @@
 
 # fork by reg from /etc/kernel/postinst.d/apt-auto-removal script
 
-VERSION="21.10"
+VERSION="24.01"
 readonly VERSION
 
 PROGNAME=$(basename "$0")
@@ -13,7 +13,7 @@ show_version() {
     cat <<END
 ${PROGNAME} version ${VERSION}
 
-Copyright 2018-2021 Evolix <info@evolix.fr>,
+Copyright 2018-2024 Evolix <info@evolix.fr>,
                Gregory Colpart <reg@evolix.fr>,
                Romain Dessort <rdessort@evolix.fr>,
                Ludovic Poujol <lpoujol@evolix.fr>,
@@ -105,7 +105,7 @@ main() {
     echo "BEFORE"
     dpkg -l | grep linux-image
 
-    dpkg --get-selections | tr '\t' ' ' | cut -d" " -f1 | grep '^linux-image-[234]' | grep -v -E "(${kernels})" | xargs --no-run-if-empty ${APT} -o Dir::State::Lists="${listupgrade_state_dir}" -y purge
+    dpkg --get-selections | tr '\t' ' ' | cut -d" " -f1 | grep '^linux-image-[0-9]' | grep -v -E "(${kernels})" | xargs --no-run-if-empty ${APT} -o Dir::State::Lists="${listupgrade_state_dir}" -y purge
 
     echo "
     AFTER"

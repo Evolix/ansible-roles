@@ -43,6 +43,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-base: dump-server-state upstream release 23.11
 * evolinux-base: use separate default config file for rsyslog
 * kvmstats: use .capacity instead of .physical for disk size
+* listupgrade : old-kernel-removal.sh upstream release 24.01
 * log2mail: move custom config in separate file
 * lxc: init /etc git repository in lxc container
 * mysql: disable performance schema for Debian 8
