@@ -577,6 +577,13 @@ ServiceName: elasticsearch
 ipServicePort: 9200
 ServiceType: http
 ServiceVersion: Elasticsearch ${elasticsearch_version}
+
+dn: ServiceName=elasticsearch_shards,${computer_dn}
+NagiosEnabled: TRUE
+objectClass: EvoService
+ServiceName: elasticsearch_shards
+ServiceType: disk
+ServiceVersion: Elasticsearch ${elasticsearch_version}
 EOT
 fi
 
