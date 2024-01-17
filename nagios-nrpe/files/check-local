@@ -4,6 +4,37 @@ CHECK_BIN=/usr/lib/nagios/plugins/check_nrpe
 
 server_address="127.0.0.1"
 
+#check_lookup="$1"
+#
+## Array of commands found in the conf (first-found order)
+#found_commands=()
+#
+## Queue of conf files and directories included in Nagios
+#includes_fifo=("/etc/nagios/nrpe.cfg")
+#
+## Debian major version number
+#debian_major_version=$(cut -d "." -f 1 < /etc/debian_version)
+#
+#function grep_conf {
+#    grep -E -R "^\s*(include(_dir)?=.+|command\[check_$1)" $2
+#}
+#
+## Print check commands, in the same order as they are declared in the conf,
+## with respect to the include and include_dir directives.
+#for l in $(grep_conf "${check_lookup}" /etc/nagios/nrpe.cfg); do
+#    if [[ $l =~ "check_${check_lookup}" ]]; then
+#        echo $l
+#    elif [[ $l =~ 'include=' ]]; then
+#        conf_file=$(echo $l | cut -d= -f2)
+#        grep_conf "${check_lookup}" "${conf_file}"
+#    elif [[ $l =~ 'include_dir=' ]]; then
+#        true
+#        # todo if Debian <= 9 then find else find | sort
+#    fi
+#done
+
+
+
 if ! test -f "${CHECK_BIN}"; then
     echo "${CHECK_BIN} is missing, please install nagios-nrpe-plugin package."
     exit 1
@@ -26,11 +57,13 @@ for file in /etc/nagios/{nrpe.cfg,nrpe_local.cfg,nrpe.d/evolix.cfg}; do
 done
 
 if [ -n "${command}" ]; then
-    echo "Found command in /etc/nagios (take care, in some cases, Nagios can play another command):"
+    echo "Command:"
     echo "    ${command}"
 fi
 
-echo "NRPE daemon output:"
-"${CHECK_BIN}" -H "${server_address}" -c "check_$1"
+check_output=$("${CHECK_BIN}" -H "${server_address}" -c "check_$1" 2&>1)
+rc=$?
 
+echo "NRPE daemon output:"
+echo $check_output
 
