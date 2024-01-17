@@ -2,13 +2,17 @@
 #
 # Execute 'evodomains --help' for usage.
 #
-# Evodomains is a Python script to facilitate the management
-# of a server's domains.
-# It's scope is Apache, Nginx, HaProxy and SSL certificates domains.
-# It can list domains, check domains records, and will permit (in the future)
-# to remove domains from vhosts configuration and remove certificate files.
+# Evodomains is a Python script to ease the management of a server's domains.
 #
-# Developped by Will
+# Features:
+# - Supports Apache, Nginx, HaProxy and SSL certificates domains
+# - List domains
+# - Check domains name records
+# Roadmap :
+# - Remove domains from vhosts configuration
+# - Remove certificate files
+#
+# Authors: Will
 #
 
 import os
@@ -20,6 +24,7 @@ import time
 import argparse
 import json
 from enum import Enum
+from typing import Type, List
 try:
     from cryptography import x509
     from cryptography.hazmat.primitives import hashes
@@ -28,6 +33,8 @@ try:
 except:
     pass
 
+
+""" Constants """
 
 config_dir_path = '/etc/evolinux/domains'
 ignored_domains_file = 'ignored_domains_check.list'
@@ -38,30 +45,14 @@ domain_cn_regex = re.compile('CN=(((?!-)[A-Za-z0-9-\*]{1,63}(?<!-)\.)+[A-Za-z]{2
 domain_san_regex = re.compile('DNS:(((?!-)[A-Za-z0-9-\*]{1,63}(?<!-)\.)+[A-Za-z]{2,6})')
 
 # Time to wait for DNS answer before considering a domain in timeouted.
-# (Full DNS check must execute in less than 10s to avoid Icinga timeout.)
+# Note: DNS check of all domains must be <10s to avoid Icinga timeout.
 DNS_timeout = 5
 
 
 """ Data structures """
 
-class Domain:
-    def __init__(self, domain):
-        self.domain = domain
-        self.providers = []
-        self.DNS_check_result = None
-
-    def add_provider(self, provider):
-        self.providers.append(provider)
-
-    def add_providers(self, providers):
-        self.providers.extend(providers)
-
-    def set_DNS_check_result(self, DNS_check_result):
-        self.DNS_check_result = DNS_check_result
-
-
 class DomainProvider:
-    """Data structure to store where a domain was found.
+    """Abstract class to store the infos about where a domain was found.
     For inheritance only, should not be instantiated.
     Attributes:
         - domain: the domain
@@ -72,7 +63,7 @@ class DomainProvider:
         - port: listening port
         - attribute: certificate attribute ('CN', 'SAN')
     """
-    def __init__(self, domain, provider, provider_type, path, line, port, attribute):
+    def __init__(self, domain: str, provider: str, provider_type: str, path: str, line: int, port: int, attribute: str):
         self.domain = domain
         self.provider = provider
         self.type = provider_type
@@ -97,26 +88,44 @@ class DomainProvider:
                 and self.attribute == other.attribute
                )
 
+class Domain:
+    """
+    """
+    def __init__(self, domain: str):
+        self.domain = domain
+        self.providers = []
+        self.DNS_check_result = None
+
+    def add_provider(self, provider: Type[DomainProvider]):
+        self.providers.append(provider)
+
+    def add_providers(self, providers: List[Type[DomainProvider]]):
+        self.providers.extend(providers)
+
+    def set_DNS_check_result(self, DNS_check_result):
+        self.DNS_check_result = DNS_check_result
+
+
 class IncludedProvider(DomainProvider):
     """DomainProvider for domains from included_domains_file."""
-    def __init__(self, domain, path=None, line=None, port=None, attribute=None):
+    def __init__(self, domain: str, path=None, line=None, port=None, attribute=None):
         if not path:
             path = os.path.join(config_dir_path, included_domains_file)
         super().__init__(domain, 'evodomains', 'config', path, line, port, attribute)
 
 class ApacheProvider(DomainProvider):
     """DomainProvider for Apache."""
-    def __init__(self, domain, path, line, port, attribute=None):
+    def __init__(self, domain: str, path: str, line: int, port: int, attribute=None):
         super().__init__(domain, 'apache', 'config', path, line, port, attribute)
 
 class NginxProvider(DomainProvider):
     """DomainProvider for Nginx."""
-    def __init__(self, domain, path, line, port, attribute=None):
+    def __init__(self, domain: str, path: str, line: int, port: int, attribute=None):
         super().__init__(domain, 'nginx', 'config', path, line, port, attribute)
 
 class CertificateProvider(DomainProvider):
     """DomainProvider for X.509 certificates."""
-    def __init__(self, domain, provider, path, attribute):
+    def __init__(self, domain: str, provider: str, path: str, attribute: str):
         super().__init__(domain, provider, 'certificate', path, None, None, attribute)
 
 #class HaProxyProvider(DomainProvider):
@@ -126,6 +135,7 @@ class CertificateProvider(DomainProvider):
 
 
 class CheckStatus(Enum):
+    """DNS answer status"""
     OK = 1
     UNKNOWN = 2
     DNS_TIMEOUT = 3
@@ -171,7 +181,7 @@ class CustomJSONEncoder(json.JSONEncoder):
 
 
 def print_error_and_exit(s):
-    if output ==  'nrpe':
+    if output == 'nrpe':
         print('UNKNOWN - {}'.format(s), file=sys.stderr, flush=True)
         sys.exit(3)
     else:
@@ -207,9 +217,35 @@ def execute(cmd, shell=False):
     return stdout_lines, stderr_lines, proc.returncode
 
 
-def strip_comments(string):
-    """Return string with any # comment removed.""" 
+def strip_comments(string: str):
+    """Return string with any # comment removed."""
     return string.split('#')[0]
+
+
+def get_main_domain(domain: str):
+    """Return main domain without subdomain.
+    Example:
+    - input "www.example.com" will return "example.com".
+    """
+    splitted = domain.strip('.').split('.')[-2:]
+    return '.'.join(splitted)
+
+
+def get_sub_domain(domain: str):
+    """Return subdomain without main domain.
+    Example:
+    - input "dev.www.example.com" will return "dev.www".
+    """
+    splitted = domain.strip('.').split('.')[:-2]
+    return '.'.join(splitted)
+
+
+def sorted_domains(domains: List[str]):
+    """Returns the list sorted by main domain (and not sub-domain).
+    """
+    s = sorted(domains, key=get_sub_domain)
+    return sorted(s, key=get_main_domain)
+
 
 
 #def merge_dicts(*dicts):
@@ -222,7 +258,7 @@ def strip_comments(string):
 
 
 
-""" Code to deal with DNS resolution """
+""" Functions to deal with DNS resolution """
 
 
 def dig(domain):
@@ -385,15 +421,22 @@ def output_domains_json(domains):
 def output_domains_human(domains):
     """Print domains dict to stdout in human readable format.
     """
-    for dom in sorted(domains.keys()):
+    for dom in sorted_domains(domains.keys()):
         print('{}'.format(dom))
         output_providers_human(domains[dom], prefix='\t')
 
 
-def output_check_result_nrpe(domains, ok_domains, timeout_domains, not_found_domains, unexpected_domains, unknown_domains):
+def output_check_result_nrpe(domains):
     """Print DNS check results to stdout in NRPE format.
     For now, never output critical alerts.
     """
+    # Filter domains in function of check results
+    ok_domains = dict(filter(filter_ok_domains, domains.items()))
+    timeout_domains = dict(filter(filter_timeout_domains, domains.items()))
+    not_found_domains = dict(filter(filter_not_found_domains, domains.items()))
+    unexpected_domains = dict(filter(filter_unexpected_domains, domains.items()))
+    unknown_domains = dict(filter(filter_unknown_domains, domains.items()))
+
     n_ok = len(ok_domains)
     n_warnings = len(timeout_domains) + len(not_found_domains) + len(unexpected_domains)
     n_unknown = len(unknown_domains)
@@ -402,57 +445,75 @@ def output_check_result_nrpe(domains, ok_domains, timeout_domains, not_found_dom
 
     print('{} - {} UNK / 0 CRIT / {} WARN / {} OK \n'.format(msg, n_unknown, n_warnings, n_ok))
 
-    for d in unknown_domains.keys():
-        print('UNKNOWN - DNS status of {}'.format(d))
-    for d in timeout_domains.keys():
-        print('WARNING - timeout resolving {}'.format(d))
-    for d in not_found_domains.keys():
-        print('WARNING - no resolution for {}'.format(d))
-    for d in unexpected_domains.keys():
-        print('WARNING - {} resolves to unexpected IP ({})'.format(d, ' '.join(unexpected_domains[d].DNS_check_result.resolve_ips)))
+    for d in sorted_domains(unknown_domains.keys()):
+        comments = " (" + ", ".join(domains[d].DNS_check_result.comments) + ")" if domains[d].DNS_check_result.comments else ""
+        print('UNKNOWN - DNS status of {}{}'.format(d, comments))
+    for d in sorted_domains(timeout_domains.keys()):
+        comments = " (" + ", ".join(domains[d].DNS_check_result.comments) + ")" if domains[d].DNS_check_result.comments else ""
+        print('WARNING - timeout resolving {}{}'.format(d, comments))
+    for d in sorted_domains(not_found_domains.keys()):
+        comments = " (" + ", ".join(domains[d].DNS_check_result.comments) + ")" if domains[d].DNS_check_result.comments else ""
+        print('WARNING - no resolution for {}{}'.format(d, comments))
+    for d in sorted_domains(unexpected_domains.keys()):
+        comments = " (" + ", ".join(domains[d].DNS_check_result.comments) + ")" if domains[d].DNS_check_result.comments else ""
+        print('WARNING - {} resolves to unexpected IP : {}{}'.format(d, ' '.join(unexpected_domains[d].DNS_check_result.resolve_ips), comments))
 
     sys.exit(1) if n_warnings or n_unknown else sys.exit(0)
 
 
-def output_check_result_json(domains, ok_domains, timeout_domains, not_found_domains, unexpected_domains, unknown_domains):
+def output_check_result_json(domains):
     """Print result of check domains to stdout in JSON format.
     """
+    # Filter domains in function of check results
+    ok_domains = dict(filter(filter_ok_domains, domains.items()))
+    timeout_domains = dict(filter(filter_timeout_domains, domains.items()))
+    not_found_domains = dict(filter(filter_not_found_domains, domains.items()))
+    unexpected_domains = dict(filter(filter_unexpected_domains, domains.items()))
+    unknown_domains = dict(filter(filter_unknown_domains, domains.items()))
+
     output_dict = {
-        'timeout_domains': sorted(timeout_domains),
-        'not_found_domains': sorted(not_found_domains),
+        'timeout_domains': sorted_domains(timeout_domains.keys()),
+        'not_found_domains': sorted_domains(not_found_domains.keys()),
         'unexpected_domains': unexpected_domains,
         'unknown_domains': unknown_domains,
-        'ok_domains': sorted(ok_domains),
+        'ok_domains': sorted_domains(ok_domains.keys()),
         'domains': domains
     }
     print(json.dumps(output_dict, sort_keys=True, indent=4, cls=CustomJSONEncoder))
 
 
-def output_check_result_human(domains, ok_domains, timeout_domains, not_found_domains, unexpected_domains, unknown_domains):
+def output_check_result_human(domains):
     """Print result of check domains to stdout in human readable format.
     """
+    # Filter domains in function of check results
+    ok_domains = dict(filter(filter_ok_domains, domains.items()))
+    timeout_domains = dict(filter(filter_timeout_domains, domains.items()))
+    not_found_domains = dict(filter(filter_not_found_domains, domains.items()))
+    unexpected_domains = dict(filter(filter_unexpected_domains, domains.items()))
+    unknown_domains = dict(filter(filter_unknown_domains, domains.items()))
+
     if timeout_domains or not_found_domains or unexpected_domains or unknown_domains:
 
         if timeout_domains: print('\nTimeouts:')
-        for d in timeout_domains.keys():
+        for d in sorted_domains(timeout_domains.keys()):
             print('\t{}'.format(d))
             output_comments_human(domains[d], '\t\tComment: ')
             output_providers_human(domains[d], '\t\t')
 
         if not_found_domains: print('\nNo resolution:')
-        for d in not_found_domains.keys():
+        for d in sorted_domains(not_found_domains.keys()):
             print('\t{}'.format(d))
             output_comments_human(domains[d], '\t\tComment: ')
             output_providers_human(domains[d], '\t\t')
 
         if unexpected_domains: print('\nUnexpected resolved IPs:')
-        for d in unexpected_domains.keys():
-            print('\t{} -> [{}]'.format(d, ' '.join(unexpected_domains[d].DNS_check_result.resolve_ips)))
+        for d in sorted_domains(unexpected_domains.keys()):
+            print('\t{} -> [{}]'.format(d, ', '.join(unexpected_domains[d].DNS_check_result.resolve_ips)))
             output_comments_human(domains[d], '\t\tComment: ')
             output_providers_human(domains[d], '\t\t')
 
         if unknown_domains: print('\nUnknown DNS status:')
-        for d in unknown_domains.keys():
+        for d in sorted_domains(unknown_domains.keys()):
             print('\t{}'.format(d))
             output_comments_human(domains[d], '\t\tComment: ')
             output_providers_human(domains[d], '\t\t')
@@ -987,7 +1048,7 @@ def parse_arguments():
     parser.add_argument('-o', '--output', help='Output format. Values: human (default), json, nrpe')
     #parser.add_argument('-s', '--ssl-only', action='store_true', help='SSL/TLS domains only (not implemented.')
     parser.add_argument('-w', '--warning', action='store_true', help='Print warnings to stdout.')
-    parser.add_argument('-d', '--debug', action='store_true', help='Print debug to stdout (include warnings).')
+    parser.add_argument('-d', '--debug', action='store_true', help='Print debug to stdout (includes warnings).')
     args = parser.parse_args()
 
     global action, output, warning, debug #, ssl_only
@@ -1030,6 +1091,26 @@ def load_conf():
 
     ignored_domains.append('_')
 
+def filter_ok_domains(pair):
+    domain_name, domain_obj = pair
+    return domain_obj.DNS_check_result.status == CheckStatus.OK
+
+def filter_timeout_domains(pair):
+    domain_name, domain_obj = pair
+    return domain_obj.DNS_check_result.status == CheckStatus.DNS_TIMEOUT
+
+def filter_not_found_domains(pair):
+    domain_name, domain_obj = pair
+    return domain_obj.DNS_check_result.status == CheckStatus.DOMAIN_NOT_FOUND
+
+def filter_unexpected_domains(pair):
+    domain_name, domain_obj = pair
+    return domain_obj.DNS_check_result.status == CheckStatus.IP_NOT_ALLOWED
+
+def filter_unknown_domains(pair):
+    domain_name, domain_obj = pair
+    return domain_obj.DNS_check_result.status not in [CheckStatus.OK, CheckStatus.DNS_TIMEOUT, CheckStatus.DOMAIN_NOT_FOUND, CheckStatus.IP_NOT_ALLOWED]
+
 
 def main(argv):
     parse_arguments()
@@ -1042,34 +1123,18 @@ def main(argv):
             print_error_and_exit('Action \'list\' is not available for \'--output nrpe\'.')
         elif output == 'json':
             output_domains_json(domains)
-        else:  # output == 'human'
+        else:  # defaults to output == 'human'
             output_domains_human(domains)
 
     elif action == 'check-dns':
         check_domains(domains)
 
-        # Filter domains in function of check results
-        ok_domains, timeout_domains, not_found_domains, unexpected_domains, unknown_domains = {}, {}, {}, {}, {}
-        for domain_txt, domain_obj in domains.items():
-            if domain_obj.DNS_check_result.status == CheckStatus.OK:
-                ok_domains[domain_txt] = domain_obj
-            elif domain_obj.DNS_check_result.status == CheckStatus.DNS_TIMEOUT:
-                timeout_domains[domain_txt] = domain_obj
-            elif domain_obj.DNS_check_result.status == CheckStatus.DOMAIN_NOT_FOUND:
-                not_found_domains[domain_txt] = domain_obj
-            elif domain_obj.DNS_check_result.status == CheckStatus.IP_NOT_ALLOWED:
-                unexpected_domains[domain_txt] = domain_obj
-            elif domain_obj.DNS_check_result.status == CheckStatus.UNKNOWN:
-                unknown_domains[domain_txt] = domain_obj
-            else:
-                unknown_domains[domain_txt] = domain_obj
-
         if output == 'nrpe':
-            output_check_result_nrpe(domains, ok_domains, timeout_domains, not_found_domains, unexpected_domains, unknown_domains)
+            output_check_result_nrpe(domains)
         elif output == 'json':
-            output_check_result_json(domains, ok_domains, timeout_domains, not_found_domains, unexpected_domains, unknown_domains)
-        else:  # output == 'human'
-            output_check_result_human(domains, ok_domains, timeout_domains, not_found_domains, unexpected_domains, unknown_domains)
+            output_check_result_json(domains)
+        else:  # defaults to output == 'human'
+            output_check_result_human(domains)
 
 
 if __name__ == '__main__':
