@@ -85,6 +85,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: fix Add Ceph volume to fstab : missing UUID= in src
 * webapps/nextcloud: fix misplaced gid attribute
 * webapps/nextcloud: fix missing gid
+* php: drop apt_preferences(5) file for sury
 
 ### Removed
 
