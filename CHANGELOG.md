@@ -86,6 +86,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: fix misplaced gid attribute
 * webapps/nextcloud: fix missing gid
 * php: drop apt_preferences(5) file for sury
+* listupgrade: try and get rid of duplicate entries
 
 ### Removed
 
