@@ -52,8 +52,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios: rename var `nagios_nrpe_process_processes` into `nagios_nrpe_processes` and check systemd-timesyncd instead of ntpd in Debian 12
 * proftpd: in SFTP vhost, enable SSH keys login, enable ed25549 host key for Debian >= 11
 * redis: manage config template inside a block, to allow custom modifications outside
-* squid: config directory seems to have changed from /etc/squid3 to /etc/squid in Debian 8
 * spamassassin: Use spamd starting with Bookworm
+* squid: config directory seems to have changed from /etc/squid3 to /etc/squid in Debian 8
 * unbound: Add config file to allow configuration reload on Debian 11 and lower
 * unbound: Add munin configuration & setup plugin
 * unbound: Big cleanup
@@ -74,11 +74,13 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-base: fix hardware.yml (wrong repo, missing update cache)
 * evolinux-base: start to install linux-image-cloud-amd64 with Buster
 * fail2ban: fix template marker
+* listupgrade: try and get rid of duplicate entries
 * nagios: fix default file to monitor for check_clamav_db
 * nginx: fix mistake between "check_mode: no" and "when: not ansible_check_mode" (fail in check mode)
 * nginx: keep indentation
 * nginx: take care of « already defined » and « not yet defined » server status suffix in check mode
 * php: Bullseye/Sury > Honor the php_version asked in the pub.evolix.org repository
+* php: drop apt_preferences(5) file for sury
 * proftpd: set missing default listen IP for SFTP
 * ssl: no not execute haproxy tasks and reload if haproxy is disabled
 * unbound: Add a apt cache validity to enforce an apt update if needed
@@ -86,8 +88,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: fix Add Ceph volume to fstab : missing UUID= in src
 * webapps/nextcloud: fix misplaced gid attribute
 * webapps/nextcloud: fix missing gid
-* php: drop apt_preferences(5) file for sury
-* listupgrade: try and get rid of duplicate entries
 
 ### Removed
 
