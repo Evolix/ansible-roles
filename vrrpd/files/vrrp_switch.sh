@@ -62,7 +62,7 @@ case "${STATE}" in
     "master" )
         # Choose a MAC address
         MAC_SUFFIX=$(printf %02x "${VRID}")
-        MAC="00:00:5e:00:01:${MAC_SUFFIX})"
+        MAC="00:00:5e:00:01:${MAC_SUFFIX}"
         # Create macvlan interface
         ip link add link "${INTERFACE_NAME}" address "${MAC}" "${VIRTUAL_INTERFACE_NAME}" type macvlan
         # Add IP to interface
