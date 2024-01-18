@@ -51,6 +51,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios: cleaning nrpe check template
 * nagios: rename var `nagios_nrpe_process_processes` into `nagios_nrpe_processes` and check systemd-timesyncd instead of ntpd in Debian 12
 * proftpd: in SFTP vhost, enable SSH keys login, enable ed25549 host key for Debian >= 11
+* redis: manage config template inside a block, to allow custom modifications outside
 * squid: config directory seems to have changed from /etc/squid3 to /etc/squid in Debian 8
 * spamassassin: Use spamd starting with Bookworm
 * unbound: Add config file to allow configuration reload on Debian 11 and lower
