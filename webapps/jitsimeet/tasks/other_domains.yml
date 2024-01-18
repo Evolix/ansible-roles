@@ -10,6 +10,7 @@
     mode: "{{ item.mode }}"
   loop:
     - { src: 'meet/config.js.j2', dest: "/etc/jitsi/meet/{{ domain }}-config.js", owner: "root", group: "root", mode: "0644" }
+    - { src: 'meet/interface_config.js.j2', dest: "/etc/jitsi/meet/{{ domain }}-interface_config.js", owner: "root", group: "root", mode: "0644" }
 
 - name: Check if SSL certificate is present and register result
   stat:
@@ -20,7 +21,7 @@
   block:
   - name: Template vhost without SSL for successfull LE challengce
     template: 
-      src: "nginx/vhost.conf.j2"
+      src: "nginx/other.vhost.conf.j2"
       dest: "/etc/nginx/sites-available/{{ domain }}.conf"
   - name: Enable temporary nginx vhost
     file:
@@ -42,7 +43,7 @@
 
 - name: (Re)check if SSL certificate is present and register result
   stat:
-    path: "/etc/letsencrypt/live/{{ domain |first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ domain }}/fullchain.pem"
   register: ssl
 
 - name: (Re)template conf file for nginx vhost with SSL
@@ -50,14 +51,13 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   loop:
-    - { src: 'nginx/vhost.conf.j2', dest: "/etc/nginx/sites-available/{{ domain }}.conf" }
-    - { src: 'nginx/multiplex.conf.j2', dest: '/etc/nginx/modules-available/multiplex.conf' }
+    - { src: 'nginx/other.vhost.conf.j2', dest: "/etc/nginx/sites-available/{{ domain }}.conf" }
 
-- name: Enable multiplex module conf
-  file:
-    src: '/etc/nginx/modules-available/multiplex.conf'
-    dest: '/etc/nginx/modules-enabled/multiplex.conf'
-    state: link
+- name: Insert block in multiplex.conf
+  lineinfile:
+    path: /etc/nginx/modules-enabled/multiplex.conf
+    insertafter: "web_backend;"
+    line: "{{ domain }} web_backend;"
 
 - name: Enable nginx vhost
   file:
