@@ -74,7 +74,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-base: fix hardware.yml (wrong repo, missing update cache)
 * evolinux-base: start to install linux-image-cloud-amd64 with Buster
 * fail2ban: fix template marker
-* listupgrade: try and get rid of duplicate entries
 * nagios: fix default file to monitor for check_clamav_db
 * nginx: fix mistake between "check_mode: no" and "when: not ansible_check_mode" (fail in check mode)
 * nginx: keep indentation

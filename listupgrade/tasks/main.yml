@@ -45,19 +45,6 @@
     owner: root
     group: root
 
-- name: Disable listupgrade cron with an extra ending space
-  ansible.builtin.cron:
-    name: "listupgrade.sh"
-    cron_file: "listupgrade"
-    user: root
-    job: "/usr/share/scripts/listupgrade.sh --cron "
-    minute: "{{ listupgrade_cron_minute }}"
-    hour: "{{ listupgrade_cron_hour }}"
-    weekday: "{{ listupgrade_cron_weekday }}"
-    day: "{{ listupgrade_cron_day }}"
-    month: "{{ listupgrade_cron_month }}"
-    state: "absent"
-
 - name: Enable listupgrade cron
   ansible.builtin.cron:
     name: "listupgrade.sh"
