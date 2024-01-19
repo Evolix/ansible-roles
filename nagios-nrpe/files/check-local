@@ -1,60 +1,73 @@
 #!/usr/bin/env bash
 
+#set -x
+
 CHECK_BIN=/usr/lib/nagios/plugins/check_nrpe
 
 server_address="127.0.0.1"
 
-#check_lookup="$1"
-#
-## Array of commands found in the conf (first-found order)
-#found_commands=()
-#
-## Queue of conf files and directories included in Nagios
-#includes_fifo=("/etc/nagios/nrpe.cfg")
-#
-## Debian major version number
-#debian_major_version=$(cut -d "." -f 1 < /etc/debian_version)
-#
-#function grep_conf {
-#    grep -E -R "^\s*(include(_dir)?=.+|command\[check_$1)" $2
-#}
-#
-## Print check commands, in the same order as they are declared in the conf,
-## with respect to the include and include_dir directives.
-#for l in $(grep_conf "${check_lookup}" /etc/nagios/nrpe.cfg); do
-#    if [[ $l =~ "check_${check_lookup}" ]]; then
-#        echo $l
-#    elif [[ $l =~ 'include=' ]]; then
-#        conf_file=$(echo $l | cut -d= -f2)
-#        grep_conf "${check_lookup}" "${conf_file}"
-#    elif [[ $l =~ 'include_dir=' ]]; then
-#        true
-#        # todo if Debian <= 9 then find else find | sort
-#    fi
-#done
+check_lookup="$1"
+
+debian_major_version=$(cut -d "." -f 1 < /etc/debian_version)
+
+function grep_conf {
+    grep -E -R --no-filename "^\s*(include(_dir)?=.+|command\[check_$1)" $2 | grep -v -E '^[[:blank:]]*#'
+}
+
+# Print check commands, in the same order as they are declared in the conf,
+# with respect to the include and include_dir directives.
+
+function get_config_dir_checks {
+    # $1: check name (load, disk1…)
+    # $2: nrpe conf dir
+    conf_dir=$(echo "${line}" | cut -d= -f2)
+    if [ $debian_major_version -ge 10 ]; then
+        # From Deb10, NRPE use scandir() with alphasort() function
+        sort_command="sort"
+    else
+        # Before Deb10, NRPE use loaddir(), like find utility
+        sort_command="cat -"
+    fi
+    # Add conf files in dir to be processed recursively
+    for file in $(find "$2" -maxdepth 1 -name "*.cfg" | "${sort_command}"); do
+        if [ -f "${file}" ]; then
+            get_config_file_checks "$1" "${file}"
+        elif [ -d "${file}" ]; then
+            get_config_dir_checks "$1" "${file}"
+        fi
+    done
+}
+
+function get_config_file_checks {
+    # $1: check name (load, disk1…)
+    # $2: nrpe conf file (.cfg)
+    conf_lines=$(grep_conf $1 $2)
+    while read line; do
+        if [[ "${line}" =~ .*"check_$1".* ]]; then
+            echo "${line}" | cut -d'=' -f2-
+
+        elif [[ "${line}" =~ .*'include='.* ]]; then
+            conf_file=$(echo "${line}" | cut -d= -f2)
+            get_config_file_checks "$1" "${conf_file}"
+
+        elif [[ "${line}" =~ .*'include_dir='.* ]]; then
+            conf_dir=$(echo "${line}" | cut -d= -f2)
+            get_config_dir_checks $1 "${conf_dir}"
+        fi
+
+    done <<< "${conf_lines}"
+}
 
 
 
-if ! test -f "${CHECK_BIN}"; then
+if [ ! -f "${CHECK_BIN}" ]; then
     echo "${CHECK_BIN} is missing, please install nagios-nrpe-plugin package."
     exit 1
 fi
 
-for file in /etc/nagios/{nrpe.cfg,nrpe_local.cfg,nrpe.d/evolix.cfg}; do
-    if [ -r ${file} ]; then
-        command_search=$(grep "\[check_$1\]" "${file}" | grep -v '^[[:blank:]]*#' | tail -n1 | cut -d'=' -f2-)
-    fi
-    if [ -n "${command_search}" ]; then
-        command="${command_search}"
-    fi
-
-    if [ -r ${file} ]; then
-        server_address_search=$(grep "server_address" "${file}" | grep -v '^[[:blank:]]*#' | cut -d'=' -f2)
-    fi
-    if [ -n "${server_address_search}" ]; then
-        server_address="${server_address_search}"
-    fi
-done
+commands=$(get_config_file_checks $1 /etc/nagios/nrpe.cfg)
+echo "$commands"
+command=$(echo "${commands}" | tail -n1)
 
 if [ -n "${command}" ]; then
     echo "Command:"
