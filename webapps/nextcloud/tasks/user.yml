@@ -26,6 +26,11 @@
   tags:
   - nextcloud
 
+- name: Set mode for home directory
+  ansible.builtin.file:
+    path: "{{ nextcloud_home }}"
+    mode: "0701"
+
 - name: Create top-level directories
   ansible.builtin.file:
     dest: "{{ item }}"

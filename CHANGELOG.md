@@ -62,6 +62,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * unbound: Use root hints provided by debian package dns-root-data instead of downloading them
 * vrrpd: variable to force update the switch script (default: false)
 * webapps/nextcloud: Add Ceph volume to fstab
+* webapps/nextcloud: Set home directory's mode
 
 ### Fixed
 
