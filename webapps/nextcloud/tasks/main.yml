@@ -48,6 +48,7 @@
 - ansible.builtin.include: user.yml
 
 - ansible.builtin.include: archive.yml
+  when: nextcloud_get_archive
 
 - ansible.builtin.include: apache-vhost.yml
 
