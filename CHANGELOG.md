@@ -89,6 +89,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: fix Add Ceph volume to fstab : missing UUID= in src
 * webapps/nextcloud: fix misplaced gid attribute
 * webapps/nextcloud: fix missing gid
+* minifirewall: ports 25, 53, 443, 993, 995 not opened publicly by default anymore, ports 20, 21, 110, 143 not opened semi-publicly by default anymore.
 
 ### Removed
 
