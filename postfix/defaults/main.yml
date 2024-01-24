@@ -1,5 +1,7 @@
 ---
-postfix_hostname: "{{ ansible_fqdn }}"
+postfix_hostname: "{{ evolinux_hostname }}.{{ evolinux_domain }}"
 postfix_force_main_cf: False
 postfix_packmail: False
-postfix_slow_transport_include: "{{ postfix_packmail }}"
+postfix_slow_transport_include: False
+postfix_purge_exim: True
+

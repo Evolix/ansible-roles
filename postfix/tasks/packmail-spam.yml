@@ -1,8 +1,6 @@
 ---
-- name: "mount /usr in rw"
-  ansible.builtin.command:
-    cmd: 'mount -o remount,rw /usr'
-  changed_when: False
+- ansible.builtin.include_role:
+    name: evolix/remount-usr
   tags: postfix
 
 - name: copy spam.sh script

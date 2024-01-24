@@ -159,12 +159,10 @@ evolinux_root_disable_ssh: False
 # postfix
 
 evolinux_postfix_include: True
-
-evolinux_postfix_packages: True
+evolinux_mail_aliases_include: True
 evolinux_postfix_users_alias_root: True
 evolinux_postfix_mailer_alias_root: True
 evolinux_postfix_root_alias: True
-evolinux_postfix_purge_exim: True
 
 # logs
 
