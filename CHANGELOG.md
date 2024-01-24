@@ -29,6 +29,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: Added var nextcloud_user_uid to enforce uid for nextcloud user
 * webapps/nextcloud: Set ownership and permissions of data directory
 * webapps/nextcloud: Add condition for archive tasks
+* fail2ban: add script unban_ip
 
 ### Changed
 

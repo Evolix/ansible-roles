@@ -111,3 +111,12 @@
     - ansible_distribution_release == "stretch" or ansible_distribution_release == "buster"
   tags:
     - fail2ban
+
+- name: Script unban_ip is installed
+  ansible.builtin.copy:
+    src: unban_ip.sh
+    dst: /usr/local/sbin/unban_ip
+    mode: '0700'
+  tags:
+    - fail2ban
+
