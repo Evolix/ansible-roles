@@ -127,6 +127,11 @@
     name: evolix/nagios-nrpe
   when: evolinux_nagios_nrpe_include | bool
 
+- name: check_free_space
+  ansible.builtin.include_role:
+    name: evolix/check_free_space
+  when: evolinux_check_free_space_include | bool
+
 - name: Autosysadmin
   ansible.builtin.include_role:
     name: 'evolix/autosysadmin'

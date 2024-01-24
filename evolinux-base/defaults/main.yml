@@ -211,6 +211,10 @@ evolinux_munin_include: True
 
 evolinux_nagios_nrpe_include: True
 
+# check_free_space
+
+evolinux_check_free_space_include: True
+
 # fail2ban
 
 evolinux_fail2ban_include: False
