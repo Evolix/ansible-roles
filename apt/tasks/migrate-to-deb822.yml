@@ -31,6 +31,11 @@
   tags:
     - apt
 
+- name: Is system.sources present?
+  ansible.builtin.stat:
+    path: /etc/apt/sources.list.d/system.sources
+  register: _system_sources
+
 - name: Add signed-by when relevant for bookworm
   ansible.builtin.lineinfile:
     dest: /etc/apt/sources.list.d/system.sources
@@ -39,6 +44,12 @@
     state: present
   tags:
     - apt
+  when: _system_sources.stat.exists or not ansible_check_mode
+
+- name: Is security.sources present?
+  ansible.builtin.stat:
+    path: /etc/apt/sources.list.d/security.sources
+  register: _security_sources
 
 - name: Add signed-by when relevant for bookworm-security
   ansible.builtin.lineinfile:
@@ -48,3 +59,4 @@
     state: present
   tags:
     - apt
+  when: _security_sources.stat.exists or not ansible_check_mode
