@@ -153,6 +153,7 @@ server {
 
   # xmpp websockets
   location = /xmpp-websocket {
+      add_header 'Access-Control-Allow-Origin' '*';
       proxy_pass http://$prosody_node/xmpp-websocket?prefix=$prefix&$args;
       proxy_http_version 1.1;
       proxy_set_header Upgrade $http_upgrade;
