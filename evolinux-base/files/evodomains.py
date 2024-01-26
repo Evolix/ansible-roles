@@ -146,7 +146,7 @@ class CheckStatus(Enum):
 class DNSCheckResult:
     def __init__(self):
         self.status = CheckStatus.UNKNOWN
-        self.resolve_ips = []
+        self.unexpected_ips = {}
         self.comments = []
 
     def set_status(self, status):
@@ -154,8 +154,11 @@ class DNSCheckResult:
             raise ValueError('Unknown DNS status {}'.format(status))
         self.status = status
 
-    def set_resolve_ips(self, ips):
-        self.resolve_ips = ips
+    def add_unexpected_ip(self, ip, reverse=None):
+        if reverse is not None:
+            self.unexpected_ips[ip] = reverse
+        else:
+            self.unexpected_ips[ip] = ip
 
     def add_comment(self, comment):
         self.comments.append(comment)
@@ -273,7 +276,7 @@ class DNSResolutionThread(threading.Thread):
     def __init__(self, domain):
         threading.Thread.__init__(self, daemon=True)
         self.domain = domain
-        self.ips = []
+        self.ips = {}
 
     def run(self):
         """Resolve domain with dig."""
@@ -293,7 +296,18 @@ class DNSResolutionThread(threading.Thread):
                 if match:
                     ip = match.group(1)
                     if ip not in self.ips:
-                        self.ips.append(ip)
+                        self.ips[ip] = ''
+
+            # Reverse
+            for ip in self.ips:
+                dig_results = dig("-x " + ip)
+                for line in dig_results:
+                    match = re.search('^([0-9a-z\.-]+)$', line)
+                    if match:
+                        reverse = match.group(1).rstrip('.')
+                        self.ips[ip] = reverse
+                if not self.ips[ip]:
+                    self.ips[ip] = ip
 
         except Exception as e:
             print_warning(e)
@@ -409,7 +423,7 @@ def output_comments_human(domain, prefix='', suffix=''):
     """Print providers of domain object in human readable format.
     """
     for comment in domain.DNS_check_result.comments:
-        print('{}{}{}'.format(prefix, comment, suffix))
+        print('{}{}{}'.format(prefix, comment + ".", suffix))
 
 
 def output_domains_json(domains):
@@ -446,17 +460,18 @@ def output_check_result_nrpe(domains):
     print('{} - {} UNK / 0 CRIT / {} WARN / {} OK \n'.format(msg, n_unknown, n_warnings, n_ok))
 
     for d in sorted_domains(unknown_domains.keys()):
-        comments = " (" + ", ".join(domains[d].DNS_check_result.comments) + ")" if domains[d].DNS_check_result.comments else ""
+        comments = " (" + ", ".join(domains[d].DNS_check_result.comments).lower() + ")" if domains[d].DNS_check_result.comments else ""
         print('UNKNOWN - DNS status of {}{}'.format(d, comments))
     for d in sorted_domains(timeout_domains.keys()):
-        comments = " (" + ", ".join(domains[d].DNS_check_result.comments) + ")" if domains[d].DNS_check_result.comments else ""
+        comments = " (" + ", ".join(domains[d].DNS_check_result.comments).lower() + ")" if domains[d].DNS_check_result.comments else ""
         print('WARNING - timeout resolving {}{}'.format(d, comments))
     for d in sorted_domains(not_found_domains.keys()):
-        comments = " (" + ", ".join(domains[d].DNS_check_result.comments) + ")" if domains[d].DNS_check_result.comments else ""
+        comments = " (" + ", ".join(domains[d].DNS_check_result.comments).lower() + ")" if domains[d].DNS_check_result.comments else ""
         print('WARNING - no resolution for {}{}'.format(d, comments))
     for d in sorted_domains(unexpected_domains.keys()):
-        comments = " (" + ", ".join(domains[d].DNS_check_result.comments) + ")" if domains[d].DNS_check_result.comments else ""
-        print('WARNING - {} resolves to unexpected IP : {}{}'.format(d, ' '.join(unexpected_domains[d].DNS_check_result.resolve_ips), comments))
+        ips = ", ".join(unexpected_domains[d].DNS_check_result.unexpected_ips.values())
+        comments = " (" + ", ".join(domains[d].DNS_check_result.comments).lower() + ")" if domains[d].DNS_check_result.comments else ""
+        print('WARNING - {} resolves to unexpected server(s): {}{}'.format(d, ips, comments))
 
     sys.exit(1) if n_warnings or n_unknown else sys.exit(0)
 
@@ -497,25 +512,25 @@ def output_check_result_human(domains):
         if timeout_domains: print('\nTimeouts:')
         for d in sorted_domains(timeout_domains.keys()):
             print('\t{}'.format(d))
-            output_comments_human(domains[d], '\t\tComment: ')
+            output_comments_human(domains[d], '\t\tComment(s): ')
             output_providers_human(domains[d], '\t\t')
 
         if not_found_domains: print('\nNo resolution:')
         for d in sorted_domains(not_found_domains.keys()):
             print('\t{}'.format(d))
-            output_comments_human(domains[d], '\t\tComment: ')
+            output_comments_human(domains[d], '\t\tComment(s): ')
             output_providers_human(domains[d], '\t\t')
 
         if unexpected_domains: print('\nUnexpected resolved IPs:')
         for d in sorted_domains(unexpected_domains.keys()):
-            print('\t{} -> [{}]'.format(d, ', '.join(unexpected_domains[d].DNS_check_result.resolve_ips)))
-            output_comments_human(domains[d], '\t\tComment: ')
+            print('\t{} -> [{}]'.format(d, ', '.join(unexpected_domains[d].DNS_check_result.unexpected_ips.values())))
+            output_comments_human(domains[d], '\t\tComment(s): ')
             output_providers_human(domains[d], '\t\t')
 
         if unknown_domains: print('\nUnknown DNS status:')
         for d in sorted_domains(unknown_domains.keys()):
             print('\t{}'.format(d))
-            output_comments_human(domains[d], '\t\tComment: ')
+            output_comments_human(domains[d], '\t\tComment(s): ')
             output_providers_human(domains[d], '\t\t')
 
         sys.exit(1)
@@ -998,10 +1013,6 @@ def check_domains(domains):
     """Check resolution of domains and save it
     in a DNSCheckResult object in Domain attribute DNS_check_result.
     Returns: nothing
-    #- timeout_domains: list of domains which exceeded timeout limit (see 'timeout' variable).
-    #- none_domains: list of domains that do not resolve.
-    #- outside_ips: dict of domains (keys) that resolve to unexpected IPs (values).
-    #- ok_domains: list of domains that resolve to allowed IPs.
     """
     jobs = []
     for domain_txt, domain_obj in domains.items():
@@ -1016,25 +1027,21 @@ def check_domains(domains):
         result = DNSCheckResult()
 
         if '*' in j.domain.domain:
-            result.add_comment("Resolution checked for subdomain www. ({}).".format(j.domain.domain))
+            result.add_comment("Resolution checked for subdomain www".format(j.domain.domain))
+
+        for ip in j.ips:
+            if ip not in allowed_ips:
+                result.add_unexpected_ip(ip, j.ips[ip])
 
         if j.domain.domain in ignored_domains:
             result.set_status(CheckStatus.OK)
-            result.add_comment("Domain in ignored domains list.")
-            if j.ips:
-                result.set_resolve_ips(j.ips)
+            result.add_comment("Domain in ignored domains list")
         elif j.is_alive():
             result.set_status(CheckStatus.DNS_TIMEOUT)
         elif not j.ips:
             result.set_status(CheckStatus.DOMAIN_NOT_FOUND)
         else:
-            result.set_resolve_ips(j.ips)
-            is_allowed = True
-            for ip in j.ips:
-                if ip not in allowed_ips:
-                    is_allowed = False
-                    break
-            if not is_allowed:
+            if result.unexpected_ips:
                 result.set_status(CheckStatus.IP_NOT_ALLOWED)
             else:
                 result.set_status(CheckStatus.OK)
