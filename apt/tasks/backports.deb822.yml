@@ -10,16 +10,6 @@
   tags:
     - apt
 
-- name: Backports configuration
-  ansible.builtin.copy:
-    src: '{{ ansible_distribution_release }}_backports_preferences'
-    dest: /etc/apt/preferences.d/0-backports-defaults
-    force: true
-    mode: "0640"
-  register: apt_backports_config
-  tags:
-    - apt
-
 - name: Apt update
   ansible.builtin.apt:
     update_cache: yes
