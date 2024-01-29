@@ -37,6 +37,7 @@
     - { key: 'user_attrs', value: 'homeDirectory=home' }
     - { key: 'user_filter', value: '(&(isActive=TRUE)(uid=%u))' }
     - { key: 'pass_attrs', value: 'uid=user,userPassword=password' }
+    - { key: 'iterate_filter', value: '(&(isActive=TRUE))' }
   when: ldap_suffix is defined
   notify: reload dovecot
   tags:
