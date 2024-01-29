@@ -32,4 +32,4 @@
     update_cache: yes
   tags:
     - apt
-  when: apt_backports_list is changed or apt_backports_config is changed
+  when: apt_backports_list is changed

@@ -13,6 +13,6 @@
 - name: Apt update
   ansible.builtin.apt:
     update_cache: yes
-  when: apt_backports_sources is changed or apt_backports_config is changed
+  when: apt_backports_sources is changed
   tags:
     - apt
