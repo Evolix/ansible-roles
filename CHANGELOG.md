@@ -96,6 +96,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * minifirewall: ports 25, 53, 443, 993, 995 not opened publicly by default anymore, ports 20, 21, 110, 143 not opened semi-publicly by default anymore.
 * dovecot: add missing LDAP conf iterate_filter to exclude disabled accounts in users list (caused « User no longer exists » errors in commands listing users like « doveadm user -u '*' » or « doveadm expunge -u "*" mailbox INBOX savedbefore 7d »).
 * dovecot: fix missing default mails
+* webapps/roundcube & evoadminmail: make roles more idempotent (were failing when played twice)
 
 ### Removed
 

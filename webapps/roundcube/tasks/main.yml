@@ -99,6 +99,7 @@
     src: /etc/apache2/sites-available/roundcube.conf
     dest: /etc/apache2/sites-enabled/roundcube.conf
     state: link
+    force: true
   notify: reload apache2
   when: roundcube_webserver == "apache"
   tags:
