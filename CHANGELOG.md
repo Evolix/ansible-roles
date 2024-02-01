@@ -97,6 +97,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * dovecot: add missing LDAP conf iterate_filter to exclude disabled accounts in users list (caused « User no longer exists » errors in commands listing users like « doveadm user -u '*' » or « doveadm expunge -u "*" mailbox INBOX savedbefore 7d »).
 * dovecot: fix missing default mails
 * webapps/roundcube & evoadminmail: make roles more idempotent (were failing when played twice)
+* roundcube: set default SMTP port to 25 instead of 587, which failed because of missing SSL conf (local connexion does not need SSL)
 
 ### Removed
 

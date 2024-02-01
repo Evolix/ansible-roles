@@ -58,12 +58,21 @@
   tags:
     - roundcube
 
-- name: configure roudcube imap port
+- name: configure roundcube imap port
   ansible.builtin.lineinfile:
     dest: /etc/roundcube/config.inc.php
     regexp: "\\$config\\['default_port'\\]"
     insertafter: "\\$config\\['default_host'\\]"
     line: "$config['default_port'] = 1143;"
+  tags:
+    - roundcube
+
+- name: configure roundcube smtp port
+  ansible.builtin.lineinfile:
+    dest: /etc/roundcube/config.inc.php
+    regexp: "\\$config\\['smtp_port'\\]"
+    insertafter: "\\$config\\['smtp_port'\\]"
+    line: "$config['smtp_port'] = 25;"
   tags:
     - roundcube
 
