@@ -67,7 +67,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * vrrpd: variable to force update the switch script (default: false)
 * webapps/nextcloud: Add Ceph volume to fstab
 * webapps/nextcloud: Set home directory's mode
-* userlogrotate: Use user's primary group when user's name is not an existing group
 
 ### Fixed
 

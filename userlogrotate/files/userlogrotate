@@ -73,9 +73,6 @@ for path in ${SYSTEM_LOGS_SEARCH_PATHS[@]}; do
         for file in ${log_paths}; do
             user="$(user_for "${file}")"
             group="$(group_for "${file}")"
-            if ! getent group "${user}" > /dev/null 2> /dev/null; then
-                group="$(id -gn "${user}")"
-            fi
             rotate "${file}" "${group}":"${user}"
             delete_old "$(dirname "${file}")"
         done
@@ -88,9 +85,6 @@ for path in ${APPLICATIVE_LOGS_SEARCH_PATHS[@]}; do
         for file in ${log_paths}; do
             user="$(user_for "${file}")"
             group="$(group_for "${file}")"
-            if ! getent group "${user}" > /dev/null 2> /dev/null; then
-                group="$(id -gn "${user}")"
-            fi
             rotate "${file}" "${group}":"${user}"
             delete_old "$(dirname "${file}")"
         done
