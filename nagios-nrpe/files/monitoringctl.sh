@@ -12,31 +12,39 @@ monitoringctl gives some control over NRPE checks and alerts.
 
 Usage: monitoringctl [OPTIONS] ACTION ARGUMENTS
 
-OPTIONS:
+GENERAL OPTIONS:
 
-    -h, --help                  Print this message and exit.
-    -v, --verbose               Print more informations.
-    -f, --for DURATION          Specify disable-alerts duration (default: 1h).
+    -h, --help                         Print this message and exit.
+    -v, --verbose                      Print more informations.
 
 ACTIONS:
 
-    check CHECK_NAME
+    check [--bypass-nrpe] CHECK_NAME
 
-        Ask CHECK_NAME status to NRPE as an HTTP request (on 127.0.0.1:5666).
-        Also show command that NRPE has supposedly run.
+        Ask CHECK_NAME status to NRPE as an HTTP request.
+        Indicates which command NRPE has supposedly run (from its configuration).
+
+        Options:
+
+            -b, --bypass-nrpe          Execute directly command from NRPE configuration,
+                                       without requesting to NRPE.
 
     alerts-status
 
         Print :
-        - Whether alerts are enabled or not (silenced).
+        - Wether alerts are enabled or not (silenced).
         - If alerts are disabled (silenced):
             - Comment.
             - Time left before automatic re-enable.
 
-    disable-alerts [--for DURATION] 'COMMENT'
+    disable-alerts [--duration DURATION] 'COMMENT'
 
         Disable (silence) all alerts (only global for now) for DURATION and write COMMENT into the log.
         Checks output is still printed, so alerts history won't be lost.
+
+        Options:
+
+            -d, --duration DURATION    Specify disable-alerts duration (default: 1h).
 
     enable-alerts 'COMMENT'
 
@@ -66,11 +74,21 @@ function usage_error {
     exit 1
 }
 
+function now {
+    date --iso-8601=seconds
+}
 
-### CHECK ACTION ##########################
+function log {
+    # $1: message
+    echo "$(now) - $1" >> "${log_path}"
+}
 
-# Print NRPE configuration without comments and in the same order
-# than Nagios (taking account that order changes from Deb10)
+
+### FUNCTIONS FOR CONFIGURATION READING ##########################
+
+# Print NRPE configuration, with includes, without comments
+# and in the same order than NRPE does (taking account that
+# order changes from Deb10)
 function get_conf_from_file {
     # $1: NRPE conf file (.cfg)
     if [ ! -f "$1" ]; then return; fi
@@ -89,6 +107,9 @@ function get_conf_from_file {
     done <<< "${conf_lines}"
 }
 
+# Print NRPE configuration, with includes, without comments
+# and in the same order than NRPE does (taking account that
+# order changes from Deb10)
 function get_conf_from_dir {
     # $1: NRPE conf dir
     if [ ! -d "$1" ]; then return; fi
@@ -111,67 +132,29 @@ function get_conf_from_dir {
     done
 }
 
-
-function grep_conf {
-    # $1: check name (load, disk1…)
-    # $2: nrpe conf file (.cfg)
-    grep -E -R --no-filename "^\s*(include(_dir)?=.+|command\[check_$1\])" "$2" | grep -v -E '^[[:blank:]]*#'
+# Print the checks that are configured in NRPE
+function get_checks_list {
+    echo "${conf_lines}" | grep -E "command\[check_.*\]=" | awk -F"[\\\[\\\]=]" '{sub("check_", "", $2); print $2}' | sort | uniq
 }
 
-# Print check commands, in the same order as they are declared in the conf,
-# with respect to the include and include_dir directives, which are
-# explored recursively.
-function get_config_file_checks {
-    # $1: check name (load, disk1…)
-    # $2: nrpe conf file (.cfg)
-    conf_lines=$(grep_conf "$1" "$2")
-    while read -r line; do
-        if [[ "${line}" =~ .*"check_$1".* ]]; then
-            echo "${line}" | cut -d'=' -f2-
-
-        elif [[ "${line}" =~ .*'include='.* ]]; then
-            conf_file=$(echo "${line}" | cut -d= -f2)
-            get_config_file_checks "$1" "${conf_file}"
-
-        elif [[ "${line}" =~ .*'include_dir='.* ]]; then
-            conf_dir=$(echo "${line}" | cut -d= -f2)
-            get_config_dir_checks "$1" "${conf_dir}"
-        fi
-
-    done <<< "${conf_lines}"
+# Print the commands defined for check $1 in NRPE configuration
+function get_check_commands {
+    # $1: check name
+    echo "$conf_lines" | grep -E "command\[check_$1\]" | cut -d'=' -f2-
 }
 
-# Same as get_config_file_checks, but for a recursive search in a directory.
-function get_config_dir_checks {
-    # $1: check name (load, disk1…)
-    # $2: nrpe conf dir
-    if [ "${debian_major_version}" -ge 10 ]; then
-        # From Deb10, NRPE use scandir() with alphasort() function
-        sort_command="sort"
-    else
-        # Before Deb10, NRPE use loaddir(), like find utility
-        sort_command="cat -"
-    fi
-    # Add conf files in dir to be processed recursively
-    for file in $(find "$2" -maxdepth 1 -name "*.cfg" | ${sort_command}); do
-        if [ -f "${file}" ]; then
-            get_config_file_checks "$1" "${file}"
-        elif [ -d "${file}" ]; then
-            get_config_dir_checks "$1" "${file}"
-        fi
-    done
-}
+
+### CHECK ACTION ##########################
 
 function check {
+    # $1: check name
+
     check_nrpe_bin=/usr/lib/nagios/plugins/check_nrpe
-    debian_major_version=$(cut -d "." -f 1 < /etc/debian_version)
 
     if [ ! -f "${check_nrpe_bin}" ]; then
         >&2 echo "${check_nrpe_bin} is missing, please install nagios-nrpe-plugin package."
         exit 1
     fi
-
-    conf_lines=$(get_conf_from_file "${conf_path}")
 
     server_address=$(echo "$conf_lines" | grep "server_address"  | cut  -d'=' -f2)
     if [ -z "${server_address}" ]; then server_address="127.0.0.1"; fi
@@ -179,26 +162,31 @@ function check {
     server_port=$(echo "$conf_lines" | grep "server_port"  | cut  -d'='  -f2)
     if [ -z "${server_port}" ]; then server_port="5666"; fi
 
-    found_commands=$(echo "$conf_lines" | grep -E "command\[check_$1\]" | cut -d'=' -f2-)
+    check_commands=$(get_check_commands "$1")
 
-    if [ -n "${found_commands}" ]; then
-
+    if [ -n "${check_commands}" ]; then
         if [ "${verbose}" == "True" ]; then
             echo "Available commands (in config order, the last one overwrites the others):"
-            echo "$found_commands"
+            echo "$check_commands"
         fi
 
-        nrpe_command=$(echo "${found_commands}" | tail -n1)
+        check_command=$(echo "${check_commands}" | tail -n1)
 
         echo "Command used by NRPE:"
-        echo "    ${nrpe_command}"
-
+        echo "    ${check_command}"
     else
-        >&2 echo "No command found in NRPE configuration for this check:"
-        >&2 echo "    $1"
+        >&2 echo "Warning: no command found in NRPE configuration for check '${1}'."
+        if [ "${bypass_nrpe}" = "True" ]; then
+            >&2 echo "Aborted."
+            exit 1
+        fi
     fi
 
-    request_command="${check_nrpe_bin} -H ${server_address} -p ${server_port} -c check_$1 2&>1"
+    if [ "${bypass_nrpe}" = "False" ]; then
+        request_command="${check_nrpe_bin} -H ${server_address} -p ${server_port} -c check_$1 2&>1"
+    else
+        request_command="sudo -u nagios -- ${check_command}"
+    fi
 
     if [ "${verbose}" == "True" ]; then
         echo "Executing:"
@@ -208,14 +196,18 @@ function check {
     check_output=$(${request_command})
     rc=$?
 
-    echo "NRPE service output (on ${server_address}:5666):"
+    if [ "${bypass_nrpe}" = "False" ]; then
+        echo "NRPE service output (on ${server_address}:${server_port}):"
+    else
+        echo "Direct check output (bypassing NRPE):"
+    fi
     echo "${check_output}"
 
     exit "${rc}"
 }
 
 
-### (EN|DIS)ABLE-ALERT ACTION ##########################
+### (EN|DIS)ABLE-ALERTS ACTIONS ##########################
 
 function filter_duration {
     # Format (in brief): XdYhZm
@@ -229,10 +221,27 @@ function filter_duration {
     fi
 }
 
+# Check that NRPE commands are wrapped by alerts_wrapper script
+function is_nrpe_wrapped {
+    for check in $(get_checks_list); do
+        command=$(get_check_commands "${check}" | tail -n1)
+        echo "${command}" | grep --quiet --no-messages alerts_wrapper
+        rc=$?
+        if [ "${rc}" -ne 0 ]; then
+            >&2 echo "Warning: check '${check}' has no alerts_wrapper, it will not be disabled:"
+            >&2 echo "    ${command}"
+        fi
+    done
+}
 
 function disable-alerts {
+    # $1: comment
 
-    #TODO
+    if ! command -v alerts_switch &> /dev/null; then
+        >&2 echo "Error: script 'alerts_switch' is not installed."
+        >&2 echo "Aborted."
+        exit 1
+    fi
 
     # TODO: Check not disabled yet
 
@@ -242,8 +251,8 @@ function disable-alerts {
     Hint: use --duration DURATION to change default time length."
     fi
     cat <<EOF
-Warning: alerts will be disabled for ${duration}${default_msg}
-Check outputs will still be gathered by our monitoring system, so alerts history won't be lost.
+Alerts will be disabled for ${duration}${default_msg}
+Our monitoring system will continue to gather checks outputs, so alerts history won't be lost.
 To re-enable alerts before ${duration}, execute (as root or with sudo):
     monitoringctl enable-alerts
 EOF
@@ -251,7 +260,25 @@ EOF
 
     read -r answer
     if [ "$answer" = "Y" ] || [ "$answer" = "y" ]; then
-        #systemd-run --quiet --unit="" --on-calendar="" 
+        log "Action disable-alerts requested for ${duration}: '${1}'"
+        for check in $(get_checks_list); do
+            # Log a warning if check has no wrapper
+            command=$(get_check_commands "${check}" | tail -n1)
+            echo "${command}" | grep --quiet --no-messages alerts_wrapper
+            rc=$?
+            if [ "${rc}" -ne 0 ]; then
+                log "Warning: check '${check}' has no alerts_wrapper, it will not be disabled."
+            fi
+
+            wrapper_names=$(get_check_commands "${check}" | tail -n1 | awk '{match($0, /.*--name\s+([^[:space:]]+)/, arr); print arr[1]}')
+            for name in $(echo "${wrapper_names=}" | tr ',' '\n'); do
+                echo "$(now) - Executing 'alerts_switch disable ${name}'" >> "${log_path}"
+                alerts_switch disable "${name}"
+            done
+        done
+
+        #TODO remove previous units if any
+        #TODO systemd-run --quiet --unit="" --on-calendar="" -- monitoringctl enable-alerts "[AUTO] ${}"
         echo "Alerts are now disabled for ${duration}."
     else
         echo "Canceled."
@@ -260,16 +287,23 @@ EOF
     exit 0
 }
 
-
-
 function enable-alerts {
+    # $1: comment
 
     #TODO
 
-    echo "Alerts are re-enabled."
+    echo "Alerts are re-enabled (stub)."
     #echo "Alerts were already enabled."
 
     exit 0
+}
+
+
+### ALERTS-STATUS ACTION ##########################
+
+function alerts-status {
+    # TODO
+    true
 }
 
 
@@ -293,6 +327,7 @@ comment=""
 verbose="False"
 duration="1h"
 default_duration="True"
+bypass_nrpe="False"
 
 # Parse arguments and options
 while :; do
@@ -302,6 +337,9 @@ while :; do
             exit 0;;
         -v|--verbose)
             verbose="True"
+            shift;;
+        -b|--bypass-nrpe)
+            bypass_nrpe="True"
             shift;;
         -d|--duration)
             if [ "${default_duration}" = "False" ]; then
@@ -321,6 +359,11 @@ while :; do
             break;;
     esac
 done
+
+
+debian_major_version=$(cut -d "." -f 1 < /etc/debian_version)
+conf_lines=$(get_conf_from_file "${conf_path}")
+
 
 if [ -z "${action}" ]; then
     usage_error "Missing or invalid ACTION argument."
@@ -364,7 +407,17 @@ if [ "${action}" = "disable-alerts" ]; then
         usage_error "Action disable-alerts: too many arguments."
     fi
 
+    is_nrpe_wrapped
+
     comment="$1"
     disable-alerts "${comment}"
+fi
+
+if [ "${action}" = "alerts-status" ]; then
+    if [ "$#" -gt 0 ]; then
+        usage_error "Action alerts-status: too many arguments."
+    fi
+
+    alerts-status
 fi
 
