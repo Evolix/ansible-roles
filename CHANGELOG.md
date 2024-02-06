@@ -16,24 +16,24 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * Preliminary work for php83
 * apt: add task file to install ELTS repository (default: False)
 * autosysadmin: Add a role to automatically deploy autosysadmin on evolixisation
+* check_free_space: added role
 * etc-git: add /var/chroot-bind/etc/bind repo
+* fail2ban: add script unban_ip
+* generateldif: new Services for check_pressure_{cpu,io,mem}
 * kvm-host: Automatically add an LVM filter when LVM is present
 * lxc-php: Allow one to install php83 on Bookworm container
 * minifirewall: Fix nagios check for old versions of minifirewall
 * mongodb: add gpg key for 7.0
 * nagios-nrpe: add check_sentinel for monitoring Redis Sentinel
+* nagios-nrpe: new check_pressure_{cpu,io,mem}
 * remount-usr: do not try to remount /usr RW if /usr is not a mounted partition
+* vrrpd: configure minifirewall
 * vrrpd: test if interface exists before deleting it
 * webapps/evoadmin-mail: package installed via public.evolix.org/evolix repo starting with Bookworm
+* webapps/nextcloud: Add condition for archive tasks
 * webapps/nextcloud: Add condition for config tasks
 * webapps/nextcloud: Added var nextcloud_user_uid to enforce uid for nextcloud user
 * webapps/nextcloud: Set ownership and permissions of data directory
-* webapps/nextcloud: Add condition for archive tasks
-* fail2ban: add script unban_ip
-* check_free_space: added role
-* nagios-nrpe: new check_pressure_{cpu,io,mem}
-* generateldif: new Services for check_pressure_{cpu,io,mem}
-* vrrpd: configure minifirewall
 
 ### Changed
 
@@ -76,32 +76,32 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * apache: fix MaxRequestsPerChild value to be sync with wiki.e.o
 * apt: use archive.debian.org with Stretch
 * certbot: fix hook for dovecot when more than one certificate is used (eg. different certificates for POP3 and IMAP)
+* dovecot: add missing LDAP conf iterate_filter to exclude disabled accounts in users list (caused « User no longer exists » errors in commands listing users like « doveadm user -u '*' » or « doveadm expunge -u "*" mailbox INBOX savedbefore 7d »).
+* dovecot: fix missing default mails
 * dovecot: fix plugin dovecot1
 * evoadmin-web: Fix PHP version for Bookworm
 * evolinux-base: fix hardware.yml (wrong repo, missing update cache)
 * evolinux-base: start to install linux-image-cloud-amd64 with Buster
 * fail2ban: fix template marker
+* minifirewall: ports 25, 53, 443, 993, 995 not opened publicly by default anymore, ports 20, 21, 110, 143 not opened semi-publicly by default anymore.
 * nagios: fix default file to monitor for check_clamav_db
+* nginx: add "when: not ansible_check_mode" in various tasks to prevent fail in check mode
+* nginx: fix mistake between "check_mode: no" and "when: not ansible_check_mode" (fail in check mode)
 * nginx: fix mistake between "check_mode: no" and "when: not ansible_check_mode" (fail in check mode)
 * nginx: keep indentation
 * nginx: take care of « already defined » and « not yet defined » server status suffix in check mode
 * php: Bullseye/Sury > Honor the php_version asked in the pub.evolix.org repository
 * php: drop apt_preferences(5) file for sury
+* postfix: remove dependency on evolinux_fqdn var
 * proftpd: set missing default listen IP for SFTP
+* roundcube: set default SMTP port to 25 instead of 587, which failed because of missing SSL conf (local connexion does not need SSL)
 * ssl: no not execute haproxy tasks and reload if haproxy is disabled
 * unbound: Add a apt cache validity to enforce an apt update if needed
 * webapps/nextcloud: added check that nextcloud uid is over 3000
 * webapps/nextcloud: fix Add Ceph volume to fstab : missing UUID= in src
 * webapps/nextcloud: fix misplaced gid attribute
 * webapps/nextcloud: fix missing gid
-* minifirewall: ports 25, 53, 443, 993, 995 not opened publicly by default anymore, ports 20, 21, 110, 143 not opened semi-publicly by default anymore.
-* dovecot: add missing LDAP conf iterate_filter to exclude disabled accounts in users list (caused « User no longer exists » errors in commands listing users like « doveadm user -u '*' » or « doveadm expunge -u "*" mailbox INBOX savedbefore 7d »).
-* dovecot: fix missing default mails
 * webapps/roundcube & evoadminmail: make roles more idempotent (were failing when played twice)
-* nginx: fix mistake between "check_mode: no" and "when: not ansible_check_mode" (fail in check mode)
-* nginx: add "when: not ansible_check_mode" in various tasks to prevent fail in check mode
-* postfix: remove dependency on evolinux_fqdn var
-* roundcube: set default SMTP port to 25 instead of 587, which failed because of missing SSL conf (local connexion does not need SSL)
 
 ### Removed
 
