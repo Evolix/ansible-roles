@@ -33,6 +33,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * check_free_space: added role
 * nagios-nrpe: new check_pressure_{cpu,io,mem}
 * generateldif: new Services for check_pressure_{cpu,io,mem}
+* vrrpd: configure minifirewall
 
 ### Changed
 

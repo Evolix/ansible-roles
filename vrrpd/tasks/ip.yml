@@ -18,5 +18,40 @@
     enabled: yes
     state: "{{ vrrp_address.state }}"
   when:
-  - vrrp_systemd_unit is changed
-  - not ansible_check_mode
+    - vrrp_systemd_unit is changed
+    - not ansible_check_mode
+
+- name: Check if a recent minifirewall is present
+  ansible.builtin.stat:
+    path: /etc/minifirewall.d/
+  register: _minifirewall_dir
+
+- ansible.builtin.set_fact:
+    minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | bool | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
+
+- name: VRRP output is authorized in minifirewall
+  lineinfile:
+    path: /etc/minifirewall.d/vrrpd
+    line: "/sbin/iptables -A OUTPUT -o {{ vrrp_address.interface }} -p 112 -j ACCEPT # Allow VRRP output on {{ vrrp_address.interface }}"
+    regexp: "# Allow VRRP output on {{ vrrp_address.interface }}$"
+    create: yes
+    mode: "0600"
+    owner: "root"
+    group: "root"
+  notify: "{{ minifirewall_restart_handler_name }}"
+  when: _minifirewall_dir.stat.exists
+
+- name: VRRP input is authorized in minifirewall
+  lineinfile:
+    path: /etc/minifirewall.d/vrrpd
+    line: "/sbin/iptables -A INPUT -i {{ vrrp_address.interface }} -s {{ peer }} -d 224.0.0.0/8 -j ACCEPT # Allow VRRP input on {{ vrrp_address.interface }} from {{ peer }} for VRID {{ vrrp_address.id }}"
+    regexp: "# Allow VRRP input on {{ vrrp_address.interface }} from {{ peer }} for VRID {{ vrrp_address.id }}"
+    create: yes
+    mode: "0600"
+    owner: "root"
+    group: "root"
+  loop: "{{ vrrp_address.peers | default([]) }}"
+  loop_control:
+    loop_var: peer
+  notify: "{{ minifirewall_restart_handler_name }}"
+  when: _minifirewall_dir.stat.exists

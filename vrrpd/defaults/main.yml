@@ -12,3 +12,6 @@ vrrp_addresses: []
 #     ip: Null                # the ip address(es) (and optionnaly subnet mask) of the virtual server
 #     state: Null             # 'started' or 'stopped'
 #   }
+
+minifirewall_restart_if_needed: True
+minifirewall_restart_force: False
