@@ -102,6 +102,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * webapps/nextcloud: fix misplaced gid attribute
 * webapps/nextcloud: fix missing gid
 * webapps/roundcube & evoadminmail: make roles more idempotent (were failing when played twice)
+* amavis: Add variables for generate "ldap_suffix" 
 
 ### Removed
 
