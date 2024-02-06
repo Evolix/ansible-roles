@@ -20,7 +20,7 @@
 - name: customize worker_connections
   ansible.builtin.lineinfile:
     dest: /etc/nginx/nginx.conf
-    regexp: '^(\s*)(worker_connections)\s+.+;'
+    regexp: '^(\s*)worker_connections\s+.+;'
     line: '\1worker_connections 1024;'
     insertafter: 'events \{'
     backrefs: yes
@@ -31,7 +31,7 @@
 - name: use epoll
   ansible.builtin.lineinfile:
     dest: /etc/nginx/nginx.conf
-    regexp: '^(\s*)(use)\s+.+;'
+    regexp: '^(\s*)use\s+.+;'
     line: '\1use epoll;'
     insertafter: 'events \{'
     backrefs: yes
