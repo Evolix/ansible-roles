@@ -25,17 +25,17 @@ END
 }
 show_help() {
     cat <<END
-alerts_wrapper is supposed to wrap an NRPE command and overrides the return code.
+alerts_wrapper wraps an NRPE command and overrides the return code.
 
-Usage: alerts_wrapper --limit=1d --name=check_name command with optional arguments
-  or   alerts_wrapper --name=check_name command with optional arguments
-  or   alerts_wrapper check_name command with optional arguments
+Usage: alerts_wrapper [--limit 1d] --names check_name[,other_disable_names,...] <check command with optional arguments>
+Usage: alerts_wrapper disable_name <check command with optional arguments>
 
 Options
  --limit            max age of the "check file" ;
                     can be "1d" for 1 day, "5m" for 5 minutes…
                     or more complex expressions like "1w2d10m42s"
- --name             check name
+ --names            disable name (shoud contain at least the check name)
+ --name             (deprecated) disable name (kept for backward compatibility)
  -h, --help         print this message and exit
  -V, --version      print version and exit
 END
@@ -52,18 +52,20 @@ time_in_seconds() {
 }
 
 delay_from_alerts_disabled_file() {
-    last_change=$(stat -c %Z "${alerts_disabled_file}")
-    limit_seconds=$(time_in_seconds "${wrapper_limit}" || time_in_seconds "${wrapper_limit_default}") 
+    # $1: disabled file
+    last_change=$(stat -c %Z "$1")
+    limit_seconds=$(time_in_seconds "${wrapper_limit}" || time_in_seconds "${wrapper_limit_default}")
     limit_date=$(date --date "${limit_seconds} seconds ago" +"%s")
 
     echo $(( last_change - limit_date ))
 }
 
-enable_check() {
+enable_checks() {
+    # $1: disable name
     if [ "$(id -u)" -eq "0" ] ; then
-        /usr/local/bin/alerts_switch enable "${check_name}"
+        /usr/local/bin/alerts_switch enable "$1"
     else
-        sudo /usr/local/bin/alerts_switch enable "${check_name}"
+        sudo /usr/local/bin/alerts_switch enable "$1"
     fi
 }
 
@@ -74,19 +76,24 @@ main() {
 
     delay=0
 
-    if [ -e "${alerts_disabled_file}" ]; then
-        delay=$(delay_from_alerts_disabled_file)
+    for disable_name in ${disable_names}; do
+        alerts_disabled_file="/var/lib/misc/${disable_name}_alerts_disabled"
+        if [ -e "${alerts_disabled_file}" ]; then
+            delay=$(delay_from_alerts_disabled_file "${alerts_disabled_file}")
 
-        if [ "${delay}" -le "0" ]; then
-            enable_check
+            if [ "${delay}" -le "0" ]; then
+                enable_checks "${disable_name}"
+            fi
         fi
-    fi
 
-    if [ -e "${alerts_disabled_file}" ]; then
-        formatted_last_change=$(date --date "@$(stat -c %Z "${alerts_disabled_file}")" +'%c')
-        readonly formatted_last_change
+        if [ -e "${alerts_disabled_file}" ]; then
+            formatted_last_change=$(date --date "@$(stat -c %Z "${alerts_disabled_file}")" +'%c')
+            readonly formatted_last_change
 
-        echo "ALERTS DISABLED for ${check_name} (since ${formatted_last_change}, delay: ${delay} sec) - $(cat "${check_stdout}")"
+            echo "ALERTS DISABLED for ${disable_names} (since ${formatted_last_change}, delay: ${delay} sec) - $(cat "${check_stdout}")"
+        fi
+    done
+
         if [ ${check_rc} = 0 ]; then
             # Nagios OK
             exit 0
@@ -138,21 +145,21 @@ if [[ "${1}" =~ -.* ]]; then
                 exit 1
                 ;;
 
-            --name)
+            --name|--names)
                 # with value separated by space
                 if [ -n "$2" ]; then
-                    check_name=$2
+                    disable_names=$2
                     shift
                 else
                     printf 'ERROR: "--name" requires a non-empty option argument.\n' >&2
                     exit 1
                 fi
                 ;;
-            --name=?*)
+            --name=?*|--names=?*)
                 # with value speparated by =
-                check_name=${1#*=}
+                disable_names=${1#*=}
                 ;;
-            --name=)
+            --name=|--names=)
                 # without value
                 printf 'ERROR: "--name" requires a non-empty option argument.\n' >&2
                 exit 1
@@ -180,8 +187,8 @@ if [[ "${1}" =~ -.* ]]; then
     check_command="$*"
 else
     # no option is passed (backward compatibility with previous version)
-    # treat the first argument as check_name and the rest as the command
-    check_name="${1}"
+    # treat the first argument as disable_names and the rest as the command
+    disable_names="${1}"
     shift
     check_command="$*"
 fi
@@ -190,8 +197,8 @@ fi
 if [ -z "${wrapper_limit}" ]; then
     wrapper_limit="${wrapper_limit_default}"
 fi
-if [ -z "${check_name}" ]; then
-    printf 'ERROR: You must specify a check name, with --name.\n' >&2
+if [ -z "${disable_names}" ]; then
+    printf 'ERROR: You must specify a check name, with --names.\n' >&2
     exit 1
 fi
 if [ -z "${check_command}" ]; then
@@ -199,16 +206,12 @@ if [ -z "${check_command}" ]; then
     exit 1
 fi
 
-readonly check_name
+disable_names="all $(echo "${disable_names}" | tr ',' ' ')"
+readonly disable_names
 readonly check_command
 readonly wrapper_limit
-alerts_disabled_file="/var/lib/misc/${check_name}_alerts_disabled"
-readonly alerts_disabled_file
 
-check_file="/var/lib/misc/${check_name}_alerts_disabled"
-readonly check_file
-
-check_stdout=$(mktemp --tmpdir=/tmp "${check_name}_stdout.XXXX")
+check_stdout=$(mktemp --tmpdir=/tmp "${disable_names}_stdout.XXXX")
 readonly check_stdout
 
 # shellcheck disable=SC2064

@@ -243,7 +243,10 @@ function disable-alerts {
         exit 1
     fi
 
-    # TODO: Check not disabled yet
+    # Are alerts already disabled ?
+    if [ -f /var/lib/misc/all_alerts_disabled ]; then
+        
+    fi
 
     default_msg="."
     if [ "${default_duration}" = "True" ]; then
@@ -256,46 +259,50 @@ Our monitoring system will continue to gather checks outputs, so alerts history 
 To re-enable alerts before ${duration}, execute (as root or with sudo):
     monitoringctl enable-alerts
 EOF
-    echo -n "Confirm  (y/N)? "
-
+    echo -n "Confirm (y/N)? "
     read -r answer
-    if [ "$answer" = "Y" ] || [ "$answer" = "y" ]; then
-        log "Action disable-alerts requested for ${duration}: '${1}'"
-        for check in $(get_checks_list); do
-            # Log a warning if check has no wrapper
-            command=$(get_check_commands "${check}" | tail -n1)
-            echo "${command}" | grep --quiet --no-messages alerts_wrapper
-            rc=$?
-            if [ "${rc}" -ne 0 ]; then
-                log "Warning: check '${check}' has no alerts_wrapper, it will not be disabled."
-            fi
-
-            wrapper_names=$(get_check_commands "${check}" | tail -n1 | awk '{match($0, /.*--name\s+([^[:space:]]+)/, arr); print arr[1]}')
-            for name in $(echo "${wrapper_names=}" | tr ',' '\n'); do
-                echo "$(now) - Executing 'alerts_switch disable ${name}'" >> "${log_path}"
-                alerts_switch disable "${name}"
-            done
-        done
-
-        #TODO remove previous units if any
-        #TODO systemd-run --quiet --unit="" --on-calendar="" -- monitoringctl enable-alerts "[AUTO] ${}"
-        echo "Alerts are now disabled for ${duration}."
-    else
+    if [ "$answer" != "Y" ] && [ "$answer" != "y" ]; then
         echo "Canceled."
+        exit 0
     fi
 
-    exit 0
+    log "Action disable-alerts requested for ${duration} by user $(logname || echo unknown): '$1'"
+
+    # Log a warning if a check has no wrapper
+    for check in $(get_checks_list); do
+        command=$(get_check_commands "${check}" | tail -n1)
+        if ! echo "${command}" | grep --quiet --no-messages alerts_wrapper; then
+            log "Warning: check '${check}' has no alerts_wrapper, it will not be disabled."
+        fi
+    done
+
+        #wrapper_names=$(get_check_commands "${check}" | tail -n1 | awk '{match($0, /.*--name\s+([^[:space:]]+)/, arr); print arr[1]}')
+        #for name in $(echo "${wrapper_names=}" | tr ',' '\n'); do
+        #    log "Executing 'alerts_switch disable ${name}'"
+        #    alerts_switch disable "${name}"
+        #done
+    #done
+
+    log "Executing 'alerts_switch disable all'"
+    alerts_switch disable all
+
+
+    #TODO remove previous units if any
+    #TODO systemd-run --quiet --unit="" --on-calendar="" -- monitoringctl enable-alerts "[AUTO] $1"
+
+    echo "Alerts are now disabled for ${duration}."
 }
 
 function enable-alerts {
     # $1: comment
 
-    #TODO
+    log "Action enable-alerts requested by user $(logname || echo unknown): '${1}'"
+    log "Executing 'alerts_switch enable all'"
 
-    echo "Alerts are re-enabled (stub)."
-    #echo "Alerts were already enabled."
+    alerts_switch enable all
 
-    exit 0
+    echo "Alerts are now re-enabled (stub)."
+    #TODO ou: echo "Alerts were already enabled."
 }
 
 
@@ -382,9 +389,8 @@ if [ "${action}" = "check" ]; then
 
     check_name="$1"
     check "$check_name"
-fi
 
-if [ "${action}" = "enable-alerts" ]; then
+elif [ "${action}" = "enable-alerts" ]; then
     if [ "$#" = 0 ]; then
         usage_error "Action enable-alerts: missing COMMENT argument."
     fi
@@ -397,9 +403,8 @@ if [ "${action}" = "enable-alerts" ]; then
 
     comment="$1"
     enable-alerts "${comment}"
-fi
 
-if [ "${action}" = "disable-alerts" ]; then
+elif [ "${action}" = "disable-alerts" ]; then
     if [ "$#" = 0 ]; then
         usage_error "Action disable-alerts: missing COMMENT argument."
     fi
@@ -411,9 +416,8 @@ if [ "${action}" = "disable-alerts" ]; then
 
     comment="$1"
     disable-alerts "${comment}"
-fi
 
-if [ "${action}" = "alerts-status" ]; then
+elif [ "${action}" = "alerts-status" ]; then
     if [ "$#" -gt 0 ]; then
         usage_error "Action alerts-status: too many arguments."
     fi

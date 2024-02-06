@@ -12,7 +12,10 @@ readonly PROGDIR=$(readlink -m $(dirname $0))
 readonly ARGS="$@"
 
 usage() {
-    echo "$PROGNAME action prefix"
+    echo "$PROGNAME disables or enables NRPE alerts wrapped by the script 'alerts_wrapper' in NRPE configuration."
+    echo "Usage: $PROGNAME enable|disable <NAME>"
+    echo "       $PROGNAME help"
+    echo "NAME: one of the names given to '--names' option of 'alerts_wrapper'."
 }
 
 disable_alerts () {
@@ -44,11 +47,11 @@ now () {
 }
 
 log_disable () {
-    echo "$(now) - alerts disabled by $(logname || echo unknown)" >> $1
+    echo "$(now) - alerts_switch: alerts disabled by $(logname || echo unknown)" >> $1
 }
 
 log_enable () {
-    echo "$(now) - alerts enabled by $(logname || echo unknown)" >> $1
+    echo "$(now) - alerts_switch: alerts enabled by $(logname || echo unknown)" >> $1
 }
 
 main () {
@@ -59,7 +62,7 @@ main () {
     mkdir -p "${base_dir}"
 
     local file_path="${base_dir}/${prefix}_alerts"
-    local log_file="/var/log/${prefix}_alerts.log"
+    local log_file="/var/log/monitoringctl.log"
 
     case "$action" in
     enable)
@@ -75,6 +78,7 @@ main () {
         ;;
     *)
         >&2 echo "Unknown action '$action'"
+        usage
         exit 1
         ;;
     esac
