@@ -10,7 +10,7 @@
       - dovecot-managesieved
     state: present
   tags:
-  - dovecot
+    - dovecot
 
 - name: Generate 4096 bits Diffie-Hellman parameters (may take several minutes)
   community.crypto.openssl_dhparam:
@@ -23,7 +23,7 @@
     regexp: "[^#]!include auth-system.conf.ext"
     replace: "#!include auth-system.conf.ext"
   tags:
-  - dovecot
+    - dovecot
 
 - name: update ldap auth
   ansible.builtin.lineinfile:
@@ -43,7 +43,7 @@
   when: ldap_suffix is defined
   notify: reload dovecot
   tags:
-  - dovecot
+    - dovecot
 
 - name: create vmail group
   ansible.builtin.group:
@@ -51,7 +51,7 @@
     gid: "{{ dovecot_vmail_gid }}"
     system: True
   tags:
-  - dovecot
+    - dovecot
 
 - name: create vmail user
   ansible.builtin.user:
@@ -61,7 +61,7 @@
     shell: /bin/false
     system: True
   tags:
-  - dovecot
+    - dovecot
 
 - name: deploy evolix config for Dovecot
   ansible.builtin.template:
@@ -70,7 +70,7 @@
     mode: "0644"
   notify: reload dovecot
   tags:
-  - dovecot
+    - dovecot
 
 - name: deploy file for custom configuration
   ansible.builtin.template:
@@ -79,7 +79,7 @@
     mode: "0644"
   notify: reload dovecot
   tags:
-  - dovecot
+    - dovecot
 
 - ansible.builtin.include: munin.yml
   tags:
@@ -89,7 +89,8 @@
   ansible.builtin.apt:
     name: log2mail
     state: present
-  tags: dovecot
+  tags:
+    - dovecot
 
 - name: dovecot is configured in log2mail
   ansible.builtin.blockinfile:
@@ -104,5 +105,6 @@
       mailto = {{ log2mail_alert_email or general_alert_email | mandatory }}
       template = /etc/log2mail/mail
   notify: restart log2mail
-  tags: dovecot
+  tags:
+    - dovecot
 
