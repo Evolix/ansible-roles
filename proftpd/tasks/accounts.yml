@@ -73,5 +73,6 @@
   when:
     - proftpd_sftp_enable | bool
     - proftpd_sftp_use_publickeys | bool
+    - _proftpd_account.sshkeys is defined
   tags:
     - proftpd
