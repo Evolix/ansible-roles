@@ -44,6 +44,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * apt: Disable archive repository for Debian 8
 * apt: Use the GPG version of the key for Debian 8-9
 * bind: Update role for Buster, Bullseye and Bookworm support
+* dovecot: add variables for LDAP
 * dovecot: Munin plugin conf path is now `/etc/munin/plugin-conf.d/zzz-dovecot` (instead of `z-evolinux-dovecot`)
 * evocheck: upstream release 24.01
 * evolinux-base: dump-server-state upstream release 23.11
