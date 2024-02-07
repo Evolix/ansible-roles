@@ -5,6 +5,7 @@
     dest: /etc/apache2/ipaddr_whitelist.conf
     line: "Require ip {{ item }}"
     state: present
+    create: yes
   loop: "{{ apache_ipaddr_whitelist_present }}"
   notify: reload apache
   tags:
