@@ -50,8 +50,8 @@
     mode: "0640"
   loop:
     - { option: 'hostname', value: '127.0.0.1' }
-    - { option: 'base', value: "{{ ldap_suffix }}" }
-    - { option: 'bind', value: "cn=nagios,ou=ldapusers,{{ ldap_suffix }}" }
+    - { option: 'base', value: "{{ ldap_suffix | mandatory }}" }
+    - { option: 'bind', value: "cn=nagios,ou=ldapusers,{{ ldap_suffix | mandatory }}" }
     - { option: 'pass', value: "{{ ldap_nagios_password }}" }
   when: not nagios_monitoring_plugins_path.stat.exists
 

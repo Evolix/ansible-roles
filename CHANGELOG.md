@@ -38,6 +38,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Changed
 
 * add-vm.sh: allow VM name max length > 20
+* amavis: make ldap_suffix mandatory
 * apache : fix goaway pattern for bad bots 
 * apache : rename MaxRequestsPerChild to MaxConnectionsPerChild (new name)
 * apache: use backward compatible Redirect directive
@@ -50,6 +51,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * evolinux-base: dump-server-state upstream release 23.11
 * evolinux-base: use separate default config file for rsyslog
 * kvmstats: use .capacity instead of .physical for disk size
+* ldap: make ldap_suffix mandatory
 * listupgrade : old-kernel-removal.sh upstream release 24.01
 * log2mail: move custom config in separate file
 * lxc: init /etc git repository in lxc container
