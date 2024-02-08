@@ -13,6 +13,18 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [24.02] 2024-02-08
+
+### Added
+
 * Support for PHP 8.3 with bookworm LXC containers
 * apt: add task file to install ELTS repository (default: False)
 * autosysadmin: Add a role to automatically deploy autosysadmin on evolixisation
@@ -113,8 +125,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * evolinux-base: no need to remove update-evobackup-canary from sbin anymore
 * evolinux-base: no need to symlink backup-server-state to dump-server-state anymore
-
-### Security
 
 ## [23.10] 2023-10-14
 
