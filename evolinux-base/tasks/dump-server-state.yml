@@ -6,10 +6,3 @@
     owner: root
     group: root
     mode: "0750"
-
-- name: symlink backup-server-state to dump-server-state
-  ansible.builtin.file:
-    src: /usr/local/sbin/dump-server-state
-    dest: /usr/local/sbin/backup-server-state
-    state: link
-    force: true

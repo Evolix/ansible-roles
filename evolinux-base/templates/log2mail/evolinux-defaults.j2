@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+
+file = /var/log/syslog
+pattern = "Out of memory: Kill"
+mailto = {{ log2mail_alert_email or general_alert_email | mandatory }}
+template = /etc/log2mail/mail
+
+file = /var/log/syslog
+pattern = "memory read error"
+mailto = {{ log2mail_alert_email or general_alert_email | mandatory }}
+template = /etc/log2mail/mail
+
+file = /var/log/cron.log
+pattern = "Syntax error"
+mailto = {{ log2mail_alert_email or general_alert_email | mandatory }}
+template = /etc/log2mail/mail

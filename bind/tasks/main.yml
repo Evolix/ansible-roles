@@ -17,13 +17,13 @@
   register: check_apparmor
 
 - name: configure apparmor
-  ansible.builtin.template:
-    src: apparmor.usr.sbin.named.j2
-    dest: /etc/apparmor.d/usr.sbin.named
-    owner: root
-    group: root
+  ansible.builtin.copy:
+    src: apparmor.usr.sbin.named
+    dest: /etc/apparmor.d/local/usr.sbin.named
     mode: "0644"
+    owner: root
     force: true
+    backup: yes
   notify: restart apparmor
   when: check_apparmor.rc == 0
 
@@ -94,13 +94,67 @@
     - bind_chroot_set | bool
     - chrootbind_run.stdout | length > 0
 
-- name: Modify OPTIONS in /etc/default/bind9 for chroot
+- name: Modify OPTIONS in /etc/default/bind9 for chroot (until Buster)
   ansible.builtin.replace:
     dest: /etc/default/bind9
     regexp: '^OPTIONS=.*'
     replace: 'OPTIONS="-u bind -t {{ bind_chroot_path }}"'
   notify: restart bind
-  when: bind_chroot_set | bool
+  when:
+    - bind_chroot_set | bool
+    - ansible_distribution_major_version is version('11', '<')
+
+- name: Modify OPTIONS in /etc/default/named for chroot (since Bullseye)
+  ansible.builtin.replace:
+    dest: /etc/default/named
+    regexp: '^OPTIONS=.*'
+    replace: 'OPTIONS="-u bind -t {{ bind_chroot_path }}"'
+  notify: restart bind
+  when:
+    - bind_chroot_set | bool
+    - ansible_distribution_major_version is version('11', '>=')
+
+- name: Create mount target directory for chroot (since Bookworm)
+  ansible.builtin.file:
+    path: /var/chroot-bind/run/systemd/journal
+    state: directory
+    owner: bind
+    group: bind
+  notify: restart bind
+  when:
+    - bind_chroot_set | bool
+    - ansible_distribution_major_version is version('12', '>=')
+
+- name: Create mount targets for chroot (since Bookworm)
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: touch
+    owner: bind
+    group: bind
+  loop:
+    - /var/chroot-bind/run/systemd/journal/socket
+    - /var/chroot-bind/run/systemd/journal/stdout
+    - /var/chroot-bind/run/systemd/notify
+  notify: restart bind
+  when:
+    - bind_chroot_set | bool
+    - ansible_distribution_major_version is version('12', '>=')
+
+- name: Set up bind mount for chroot (since Bookworm)
+  ansible.posix.mount:
+    src: "{{ item }}"
+    path: "/var/chroot-bind{{ item }}"
+    opts: bind
+    state: mounted
+    fstype: none
+  loop:
+    - /run/systemd/journal/socket
+    - /run/systemd/journal/stdout
+    - /run/systemd/notify
+  notify: restart bind
+  when:
+    - bind_chroot_set | bool
+    - ansible_distribution_major_version is version('12', '>=')
 
 - name: logrotate for bind
   ansible.builtin.template:

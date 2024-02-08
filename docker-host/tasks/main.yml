@@ -119,4 +119,4 @@
     cmd: "{{ docker_tls_path }}/shellpki.sh init"
   when:
     - docker_tls_enabled | bool
-    - not tls_certs_stat.stat.isdir
+    - not (tls_certs_stat.stat.exists and tls_certs_stat.stat.isdir)

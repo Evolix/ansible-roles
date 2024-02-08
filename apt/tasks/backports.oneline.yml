@@ -17,16 +17,6 @@
   tags:
     - apt
 
-- name: Backports configuration
-  ansible.builtin.copy:
-    src: '{{ ansible_distribution_release }}_backports_preferences'
-    dest: /etc/apt/preferences.d/0-backports-defaults
-    force: true
-    mode: "0640"
-  register: apt_backports_config
-  tags:
-    - apt
-
 - name: Archived backport are accepted (jessie)
   ansible.builtin.lineinfile:
     dest: '/etc/apt/apt.conf.d/99no-check-valid-until'
@@ -42,4 +32,4 @@
     update_cache: yes
   tags:
     - apt
-  when: apt_backports_list is changed or apt_backports_config is changed
+  when: apt_backports_list is changed

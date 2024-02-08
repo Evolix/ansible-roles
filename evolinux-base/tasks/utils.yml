@@ -23,20 +23,3 @@
     owner: root
     group: root
     mode: "0755"
-
-# TODO: delete when this has been run once on all our servers
-- name: update-evobackup-canary is removed from sbin
-  ansible.builtin.file:
-    path: /usr/local/sbin/update-evobackup-canary
-    state: absent
-
-- name: Deploy htop configuration
-  ansible.builtin.copy:
-    src: htoprc
-    dest: /etc/htoprc
-    mode: "0644"
-
-- name: Deploy top configuration file
-  ansible.builtin.file:
-    path: /etc/topdefaultrc
-    state: absent

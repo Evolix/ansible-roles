@@ -14,6 +14,7 @@ get_pkg_version() {
         sed 's/[~+-].\+//' | sed 's/.\+://' | sed 's/p.*//' | cut -d'.' -f1,2
 }
 
+debianVersion=$(cut -d "." -f 1 < /etc/debian_version)
 clientNumber="{{ client_number | mandatory }}"
 monitoringMode="{{ monitoring_mode | mandatory }}"
 monitoringType="{{ monitoring_type | mandatory }}"
@@ -685,6 +686,34 @@ ServiceVersion: PHP-FPM 8.1 (multiphp)
 EOT
 fi
 
+if lxc-ls | grep -q php82 ; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=php-fpm82,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: php-fpm82
+ipServicePort: 443
+ServiceType: web
+ServiceVersion: PHP-FPM 8.2 (multiphp)
+EOT
+fi
+
+if lxc-ls | grep -q php83 ; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=php-fpm83,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: php-fpm83
+ipServicePort: 443
+ServiceType: web
+ServiceVersion: PHP-FPM 8.3 (multiphp)
+EOT
+fi
+
 fi
 # END - LXC (multiphp)
 
@@ -735,6 +764,32 @@ ServiceVersion: Undefined
 EOT
 fi
 
+# Check pressure
+if [ "${debianVersion}" -ge 12 ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=pressure_cpu,${computer_dn}
+objectClass: EvoService
+NagiosEnabled: TRUE
+ServiceName: pressure_cpu
+ServiceType: pressure
+ServiceVersion: Undefined
+
+dn: ServiceName=pressure_io,${computer_dn}
+objectClass: EvoService
+NagiosEnabled: TRUE
+ServiceName: pressure_io
+ServiceType: pressure
+ServiceVersion: Undefined
+
+dn: ServiceName=pressure_mem,${computer_dn}
+objectClass: EvoService
+NagiosEnabled: TRUE
+ServiceName: pressure_mem
+ServiceType: pressure
+ServiceVersion: Undefined
+EOT
+fi
 
 # test if we have a stdout
 if [ -t 1 ]; then

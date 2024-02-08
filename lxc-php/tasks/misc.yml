@@ -1,31 +1,31 @@
 ---
 
-- name: "{{ lxc_php_version }} - Configure timezone for the container"
+- name: "{{ lxc_php_container_name }} - Configure timezone for the container"
   ansible.builtin.copy:
     remote_src: yes
     src: "/etc/timezone"
     dest: "{{ lxc_rootfs }}/etc/timezone"
 
-- name: "{{ lxc_php_version }} - Ensure container's root directory is 755"
+- name: "{{ lxc_php_container_name }} - Ensure container's root directory is 755"
   ansible.builtin.file:
     path: "{{ lxc_rootfs }}"
     state: directory
     mode: '0755'
 
-- name: "{{ lxc_php_version }} - Configure mailname for the container"
+- name: "{{ lxc_php_container_name }} - Configure mailname for the container"
   ansible.builtin.copy:
     content: "{{ evolinux_hostname }}.{{ evolinux_domain }}\n"
     dest: "{{ lxc_rootfs }}/etc/mailname"
   notify: "Restart opensmtpd"
 
-- name: "{{ lxc_php_version }} - Install misc packages"
+- name: "{{ lxc_php_container_name }} - Install misc packages"
   community.general.lxc_container:
-    name: "{{ lxc_php_version }}"
+    name: "{{ lxc_php_container_name }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt install -y cron logrotate git zip unzip"
 
-- name: "{{ lxc_php_version }} - Add MySQL socket to container default mounts"
+- name: "{{ lxc_php_container_name }} - Add MySQL socket to container default mounts"
   community.general.lxc_container:
-    name: "{{ lxc_php_version }}"
+    name: "{{ lxc_php_container_name }}"
     container_config:
       - "lxc.mount.entry = /run/mysqld {{ php_conf_mysql_socket_dir | replace('/', '', 1) }} none bind,create=dir 0 0"
   when:

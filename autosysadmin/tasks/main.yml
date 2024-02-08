@@ -1,0 +1,37 @@
+---
+- name: Install dependencies
+  ansible.builtin.import_tasks: dependencies.yml
+  tags:
+    - autosysadmin
+
+- name: Install autosysadmin scripts
+  ansible.builtin.import_tasks: autosysadmin_scripts.yml
+  tags:
+    - autosysadmin
+
+- name: Amend NRPE configuration
+  ansible.builtin.import_tasks: nrpe.yml
+  tags:
+    - autosysadmin
+
+- name: Amend sudo configuration
+  ansible.builtin.import_tasks: sudo.yml
+  tags:
+    - autosysadmin
+
+- name: Amend rsyslog configuration
+  ansible.builtin.import_tasks: rsyslog.yml
+  tags:
+    - autosysadmin
+
+- name: Amend logrotate configuration
+  ansible.builtin.import_tasks: logrotate.yml
+  tags:
+    - autosysadmin
+
+- name: Install last version of dump-server-state
+  ansible.builtin.import_role:
+    name: evolinux-base
+    tasks_from: dump-server-state.yml
+  tags:
+    - autosysadmin

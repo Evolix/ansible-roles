@@ -87,7 +87,7 @@ main() {
           append_details "configuration is up-to-date"
           summary_ok "minifirewall is started and configuration is up-to-date"
         else
-          if echo "${check_result}" | grep --quiet --regexp 'usage'; then
+          if echo "${check_result}" | grep --ignore-case --quiet --regexp 'usage'; then
             append_details "minifirewall is too old to check active configuration"
           else
             case "${check_rc}" in

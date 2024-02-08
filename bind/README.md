@@ -10,4 +10,4 @@ Minimal configuration is in `tasks/main.yml`
 
 The full list of variables (with default values) can be found in `defaults/main.yml`.
 
-waening : sync chroot-bind.sh
+warning : sync chroot-bind.sh

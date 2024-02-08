@@ -24,18 +24,9 @@
 
 - name: Setup pub.evolix.org repository - Add source list
   ansible.builtin.apt_repository:
-    repo: "deb [signed-by={{ apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix {{ ansible_distribution_release }}-php81 main"
+    repo: "deb [signed-by={{ apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix {{ ansible_distribution_release }}-php{{ php_version | replace('.', '')}} main"
     filename: evolix-php
     state: present
-  when:
-    - ansible_distribution_release == "bullseye"
-
-- name: Setup deb.sury.org repository - Add preferences file
-  ansible.builtin.copy:
-    src: sury.preferences
-    dest: /etc/apt/preferences.d/z-sury
-  when:
-    - ansible_distribution_release != "bullseye"
 
 - name: Setup deb.sury.org repository - Add GPG key
   ansible.builtin.copy:

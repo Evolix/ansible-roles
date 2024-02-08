@@ -1,0 +1,74 @@
+#
+# Ansible managed - DO NOT MODIFY, your changes will be **overwritten** !
+# 
+# Update the hosts_vars/group_vars on the autosysadmin project
+# https://gitea.evolix.org/evolix/autosysadmin/src/branch/master
+#
+
+# Configuration for autosysadmin
+# Use this file to change configuration values defined in repair scripts
+# Ex : repair_http=off
+
+{% if repair_amavis == "off" %}
+repair_amavis=off
+{% endif %}
+
+{% if repair_disk == "off" %}
+repair_disk=off
+{% endif %}
+
+{% if repair_elasticsearch == "off" %}
+repair_elasticsearch=off
+{% endif %}
+
+{% if repair_http == "off" %}
+repair_http=off
+{% endif %}
+
+{% if repair_mysql == "off" %}
+repair_mysql=off
+{% endif %}
+
+{% if repair_opendkim == "off" %}
+repair_opendkim=off
+{% endif %}
+
+{% if repair_php_fpm56 == "off" %}
+repair_php_fpm56=off
+{% endif %}
+
+{% if repair_php_fpm70 == "off" %}
+repair_php_fpm70=off
+{% endif %}
+
+{% if repair_php_fpm73 == "off" %}
+repair_php_fpm73=off
+{% endif %}
+
+{% if repair_php_fpm74 == "off" %}
+repair_php_fpm74=off
+{% endif %}
+
+{% if repair_php_fpm80 == "off" %}
+repair_php_fpm80=off
+{% endif %}
+
+{% if repair_php_fpm81 == "off" %}
+repair_php_fpm81=off
+{% endif %}
+
+{% if repair_php_fpm82 == "off" %}
+repair_php_fpm82=off
+{% endif %}
+
+{% if repair_php_fpm83 == "off" %}
+repair_php_fpm83=off
+{% endif %}
+
+{% if repair_redis == "off" %}
+repair_redis=off
+{% endif %}
+
+{% if repair_tomcat_instance == "off" %}
+repair_tomcat_instance=off
+{% endif %}

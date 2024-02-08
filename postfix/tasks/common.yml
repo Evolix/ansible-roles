@@ -1,11 +1,32 @@
----
 
-- name: check if main.cf is default
+- name: Postfix packages are installed
+  ansible.builtin.apt:
+    name:
+      - postfix
+      - mailgraph
+    state: present
+  tags:
+    - postfix
+
+- name: exim4 is absent
+  ansible.builtin.apt:
+    name:
+      - exim4
+      - exim4-base
+      - exim4-config
+      - exim4-daemon-light
+    purge: yes
+    state: absent
+  tags:
+    - postfix
+  when: postfix_purge_exim | bool
+
+- name: compute main.cf SHA1 checksum
   ansible.builtin.shell:
-    cmd: 'grep -v -E "^(myhostname|mydestination|mailbox_command)" /etc/postfix/main.cf | md5sum -'
+    cmd: 'grep -v -E "^(myhostname|mydestination|mailbox_command)" /etc/postfix/main.cf | sha1sum | cut -d " " -f1'
   changed_when: False
   check_mode: no
-  register: default_main_cf
+  register: main_cf_checksum
   tags:
     - postfix
 

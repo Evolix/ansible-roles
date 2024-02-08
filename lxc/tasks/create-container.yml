@@ -58,13 +58,13 @@
     name: "{{ name }}"
     state: started
 
-- name: "Ensure /etc/profile.d exists in container"
+- name: "Ensure /etc/profile.d exists in container {{ name }}"
   ansible.builtin.file:
     path: "/var/lib/lxc/{{ name }}/rootfs/etc/profile.d"
     mode: '0755'
     state: directory
 
-- name: "Copy host /etc/profile.d/evolinux into container"
+- name: "Copy host /etc/profile.d/evolinux into container {{ name }}"
   ansible.builtin.copy:
     src: "/etc/profile.d/evolinux.sh"
     remote_src: true
@@ -75,3 +75,22 @@
   community.general.lxc_container:
     name: "{{ name }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt-get purge -y openssh-server"
+
+- name: "Init /etc git repository in container {{ name }}"
+  ansible.builtin.include_role:
+    name: 'etc-git'
+    tasks_from: 'repository.yml'
+    apply:
+      vars:
+        gitignore_items:
+          - "aliases.db"
+          - "*.swp"
+          - "postfix/sa-blacklist.access"
+          - "postfix/*.db"
+          - "postfix/spamd.cidr"
+          - "evobackup/.keep-*"
+          - "letsencrypt/.certbot.lock"
+      become: yes
+  loop: ["/var/lib/lxc/{{ name }}/rootfs/etc/"]
+  loop_control:
+    loop_var: 'repository_path'

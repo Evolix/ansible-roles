@@ -1,5 +1,9 @@
 ---
-## MD5 hash of default main.cf filter, obtained with this command :
-# grep -v -E "^(myhostname|mydestination|mailbox_command)" /etc/postfix/main.cf  | md5sum -
-postfix_maincf_md5_jessie: "5450c05d65878e99dad696c7c722e511"
-postfix_maincf_md5_stretch: "30022953f1f61f002bfb72e163ecb27e"
+# Output of default main.cf:
+# grep -v -E "^(myhostname|mydestination|mailbox_command)" /etc/postfix/main.cf | sha1sum | cut -d " " -f1
+main_cf_known_checksums:
+  - 72bd6999f053ea89b359e233cf252616ee6e2fbb  # bookworm
+  - efd078215285ad520addee5b11af869717627b95  # bullseye
+  - c7d1e008120565927b213be1bf646fddfa949dc6  # buster
+  - 8b4de47321a9c003bf414a683c0d056b4469b325  # stretch
+  - f72feb50754830a7d8ae46f28e86d758881bcfc3  # jessie

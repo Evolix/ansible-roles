@@ -12,6 +12,7 @@
     src: "/etc/apache2/sites-available/evoadminmail.conf"
     dest: "/etc/apache2/sites-enabled/evoadminmail.conf"
     state: link
+    force: true
   notify: reload apache2
   when: evoadminmail_enable_vhost | bool
   tags:

@@ -3,10 +3,10 @@
 # TODO: voir comment faire des backups initiaux des fichiers
 
 # RSyslog
-- name: Copy rsyslog.conf
+- name: Copy rsyslog evolinux defaut conf
   ansible.builtin.copy:
-    src: logs/rsyslog.conf
-    dest: /etc/rsyslog.conf
+    src: logs/rsyslog.d/10-evolinux-default.conf
+    dest: /etc/rsyslog.d/10-evolinux-default.conf
     mode: "0644"
   notify: restart rsyslog
   when: evolinux_logs_rsyslog_conf | bool

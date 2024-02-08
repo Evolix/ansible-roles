@@ -1,38 +1,74 @@
 ---
 - name: Install Unbound package
   ansible.builtin.apt:
-    name: unbound
+    name:
+      - unbound
+      - unbound-anchor
+      - dns-root-data
     state: present
-  when: ansible_distribution == "Debian"
+    cache_valid_time: 3600
   tags:
-  - unbound
-
-- name: Retrieve list of root DNS servers
-  ansible.builtin.get_url:
-    url: https://www.internic.net/domain/named.cache
-    dest: /etc/unbound/root.hints
-    force: true
-    mode: "0644"
-  notify: reload unbound
-  tags:
-  - unbound
+    - unbound
 
 - name: Copy Unbound config
   ansible.builtin.template:
-    src: unbound.conf.j2
-    dest: /etc/unbound/unbound.conf
+    src: evolinux.conf.j2
+    dest: /etc/unbound/unbound.conf.d/evolinux.conf
     owner: root
     group: root
     mode: "0644"
-  when: ansible_distribution == "Debian"
-  notify: reload unbound
+  notify: Reload unbound
   tags:
-  - unbound
+    - unbound
+
+- name: Copy Unbound config for reloading (Debian 11 and older)
+  ansible.builtin.template:
+    src: evolinux-reload.conf.j2
+    dest: /etc/unbound/unbound.conf.d/evolinux-reload.conf
+    owner: root
+    group: root
+    mode: "0644"
+  when:
+    - ansible_distribution_major_version is version('11', '<=')
+  notify: Restart unbound
+  tags:
+    - unbound
+
+- name: Copy munin plugin config
+  ansible.builtin.copy:
+    src: munin-plugin.conf
+    dest: /etc/munin/plugin-conf.d/unbound
+    owner: root
+    group: root
+    mode: "0644"
+  tags:
+    - unbound
+
+- name: Enable unbound munin plugin
+  ansible.builtin.file:
+    src: /usr/share/munin/plugins/unbound_munin_
+    dest: "/etc/munin/plugins/unbound_munin_{{ plugin_name }}"
+    state: link
+  loop:
+    - hits
+    - queue
+    - memory
+    - by_type
+    - by_class
+    - by_opcode
+    - by_rcode
+    - by_flags
+    - histogram
+  loop_control:
+    loop_var: plugin_name
+  notify: Restart munin-node
+  tags:
+    - unbound
 
 - name: Starting and enabling Unbound
   ansible.builtin.service:
     name: unbound
-    enabled: yes
+    enabled: true
     state: started
   tags:
-  - unbound
+    - unbound

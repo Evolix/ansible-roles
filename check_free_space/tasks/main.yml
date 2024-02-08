@@ -1,0 +1,37 @@
+---
+- ansible.builtin.include_role:
+    name: evolix/remount-usr
+
+- name: Copy check_free_space.sh script
+  ansible.builtin.copy:
+    src: files/check_free_space.sh
+    dest: /usr/share/scripts/check_free_space
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Copy email template
+  ansible.builtin.copy:
+    src: files/check_free_space.tpl
+    dest: /usr/share/scripts/check_free_space.tpl
+    owner: root
+    group: root
+    mode: "0644"
+
+# not using the cron_module for this since it is buggy
+- name: check_free_space.sh is run by cron
+  ansible.builtin.template:
+    src: templates/cron_check_free_space.j2
+    dest: /etc/cron.d/check_free_space
+    owner: root
+    group: root
+    mode: "0644"
+    force: false
+
+- name: Duc and Mutt are installed
+  ansible.builtin.apt:
+    pkg:
+      - mutt
+      - duc
+    state: present
+

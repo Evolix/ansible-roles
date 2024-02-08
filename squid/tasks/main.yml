@@ -38,14 +38,14 @@
 - name: "squid.conf is present (jessie)"
   ansible.builtin.template:
     src: squid.conf.j2
-    dest: /etc/squid3/squid.conf
+    dest: /etc/squid/squid.conf
   notify: "restart squid3"
   when: ansible_distribution_release == "jessie"
 
 - name: "evolix whitelist is present (jessie)"
   ansible.builtin.copy:
     src: whitelist-evolinux.conf
-    dest: /etc/squid3/whitelist.conf
+    dest: /etc/squid/whitelist.conf
     force: false
   notify: "reload squid3"
   when: ansible_distribution_release == "jessie"
@@ -135,7 +135,7 @@
 - name: add some URL in whitelist (Debian 8)
   ansible.builtin.lineinfile:
     insertafter: EOF
-    dest: /etc/squid3/whitelist.conf
+    dest: /etc/squid/whitelist.conf
     line: "{{ item }}"
     state: present
   loop: '{{ squid_whitelist_items }}'

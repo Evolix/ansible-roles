@@ -88,7 +88,7 @@ ${DIALOG} \
     "memory" 2 1 "${defaultRAM}" 2 10 20 0 \
     "volRoot" 3 1 "${disks[0]}-${defaultRootSize}" 3 10 20 0 \
     "volHome" 4 1 "${disks[1]}-${defaultHomeSize}" 4 10 20 0 \
-    "vmName" 5 1 "${defaultVmName}" 5 10 20 0 \
+    "vmName" 5 1 "${defaultVmName}" 5 10 20 1024 \
     2> "${DIALOGOUT}"
 
 vCPU=$(sed 1'q;d' "${DIALOGOUT}")
@@ -231,7 +231,7 @@ EOT
 
     if ! isDryRun; then
         sleep 5
-        drbdadm status | tail -4
+        ( drbdadm status || drbd-overview ) 2>/dev/null | tail -4
 
         drbdDiskPath="/dev/drbd/by-res/${vmName}/0"
         if ! [ -b "${drbdDiskPath}" ]; then

@@ -36,9 +36,9 @@
   notify: reload apache2
   when: ansible_distribution_release == "bullseye"
 
-- name: "Set custom values for PHP config (Debian 11)"
+- name: "Set custom values for PHP config (Debian 12)"
   community.general.ini_file:
-    dest: /etc/php/8.1/apache2/conf.d/zzz-evolinux-custom.ini
+    dest: /etc/php/8.2/apache2/conf.d/zzz-evolinux-custom.ini
     section: PHP
     option: "disable_functions"
     value: "shell-exec,system,passthru,putenv,popen"

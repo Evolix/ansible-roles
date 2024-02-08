@@ -21,6 +21,111 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [24.02] 2024-02-08
+
+### Added
+
+* Support for PHP 8.3 with bookworm LXC containers
+* apt: add task file to install ELTS repository (default: False)
+* autosysadmin: Add a role to automatically deploy autosysadmin on evolixisation
+* check_free_space: added role
+* etc-git: add /var/chroot-bind/etc/bind repo
+* fail2ban: add script unban_ip
+* generateldif: new Services for check_pressure_{cpu,io,mem}
+* kvm-host: Automatically add an LVM filter when LVM is present
+* lxc-php: Allow one to install php83 on Bookworm container
+* minifirewall: Fix nagios check for old versions of minifirewall
+* mongodb: add gpg key for 7.0
+* nagios-nrpe: add check_sentinel for monitoring Redis Sentinel
+* nagios-nrpe: new check_pressure_{cpu,io,mem}
+* remount-usr: do not try to remount /usr RW if /usr is not a mounted partition
+* vrrpd: configure minifirewall
+* vrrpd: test if interface exists before deleting it
+* webapps/evoadmin-mail: package installed via public.evolix.org/evolix repo starting with Bookworm
+* webapps/nextcloud: Add condition for archive tasks
+* webapps/nextcloud: Add condition for config tasks
+* webapps/nextcloud: Added var nextcloud_user_uid to enforce uid for nextcloud user
+* webapps/nextcloud: Set ownership and permissions of data directory
+
+### Changed
+
+* add-vm.sh: allow VM name max length > 20
+* amavis: make ldap_suffix mandatory
+* apache : fix goaway pattern for bad bots 
+* apache : rename MaxRequestsPerChild to MaxConnectionsPerChild (new name)
+* apache: use backward compatible Redirect directive
+* apt: Disable archive repository for Debian 8
+* apt: Use the GPG version of the key for Debian 8-9
+* bind: Update role for Buster, Bullseye and Bookworm support
+* dovecot: add variables for LDAP
+* dovecot: Munin plugin conf path is now `/etc/munin/plugin-conf.d/zzz-dovecot` (instead of `z-evolinux-dovecot`)
+* evocheck: upstream release 24.01
+* evolinux-base: dump-server-state upstream release 23.11
+* evolinux-base: use separate default config file for rsyslog
+* kvmstats: use .capacity instead of .physical for disk size
+* ldap: make ldap_suffix mandatory
+* listupgrade : old-kernel-removal.sh upstream release 24.01
+* log2mail: move custom config in separate file
+* lxc: init /etc git repository in lxc container
+* mysql: disable performance schema for Debian 8
+* nagios: add dockerd check in nrpe check template
+* nagios: cleaning nrpe check template
+* nagios: rename var `nagios_nrpe_process_processes` into `nagios_nrpe_processes` and check systemd-timesyncd instead of ntpd in Debian 12
+* proftpd: in SFTP vhost, enable SSH keys login, enable ed25549 host key for Debian >= 11
+* redis: manage config template inside a block, to allow custom modifications outside
+* spamassassin: Use spamd starting with Bookworm
+* squid: config directory seems to have changed from /etc/squid3 to /etc/squid in Debian 8
+* unbound: Add config file to allow configuration reload on Debian 11 and lower
+* unbound: Add munin configuration & setup plugin
+* unbound: Big cleanup
+* unbound: Move generated config file to `/etc/unbound/unbound.conf.d/evolinux.conf`
+* unbound: Use root hints provided by debian package dns-root-data instead of downloading them
+* vrrpd: replace switch script with custom one (fix MAC issue, use `ip(8)`, shell cleanup…)
+* vrrpd: variable to force update the switch script (default: false)
+* webapps/nextcloud: Add Ceph volume to fstab
+* webapps/nextcloud: Set home directory's mode
+
+### Fixed
+
+* Add php-fpm82 to LDAP when relevant
+* Check stat.exists before stat.isdir
+* apache: fix MaxRequestsPerChild value to be sync with wiki.e.o
+* apt: use archive.debian.org with Stretch
+* certbot: fix hook for dovecot when more than one certificate is used (eg. different certificates for POP3 and IMAP)
+* dovecot: add missing LDAP conf iterate_filter to exclude disabled accounts in users list (caused « User no longer exists » errors in commands listing users like « doveadm user -u '*' » or « doveadm expunge -u "*" mailbox INBOX savedbefore 7d »).
+* dovecot: fix missing default mails
+* dovecot: fix plugin dovecot1
+* evoadmin-web: Fix PHP version for Bookworm
+* evolinux-base: fix hardware.yml (wrong repo, missing update cache)
+* evolinux-base: start to install linux-image-cloud-amd64 with Buster
+* fail2ban: fix template marker
+* minifirewall: ports 25, 53, 443, 993, 995 not opened publicly by default anymore, ports 20, 21, 110, 143 not opened semi-publicly by default anymore.
+* nagios: fix default file to monitor for check_clamav_db
+* nginx: add "when: not ansible_check_mode" in various tasks to prevent fail in check mode
+* nginx: fix mistake between "check_mode: no" and "when: not ansible_check_mode" (fail in check mode)
+* nginx: fix mistake between "check_mode: no" and "when: not ansible_check_mode" (fail in check mode)
+* nginx: keep indentation
+* nginx: take care of « already defined » and « not yet defined » server status suffix in check mode
+* php: Bullseye/Sury > Honor the php_version asked in the pub.evolix.org repository
+* php: drop apt_preferences(5) file for sury
+* postfix: remove dependency on evolinux_fqdn var
+* proftpd: set missing default listen IP for SFTP
+* roundcube: set default SMTP port to 25 instead of 587, which failed because of missing SSL conf (local connexion does not need SSL)
+* ssl: no not execute haproxy tasks and reload if haproxy is disabled
+* unbound: Add a apt cache validity to enforce an apt update if needed
+* webapps/nextcloud: added check that nextcloud uid is over 3000
+* webapps/nextcloud: fix Add Ceph volume to fstab : missing UUID= in src
+* webapps/nextcloud: fix misplaced gid attribute
+* webapps/nextcloud: fix missing gid
+* webapps/roundcube & evoadminmail: make roles more idempotent (were failing when played twice)
+* amavis: Add variables for generate "ldap_suffix"
+* proftpd: fix error when no SSH key is provided
+
+### Removed
+
+* evolinux-base: no need to remove update-evobackup-canary from sbin anymore
+* evolinux-base: no need to symlink backup-server-state to dump-server-state anymore
+
 ## [23.10] 2023-10-14
 
 ### Added
@@ -381,16 +486,16 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
-* docker : Introduce new default settings + allow to change the docker data directory
-* docker : Introduce new variables to tweak daemon settings
+* docker: Introduce new default settings + allow to change the docker data directory
+* docker: Introduce new variables to tweak daemon settings
 
 ### Changed
 
-* evocheck: upstream release 22.05
+* evocheck: Upstream release 22.05
 
 ### Removed
 
-* docker : Removed Debian Jessie support
+* docker: Removed Debian Jessie support
 
 ## [22.05] 2022-05-10
 

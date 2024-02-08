@@ -6,7 +6,7 @@
       - amavisd-new
     state: present
   tags:
-  - amavis
+    - amavis
 
 - name: configure Amavis
   ansible.builtin.template:
@@ -15,7 +15,7 @@
     mode: "0644"
   notify: restart amavis
   tags:
-  - amavis
+    - amavis
 
 - name: Install purge custom cron
   ansible.builtin.copy:
@@ -23,5 +23,5 @@
     dest: /etc/cron.daily/amavis_purge_virusmails
     mode: "0755"
   tags:
-  - amavis
-  - amavis_purge_cron
+    - amavis
+    - amavis_purge_cron

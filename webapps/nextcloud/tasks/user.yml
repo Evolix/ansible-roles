@@ -1,9 +1,15 @@
 ---
+- name: Check nextcloud user id is over 2999
+  ansible.builtin.assert:
+    that:
+      - nextcloud_user_uid >= 3000
+
 - name: Create {{ nextcloud_user }} unix group
 
   ansible.builtin.group:
     name: "{{ nextcloud_user | mandatory }}"
     state: present
+    gid: "{{ nextcloud_user_uid | mandatory }}"
   tags:
     - nextcloud
 
@@ -12,12 +18,18 @@
     name: "{{ nextcloud_user | mandatory }}"
     group: "{{ nextcloud_user | mandatory }}"
     home: "{{ nextcloud_home | mandatory }}"
+    uid: "{{ nextcloud_user_uid | mandatory }}"
     shell: '/bin/bash'
     create_home: True
     state: present
 #    mode: "0755"
   tags:
   - nextcloud
+
+- name: Set mode for home directory
+  ansible.builtin.file:
+    path: "{{ nextcloud_home }}"
+    mode: "0701"
 
 - name: Create top-level directories
   ansible.builtin.file:
@@ -36,7 +48,14 @@
 - name: Mount up Ceph volume by UUID
   ansible.posix.mount:
     path: "{{ nextcloud_data }}"
-    src: "{{ nextcloud_data_uuid }}"
+    src: "UUID={{ nextcloud_data_uuid }}"
     fstype: ext4
     opts: defaults,noexec,nosuid,nodev,relatime,lazytime
-    state: present
+    state: mounted
+
+- name: Set volume's root permissions and ownership
+  ansible.builtin.file:
+    path: "{{ nextcloud_data }}"
+    owner: "{{ nextcloud_user }}"
+    group: "{{ nextcloud_user }}"
+    mode: "0700"

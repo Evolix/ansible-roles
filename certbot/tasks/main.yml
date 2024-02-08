@@ -21,6 +21,8 @@
 
 - ansible.builtin.include: acme-challenge.yml
 
+# This is always going to mark a "change".
+# Couldn't figure out why !
 - name: Deploy hooks are present
   ansible.builtin.copy:
     src: hooks/deploy/

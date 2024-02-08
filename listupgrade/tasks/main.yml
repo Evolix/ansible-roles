@@ -46,7 +46,7 @@
     group: root
 
 - name: Remove old lisupgrade typo
-  cron:
+  ansible.builtin.cron:
     name: "lisupgrade.sh"
     cron_file: "listupgrade"
     state: absent
