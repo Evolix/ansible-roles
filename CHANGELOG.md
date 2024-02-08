@@ -21,6 +21,12 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [24.02.1] 2024-02-08
+
+### Fixed
+
+* fail2ban: fix Ansible syntax
+
 ## [24.02] 2024-02-08
 
 ### Added
