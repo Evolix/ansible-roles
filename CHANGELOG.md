@@ -13,7 +13,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
-* Preliminary work for php83
+* Support for PHP 8.3 with bookworm LXC containers
 * apt: add task file to install ELTS repository (default: False)
 * autosysadmin: Add a role to automatically deploy autosysadmin on evolixisation
 * check_free_space: added role
@@ -68,6 +68,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * unbound: Big cleanup
 * unbound: Move generated config file to `/etc/unbound/unbound.conf.d/evolinux.conf`
 * unbound: Use root hints provided by debian package dns-root-data instead of downloading them
+* vrrpd: replace switch script with custom one (fix MAC issue, use `ip(8)`, shell cleanup…)
 * vrrpd: variable to force update the switch script (default: false)
 * webapps/nextcloud: Add Ceph volume to fstab
 * webapps/nextcloud: Set home directory's mode
@@ -75,7 +76,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Fixed
 
 * Add php-fpm82 to LDAP when relevant
-* check stat.exists before stat.isdir
+* Check stat.exists before stat.isdir
 * apache: fix MaxRequestsPerChild value to be sync with wiki.e.o
 * apt: use archive.debian.org with Stretch
 * certbot: fix hook for dovecot when more than one certificate is used (eg. different certificates for POP3 and IMAP)
