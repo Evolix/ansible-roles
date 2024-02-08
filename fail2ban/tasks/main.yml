@@ -115,7 +115,7 @@
 - name: Script unban_ip is installed
   ansible.builtin.copy:
     src: unban_ip.sh
-    dst: /usr/local/sbin/unban_ip
+    dest: /usr/local/sbin/unban_ip
     mode: '0700'
   tags:
     - fail2ban
