@@ -11,21 +11,17 @@
     mode: '0644'
     force: true
 
-- name: Add Jitsi Meet apt repository key
-  ansible.builtin.get_url:
-    url: https://download.jitsi.org/jitsi-key.gpg.key
-    dest: /etc/apt/trusted.gpg.d/jitsimeet.asc
-    mode: '0644'
-    force: true
+- name: Add Jitsi Meet apt repository key + dearmor hack
+  shell: curl -sL https://download.jitsi.org/jitsi-key.gpg.key | sh -c 'gpg --dearmor > /etc/apt/trusted.gpg.d/jitsimeet.gpg'
 
 - name: Add Prosody apt repository
   ansible.builtin.apt_repository:
-    repo: "deb http://packages.prosody.im/debian {{ ansible_distribution_release }} main"
+    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/prosody.gpg] https://packages.prosody.im/debian {{ ansible_distribution_release }} main"
     state: present
 
 - name: Add Jitsi Meet apt repository
   ansible.builtin.apt_repository:
-    repo: "deb https://download.jitsi.org stable/"
+    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/jitsimeet.gpg] https://download.jitsi.org stable/"
     state: present
 
 - name: Install system dependencies
