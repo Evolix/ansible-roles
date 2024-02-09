@@ -1,12 +1,16 @@
 #!/bin/bash
-
-# https://forge.evolix.org/projects/evolix-private/repository
 #
-# You should not alter this file.
-# If you need to, create and customize a copy.
+# Source:
+# https://gitea.evolix.org/evolix/ansible-roles/src/branch/stable/nagios-nrpe
+#
 
 VERSION="21.04"
 readonly VERSION
+readonly base_dir="/var/lib/monitoringctl"
+
+# Default maximum allowed disable time
+disable_max_time_default="1d"
+readonly disable_max_time_default
 
 # base functions
 
@@ -27,17 +31,20 @@ show_help() {
     cat <<END
 alerts_wrapper wraps an NRPE command and overrides the return code.
 
-Usage: alerts_wrapper [--limit 1d] --names check_name[,other_disable_names,...] <check command with optional arguments>
+Usage: alerts_wrapper [--maximum 1d] [--names check,other_disable_name,...]] <check command with optional arguments>
 Usage: alerts_wrapper disable_name <check command with optional arguments>
 
 Options
- --limit            max age of the "check file" ;
-                    can be "1d" for 1 day, "5m" for 5 minutes…
-                    or more complex expressions like "1w2d10m42s"
- --names            disable name (shoud contain at least the check name)
- --name             (deprecated) disable name (kept for backward compatibility)
- -h, --help         print this message and exit
- -V, --version      print version and exit
+ -m|--max|--maximum    Max age of the disable file.
+                       Can be "1d" for 1 day, "5m" for 5 minutes…
+                       or more complex expressions like "1w2d10m42s"
+                       If no time unit is provided, hour is assumed.
+ --limit               (deprecated) Same as above (kept for backward compatibility).
+ -n|--names               Disable name (recommanded: set at least the check name).
+                       Special name: 'all' is already defined (and cannot be removed).
+ --name                (deprecated) Disable name (kept for backward compatibility).
+ -h, --help            Print this message and exit.
+ -V, --version         Print version and exit.
 END
 }
 
@@ -51,13 +58,20 @@ time_in_seconds() {
     fi
 }
 
-delay_from_alerts_disabled_file() {
+delay_from_disable_file() {
     # $1: disabled file
     last_change=$(stat -c %Z "$1")
-    limit_seconds=$(time_in_seconds "${wrapper_limit}" || time_in_seconds "${wrapper_limit_default}")
-    limit_date=$(date --date "${limit_seconds} seconds ago" +"%s")
 
-    echo $(( last_change - limit_date ))
+    disable_secs=$(grep -v -E "^\s*#" "${1}" | grep -E "[0-9]+" | head -n1 | awk '{print$1}')
+    disable_max_secs=$(time_in_seconds "${disable_max_time}" || time_in_seconds "${disable_max_time_default}")
+
+    if [ "${disable_secs}" -gt "${disable_max_secs}" ]; then
+        disable_secs="${disable_max_secs}"
+    fi
+
+    disable_date=$(date --date "${disable_secs} seconds ago" +"%s")
+
+    echo $(( last_change - disable_date ))
 }
 
 enable_checks() {
@@ -70,30 +84,52 @@ enable_checks() {
 }
 
 main() {
-    ${check_command} > "${check_stdout}"
+    check_stdout=$(timeout 9 ${check_command})
     check_rc=$?
-    readonly check_rc
+
+    if [ "${check_rc}" -eq 124 ] && [ -z "${check_stdout}" ]; then
+        check_stdout="Check timeout (9 sec)"
+    fi
 
     delay=0
-
+    disabled="False"
     for disable_name in ${disable_names}; do
-        alerts_disabled_file="/var/lib/misc/${disable_name}_alerts_disabled"
-        if [ -e "${alerts_disabled_file}" ]; then
-            delay=$(delay_from_alerts_disabled_file "${alerts_disabled_file}")
+        disable_file="${base_dir}/${disable_name}_alerts_disabled"
+        if [ -e "${disable_file}" ]; then
+            delay=$(delay_from_disable_file "${disable_file}")
 
             if [ "${delay}" -le "0" ]; then
                 enable_checks "${disable_name}"
             fi
         fi
 
-        if [ -e "${alerts_disabled_file}" ]; then
-            formatted_last_change=$(date --date "@$(stat -c %Z "${alerts_disabled_file}")" +'%c')
-            readonly formatted_last_change
+        if [ -e "${disable_file}" ]; then
+            disabled="True"
+            formatted_last_change=$(date --date "@$(stat -c %Z "${disable_file}")" +'%c')
 
-            echo "ALERTS DISABLED for ${disable_names} (since ${formatted_last_change}, delay: ${delay} sec) - $(cat "${check_stdout}")"
+            delay_days="$(( delay /86400 ))"
+            if [ "${delay_days}" -eq 0 ]; then delay_days=""
+            else delay_days="${delay_days}d "; fi
+
+            delay_hours="$(( (delay %86400) /3600 ))"
+            if [ "${delay_hours}" -eq 0 ]; then delay_hours=""
+            else delay_hours="${delay_hours}h "; fi
+
+            delay_minutes="$(( ((delay %86400) %3600) /60 ))"
+            if [ "${delay_minutes}" -eq 0 ]; then delay_minutes=""
+            else delay_minutes="${delay_minutes}m "; fi
+
+            delay_seconds="$(( ((delay %86400) %3600) %60 ))"
+            if [ "${delay_seconds}" -eq 0 ]; then delay_seconds=""
+            else delay_days="${delay_days}s "; fi
+
+            echo "ALERTS DISABLED for ${disable_names} (since ${formatted_last_change}, delay: ${delay_days}${delay_hours}${delay_minutes}${delay_seconds})."
         fi
     done
 
+    echo "${check_stdout}"
+
+    if [ "${disabled}" == "True" ]; then
         if [ ${check_rc} = 0 ]; then
             # Nagios OK
             exit 0
@@ -102,14 +138,10 @@ main() {
             exit 1
         fi
     else
-        cat "${check_stdout}"
         exit ${check_rc}
     fi
 }
 
-# Default: 1 day before re-enabling the check
-wrapper_limit_default="1d"
-readonly wrapper_limit_default
 
 if [[ "${1}" =~ -.* ]]; then
     # parse options
@@ -125,27 +157,27 @@ if [[ "${1}" =~ -.* ]]; then
                 exit 0
                 ;;
 
-            --limit)
+            -m|--max|--maximum|--limit)
                 # with value separated by space
                 if [ -n "$2" ]; then
-                    wrapper_limit=$2
+                    disable_max_time=$2
                     shift
                 else
-                    printf 'ERROR: "--limit" requires a non-empty option argument.\n' >&2
+                    printf 'ERROR: "--maximum" requires a non-empty option argument.\n' >&2
                     exit 1
                 fi
                 ;;
-            --limit=?*)
+            -m|--max|--maximum|--limit=?*)
                 # with value speparated by =
-                wrapper_limit=${1#*=}
+                disable_max_time=${1#*=}
                 ;;
-            --limit=)
+            -m|--max|--maximum|--limit=)
                 # without value
-                printf 'ERROR: "--limit" requires a non-empty option argument.\n' >&2
+                printf 'ERROR: "--maximum" requires a non-empty option argument.\n' >&2
                 exit 1
                 ;;
 
-            --name|--names)
+            -n|--name|--names)
                 # with value separated by space
                 if [ -n "$2" ]; then
                     disable_names=$2
@@ -155,11 +187,11 @@ if [[ "${1}" =~ -.* ]]; then
                     exit 1
                 fi
                 ;;
-            --name=?*|--names=?*)
+            -n|--name=?*|--names=?*)
                 # with value speparated by =
                 disable_names=${1#*=}
                 ;;
-            --name=|--names=)
+            -n|--name=|--names=)
                 # without value
                 printf 'ERROR: "--name" requires a non-empty option argument.\n' >&2
                 exit 1
@@ -194,13 +226,13 @@ else
 fi
 
 # Default values or errors
-if [ -z "${wrapper_limit}" ]; then
-    wrapper_limit="${wrapper_limit_default}"
+if [ -z "${disable_max_time}" ]; then
+    disable_max_time="${disable_max_time_default}"
 fi
-if [ -z "${disable_names}" ]; then
-    printf 'ERROR: You must specify a check name, with --names.\n' >&2
-    exit 1
-fi
+#if [ -z "${disable_names}" ]; then
+#    printf 'ERROR: You must specify a check name, with --names.\n' >&2
+#    exit 1
+#fi
 if [ -z "${check_command}" ]; then
     printf 'ERROR: You must specify a command to execute.\n' >&2
     exit 1
@@ -209,12 +241,6 @@ fi
 disable_names="all $(echo "${disable_names}" | tr ',' ' ')"
 readonly disable_names
 readonly check_command
-readonly wrapper_limit
-
-check_stdout=$(mktemp --tmpdir=/tmp "${disable_names}_stdout.XXXX")
-readonly check_stdout
-
-# shellcheck disable=SC2064
-trap "rm ${check_stdout}" EXIT
+readonly disable_max_time
 
 main

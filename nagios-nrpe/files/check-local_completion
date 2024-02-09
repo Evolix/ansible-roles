@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 
+# List of available checks
 _check_local_dynamic_completion() {
     local cur;
     cur=${COMP_WORDS[COMP_CWORD]};
     COMPREPLY=();
     COMPREPLY=( $( compgen -W '$(grep "\[check_" -Rs /etc/nagios/ | grep -vE "^[[:blank:]]*#" | awk -F"[\\\[\\\]=]" "{print \$2}" | sed "s/check_//" | sort | uniq)' -- $cur ) );
 }
+
+# List of available disable names of alerts_wrapper
+# grep "alerts_wrapper" -Rs /etc/nagios/ | grep -vE "^\s*#" | awk '{ for (i=1; i<=NF; i++) { if ($i ~ /--name[s]?/) print $(i+1) } }' | tr ',' '\n' | sort | uniq
+# + ajouter all
 
 complete -F _check_local_dynamic_completion check-local
 
