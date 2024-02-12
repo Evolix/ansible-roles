@@ -13,6 +13,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* kvm-host: add minifirewall rules if DRBD interface is configured
+
 ### Changed
 
 ### Fixed
