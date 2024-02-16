@@ -2,12 +2,15 @@
 
 #set -x
 
+VERSION="24.03.00"
+
 readonly base_dir="/var/lib/monitoringctl"
 readonly log_path="/var/log/monitoringctl.log"
 readonly conf_path="/etc/nagios/nrpe.cfg"
 
 function show_help {
     cat <<EOF
+monitoringctl version ${VERSION}.
 
 monitoringctl gives some control over NRPE checks and alerts.
 
@@ -16,7 +19,8 @@ Usage: monitoringctl [OPTIONS] ACTION ARGUMENTS
 GENERAL OPTIONS:
 
     -h, --help                         Print this message and exit.
-    -v, --verbose                      Print more informations.
+    -V, --version                      Print version number and exit.
+#    -v, --verbose                      Print more informations.
 
 ACTIONS:
 
@@ -30,7 +34,7 @@ ACTIONS:
             -b, --bypass-nrpe          Execute directly command from NRPE configuration,
                                        without requesting to NRPE.
 
-    alerts-status
+    status
 
         Print :
         - Wether alerts are enabled or not (silenced).
@@ -38,16 +42,16 @@ ACTIONS:
             - Comment.
             - Time left before automatic re-enable.
 
-    disable-alerts [--duration DURATION] 'COMMENT'
+    disable [--during DURATION] 'COMMENT'
 
         Disable (silence) all alerts (only global for now) for DURATION and write COMMENT into the log.
         Checks output is still printed, so alerts history won't be lost.
 
         Options:
 
-            -d, --duration DURATION    Specify disable-alerts duration (default: 1h).
+            -d, --during DURATION    Specify disable duration (default: 1h).
 
-    enable-alerts 'COMMENT'
+    enable 'COMMENT'
 
         Re-enable all alerts (only global for now)
 
@@ -57,7 +61,7 @@ COMMENT:
 
 DURATION:
 
-    (optional, default: "1h") Duration time (string) during which alerts will be disabled (silenced).
+    (optional, default: "1h") Time (string) during which alerts will be disabled (silenced).
 
     Format:
         You can use 'd' (day), 'h' (hour) and 'm' (minute) , or a combination of them, to specify a duration.
@@ -66,6 +70,10 @@ DURATION:
 Log path: ${log_path}
 
 EOF
+}
+
+function show_version {
+    echo "monitoringctl version ${VERSION}."
 }
 
 
@@ -149,7 +157,6 @@ function get_check_commands {
 
 function check {
     # $1: check name
-
     check_nrpe_bin=/usr/lib/nagios/plugins/check_nrpe
 
     if [ ! -f "${check_nrpe_bin}" ]; then
@@ -218,7 +225,7 @@ function filter_duration {
     if [[ "$1" =~ ${time_regex} ]]; then
         echo "$1"
     else
-        usage_error "Option --duration: \"$1\" is not a valid duration."
+        usage_error "Option --during: \"$1\" is not a valid duration."
     fi
 }
 
@@ -248,19 +255,19 @@ function disable_alerts {
     # -> mauvais indicateur, cf. le timeout à l'intérieur + le max autorisé dans la commande alerts_wrapper
     #if [ -f "${base_dir}/all_alerts_disabled" ]; then
     #    echo "All alerts are already disabled."
-    #    alerts-status
+    #    status
     #fi
 
     default_msg="."
     if [ "${default_duration}" = "True" ]; then
         default_msg=" (default value).
-    Hint: use --duration DURATION to change default time length."
+    Hint: use --during DURATION to change default time length."
     fi
     cat <<EOF
 Alerts will be disabled for ${duration}${default_msg}
 Our monitoring system will continue to gather checks outputs, so alerts history won't be lost.
 To re-enable alerts before ${duration}, execute (as root or with sudo):
-    monitoringctl enable-alerts
+    monitoringctl enable
 EOF
     echo -n "Confirm (y/N)? "
     read -r answer
@@ -269,7 +276,7 @@ EOF
         exit 0
     fi
 
-    log "Action disable-alerts requested for ${duration} by user $(logname || echo unknown): '$1'"
+    log "Action disable requested for ${duration} by user $(logname || echo unknown): '$1'"
 
     # Log a warning if a check has no wrapper
     for check in $(get_checks_list); do
@@ -286,23 +293,24 @@ EOF
         #done
     #done
 
-    log "Executing 'alerts_switch disable all'"
-    alerts_switch disable all --duration "${duration}"
+    log "Executing 'alerts_switch disable all --during \"${duration}\"'"
+    alerts_switch disable all --during "${duration}"
 
     echo "All alerts are now disabled for ${duration}."
 }
 
-function enable-alerts {
+function enable {
     # $1: comment
 
-    log "Action enable-alerts requested by user $(logname || echo unknown): '${1}'"
+    log "Action enable requested by user $(logname || echo unknown): '${1}'"
     log "Executing 'alerts_switch enable all'"
+    alerts_switch enable all
 
     echo "All alerts are now enabled."
 }
 
 
-### ALERTS-STATUS ACTION ##########################
+### status ACTION ##########################
 
 # Converts human writable duration into seconds
 function duration_to_seconds {
@@ -427,24 +435,27 @@ while :; do
         -h|-\?|--help)
             show_help
             exit 0;;
+        -V|--version)
+            show_version
+            exit 0;;
         -v|--verbose)
             verbose="True"
             shift;;
         -b|--bypass-nrpe)
             bypass_nrpe="True"
             shift;;
-        -d|--duration)
+        -d|--during)
             if [ "${default_duration}" = "False" ]; then
-                 usage_error "Option --duration: defined multiple times."
+                 usage_error "Option --during: defined multiple times."
             fi
             if [ "$#" -gt 1 ]; then
                 duration=$(filter_duration "$2")
                 default_duration="False"
             else
-                usage_error "Option --duration: missing value."
+                usage_error "Option --during: missing value."
             fi
             shift; shift;;
-        check|enable-alerts|disable-alerts|alerts-status)
+        check|enable|disable|status)
             action="$1"
             shift;;
         *)
@@ -474,31 +485,31 @@ if [ "${action}" = "check" ]; then
         usage_error "Action check: too many arguments."
     fi
     if [ "${default_duration}" = "False" ]; then
-        usage_error "Action check: there is no --duration option."
+        usage_error "Action check: there is no --during option."
     fi
 
     check "$check_name"
 
-elif [ "${action}" = "enable-alerts" ]; then
+elif [ "${action}" = "enable" ]; then
     if [ "$#" = 0 ]; then
-        usage_error "Action enable-alerts: missing COMMENT argument."
+        usage_error "Action enable: missing COMMENT argument."
     fi
     if [ "$#" -gt 1 ]; then
-        usage_error "Action enable-alerts: too many arguments."
+        usage_error "Action enable: too many arguments."
     fi
     if [ "${default_duration}" = "False" ]; then
-        usage_error "Action enable-alerts: there is no --duration option."
+        usage_error "Action enable: there is no --during option."
     fi
 
     comment="$1"
-    enable-alerts "${comment}"
+    enable "${comment}"
 
-elif [ "${action}" = "disable-alerts" ]; then
+elif [ "${action}" = "disable" ]; then
     if [ "$#" = 0 ]; then
-        usage_error "Action disable-alerts: missing COMMENT argument."
+        usage_error "Action disable: missing COMMENT argument."
     fi
     if [ "$#" -gt 1 ]; then
-        usage_error "Action disable-alerts: too many arguments."
+        usage_error "Action disable: too many arguments."
     fi
 
     is_nrpe_wrapped
@@ -506,9 +517,9 @@ elif [ "${action}" = "disable-alerts" ]; then
     comment="$1"
     disable_alerts "${comment}"
 
-elif [ "${action}" = "alerts-status" ]; then
+elif [ "${action}" = "status" ]; then
     if [ "$#" -gt 0 ]; then
-        usage_error "Action alerts-status: too many arguments."
+        usage_error "Action status: too many arguments."
     fi
 
     alerts_status

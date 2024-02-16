@@ -14,44 +14,59 @@ readonly log_file="/var/log/monitoringctl.log"
 duration="1h"
 
 usage() {
-    echo "$PROGNAME disables or enables NRPE alerts wrapped by the script 'alerts_wrapper' in NRPE configuration."
-    echo "Usage: $PROGNAME disable [-d|--duration <DURATION>] <NAME>"
-    echo "       $PROGNAME enable <NAME>"
-    echo "       $PROGNAME help"
-    echo "NAME: one of the names given to '--names' option of 'alerts_wrapper'."
-    echo "DURATION: Duration of alert disabling."
-    echo "          Can be '1d' for 1 day, '5m' for 5 minutes or more complex expressions like '1w2d10m42s' (if no time unit is provided, hour is assumed)"
-    echo "          Default value: 1h"
+    cat <<END
+$PROGNAME disables or enables NRPE alerts wrapped by the script 'alerts_wrapper' in NRPE configuration.
+
+Usage: $PROGNAME disable [-d|--during <DURATION>] <CHECK_NAME|ALL>
+       $PROGNAME enable <CHECK_NAME|ALL>
+       $PROGNAME help
+
+CHECK_NAME: the name given to '--name' option of 'alerts_wrapper'.
+DURATION: Duration of alert disabling.
+          Can be '1d' for 1 day, '5m' for 5 minutes or more complex
+          expressions like '1w2d10m42s' (if no time unit is provided,
+          hour is assumed)
+          Default value: 1h
+END
 }
 
-time_in_seconds() {
+error() {
+    # $1: error message
+    >&2 echo "$1"
+    usage
+    exit 1
+}
+
+time_to_seconds() {
+    # $1: time in string format
     if echo "${1}" | grep -E -q '^([0-9]+[wdhms])+$'; then
         echo "${1}" | sed 's/w/ * 604800 + /g; s/d/ * 86400 + /g; s/h/ * 3600 + /g; s/m/ * 60 + /g; s/s/ + /g; s/+ $//' | xargs expr
     elif echo "${1}" | grep -E -q '^([0-9]+$)'; then
         echo "${1} * 3600" | xargs expr
     else
-        >&2 echo "Invalid duration: '${1}'."
-        usage
-        exit 1
+        error "Invalid duration: '${1}'."
     fi
 }
 
 get_disable_names() {
-    echo "all,$(grep "alerts_wrapper" -Rs /etc/nagios/ | grep -vE "^\s*#" | awk '{ for (i=1; i<=NF; i++) { if ($i ~ /(-n|--name[s]?)/) print $(i+1) } }')" | tr ',' '\n' | sort | uniq
+    grep "alerts_wrapper" -Rs /etc/nagios/ | grep -vE "^\s*#" | awk '{ for (i=1; i<=NF; i++) { if ($i ~ /(-n|--name)/) print $(i+1) } }' | tr ',' '\n' | sort | uniq
 }
 
-
 disable_alerts () {
+    # $1: check name
+    disable_file_path="${base_dir}/${check_name}_alerts_disabled"
     echo "${duration_sec}" > "${disable_file_path}"
     chmod 0644 "${disable_file_path}"
-    log_disable
+    log_disable "$1"
 }
 
 enable_alerts () {
+    # $1: check name
+    disable_file_path="${base_dir}/${check_name}_alerts_disabled"
     if [ -e "${disable_file_path}" ]; then
         rm "${disable_file_path}"
     fi
-    log_enable
+    log_enable "$1"
 }
 
 now () {
@@ -59,24 +74,29 @@ now () {
 }
 
 log_disable () {
-    echo "$(now) - alerts_switch: ${disable_name} alerts disabled by $(logname || echo unknown)" >> $log_file
+    # $1: check name
+    echo "$(now) - alerts_switch: $1 alerts disabled by $(logname || echo unknown)" >> $log_file
 }
 
 log_enable () {
-    echo "$(now) - alerts_switch: ${disable_name} alerts enabled by $(logname || echo unknown)" >> $log_file
+    # $1: check name
+    echo "$(now) - alerts_switch: $1 alerts enabled by $(logname || echo unknown)" >> $log_file
 }
 
 
 main () {
-    disable_file_path="${base_dir}/${disable_name}_alerts_disabled"
-
     mkdir -p "${base_dir}"
 
+    #TODO
+    if all
+        for check in $(get_disable_names); do
+        done
+
     if [ "${action}" == 'enable' ]; then
-        enable_alerts
+        enable_alerts "${check_name}"
     elif [ "${action}" == 'disable' ]; then
-        duration_sec=$(time_in_seconds "${duration}")
-        disable_alerts
+        duration_sec=$(time_to_seconds "${duration}")
+        disable_alerts "${check_name}"
     elif [ "${action}" == 'help' ]; then
         usage
     fi
@@ -88,42 +108,39 @@ while :; do
         enable|disable|help)
             action="$1"
             shift;;
-        -d|--duration)
+        -d|--during)
             if [ "$#" -gt 1 ]; then
                 duration="$2"
             else
-                >&2 echo "Missing --duration argument."
-                usage
-                exit 1
+                error "Missing --during argument."
             fi
             shift; shift;;
         *)
             if [ -z "${action}" ]; then
-                >&2 echo "Missing action argument."
-                usage
-                exit 1
-            fi
-            if [ -z "$1" ]; then
+                error "Missing action argument."
+            elif [ -n "${check_name}" ]; then
+                error "Unknown argument '$1'."
+            elif [ -z "$1" ]; then
                 break
             fi
             get_disable_names | grep --quiet -E "^$1$"
             arg_is_in_disable_names_rc=$?
-            if [ "${arg_is_in_disable_names_rc}" -eq 0 ] && [ -z "${disable_name}" ]; then
-                disable_name="$1"
+            if [ "${arg_is_in_disable_names_rc}" -eq 0 ] || [ "$1" == "all" ]; then
+                check_name="$1"
             else
-                >&2 echo "Unknown argument '$1', or NAME not defined in NRPE configuration."
-                usage
-                exit 1
+                error "Unknown argument '$1', or NAME not defined in NRPE configuration."
             fi
             shift;;
     esac
 done
 
-if [ -z "${disable_name}" ] && [ "${action}" != 'help' ] ; then
-    >&2 echo "Missing NAME argument."
-    usage
-    exit 1
+if [ -z "${check_name}" ] && [ "${action}" != 'help' ] ; then
+    error "Missing CHECK_NAME argument."
 fi
+
+readonly check_name
+readonly duration
+readonly action
 
 main
 

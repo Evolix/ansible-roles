@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# List of available checks
+_monitoringctl_completion() {
+    local cur=${COMP_WORDS[COMP_CWORD]};
+
+    if [ "${#COMP_WORDS[@]}" == "1" ]; then
+        COMPREPLY=($(compgen -W "check status enable disable" "${cur}"))
+    elif [ "${COMP_WORDS[@]}" =~ (check|enable|disable) ]; then
+        
+    fi
+
+    COMPREPLY=( $( compgen -W '$(grep "\[check_" -Rs /etc/nagios/ | grep -vE "^[[:blank:]]*#" | awk -F"[\\\[\\\]=]" "{print \$2}" | sed "s/check_//" | sort | uniq)' -- "${cur}" ) );
+}
+
+# List of available checks
+_disable_names_list_completion() {
+    local cur=${COMP_WORDS[COMP_CWORD]};
+    command="echo \"all\"; echo \$(grep \"alerts_wrapper\" -Rs /etc/nagios/ | awk '!/^\s*#/ { for (i=1; i<=NF; i++) if (\$i ~ /--name[s]?/) { sub(\",\", \"\n\", \$(i+1)); print \$(i+1) } }' | sort | uniq)"
+    COMPREPLY=( $( compgen -W '$($command)' -- "$cur" ) );
+
+complete -F _monitoringctl_completion monitoringctl
+#complete -F _disable_names_list_completion alerts_switch
+
+
