@@ -17,6 +17,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* apt: add ftp.evolix.org as recognized system source
 * redis: create sysfs config file if missing
 
 ### Fixed

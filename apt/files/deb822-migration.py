@@ -13,6 +13,7 @@ destinations = {
     ".*-backports": "backports.sources",
     ".debian.org": "system.sources",
     "mirror.evolix.org": "system.sources",
+    "ftp.evolix.org": "system.sources",
     "pub.evolix.net": "evolix_public_old.sources.bak",
     "pub.evolix.org": "evolix_public.sources",
     "artifacts.elastic.co": "elastic.sources",
