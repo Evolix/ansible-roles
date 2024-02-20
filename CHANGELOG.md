@@ -90,6 +90,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * vrrpd: variable to force update the switch script (default: false)
 * webapps/nextcloud: Add Ceph volume to fstab
 * webapps/nextcloud: Set home directory's mode
+* certbot: Utiliser pkey pour tester clé
 
 ### Fixed
 
