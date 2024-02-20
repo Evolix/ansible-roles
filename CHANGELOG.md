@@ -17,6 +17,8 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Changed
 
+* redis: create sysfs config file if missing
+
 ### Fixed
 
 ### Removed
