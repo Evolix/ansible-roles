@@ -13,6 +13,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+* certbot: Renewal hook for NRPE
 * kvm-host: add minifirewall rules if DRBD interface is configured
 
 ### Changed
