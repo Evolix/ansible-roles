@@ -20,6 +20,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * apt: add ftp.evolix.org as recognized system source
 * lxc-php, php: Update sury PGP key
 * redis: create sysfs config file if missing
+* openvpn: earlier alert for CA expiration
 
 ### Fixed
 
