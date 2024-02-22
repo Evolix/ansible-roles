@@ -13,3 +13,4 @@ jitsi_meet_ssl_key_path: "/etc/ssl/private/ssl-cert-snakeoil.key"
 jitsi_meet_turn_secret: "YOU_ABSOLUTELY_MUST_CHANGE_ME"
 jitsi_meet_jvb_secret: "NOT_CHANGING_ME_IS_SUPER_UNCOOL"
 jitsi_meet_jvb_muc_nick: "1899aaf3-3991-4770-9c8c-113906dc0a2e"
+colibri_ext_port: '8443'

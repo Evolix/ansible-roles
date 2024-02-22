@@ -240,8 +240,8 @@ server {
 
 ## Pour communiquer les stats colibri à un serveur externe Grafana 
 server {
-    listen 8443      ssl http2;
-    listen [::]:8443 ssl http2;
+    listen {{ colibri_ext_port }}      ssl http2;
+    listen [::]:{{ colibri_ext_port }} ssl http2;
 
     server_name {{ domains | first }};
 
