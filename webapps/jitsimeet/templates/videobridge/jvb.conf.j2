@@ -3,10 +3,18 @@ videobridge {
         public {
             port = 9090
         }
+        private {
+            port = 8080
+        }
     }
     websockets {
         enabled = true
         domain = "{{ domains | first }}:443"
         tls = true
+    }
+    apis {
+        rest {
+            enabled = true
+        }
     }
 }
