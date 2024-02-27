@@ -55,7 +55,7 @@ time_to_seconds() {
 
 delay_from_disable_file() {
     # $1: disabled file containing the re-enable time in sec
-    enable_secs=$(grep -v -E "^\s*#" "${1}" | grep -E "[0-9]+" | head -n1 | awk '{print $1}')
+    enable_secs=$(grep -v -E "^\s*#" "${1}" | grep -E "^[0-9]+$" | head -n1 | awk '{print $1}')
     # If file is empty, use file last change date plus default disabled time
     if [ -z "${enable_secs}" ]; then
         file_last_change_secs=$(stat -c %Z "$1")
@@ -71,19 +71,19 @@ delay_to_string() {
     #$1 delay in secs
     delay_days="$(( delay /86400 ))"
     if [ "${delay_days}" -eq 0 ]; then delay_days=""
-    else delay_days="${delay_days}d "; fi
+    else delay_days="${delay_days}d"; fi
 
     delay_hours="$(( (delay %86400) /3600 ))"
     if [ "${delay_hours}" -eq 0 ]; then delay_hours=""
-    else delay_hours="${delay_hours}h "; fi
+    else delay_hours="${delay_hours}h"; fi
 
     delay_minutes="$(( ((delay %86400) %3600) /60 ))"
     if [ "${delay_minutes}" -eq 0 ]; then delay_minutes=""
-    else delay_minutes="${delay_minutes}m "; fi
+    else delay_minutes="${delay_minutes}m"; fi
 
     delay_seconds="$(( ((delay %86400) %3600) %60 ))"
     if [ "${delay_seconds}" -eq 0 ]; then delay_seconds=""
-    else delay_days="${delay_days}s "; fi
+    else delay_seconds="${delay_seconds}s"; fi
 
     echo "${delay_days}${delay_hours}${delay_minutes}${delay_seconds}"
 }
@@ -120,7 +120,7 @@ main() {
         timeout_command="timeout 9"
     fi
 
-    check_stdout=$(${timeout_command} "${check_command}")
+    check_stdout=$(${timeout_command} ${check_command})
     check_rc=$?
 
     if [ "${is_disabled}" == "True" ] && [ "${check_rc}" -eq 124 ] && [ -z "${check_stdout}" ]; then
@@ -130,10 +130,10 @@ main() {
     if [ "${is_disabled}" == "True" ]; then
         delay=$(delay_from_disable_file "${disable_file}")
         delay_str="$(delay_to_string "${delay}")"
-        echo "ALERTS DISABLED for ${check_name} until ${delay_str}."
+        echo "ALERT DISABLED until ${delay_str} - ${check_stdout}"
+    else
+        echo "${check_stdout}"
     fi
-
-    echo "${check_stdout}"
 
     if [ "${is_disabled}" == "True" ]; then
         if [ ${check_rc} = 0 ]; then
@@ -179,7 +179,6 @@ if [[ "${1}" =~ -.* ]]; then
                 printf 'ERROR: "--name" requires a non-empty option argument.\n' >&2
                 exit 1
                 ;;
-
             --)
                 # End of all options.
                 shift
@@ -210,11 +209,15 @@ fi
 
 if [ -z "${check_name}" ]; then
     printf 'ERROR: You must specify a check name, with --names.\n' >&2
-    exit 1
+    exit 2
 fi
 if [ -z "${check_command}" ]; then
     printf 'ERROR: You must specify a command to execute.\n' >&2
-    exit 1
+    exit 2
+fi
+if [ -e "${base_dir}" ] && [ ! -x "${base_dir}" ]; then
+    printf "ERROR: %s exists but is no reachable.\n" "${base_dir}"
+    exit 2
 fi
 
 readonly check_name

@@ -1,25 +1,81 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
+#
 
-# List of available checks
-_monitoringctl_completion() {
-    local cur=${COMP_WORDS[COMP_CWORD]};
-
-    if [ "${#COMP_WORDS[@]}" == "1" ]; then
-        COMPREPLY=($(compgen -W "check status enable disable" "${cur}"))
-    elif [ "${COMP_WORDS[@]}" =~ (check|enable|disable) ]; then
-        
-    fi
-
-    COMPREPLY=( $( compgen -W '$(grep "\[check_" -Rs /etc/nagios/ | grep -vE "^[[:blank:]]*#" | awk -F"[\\\[\\\]=]" "{print \$2}" | sed "s/check_//" | sort | uniq)' -- "${cur}" ) );
+_get_wrappers_names() {
+    grep "alerts_wrapper" -Rs /etc/nagios/ | grep -v -E "^\s*#" | awk '{ for (i=1 ; i<=NF; i++) { if ($i ~ /^(-n|--name)$/) { print $(i+1); break } } }' | tr ',' '\n' | sort | uniq
 }
 
-# List of available checks
-_disable_names_list_completion() {
+_monitoringctl_completion() {
     local cur=${COMP_WORDS[COMP_CWORD]};
-    command="echo \"all\"; echo \$(grep \"alerts_wrapper\" -Rs /etc/nagios/ | awk '!/^\s*#/ { for (i=1; i<=NF; i++) if (\$i ~ /--name[s]?/) { sub(\",\", \"\n\", \$(i+1)); print \$(i+1) } }' | sort | uniq)"
-    COMPREPLY=( $( compgen -W '$($command)' -- "$cur" ) );
+    local prev=${COMP_WORDS[COMP_CWORD-1]};
 
-complete -F _monitoringctl_completion monitoringctl
-#complete -F _disable_names_list_completion alerts_switch
+    local action=""
+    for w in "${COMP_WORDS[@]}"; do
+        case "$w" in
+            status|check|enable|disable)
+                action="${w}"
+                ;;
+        esac
+    done
 
+    local words="--help"
+    case "${action}" in
+        status)
+            words="${words}"
+            ;;
+        check)
+            local checks="$(_get_wrappers_names)"
+            local check=""
+            for w in "${COMP_WORDS[@]}"; do
+                for c in ${checks}; do
+                    if [ "${c}" == "${w}" ]; then
+                        check="${w}"
+                        break
+                    fi
+                done
+            done
+            if [ -z "${check}" ]; then
+                words="--bypass-nrpe ${checks} ${words}"
+            else
+                words="--bypass-nrpe ${words}"
+            fi
+            ;;
+        enable)
+            if [ "${prev}" == "enable" ]; then
+                words="all $(_get_wrappers_names)"
+            else
+                words="--comment ${words}"
+            fi
+            ;;
+        disable)
+            if [ "${prev}" == "disable" ]; then
+                words="all $(_get_wrappers_names)"
+            elif [ "${prev}" == "-d" ] || [ "${prev}" == "--during" ]; then
+                words="1d 1d12h 1h 1h30m 1m 1m30s 30s"
+            else
+                words="--during --comment ${words}"
+            fi
+            ;;
+        *)
+            words="status check enable disable ${words}"
+            ;;
+    esac
+
+    # Avoid double
+    opts=();
+    for i in ${words}; do
+        for j in "${COMP_WORDS[@]}"; do
+            if [[ "$i" == "$j" ]]; then
+                continue 2
+            fi
+        done
+        opts+=("$i")
+    done
+
+    COMPREPLY=($(compgen -W "${opts[*]}" -- "${cur}"))
+    return 0
+
+}
+
+complete -F _monitoringctl_completion monitoringctl.sh
 

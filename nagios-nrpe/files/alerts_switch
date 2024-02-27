@@ -4,8 +4,6 @@
 # https://gitea.evolix.org/evolix/ansible-roles/src/branch/stable/nagios-nrpe
 #
 
-set -e
-
 readonly PROGNAME=$(basename $0)
 readonly base_dir="/var/lib/monitoringctl"
 readonly log_file="/var/log/monitoringctl.log"
@@ -41,28 +39,32 @@ time_to_seconds() {
     # $1: time in string format
     if echo "${1}" | grep -E -q '^([0-9]+[wdhms])+$'; then
         echo "${1}" | sed 's/w/ * 604800 + /g; s/d/ * 86400 + /g; s/h/ * 3600 + /g; s/m/ * 60 + /g; s/s/ + /g; s/+ $//' | xargs expr
-    elif echo "${1}" | grep -E -q '^([0-9]+$)'; then
-        echo "${1} * 3600" | xargs expr
+    elif echo "${1}" | grep -E -q '^([0-9]+h[0-9]+$)'; then
+        echo "${1}" | sed 's/h/ * 3600 + /g; s/$/ * 60/' | xargs expr
+    elif echo "${1}" | grep -E -q '^([0-9]+m[0-9]+$)'; then
+        echo "${1}" | sed 's/m/ * 60 + /g' | xargs expr
     else
         error "Invalid duration: '${1}'."
     fi
 }
 
 get_disable_names() {
-    grep "alerts_wrapper" -Rs /etc/nagios/ | grep -vE "^\s*#" | awk '{ for (i=1; i<=NF; i++) { if ($i ~ /(-n|--name)/) print $(i+1) } }' | tr ',' '\n' | sort | uniq
+    grep "alerts_wrapper" -Rs /etc/nagios/ | grep -vE "^\s*#" | awk '{ for (i=1; i<=NF; i++) { if ($i ~ /^(-n|--name)$/) { print $(i+1); break } } }' | tr ',' '\n' | sort | uniq
 }
 
 disable_alerts () {
-    # $1: check name
-    disable_file_path="${base_dir}/${check_name}_alerts_disabled"
-    echo "${duration_sec}" > "${disable_file_path}"
+    # $1: check name, $2: duration_sec
+    now_secs=$(date +"%s")
+    disable_until_secs=$(( now_secs + $2 ))
+    disable_file_path="${base_dir}/${1}_alerts_disabled"
+    echo "${disable_until_secs}" > "${disable_file_path}"
     chmod 0644 "${disable_file_path}"
     log_disable "$1"
 }
 
 enable_alerts () {
     # $1: check name
-    disable_file_path="${base_dir}/${check_name}_alerts_disabled"
+    disable_file_path="${base_dir}/${1}_alerts_disabled"
     if [ -e "${disable_file_path}" ]; then
         rm "${disable_file_path}"
     fi
@@ -85,18 +87,25 @@ log_enable () {
 
 
 main () {
-    mkdir -p "${base_dir}"
-
-    #TODO
-    if all
-        for check in $(get_disable_names); do
-        done
+    install --mode=0755 --directory "${base_dir}"
 
     if [ "${action}" == 'enable' ]; then
-        enable_alerts "${check_name}"
+        if [ "${check_name}" == "all" ]; then
+            for check in $(get_disable_names); do
+                enable_alerts "${check}"
+            done
+        else
+            enable_alerts "${check_name}"
+        fi
     elif [ "${action}" == 'disable' ]; then
         duration_sec=$(time_to_seconds "${duration}")
-        disable_alerts "${check_name}"
+        if [ "${check_name}" == "all" ]; then
+            for check in $(get_disable_names); do
+                disable_alerts "${check}" "${duration_sec}"
+            done
+        else
+            disable_alerts "${check_name}" "${duration_sec}"
+        fi
     elif [ "${action}" == 'help' ]; then
         usage
     fi
@@ -116,20 +125,22 @@ while :; do
             fi
             shift; shift;;
         *)
-            if [ -z "${action}" ]; then
-                error "Missing action argument."
-            elif [ -n "${check_name}" ]; then
-                error "Unknown argument '$1'."
-            elif [ -z "$1" ]; then
-                break
-            fi
-            get_disable_names | grep --quiet -E "^$1$"
-            arg_is_in_disable_names_rc=$?
-            if [ "${arg_is_in_disable_names_rc}" -eq 0 ] || [ "$1" == "all" ]; then
-                check_name="$1"
+            if [ -n "$1" ]; then
+                get_disable_names | grep --quiet -E "^$1$"
+                arg_is_in_disable_names_rc=$?
+                if [ "${arg_is_in_disable_names_rc}" -eq 0 ] || [ "$1" == "all" ]; then
+                    check_name="$1"
+                else
+                    error "Unknown argument '$1', or NAME not defined in NRPE configuration."
+                fi
             else
-                error "Unknown argument '$1', or NAME not defined in NRPE configuration."
+                if [ -z "${action}" ]; then
+                    error "Missing action argument."
+                elif [ -z "$1" ]; then
+                    break
+                fi
             fi
+
             shift;;
     esac
 done
