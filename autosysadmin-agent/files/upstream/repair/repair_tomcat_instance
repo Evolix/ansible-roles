@@ -1,0 +1,34 @@
+#!/bin/bash
+
+: "${AUTOSYSADMIN_LIB:=/usr/local/lib/autosysadmin}"
+source "${AUTOSYSADMIN_LIB}/common.sh" || exit 1
+source "${AUTOSYSADMIN_LIB}/repair.sh" || exit 1
+
+pre_repair
+
+repair_tomcat_instance_handle_tomcat() {
+
+    if /bin/su - "${1}" -c "/bin/systemctl --quiet --user is-active tomcat.service" ; then
+        if ! /bin/su - "${1}" -c "/usr/bin/timeout 20 /bin/systemctl --quiet --user restart tomcat.service"
+        then
+            log_abort_and_quit "Echec de redémarrage instance tomcat utilisateur ${1}"
+        else
+            log_action "Redémarrage instance tomcat utilisateur ${1}"
+        fi
+    elif /bin/systemctl --quiet is-active "${1}".service ; then
+        if ! /usr/bin/timeout 20 systemctl --quiet restart "${1}".service
+        then
+            log_abort_and_quit "Echec de redémarrage instance tomcat ${1}"
+        else
+            log_action "Redémarrage instance tomcat ${1}"
+        fi
+    fi
+
+}
+
+for instance in $( /usr/local/lib/nagios/plugins/check_tomcat_instance.sh |grep CRITICAL |awk '{print $3}' |sed '1d') ;
+do
+    repair_tomcat_instance_handle_tomcat "${instance}"
+done
+
+post_repair

@@ -1,0 +1,41 @@
+#!/bin/bash
+
+: "${AUTOSYSADMIN_LIB:=/usr/local/lib/autosysadmin}"
+source "${AUTOSYSADMIN_LIB}/common.sh" || exit 1
+source "${AUTOSYSADMIN_LIB}/repair.sh" || exit 1
+
+## Custom lock wait and/or lock name
+# LOCK_WAIT="15s"
+# LOCK_NAME="repair_http"
+
+pre_repair
+
+## The name of the service, mainly for logging
+service_name="example"
+## The systemd service name
+systemd_service="${service_name}.service"
+
+if is_systemd_enabled "${systemd_service}"; then
+    if is_systemd_active "${systemd_service}"; then
+        log_abort_and_quit "${systemd_service} is active, nothing left to do."
+    else
+        # Save service status before restart
+        systemctl status "${systemd_service}" | save_in_log_dir "${service_name}.before.status"
+
+        # Try to restart
+        timeout 20 systemctl restart "${systemd_service}" > /dev/null
+        rc=$?
+        if [ "${rc}" -eq "0" ]; then
+            log_action "Restart ${service_name}: OK"
+        else
+            log_action "Restart ${service_name}: failed"
+        fi
+
+        # Save service status after restart
+        systemctl status "${systemd_service}" | save_in_log_dir "${service_name}.after.status"
+    fi
+else
+    log_abort_and_quit "${service_name} is disabled (or missing), nothing left to do."
+fi
+
+post_repair

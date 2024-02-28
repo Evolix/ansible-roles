@@ -149,7 +149,7 @@
 
 - name: Autosysadmin
   ansible.builtin.include_role:
-    name: 'evolix/autosysadmin'
+    name: 'evolix/autosysadmin-agent'
   when: evolinux_autosysadmin_include | bool
 
 - name: fail2ban

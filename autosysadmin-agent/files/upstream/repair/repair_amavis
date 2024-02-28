@@ -1,0 +1,16 @@
+#!/bin/bash
+
+: "${AUTOSYSADMIN_LIB:=/usr/local/lib/autosysadmin}"
+source "${AUTOSYSADMIN_LIB}/common.sh" || exit 1
+source "${AUTOSYSADMIN_LIB}/repair.sh" || exit 1
+
+pre_repair
+
+# shellcheck source=./restart_amavis.sh
+source /usr/share/scripts/autosysadmin/auto/restart_amavis.sh
+
+restart_amavis
+
+sendmail success
+
+post_repair

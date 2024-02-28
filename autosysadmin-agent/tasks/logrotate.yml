@@ -1,0 +1,8 @@
+---
+- name: Copy logrotate configuration for autosysadmin
+  ansible.builtin.copy:
+    src: "files/autosysadmin.logrotate.conf"
+    dest: "/etc/logrotate.d/autosysadmin"
+    owner: root
+    group: root
+    mode: "0644"

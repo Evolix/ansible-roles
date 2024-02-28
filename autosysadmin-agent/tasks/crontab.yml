@@ -1,0 +1,25 @@
+---
+
+- name: "Add begin marker if missing"
+  ansible.builtin.lineinfile:
+    path: "/etc/cron.d/autosysadmin"
+    line: "# BEGIN ANSIBLE MANAGED SECTION FOR AUTOSYSADMIN"
+    insertbefore: BOF
+    create: yes
+
+- name: "Add end marker if missing"
+  ansible.builtin.lineinfile:
+    path: "/etc/cron.d/autosysadmin"
+    line: "# END ANSIBLE MANAGED SECTION FOR AUTOSYSADMIN"
+    insertbefore: "EOF"
+    create: yes
+
+- name: "Create config if missing"
+  ansible.builtin.blockinfile:
+    path: "/etc/cron.d/autosysadmin"
+    marker: "# {mark} ANSIBLE MANAGED SECTION FOR AUTOSYSADMIN"
+    block: "{{ lookup('ansible.builtin.template', '../templates/autosysadmin.cron.j2') }}"
+    owner: root
+    group: root
+    mode: "0750"
+    create: yes

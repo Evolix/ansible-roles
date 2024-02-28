@@ -1,0 +1,14 @@
+#!/bin/bash
+
+: "${AUTOSYSADMIN_LIB:=/usr/local/lib/autosysadmin}"
+source "${AUTOSYSADMIN_LIB}/common.sh" || exit 1
+source "${AUTOSYSADMIN_LIB}/repair.sh" || exit 1
+
+LOCK_WAIT="15s"
+LOCK_NAME="repair_http"
+
+pre_repair
+
+repair_lxc_php php70
+
+post_repair

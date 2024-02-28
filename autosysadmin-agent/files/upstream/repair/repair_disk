@@ -1,0 +1,157 @@
+#!/bin/bash
+
+: "${AUTOSYSADMIN_LIB:=/usr/local/lib/autosysadmin}"
+source "${AUTOSYSADMIN_LIB}/common.sh" || exit 1
+source "${AUTOSYSADMIN_LIB}/repair.sh" || exit 1
+
+pre_repair
+
+
+# We always keep some reserved blocks to avoid missing some logs
+# https://gitea.evolix.org/evolix/autosysadmin/issues/22
+RESERVED_BLOCKS_MIN=1
+
+get_mountpoints() {
+    # the $(...) get the check_disk1 command
+    # the cut command selects the critical part of the check_disk1 output
+    # the grep command extracts the mountpoints and available disk space
+    # the last cut command selects the mountpoints
+    check_disk1_command=$(grep check_disk1 /etc/nagios/nrpe.d/evolix.cfg | cut -d'=' -f2-)
+    
+    ${check_disk1_command} -e | cut -d'|' -f1 | grep --extended-regexp --only-matching '/[[:graph:]]* [0-9]+ [A-Z][A-Z]' | cut -d' ' -f1
+}
+
+is_reserved_blocks_nominal() {
+    partition=${1}
+
+    fs_type="$(findmnt -n --output=fstype "${partition}")"
+    if [ "${fs_type}" = "ext4" ]; then
+        device="$(findmnt -n --output=source "${partition}")"
+        reserved_block_count="$(tune2fs -l "${device}" | grep 'Reserved block count' | awk -F':' '{ gsub (" ", "", $0); print $2}')"
+        block_count="$(tune2fs -l "${device}" | grep 'Block count' | awk -F':' '{ gsub (" ", "", $0); print $2}')"
+        percentage=$(awk "BEGIN { pc=100*${reserved_block_count}/${block_count}; i=int(pc); print (pc-i<0.5)?i:i+1 }")
+
+        log_run "Reserved blocks for ${partition} is currently at ${percentage}%"
+        if [ "${percentage}" -gt "${RESERVED_BLOCKS_MIN}" ]; then
+            log_run "Allowing tune2fs action to reduce the number of reserved blocks"
+            return 0
+        else
+            log_run "Reserved blocks already at or bellow ${RESERVED_BLOCKS_MIN}%, no automatic action possible"
+            return 1
+        fi
+    else
+        log_run "Filesystem for ${partition} (${fs_type}) is incompatible with reserved block reduction."
+        return 1
+    fi
+}
+
+reduce_reserved_blocks() {
+    partition=${1}
+
+    device=$(findmnt -n --output=source "${partition}")
+    tune2fs -m "${RESERVED_BLOCKS_MIN}" "${device}"
+    log_action "Reserved blocks for ${partition} changed to ${RESERVED_BLOCKS_MIN} percent"
+}
+
+is_tmp_to_delete() {
+    size="$(find /var/log/ -type f -ctime +1 -exec du {} \+ | awk '{s+=$1}END{print s / 1024}')"
+    if [ -n "${size}" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+is_log_to_delete() {
+    size="$(find /var/log/ -type f -mtime +365 -exec du {} \+ | awk '{s+=$1}END{print s / 1024}')"
+    if [ -n "${size}" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+clean_apt_cache() {
+    for container in $(lxc-ls -1); do
+        if [ -e "$(lxc-config lxc.lxcpath)/${container}/rootfs/var/cache" ]; then
+            lxc-attach --name "${container}" -- apt-get clean
+            log_action "Clean apt cache in LXC container ${container}";
+        fi
+    done
+
+    # NOTE: "head -n 1" might be superfluous, but let's be sure to have only the first returned value
+    biggest_subdir=$(du --summarize --one-file-system "/var/*" | sort --numeric-sort --reverse | sed 's/^[0-9]\+[[:space:]]\+//;q' | head -n 1)
+    case "${biggest_subdir}" in
+        '/var/cache')
+            apt-get clean
+            log_action 'Clean apt cache'
+        ;;
+    esac
+}
+
+clean_amavis_virusmails() {
+    if du --inodes /var/lib/* | sort --numeric-sort | tail -n 3 | grep --quiet 'virusmails$'; then
+        find /var/lib/amavis/virusmails/ -type f -atime +30 -delete
+        log_action 'Clean amavis infected mails'
+    fi
+}
+
+critical_mountpoints=$(get_mountpoints)
+
+if [ -z "${critical_mountpoints}" ]; then
+    log_abort_and_quit "No partition is in critical state, nothing left to do."
+else
+    for mountpoint in ${critical_mountpoints}; do
+        case "${mountpoint}" in
+        /var)
+            #if is_log_to_delete
+            #then
+            #    find /var/log/ -type f -mtime +365 -delete
+            #    log_action "$size Mo of disk space freed in /var"
+            #fi
+            if is_reserved_blocks_nominal /var; then
+                reduce_reserved_blocks /var
+                clean_apt_cache
+                clean_amavis_virusmails
+            fi
+            ;;
+        /tmp)
+            #if is_tmp_to_delete
+            #then
+            #    find /tmp/ -type f -ctime +1 -delete
+            #    log_action "$size Mo of disk space freed in /tmp"
+            #fi
+            if is_reserved_blocks_nominal /tmp; then
+                reduce_reserved_blocks /tmp
+            fi
+            ;;
+        /home)
+            if is_reserved_blocks_nominal /home; then
+                reduce_reserved_blocks /home
+            fi
+            ;;
+        /srv)
+            if is_reserved_blocks_nominal /srv; then
+                reduce_reserved_blocks /srv
+            fi
+            ;;
+        /filer)
+            if is_reserved_blocks_nominal /filer; then
+                reduce_reserved_blocks /filer
+            fi
+            ;;
+        /)
+            if is_reserved_blocks_nominal /; then
+                reduce_reserved_blocks /
+                # Suggest remove old kernel ?
+            fi
+            ;;
+        *)
+            # unknown
+            log_run 'Unknown partition (or weird case) or nothing to do'
+            ;;
+        esac
+    done
+fi
+
+post_repair

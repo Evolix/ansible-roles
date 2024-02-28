@@ -1,0 +1,17 @@
+---
+
+general_scripts_dir: "/usr/share/scripts"
+
+autosysadmin_agent_bin_dir: "/usr/local/bin/autosysadmin"
+autosysadmin_agent_lib_dir: "/usr/local/lib/autosysadmin"
+autosysadmin_agent_auto_dir: "{{ general_scripts_dir }}/autosysadmin/auto"
+
+autosysadmin_agent_crontab_enabled: true
+autosysadmin_agent_log_retention_days: 365
+
+autosysadmin_config: []
+  ### All repair are disabled if set to 'off'
+  ### even if a specific repair value is 'on'
+  # repair_all: 'on'
+  ### Default values for checks
+  # repair_foo: 'off'
