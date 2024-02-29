@@ -1,7 +1,7 @@
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Run each enabled script
-*/5 * * * * root run-parts /usr/share/scripts/autosysadmin/auto
+*/5 * * * * root run-parts /usr/share/scripts/autosysadmin/restart
 
 # Clean run log files
 @weekly root {{ autosysadmin_agent_bin_dir | mandatory }}/delete_old_logs.sh {{ autosysadmin_agent_log_retention_days | default('365') }}

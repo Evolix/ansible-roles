@@ -14,13 +14,14 @@ The **patch** part changes is incremented if multiple releases happen the same m
 ### Added
 
 * autosysadmin-agent: upstream release 24.02.3
-* autosysadmin-agent: logs clearing is done weekly
 * certbot: Renewal hook for NRPE
 * kvm-host: add minifirewall rules if DRBD interface is configured
 
 ### Changed
 
 * apt: add ftp.evolix.org as recognized system source
+* autosysadmin-agent: logs clearing is done weekly
+* autosysadmin-agent: rename /usr/share/scripts/autosysadmin/{auto,restart}
 * lxc-php, php: Update sury PGP key
 * redis: create sysfs config file if missing
 * openvpn: earlier alert for CA expiration
