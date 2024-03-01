@@ -3,7 +3,7 @@ Autosysadmin "restart auto" scripts
 
 In this directory you can place scripts that will be executed automatically by a cron job (stored in `/etc/cron.d/autosysadmin`).
 
-They must satisfy the default `run-parts(8)` constaints :
+They must satisfy the default `run-parts(8)` constraints :
 
 * be "executable"
 * belong to the Debian cron script namespace (`^[a-zA-Z0-9_-]+$`), example: `restart_amavis`

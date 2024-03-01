@@ -13,7 +13,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
-* autosysadmin-agent: upstream release 24.02.3
+* autosysadmin-agent: upstream release 24.03
 * certbot: Renewal hook for NRPE
 * kvm-host: add minifirewall rules if DRBD interface is configured
 

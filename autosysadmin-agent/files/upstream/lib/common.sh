@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="24.02.3"
+VERSION="24.03"
 
 # Common functions for "repair" and "restart" scripts
 
@@ -37,22 +37,31 @@ initialize() {
     RUN_ID="$(date +"%Y-%m-%d_%H-%M")_${PROGNAME}_${PID}"
     readonly RUN_ID
 
+    # Main log directory
+    MAIN_LOG_DIR="/var/log/autosysadmin"
+    readonly MAIN_LOG_DIR
+    # shellcheck disable=SC2174
+    mkdir --mode=750 --parents "${MAIN_LOG_DIR}"
+    chgrp adm "${MAIN_LOG_DIR}"
+
     # Each execution store some information
     # in a unique directory based on the RUN_ID
-    LOG_DIR="/var/log/autosysadmin/${RUN_ID}"
-    readonly LOG_DIR
-    mkdir -p "${LOG_DIR}"
+    RUN_LOG_DIR="${MAIN_LOG_DIR}/${RUN_ID}"
+    readonly RUN_LOG_DIR
+    # shellcheck disable=SC2174
+    mkdir --mode=750 --parents "${RUN_LOG_DIR}"
+    chgrp adm "${RUN_LOG_DIR}"
 
     # This log file contains all events
-    LOG_FILE="${LOG_DIR}/autosysadmin.log"
-    readonly LOG_FILE
+    RUN_LOG_FILE="${RUN_LOG_DIR}/autosysadmin.log"
+    readonly RUN_LOG_FILE
 
     # This log file contains notable actions
-    ACTIONS_FILE="${LOG_DIR}/actions.log"
+    ACTIONS_FILE="${RUN_LOG_DIR}/actions.log"
     readonly ACTIONS_FILE
     touch "${ACTIONS_FILE}"
     # This log file contains abort reasons (if any)
-    ABORT_FILE="${LOG_DIR}/abort.log"
+    ABORT_FILE="${RUN_LOG_DIR}/abort.log"
     readonly ABORT_FILE
     # touch "${ABORT_FILE}"
 
@@ -91,7 +100,7 @@ initialize() {
     test -f /etc/evolinux/autosysadmin && source /etc/evolinux/autosysadmin
 
     log_all "Begin ${PROGNAME} RUN_ID: ${RUN_ID}"
-    log_all "Log directory is ${LOG_DIR}"
+    log_all "Log directory is ${RUN_LOG_DIR}"
 }
 
 # Executes a list of tasks before exiting:
@@ -561,7 +570,7 @@ log_run() {
 
     printf "[%s] %s[%s]: %s\\n" \
         "${date}" "${PROGNAME}" "${PID}" "${msg}" \
-        >> "${LOG_FILE}"
+        >> "${RUN_LOG_FILE}"
 }
 # Log a message in the system log file (syslog or journald)
 log_global() {
@@ -622,7 +631,7 @@ print_abort_reasons() {
 }
 # Print the content of the main log from the log directory
 print_main_log() {
-    cat "${LOG_FILE}"
+    cat "${RUN_LOG_FILE}"
 }
 # Log an abort reason and quit the script
 log_abort_and_quit() {
@@ -634,7 +643,7 @@ log_abort_and_quit() {
 # into a file in the log directory named after the 1st parameter
 save_in_log_dir() {
     local file_name=$1
-    local file_path="${LOG_DIR}/${file_name}"
+    local file_path="${RUN_LOG_DIR}/${file_name}"
 
     cat /dev/stdin > "${file_path}"
 
@@ -643,7 +652,7 @@ save_in_log_dir() {
 # Return the full path of the file in log directory
 # based on the name in the 1st parameter
 file_path_in_log_dir() {
-    echo "${LOG_DIR}/${1}"
+    echo "${RUN_LOG_DIR}/${1}"
 }
 
 format_mail_success() {
@@ -731,7 +740,7 @@ print_report_information() {
     echo ""
     echo "**Utilisateurs récents**"
     echo ""
-    who_file=$(file_path_in_log_dir "server-state/df.txt")
+    who_file=$(file_path_in_log_dir "who-users")
     if [ -s "${who_file}" ]; then
         cat "${who_file}"
     else
