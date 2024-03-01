@@ -23,10 +23,11 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * apt: add ftp.evolix.org as recognized system source
 * autosysadmin-agent: logs clearing is done weekly
 * autosysadmin-agent: rename /usr/share/scripts/autosysadmin/{auto,restart}
+* certbot: use pkey to test the key
 * evolinux-base: execute autosysadmin-agent and autosysadmin-restart_nrpe roles
 * lxc-php, php: Update sury PGP key
-* redis: create sysfs config file if missing
 * openvpn: earlier alert for CA expiration
+* redis: create sysfs config file if missing
 
 ### Fixed
 
@@ -100,7 +101,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * vrrpd: variable to force update the switch script (default: false)
 * webapps/nextcloud: Add Ceph volume to fstab
 * webapps/nextcloud: Set home directory's mode
-* certbot: Utiliser pkey pour tester clé
 
 ### Fixed
 
