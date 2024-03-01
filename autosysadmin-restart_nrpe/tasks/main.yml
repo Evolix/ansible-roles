@@ -1,0 +1,24 @@
+---
+
+    - name: "Remount /usr if needed"
+      ansible.builtin.include_role:
+        name: remount-usr
+
+    - name: "Copy restart_nrpe"
+      ansible.builtin.copy:
+        src: upstream/restart_nrpe
+        dest: "{{ restart_nrpe_path }}"
+        owner: "root"
+        group: "root"
+        mode: "0750"
+
+    - name: "Customize RUNNING value"
+      ansible.builtin.lineinfile:
+        path: "{{ restart_nrpe_path }}"
+        line: "RUNNING=\"{{ restart_nrpe_running }}\""
+        regexp: "^ *RUNNING="
+        create: False
+      when:
+        - restart_nrpe_running is defined
+        - restart_nrpe_running != None
+        - restart_nrpe_running | length > 0

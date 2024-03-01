@@ -1,0 +1,8 @@
+---
+
+general_scripts_dir: "/usr/share/scripts"
+
+restart_nrpe_path: "{{ general_scripts_dir }}/autosysadmin/restart/restart_nrpe"
+
+# Change this to customize the RUNNING value in the script
+restart_nrpe_running: Null
