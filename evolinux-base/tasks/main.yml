@@ -147,9 +147,14 @@
   tags:
     - postfix
 
-- name: Autosysadmin
+- name: Autosysadmin (agent)
   ansible.builtin.include_role:
-    name: 'evolix/autosysadmin'
+    name: 'evolix/autosysadmin-agent'
+  when: evolinux_autosysadmin_include | bool
+
+- name: Autosysadmin (restart_nrpe)
+  ansible.builtin.include_role:
+    name: 'evolix/autosysadmin-restart_nrpe'
   when: evolinux_autosysadmin_include | bool
 
 - name: fail2ban

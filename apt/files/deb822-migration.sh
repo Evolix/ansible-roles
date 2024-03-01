@@ -1,5 +1,11 @@
 #!/bin/sh
 
+##########
+# This script changes all "one-line" APT sources into "deb822" sources.
+# It is responsible for searching and processing the files.
+# The actual format migration is done by a python script.
+##########
+
 deb822_migrate_script=$(command -v deb822-migration.py)
 
 if [ -z "${deb822_migrate_script}" ]; then

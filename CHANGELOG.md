@@ -21,6 +21,30 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [24.03] 2024-03-01
+
+### Added
+
+* autosysadmin-agent: upstream release 24.03
+* autosysadmin-restart_nrpe: add role
+* certbot: Renewal hook for NRPE
+* kvm-host: add minifirewall rules if DRBD interface is configured
+
+### Changed
+
+* apt: add ftp.evolix.org as recognized system source
+* autosysadmin-agent: logs clearing is done weekly
+* autosysadmin-agent: rename /usr/share/scripts/autosysadmin/{auto,restart}
+* certbot: use pkey to test the key
+* evolinux-base: execute autosysadmin-agent and autosysadmin-restart_nrpe roles
+* lxc-php, php: Update sury PGP key
+* openvpn: earlier alert for CA expiration
+* redis: create sysfs config file if missing
+
+### Removed
+
+* autosysadmin: replaced by autosysadmin-agent
+
 ## [24.02.1] 2024-02-08
 
 ### Fixed
@@ -77,6 +101,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * nagios: add dockerd check in nrpe check template
 * nagios: cleaning nrpe check template
 * nagios: rename var `nagios_nrpe_process_processes` into `nagios_nrpe_processes` and check systemd-timesyncd instead of ntpd in Debian 12
+* nagios: add option --full to check pressure IO and mem to avoid flaps
 * proftpd: in SFTP vhost, enable SSH keys login, enable ed25549 host key for Debian >= 11
 * redis: manage config template inside a block, to allow custom modifications outside
 * spamassassin: Use spamd starting with Bookworm

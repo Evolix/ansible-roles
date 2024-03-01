@@ -1,0 +1,7 @@
+#
+# Ansible managed - DO NOT MODIFY, your changes will be overwritten !
+#
+
+{% for script in lookup('ansible.builtin.fileglob', '../../../autosysadmin/agent/repair/repair_*', wantlist=True) | map("basename") | sort %}
+nagios          ALL = NOPASSWD: {{ autosysadmin_agent_bin_dir }}/{{ script }}
+{% endfor %}
