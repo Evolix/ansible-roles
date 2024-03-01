@@ -13,6 +13,18 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [24.03] 2024-03-01
+
+### Added
+
 * autosysadmin-agent: upstream release 24.03
 * autosysadmin-restart_nrpe: add role
 * certbot: Renewal hook for NRPE
@@ -29,13 +41,9 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * openvpn: earlier alert for CA expiration
 * redis: create sysfs config file if missing
 
-### Fixed
-
 ### Removed
 
 * autosysadmin: replaced by autosysadmin-agent
-
-### Security
 
 ## [24.02] 2024-02-08
 
