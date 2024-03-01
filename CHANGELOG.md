@@ -6,8 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 This project does not follow semantic versioning.
 The **major** part of the version is the year
-The **minor** part changes is the month
-The **patch** part changes is incremented if multiple releases happen the same month
+The **minor** part is the month
+The **patch** part is incremented if multiple releases happen the same month
 
 ## [Unreleased]
 
