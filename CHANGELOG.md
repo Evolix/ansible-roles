@@ -17,6 +17,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* certbot: Fix HAProxy renewal hook
+
 ### Removed
 
 ### Security

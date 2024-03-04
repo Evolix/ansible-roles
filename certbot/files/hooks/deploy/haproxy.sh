@@ -30,7 +30,7 @@ concat_files() {
 }
 cert_and_key_mismatch() {
     haproxy_cert_md5=$(openssl x509 -noout -pubkey -in "${haproxy_cert_file}" | openssl md5)
-    haproxy_key_md5=$(openssl pkey -noout -pubout -in "${haproxy_cert_file}" | openssl md5)
+    haproxy_key_md5=$(openssl pkey -pubout -in "${haproxy_cert_file}" | openssl md5)
 
     test "${haproxy_cert_md5}" != "${haproxy_key_md5}"
 }
