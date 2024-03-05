@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="24.03"
+VERSION="24.03.1"
 
 # Common functions for "repair" and "restart" scripts
 
@@ -83,7 +83,7 @@ initialize() {
     LOCK_WAIT="0"
 
     # Default values for email headers
-    EMAIL_FROM="equipe+autosysadmin@evolix.fr"
+    EMAIL_FROM="equipe+autosysadmin@evolix.net"
     EMAIL_INTERNAL="autosysadmin@evolix.fr"
 
     LOCK_FILE="${RUN_DIR}/${LOCK_NAME}.lock"
