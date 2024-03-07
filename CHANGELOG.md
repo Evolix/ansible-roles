@@ -20,6 +20,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * certbot: Fix HAProxy renewal hook
+* keepalived: Fix tasks that use file instead of copy
 
 ### Removed
 
