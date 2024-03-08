@@ -1,16 +1,21 @@
 ---
 
-
 - name: "Remount /usr if needed"
   ansible.builtin.include_role:
     name: remount-usr
 
-- name: check if old script is present
+- name: "dir /usr/local/lib/monitoringctl/ exists"
+  ansible.builtin.file:
+    path: /usr/local/lib/monitoringctl/
+    state: directory
+    mode: '0755'
+
+- name: "check if old alerts_switch script is present"
   ansible.builtin.stat:
     path: /usr/share/scripts/alerts_switch
   register: old_alerts_switch
 
-- name: alerts_switch is at the right place
+- name: "alerts_switch is at the right place"
   ansible.builtin.command:
     cmd: "mv /usr/share/scripts/alerts_switch /usr/local/bin/alerts_switch"
   args:
@@ -26,18 +31,64 @@
     mode: "0750"
     force: true
 
-- name: "symlink for backward compatibility"
+- name: "alerts_switch symlink for backward compatibility"
   ansible.builtin.file:
     src: /usr/local/bin/alerts_switch
-    dest: /usr/share/scripts/alerts_switch
+    path: /usr/share/scripts/alerts_switch
     state: link
   when: old_alerts_switch.stat.exists
+
+- name: "check if old alerts_wrapper script is present"
+  ansible.builtin.stat:
+    path: "{{ nagios_plugins_directory }}/alerts_wrapper"
+  register: old_alerts_wrapper
+
+- name: "alerts_wrapper is at the right place"
+  ansible.builtin.command:
+    cmd: "mv {{ nagios_plugins_directory }}/alerts_wrapper /usr/local/lib/monitoringctl/alerts_wrapper"
+    creates: /usr/local/lib/monitoringctl/alerts_wrapper
+  when: old_alerts_wrapper.stat.exists
 
 - name: "copy alerts_wrapper"
   ansible.builtin.copy:
     src: alerts_wrapper
-    dest: "{{ nagios_plugins_directory }}/alerts_wrapper"
+    dest: "/usr/local/lib/monitoringctl/alerts_wrapper"
     owner: root
     group: staff
     mode: "0755"
     force: true
+
+- name: "alerts_wrapper symlink for backward compatibility"
+  ansible.builtin.file:
+    src: /usr/local/lib/monitoringctl/alerts_wrapper
+    path: "{{ nagios_plugins_directory }}/alerts_wrapper"
+    state: link
+  when: old_alerts_wrapper.stat.exists
+
+- name: "copy monitoringctl"
+  ansible.builtin.copy:
+    src: monitoringctl
+    dest: /usr/local/sbin/monitoringctl
+    owner: root
+    group: root
+    mode: "0750"
+    force: true
+
+- name: "copy monitoringctl_common lib"
+  ansible.builtin.copy:
+    src: monitoringctl_common
+    dest: /usr/local/lib/monitoringctl/common
+    owner: root
+    group: root
+    mode: "0644"
+    force: true
+
+- name: "copy monitoringctl_completion script"
+  ansible.builtin.copy:
+    src: monitoringctl_completion
+    dest: /etc/bash_completion.d/monitoringctl
+    owner: root
+    group: root
+    mode: "0644"
+    force: true
+

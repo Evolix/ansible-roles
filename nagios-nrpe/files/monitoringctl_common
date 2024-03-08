@@ -1,0 +1,254 @@
+#!/usr/bin/env bash
+
+# Location of disable files
+readonly var_dir="/var/lib/monitoringctl"
+
+readonly log_file="/var/log/monitoringctl.log"
+
+readonly nrpe_conf_path="/etc/nagios/nrpe.cfg"
+
+debian_major_version="$(cut -d "." -f 1 < /etc/debian_version)"
+readonly debian_major_version
+
+# If no time limit is provided in CLI or found in file, this value is used
+readonly default_disabled_time="1h"
+
+
+
+function error() {
+    # $1: error message
+    >&2 echo "${1}"
+    exit 1
+}
+
+function usage_error() {
+    # $1: error message
+    >&2 echo "${1}"
+    >&2 echo "Execute \"${PROGNAME} --help\" for information on usage."
+    exit 1
+}
+
+function log() {
+    # $1: message
+    echo "$(now_iso) - ${PROGNAME}: ${1}" >> "${log_file}"
+}
+
+function show_version() {
+    cat <<END
+${PROGNAME} version ${VERSION}.
+
+Copyright 2018-2024 Evolix <info@evolix.fr>,
+                    Jérémy Lecour <jlecour@evolix.fr>
+                    and others.
+
+${PROGNAME} comes with ABSOLUTELY NO WARRANTY.This is free software,
+and you are welcome to redistribute it under certain conditions.
+See the GNU General Public License v3.0 for details.
+END
+}
+
+# Fail if argument does not respect format: XwXdXhXmXs, XhX, XmX
+function filter_duration() {
+    # $1: duration in format specified above
+    time_regex="^([0-9]+d)?(([0-9]+h(([0-9]+m?)|([0-9]+m([0-9]+s?)?))?)|(([0-9]+m([0-9]+s?)?)?))?$"
+    if [[ "${1}" =~ ${time_regex} ]]; then
+        return 0
+    fi
+    return 1
+}
+
+# Convert human writable duration into seconds
+function time_to_seconds() {
+    # $1: formated time string
+    if echo "${1}" | grep -E -q '^([0-9]+[wdhms])+$'; then
+        echo "${1}" | sed 's/w/ * 604800 + /g; s/d/ * 86400 + /g; s/h/ * 3600 + /g; s/m/ * 60 + /g; s/s/ + /g; s/+ $//' | xargs expr
+    elif echo "${1}" | grep -E -q '^([0-9]+h[0-9]+$)'; then
+        echo "${1}" | sed 's/h/ * 3600 + /g; s/$/ * 60/' | xargs expr
+    elif echo "${1}" | grep -E -q '^([0-9]+m[0-9]+$)'; then
+        echo "${1}" | sed 's/m/ * 60 + /g' | xargs expr
+    else
+        error "Invalid duration: '${1}'."
+    fi
+}
+
+# Print re-enable time in secs
+function get_enable_time() {
+    # $1: wrapper name
+    disable_file_path="$(get_disable_file_path "${1}")"
+    enable_secs="$(grep -v -E "^\s*#" "${disable_file_path}" | grep -E "^[0-9]+$" | head -n1 | awk '{print $1}')"
+    # If file is empty, use file last change date plus default disabled time
+    if [ -z "${enable_secs}" ]; then
+        file_last_change_secs="$(stat -c %Z "${disable_file_path}")"
+        default_disabled_time_secs="$(time_to_seconds "${default_disabled_time}")"
+        enable_secs="$(( file_last_change_secs + default_disabled_time_secs ))"
+    fi
+    echo "${enable_secs}"
+}
+
+function now_secs() {
+    date +"%s"
+}
+
+function now_iso() {
+    date --iso-8601=seconds
+}
+
+# Print delay before re-enable in secs
+function enable_delay() {
+    # $1: re-enable time in secs
+    #now_secs=$(date +"%s")
+    echo $(( ${1} - $(now_secs) ))
+}
+
+# Converts delay (in seconds) into human readable duration
+function delay_to_string() {
+    # $1: delay in secs
+    delay_days="$(( ${1} /86400 ))"
+    if [ "${delay_days}" -eq 0 ]; then delay_days=""
+    else delay_days="${delay_days}d"; fi
+
+    delay_hours="$(( (${1} %86400) /3600 ))"
+    if [ "${delay_hours}" -eq 0 ]; then delay_hours=""
+    else delay_hours="${delay_hours}h"; fi
+
+    delay_minutes="$(( ((${1} %86400) %3600) /60 ))"
+    if [ "${delay_minutes}" -eq 0 ]; then delay_minutes=""
+    else delay_minutes="${delay_minutes}m"; fi
+
+    delay_seconds="$(( ((${1} %86400) %3600) %60 ))"
+    if [ "${delay_seconds}" -eq 0 ]; then delay_seconds=""
+    else delay_seconds="${delay_seconds}s"; fi
+
+    echo "${delay_days}${delay_hours}${delay_minutes}${delay_seconds}"
+}
+
+function is_disabled() {
+    # $1: wrapper name
+    disable_file_path="$(get_disable_file_path "${1}")"
+    if [ -e "${disable_file_path}" ]; then
+        enable_time="$(get_enable_time "${1}")"
+        enable_delay="$(enable_delay "${enable_time}")"
+        if [ "${enable_delay}" -le "0" ]; then
+            echo "False"
+        else
+            echo "True"
+        fi
+    else
+        echo False
+    fi
+}
+
+function get_disable_file_path() {
+    # $1: wrapper name
+    echo "${var_dir}/${1}_alerts_disabled"
+}
+
+
+
+### Nagios configuration functions ####################
+
+# Print NRPE configuration, with includes, without comments
+# and in the same order than NRPE does (taking account that
+# order changes from Deb10)
+function get_nrpe_conf() {
+    _get_conf_from_file "${nrpe_conf_path}"
+}
+
+# Private function to recursively get NRPE conf from file
+function _get_conf_from_file() {
+    # $1: NRPE conf file (.cfg)
+    if [ ! -f "${1}" ]; then return; fi
+
+    conf_lines=$(grep -E -R -v --no-filename "^\s*(#.*|)$" "${1}")
+    while read -r line; do
+        if [[ "${line}" =~ .*'include='.* ]]; then
+            conf_file=$(echo "${line}" | cut -d= -f2)
+            _get_conf_from_file "${conf_file}"
+        elif [[ "${line}" =~ .*'include_dir='.* ]]; then
+            conf_dir=$(echo "${line}" | cut -d= -f2)
+            _get_conf_from_dir "${conf_dir}"
+        else
+            echo "${line}"
+        fi
+    done <<< "${conf_lines}"
+}
+
+# Private function to recursively get NRPE conf from directory
+function _get_conf_from_dir() {
+    # $1: NRPE conf dir
+    if [ ! -d "${1}" ]; then return; fi
+
+    if [ "${debian_major_version}" -ge 10 ]; then
+        # From Deb10, NRPE use scandir() with alphasort() function
+        sort_command="sort"
+    else
+        # Before Deb10, NRPE use loaddir(), like find utility
+        sort_command="cat -"
+    fi
+
+    # Add conf files in dir to be processed recursively
+    for file in $(find "${1}" -maxdepth 1 -name "*.cfg" | ${sort_command}); do
+        if [ -f "${file}" ]; then
+            _get_conf_from_file "${file}"
+        elif [ -d "${file}" ]; then
+            _get_conf_from_dir "${file}"
+        fi
+    done
+}
+
+# Print the checks that are configured in NRPE
+function get_checks_names() {
+    conf_lines="$(get_nrpe_conf "${nrpe_conf_path}")"
+    echo "${conf_lines}" | grep -E "command\[check_.*\]=" | awk -F"[\\\[\\\]=]" '{sub("check_", "", $2); print $2}' | sort | uniq
+}
+
+# Print the commands defined for check $1 in NRPE configuration
+function get_check_commands() {
+    # $1: check name
+    conf_lines="$(get_nrpe_conf "${nrpe_conf_path}")"
+    echo "${conf_lines}" | grep -E "command\[check_${1}\]" | cut -d'=' -f2-
+}
+
+# Print the checks that have no alerts_wrapper in NRPE configuration
+function not_wrapped_checks() {
+    for check in $(get_checks_names); do
+        if ! is_wrapped "${check}"; then
+            echo "${check}"
+        fi
+    done
+}
+
+# Fail if check is mot wrapped
+function is_wrapped() {
+    # $1: check name
+    cmd=$(get_check_commands "${1}" | tail -n1)
+    if echo "${cmd}" | grep --quiet --no-messages alerts_wrapper; then
+        return 0
+    fi
+    return 1
+}
+
+# Print the names that are defined in the wrappers of the checks
+function get_wrappers_names() {
+    conf_lines="$(get_nrpe_conf "${nrpe_conf_path}")"
+    echo "${conf_lines}" | grep -s "alerts_wrapper" | awk '{ for (i=1 ; i<=NF; i++) { if ($i ~ /^(-n|--name)$/) { print $(i+1); break } } }' | tr ',' '\n' | sort | uniq
+}
+
+function is_check() {
+    # $1: check name
+    checks="$(get_checks_names)"
+    if echo "${checks}" | grep --quiet -E "^${1}$"; then
+        return 0
+    fi
+    return 1
+}
+
+function is_wrapper() {
+    # $1: wrapper name
+    wrappers="$(get_wrappers_names)"
+    if echo "${wrappers}" | grep --quiet -E "^${1}$"; then
+        return 0
+    fi
+    return 1
+}
+

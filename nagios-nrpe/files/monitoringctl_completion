@@ -1,18 +1,22 @@
 #!/usr/bin/bash
 #
 
-_get_wrappers_names() {
-    grep "alerts_wrapper" -Rs /etc/nagios/ | grep -v -E "^\s*#" | awk '{ for (i=1 ; i<=NF; i++) { if ($i ~ /^(-n|--name)$/) { print $(i+1); break } } }' | tr ',' '\n' | sort | uniq
+function _get_wrappers_names() {
+    grep "alerts_wrapper" --no-filename --no-messages -R /etc/nagios/ | grep --invert-match --extended-regexp "^\s*#" | awk '{ for (i=1 ; i<=NF; i++) { if ($i ~ /^(-n|--name)$/) { print $(i+1); break } } }' | tr ',' '\n' | sort | uniq
 }
 
-_monitoringctl_completion() {
+function _get_checks_names() {
+    grep --extended-regexp --no-filename --no-messages -R "command\[check_.*\]="  /etc/nagios/ | grep --invert-match --extended-regexp "^\s*#" | awk -F"[\\\[\\\]=]" '{sub("check_", "", $2); print $2}' | sort | uniq
+}
+
+function _monitoringctl_completion() {
     local cur=${COMP_WORDS[COMP_CWORD]};
     local prev=${COMP_WORDS[COMP_CWORD-1]};
 
     local action=""
     for w in "${COMP_WORDS[@]}"; do
         case "$w" in
-            status|check|enable|disable)
+            status|check|enable|disable|show)
                 action="${w}"
                 ;;
         esac
@@ -20,12 +24,9 @@ _monitoringctl_completion() {
 
     local words="--help"
     case "${action}" in
-        status)
-            words="${words}"
-            ;;
-        check)
-            local checks="$(_get_wrappers_names)"
-            local check=""
+        check|show)
+            checks="$(_get_checks_names)"
+            check=""
             for w in "${COMP_WORDS[@]}"; do
                 for c in ${checks}; do
                     if [ "${c}" == "${w}" ]; then
@@ -35,9 +36,15 @@ _monitoringctl_completion() {
                 done
             done
             if [ -z "${check}" ]; then
-                words="--bypass-nrpe ${checks} ${words}"
-            else
+                words="${checks} ${words}"
+            fi
+            if [ "${action}" == "check" ]; then
                 words="--bypass-nrpe ${words}"
+            fi
+            ;;
+        status)
+            if [ "${prev}" == "enable" ]; then
+                words="all $(_get_checks_names)"
             fi
             ;;
         enable)
@@ -57,7 +64,7 @@ _monitoringctl_completion() {
             fi
             ;;
         *)
-            words="status check enable disable ${words}"
+            words="status check enable disable show ${words}"
             ;;
     esac
 
@@ -77,5 +84,5 @@ _monitoringctl_completion() {
 
 }
 
-complete -F _monitoringctl_completion monitoringctl.sh
+complete -F _monitoringctl_completion monitoringctl
 
