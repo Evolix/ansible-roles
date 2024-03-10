@@ -40,7 +40,7 @@ function cleanup {
 }
 
 # Postfix
-postfix_dbs="client.access sender.access recipient.access header_kill sa-blacklist.access spamd.cidr"
+postfix_dbs="client.access sender.access recipient.access header_kill"
 for db in ${postfix_dbs}; do
     if is_new "${db}"; then
         download "${db}"
