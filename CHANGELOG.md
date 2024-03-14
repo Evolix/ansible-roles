@@ -46,6 +46,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc-php, php: Update sury PGP key
 * openvpn: earlier alert for CA expiration
 * redis: create sysfs config file if missing
+* nextcloud: use latest version by default
 
 ### Removed
 
