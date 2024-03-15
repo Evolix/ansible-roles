@@ -35,6 +35,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * autosysadmin-restart_nrpe: add role
 * certbot: Renewal hook for NRPE
 * kvm-host: add minifirewall rules if DRBD interface is configured
+* proftpd: add whitelist ip
 
 ### Changed
 
