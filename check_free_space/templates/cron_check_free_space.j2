@@ -1,0 +1,4 @@
+{% if check_free_space_mailto and check_free_space_mailto != "" %}
+MAILTO={{ check_free_space_mailto }}
+{% endif %}
+30 4 * * 1 root /usr/share/scripts/check_free_space "{{ check_free_space_partitions | join(' ') }}" {{ check_free_space_max_percent }} /usr/share/scripts/check_free_space.tpl

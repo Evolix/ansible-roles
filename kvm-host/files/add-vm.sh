@@ -231,7 +231,7 @@ EOT
 
     if ! isDryRun; then
         sleep 5
-        drbdadm status | tail -4
+        ( drbdadm status || drbd-overview ) 2>/dev/null | tail -4
 
         drbdDiskPath="/dev/drbd/by-res/${vmName}/0"
         if ! [ -b "${drbdDiskPath}" ]; then

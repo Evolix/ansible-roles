@@ -1,0 +1,6 @@
+---
+check_free_space_partitions:
+  - "/home"
+  - "/srv"
+check_free_space_max_percent: 70
+check_free_space_mailto: Null

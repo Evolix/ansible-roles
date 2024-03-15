@@ -45,6 +45,12 @@
     owner: root
     group: root
 
+- name: Remove old lisupgrade typo
+  ansible.builtin.cron:
+    name: "lisupgrade.sh"
+    cron_file: "listupgrade"
+    state: absent
+
 - name: Enable listupgrade cron
   ansible.builtin.cron:
     name: "listupgrade.sh"

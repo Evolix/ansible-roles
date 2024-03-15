@@ -1,11 +1,11 @@
 ---
 
-- name: "{{ lxc_php_version }} - Install opensmtpd"
+- name: "{{ lxc_php_container_name }} - Install opensmtpd"
   community.general.lxc_container:
-    name: "{{ lxc_php_version }}"
+    name: "{{ lxc_php_container_name }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends -y opensmtpd"
 
-- name: "{{ lxc_php_version }} - Configure opensmtpd (in the container)"
+- name: "{{ lxc_php_container_name }} - Configure opensmtpd (in the container)"
   ansible.builtin.template:
     src: smtpd.conf.j2
     dest: "{{ lxc_rootfs }}/etc/smtpd.conf"
@@ -14,7 +14,7 @@
   when: lxc_php_container_releases[lxc_php_version] in ["jessie", "stretch", "buster"]
 
 
-- name: "{{ lxc_php_version }} - Configure opensmtpd (in the container)"
+- name: "{{ lxc_php_container_name }} - Configure opensmtpd (in the container)"
   ansible.builtin.template:
     src: smtpd.conf.bullseye.j2
     dest: "{{ lxc_rootfs }}/etc/smtpd.conf"

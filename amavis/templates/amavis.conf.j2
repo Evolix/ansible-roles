@@ -44,7 +44,7 @@ $max_servers = 2;
 $enable_ldap = 1;
 $default_ldap = {
    hostname => '127.0.0.1', tls => 0,
-   base => '{{ ldap_suffix }}', scope => 'sub',
+   base => '{{ ldap_suffix | mandatory }}', scope => 'sub',
    query_filter => '(&(mailacceptinggeneralid=%m)(isActive=TRUE))'
 };
 

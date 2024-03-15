@@ -1,0 +1,9 @@
+---
+- name: Copy rsyslog configuration for autosysadmin
+  ansible.builtin.copy:
+    src: "files/autosysadmin.rsyslog.conf"
+    dest: "/etc/rsyslog.d/autosysadmin.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart rsyslog

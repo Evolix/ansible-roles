@@ -1,29 +1,47 @@
 ---
-- name: install SpamAssasin
+
+- name: For Debian < 12
+  set_fact:
+    spamassassin_restart_handler: restart spamassassin
+    spamassassin_package_name: spamassassin
+  tags:
+    - spamassassin
+  when: ansible_distribution_major_version is version('12', '<')
+
+# the package is called "spamd" after Debian 12
+- name: For Debian >= 12
+  set_fact:
+    spamassassin_restart_handler: restart spamd
+    spamassassin_package_name: spamd
+  tags:
+    - spamassassin
+  when: ansible_distribution_major_version is version('12', '>=')
+
+- name: Install SpamAssassin
   ansible.builtin.apt:
     name:
-      - spamassassin
+      - "{{ spamassassin_package_name }}"
     state: present
   tags:
     - spamassassin
 
-- name: configure SpamAssasin
+- name: Configure SpamAssassin
   ansible.builtin.copy:
     src: spamassassin.cf
     dest: /etc/spamassassin/local_evolix.cf
     mode: "0644"
-  notify: restart spamassassin
+  notify: "{{ spamassassin_restart_handler }}"
   tags:
     - spamassassin
 
-- name: enable SpamAssasin
+- name: Enable SpamAssassin
   ansible.builtin.replace:
     dest: /etc/default/spamassassin
     regexp: 'ENABLED=0'
     replace: 'ENABLED=1'
-  notify: restart spamassassin
   tags:
     - spamassassin
+  when: ansible_distribution_major_version is version('12', '<')
 
 - name: add amavis user to debian-spamd group
   ansible.builtin.user:
@@ -97,5 +115,15 @@
     name: spamassassin
     state: started
     enabled: True
+  when: ansible_distribution_major_version is version('12', '<')
+  tags:
+    - spamassassin
+
+- name: ensure spamd is started and enabled
+  ansible.builtin.systemd:
+    name: spamd
+    state: started
+    enabled: True
+  when: ansible_distribution_major_version is version('12', '>=')
   tags:
     - spamassassin

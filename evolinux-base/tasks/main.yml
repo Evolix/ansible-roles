@@ -81,9 +81,16 @@
   ansible.builtin.import_tasks: root.yml
   when: evolinux_root_include | bool
 
-- name: Postfix
-  ansible.builtin.import_tasks: postfix.yml
+- name: Postfix role
+  ansible.builtin.include_role:
+    name: evolix/postfix
   when: evolinux_postfix_include | bool
+  tags:
+    - postfix
+
+- name: Configure /etc/aliases
+  ansible.builtin.import_tasks: mail_aliases.yml
+  when: evolinux_mail_aliases_include | bool
 
 - name: Logs management
   ansible.builtin.import_tasks: logs.yml
@@ -126,6 +133,29 @@
   ansible.builtin.include_role:
     name: evolix/nagios-nrpe
   when: evolinux_nagios_nrpe_include | bool
+
+- name: check_free_space
+  ansible.builtin.include_role:
+    name: evolix/check_free_space
+  when: evolinux_check_free_space_include | bool
+
+# postfix role must be after nagios-nrpe role
+- name: Postfix role
+  ansible.builtin.include_role:
+    name: evolix/postfix
+  when: evolinux_postfix_include | bool
+  tags:
+    - postfix
+
+- name: Autosysadmin (agent)
+  ansible.builtin.include_role:
+    name: 'evolix/autosysadmin-agent'
+  when: evolinux_autosysadmin_include | bool
+
+- name: Autosysadmin (restart_nrpe)
+  ansible.builtin.include_role:
+    name: 'evolix/autosysadmin-restart_nrpe'
+  when: evolinux_autosysadmin_include | bool
 
 - name: fail2ban
   ansible.builtin.include_role:

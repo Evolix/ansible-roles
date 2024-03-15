@@ -6,7 +6,7 @@ Installation and configuration of Squid
 
 Everything is in the `tasks/main.yml` file.
 
-A blank file is created at `/etc/squid3/whitelist-custom.conf` to add addresses in the whitelist.
+A blank file is created at `/etc/squid/whitelist-custom.conf` to add addresses in the whitelist.
 
 ## Available variables
 

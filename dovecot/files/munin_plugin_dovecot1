@@ -53,15 +53,17 @@ if ( $ARGV[0] and $ARGV[0] eq "autoconf" ) {
   exit 0;
 }
 
-if (-f "$logfile.0") {
-  $rotlogfile = $logfile . ".0";
-} elsif (-f "$logfile.1") {
-  $rotlogfile = $logfile . ".1";
-} elsif (-f "$logfile.01") {
-  $rotlogfile = $logfile . ".01";
-} else {
-  $rotlogfile = $logfile . ".0";
-}
+# Disable rotated log inpection because name is not deterministic across systems
+# and data loss is may 5 min 
+#if (-f "$logfile.0") {
+#  $rotlogfile = $logfile . ".0";
+#} elsif (-f "$logfile.1") {
+#  $rotlogfile = $logfile . ".1";
+#} elsif (-f "$logfile.01") {
+#  $rotlogfile = $logfile . ".01";
+#} else { 
+#  $rotlogfile = $logfile . ".0";
+#}
 
 if ( $ARGV[0] and $ARGV[0] eq "config" ) {
   print "multigraph dovecot_connections\n";
@@ -179,7 +181,9 @@ if (!defined $pos) {
 
 if ($startsize < $pos) {
   # Log rotated
-  parseDovecotfile ($rotlogfile, $pos, (stat $rotlogfile)[7]);
+  # Disable rotated log inpection because name is not deterministic across systems
+  # and data loss is may 5 min 
+  #parseDovecotfile ($rotlogfile, $pos, (stat $rotlogfile)[7]);
   $pos = 0;
 }
 

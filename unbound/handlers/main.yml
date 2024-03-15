@@ -1,5 +1,15 @@
 ---
-- name: reload unbound
+- name: Restart unbound
+  ansible.builtin.service:
+    name: unbound
+    state: restarted
+
+- name: Reload unbound
   ansible.builtin.service:
     name: unbound
     state: reloaded
+
+- name: Restart munin-node
+  ansible.builtin.service:
+    name: munin-node
+    state: restarted

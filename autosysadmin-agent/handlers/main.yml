@@ -1,0 +1,16 @@
+---
+
+- name: restart nagios-nrpe-server
+  service:
+    name: nagios-nrpe-server
+    state: restarted
+
+- name: restart nrpe
+  service:
+    name: nrpe
+    state: restarted
+
+- name: restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted

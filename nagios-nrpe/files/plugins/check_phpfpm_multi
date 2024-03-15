@@ -19,14 +19,21 @@ nb_ok=0
 nb_unchk=0
 output=""
 
-readonly POOL_FOLDER=${1:-$(detect_pool_dir)}
+# We want globbing to be expanded here
+# shellcheck disable=SC2206
+readonly POOL_FOLDER=( ${1:-$(detect_pool_dir)} )
 
-if [[ ! -d "$POOL_FOLDER" ]]; then
-  echo "CRITICAL - $POOL_FOLDER does not exists"
+if [ "${#POOL_FOLDER[@]}" -gt 1 ]; then
+  echo "CRITICAL - '${POOL_FOLDER[*]}' contains more than one directories"
+  exit 2
+fi;
+
+if [[ ! -d "${POOL_FOLDER[0]}" ]]; then
+  echo "CRITICAL - ${POOL_FOLDER[0]} does not exists"
   exit 2
 fi;  
 
-readonly POOL_FILES=$(find "$POOL_FOLDER" -name "*.conf")
+readonly POOL_FILES=$(find "${POOL_FOLDER[0]}" -name "*.conf")
 
 for pool_file in $POOL_FILES; do
   

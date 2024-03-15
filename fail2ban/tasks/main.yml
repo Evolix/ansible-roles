@@ -94,7 +94,7 @@
 - name: "Extend dbpurgeage if recidive jail is enabled"
   ansible.builtin.blockinfile:
     dest: /etc/fail2ban/fail2ban.d/recidive_dbpurgeage
-    marker: "# ANSIBLE MANAGED"
+    marker: "# {mark} ANSIBLE MANAGED"
     block: |
       [DEFAULT]
       dbpurgeage = {{ fail2ban_recidive_bantime }}
@@ -111,3 +111,12 @@
     - ansible_distribution_release == "stretch" or ansible_distribution_release == "buster"
   tags:
     - fail2ban
+
+- name: Script unban_ip is installed
+  ansible.builtin.copy:
+    src: unban_ip.sh
+    dest: /usr/local/sbin/unban_ip
+    mode: '0700'
+  tags:
+    - fail2ban
+

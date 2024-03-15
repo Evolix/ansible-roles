@@ -1,4 +1,5 @@
 ---
+
 - name: Install Evolix public repositry
   ansible.builtin.include_role:
     name: evolix/apt
@@ -13,6 +14,15 @@
     state: present
   tags:
     - vrrpd
+
+- name: install custom switch script
+  ansible.builtin.copy:
+    src: vrrp_switch.sh
+    dest: /etc/vrrpd/vrrp_switch
+    mode: "0700"
+    owner: "root"
+    group: "root"
+    force: "{{ vrrp_force_update_switch_script | bool | ternary('yes','no') }}"
 
 - name: Adjust sysctl config (except rp_filter)
   ansible.posix.sysctl:

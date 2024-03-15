@@ -1,5 +1,5 @@
 ---
-nextcloud_version: "latest-24"
+nextcloud_version: "latest"
 nextcloud_archive_name: "{{ nextcloud_version }}.tar.bz2"
 nextcloud_releases_baseurl: "https://download.nextcloud.com/server/releases/"
 
@@ -17,3 +17,6 @@ nextcloud_db_name: "{{ nextcloud_instance_name }}"
 
 nextcloud_admin_login: "admin"
 nextcloud_admin_password: ""
+
+nextcloud_get_archive: True
+nextcloud_do_config: True

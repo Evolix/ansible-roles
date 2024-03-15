@@ -4,6 +4,8 @@
     name: evolix/drbd
   when: kvm_install_drbd
 
+- ansible.builtin.import_tasks: lvm.yml
+
 ## TODO: check why it's disabled
 - ansible.builtin.include: ssh.yml
 
@@ -14,3 +16,5 @@
 - ansible.builtin.include: images.yml
 
 - ansible.builtin.include: tools.yml
+
+- ansible.builtin.include: firewall.yml

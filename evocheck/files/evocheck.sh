@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian) server
 # powered by Evolix
 
-VERSION="23.10"
+VERSION="24.01"
 readonly VERSION
 
 # base functions
@@ -68,6 +68,8 @@ detect_os() {
                 10) DEBIAN_RELEASE="buster";;
                 11) DEBIAN_RELEASE="bullseye";;
                 12) DEBIAN_RELEASE="bookworm";;
+                13) DEBIAN_RELEASE="trixie";;
+                14) DEBIAN_RELEASE="forky";;
             esac
         fi
     fi
@@ -84,6 +86,12 @@ is_debian_bullseye() {
 }
 is_debian_bookworm() {
     test "${DEBIAN_RELEASE}" = "bookworm"
+}
+is_debian_trixie() {
+    test "${DEBIAN_RELEASE}" = "trixie"
+}
+is_debian_forky() {
+    test "${DEBIAN_RELEASE}" = "forky"
 }
 
 is_pack_web(){
@@ -148,13 +156,13 @@ check_dpkgwarning() {
 # Check if localhost, localhost.localdomain and localhost.$mydomain are set in Postfix mydestination option.
 check_postfix_mydestination() {
     # shellcheck disable=SC2016
-    if ! grep mydestination /etc/postfix/main.cf | grep --quiet -E 'localhost([[:blank:]]|$)'; then
+    if ! grep mydestination /etc/postfix/main.cf | grep --quiet --extended-regexp 'localhost([[:blank:]]|$)'; then
         failed "IS_POSTFIX_MYDESTINATION" "'localhost' is missing in Postfix mydestination option."
     fi
-    if ! grep mydestination /etc/postfix/main.cf | grep --quiet 'localhost\.localdomain'; then
+    if ! grep mydestination /etc/postfix/main.cf | grep --quiet --fixed-strings 'localhost.localdomain'; then
         failed "IS_POSTFIX_MYDESTINATION" "'localhost.localdomain' is missing in Postfix mydestination option."
     fi
-    if ! grep mydestination /etc/postfix/main.cf | grep --quiet 'localhost\.\$mydomain'; then
+    if ! grep mydestination /etc/postfix/main.cf | grep --quiet --fixed-strings 'localhost.$mydomain'; then
         failed "IS_POSTFIX_MYDESTINATION" "'localhost.\$mydomain' is missing in Postfix mydestination option."
     fi
 }
@@ -193,10 +201,39 @@ check_debiansecurity() {
     apt-cache policy | grep "\bl=Debian-Security\b" | grep "\bo=Debian\b" | grep --quiet "\bc=main\b"
     test $? -eq 0 || failed "IS_DEBIANSECURITY" "missing Debian-Security repository"
 }
+check_debiansecurity_lxc() {
+    if is_installed lxc; then
+        container_list=$(lxc-ls)
+        for container in $container_list; do
+            DEBIAN_LXC_VERSION=$(cut -d "." -f 1 < /var/lib/lxc/${container}/rootfs/etc/debian_version)
+            if [ $DEBIAN_LXC_VERSION -ge 9 ]; then
+                lxc-attach --name $container apt-cache policy | grep "\bl=Debian-Security\b" | grep "\bo=Debian\b" | grep --quiet "\bc=main\b"
+                test $? -eq 0 || failed "IS_DEBIANSECURITY_LXC" "missing Debian-Security repository in container ${container}"
+            fi
+        done
+    fi
+}
+check_backports_version() {
+    # Look for enabled "Debian Backports" sources from the "Debian" origin
+    apt-cache policy | grep "\bl=Debian Backports\b" | grep "\bo=Debian\b" | grep --quiet "\bc=main\b"
+    test $? -eq 1 || ( \
+        apt-cache policy | grep "\bl=Debian Backports\b" | grep --quiet "\bn=${DEBIAN_RELEASE}-backports\b" && \
+        test $? -eq 0 || failed "IS_BACKPORTS_VERSION" "Debian Backports enabled for another release than ${DEBIAN_RELEASE}" )
+}
 check_oldpub() {
     # Look for enabled pub.evolix.net sources (supersed by pub.evolix.org since Stretch)
     apt-cache policy | grep --quiet pub.evolix.net
     test $? -eq 1 || failed "IS_OLDPUB" "Old pub.evolix.net repository is still enabled"
+}
+check_oldpub_lxc() {
+    # Look for enabled pub.evolix.net sources (supersed by pub.evolix.org since Buster as Sury safeguard)
+    if is_installed lxc; then
+        container_list=$(lxc-ls)
+        for container in $container_list; do
+            lxc-attach --name $container apt-cache policy | grep --quiet pub.evolix.net
+            test $? -eq 1 || failed "IS_OLDPUB_LXC" "Old pub.evolix.net repository is still enabled in container ${container}"
+        done
+    fi
 }
 check_newpub() {
     # Look for enabled pub.evolix.org sources
@@ -208,7 +245,19 @@ check_sury() {
     apt-cache policy | grep --quiet packages.sury.org
     if [ $? -eq 0 ]; then
          apt-cache policy | grep "\bl=Evolix\b" | grep php --quiet
-	 test $? -eq 0 || failed "IS_SURY" "packages.sury.org is present but our safeguard pub.evolix.org repository is missing"
+         test $? -eq 0 || failed "IS_SURY" "packages.sury.org is present but our safeguard pub.evolix.org repository is missing"
+    fi
+}
+check_sury_lxc() {
+    if is_installed lxc; then
+        container_list=$(lxc-ls)
+        for container in $container_list; do
+            lxc-attach --name $container apt-cache policy | grep --quiet packages.sury.org
+            if [ $? -eq 0 ]; then
+                 lxc-attach --name $container apt-cache policy | grep "\bl=Evolix\b" | grep php --quiet
+                 test $? -eq 0 || failed "IS_SURY_LXC" "packages.sury.org is present but our safeguard pub.evolix.org repository is missing in container ${container}"
+            fi
+        done
     fi
 }
 check_aptitude() {
@@ -249,8 +298,15 @@ check_customcrontab() {
     test "$found_lines" = 4 && failed "IS_CUSTOMCRONTAB" "missing custom field in crontab"
 }
 check_sshallowusers() {
-    grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d \
-        || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
+    if is_debian_bookworm; then
+        grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config.d \
+            || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config.d/*"
+        grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config \
+            && failed "IS_SSHALLOWUSERS" "AllowUsers or AllowGroups directive present in sshd_config"
+    else
+        grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d \
+            || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
+    fi
 }
 check_diskperf() {
     perfFile="/root/disk-perf.txt"
@@ -307,7 +363,7 @@ check_minifw() {
     } || failed "IS_MINIFW" "minifirewall seems not started"
 }
 check_minifw_includes() {
-    if is_debian_bullseye; then
+    if { ! is_debian_stretch && ! is_debian_buster ; }; then
         if grep -q -e '/sbin/iptables' -e '/sbin/ip6tables' "/etc/default/minifirewall"; then
             failed "IS_MINIFWINCLUDES" "minifirewall has direct iptables invocations in /etc/default/minifirewall that should go in /etc/minifirewall.d/"
         fi
@@ -334,13 +390,13 @@ check_nrpedisks() {
     test "$NRPEDISKS" = "$DFDISKS" || failed "IS_NRPEDISKS" "there must be $DFDISKS check_disk in nrpe.cfg"
 }
 check_nrpepid() {
-    if { is_debian_bullseye || is_debian_bookworm ; }; then
+    if { is_debian_stretch || is_debian_buster ; }; then
         { test -e /etc/nagios/nrpe.cfg \
-            && grep -q "^pid_file=/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
+            && grep -q "^pid_file=/var/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
         } || failed "IS_NRPEPID" "missing or wrong pid_file directive in nrpe.cfg"
     else
         { test -e /etc/nagios/nrpe.cfg \
-            && grep -q "^pid_file=/var/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
+            && grep -q "^pid_file=/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
         } || failed "IS_NRPEPID" "missing or wrong pid_file directive in nrpe.cfg"
     fi
 }
@@ -550,14 +606,10 @@ check_evobackup_exclude_mount() {
             # then we verify that every mount is excluded
             if ! grep -q -- "^\s*--one-file-system" "${evobackup_file}"; then
                 # old releases of evobackups don't have version
-                if grep -q  "^VERSION=" "${evobackup_file}"; then
-                  evobackup_version=$(sed -E -n 's/VERSION="(.*)"/\1/p' "${evobackup_file}")
-                  # versions over 22.12 use a new syntax to exclude rsync files
-                  if dpkg --compare-versions "$evobackup_version" ge 22.12 ; then
-                    sed -En '/RSYNC_EXCLUDES="/,/"/ {s/(RSYNC_EXCLUDES=|")//g;p}' > "${excludes_file}"
-                  else
-                    grep -- "--exclude " "${evobackup_file}" | grep -E -o "\"[^\"]+\"" | tr -d '"' > "${excludes_file}"
-                  fi
+                if grep -q  "^VERSION=" "${evobackup_file}" && dpkg --compare-versions "$(sed -E -n 's/VERSION="(.*)"/\1/p' "${evobackup_file}")" ge 22.12 ; then
+                  sed -En '/RSYNC_EXCLUDES="/,/"/ {s/(RSYNC_EXCLUDES=|")//g;p}' "${evobackup_file}" > "${excludes_file}"
+                else
+                  grep -- "--exclude " "${evobackup_file}" | grep -E -o "\"[^\"]+\"" | tr -d '"' > "${excludes_file}"
                 fi
                 not_excluded=$(findmnt --type nfs,nfs4,fuse.sshfs, -o target --noheadings | grep -v -f "${excludes_file}")
                 for mount in ${not_excluded}; do
@@ -611,7 +663,7 @@ check_apacheipinallow() {
 check_muninapacheconf() {
     muninconf="/etc/apache2/conf-available/munin.conf"
     if is_installed apache2; then
-        test -e $muninconf && grep -vEq "^( |\t)*#" "$muninconf" \
+        test -e $muninconf && grep --invert-match --extended-regexp --quiet "^( |\t)*#" "$muninconf" \
             && failed "IS_MUNINAPACHECONF" "default munin configuration may be commented or disabled"
     fi
 }
@@ -620,17 +672,17 @@ check_phpmyadminapacheconf() {
     phpmyadminconf0="/etc/apache2/conf-available/phpmyadmin.conf"
     phpmyadminconf1="/etc/apache2/conf-enabled/phpmyadmin.conf"
     if is_installed apache2; then
-        test -e $phpmyadminconf0 && grep -vEq "^( |\t)*#" "$phpmyadminconf0" \
-            && failed "IS_PHPMYADMINAPACHECONF" "default phpmyadmin configuration ($phpmyadminconf0) may be commented or disabled"
-        test -e $phpmyadminconf1 && grep -vEq "^( |\t)*#" "$phpmyadminconf1" \
-            && failed "IS_PHPMYADMINAPACHECONF" "default phpmyadmin configuration ($phpmyadminconf1) may be commented or disabled"
+        test -e $phpmyadminconf0 && grep --invert-match --extended-regexp --quiet "^( |\t)*#" "$phpmyadminconf0" \
+            && failed "IS_PHPMYADMINAPACHECONF" "default phpmyadmin configuration ($phpmyadminconf0) should be commented or disabled"
+        test -e $phpmyadminconf1 && grep --invert-match --extended-regexp --quiet "^( |\t)*#" "$phpmyadminconf1" \
+            && failed "IS_PHPMYADMINAPACHECONF" "default phpmyadmin configuration ($phpmyadminconf1) should be commented or disabled"
     fi
 }
 # Verification si le système doit redémarrer suite màj kernel.
 check_kerneluptodate() {
     if is_installed linux-image*; then
         # shellcheck disable=SC2012
-        kernel_installed_at=$(date -d "$(ls --full-time -lcrt /boot | tail -n1 | awk '{print $6}')" +%s)
+        kernel_installed_at=$(date -d "$(ls --full-time -lcrt /boot/*lin* | tail -n1 | awk '{print $6}')" +%s)
         last_reboot_at=$(($(date +%s) - $(cut -f1 -d '.' /proc/uptime)))
         if [ "$kernel_installed_at" -gt "$last_reboot_at" ]; then
             failed "IS_KERNELUPTODATE" "machine is running an outdated kernel, reboot advised"
@@ -697,6 +749,16 @@ check_etcgit() {
     git rev-parse --is-inside-work-tree > /dev/null 2>&1 \
         || failed "IS_ETCGIT" "/etc is not a git repository"
 }
+check_etcgit_lxc() {
+    if is_installed lxc; then
+        container_list=$(lxc-ls)
+        for container in $container_list; do
+            export GIT_DIR="/var/lib/lxc/${container}/rootfs/etc/.git" GIT_WORK_TREE="/var/lib/lxc/${container}/rootfs/etc"
+            git rev-parse --is-inside-work-tree > /dev/null 2>&1 \
+                || failed "IS_ETCGIT_LXC" "/etc is not a git repository in container ${container}"
+        done
+    fi
+}
 # Check if /etc/.git/ has read/write permissions for root only.
 check_gitperms() {
     GIT_DIR="/etc/.git"
@@ -704,6 +766,19 @@ check_gitperms() {
         expected="700"
         actual=$(stat -c "%a" $GIT_DIR)
         [ "$expected" = "$actual" ] || failed "IS_GITPERMS" "$GIT_DIR must be $expected"
+    fi
+}
+check_gitperms_lxc() {
+    if is_installed lxc; then
+        container_list=$(lxc-ls)
+        for container in $container_list; do
+            GIT_DIR="/var/lib/lxc/${container}/rootfs/etc/.git"
+            if test -d $GIT_DIR; then
+                expected="700"
+                actual=$(stat -c "%a" $GIT_DIR)
+                [ "$expected" = "$actual" ] || failed "IS_GITPERMS_LXC" "$GIT_DIR must be $expected (in container ${container})"
+            fi
+        done
     fi
 }
 # Check if no package has been upgraded since $limit.
@@ -813,7 +888,7 @@ check_drbd_two_primaries() {
                 failed "IS_DRBDTWOPRIMARIES" "Some DRBD ressources have two primaries, you risk a split brain!"
             fi
         elif command -v drbdadm >/dev/null; then
-            if drbdadm status | grep Primary -A2 | grep peer | grep -q Primary; then
+            if drbdadm role all 2>&1 | grep -q 'Primary/Primary'; then
                 failed "IS_DRBDTWOPRIMARIES" "Some DRBD ressources have two primaries, you risk a split brain!"
             fi
         fi
@@ -824,7 +899,7 @@ check_broadcomfirmware() {
     if [ -x "${LSPCI_BIN}" ]; then
         if ${LSPCI_BIN} | grep -q 'NetXtreme II'; then
             { is_installed firmware-bnx2 \
-                && grep -q "^deb http://mirror.evolix.org/debian.* non-free" /etc/apt/sources.list;
+                && apt-cache policy | grep "\bl=Debian\b" | grep --quiet -v "\b,c=non-free\b"
             } || failed "IS_BROADCOMFIRMWARE" "missing non-free repository"
         fi
     else
@@ -1000,6 +1075,7 @@ check_phpevolinuxconf() {
     is_debian_stretch  && phpVersion="7.0"
     is_debian_buster   && phpVersion="7.3"
     is_debian_bullseye && phpVersion="7.4"
+    is_debian_bookworm && phpVersion="8.2"
     if is_installed php; then
         { test -f "/etc/php/${phpVersion}/cli/conf.d/z-evolinux-defaults.ini" \
             && test -f "/etc/php/${phpVersion}/cli/conf.d/zzz-evolinux-custom.ini"
@@ -1131,16 +1207,10 @@ check_usrsharescripts() {
     test "$expected" = "$actual" || failed "IS_USRSHARESCRIPTS" "/usr/share/scripts must be $expected"
 }
 check_sshpermitrootno() {
-    sshd_args="-C addr=,user=,host=,laddr=,lport=0"
-    if is_debian_stretch; then
-        # Noop, we'll use the default $sshd_args
-        :
-    elif is_debian_buster; then
+    # You could change the SSH port in /etc/evocheck.cf
+    sshd_args="-C addr=,user=,host=,laddr=,lport=${SSH_PORT:-22}"
+    if is_debian_buster; then
         sshd_args="${sshd_args},rdomain="
-    else
-        # NOTE: From Debian Bullseye 11 onward, with OpenSSH 8.1, the argument
-        # -T doesn't require the additional -C.
-        sshd_args=
     fi
     # shellcheck disable=SC2086
     if ! (sshd -T ${sshd_args} 2> /dev/null | grep -qi 'permitrootlogin no'); then
@@ -1261,7 +1331,7 @@ check_lxc_container_resolv_conf() {
         container_list=$(lxc-ls)
         current_resolvers=$(grep nameserver /etc/resolv.conf | sed 's/nameserver//g' )
 
-       for container in $container_list; do
+        for container in $container_list; do
             if [ -f "/var/lib/lxc/${container}/rootfs/etc/resolv.conf" ]; then
 
                 while read -r resolver; do
@@ -1305,6 +1375,34 @@ check_lxc_php_fpm_service_umask_set() {
         if [ -n "${missing_umask}" ]; then
             failed "IS_LXC_PHP_FPM_SERVICE_UMASK_SET" "UMask is not set to 0007 in PHP-FPM services of theses containers : ${missing_umask}."
         fi
+    fi
+}
+# Check that LXC containers have the proper Debian version.
+check_lxc_php_bad_debian_version() {
+    if is_installed lxc; then
+        php_containers_list=$(lxc-ls --filter php)
+        missing_umask=""
+        for container in $php_containers_list; do
+            if [ "$container" = "php56" ]; then
+                grep --quiet 'VERSION_ID="8"' /var/lib/lxc/${container}/rootfs/etc/os-release || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container} should use Jessie"
+            elif [ "$container" = "php70" ]; then
+                grep --quiet 'VERSION_ID="9"' /var/lib/lxc/${container}/rootfs/etc/os-release || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container} should use Stretch"
+            elif [ "$container" = "php73" ]; then
+                grep --quiet 'VERSION_ID="10"' /var/lib/lxc/${container}/rootfs/etc/os-release || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container} should use Buster"
+            elif [ "$container" = "php74" ]; then
+                grep --quiet 'VERSION_ID="11"' /var/lib/lxc/${container}/rootfs/etc/os-release || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container} should use Bullseye"
+            elif [ "$container" = "php82" ]; then
+                grep --quiet 'VERSION_ID="12"' /var/lib/lxc/${container}/rootfs/etc/os-release || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container} should use Bookworm"
+            fi
+        done
+    fi
+}
+check_lxc_openssh() {
+    if is_installed lxc; then
+        container_list=$(lxc-ls)
+        for container in $container_list; do
+            test -e /var/lib/lxc/${container}/rootfs/usr/sbin/sshd && failed "IS_LXC_OPENSSH" "openssh-server should not be installed in container ${container}"
+        done
     fi
 }
 
@@ -1460,9 +1558,13 @@ main() {
     test "${IS_LOGROTATECONF:=1}" = 1 && check_logrotateconf
     test "${IS_SYSLOGCONF:=1}" = 1 && check_syslogconf
     test "${IS_DEBIANSECURITY:=1}" = 1 && check_debiansecurity
+    test "${IS_DEBIANSECURITY_LXC:=1}" = 1 && check_debiansecurity_lxc
+    test "${IS_BACKPORTS_VERSION:=1}" = 1 && check_backports_version
     test "${IS_OLDPUB:=1}" = 1 && check_oldpub
+    test "${IS_OLDPUB_LXC:=1}" = 1 && check_oldpub_lxc
     test "${IS_NEWPUB:=1}" = 1 && check_newpub
     test "${IS_SURY:=1}" = 1 && check_sury
+    test "${IS_SURY_LXC:=1}" = 1 && check_sury_lxc
     test "${IS_APTITUDE:=1}" = 1 && check_aptitude
     test "${IS_APTGETBAK:=1}" = 1 && check_aptgetbak
     test "${IS_USRRO:=1}" = 1 && check_usrro
@@ -1515,7 +1617,9 @@ main() {
     test "${IS_MUNINRUNNING:=1}" = 1 && check_muninrunning
     test "${IS_BACKUPUPTODATE:=1}" = 1 && check_backupuptodate
     test "${IS_ETCGIT:=1}" = 1 && check_etcgit
+    test "${IS_ETCGIT_LXC:=1}" = 1 && check_etcgit_lxc
     test "${IS_GITPERMS:=1}" = 1 && check_gitperms
+    test "${IS_GITPERMS_LXC:=1}" = 1 && check_gitperms_lxc
     test "${IS_NOTUPGRADED:=1}" = 1 && check_notupgraded
     test "${IS_TUNE2FS_M5:=1}" = 1 && check_tune2fs_m5
     test "${IS_EVOLINUXSUDOGROUP:=1}" = 1 && check_evolinuxsudogroup
@@ -1557,6 +1661,8 @@ main() {
     test "${IS_LXC_CONTAINER_RESOLV_CONF:=1}" = 1 && check_lxc_container_resolv_conf
     test "${IS_NO_LXC_CONTAINER:=1}" = 1 && check_no_lxc_container
     test "${IS_LXC_PHP_FPM_SERVICE_UMASK_SET:=1}" = 1 && check_lxc_php_fpm_service_umask_set
+    test "${IS_LXC_PHP_BAD_DEBIAN_VERSION:=1}" = 1 && check_lxc_php_bad_debian_version
+    test "${IS_LXC_OPENSSH:=1}" = 1 && check_lxc_openssh
     test "${IS_CHECK_VERSIONS:=1}" = 1 && check_versions
 
     if [ -f "${main_output_file}" ]; then
@@ -1572,7 +1678,7 @@ main() {
 }
 cleanup() {
     # Cleanup tmp files
-    # shellcheck disable=SC2086,SC2317
+    # shellcheck disable=SC2068,SC2317
     rm -f ${files_to_cleanup[@]}
 
     log "$PROGNAME exit."

@@ -1,0 +1,9 @@
+---
+- name: Allow all traffic through DRBD interface
+  ansible.builtin.lineinfile:
+    path: /etc/minifirewall.d/drbd
+    line: "/sbin/iptables -I INPUT -p tcp -i {{ kvm_drbd_interface }} -j ACCEPT"
+    create: yes
+  when:
+    - kvm_drbd_interface is defined
+    - kvm_drbd_interface | length > 0

@@ -9,15 +9,18 @@
 - name: Munin plugins are present and configured
   block:
 
-    - name: Disable dovecot plugin
+    - name: Disable Dovecot plugin
       ansible.builtin.file:
         path: /etc/munin/plugins/dovecot
         state: absent
 
-    - name: Remove dovecot plugin conf
+    - name: Remove old Dovecot plugin conf
       ansible.builtin.file:
-        path: /etc/munin/plugin-conf.d/dovecot
+        path: "/etc/munin/plugin-conf.d/{{ item }}"
         state: absent
+      loop:
+        - dovecot
+        - z-evolinux-dovecot
 
     - name: "Remount /usr if needed"
       ansible.builtin.include_role:
@@ -46,8 +49,8 @@
 
     - name: Copy Munin config
       ansible.builtin.copy:
-        src: z-evolinux-dovecot.conf
-        dest: /etc/munin/plugin-conf.d/z-evolinux-dovecot
+        src: munin_plugins.conf
+        dest: /etc/munin/plugin-conf.d/zzz-dovecot
         mode: '0644'
       notify: restart munin-node
 

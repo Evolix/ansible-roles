@@ -17,4 +17,5 @@
     dest: /etc/nginx/sites-available/evolinux-default.conf
     regexp: 'location /server-status-? {'
     replace: 'location /server-status-{{ nginx_serverstatus_suffix }} {'
+  when: not ansible_check_mode
   notify: reload nginx

@@ -1,0 +1,69 @@
+#!/bin/bash
+
+: "${AUTOSYSADMIN_LIB:=/usr/local/lib/autosysadmin}"
+source "${AUTOSYSADMIN_LIB}/common.sh" || exit 1
+source "${AUTOSYSADMIN_LIB}/repair.sh" || exit 1
+
+pre_repair
+
+if is_debian_version "8" "<="; then
+
+    if is_sysvinit_enabled '*mysql*'; then
+        if ! pgrep -u mysql mysqld > /dev/null; then
+
+            # Save service status before restart
+            timeout 2 mysqladmin status 2>&1 | save_in_log_dir "mysql.before.status"
+
+            timeout 20 /etc/init.d/mysql restart > /dev/null
+            rc=$?
+            if [ "${rc}" -eq "0" ]; then
+                log_action "Restart mysql: OK"
+            else
+                log_action "Restart mysql: failed"
+            fi
+
+            # Save service status after restart
+            timeout 2 mysqladmin status 2>&1 | save_in_log_dir "mysql.after.status"
+        else
+            log_abort_and_quit "mysqld process alive. Aborting"
+        fi
+    else
+        log_abort_and_quit "MySQL not enabled. Aborting"
+    fi
+
+else
+
+    if is_debian_version "12" ">="; then
+        service="mariadb.service"
+        service_name="mariadb"
+    else
+        service="mysql.service"
+        service_name="mysql"
+    fi
+
+    if is_systemd_enabled "${service}"; then
+        if is_systemd_active "${service}"; then
+            log_abort_and_quit "${service} is active, nothing left to do."
+        else
+            # Save service status before restart
+            systemctl status "${service}" | save_in_log_dir "${service_name}.before.status"
+
+            # Try to restart
+            timeout 20 systemctl restart "${service}" > /dev/null
+            rc=$?
+            if [ "${rc}" -eq "0" ]; then
+                log_action "Restart ${service_name}: OK"
+            else
+                log_action "Restart ${service_name}: failed"
+            fi
+
+            # Save service status after restart
+            systemctl status "${service}" | save_in_log_dir "${service_name}.after.status"
+        fi
+    else
+        log_abort_and_quit "${service} is disabled (or missing), nothing left to do."
+    fi
+
+fi
+
+post_repair

@@ -24,10 +24,26 @@
     owner: root
     group: root
 
+- name: Set Evolix GPG key format to GPG (Debian < 9)
+  set_fact:
+    apt_evolix_public_key: "pub_evolix.gpg"
+  when:
+    - ansible_distribution_major_version is version('9', '<')
+  tags:
+    - apt
+
+- name: Set Evolix GPG key format to ASC (Debian >= 9)
+  set_fact:
+    apt_evolix_public_key: "pub_evolix.asc"
+  when:
+    - ansible_distribution_major_version is version('9', '>=')
+  tags:
+    - apt
+
 - name: Add Evolix GPG key
   ansible.builtin.copy:
-    src: pub_evolix.asc
-    dest: "{{ apt_keyring_dir }}/pub_evolix.asc"
+    src: "{{ apt_evolix_public_key }}"
+    dest: "{{ apt_keyring_dir }}/{{ apt_evolix_public_key }}"
     force: true
     mode: "0644"
     owner: root

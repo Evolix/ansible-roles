@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+##########
+# This script takes a multi-lines input of "oneliner-style" APT sources definitions.
+# It converts them into "deb822-style" sources.
+# Each generated file will have only one stanza, possibly with multiple Types/Suites/Components
+##########
+
 import re
 import sys
 import os
@@ -10,11 +16,16 @@ import apt_pkg
 # Order matters !
 destinations = {
     "debian-security": "security.sources",
+
     ".*-backports": "backports.sources",
+
     ".debian.org": "system.sources",
     "mirror.evolix.org": "system.sources",
+    "ftp.evolix.org": "system.sources",
+
     "pub.evolix.net": "evolix_public_old.sources.bak",
     "pub.evolix.org": "evolix_public.sources",
+
     "artifacts.elastic.co": "elastic.sources",
     "download.docker.com": "docker.sources",
     "downloads.linux.hpe.com": "hp.sources",
@@ -75,6 +86,11 @@ def prepare_sources(lines):
                     if "=" in option:
                         key, value = option.split("=")
                         options[key] = value
+
+            ### WARNING ###
+            # if there are multiple lines with different URIS for a given destination (eg. "system")
+            # each one will overwrite the previous one 
+            # and the last evaluated will be what remains.
 
             if dest in sources:
                 sources[dest]["Types"].add(matches["type"])

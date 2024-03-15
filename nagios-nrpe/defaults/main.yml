@@ -8,8 +8,17 @@ nagios_nrpe_default_ntp_server: "pool.ntp.org"
 nagios_nrpe_ntp_server: Null
 
 # Use nagios_nrpe_processes to override
-nagios_nrpe_processes_default_before_debian_12: [ cron rsyslogd ntpd munin-node ]
-nagios_nrpe_processes_default: [ cron rsyslogd systemd-timesyn munin-node ]
+nagios_nrpe_processes_default_before_debian_12:
+  - cron
+  - rsyslogd
+  - ntpd
+  - munin-node
+nagios_nrpe_processes_default:
+  - cron
+  - rsyslogd
+  - systemd-timesyn
+  - munin-node
+
 # Built dynamically :
 nagios_nrpe_processes: Null
 

@@ -23,6 +23,7 @@
     path: /etc/sysfs.conf
     line: kernel/mm/transparent_hugepage/enabled = {{ redis_sysctl_transparent_hugepage_enabled }}
     regexp: "kernel/mm/transparent_hugepage/enabled"
+    create: yes
   tags:
     - redis
     - kernel

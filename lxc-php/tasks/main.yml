@@ -9,16 +9,16 @@
     name: evolix/lxc
   vars:
     lxc_containers:
-      - { name: "{{ lxc_php_version }}", release: "{{ lxc_php_container_releases[lxc_php_version] }}" }
+      - { name: "{{ lxc_php_container_name }}", release: "{{ lxc_php_container_releases[lxc_php_version] }}" }
   when: lxc_php_version is defined
 
 - name: set LXC rootfs
   ansible.builtin.set_fact:
-    lxc_rootfs: "/var/lib/lxc/{{ lxc_php_version }}/rootfs"
+    lxc_rootfs: "/var/lib/lxc/{{ lxc_php_container_name }}/rootfs"
 
-- name: "Update APT cache in container {{ lxc_php_version }}"
+- name: "Update APT cache in container {{ lxc_php_container_name }}"
   community.general.lxc_container:
-    name: "{{ lxc_php_version }}"
+    name: "{{ lxc_php_container_name }}"
     container_command: "apt-get update"
 
 - ansible.builtin.import_tasks: "php56.yml"
@@ -41,6 +41,9 @@
 
 - ansible.builtin.import_tasks: "php82.yml"
   when: lxc_php_version == "php82"
+
+- ansible.builtin.import_tasks: "php83.yml"
+  when: lxc_php_version == "php83"
 
 - ansible.builtin.import_tasks: "umask.yml"
 

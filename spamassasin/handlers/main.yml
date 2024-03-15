@@ -3,3 +3,8 @@
   ansible.builtin.service:
     name: spamassassin
     state: restarted
+
+- name: restart spamd
+  ansible.builtin.service:
+    name: spamd
+    state: restarted

@@ -10,6 +10,11 @@
     name: "{{ lxc_php_version }}"
     container_command: "systemctl restart {{ lxc_php_services[lxc_php_version] }}"
 
+- name: Reload php83-fpm
+  community.general.lxc_container:
+    name: "{{ lxc_php_version }}"
+    container_command: "systemctl reload php8.3-fpm"
+
 - name: Reload php82-fpm
   community.general.lxc_container:
     name: "{{ lxc_php_version }}"

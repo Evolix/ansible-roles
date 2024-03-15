@@ -1,0 +1,131 @@
+#!/bin/bash
+
+: "${AUTOSYSADMIN_LIB:=/usr/local/lib/autosysadmin}"
+source "${AUTOSYSADMIN_LIB}/common.sh" || exit 1
+source "${AUTOSYSADMIN_LIB}/repair.sh" || exit 1
+
+pre_repair
+
+## Apache
+
+service="apache2.service"
+service_name="apache2"
+
+if is_systemd_enabled "${service}"; then
+    if is_systemd_active "${service}"; then
+        log_all "${service} is active. Skip."
+    else
+        # Save service status before restart
+        systemctl status "${service}" | save_in_log_dir "${service_name}.before.status"
+
+        # check syntax
+        if apache2ctl -t > /dev/null 2>&1; then
+            # Try to restart
+            timeout 20 systemctl restart "${service}" > /dev/null
+            rc=$?
+            if [ "${rc}" -eq "0" ]; then
+                log_action "Restart ${service_name}: OK"
+            else
+                log_action "Restart ${service_name}: failed"
+            fi
+
+            # Save service status after restart
+            systemctl status "${service}" | save_in_log_dir "${service_name}.after.status"
+
+            # Save error logs
+            date=$(LANG=en_US.UTF-8 date '+%b %d')
+            grep "${date}" /home/*/log/error.log /var/log/apache2/*error.log \
+                | grep -v \
+                -e "Got error 'PHP message:" \
+                -e "No matching DirectoryIndex" \
+                -e "client denied by server configuration" \
+                -e "server certificate does NOT include an ID which matches the server name" \
+                    | save_in_log_dir "apache-errors.log"
+        else
+            log_action "Restart ${service_name}: skip (invalid configuration)"
+        fi
+    fi
+else
+    log_all "${service} is disabled (or missing). Skip."
+fi
+
+## Nginx
+
+service="nginx.service"
+service_name="nginx"
+
+if is_systemd_enabled "${service}"; then
+    if is_systemd_active "${service}"; then
+        log_all "${service} is active. Skip."
+    else
+        # Save service status before restart
+        systemctl status "${service}" | save_in_log_dir "${service_name}.before.status"
+
+        # check syntax
+        if nginx -t > /dev/null 2>&1; then
+            # Try to restart
+            timeout 20 systemctl restart "${service}" > /dev/null
+            rc=$?
+            if [ "${rc}" -eq "0" ]; then
+                log_action "Restart ${service_name}: OK"
+            else
+                log_action "Restart ${service_name}: failed"
+            fi
+
+            # Save service status after restart
+            systemctl status "${service}" | save_in_log_dir "${service_name}.after.status"
+
+            # Save error logs
+            ### Consider doing for Nginx the same as Apache
+        else
+            log_action "Restart ${service_name}: skip (invalid configuration)"
+        fi
+    fi
+else
+    log_all "${service} is disabled (or missing). Skip."
+fi
+
+## LXC
+
+if is_systemd_enabled 'lxc.service'; then
+    for container in $(lxc-ls -1 | grep --fixed-strings 'php' | grep --extended-regexp --invert-match --regexp '\bold\b' --regexp '\bdisabled\b'); do
+        repair_lxc_php "${container}"
+    done
+else
+    log_all "LXC is disabled (or missing). Skip."
+fi
+
+## FPM
+
+fpm_services=$(systemd_list_services 'php*-fpm*')
+if [ -n "${fpm_services}" ]; then
+    for service in ${fpm_services}; do
+        service_name="${service//.service/}"
+        if is_systemd_enabled "${service}"; then
+            if is_systemd_active "${service}"; then
+                log_all "${service} is active. Skip."
+            else
+                # Save service status before restart
+                systemctl status "${service}" | save_in_log_dir "${service_name}.before.status"
+
+                # Try to restart
+                timeout 20 systemctl restart "${service}" > /dev/null
+                rc=$?
+                if [ "${rc}" -eq "0" ]; then
+                    log_action "Restart ${service_name}: OK"
+                else
+                    log_action "Restart ${service_name}: failed"
+                fi
+
+                # Save service status after restart
+                systemctl status "${service}" | save_in_log_dir "${service_name}.after.status"
+            fi
+        else
+            log_all "${service} is disabled (or missing). Skip."
+        fi
+    done
+else
+    log_all "PHP FPM not found. Skip."
+fi
+
+post_repair

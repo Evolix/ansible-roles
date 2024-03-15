@@ -9,6 +9,7 @@
     - ansible_machine == "x86_64"
     - ansible_virtualization_role == "guest"
     - evolinux_kernel_cloud_auto | bool
+    - ansible_distribution_major_version is version('10', '>=')
 
 - name: "Remove non-Cloud kernel on virtual servers"
   ansible.builtin.apt:

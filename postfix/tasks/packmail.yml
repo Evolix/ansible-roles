@@ -1,11 +1,9 @@
 ---
-- name: ensure packages are installed
+- name: Complementary packmail packages are installed
   ansible.builtin.apt:
     name:
-      - postfix
       - postfix-ldap
       - postfix-policyd-spf-python
-      - mailgraph
     state: present
   tags:
   - postfix
@@ -24,6 +22,10 @@
     enabled: yes
     state: started
 
+- name: display checksums of known main.cf files
+  debug:
+    var: main_cf_known_checksums
+
 - name: create packmail main.cf
   ansible.builtin.template:
     src: packmail_main.cf.j2
@@ -33,7 +35,7 @@
     mode: "0644"
     force: true
   notify: restart postfix
-  when: (postfix_force_main_cf | bool) or (postfix_maincf_md5_jessie in default_main_cf.stdout) or (postfix_maincf_md5_stretch in default_main_cf.stdout)
+  when: (postfix_force_main_cf | bool) or (main_cf_checksum.stdout in main_cf_known_checksums)
   tags:
   - postfix
 

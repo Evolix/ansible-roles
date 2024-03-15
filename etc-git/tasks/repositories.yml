@@ -24,14 +24,36 @@
 - ansible.builtin.include_role:
     name: evolix/remount-usr
   when:
-    - _usr_share_scripts.stat.isdir
+    - _usr_share_scripts.stat.exists and _usr_share_scripts.stat.isdir
 
 - ansible.builtin.import_tasks: repository.yml
   vars:
     repository_path: "/usr/share/scripts"
     gitignore_items: []
   when:
-    - _usr_share_scripts.stat.isdir
+    - _usr_share_scripts.stat.exists and _usr_share_scripts.stat.isdir
     - ansible_distribution_major_version is version('10', '>=')
   tags:
     - etc-git
+
+
+- name: verify /var/chroot-bind/ presence
+  ansible.builtin.stat:
+    path: /var/chroot-bind
+  register: _var_chroot_bind
+  tags:
+    - etc-git
+
+- name: /var/chroot-bind/etc/bind is a safe directory
+  ansible.builtin.shell: git config --global --add safe.directory /var/chroot-bind/etc/bind
+
+- ansible.builtin.import_tasks: repository.yml
+  vars:
+    repository_path: "/var/chroot-bind/etc/bind"
+    gitignore_items: []
+  when:
+    - _var_chroot_bind.stat.exists and _var_chroot_bind.stat.isdir
+    - ansible_distribution_major_version is version('8', '>=')
+  tags:
+    - etc-git
+

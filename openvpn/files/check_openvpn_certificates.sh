@@ -35,6 +35,7 @@ fi
 # Dates in seconds
 _15_days="1296000"
 _30_days="2592000"
+_60_days="5184000"
 current_date=$($date_cmd +"%s")
 
 # Trying to define the OpenVPN conf file location - default to /etc/openvpn/server.conf
@@ -90,15 +91,15 @@ test_ca_expiration() {
     if [ $current_date -ge $1 ]; then
         CA_ECHO="CRITICAL - The server CA has expired on $formated_ca_expiration_date"
         CA_STATE=$STATE_CRITICAL
-    # Expiration in 15 days or less - CA file
-    elif [ $((current_date+_15_days)) -ge $1 ]; then
-        CA_ECHO="CRITICAL - The server CA expires in 15 days or less : $formated_ca_expiration_date"
-        CA_STATE=$STATE_CRITICAL
     # Expiration in 30 days or less - CA file
     elif [ $((current_date+_30_days)) -ge $1 ]; then
-        CA_ECHO="WARNING - The server CA expires in 30 days or less : $formated_ca_expiration_date"
+        CA_ECHO="CRITICAL - The server CA expires in 30 days or less : $formated_ca_expiration_date"
+        CA_STATE=$STATE_CRITICAL
+    # Expiration in 60 days or less - CA file
+    elif [ $((current_date+_60_days)) -ge $1 ]; then
+        CA_ECHO="WARNING - The server CA expires in 60 days or less : $formated_ca_expiration_date"
         CA_STATE=$STATE_WARNING
-    # Expiration in more than 30 days - CA file
+    # Expiration in more than 60 days - CA file
     else
         CA_ECHO="OK - The server CA expires on $formated_ca_expiration_date"
         CA_STATE=$STATE_OK
@@ -193,8 +194,8 @@ main() {
             echo $RESTART_ECHO
             exit $CERT_STATE
         else
-            echo $CERT_ECHO
             echo $CA_ECHO
+            echo $CERT_ECHO
             echo $RESTART_ECHO
             exit $CERT_STATE
         fi

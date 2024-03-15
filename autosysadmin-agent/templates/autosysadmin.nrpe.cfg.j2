@@ -1,0 +1,8 @@
+#
+# Ansible managed - DO NOT MODIFY, your changes will be overwritten !
+#
+
+# Autosysadmin repair commands
+{% for script in lookup('ansible.builtin.fileglob', '../../../autosysadmin/agent/repair/repair_*', wantlist=True) | map("basename") | sort %}
+command[{{ script }}]=sudo {{ autosysadmin_agent_bin_dir }}/{{ script }}
+{% endfor %}

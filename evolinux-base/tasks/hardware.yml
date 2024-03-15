@@ -6,11 +6,11 @@
   tags:
     - packages
 
-- name: firmware-non-free components are installed (Debian 12+)
+- name: non-free-firmware components are installed (Debian 12+)
   ansible.builtin.replace:
     dest: /etc/apt/sources.list.d/system.sources
-    regexp: '^(Components: ((?!\bfirmware-non-free\b).)*)$'
-    replace: '\1 firmware-non-free'
+    regexp: '^(Components: ((?!\bnon-free-firmware\b).)*)$'
+    replace: '\1 non-free-firmware'
   when:
     - ansible_distribution_major_version is version('12', '>=')
 
@@ -48,6 +48,7 @@
       - firmware-linux-nonfree
       - intel-microcode
     state: present
+    update_cache: True
   tags:
     - packages
 

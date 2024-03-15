@@ -5,6 +5,7 @@
     dest: /etc/nginx/snippets/ipaddr_whitelist
     line: "allow {{ item }};"
     state: present
+    create: yes
   loop: "{{ nginx_ipaddr_whitelist_present }}"
   notify: reload nginx
   tags:

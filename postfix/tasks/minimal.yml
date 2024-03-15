@@ -1,10 +1,8 @@
 ---
-- name: ensure packages are installed
-  ansible.builtin.apt:
-    name: postfix
-    state: present
-  tags:
-  - postfix
+
+- name: display checksums of known main.cf files
+  debug:
+    var: main_cf_known_checksums
 
 - name: create minimal main.cf
   ansible.builtin.template:
@@ -15,6 +13,6 @@
     mode: "0644"
     force: true
   notify: restart postfix
-  when: (postfix_force_main_cf | bool) or (postfix_maincf_md5_jessie in default_main_cf.stdout) or (postfix_maincf_md5_stretch in default_main_cf.stdout)
+  when: (postfix_force_main_cf | bool) or (main_cf_checksum.stdout in main_cf_known_checksums)
   tags:
   - postfix

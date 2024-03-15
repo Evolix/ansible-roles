@@ -1,3 +1,3 @@
 # {{ ansible_managed }}
 
-deb [signed-by={{ apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix {{ ansible_distribution_release }} main
+deb [signed-by={{ apt_keyring_dir }}/{{ apt_evolix_public_key }}] http://pub.evolix.org/evolix {{ ansible_distribution_release }} main
