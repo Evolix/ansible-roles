@@ -16,3 +16,4 @@ proftpd_sftp_use_publickeys: True
 proftpd_sftp_port: 22222
 proftpd_accounts: []
 proftpd_accounts_final: []
+proftpd_sftp_enable_user_whitelist : False
