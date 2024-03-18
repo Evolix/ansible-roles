@@ -142,6 +142,9 @@ evolinux_ssh_group: "evolinux-ssh"
 #
 # evolinux_users_include: True
 
+# bash
+evolinux_bash_config_include: true
+
 # root
 
 evolinux_root_include: True

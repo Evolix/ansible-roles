@@ -16,6 +16,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * autosysadmin-agent: upstream release 24.03.1
+* evolinux-base: Add new variable to disable global customisation of bash config
 
 ### Fixed
 
