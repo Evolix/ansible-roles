@@ -43,3 +43,19 @@ For generate the sha512 version of yours password :
 ~~~
 printf "test" | mkpasswd --stdin --method=sha-512
 ~~~
+
+## Add whitelist ip for accounts
+
+If you want add an filtering by ip for accounts, you have to enabled variable `proftpd_sftp_enable_user_whitelist` and add variable `proftpd_sftp_ips_whitelist` and a group by accounts.
+
+Example :
+
+~~~
+proftpd_sftp_enable_user_whitelist : True
+
+proftpd_sftp_ips_whitelist:
+  foo: ['127.0.0.1', '192.168.0.1']
+
+proftpd_accounts:
+- { name: 'ftp3', home: '/home/ftp3/', uid: 116, gid: 65534, group: 'foo', password: '$6$/Yy0b0No3GWh$3ZY1GZFI25eyQDBrANyHw.NFPqPqdg6sCi89nM/aNitmESZ2jGfROveS5xowy.WjX9tMC7.KPoabKPyxOpBJY0' }
+~~~
