@@ -20,8 +20,8 @@
 
     # LOG
     CustomLog /var/log/apache2/access.log vhost_combined
-    CustomLog /var/lib/roundcube/logs/access.log combined
-    ErrorLog  /var/lib/roundcube/logs/error.log
+    CustomLog /var/log/roundcube/access.log combined
+    ErrorLog  /var/log/roundcube/error.log
 
     # REWRITE
     UseCanonicalName On
