@@ -2,12 +2,15 @@
 # Juin - Decembre 2022 : #64088
 # Purge pour Stretch et Buster
 
-/usr/bin/ionice -c3 /usr/bin/sqlite3 /var/lib/fail2ban/fail2ban.sqlite3 "DELETE FROM bans WHERE datetime('now', '-{{ fail2ban_dbpurgeage_default }}') > datetime(timeofban, 'unixepoch');"
+/usr/bin/ionice -c3 /usr/bin/sqlite3 /var/lib/fail2ban/fail2ban.sqlite3 ".timeout 5000; DELETE FROM bans WHERE datetime('now', '-{{ fail2ban_dbpurgeage_default }}') > datetime(timeofban, 'unixepoch');"
 
-place_dispo=$( df -h  /var/lib/fail2ban/fail2ban.sqlite3  --output="avail" -h --block-size=1 |tail -n1 )
-place_pris=$( echo $(("$(stat --format %s /var/lib/fail2ban/fail2ban.sqlite3 ) * 2" )) )
+place_dispo="$(df /var/lib/fail2ban/fail2ban.sqlite3 --output="avail" --block-size=1 | tail -n1)"
+place_pris="$(stat --format %s /var/lib/fail2ban/fail2ban.sqlite3)"
 
-if [ $place_pris -lt $place_dispo ]
+if [ "$place_pris" -lt "$place_dispo" ]
 then
     /usr/bin/ionice -c3 /usr/bin/sqlite3 /var/lib/fail2ban/fail2ban.sqlite3 "VACUUM;"
+else
+    >&2 echo "Fail2ban SQLite VACUUM not done because /var lacks of space (VACUUM may use twice the database size)."
+    exit 1
 fi
