@@ -5,6 +5,14 @@
 readonly PROGNAME=$(basename $0)
 readonly VERSION="24.04.00"
 
+readonly red="\e[0;31m"
+readonly green="\e[0;32m"
+readonly orange="\e[0;33m"
+readonly lightgreen="\e[1;32m"
+readonly yellow="\e[1;33m"
+readonly lightblue="\e[1;34m"
+readonly nocolor="\e[0m"
+
 # Load common functions and vars
 readonly lib_dir="/usr/local/lib/monitoringctl"
 if [ -r "${lib_dir}/common" ]; then
@@ -77,8 +85,14 @@ EOF
 }
 
 function check() {
-    # $1: check name
+    # $1: check name, "all" or empty
     readonly check_nrpe_bin="/usr/lib/nagios/plugins/check_nrpe"
+
+    if [ -z "${1}" ] || [ "${1}" = "all" ]; then
+        checks="$(get_checks_names)"
+    else
+        checks="${1}"
+    fi
 
     if [ ! -f "${check_nrpe_bin}" ]; then
         >&2 echo "${check_nrpe_bin} is missing, please install nagios-nrpe-plugin package."
