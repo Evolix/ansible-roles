@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="24.03.1"
+VERSION="24.03.2"
 
 # Common functions for "repair" and "restart" scripts
 
