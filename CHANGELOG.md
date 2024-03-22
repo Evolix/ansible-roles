@@ -25,6 +25,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * keepalived: Fix tasks that use file instead of copy
 * memcached: Fix conditions not properly writen (installation was always in multi-instance mode)
 * fail2ban: SQLite purge script didn't vacuum as expected + error when vacuum cannot be done
+* nagios-nrpe: create /etc/bash_completion.d if missing
 
 ### Removed
 
