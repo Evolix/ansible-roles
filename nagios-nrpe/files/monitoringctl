@@ -11,6 +11,7 @@ readonly orange="\e[0;33m"
 readonly lightgreen="\e[1;32m"
 readonly yellow="\e[1;33m"
 readonly lightblue="\e[1;34m"
+readonly purple="\e[0;35m"
 readonly nocolor="\e[0m"
 
 # Load common functions and vars
@@ -87,13 +88,6 @@ EOF
 function check() {
     # $1: check name, "all" or empty
     readonly check_nrpe_bin="/usr/lib/nagios/plugins/check_nrpe"
-
-    if [ -z "${1}" ] || [ "${1}" = "all" ]; then
-        checks="$(get_checks_names)"
-    else
-        checks="${1}"
-    fi
-
     if [ ! -f "${check_nrpe_bin}" ]; then
         >&2 echo "${check_nrpe_bin} is missing, please install nagios-nrpe-plugin package."
         exit 1
@@ -107,31 +101,82 @@ function check() {
     server_port=$(echo "$conf_lines" | grep "server_port" | tail -n1 | cut -d'=' -f2)
     if [ -z "${server_port}" ]; then server_port="5666"; fi
 
-    check_commands=$(get_check_commands "$1")
-
-    if [ -n "${check_commands}" ]; then
-        check_command=$(echo "${check_commands}" | tail -n1)
+    if [ -z "${1}" ] || [ "${1}" = "all" ]; then
+        checks="$(get_checks_names)"
+        header="Check\tStatus\tOutput (truncated)"
+        underline="-----\t------\t------------------"
+        str_out="${header}\n${underline}\n"
     else
-        error "Warning: no command found in NRPE configuration for check '${1}'. Aborted."
+        checks="${1}"
+        if [ "${bypass_nrpe}" = "False" ]; then
+            str_out="NRPE service output (on ${server_address}:${server_port}):\n"
+        else
+            str_out="Direct check output (bypassing NRPE):\n"
+        fi
     fi
 
-    if [ "${bypass_nrpe}" = "False" ]; then
-        request_command="${check_nrpe_bin} -H ${server_address} -p ${server_port} -c check_$1 2&>1"
+    for check in $checks; do
+        err_msg=""
+        if [ "${bypass_nrpe}" = "False" ]; then
+            request_command="${check_nrpe_bin} -H ${server_address} -p ${server_port} -c check_${check} 2&>1"
+        else
+            check_commands="$(get_check_commands "${check}")"
+            if [ -n "${check_commands}" ]; then
+                check_command="$(echo "${check_commands}")"
+
+                request_command="sudo -u nagios -- ${check_command}"
+            else
+                if [ -z "${1}" ] || [ "${1}" = "all" ]; then
+                    err_msg="Check command not found in NRPE configuration."
+                else
+                    err_mgs="Warning: no command found in NRPE configuration for check '${check}'. Aborted."
+                fi
+            fi
+        fi
+        if [ -z "${err_msg}" ]; then
+            check_output="$(${request_command})"
+            rc="$?"
+            check_output="$(echo "${check_output}" | tr '\n' ' ')"
+            if [ "${#check_output}" -gt 60 ]; then
+                check_output="$(echo "${check_output}" | cut -c-60) [...]"
+            fi
+        else
+            check_output="${err_msg}"
+            rc="3"
+        fi
+
+        case "${rc}" in
+            0)
+                rc_str="OK"
+                color="${green}"
+                ;;
+            1)
+                rc_str="Warning"
+                color="${orange}"
+                ;;
+            2)
+                rc_str="Critical"
+                color="${red}"
+                ;;
+            3)
+                rc_str="Unknown"
+                color="${purple}"
+                ;;
+            *)
+                rc_str="Unknown"
+                color="${purple}"
+        esac
+        if [ -z "${1}" ] || [ "${1}" = "all" ]; then
+            str_out="${str_out}${color}${check}\t${rc_str}\t${check_output}${nocolor}\n"
+        fi
+    done
+
+    if [ -z "${1}" ] || [ "${1}" = "all" ]; then
+        echo -e "${str_out}" | column -t -s $'\t'
     else
-        request_command="sudo -u nagios -- ${check_command}"
+        echo -e "${str_out}${color}${check_output}${nocolor}" | sed 's/|/\n/g'
+        exit "${rc}"
     fi
-
-    check_output=$(${request_command})
-    rc=$?
-
-    if [ "${bypass_nrpe}" = "False" ]; then
-        echo "NRPE service output (on ${server_address}:${server_port}):"
-    else
-        echo "Direct check output (bypassing NRPE):"
-    fi
-    echo "${check_output}"
-
-    exit "${rc}"
 }
 
 function disable_alerts() {
@@ -241,8 +286,9 @@ function alerts_status() {
         checks="${1}"
     fi
 
-    printf -- "Check               \tStatus     \tRe-enable time\n"
-    printf -- "--------------------\t-----------\t---------------------------------------\n"
+    header="Check\tStatus\tRe-enable time"
+    underline="-----\t------\t--------------"
+    str_out="${header}\n${underline}\n"
 
     for check in $checks; do
         enable_str=""
@@ -260,8 +306,20 @@ function alerts_status() {
                 enable_str="${enable_date} (${delay_str} left)"
             fi
         fi
-        printf -- "%-20s\t%-11s\t%s\n" "${check}" "${status_str}" "${enable_str}"
+        case "${status_str}" in
+            "Enabled")
+                color="${green}"
+                ;;
+            "Disabled")
+                color="${orange}"
+                ;;
+            *)
+                color="${red}"
+        esac
+        str_out="${str_out}${color}${check}\t${status_str}\t${enable_str}${nocolor}\n"
     done
+
+    echo -e "${str_out}" | column -t -s $'\t'
 }
 
 
@@ -368,7 +426,7 @@ if [ "$#" -gt 0 ]; then
 fi
 
 case "${action}" in
-    check|disable|enable|show)
+    disable|enable|show)
         if [ -z "${check_name}" ]; then
             usage_error "Action ${action}: missing CHECK_NAME argument."
         fi
