@@ -65,7 +65,11 @@ function main() {
         enable_delay="$(enable_delay "${enable_time}")"
         delay_str="$(delay_to_string "${enable_delay}")"
         enable_date="$(date --date "+${enable_delay} seconds" "+%d %h %Y at %H:%M:%S")"
-        echo "ALERT DISABLED until ${enable_date} (${delay_str} left) - ${check_stdout}"
+        disable_msg="$(get_disable_message "${wrapper_name}")"
+        if [ -n "${disable_msg}" ]; then
+            disable_msg="- ${disable_msg} "
+        fi
+        echo "ALERT DISABLED until ${enable_date} (${delay_str} left) ${disable_msg}- Check output: ${check_stdout}"
     else
         echo "${check_stdout}"
     fi

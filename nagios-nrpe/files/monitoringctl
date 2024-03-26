@@ -42,7 +42,7 @@ ACTIONS:
     status [CHECK_NAME|all]
 
         Print whether alerts are enabled or not (silenced).
-        If alerts are disabled (silenced), show comment and time left before automatic re-enabling.
+        If alerts are disabled (silenced), show disable message and time left before automatic re-enabling.
 
     check [--bypass-nrpe] CHECK_NAME
 
@@ -51,12 +51,12 @@ ACTIONS:
         -b, --bypass-nrpe          Execute directly command from NRPE configuration,
                                    as user nagios, without passing the request to NRPE.
 
-    disable CHECK_NAME|all [--during DURATION] --comment 'COMMENT'
+    disable CHECK_NAME|all [--during DURATION] [--message 'DISABLE MESSAGE']
 
-        Disable (silence) CHECK_NAME or all alerts for DURATION and write COMMENT into the log.
+        Disable (silence) CHECK_NAME or all alerts for DURATION and write DISABLE MESSAGE into the log.
         Checks output is still printed, so alerts history won't be lost.
 
-    enable CHECK_NAME|all --comment 'COMMENT'
+    enable CHECK_NAME|all [--message 'ENABLE MESSAGE']
 
         Re-enable CHECK_NAME or all alerts
 
@@ -64,9 +64,9 @@ ACTIONS:
 
         Show NPRE command(s) configured for CHECK_NAME
 
-COMMENT:
+MESSAGE:
 
-    Comment string to be written in log (mandatory).
+    Message to be written in log and disabled check output (mandatory, will be asked dynamically if not provided).
 
 DURATION:
 
@@ -129,7 +129,7 @@ function check() {
                 if [ -z "${1}" ] || [ "${1}" = "all" ]; then
                     err_msg="Check command not found in NRPE configuration."
                 else
-                    err_mgs="Warning: no command found in NRPE configuration for check '${check}'. Aborted."
+                    err_mgs="Error: no command found in NRPE configuration for check '${check}'. Aborted."
                 fi
             fi
         fi
@@ -137,8 +137,12 @@ function check() {
             check_output="$(${request_command})"
             rc="$?"
             check_output="$(echo "${check_output}" | tr '\n' ' ')"
-            if [ "${#check_output}" -gt 60 ]; then
-                check_output="$(echo "${check_output}" | cut -c-60) [...]"
+            if [ -z "${1}" ] || [ "${1}" = "all" ]; then
+                term_cols="$(tput cols)"
+
+                if [ "${#check_output}" -gt 60 ]; then
+                    check_output="$(echo "${check_output}" | cut -c-80) [...]"
+                fi
             fi
         else
             check_output="${err_msg}"
@@ -166,6 +170,7 @@ function check() {
                 rc_str="Unknown"
                 color="${purple}"
         esac
+
         if [ -z "${1}" ] || [ "${1}" = "all" ]; then
             str_out="${str_out}${color}${check}\t${rc_str}\t${check_output}${nocolor}\n"
         fi
@@ -180,7 +185,7 @@ function check() {
 }
 
 function disable_alerts() {
-    # $1: check name, $2: comment
+    # $1: check name, $2: disable message
     if ! command -v alerts_switch &> /dev/null; then
         error "Error: script 'alerts_switch' is not installed. Aborted."
     fi
@@ -191,11 +196,22 @@ function disable_alerts() {
         checks="${1}"
     fi
 
+    if [ -z "${2}" ]; then
+        echo -n "> Please provide a disable message (for logging and check output): "
+        read -r message
+        echo ''
+        if [ -z "${message}" ]; then
+            error "Error: disable message is mandatory."
+        fi
+    else
+        message="${2}"
+    fi
+
     # Verify that checks to disable are wrapped
     unwrappeds="$(not_wrapped_checks)"
     unwrapped_checks="$(comm -12 <(echo "${checks}") <(echo "${unwrappeds}"))"
     if [ -n "${unwrapped_checks}" ]; then
-        >&2 printf "Warning: some checks have no alerts_wrapper, they will not be disabled:"
+        >&2 printf "${orange}Warning:${nocolor} some checks are not configured, they will not be disabled:"
         for unwrapped in ${unwrapped_checks}; do
             >&2 printf " %s" "${unwrapped}"
         done
@@ -212,20 +228,27 @@ function disable_alerts() {
     else
         check_txt="Check ${1}"
     fi
+    main_msg="${check_txt} will be disabled for ${duration}${default_msg}."
+    main_msg_len="${#main_msg}"
+    line="$(printf '─%.0s' $(eval "echo {1.."${main_msg_len}"}"))"
     cat <<EOF
-${check_txt} will be disabled for ${duration}${default_msg}.
-Alerts history is kept in our monitoring system.
-To re-enable alert(s) before ${duration}, execute as root or with sudo: 'monitoringctl enable ${1} --comment "YOUR REASON"'
+┌${line}┐
+│${main_msg}│
+└${line}┘
+
+Additional information:
+* Alerts history is kept in our monitoring system.
+* To re-enable alert(s) before ${duration}, execute as root or with sudo: 'monitoringctl enable ${1}'
+
 EOF
 
-    echo -n "Confirm (y/N)? "
+    echo -n "> Confirm (y/N)? "
     read -r answer
     if [ "${answer}" != "Y" ] && [ "${answer}" != "y" ]; then
-        echo "Canceled." && exit 0
+        echo -e "${orange}Canceled.${nocolor}" && exit 0
     fi
 
     log "Action disable ${1} requested for ${duration} by user $(logname || echo unknown)."
-    log "Comment: '${2}'"
 
     # Log a warning if a check has no wrapper
     if [ -n "${unwrapped_checks}" ]; then
@@ -235,14 +258,13 @@ EOF
         done
     fi
 
-    log "Executing 'alerts_switch disable ${1} --during \"${duration}\"'"
-    alerts_switch disable "${1}" --during "${duration}"
+    alerts_switch disable "${1}" --during "${duration}" --message "${message}"
 
-    echo "${1} alerts are now disabled for ${duration}"
+    echo -e "${orange}Check ${1} alerts are now disabled for ${duration}${nocolor}"
 }
 
 function enable_alerts() {
-    # $1: wrapper name, $2: comment
+    # $1: wrapper name, $2: enable message
     if [ "${1}" != "all" ]; then
         is_disabled="$(is_disabled "${1}")"
         if [ "${is_disabled}" = "False" ]; then
@@ -251,12 +273,21 @@ function enable_alerts() {
         fi
     fi
 
-    log "Action enable ${1} requested by user $(logname || echo unknown)."
-    log "Comment: '${2}'"
-    log "Executing 'alerts_switch enable ${1}'"
-    alerts_switch enable "${1}"
+    if [ -z "${2}" ]; then
+        echo -n "> Please provide an enable message (for logging): "
+        read -r message
+        echo ''
+        if [ -z "${message}" ]; then
+            error "Error: disable message is mandatory."
+        fi
+    else
+        message="${2}"
+    fi
 
-    echo "${1} alerts are now enabled."
+    log "Action enable ${1} requested by user $(logname || echo unknown)."
+    alerts_switch enable "${1}" --message "${message}"
+
+    echo -e "${green}Check ${1} alerts are now enabled.${nocolor}"
 }
 
 # Show NRPE command(s) configured for a check
@@ -286,15 +317,16 @@ function alerts_status() {
         checks="${1}"
     fi
 
-    header="Check\tStatus\tRe-enable time"
-    underline="-----\t------\t--------------"
+    header="Check\tStatus\tRe-enable time\tDisable message"
+    underline="-----\t------\t--------------\t---------------"
     str_out="${header}\n${underline}\n"
 
     for check in $checks; do
         enable_str=""
         status_str="Enabled"
+        disable_msg=""
         if ! is_wrapped "${check}"; then
-            status_str="Not wrapped"
+            status_str="Not configured"
         else
             is_disabled="$(is_disabled "${check}")"
             if [ "${is_disabled}" = "True" ]; then
@@ -304,6 +336,7 @@ function alerts_status() {
                 delay_str="$(delay_to_string "${enable_delay}")"
                 enable_date="$(date --date "+${enable_delay} seconds" "+%d %h %Y at %H:%M:%S")"
                 enable_str="${enable_date} (${delay_str} left)"
+                disable_msg="$(get_disable_message "${check}")"
             fi
         fi
         case "${status_str}" in
@@ -316,7 +349,7 @@ function alerts_status() {
             *)
                 color="${red}"
         esac
-        str_out="${str_out}${color}${check}\t${status_str}\t${enable_str}${nocolor}\n"
+        str_out="${str_out}${color}${check}\t${status_str}\t${enable_str}${nocolor}\t${disable_msg}\n"
     done
 
     echo -e "${str_out}" | column -t -s $'\t'
@@ -339,7 +372,7 @@ fi
 
 # Default arguments and options
 action=""
-comment=""
+message=""
 duration="${default_disabled_time}"
 bypass_nrpe="False"
 default_duration="True"
@@ -370,11 +403,11 @@ while :; do
             fi
             default_duration="False"
             shift; shift;;
-        -c|--comment)
+        -m|--message)
             if [ "$#" -lt 2 ]; then
-                usage_error "Option --comment: missing comment string."
+                usage_error "Option --message: missing message string."
             fi
-            comment="${2}"
+            message="${2}"
             shift; shift;;
         status|check|enable|disable|show)
             action="${1}"
@@ -404,7 +437,7 @@ while :; do
                         check_name="${1}"
                     else
                         if is_check "${1}"; then
-                            error "Error: check '${1}' has no alerts_wrapper, it cannot be disabled. Aborted."
+                            error "Error: check '${1}' is not configured, it cannot be disabled. Aborted."
                         else
                             # We use the word "check" for the end user,
                             # but this is actually "unknown wrapper"
@@ -433,12 +466,6 @@ case "${action}" in
         ;;
 esac
 
-if [ "${action}" = "enable" ] || [ "${action}" = "disable" ]; then
-    if [ -z "${comment}" ]; then
-        usage_error "Action ${action}: missing --comment argument."
-    fi
-fi
-
 if [ ! "${action}" = "disable" ]; then
     if [ "${default_duration}" = "False" ]; then
         usage_error "Action ${action}: there is no --during option."
@@ -456,10 +483,10 @@ case "${action}" in
         show_check_commands "${check_name}"
         ;;
     enable)
-        enable_alerts "${check_name}" "${comment}"
+        enable_alerts "${check_name}" "${message}"
         ;;
     disable)
-        disable_alerts "${check_name}" "${comment}"
+        disable_alerts "${check_name}" "${message}"
         ;;
 esac
 

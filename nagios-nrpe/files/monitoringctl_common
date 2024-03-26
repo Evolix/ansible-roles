@@ -75,7 +75,11 @@ function time_to_seconds() {
 function get_enable_time() {
     # $1: wrapper name
     disable_file_path="$(get_disable_file_path "${1}")"
-    enable_secs="$(grep -v -E "^\s*#" "${disable_file_path}" | grep -E "^[0-9]+$" | head -n1 | awk '{print $1}')"
+    if [ ! -e "${disable_file_path}" ]; then
+        return
+    fi
+
+    enable_secs="$(grep -v -E "^\s*#" "${disable_file_path}" | sed '/^$/d' | head -n1 | awk '/^[0-9]+$/ {print $1}')"
     # If file is empty, use file last change date plus default disabled time
     if [ -z "${enable_secs}" ]; then
         file_last_change_secs="$(stat -c %Z "${disable_file_path}")"
@@ -83,6 +87,18 @@ function get_enable_time() {
         enable_secs="$(( file_last_change_secs + default_disabled_time_secs ))"
     fi
     echo "${enable_secs}"
+}
+
+# Print disable message
+function get_disable_message() {
+    # $1: wrapper name
+    disable_file_path="$(get_disable_file_path "${1}")"
+    if [ ! -e "${disable_file_path}" ]; then
+        return
+    fi
+
+    disable_msg="$(sed '/^$/d' "${disable_file_path}" | tail -n+2 | tr '\n' ' ' | awk '{$1=$1;print}')"
+    echo "${disable_msg}"
 }
 
 function now_secs() {
