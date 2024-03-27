@@ -9,7 +9,7 @@ videobridge {
     }
     websockets {
         enabled = true
-        domain = "{{ domains | first }}:443"
+        domain = "{{ jitsimeet_domains | first }}:443"
         tls = true
     }
     apis {

@@ -1,10 +1,10 @@
 # jitsi-meet coturn config. Do not modify this line
 use-auth-secret
 keep-address-family
-static-auth-secret={{ jitsi_meet_turn_secret }}
-realm={{ turn_domains | first }}
-cert=/etc/coturn/certs/{{ turn_domains | first }}.crt
-pkey=/etc/coturn/certs/{{ turn_domains | first }}.key
+static-auth-secret={{ jitsimeet_turn_secret }}
+realm={{ jitsimeet_turn_domains | first }}
+cert=/etc/coturn/certs/{{ jitsimeet_turn_domains | first }}.crt
+pkey=/etc/coturn/certs/{{ jitsimeet_turn_domains | first }}.key
 no-multicast-peers
 no-cli
 #no-loopback-peers

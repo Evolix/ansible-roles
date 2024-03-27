@@ -29,7 +29,7 @@ Exemple de playbook
     - all
   vars:
     # Supplanter ici les variables du rôle
-    domains: ['votre-vrai-domaine.org']
+    jitsimeet_domains: ['votre-vrai-domaine.org']
     service: 'mon-jitsimeet'
 
   roles:

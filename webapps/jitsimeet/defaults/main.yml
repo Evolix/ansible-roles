@@ -1,16 +1,16 @@
 ---
 # defaults file for main vars
 
-system_dep: "['gnupg2', 'curl', 'apt-transport-https', 'default-jdk', 'lua5.2', 'lua-unbound', 'certbot', 'python3-certbot-nginx']"
+jitsimeet_system_dep: "['gnupg2', 'curl', 'apt-transport-https', 'default-jdk', 'lua5.2', 'lua-unbound', 'certbot', 'python3-certbot-nginx']"
 
-domains: ['jitsi.example.net']
-turn_domains: ['turn.jitsi.example.net']
-certbot_admin_email: 'security@example.net'
+jitsimeet_domains: ['jitsi.example.net']
+jitsimeet_turn_domains: ['turn.jitsi.example.net']
+jitsimeet_certbot_admin_email: 'security@example.net'
 
-jitsi_meet_cert_choice: "Generate a new self-signed certificate (You will later get a chance to obtain a Let's encrypt certificate)"
-jitsi_meet_ssl_cert_path: "/etc/ssl/certs/ssl-cert-snakeoil.pem"
-jitsi_meet_ssl_key_path: "/etc/ssl/private/ssl-cert-snakeoil.key"
-jitsi_meet_turn_secret: "YOU_ABSOLUTELY_MUST_CHANGE_ME"
-jitsi_meet_jvb_secret: "NOT_CHANGING_ME_IS_SUPER_UNCOOL"
-jitsi_meet_jvb_muc_nick: "1899aaf3-3991-4770-9c8c-113906dc0a2e"
-colibri_ext_port: '8443'
+jitsimeet_cert_choice: "Generate a new self-signed certificate (You will later get a chance to obtain a Let's encrypt certificate)"
+jitsimeet_ssl_cert_path: "/etc/ssl/certs/ssl-cert-snakeoil.pem"
+jitsimeet_ssl_key_path: "/etc/ssl/private/ssl-cert-snakeoil.key"
+jitsimeet_turn_secret: "YOU_ABSOLUTELY_MUST_CHANGE_ME"
+jitsimeet_jvb_secret: "NOT_CHANGING_ME_IS_SUPER_UNCOOL"
+jitsimeet_jvb_muc_nick: "1899aaf3-3991-4770-9c8c-113906dc0a2e"
+jitsimeet_colibri_ext_port: '8443'

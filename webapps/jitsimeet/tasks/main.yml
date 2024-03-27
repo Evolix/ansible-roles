@@ -1,8 +1,8 @@
 ---
 # tasks file for jitsimeet install
 
-- name: Set FQDN
-  command: "hostnamectl set-hostname {{ domains | first }}"
+#- name: Set FQDN
+#  ansible.builtin.command: "hostnamectl set-hostname {{ jitsimeet_domains | first }}"
 
 - name: Add Prosody apt repository key
   ansible.builtin.get_url:
@@ -12,7 +12,12 @@
     force: true
 
 - name: Add Jitsi Meet apt repository key + dearmor hack
-  shell: curl -sL https://download.jitsi.org/jitsi-key.gpg.key | sh -c 'gpg --dearmor > /etc/apt/trusted.gpg.d/jitsimeet.gpg'
+  ansible.builtin.shell: curl -sL https://download.jitsi.org/jitsi-key.gpg.key | sh -c 'gpg --dearmor > /etc/apt/trusted.gpg.d/jitsimeet.gpg'
+
+- name: Adjust permissions of gpg key
+  ansible.builtin.file:
+    path: /etc/apt/trusted.gpg.d/jitsimeet.gpg
+    mode: '0644'
 
 - name: Add Prosody apt repository
   ansible.builtin.apt_repository:
@@ -26,7 +31,7 @@
 
 - name: Install system dependencies
   ansible.builtin.apt:
-    name: "{{ system_dep }}"
+    name: "{{ jitsimeet_system_dep }}"
     state: present
     update_cache: true
 
@@ -39,23 +44,23 @@
   loop:
     - name: jitsi-videobridge2
       question: jitsi-videobridge/jvb-hostname
-      value: "{{ domains | first }}"
+      value: "{{ jitsimeet_domains | first }}"
       vtype: string
     - name: jitsi-meet-web-config
       question: jitsi-meet/cert-choice
-      value: "{{ jitsi_meet_cert_choice }}"
+      value: "{{ jitsimeet_cert_choice }}"
       vtype: string
     - name: jitsi-meet-web-config
       question: jitsi-meet/cert-path-crt
-      value: "{{ jitsi_meet_ssl_cert_path }}"
+      value: "{{ jitsimeet_ssl_cert_path }}"
       vtype: string
     - name: jitsi-meet-web-config
       question: jitsi-meet/cert-path-key
-      value: "{{ jitsi_meet_ssl_key_path }}"
+      value: "{{ jitsimeet_ssl_key_path }}"
       vtype: string
     - name: jitsi-meet-prosody
       question: jitsi-meet-prosody/turn-secret
-      value: "{{ jitsi_meet_turn_secret }}"
+      value: "{{ jitsimeet_turn_secret }}"
       vtype: string
 
 - name: Install Jitsi Meet
@@ -70,7 +75,7 @@
     state: present
 
 - name: Add certs dir for coturn/letsencrypt if needed
-  file:
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
     mode: "{{ item.mode }}"
@@ -83,7 +88,7 @@
     - { path: '/etc/letsencrypt/renewal-hooks/deploy', owner: "root", group: "root", mode: "0700" }
 
 - name: Template config files
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: "{{ item.owner }}"
@@ -92,10 +97,10 @@
   loop:
     - { src: 'videobridge/jvb.conf.j2', dest: "/etc/jitsi/videobridge/jvb.conf", owner: "jvb", group: "jitsi", mode: "0640" }
     - { src: 'videobridge/sip-communicator.properties.j2', dest: "/etc/jitsi/videobridge/sip-communicator.properties", owner: "jvb", group: "jitsi", mode: "0640" }
-    - { src: 'meet/config.js.j2', dest: "/etc/jitsi/meet/{{ domains | first }}-config.js", owner: "root", group: "root", mode: "0644" }
-    - { src: 'meet/interface_config.js.j2', dest: "/etc/jitsi/meet/{{ domains | first }}-interface_config.js", owner: "root", group: "root", mode: "0644" }
+    - { src: 'meet/config.js.j2', dest: "/etc/jitsi/meet/{{ jitsimeet_domains | first }}-config.js", owner: "root", group: "root", mode: "0644" }
+    - { src: 'meet/interface_config.js.j2', dest: "/etc/jitsi/meet/{{ jitsimeet_domains | first }}-interface_config.js", owner: "root", group: "root", mode: "0644" }
     - { src: 'meet/welcomePageAdditionalContent.html.j2', dest: "/etc/jitsi/meet/welcomePageAdditionalContent.html", owner: "root", group: "root", mode: "0644" }
-    - { src: 'prosody/virtualhost.cfg.lua.j2', dest: "/etc/prosody/conf.avail/{{ domains | first }}.cfg.lua", owner: "root", group: "root", mode: "0644" }
+    - { src: 'prosody/virtualhost.cfg.lua.j2', dest: "/etc/prosody/conf.avail/{{ jitsimeet_domains | first }}.cfg.lua", owner: "root", group: "root", mode: "0644" }
     - { src: 'coturn/turnserver.conf.j2', dest: "/etc/turnserver.conf", owner: "root", group: "turnserver", mode: "0640" }
     - { src: 'certbot/coturn-certbot-deploy.sh.j2', dest: "/etc/letsencrypt/renewal-hooks/deploy/coturn-certbot-deploy.sh", owner: "root", group: "root", mode: "0700" }
 
@@ -110,10 +115,10 @@
         }
 
 - name: Unregister default jvb account in prosody
-  ansible.builtin.command: prosodyctl unregister jvb auth.{{ domains | first }}
+  ansible.builtin.command: prosodyctl unregister jvb auth.{{ jitsimeet_domains | first }}
 
 - name: Register jvb account in prosody (with proper secret)
-  ansible.builtin.command: prosodyctl register jvb auth.{{ domains | first }} {{ jitsi_meet_jvb_secret }}
+  ansible.builtin.command: prosodyctl register jvb auth.{{ jitsimeet_domains | first }} {{ jitsimeet_jvb_secret }}
 
 - name: Restart prosody
   ansible.builtin.service:
@@ -131,75 +136,75 @@
     state: restarted
 
 - name: Check if SSL certificate is present and register result
-  stat:
-    path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ jitsimeet_domains |first }}/fullchain.pem"
   register: ssl
 
 - name: Generate certificate only if required (first time)
   block:
   - name: Template vhost without SSL for successfull LE challengce
-    template: 
+    ansible.builtin.template: 
       src: "nginx/vhost.conf.j2"
-      dest: "/etc/nginx/sites-available/{{ domains |first }}.conf"
+      dest: "/etc/nginx/sites-available/{{ jitsimeet_domains |first }}.conf"
   - name: Enable temporary nginx vhost
-    file:
-      src: "/etc/nginx/sites-available/{{ domains |first }}.conf"
-      dest: "/etc/nginx/sites-enabled/{{ domains |first }}.conf"
+    ansible.builtin.file:
+      src: "/etc/nginx/sites-available/{{ jitsimeet_domains |first }}.conf"
+      dest: "/etc/nginx/sites-enabled/{{ jitsimeet_domains |first }}.conf"
       state: link
   - name: Reload nginx conf
-    service:
+    ansible.builtin.service:
       name: nginx
       state: reloaded
   - name: Make sure /var/lib/letsencrypt exists and has correct permissions
-    file: 
+    ansible.builtin.file: 
       path: /var/lib/letsencrypt
       state: directory
       mode: '0755'
   - name: Generate certificate with certbot
-    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ certbot_admin_email }} -d {{ domains |first }}
+    ansible.builtin.shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ jitsimeet_certbot_admin_email }} -d {{ jitsimeet_domains |first }}
   when: ssl.stat.exists != true
 
 - name: (Re)check if SSL certificate is present and register result
-  stat:
-    path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ jitsimeet_domains |first }}/fullchain.pem"
   register: ssl
 
 - name: (Re)template conf file for nginx vhost with SSL
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   loop:
-    - { src: 'nginx/vhost.conf.j2', dest: "/etc/nginx/sites-available/{{ domains |first }}.conf" }
+    - { src: 'nginx/vhost.conf.j2', dest: "/etc/nginx/sites-available/{{ jitsimeet_domains |first }}.conf" }
     - { src: 'nginx/multiplex.conf.j2', dest: '/etc/nginx/modules-available/multiplex.conf' }
 
 - name: Enable multiplex module conf
-  file:
+  ansible.builtin.file:
     src: '/etc/nginx/modules-available/multiplex.conf'
     dest: '/etc/nginx/modules-enabled/multiplex.conf'
     state: link
 
 - name: Enable nginx vhost
-  file:
-    src: "/etc/nginx/sites-available/{{ domains |first }}.conf"
-    dest: "/etc/nginx/sites-enabled/{{ domains |first }}.conf"
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ jitsimeet_domains |first }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ jitsimeet_domains |first }}.conf"
     state: link
 
 - name: Reload nginx conf
-  service:
+  ansible.builtin.service:
     name: nginx
     state: reloaded
 
 - name: Check if SSL certificate for coturn is present and register result
-  stat:
-    path: "/etc/coturn/certs/{{ turn_domains |first }}.crt"
+  ansible.builtin.stat:
+    path: "/etc/coturn/certs/{{ jitsimeet_turn_domains |first }}.crt"
   register: ssl_coturn
 
 - name: Generate certificate for coturn with certbot
-  shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/coturn-certbot-deploy.sh --agree-tos --email {{ certbot_admin_email }} -d {{ turn_domains |first }}
+  ansible.builtin.shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/coturn-certbot-deploy.sh --agree-tos --email {{ jitsimeet_certbot_admin_email }} -d {{ jitsimeet_turn_domains |first }}
   when: ssl_coturn.stat.exists != true 
 
 - name: Setup other domains if any
   include_tasks: other_domains.yml
-  loop: "{{ domains[1:] }}"
+  loop: "{{ jitsimeet_domains[1:] }}"
   loop_control:
     loop_var: domain

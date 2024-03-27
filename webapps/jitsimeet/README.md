@@ -29,7 +29,7 @@ Example Playbook
     - all
   vars:
     # Overwrite the role variables here
-    domains: ['your-real-domain.org']
+    jitsimeet_domains: ['your-real-domain.org']
     service: 'my-jitsimeet'
 
   roles:

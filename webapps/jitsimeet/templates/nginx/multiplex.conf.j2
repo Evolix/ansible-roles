@@ -1,7 +1,7 @@
 stream {
     map $ssl_preread_server_name $name {
-        {{ domains | first }} web_backend;
-        {{ turn_domains | first }} turn_backend;
+        {{ jitsimeet_domains | first }} web_backend;
+        {{ jitsimeet_turn_domains | first }} turn_backend;
     }
 
     upstream web_backend {
