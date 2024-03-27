@@ -27,6 +27,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * memcached: Fix conditions not properly writen (installation was always in multi-instance mode)
 * fail2ban: SQLite purge script didn't vacuum as expected + error when vacuum cannot be done
 * nagios-nrpe: create /etc/bash_completion.d if missing
+* packweb: fix old bug (2017!) .orig file created by module patch and taken in account by ProFTPd
 
 ### Removed
 

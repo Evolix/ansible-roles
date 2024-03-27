@@ -10,3 +10,9 @@
     remote_src: False
     src: ftp/evolinux.conf.diff
     dest: /etc/proftpd/conf.d/z-evolinux.conf
+
+- name: Remove .orig file created by previous patch task
+  ansible.builtin.file:
+    path: /etc/proftpd/conf.d/z-evolinux.conf.orig
+    state: absent
+
