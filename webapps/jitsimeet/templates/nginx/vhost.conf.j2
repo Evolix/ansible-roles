@@ -33,7 +33,7 @@ map $arg_vnode $prosody_node {
 server {
   listen 80;
   listen [::]:80;
-  server_name {{ domains | first }} {{ turn_domains | first }};
+  server_name {{ jitsimeet_domains | first }} {{ jitsimeet_turn_domains | first }};
 
   # For certbot
   location ~ /.well-known/acme-challenge {
@@ -50,7 +50,7 @@ server {
 server {
   listen 8088 ssl http2;
   listen [::]:8088 ssl http2;
-  server_name {{ domains | first }};
+  server_name {{ jitsimeet_domains | first }};
   
   access_log /var/log/nginx/{{ service }}.access.log; # reduce I/0 with buffer=10m flush=5m
   error_log  /var/log/nginx/{{ service }}.error.log;
@@ -74,16 +74,16 @@ server {
   add_header Strict-Transport-Security "max-age=63072000" always;
   set $prefix "";
   set $custom_index "";
-  set $config_js_location /etc/jitsi/meet/{{ domains | first }}-config.js;
-  set $interface_config_js_location /etc/jitsi/meet/{{ domains | first }}-interface_config.js;
+  set $config_js_location /etc/jitsi/meet/{{ jitsimeet_domains | first }}-config.js;
+  set $interface_config_js_location /etc/jitsi/meet/{{ jitsimeet_domains | first }}-interface_config.js;
   set $welcome_page_additional_content_location /etc/jitsi/meet/welcomePageAdditionalContent.html;
 
   ##
   # Certificates
   # you need a certificate to run in production. see https://letsencrypt.org/
   ##
-  ssl_certificate     /etc/letsencrypt/live/{{ domains | first }}/fullchain.pem;
-  ssl_certificate_key /etc/letsencrypt/live/{{ domains | first }}/privkey.pem;
+  ssl_certificate     /etc/letsencrypt/live/{{ jitsimeet_domains | first }}/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/{{ jitsimeet_domains | first }}/privkey.pem;
 
   root /usr/share/jitsi-meet;
 
@@ -240,10 +240,10 @@ server {
 
 ## Pour communiquer les stats colibri à un serveur externe Grafana 
 server {
-    listen {{ colibri_ext_port }}      ssl http2;
-    listen [::]:{{ colibri_ext_port }} ssl http2;
+    listen {{ jitsimeet_colibri_ext_port }}      ssl http2;
+    listen [::]:{{ jitsimeet_colibri_ext_port }} ssl http2;
 
-    server_name {{ domains | first }};
+    server_name {{ jitsimeet_domains | first }};
 
     # Mozilla Guideline v5.4, nginx 1.17.7, OpenSSL 1.1.1d, intermediate configuration
     ssl_protocols TLSv1.2 TLSv1.3;
@@ -256,8 +256,8 @@ server {
 
     add_header Strict-Transport-Security "max-age=63072000" always;
 
-    ssl_certificate     /etc/letsencrypt/live/{{ domains | first }}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/{{ domains | first }}/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/{{ jitsimeet_domains | first }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ jitsimeet_domains | first }}/privkey.pem;
 
     location / {
         proxy_pass http://127.0.0.1:8080;

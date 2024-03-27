@@ -1,13 +1,13 @@
 plugin_paths = { "/usr/share/jitsi-meet/prosody-plugins/" }
 
 -- domain mapper options, must at least have domain base set to use the mapper
-muc_mapper_domain_base = "{{ domains | first }}";
+muc_mapper_domain_base = "{{ jitsimeet_domains | first }}";
 
-external_service_secret = "{{ jitsi_meet_turn_secret }}";
+external_service_secret = "{{ jitsimeet_turn_secret }}";
 external_services = {
-     { type = "stun", host = "{{ turn_domains | first }}", port = 3478 },
-     { type = "turn", host = "{{ turn_domains | first }}", port = 3478, transport = "udp", secret = true, ttl = 86400, algorithm = "turn" },
-     { type = "turns", host = "{{ turn_domains | first }}", port = 443, transport = "tcp", secret = true, ttl = 86400, algorithm = "turn" }
+     { type = "stun", host = "{{ jitsimeet_turn_domains | first }}", port = 3478 },
+     { type = "turn", host = "{{ jitsimeet_turn_domains | first }}", port = 3478, transport = "udp", secret = true, ttl = 86400, algorithm = "turn" },
+     { type = "turns", host = "{{ jitsimeet_turn_domains | first }}", port = 443, transport = "tcp", secret = true, ttl = 86400, algorithm = "turn" }
 };
 
 cross_domain_bosh = false;
@@ -33,11 +33,11 @@ ssl = {
 }
 
 unlimited_jids = {
-    "focus@auth.{{ domains | first }}",
-    "jvb@auth.{{ domains | first }}"
+    "focus@auth.{{ jitsimeet_domains | first }}",
+    "jvb@auth.{{ jitsimeet_domains | first }}"
 }
 
-VirtualHost "{{ domains | first }}"
+VirtualHost "{{ jitsimeet_domains | first }}"
     authentication = "jitsi-anonymous" -- do not delete me
     -- Properties below are modified by jitsi-meet-tokens package config
     -- and authentication above is switched to "token"
@@ -48,13 +48,13 @@ VirtualHost "{{ domains | first }}"
     -- Note that old-style SSL on port 5223 only supports one certificate, and will always
     -- use the global one.
     ssl = {
-        key = "/etc/prosody/certs/{{ domains | first }}.key";
-        certificate = "/etc/prosody/certs/{{ domains | first }}.crt";
+        key = "/etc/prosody/certs/{{ jitsimeet_domains | first }}.key";
+        certificate = "/etc/prosody/certs/{{ jitsimeet_domains | first }}.crt";
     }
-    av_moderation_component = "avmoderation.{{ domains | first }}"
-    speakerstats_component = "speakerstats.{{ domains | first }}"
-    conference_duration_component = "conferenceduration.{{ domains | first }}"
-    end_conference_component = "endconference.{{ domains | first }}"
+    av_moderation_component = "avmoderation.{{ jitsimeet_domains | first }}"
+    speakerstats_component = "speakerstats.{{ jitsimeet_domains | first }}"
+    conference_duration_component = "conferenceduration.{{ jitsimeet_domains | first }}"
+    end_conference_component = "endconference.{{ jitsimeet_domains | first }}"
     -- we need bosh
     modules_enabled = {
         "bosh";
@@ -72,13 +72,13 @@ VirtualHost "{{ domains | first }}"
         "room_metadata";
     }
     c2s_require_encryption = false
-    lobby_muc = "lobby.{{ domains | first }}"
-    breakout_rooms_muc = "breakout.{{ domains | first }}"
-    room_metadata_component = "metadata.{{ domains | first }}"
-    main_muc = "conference.{{ domains | first }}"
-    -- muc_lobby_whitelist = { "recorder.{{ domains | first }}" } -- Here we can whitelist jibri to enter lobby enabled rooms
+    lobby_muc = "lobby.{{ jitsimeet_domains | first }}"
+    breakout_rooms_muc = "breakout.{{ jitsimeet_domains | first }}"
+    room_metadata_component = "metadata.{{ jitsimeet_domains | first }}"
+    main_muc = "conference.{{ jitsimeet_domains | first }}"
+    -- muc_lobby_whitelist = { "recorder.{{ jitsimeet_domains | first }}" } -- Here we can whitelist jibri to enter lobby enabled rooms
 
-Component "conference.{{ domains | first }}" "muc"
+Component "conference.{{ jitsimeet_domains | first }}" "muc"
     restrict_room_creation = true
     storage = "memory"
     modules_enabled = {
@@ -90,14 +90,14 @@ Component "conference.{{ domains | first }}" "muc"
         "muc_rate_limit";
         "muc_password_whitelist";
     }
-    admins = { "focus@auth.{{ domains | first }}" }
+    admins = { "focus@auth.{{ jitsimeet_domains | first }}" }
     muc_password_whitelist = {
-        "focus@auth.{{ domains | first }}"
+        "focus@auth.{{ jitsimeet_domains | first }}"
     }
     muc_room_locking = false
     muc_room_default_public_jids = true
 
-Component "breakout.{{ domains | first }}" "muc"
+Component "breakout.{{ jitsimeet_domains | first }}" "muc"
     restrict_room_creation = true
     storage = "memory"
     modules_enabled = {
@@ -107,25 +107,25 @@ Component "breakout.{{ domains | first }}" "muc"
         "muc_rate_limit";
         "polls";
     }
-    admins = { "focus@auth.{{ domains | first }}" }
+    admins = { "focus@auth.{{ jitsimeet_domains | first }}" }
     muc_room_locking = false
     muc_room_default_public_jids = true
 
 -- internal muc component
-Component "internal.auth.{{ domains | first }}" "muc"
+Component "internal.auth.{{ jitsimeet_domains | first }}" "muc"
     storage = "memory"
     modules_enabled = {
         "muc_hide_all";
         "ping";
     }
-    admins = { "focus@auth.{{ domains | first }}", "jvb@auth.{{ domains | first }}" }
+    admins = { "focus@auth.{{ jitsimeet_domains | first }}", "jvb@auth.{{ jitsimeet_domains | first }}" }
     muc_room_locking = false
     muc_room_default_public_jids = true
 
-VirtualHost "auth.{{ domains | first }}"
+VirtualHost "auth.{{ jitsimeet_domains | first }}"
     ssl = {
-        key = "/etc/prosody/certs/auth.{{ domains | first }}.key";
-        certificate = "/etc/prosody/certs/auth.{{ domains | first }}.crt";
+        key = "/etc/prosody/certs/auth.{{ jitsimeet_domains | first }}.key";
+        certificate = "/etc/prosody/certs/auth.{{ jitsimeet_domains | first }}.crt";
     }
     modules_enabled = {
         "limits_exception";
@@ -133,22 +133,22 @@ VirtualHost "auth.{{ domains | first }}"
     authentication = "internal_hashed"
 
 -- Proxy to jicofo's user JID, so that it doesn't have to register as a component.
-Component "focus.{{ domains | first }}" "client_proxy"
-    target_address = "focus@auth.{{ domains | first }}"
+Component "focus.{{ jitsimeet_domains | first }}" "client_proxy"
+    target_address = "focus@auth.{{ jitsimeet_domains | first }}"
 
-Component "speakerstats.{{ domains | first }}" "speakerstats_component"
-    muc_component = "conference.{{ domains | first }}"
+Component "speakerstats.{{ jitsimeet_domains | first }}" "speakerstats_component"
+    muc_component = "conference.{{ jitsimeet_domains | first }}"
 
-Component "conferenceduration.{{ domains | first }}" "conference_duration_component"
-    muc_component = "conference.{{ domains | first }}"
+Component "conferenceduration.{{ jitsimeet_domains | first }}" "conference_duration_component"
+    muc_component = "conference.{{ jitsimeet_domains | first }}"
 
-Component "endconference.{{ domains | first }}" "end_conference"
-    muc_component = "conference.{{ domains | first }}"
+Component "endconference.{{ jitsimeet_domains | first }}" "end_conference"
+    muc_component = "conference.{{ jitsimeet_domains | first }}"
 
-Component "avmoderation.{{ domains | first }}" "av_moderation_component"
-    muc_component = "conference.{{ domains | first }}"
+Component "avmoderation.{{ jitsimeet_domains | first }}" "av_moderation_component"
+    muc_component = "conference.{{ jitsimeet_domains | first }}"
 
-Component "lobby.{{ domains | first }}" "muc"
+Component "lobby.{{ jitsimeet_domains | first }}" "muc"
     storage = "memory"
     restrict_room_creation = true
     muc_room_locking = false
@@ -159,6 +159,6 @@ Component "lobby.{{ domains | first }}" "muc"
         "polls";
     }
 
-Component "metadata.{{ domains | first }}" "room_metadata_component"
-    muc_component = "conference.{{ domains | first }}"
-    breakout_rooms_component = "breakout.{{ domains | first }}"
+Component "metadata.{{ jitsimeet_domains | first }}" "room_metadata_component"
+    muc_component = "conference.{{ jitsimeet_domains | first }}"
+    breakout_rooms_component = "breakout.{{ jitsimeet_domains | first }}"
