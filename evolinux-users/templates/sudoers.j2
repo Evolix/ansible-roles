@@ -24,6 +24,8 @@ nagios          ALL = NOPASSWD: /sbin/megacli -LdInfo -Lall -aALL -NoLog
 nagios          ALL = NOPASSWD: /sbin/megacli -AdpBbuCmd -GetBbuStatus -aALL -NoLog
 nagios          ALL = NOPASSWD: /sbin/ssacli controller all show status
 nagios          ALL = NOPASSWD: /sbin/ssacli controller slot=0 logicaldrive all show
+nagios          ALL = NOPASSWD: /usr/local/bin/mvcli info -o blk
+nagios          ALL = NOPASSWD: /usr/local/bin/mvcli info -o vd
 nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_gluster.rb
 
 nagios          ALL = (clamav) NOPASSWD: /usr/bin/clamscan /tmp/safe.txt

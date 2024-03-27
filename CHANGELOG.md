@@ -18,6 +18,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * autosysadmin-agent: upstream release 24.03.2
 * evolinux-base: Add new variable to disable global customisation of bash config
 * roundcube: Use /var/log/roundcube directly
+* evolinux-users: Add sudo mvcli for nagios user
 
 ### Fixed
 
