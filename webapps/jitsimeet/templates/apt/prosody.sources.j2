@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+
+Types: deb
+URIs: https://packages.prosody.im/debian
+Suites: bookworm
+Components: main
+Signed-by: {{ apt_keyring_dir }}/prosody.gpg
+Enabled: yes

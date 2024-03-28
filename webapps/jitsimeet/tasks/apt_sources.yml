@@ -1,0 +1,55 @@
+---
+
+- name: "Ensure {{ apt_keyring_dir }} directory exists"
+  file:
+    path: "{{ apt_keyring_dir }}"
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+
+- name: Prosody GPG key is installed
+  ansible.builtin.copy:
+    src: prosody.gpg
+    dest: "{{ apt_keyring_dir }}/prosody.gpg"
+    force: true
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Jitsi Meet GPG key is installed
+  ansible.builtin.copy:
+    src: jitsimeet.gpg
+    dest: "{{ apt_keyring_dir }}/jitsimeet.gpg"
+    force: true
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Add Prosody repository (Debian <12)
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by={{ apt_keyring_dir }}/prosody.gpg] https://packages.prosody.im/debian {{ ansible_distribution_release }} main"
+    filename: prosody
+    state: present
+    update_cache: yes
+  when: ansible_distribution_major_version is version('12', '<')
+
+- name: Add Prosody repository (Debian >=12)
+  ansible.builtin.template:
+    src: apt/prosody.sources.j2
+    dest: /etc/apt/sources.list.d/prosody.sources
+  when: ansible_distribution_major_version is version('12', '>=')
+
+- name: Add Jitsi Meet repository (Debian <12)
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by={{ apt_keyring_dir }}/jitsimeet.gpg] https://download.jitsi.org stable/"
+    filename: jitsimeet
+    state: present
+    update_cache: yes
+  when: ansible_distribution_major_version is version('12', '<')
+
+- name: Add Jitsi Meet repository (Debian >=12)
+  ansible.builtin.template:
+    src: apt/jitsimeet.sources.j2
+    dest: /etc/apt/sources.list.d/jitsimeet.sources
+  when: ansible_distribution_major_version is version('12', '>=')

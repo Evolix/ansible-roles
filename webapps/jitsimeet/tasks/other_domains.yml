@@ -29,7 +29,7 @@
       dest: "/etc/nginx/sites-enabled/{{ domain }}.conf"
       state: link
   - name: Reload nginx conf
-    ansible.builtin.service:
+    ansible.builtin.systemd:
       name: nginx
       state: reloaded
   - name: Make sure /var/lib/letsencrypt exists and has correct permissions
@@ -38,7 +38,8 @@
       state: directory
       mode: '0755'
   - name: Generate certificate with certbot
-    ansible.builtin.shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ jitsimeet_certbot_admin_email }} -d {{ domain }}
+    ansible.builtin.command: 
+      cmd: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ jitsimeet_certbot_admin_email }} -d {{ domain }}
   when: ssl.stat.exists != true
 
 - name: (Re)check if SSL certificate is present and register result
@@ -66,6 +67,6 @@
     state: link
 
 - name: Reload nginx conf
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: nginx
     state: reloaded

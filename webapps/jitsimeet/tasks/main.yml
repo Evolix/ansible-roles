@@ -1,33 +1,8 @@
 ---
 # tasks file for jitsimeet install
 
-#- name: Set FQDN
-#  ansible.builtin.command: "hostnamectl set-hostname {{ jitsimeet_domains | first }}"
-
-- name: Add Prosody apt repository key
-  ansible.builtin.get_url:
-    url: https://prosody.im/files/prosody-debian-packages.key
-    dest: /etc/apt/trusted.gpg.d/prosody.gpg
-    mode: '0644'
-    force: true
-
-- name: Add Jitsi Meet apt repository key + dearmor hack
-  ansible.builtin.shell: curl -sL https://download.jitsi.org/jitsi-key.gpg.key | sh -c 'gpg --dearmor > /etc/apt/trusted.gpg.d/jitsimeet.gpg'
-
-- name: Adjust permissions of gpg key
-  ansible.builtin.file:
-    path: /etc/apt/trusted.gpg.d/jitsimeet.gpg
-    mode: '0644'
-
-- name: Add Prosody apt repository
-  ansible.builtin.apt_repository:
-    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/prosody.gpg] https://packages.prosody.im/debian {{ ansible_distribution_release }} main"
-    state: present
-
-- name: Add Jitsi Meet apt repository
-  ansible.builtin.apt_repository:
-    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/jitsimeet.gpg] https://download.jitsi.org stable/"
-    state: present
+- name: APT sources
+  ansible.builtin.include_tasks: apt_sources.yml
 
 - name: Install system dependencies
   ansible.builtin.apt:
@@ -115,23 +90,25 @@
         }
 
 - name: Unregister default jvb account in prosody
-  ansible.builtin.command: prosodyctl unregister jvb auth.{{ jitsimeet_domains | first }}
+  ansible.builtin.command: 
+    cmd: prosodyctl unregister jvb auth.{{ jitsimeet_domains | first }}
 
 - name: Register jvb account in prosody (with proper secret)
-  ansible.builtin.command: prosodyctl register jvb auth.{{ jitsimeet_domains | first }} {{ jitsimeet_jvb_secret }}
+  ansible.builtin.command: 
+    cmd: prosodyctl register jvb auth.{{ jitsimeet_domains | first }} {{ jitsimeet_jvb_secret }}
 
 - name: Restart prosody
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: prosody
     state: restarted
 
 - name: Restart jvb
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: jitsi-videobridge2
     state: restarted
 
 - name: Restart jicofo
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: jicofo
     state: restarted
 
@@ -152,7 +129,7 @@
       dest: "/etc/nginx/sites-enabled/{{ jitsimeet_domains |first }}.conf"
       state: link
   - name: Reload nginx conf
-    ansible.builtin.service:
+    ansible.builtin.systemd:
       name: nginx
       state: reloaded
   - name: Make sure /var/lib/letsencrypt exists and has correct permissions
@@ -161,7 +138,8 @@
       state: directory
       mode: '0755'
   - name: Generate certificate with certbot
-    ansible.builtin.shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ jitsimeet_certbot_admin_email }} -d {{ jitsimeet_domains |first }}
+    ansible.builtin.command: 
+      cmd: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ jitsimeet_certbot_admin_email }} -d {{ jitsimeet_domains |first }}
   when: ssl.stat.exists != true
 
 - name: (Re)check if SSL certificate is present and register result
@@ -190,7 +168,7 @@
     state: link
 
 - name: Reload nginx conf
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: nginx
     state: reloaded
 
