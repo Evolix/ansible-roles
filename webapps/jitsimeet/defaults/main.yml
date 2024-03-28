@@ -1,5 +1,6 @@
 ---
 # defaults file for main vars
+apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"
 
 jitsimeet_system_dep: "['gnupg2', 'curl', 'apt-transport-https', 'default-jdk', 'lua5.2', 'lua-unbound', 'certbot', 'python3-certbot-nginx']"
 
