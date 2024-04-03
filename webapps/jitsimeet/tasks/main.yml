@@ -115,7 +115,7 @@
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ jitsimeet_domains |first }}/fullchain.pem"
-  register: ssl
+  register: jitsimeet_ssl
 
 - name: Generate certificate only if required (first time)
   block:
@@ -140,12 +140,12 @@
   - name: Generate certificate with certbot
     ansible.builtin.command: 
       cmd: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ jitsimeet_certbot_admin_email }} -d {{ jitsimeet_domains |first }}
-  when: ssl.stat.exists != true
+  when: jitsimeet_ssl.stat.exists != true
 
 - name: (Re)check if SSL certificate is present and register result
   ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ jitsimeet_domains |first }}/fullchain.pem"
-  register: ssl
+  register: jitsimeet_ssl
 
 - name: (Re)template conf file for nginx vhost with SSL
   ansible.builtin.template:
@@ -175,11 +175,12 @@
 - name: Check if SSL certificate for coturn is present and register result
   ansible.builtin.stat:
     path: "/etc/coturn/certs/{{ jitsimeet_turn_domains |first }}.crt"
-  register: ssl_coturn
+  register: jitsimeet_ssl_coturn
 
 - name: Generate certificate for coturn with certbot
-  ansible.builtin.shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/coturn-certbot-deploy.sh --agree-tos --email {{ jitsimeet_certbot_admin_email }} -d {{ jitsimeet_turn_domains |first }}
-  when: ssl_coturn.stat.exists != true 
+  ansible.builtin.command: 
+    cmd: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/coturn-certbot-deploy.sh --agree-tos --email {{ jitsimeet_certbot_admin_email }} -d {{ jitsimeet_turn_domains |first }}
+  when: jitsimeet_ssl_coturn.stat.exists != true 
 
 - name: Setup other domains if any
   include_tasks: other_domains.yml

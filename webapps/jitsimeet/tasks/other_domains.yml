@@ -15,7 +15,7 @@
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ domain }}/fullchain.pem"
-  register: ssl
+  register: jitsimeet_ssl
 
 - name: Generate certificate only if required (first time)
   block:
@@ -40,12 +40,12 @@
   - name: Generate certificate with certbot
     ansible.builtin.command: 
       cmd: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ jitsimeet_certbot_admin_email }} -d {{ domain }}
-  when: ssl.stat.exists != true
+  when: jitsimeet_ssl.stat.exists != true
 
 - name: (Re)check if SSL certificate is present and register result
   ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ domain }}/fullchain.pem"
-  register: ssl
+  register: jitsimeet_ssl
 
 - name: (Re)template conf file for nginx vhost with SSL
   ansible.builtin.template:
