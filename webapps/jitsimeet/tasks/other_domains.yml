@@ -11,6 +11,7 @@
   loop:
     - { src: 'meet/config.js.j2', dest: "/etc/jitsi/meet/{{ domain }}-config.js", owner: "root", group: "root", mode: "0644" }
     - { src: 'meet/interface_config.js.j2', dest: "/etc/jitsi/meet/{{ domain }}-interface_config.js", owner: "root", group: "root", mode: "0644" }
+  notify: reload nginx
 
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
@@ -23,15 +24,15 @@
     ansible.builtin.template: 
       src: "nginx/other.vhost.conf.j2"
       dest: "/etc/nginx/sites-available/{{ domain }}.conf"
+    notify: reload nginx
   - name: Enable temporary nginx vhost
     ansible.builtin.file:
       src: "/etc/nginx/sites-available/{{ domain }}.conf"
       dest: "/etc/nginx/sites-enabled/{{ domain }}.conf"
       state: link
-  - name: Reload nginx conf
-    ansible.builtin.systemd:
-      name: nginx
-      state: reloaded
+      notify: reload nginx
+  - name: Flush handlers
+    ansible.builtin.meta: flush_handlers
   - name: Make sure /var/lib/letsencrypt exists and has correct permissions
     ansible.builtin.file: 
       path: /var/lib/letsencrypt
@@ -53,20 +54,18 @@
     dest: "{{ item.dest }}"
   loop:
     - { src: 'nginx/other.vhost.conf.j2', dest: "/etc/nginx/sites-available/{{ domain }}.conf" }
+  notify: reload nginx
 
 - name: Insert block in multiplex.conf
   ansible.builtin.lineinfile:
     path: /etc/nginx/modules-enabled/multiplex.conf
     insertafter: "web_backend;"
     line: "{{ domain }} web_backend;"
+  notify: reload nginx
 
 - name: Enable nginx vhost
   ansible.builtin.file:
     src: "/etc/nginx/sites-available/{{ domain }}.conf"
     dest: "/etc/nginx/sites-enabled/{{ domain }}.conf"
     state: link
-
-- name: Reload nginx conf
-  ansible.builtin.systemd:
-    name: nginx
-    state: reloaded
+  notify: reload nginx
