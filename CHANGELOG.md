@@ -19,6 +19,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: Add new variable to disable global customisation of bash config
 * roundcube: Use /var/log/roundcube directly
 * evolinux-users: Add sudo mvcli for nagios user
+* vrrpd : configure and restart minifirewall before starting VRRP
 
 ### Fixed
 
