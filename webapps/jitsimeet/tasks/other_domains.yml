@@ -30,7 +30,7 @@
       src: "/etc/nginx/sites-available/{{ domain }}.conf"
       dest: "/etc/nginx/sites-enabled/{{ domain }}.conf"
       state: link
-      notify: reload nginx
+    notify: reload nginx
   - name: Flush handlers
     ansible.builtin.meta: flush_handlers
   - name: Make sure /var/lib/letsencrypt exists and has correct permissions
