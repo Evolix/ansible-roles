@@ -20,6 +20,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * roundcube: Use /var/log/roundcube directly
 * evolinux-users: Add sudo mvcli for nagios user
 * vrrpd : configure and restart minifirewall before starting VRRP
+* nrpe: !disk1 exclude filesystem type overlay
 
 ### Fixed
 
