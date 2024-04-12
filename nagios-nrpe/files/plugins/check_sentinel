@@ -104,7 +104,7 @@ redis_cli_args=''
 sentinel_port=$(awk '/^port/{print $2}' "${sentinel_config_file}")
 ! test -z "$sentinel_port" && redis_cli_args="${redis_cli_args} -p ${sentinel_port}"
 sentinel_pass=$(awk '/^requirepass/{print $2}' "${sentinel_config_file}")
-! test -z "$sentinel_pass" && redis_cli_args="${redis_cli_args} --pass ${sentinel_pass}"
+! test -z "$sentinel_pass" && export REDISCLI_AUTH="${sentinel_pass}"
 alias _redis-cli="redis-cli ${redis_cli_args}"
 
 # List all masters names known by sentinel
