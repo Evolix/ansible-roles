@@ -66,7 +66,7 @@
 # Logcheck
 - name: Disable logcheck monitoring of journald
   ansible.builtin.lineinfile:
-    dest: /etc/logrotate.conf
+    dest: /etc/logcheck/logcheck.logfiles.d/journal.logfiles
     line: "#journal"
     regexp: "^journal"
   when: evolinux_logs_disable_logcheck_journald | bool
