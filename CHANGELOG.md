@@ -21,6 +21,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-users: Add sudo mvcli for nagios user
 * vrrpd : configure and restart minifirewall before starting VRRP
 * nrpe: !disk1 exclude filesystem type overlay
+* postfix/amavis: max servers is now 3 (previously 2)
 
 ### Fixed
 
