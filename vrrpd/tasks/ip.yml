@@ -11,35 +11,46 @@
     minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | bool | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
 
 - name: VRRP output is authorized in minifirewall
-  lineinfile:
+  ansible.builtin.blockinfile:
     path: /etc/minifirewall.d/vrrpd
-    line: "/sbin/iptables -A OUTPUT -o {{ vrrp_address.interface }} -p 112 -j ACCEPT # Allow VRRP output on {{ vrrp_address.interface }}"
-    regexp: "# Allow VRRP output on {{ vrrp_address.interface }}$"
+    marker: "## {mark} ANSIBLE MANAGED OUTPUT RULES FOR VRID {{ vrrp_address.id }}"
+    block: |
+      /sbin/iptables -A OUTPUT -o {{ vrrp_address.interface }} -p 112 -j ACCEPT # Allow VRRP output on {{ vrrp_address.interface }}
     create: yes
     mode: "0600"
     owner: "root"
     group: "root"
   notify: "{{ minifirewall_restart_handler_name }}"
-  when: _minifirewall_dir.stat.exists
+  when:
+    - vrrp_manage_minifirewall | bool
+    - _minifirewall_dir.stat.exists
 
 - name: VRRP input is authorized in minifirewall
-  lineinfile:
+  ansible.builtin.blockinfile:
     path: /etc/minifirewall.d/vrrpd
-    line: "/sbin/iptables -A INPUT -i {{ vrrp_address.interface }} -s {{ peer }} -d 224.0.0.0/8 -j ACCEPT # Allow VRRP input on {{ vrrp_address.interface }} from {{ peer }} for VRID {{ vrrp_address.id }}"
-    regexp: "# Allow VRRP input on {{ vrrp_address.interface }} from {{ peer }} for VRID {{ vrrp_address.id }}"
+    marker: "## {mark} ANSIBLE MANAGED INPUT RULES FOR VRID {{ vrrp_address.id }}"
+    block: |
+      {% if vrrp_address.peers | default([]) | length <= 0 %}
+        /sbin/iptables -A INPUT -i {{ vrrp_address.interface }} -d 224.0.0.0/8 -j ACCEPT # Allow VRRP input on {{ vrrp_address.interface }} for VRID {{ vrrp_address.id }}
+      {% else %}
+        {% for peer in vrrp_address.peers %}
+          /sbin/iptables -A INPUT -i {{ vrrp_address.interface }} -s {{ peer }} -d 224.0.0.0/8 -j ACCEPT # Allow VRRP input on {{ vrrp_address.interface }} from {{ peer }} for VRID {{ vrrp_address.id }}
+        {% endfor %}
+      {% endif %}
     create: yes
     mode: "0600"
     owner: "root"
     group: "root"
-  loop: "{{ vrrp_address.peers | default([]) }}"
-  loop_control:
-    loop_var: peer
   notify: "{{ minifirewall_restart_handler_name }}"
-  when: _minifirewall_dir.stat.exists
+  when:
+    - vrrp_manage_minifirewall | bool
+    - _minifirewall_dir.stat.exists
 
 - name: Flush handlers to restart minifirewall
   ansible.builtin.meta: flush_handlers
-  when: _minifirewall_dir.stat.exists
+  when:
+    - vrrp_manage_minifirewall | bool
+    - _minifirewall_dir.stat.exists
 
 
 # Configure VRRP service

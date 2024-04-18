@@ -23,7 +23,8 @@ The **patch** part is incremented if multiple releases happen the same month
 * nrpe: !disk1 exclude filesystem type overlay
 * postfix/amavis: max servers is now 3 (previously 2)
 * roundcube: Use /var/log/roundcube directly
-* vrrpd : configure and restart minifirewall before starting VRRP
+* vrrpd: configure and restart minifirewall before starting VRRP
+* vrrpd: configure minifirewall with blocks instead of lines
 
 ### Fixed
 
