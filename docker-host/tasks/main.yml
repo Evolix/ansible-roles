@@ -32,7 +32,7 @@
   when: ansible_distribution_major_version is version('10', '<')
 
 - name: "Ensure {{ apt_keyring_dir }} directory exists"
-  file:
+  ansible.builtin.file:
     path: "{{ apt_keyring_dir }}"
     state: directory
     mode: "755"
@@ -53,20 +53,17 @@
     repo: 'deb [signed-by={{ apt_keyring_dir }}/docker-debian.asc] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable'
     filename: docker
     state: present
-    update_cache: yes
+    update_cache: true
   when: ansible_distribution_major_version is version('12', '<')
 
 - name: Add Docker repository (Debian >=12)
   ansible.builtin.template:
     src: docker.sources.j2
     dest: /etc/apt/sources.list.d/docker.sources
-  register: docker_sources
+    owner: root
+    group: root
+    mode: "0644"
   when: ansible_distribution_major_version is version('12', '>=')
-
-- name: Update APT cache
-  ansible.builtin.apt:
-    update_cache: yes
-  when: docker_sources is changed
 
 - name: Install Docker
   ansible.builtin.apt:
@@ -74,14 +71,16 @@
       - docker-ce
       - docker-ce-cli
       - containerd.io
+    update_cache: true
+    cache_valid_time: 3600
 
-- name: python-docker is installed
+- name: Package python-docker is installed
   ansible.builtin.apt:
     name: python-docker
     state: present
   when: ansible_python_version is version('3', '<')
 
-- name: python3-docker is installed
+- name: Package python3-docker is installed
   ansible.builtin.apt:
     name: python3-docker
     state: present
@@ -91,6 +90,9 @@
   ansible.builtin.template:
     src: daemon.json.j2
     dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: "0644"
   notify: restart docker
 
 - name: Creating Docker tmp directory

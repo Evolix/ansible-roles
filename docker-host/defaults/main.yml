@@ -4,24 +4,24 @@ docker_home: /var/lib/docker
 docker_tmpdir: "{{ docker_home }}/tmp"
 
 # Disable the possibility for containers processes to gain new privileges
-docker_conf_no_newprivileges: False
+docker_conf_no_newprivileges: false
 
 # Toggle live restore (need to be disabled in swarm mode)
-docker_conf_live_restore: True
+docker_conf_live_restore: true
 
 # Toggle user namespace
-docker_conf_user_namespace: True
+docker_conf_user_namespace: true
 
 # Disable all default network connectivity
-docker_conf_disable_default_networking: False
+docker_conf_disable_default_networking: false
 
 # Remote access
-docker_remote_access_enabled: False
+docker_remote_access_enabled: false
 docker_daemon_port: 2376
 docker_daemon_listening_ip: 0.0.0.0
 
 # TLS
-docker_tls_enabled: False
+docker_tls_enabled: false
 docker_tls_path: "{{ docker_home }}/tls"
 docker_tls_ca: ca/ca.pem
 docker_tls_ca_key: ca/ca-key.pem
