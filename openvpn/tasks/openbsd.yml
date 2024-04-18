@@ -1,5 +1,10 @@
 ---
 
+# openbsd_pkg is broken since OpenBSD 7.4 with the version of Ansible we currently use
+#- name: Install OpenVPN
+#  community.general.openbsd_pkg:
+#    name: openvpn--
+
 - name: Check if OpenVPN is already installed
   ansible.builtin.command:
     cmd: pkg_info -Iq inst:openvpn
@@ -123,14 +128,20 @@
   check_mode: no
   register: nrpe_evolix_config
 
-- name: Check if NRPE check dependenciy is already installed
+# openbsd_pkg is broken since OpenBSD 7.4 with the version of Ansible we currently use
+#- name: Install NRPE check dependency
+#  community.general.openbsd_pkg:
+#    name: p5-Net-Telnet
+#  when: nrpe_evolix_config.stat.exists
+
+- name: Check if NRPE check dependency is already installed
   ansible.builtin.command:
     cmd: pkg_info -Iq inst:p5-Net-Telnet
   register: is_installed
   ignore_errors: true
   changed_when: false
 
-- name: Install p5-Net-Telnet
+- name: Install NRPE check dependency
   ansible.builtin.command:
     cmd: pkg_add p5-Net-Telnet
   when:
