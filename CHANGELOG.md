@@ -18,11 +18,12 @@ The **patch** part is incremented if multiple releases happen the same month
 * autosysadmin-agent: upstream release 24.03.2
 * evolinux-base: Add new variable to disable global customisation of bash config
 * evolinux-base: Disable logcheck monitoring of journald only if journald.logfiles exists
-* roundcube: Use /var/log/roundcube directly
 * evolinux-users: Add sudo mvcli for nagios user
-* vrrpd : configure and restart minifirewall before starting VRRP
+* haproxy: support bookworm for backport packages
 * nrpe: !disk1 exclude filesystem type overlay
 * postfix/amavis: max servers is now 3 (previously 2)
+* roundcube: Use /var/log/roundcube directly
+* vrrpd : configure and restart minifirewall before starting VRRP
 
 ### Fixed
 
