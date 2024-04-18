@@ -1,5 +1,5 @@
 scope: {{ cluster_name }}
-name: {{ cluster_name_host }}
+name: {{ inventory_hostname }}
 
 restapi:
     listen: {{ patroni_restapi_listen }}:{{ patroni_restapi_port }}
@@ -33,11 +33,11 @@ bootstrap:
     - data-checksums
 
     pg_hba:
-    - host replication repl 127.0.0.1/32 md5
+    - host replication repl 127.0.0.1/32 scram-sha-256
 {% for server in groups['patroni'] %}
-    - host replication repl {{ hostvars[server]['postgresql_hosts_cluster'] }}/0 md5
+    - host replication repl {{ hostvars[server]['postgresql_hosts_cluster'] }}/0 scram-sha-256
 {% endfor %}
-    - host all all 0.0.0.0/0 md5
+    - host all all 0.0.0.0/0 scram-sha-256
 
    users:
         {{ postgresql_superuser }}:
@@ -54,8 +54,8 @@ postgresql:
     listen: {{ postgresql_host }}:{{ postgresql_port }}
     connect_address: {{ postgresql_host }}:{{ postgresql_port }}
     bin_dir: /usr/lib/postgresql/{{ postgresql_version }}/bin/
-    data_dir: /home/{{ cluster_name_host }}
-    pgpass: /tmp/{{ cluster_name_host }}-pgpass
+    data_dir: /srv/{{ cluster_name }}
+    pgpass: /tmp/{{ cluster_name }}-pgpass
     authentication:
         replication:
             username: {{ postgresql_replication_user }}
