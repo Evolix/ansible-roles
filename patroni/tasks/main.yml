@@ -4,4 +4,4 @@
   when: patroni_backport | bool
 
 - ansible.builtin.import_tasks: packages.yml
-- ansible.builtin.import_tasks: config.yml
+#- ansible.builtin.import_tasks: config.yml
