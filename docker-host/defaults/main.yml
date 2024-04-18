@@ -3,9 +3,6 @@
 docker_home: /var/lib/docker
 docker_tmpdir: "{{ docker_home }}/tmp"
 
-# Chose to use iptables instead of docker-proxy userland process
-docker_conf_use_iptables: False
-
 # Disable the possibility for containers processes to gain new privileges
 docker_conf_no_newprivileges: False
 

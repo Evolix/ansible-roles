@@ -1,5 +1,6 @@
 {
   "debug": false
+  ,"iptables": true
   {# Docker data-dir (default to /var/lib/docker) #}
   ,"data-root": "{{ docker_home }}"
   {# Keep containers running while docker daemon downtime #}
@@ -7,11 +8,6 @@
 {% if docker_conf_user_namespace %}
   {# Turn on user namespace remaping #}
   ,"userns-remap": "default"
-{% endif %}
-{% if docker_conf_use_iptables %}
-  {# Use iptables instead of docker-proxy #}
-  ,"userland-proxy": false
-  ,"iptables": true
 {% endif %}
   {# Disable the possibility for containers processes to gain new privileges #}
   ,"no-new-privileges": {{ docker_conf_no_newprivileges | to_json }}

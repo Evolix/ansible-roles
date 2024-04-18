@@ -1,5 +1,14 @@
 # This role installs the docker daemon
 ---
+
+- name: Fail if docker_conf_use_iptables is defined
+  ansible.builtin.fail:
+    msg: "Variable docker_conf_use_iptables is deprecated and not configurable anymore. Please remove it from your variables. Also double-check the daemon.json config for docker"
+  when:
+    - docker_conf_use_iptables is defined
+  tags:
+    - always
+
 - name: Remove older docker packages
   ansible.builtin.apt:
     name:

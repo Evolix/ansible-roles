@@ -40,6 +40,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Removed
 
+* docker-host: Removed setting docker_conf_use_iptables (iptable usage forced to true)
+
 ### Security
 
 ## [24.03] 2024-03-01
