@@ -33,6 +33,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * packweb: fix old bug (2017!) .orig file created by module patch and taken in account by ProFTPd
 * redis: replace inline argument with environment variable for the password
 * evolinux-base/logcheck: fix conf patch, journal check was not disabled when asked
+* openvpn: install packages manually, because openbsd_pkg module is broken since OpenBSD 7.4 with the version of Ansible we currently use
 
 ### Removed
 
