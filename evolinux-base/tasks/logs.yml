@@ -64,12 +64,19 @@
   when: evolinux_logs_default_dateext | bool
 
 # Logcheck
+- name: Check if journald.logfiles exists
+  stat:
+    path: /etc/logcheck/logcheck.logfiles.d/journal.logfiles
+  register: _logcheck_journald_logfiles
+
 - name: Disable logcheck monitoring of journald
   ansible.builtin.lineinfile:
     dest: /etc/logcheck/logcheck.logfiles.d/journal.logfiles
     line: "#journal"
     regexp: "^journal"
-  when: evolinux_logs_disable_logcheck_journald | bool
+  when:
+    - _logcheck_journald_logfiles.stat.exists
+    - evolinux_logs_disable_logcheck_journald | bool
 
 # Journald
 - name: /etc/systemd/journald.conf.d/ is present
