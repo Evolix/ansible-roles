@@ -29,6 +29,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * certbot: Fix HAProxy renewal hook
+* certbot: Fix HAPEE renewal hook
 * keepalived: Fix tasks that use file instead of copy
 * memcached: Fix conditions not properly writen (installation was always in multi-instance mode)
 * fail2ban: SQLite purge script didn't vacuum as expected + error when vacuum cannot be done
