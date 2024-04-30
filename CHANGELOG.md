@@ -30,16 +30,16 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
-* certbot: Fix HAProxy renewal hook
 * certbot: Fix HAPEE renewal hook
+* certbot: Fix HAProxy renewal hook
+* evolinux-base/logcheck: fix conf patch, journal check was not disabled when asked
+* fail2ban: SQLite purge script didn't vacuum as expected + error when vacuum cannot be done
 * keepalived: Fix tasks that use file instead of copy
 * memcached: Fix conditions not properly writen (installation was always in multi-instance mode)
-* fail2ban: SQLite purge script didn't vacuum as expected + error when vacuum cannot be done
 * nagios-nrpe: create /etc/bash_completion.d if missing
+* openvpn: install packages manually, because openbsd_pkg module is broken since OpenBSD 7.4 with the version of Ansible we currently use
 * packweb: fix old bug (2017!) .orig file created by module patch and taken in account by ProFTPd
 * redis: replace inline argument with environment variable for the password
-* evolinux-base/logcheck: fix conf patch, journal check was not disabled when asked
-* openvpn: install packages manually, because openbsd_pkg module is broken since OpenBSD 7.4 with the version of Ansible we currently use
 
 ### Removed
 
