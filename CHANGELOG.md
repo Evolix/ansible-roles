@@ -13,6 +13,18 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [24.04] 2024-04-30
+
+### Added
+
 proftpd: optional configuration of IP whitelists per groups of users
 
 ### Changed
@@ -46,8 +58,6 @@ proftpd: optional configuration of IP whitelists per groups of users
 ### Removed
 
 * docker-host: Removed `docker_conf_use_iptables` variable (iptable usage forced to true)
-
-### Security
 
 ## [24.03] 2024-03-01
 
