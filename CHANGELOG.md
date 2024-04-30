@@ -16,6 +16,8 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * autosysadmin-agent: upstream release 24.03.2
+* evobackup-client: replace non-functional role with install tasks
+* evobackup-client: upstream release 24.04.1
 * evolinux-base: Add new variable to disable global customisation of bash config
 * evolinux-base: Disable logcheck monitoring of journald only if journald.logfiles exists
 * evolinux-users: Add sudo mvcli for nagios user
