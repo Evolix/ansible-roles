@@ -74,7 +74,7 @@
 
 #######################################################################
 
-- name: Fail if minifirewall_main_file is defined (legacy mode)
+- name: Fail if minifirewall_main_file is defined (modern mode)
   ansible.builtin.fail:
     msg: "Variable minifirewall_main_file is deprecated and not configurable anymore."
   when:

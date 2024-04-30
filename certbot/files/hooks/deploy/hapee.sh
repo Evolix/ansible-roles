@@ -40,7 +40,7 @@ concat_files() {
 }
 cert_and_key_mismatch() {
     hapee_cert_md5=$(openssl x509 -noout -pubkey -in "${hapee_cert_file}" | openssl md5)
-    hapee_key_md5=$(openssl pkey -noout -pubout -in "${hapee_cert_file}" | openssl md5)
+    hapee_key_md5=$(openssl pkey -pubout -in "${hapee_cert_file}" | openssl md5)
 
     test "${hapee_cert_md5}" != "${hapee_key_md5}"
 }

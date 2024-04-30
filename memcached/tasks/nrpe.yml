@@ -36,7 +36,7 @@
       regexp: '^command\[check_memcached\]='
       line: 'command[check_memcached]=/usr/local/lib/nagios/plugins/check_memcached.pl -H 127.0.0.1 -p {{ memcached_port }}'
     notify: restart nagios-nrpe-server
-    when: memcached_instance_name is undefined
+    when: memcached_instance_name | length == 0
 
   - name: Add NRPE check (multi instance)
     ansible.builtin.lineinfile:
@@ -44,6 +44,6 @@
       regexp: '^command\[check_memcached\]='
       line: 'command[check_memcached]=/usr/local/lib/nagios/plugins/check_memcached_instances'
     notify: restart nagios-nrpe-server
-    when: memcached_instance_name is defined
+    when: memcached_instance_name | length > 0
 
   when: nrpe_evolix_config.stat.exists

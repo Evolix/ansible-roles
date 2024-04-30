@@ -1,9 +1,21 @@
 ---
 
+# openbsd_pkg is broken since OpenBSD 7.4 with the version of Ansible we currently use
+#- name: Install OpenVPN
+#  community.general.openbsd_pkg:
+#    name: openvpn--
+
+- name: Check if OpenVPN is already installed
+  ansible.builtin.command:
+    cmd: pkg_info -Iq inst:openvpn
+  register: is_installed
+  ignore_errors: true
+  changed_when: false
+
 - name: Install OpenVPN
-  community.general.openbsd_pkg:
-    name: openvpn--
-  when: ansible_distribution == 'OpenBSD'
+  ansible.builtin.command:
+    cmd: pkg_add openvpn--
+  when: "'Can\\'t find inst:' in is_installed.stderr"
 
 - name: Create /etc/openvpn
   ansible.builtin.file:
@@ -116,10 +128,25 @@
   check_mode: no
   register: nrpe_evolix_config
 
-- name: Install NRPE check dependencies
-  community.general.openbsd_pkg:
-    name: p5-Net-Telnet
-  when: nrpe_evolix_config.stat.exists
+# openbsd_pkg is broken since OpenBSD 7.4 with the version of Ansible we currently use
+#- name: Install NRPE check dependency
+#  community.general.openbsd_pkg:
+#    name: p5-Net-Telnet
+#  when: nrpe_evolix_config.stat.exists
+
+- name: Check if NRPE check dependency is already installed
+  ansible.builtin.command:
+    cmd: pkg_info -Iq inst:p5-Net-Telnet
+  register: is_installed
+  ignore_errors: true
+  changed_when: false
+
+- name: Install NRPE check dependency
+  ansible.builtin.command:
+    cmd: pkg_add p5-Net-Telnet
+  when:
+    - "'Can\\'t find inst:' in is_installed.stderr"
+    - nrpe_evolix_config.stat.exists
 
 - name: Install OpenVPN NRPE check
   ansible.builtin.copy:

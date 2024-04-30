@@ -134,7 +134,7 @@ localhost:10026    inet    n        -        y        -        10        smtpd
   -o smtpd_recipient_restrictions=permit_mynetworks,reject
   -o mynetworks=127.0.0.0/8
 
-smtp-amavis unix -  -   y -   2  lmtp
+smtp-amavis unix -  -   y -   3  lmtp
     -o lmtp_data_done_timeout=1200
     -o lmtp_send_xforward_command=yes
 

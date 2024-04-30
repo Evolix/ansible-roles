@@ -76,6 +76,7 @@
 
 - name: Bash configuration
   ansible.builtin.import_tasks: bash.yml
+  when: evolinux_bash_config_include | bool
 
 - name: Root user configuration
   ansible.builtin.import_tasks: root.yml

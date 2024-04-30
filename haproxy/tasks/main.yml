@@ -21,7 +21,6 @@
 - name: Self-signed certificate is present in HAProxy ssl directory
   ansible.builtin.shell:
     cmd: "cat /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/private/ssl-cert-snakeoil.key > /etc/haproxy/ssl/ssl-cert-snakeoil.pem"
-  args:
     creates: /etc/haproxy/ssl/ssl-cert-snakeoil.pem
   notify: reload haproxy
   tags:

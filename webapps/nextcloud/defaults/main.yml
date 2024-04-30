@@ -1,5 +1,5 @@
 ---
-nextcloud_version: "latest-24"
+nextcloud_version: "latest"
 nextcloud_archive_name: "{{ nextcloud_version }}.tar.bz2"
 nextcloud_releases_baseurl: "https://download.nextcloud.com/server/releases/"
 

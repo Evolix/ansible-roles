@@ -1,0 +1,50 @@
+---
+
+- name: Dependencies are present
+  ansible.builtin.apt:
+    name:
+      - rsync
+      - mtree-netbsd
+    state: present
+
+- name: "Remount /usr if needed"
+  include_role:
+    name: remount-usr
+  when: evobackup_client__lib_dir is search("/usr") or  evobackup_client__bin_dir is search("/usr")
+
+- name: copy evobackup libs
+  ansible.builtin.copy:
+    src: upstream/lib
+    dest: "{{ evobackup_client__lib_dir }}/"
+    force: True
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: copy evobackupctl script
+  ansible.builtin.copy:
+    src: upstream/bin/evobackupctl
+    dest: "{{ evobackup_client__bin_dir }}/evobackupctl"
+    force: True
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: LIBDIR is customized in evobackupctl
+  ansible.builtin.replace:
+    path: "{{ evobackup_client__bin_dir }}/evobackupctl"
+    regexp: "^LIBDIR=.+"
+    replace: "LIBDIR=\"{{ evobackup_client__lib_dir }}\""
+
+- name: Evobackup canary cron is present
+  ansible.builtin.template:
+    src: update-evobackup-canary.sh.j2
+    dest: "{{ evobackup_client__update_canary_path }}"
+    mode: "0700"
+  when: evobackup_client__update_canary_enable | bool
+
+- name: Evobackup canary cron is absent
+  ansible.builtin.file:
+    path: "{{ evobackup_client__update_canary_path }}"
+    state: absent
+  when: not ( evobackup_client__update_canary_enable | bool)

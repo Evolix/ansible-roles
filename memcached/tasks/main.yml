@@ -6,10 +6,10 @@
     - memcached
 
 - ansible.builtin.include: instance-default.yml
-  when: memcached_instance_name is undefined
+  when: memcached_instance_name | length == 0
 
 - ansible.builtin.include: instance-multi.yml
-  when: memcached_instance_name is defined
+  when: memcached_instance_name | length > 0
 
 - ansible.builtin.include: munin.yml
 

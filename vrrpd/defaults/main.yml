@@ -9,9 +9,12 @@ vrrp_addresses: []
 #     priority: Null          # the priority of this host in the virtual server (default: 100)
 #     authentication: Null    # authentification type: auth=(none|pw/hexkey|ah/hexkey) hexkey=0x[0-9a-fA-F]+
 #     label: Null             # use this name is syslog messages (helps when several vrid are running)
-#     ip: Null                # the ip address(es) (and optionnaly subnet mask) of the virtual server
+#     ip: Null                # the IP address(es) (and optionnaly subnet mask) of the virtual server
+#     peers: [IP1, IP2]       # list of peers (IP), for minifirewall rules
 #     state: Null             # 'started' or 'stopped'
 #   }
+
+vrrp_manage_minifirewall: true
 
 minifirewall_restart_if_needed: True
 minifirewall_restart_force: False

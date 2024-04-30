@@ -19,6 +19,10 @@
     haproxy_backports_packages: "{{ haproxy_backports_packages_bullseye }}"
   when: ansible_distribution_release == 'bullseye'
 
+- ansible.builtin.set_fact:
+    haproxy_backports_packages: "{{ haproxy_backports_packages_bookworm }}"
+  when: ansible_distribution_release == 'bookworm'
+
 - name: Prefer HAProxy package from backports
   ansible.builtin.template:
     src: haproxy_apt_preferences.j2

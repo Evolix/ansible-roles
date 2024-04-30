@@ -61,6 +61,35 @@
   tags:
     - proftpd
 
+- name: IP Whitelists for SFTP users are present
+  ansible.builtin.blockinfile:
+    dest: /etc/proftpd/conf.d/sftp.conf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - Whitelist ip for users"
+    block: |
+      {% for user in proftpd_accounts_final %}
+      {% if user.group is defined %}
+      <IfUser {{ user.name }}>
+          <Limit LOGIN>
+      {% for ip in proftpd_sftp_ips_whitelist[user.group] %}
+              Allow from {{ ip }}
+      {% endfor %}
+              DenyAll
+          </Limit>
+      </IfUser>
+      {% endif %}
+      {% endfor %}
+    insertbefore: "</IfModule>"
+  notify: restart proftpd
+  when: proftpd_sftp_enable_user_whitelist | bool  
+
+- name: IP Whitelists for SFTP users are absent
+  ansible.builtin.blockinfile:
+    dest: /etc/proftpd/conf.d/sftp.conf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - Whitelist ip for users"
+    state: absent
+  notify: restart proftpd
+  when: not (proftpd_sftp_enable_user_whitelist | bool)  
+
 - name: Allow keys for SFTP account
   ansible.builtin.template:
     dest: "/etc/proftpd/sftp.authorized_keys/{{ _proftpd_account.name }}"

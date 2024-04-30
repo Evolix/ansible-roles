@@ -20,8 +20,8 @@
 
     # LOG
     CustomLog /var/log/apache2/access.log vhost_combined
-    CustomLog /var/lib/roundcube/logs/access.log combined
-    ErrorLog  /var/lib/roundcube/logs/error.log
+    CustomLog /var/log/roundcube/access.log combined
+    ErrorLog  /var/log/roundcube/error.log
 
     # REWRITE
     UseCanonicalName On
@@ -40,7 +40,7 @@
     #php_admin_value upload_max_filesize 8M
     #php_admin_flag allow_url_fopen Off
     php_admin_value sendmail_path "/usr/sbin/sendmail -t -i -f www-roundcube"
-    php_admin_value error_log "/home/roundcube/log/php.log"
+    php_admin_value error_log "/var/log/roundcube/php.log"
     #php_admin_value open_basedir "/usr/share/php:/home/roundcube:/tmp"
 
 </VirtualHost>

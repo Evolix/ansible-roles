@@ -1,26 +1,31 @@
 ---
 
-- ansible.builtin.include: "ssh_key.yml"
-  tags:
-    - evobackup_client
-    - evobackup_client_backup_ssh_key
+- name: Install evobackup client components
+  ansible.builtin.include: "install.yml"
 
-- ansible.builtin.include: "jail.yml"
-  tags:
-    - evobackup_client
-    - evobackup_client_jail
+### This is commented because supposedly non-functionnal
 
-- ansible.builtin.include: "upload_scripts.yml"
-  tags:
-    - evobackup_client
-    - evobackup_client_backup_scripts
+# - ansible.builtin.include: "ssh_key.yml"
+#   tags:
+#     - evobackup_client
+#     - evobackup_client_backup_ssh_key
 
-- ansible.builtin.include: "open_ssh_ports.yml"
-  tags:
-    - evobackup_client
-    - evobackup_client_backup_firewall
+# - ansible.builtin.include: "jail.yml"
+#   tags:
+#     - evobackup_client
+#     - evobackup_client_jail
 
-- ansible.builtin.include: "verify_ssh.yml"
-  tags:
-    - evobackup_client
-    - evobackup_client_backup_hosts
+# - ansible.builtin.include: "upload_scripts.yml"
+#   tags:
+#     - evobackup_client
+#     - evobackup_client_backup_scripts
+
+# - ansible.builtin.include: "open_ssh_ports.yml"
+#   tags:
+#     - evobackup_client
+#     - evobackup_client_backup_firewall
+
+# - ansible.builtin.include: "verify_ssh.yml"
+#   tags:
+#     - evobackup_client
+#     - evobackup_client_backup_hosts

@@ -6,8 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 This project does not follow semantic versioning.
 The **major** part of the version is the year
-The **minor** part changes is the month
-The **patch** part changes is incremented if multiple releases happen the same month
+The **minor** part is the month
+The **patch** part is incremented if multiple releases happen the same month
 
 ## [Unreleased]
 
@@ -21,6 +21,44 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [24.04] 2024-04-30
+
+### Added
+
+proftpd: optional configuration of IP whitelists per groups of users
+
+### Changed
+
+* autosysadmin-agent: upstream release 24.03.2
+* evobackup-client: replace non-functional role with install tasks
+* evobackup-client: upstream release 24.04.1
+* evolinux-base: Add new variable to disable global customisation of bash config
+* evolinux-base: Disable logcheck monitoring of journald only if journald.logfiles exists
+* evolinux-users: Add sudo mvcli for nagios user
+* haproxy: support bookworm for backport packages
+* nrpe: !disk1 exclude filesystem type overlay
+* postfix/amavis: max servers is now 3 (previously 2)
+* roundcube: Use /var/log/roundcube directly
+* vrrpd: configure and restart minifirewall before starting VRRP
+* vrrpd: configure minifirewall with blocks instead of lines
+
+### Fixed
+
+* certbot: Fix HAPEE renewal hook
+* certbot: Fix HAProxy renewal hook
+* evolinux-base/logcheck: fix conf patch, journal check was not disabled when asked
+* fail2ban: SQLite purge script didn't vacuum as expected + error when vacuum cannot be done
+* keepalived: Fix tasks that use file instead of copy
+* memcached: Fix conditions not properly writen (installation was always in multi-instance mode)
+* nagios-nrpe: create /etc/bash_completion.d if missing
+* openvpn: install packages manually, because openbsd_pkg module is broken since OpenBSD 7.4 with the version of Ansible we currently use
+* packweb: fix old bug (2017!) .orig file created by module patch and taken in account by ProFTPd
+* redis: replace inline argument with environment variable for the password
+
+### Removed
+
+* docker-host: Removed `docker_conf_use_iptables` variable (iptable usage forced to true)
+
 ## [24.03] 2024-03-01
 
 ### Added
@@ -29,6 +67,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * autosysadmin-restart_nrpe: add role
 * certbot: Renewal hook for NRPE
 * kvm-host: add minifirewall rules if DRBD interface is configured
+* proftpd: add whitelist ip
 
 ### Changed
 
@@ -40,6 +79,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 * lxc-php, php: Update sury PGP key
 * openvpn: earlier alert for CA expiration
 * redis: create sysfs config file if missing
+* nextcloud: use latest version by default
 
 ### Removed
 
