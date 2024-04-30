@@ -45,7 +45,7 @@ proftpd: optional configuration of IP whitelists per groups of users
 
 ### Removed
 
-* docker-host: Removed setting docker_conf_use_iptables (iptable usage forced to true)
+* docker-host: Removed `docker_conf_use_iptables` variable (iptable usage forced to true)
 
 ### Security
 
