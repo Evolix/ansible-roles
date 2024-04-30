@@ -13,6 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+proftpd: optional configuration of IP whitelists per groups of users
+
 ### Changed
 
 * autosysadmin-agent: upstream release 24.03.2
