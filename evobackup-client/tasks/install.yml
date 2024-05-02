@@ -10,7 +10,7 @@
 - name: "Remount /usr if needed"
   include_role:
     name: remount-usr
-  when: evobackup_client__lib_dir is search("/usr") or  evobackup_client__bin_dir is search("/usr")
+  when: evobackup_client__lib_dir is search("/usr") or evobackup_client__bin_dir is search("/usr")
 
 - name: copy evobackup libs
   ansible.builtin.copy:
