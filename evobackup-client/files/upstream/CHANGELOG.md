@@ -23,13 +23,23 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
-## [24.04.1]
+## [24.05] - 2022-05-02
+
+### Added
+
+* evobackupctl: update LIBDIR when copying the template
+
+### Changed
+
+* evobackupctl: simplify the program path retrieval
+
+## [24.04.1] - 2022-04-30
 
 ### Fixed
 
 * evobackupctl: quote ARGS variable for options parsing.
 
-## [24.04]
+## [24.04] - 2022-04-29
 
 ### Added
 
@@ -52,7 +62,7 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * don't exit the whole program if a sync task can't be done
 
-## [22.12]
+## [22.12] - 2022-12-27
 
 ### Changed
 
@@ -77,6 +87,6 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 * Make start_time and stop_time compatible with OpenBSD
 
-## [22.03]
+## [22.03] - 2022-04-03
 
 Split client and server parts of the project
