@@ -13,6 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* apt: add list-upgradable-held-packages.sh
+
 ### Changed
 
 * evobackup-client: upstream release 24.05
