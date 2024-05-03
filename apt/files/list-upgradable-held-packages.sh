@@ -5,6 +5,8 @@
 # but have available updates.
 #####
 
+readonly VERSION="24.05"
+
 # set all programs to C language (english)
 export LC_ALL=C
 
@@ -48,6 +50,7 @@ Content-Type: text/plain; charset=UTF-8
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Script: ${PROGPATH}
+X-Script-Version: ${VERSION}
 To: ${EMAIL_CLIENT:-alert5@evolix.fr}
 Subject: Mise a jour manuelle disponible
 
