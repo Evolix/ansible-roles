@@ -22,6 +22,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* apt: use archive.debian.org with Buster
+
 ### Removed
 
 ### Security
