@@ -14,7 +14,7 @@
 
 - name: copy evobackup libs
   ansible.builtin.copy:
-    src: upstream/lib
+    src: upstream/lib/
     dest: "{{ evobackup_client__lib_dir }}/"
     force: True
     mode: "0644"
