@@ -1,8 +1,23 @@
 ---
 
+- name: Fetch SSHd config files
+  ansible.builtin.command:
+    cmd: "find /etc/ssh -type f \\( -name 'sshd_config' -o -path '/etc/ssh/sshd_config.d/*.conf' \\)"
+  changed_when: False
+  check_mode: no
+  register: _ssh_config_paths
+
+- ansible.builtin.debug:
+    var: _ssh_config_paths
+    verbosity: 1
+
+############################
+# AllowUsers or AllowGroups
+############################
+
 - name: verify AllowGroups directive
   ansible.builtin.command:
-    cmd: "grep -Er '^AllowGroups' /etc/ssh"
+    cmd: "grep --extended-regexp --recursive --files-with-matches '^AllowGroups' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
   changed_when: False
   failed_when: False
   check_mode: no
@@ -14,7 +29,7 @@
 
 - name: verify AllowUsers directive
   ansible.builtin.command:
-    cmd: "grep -Er '^AllowUsers' /etc/ssh"
+    cmd: "grep --extended-regexp --recursive --files-with-matches '^AllowUsers' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
   changed_when: False
   failed_when: False
   check_mode: no
@@ -42,12 +57,14 @@
     var: ssh_allowusers
     verbosity: 1
 
-- ansible.builtin.include: ssh_allowgroups.yml
+- name: Configure SSH in AllowGroups mode
+  ansible.builtin.include: ssh_allowgroups.yml
   when:
     - ssh_allowgroups
     - not ssh_allowusers
 
-- ansible.builtin.include: ssh_allowusers.yml
+- name: Configure SSH in AllowUsers mode
+  ansible.builtin.include: ssh_allowusers.yml
   vars:
     user: "{{ item.value }}"
   loop: "{{ evolinux_users | dict2items }}"
@@ -56,7 +73,24 @@
     - ssh_allowusers
     - not ssh_allowgroups
 
-- name: disable root login
+# Do this again, to update the value
+
+- name: Fetch SSHd config files
+  ansible.builtin.command:
+    cmd: "find /etc/ssh -type f \\( -name 'sshd_config' -o -path '/etc/ssh/sshd_config.d/*.conf' \\)"
+  changed_when: False
+  check_mode: no
+  register: _ssh_config_paths
+
+##################
+# PermitRootLogin
+##################
+
+### For Debian < 12
+#   if there is a commented value for PermitRootLogin
+#   we replace it with a "no"
+
+- name: Root login is disabled (Debian < 12)
   ansible.builtin.replace:
     dest: /etc/ssh/sshd_config
     regexp: '^#PermitRootLogin (yes|without-password|prohibit-password)'
@@ -64,11 +98,15 @@
   notify: reload sshd
   when:
     - evolinux_root_disable_ssh | bool
-    - ansible_distribution_major_version is version('11', '<=')
+    - ansible_distribution_major_version is version('12', '<')
+
+### For Debian >= 12
+#   if there is no value for PermitRootLogin (anywhere)
+#   we add a "no" in z-evolinux-users.conf 
 
 - name: verify PermitRootLogin directive (Debian >= 12)
   ansible.builtin.command:
-    cmd: "grep -Er '^PermitRootLogin' /etc/ssh"
+    cmd: "grep --extended-regexp --recursive --files-with-matches '^PermitRootLogin' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
   changed_when: False
   failed_when: False
   check_mode: no
@@ -76,12 +114,7 @@
   when:
     - ansible_distribution_major_version is version('12', '>=')
 
-# TODO avertir lorsque PermitRootLogin est déjà configuré?
-- ansible.builtin.debug:
-    var: grep_permitrootlogin_ssh
-    verbosity: 1
-
-- name: disable root login (Debian >= 12)
+- name: Root login is disabled (Debian >= 12)
   ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config.d/z-evolinux-users.conf
     line: "PermitRootLogin no"
@@ -93,6 +126,48 @@
   when:
     - evolinux_root_disable_ssh | bool
     - ansible_distribution_major_version is version('12', '>=')
-    - grep_permitrootlogin_ssh.rc == 1
+    - grep_permitrootlogin_ssh.rc != 0
+
+#####################
+# Allow current user 
+#####################
+
+- name: Allow current user
+  block:
+  - name: Check if evolinux ssh group is used
+    ansible.builtin.command:
+      cmd: "grep --extended-regexp --recursive --files-with-matches '^AllowGroups.+{{ evolinux_ssh_group }}' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
+    changed_when: False
+    failed_when: False
+    check_mode: no
+    register: grep_evolinux_group_ssh
+
+  - debug:
+      var: grep_evolinux_group_ssh
+
+  - name: "Get current user's login"
+    ansible.builtin.command:
+      cmd: logname
+    changed_when: False
+    register: _logname
+    check_mode: no
+
+  - debug:
+      var: evolinux_ssh_group
+
+  - debug:
+      var: evolinux_ssh_allow_current_user
+
+  - name: "Add current user ({{ _logname.stdout }}) to {{ evolinux_ssh_group }} group"
+    ansible.builtin.user:
+      name: "{{ _logname.stdout }}"
+      groups: "{{ evolinux_ssh_group }}"
+      append: yes
+    when:
+      - grep_evolinux_group_ssh.rc == 0
+  when:
+    - evolinux_ssh_group is defined
+    - evolinux_ssh_group | length > 0
+    - evolinux_ssh_allow_current_user | bool
 
 - ansible.builtin.meta: flush_handlers

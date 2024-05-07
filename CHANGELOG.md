@@ -19,6 +19,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * evobackup-client: upstream release 24.05
 * evolinux-base: improve adding the current user to SSH AllowGroups of AllowUsers
+* evolinux-users: improve SSH configuration
 
 ### Fixed
 
