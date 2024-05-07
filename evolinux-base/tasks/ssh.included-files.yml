@@ -85,6 +85,9 @@
     when:
       - grep_allowusers_ssh.rc != 0
       - grep_allowgroups_ssh.rc == 0
+
+  # If we don't have AllowGroups nor AllowUsers, do nothing
+
   when: evolinux_ssh_allow_current_user | bool
 
 - ansible.builtin.meta: flush_handlers
