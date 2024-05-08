@@ -8,7 +8,7 @@
     target: "~/{{ service }}.sql.gz"
 
 - name: Stop service
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: "{{ service }}.service"
     state: stopped
 
@@ -35,7 +35,7 @@
   become_user: "{{ service }}"
 
 - name: Start service
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: "{{ service }}.service"
     state: started
 
@@ -49,8 +49,4 @@
     state: absent
   when: keep_db_dump is undefined
   tags: clean
-
-- name: Reload nginx conf
-  ansible.builtin.service:
-    name: nginx
-    state: reloaded
+  notify: reload nginx

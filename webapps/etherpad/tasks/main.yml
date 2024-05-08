@@ -58,16 +58,13 @@
     src: "etherpad.service.j2"
     dest: "/etc/systemd/system/{{ service }}.service"
 
-- name: Enable systemd units
+- name: Enable systemd unit
   ansible.builtin.systemd:
     name: "{{ service }}.service"
     enabled: yes
     daemon_reload: yes
-
-- name: Start service
-  ansible.builtin.service:
-    name: "{{ service }}.service"
-    state: restarted
+  notify: 
+    - restart etherpad
 
 - name: Template nginx snippet for Let's Encrypt/Certbot
   ansible.builtin.template: 
@@ -90,17 +87,18 @@
       src: "/etc/nginx/sites-available/{{ service }}.conf"
       dest: "/etc/nginx/sites-enabled/{{ service }}.conf"
       state: link
-  - name: Reload nginx conf
-    ansible.builtin.service:
-      name: nginx
-      state: reloaded
+    notify: 
+      - reload nginx
+  - name: Flush handlers
+    ansible.builtin.meta: flush_handlers
   - name: Make sure /var/lib/letsencrypt exists and has correct permissions
     ansible.builtin.file: 
       path: /var/lib/letsencrypt
       state: directory
       mode: '0755'
   - name: Generate certificate with certbot
-    ansible.builtin.shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ etherpad_certbot_admin_email }} -d {{ etherpad_domains |first }}
+    ansible.builtin.command:
+      cmd: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ etherpad_certbot_admin_email }} -d {{ etherpad_domains |first }}
   - name: Create the ssl dir if needed
     ansible.builtin.file:
       path: /etc/nginx/ssl
@@ -121,14 +119,13 @@
   ansible.builtin.template:
     src: "vhost.conf.j2"
     dest: "/etc/nginx/sites-available/{{ service }}.conf"
+  notify: 
+    - reload nginx
 
 - name: Enable nginx vhost for etherpad
   ansible.builtin.file:
     src: "/etc/nginx/sites-available/{{ service }}.conf"
     dest: "/etc/nginx/sites-enabled/{{ service }}.conf"
     state: link
-
-- name: Reload nginx conf
-  ansible.builtin.service:
-    name: nginx
-    state: reloaded
+  notify: 
+    - reload nginx
