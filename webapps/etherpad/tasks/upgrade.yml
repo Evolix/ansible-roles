@@ -14,9 +14,9 @@
 
 - name: Clone etherpad repo (git)
   git:
-    repo: "{{ git_url }}"
+    repo: "{{ etherpad_git_url }}"
     dest: "~/etherpad-lite/"
-    version: "{{ git_version }}"
+    version: "{{ etherpad_git_version }}"
     update: yes
     force: true
   become_user: "{{ service }}"

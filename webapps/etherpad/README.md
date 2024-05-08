@@ -31,17 +31,17 @@ Example Playbook
     - all
   vars:
     # Overwrite the role variable here
-    domains: ['your-real-domain.org']
     service: 'my-etherpad'
-    db_host: 'localhost'
-    db_user: "{{ service }}"
-    db_name: "{{ service }}"
-    db_password: 'zKEh-CHANGE-ME-qIKc'
+    etherpad_domains: ['your-real-domain.org']
+    etherpad_db_host: 'localhost'
+    etherpad_db_user: "{{ service }}"
+    etherpad_db_name: "{{ service }}"
+    etherpad_db_password: 'zKEh-CHANGE-ME-qIKc'
 
   pre_tasks:
     - name: "Install system roles"
       roles:
-        - { role: nodejs, nodejs_apt_version: "{{ node_version }}" }
+        - { role: nodejs, nodejs_apt_version: "{{ etherpad_node_version }}" }
 
   roles:
     - { role: webapps/etherpad , tags: "etherpad" }

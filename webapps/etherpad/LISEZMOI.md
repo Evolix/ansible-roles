@@ -31,17 +31,17 @@ Exemple de playbook
     - all
   vars:
     # Supplanter ici les variables du rôle
-    domains: ['votre-vrai-domaine.org']
     service: 'mon-etherpad'
-    db_host: 'localhost'
-    db_user: "{{ service }}"
-    db_name: "{{ service }}"
-    db_password: 'zKEh-CHANGEZ-MOI-qIKc'
+    etherpad_domains: ['votre-vrai-domaine.org']
+    etherpad_db_host: 'localhost'
+    etherpad_db_user: "{{ service }}"
+    etherpad_db_name: "{{ service }}"
+    etherpad_db_password: 'zKEh-CHANGEZ-MOI-qIKc'
 
   pre_tasks:
     - name: "Installer les rôles systèmes"
       roles:
-        - { role: nodejs, nodejs_apt_version: "{{ node_version }}" }
+        - { role: nodejs, nodejs_apt_version: "{{ etherpad_node_version }}" }
 
   roles:
     - { role: webapps/etherpad , tags: "etherpad" }

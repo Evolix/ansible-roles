@@ -93,7 +93,7 @@
   /*
    * Name your instance!
    */
-  "title": "{{ app_title }}",
+  "title": "{{ etherpad_app_title }}",
 
   /*
    * Pathname of the favicon you want to use. If null, the skin's favicon is
@@ -114,7 +114,7 @@
    * - "colibris": the new experimental skin (since Etherpad 1.8), candidate to
    *               become the default in Etherpad 2.0
    */
-  "skinName": "{{ app_skin_name }}",
+  "skinName": "{{ etherpad_app_skin_name }}",
 
   /*
    * Skin Variants
@@ -140,7 +140,7 @@
    * "full-width-editor" variant (by default editor is rendered as a page, with
    * a max-width of 900px).
    */
-  "skinVariants": "{{ app_skin_variants }}",
+  "skinVariants": "{{ etherpad_app_skin_variants }}",
 
   /*
    * IP and port which Etherpad should bind at.
@@ -152,8 +152,8 @@
    *    "ip": "",                             // <-- has to be an empty string
    *    "port" : "/somepath/etherpad.socket", // <-- path to a Unix socket
    */
-  "ip": "{{ app_ip }}",
-  "port": {{ node_port }},
+  "ip": "{{ etherpad_app_ip }}",
+  "port": {{ etherpad_node_port }},
 
   /*
    * Option to hide/show the settings.json in admin page.
@@ -210,18 +210,18 @@
    */
   "dbType" : "mysql",
   "dbSettings" : {
-    "user":     "{{ db_user }}",
-    "host":     "{{ db_host }}",
-    "port":     "{{ db_port }}",
-    "password": "{{ db_password }}",
-    "database": "{{ db_name }}",
+    "user":     "{{ etherpad_db_user }}",
+    "host":     "{{ etherpad_db_host }}",
+    "port":     "{{ etherpad_db_port }}",
+    "password": "{{ etherpad_db_password }}",
+    "database": "{{ etherpad_db_name }}",
     "charset":  "utf8mb4"
   },
 
   /*
    * The default text of a pad
    */
-  "defaultPadText" : "{{ app_default_pad_text }}",
+  "defaultPadText" : "{{ etherpad_app_default_pad_text }}",
 
   /*
    * Default Pad behavior.
@@ -326,19 +326,19 @@
    * Allow import of file types other than the supported ones:
    * txt, doc, docx, rtf, odt, html & htm
    */
-  "allowUnknownFileEnds": {{ app_file_ends }},
+  "allowUnknownFileEnds": {{ etherpad_app_file_ends }},
 
   /*
    * This setting is used if you require authentication of all users.
    *
    * Note: "/admin" always requires authentication.
    */
-  "requireAuthentication": {{ app_require_authentication }},
+  "requireAuthentication": {{ etherpad_app_require_authentication }},
 
   /*
    * Require authorization by a module, or a user with is_admin set, see below.
    */
-  "requireAuthorization": {{ app_require_authorization }},
+  "requireAuthorization": {{ etherpad_app_require_authorization }},
 
   /*
    * When you use NGINX or another proxy/load-balancer set this to true.
@@ -349,7 +349,7 @@
    * The other effect will be that the logs will contain the real client's IP,
    * instead of the reverse proxy's IP.
    */
-  "trustProxy": {{ app_trust_proxy }},
+  "trustProxy": {{ etherpad_app_trust_proxy }},
 
   /*
    * Settings controlling the session cookie issued by Etherpad.
@@ -510,7 +510,7 @@
     "admin": {
       // 1) "password" can be replaced with "hash" if you install ep_hash_auth
       // 2) please note that if password is null, the user will not be created
-      "password": "{{ app_admin_password }}",
+      "password": "{{ etherpad_app_admin_password }}",
       "is_admin": true
     }
   },
