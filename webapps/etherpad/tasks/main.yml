@@ -2,28 +2,28 @@
 # tasks file for etherpad install
 
 - name: Install main system dependencies
-  apt:
+  ansible.builtin.apt:
     name: "{{ etherpad_system_dep }}"
     update_cache: yes
 
 - name: Add UNIX account
-  user:
+  ansible.builtin.user:
     name: "{{ service }}"
     shell: /bin/bash
 
 - name: Add database
-  mysql_db:
+  ansible.builtin.mysql_db:
     name: "{{ etherpad_db_name }}"
 
 - name: Add database user
-  mysql_user:
+  ansible.builtin.mysql_user:
     name: "{{ etherpad_db_user }}"
     password: "{{ etherpad_db_password }}"
     priv: "{{ etherpad_db_name }}.*:{{privileges |default('SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,INDEX,ALTER,CREATE TEMPORARY TABLES')}}"
     update_password: on_create
 
 - name: Clone etherpad repo (git)
-  git:
+  ansible.builtin.git:
     repo: "{{ etherpad_git_url }}"
     dest: "~/etherpad-lite/"
     version: "{{ etherpad_git_version | default(omit) }}"
@@ -33,20 +33,20 @@
   become_user: "{{ service }}"
 
 - name: Fix run.sh so it does not start etherpad at the end
-  lineinfile: 
+  ansible.builtin.lineinfile: 
     path: "~/etherpad-lite/src/bin/run.sh"
     state: absent
     regexp: 'exec node src/node/server.js'
   become_user: "{{ service }}"
 
 - name: Run setup
-  shell: "src/bin/run.sh"
+  ansible.builtin.shell: "src/bin/run.sh"
   args:
     chdir: "~/etherpad-lite"
   become_user: "{{ service }}"
 
 - name: Template json config file
-  template:
+  ansible.builtin.template:
     src: "settings.json.j2"
     dest: "~{{ service }}/etherpad-lite/settings.json"
     owner: "{{ service }}"
@@ -54,81 +54,81 @@
     mode: "0640"
 
 - name: Add systemd unit
-  template:
+  ansible.builtin.template:
     src: "etherpad.service.j2"
     dest: "/etc/systemd/system/{{ service }}.service"
 
 - name: Enable systemd units
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ service }}.service"
     enabled: yes
     daemon_reload: yes
 
 - name: Start service
-  service:
+  ansible.builtin.service:
     name: "{{ service }}.service"
     state: restarted
 
 - name: Template nginx snippet for Let's Encrypt/Certbot
-  template: 
+  ansible.builtin.template: 
     src: "letsencrypt.conf.j2"
     dest: "/etc/nginx/snippets/letsencrypt.conf"
 
 - name: Check if SSL certificate is present and register result
-  stat:
+  ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ etherpad_domains |first }}/fullchain.pem"
   register: ssl
 
 - name: Generate certificate only if required (first time)
   block:
   - name: Template vhost without SSL for successfull LE challengce
-    template: 
+    ansible.builtin.template: 
       src: "vhost.conf.j2"
       dest: "/etc/nginx/sites-available/{{ service }}.conf"
   - name: Enable temporary nginx vhost for LE
-    file:
+    ansible.builtin.file:
       src: "/etc/nginx/sites-available/{{ service }}.conf"
       dest: "/etc/nginx/sites-enabled/{{ service }}.conf"
       state: link
   - name: Reload nginx conf
-    service:
+    ansible.builtin.service:
       name: nginx
       state: reloaded
   - name: Make sure /var/lib/letsencrypt exists and has correct permissions
-    file: 
+    ansible.builtin.file: 
       path: /var/lib/letsencrypt
       state: directory
       mode: '0755'
   - name: Generate certificate with certbot
-    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ etherpad_certbot_admin_email }} -d {{ etherpad_domains |first }}
+    ansible.builtin.shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ etherpad_certbot_admin_email }} -d {{ etherpad_domains |first }}
   - name: Create the ssl dir if needed
-    file:
+    ansible.builtin.file:
       path: /etc/nginx/ssl
       state: directory
       mode: '0750'
   - name: Template ssl bloc for nginx vhost
-    template: 
+    ansible.builtin.template: 
       src: "ssl.conf.j2"
       dest: "/etc/nginx/ssl/{{ etherpad_domains |first }}.conf"
   when: ssl.stat.exists != true
 
 - name: (Re)check if SSL certificate is present and register result
-  stat:
+  ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ etherpad_domains |first }}/fullchain.pem"
   register: ssl
 
 - name: (Re)template conf file for nginx vhost with SSL
-  template:
+  ansible.builtin.template:
     src: "vhost.conf.j2"
     dest: "/etc/nginx/sites-available/{{ service }}.conf"
 
 - name: Enable nginx vhost for etherpad
-  file:
+  ansible.builtin.file:
     src: "/etc/nginx/sites-available/{{ service }}.conf"
     dest: "/etc/nginx/sites-enabled/{{ service }}.conf"
     state: link
 
 - name: Reload nginx conf
-  service:
+  ansible.builtin.service:
     name: nginx
     state: reloaded
