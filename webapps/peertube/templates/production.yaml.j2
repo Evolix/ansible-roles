@@ -5,13 +5,13 @@ listen:
 # Correspond to your reverse proxy server_name/listen configuration (i.e., your public PeerTube instance URL)
 webserver:
   https: true
-  hostname: '{{ domains| first }}'
+  hostname: '{{ peertube_domains| first }}'
   port: 443
 
 # Secrets you need to generate the first time you run PeerTube
 secrets:
   # Generate one using `openssl rand -hex 32`
-  peertube: '{{ pt_secret }}'
+  peertube: '{{ peertube_app_secret }}'
 
 rates_limit:
   api:
@@ -48,13 +48,13 @@ trust_proxy:
 
 # Your database name will be database.name OR 'peertube'+database.suffix
 database:
-  hostname: '{{ db_host }}'
-  port: {{ db_port }}
+  hostname: '{{ peertube_db_host }}'
+  port: {{ peertube_db_port }}
   ssl: false
   suffix: ''
-  name: '{{ db_name }}'
-  username: '{{ db_user }}'
-  password: '{{ db_password }}'
+  name: '{{ peertube_db_name }}'
+  username: '{{ peertube_db_user }}'
+  password: '{{ peertube_db_password }}'
   pool:
     max: 5
 

@@ -5,11 +5,11 @@ After=network.target postgresql.service redis-server.service
 [Service]
 Type=simple
 Environment=NODE_ENV=production
-Environment=NODE_CONFIG_DIR={{ service_home }}/config
+Environment=NODE_CONFIG_DIR={{ peertube_service_home }}/config
 User={{ service }}
 Group={{ service }}
 ExecStart=/usr/bin/node dist/server
-WorkingDirectory={{ service_home }}/peertube-latest
+WorkingDirectory={{ peertube_service_home }}/peertube-latest
 SyslogIdentifier=peertube
 Restart=always
 

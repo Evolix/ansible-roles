@@ -6,7 +6,7 @@
 server {
   listen 80;
   listen [::]:80;
-  server_name {{ domains | first }};
+  server_name {{ peertube_domains | first }};
 
   # For certbot
   location ~ /.well-known/acme-challenge {
@@ -20,14 +20,14 @@ server {
 }
 
 upstream backend {
-  server {{ pt_host }};
+  server {{ peertube_app_host }};
 }
 
 {% if ssl.stat.exists %}
 server {
   listen 443 ssl http2;
   listen [::]:443 ssl http2;
-  server_name {{ domains | first }};
+  server_name {{ peertube_domains | first }};
 
   access_log /var/log/nginx/{{ service }}.access.log; # reduce I/0 with buffer=10m flush=5m
   error_log  /var/log/nginx/{{ service }}.error.log;
@@ -43,8 +43,8 @@ server {
   # Certificates
   # you need a certificate to run in production. see https://letsencrypt.org/
   ##
-  ssl_certificate     /etc/letsencrypt/live/{{ domains | first }}/fullchain.pem;
-  ssl_certificate_key /etc/letsencrypt/live/{{ domains | first }}/privkey.pem;
+  ssl_certificate     /etc/letsencrypt/live/{{ peertube_domains | first }}/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/{{ peertube_domains | first }}/privkey.pem;
 
   ##
   # Security hardening (as of Nov 15, 2020)
@@ -156,7 +156,7 @@ server {
   # For extra performance please refer to https://github.com/denji/nginx-tuning
   ##
 
-  root {{ service_home }}/storage;
+  root {{ peertube_service_home }}/storage;
 
   # Enable compression for JS/CSS/HTML, for improved client load times.
   # It might be nice to compress JSON/XML as returned by the API, but
@@ -194,7 +194,7 @@ server {
   location ~ ^/client/(assets/images/(icons/icon-36x36\.png|icons/icon-48x48\.png|icons/icon-72x72\.png|icons/icon-96x96\.png|icons/icon-144x144\.png|icons/icon-192x192\.png|icons/icon-512x512\.png|logo\.svg|favicon\.png|default-playlist\.jpg|default-avatar-account\.png|default-avatar-account-48x48\.png|default-avatar-video-channel\.png|default-avatar-video-channel-48x48\.png))$ {
     add_header Cache-Control "public, max-age=31536000, immutable"; # Cache 1 year
 
-    root {{ service_home }};
+    root {{ peertube_service_home }};
 
     try_files /storage/client-overrides/$1 /peertube-latest/client/dist/$1 @api;
   }
@@ -203,7 +203,7 @@ server {
   location ~ ^/client/(.*\.(js|css|png|svg|woff2|otf|ttf|woff|eot))$ {
     add_header Cache-Control "public, max-age=31536000, immutable"; # Cache 1 year
 
-    alias {{ service_home }}/peertube-latest/client/dist/$1;
+    alias {{ peertube_service_home }}/peertube-latest/client/dist/$1;
   }
 
   location ~ ^(/static/(webseed|web-videos|streaming-playlists/hls)/private/)|^/download {

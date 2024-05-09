@@ -31,7 +31,7 @@ Example Playbook
     - all
   vars:
     # Overwrite the role variables here
-    domains: ['your-real-domain.org']
+    peertube_domains: ['your-real-domain.org']
     service: 'my-peertube'
 
   roles:
