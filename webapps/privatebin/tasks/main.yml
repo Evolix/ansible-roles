@@ -2,17 +2,17 @@
 # tasks file for privatebin install
 
 - name: Install main system dependencies
-  apt:
+  ansible.builtin.apt:
     name: "{{ privatebin_system_dep }}"
     update_cache: yes
 
 - name: Add UNIX account
-  user:
+  ansible.builtin.user:
     name: "{{ service }}"
     shell: /bin/bash
 
 - name: Clone privatebin repo (git)
-  git:
+  ansible.builtin.git:
     repo: "{{ privatebin_git_url }}"
     dest: "~/PrivateBin/"
     version: "{{ privatebin_git_version | default(omit) }}"
@@ -28,77 +28,77 @@
 #    mode: '0750'
 
 - name: Template apache conf for Let's Encrypt/Certbot
-  template: 
+  ansible.builtin.template: 
     src: "letsencrypt.conf.j2"
     dest: "/etc/apache2/conf-available/letsencrypt.conf"
 
 - name: Enable apache conf for Let's Encrypt/Certbot
-  command: "/usr/sbin/a2enconf letsencrypt.conf"
+  ansible.builtin.command: "/usr/sbin/a2enconf letsencrypt.conf"
 
 - name: Check if SSL certificate is present and register result
-  stat:
+  ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ privatebin_domains |first }}/fullchain.pem"
   register: ssl
 
 - name: Generate certificate only if required (first time)
   block:
   - name: Template vhost without SSL for successfull LE challengce
-    template: 
+    ansible.builtin.template: 
       src: "vhost.conf.j2"
       dest: "/etc/apache2/sites-available/{{ service }}.conf"
   - name: Enable apache vhost for privatebin
     command: "/usr/sbin/a2ensite {{ service }}"
   - name: Reload apache conf
-    service:
+    ansible.builtin.service:
       name: apache2
       state: reloaded
   - name: Make sure /var/lib/letsencrypt exists and has correct permissions
-    file: 
+    ansible.builtin.file: 
       path: /var/lib/letsencrypt
       state: directory
       mode: '0755'
   - name: Generate certificate with certbot
-    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ privatebin_certbot_admin_email }} -d {{ privatebin_domains |first }}
+    ansible.builtin.shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ privatebin_certbot_admin_email }} -d {{ privatebin_domains | first }}
   - name: Create the ssl dir if needed
-    file:
+    ansible.builtin.file:
       path: /etc/apache2/ssl
       state: directory
       mode: '0750'
   - name: Template ssl block for apache vhost
-    template: 
+    ansible.builtin.template: 
       src: "ssl.conf.j2"
       dest: "/etc/apache2/ssl/{{ service }}.conf"
   when: ssl.stat.exists != true
 
 - name: (Re)check if SSL certificate is present and register result
-  stat:
+  ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ privatebin_domains |first }}/fullchain.pem"
   register: ssl
 
 - name: (Re)template conf file for apache vhost with SSL
-  template:
+  ansible.builtin.template:
     src: "vhost.conf.j2"
     dest: "/etc/apache2/sites-available/{{ service }}.conf"
 
 - name: Enable apache mode_rewrite
-  command: "/usr/sbin/a2enmod ssl rewrite"
+  ansible.builtin.command: "/usr/sbin/a2enmod ssl rewrite"
   
 - name: Enable .htaccess configuration
-  copy:
+  ansible.builtin.copy:
     src: "~/PrivateBin/.htaccess.disabled"
     dest: "~/PrivateBin/.htaccess"
     remote_src: true
   become_user: "{{ service }}"
 
 - name: Creates directory outside DocumentRoot
-  file:
+  ansible.builtin.file:
     path: "~/secret"
     state: directory
   become_user: "{{ service }}"
   register: directory
 
 - name: Move some directories outside DocumentRoot
-  shell: 
+  ansible.builtin.shell: 
     cmd: "mv {bin,cfg,doc,lib,tpl,tst,vendor} ~/secret/"
     chdir: "~/PrivateBin/"
     executable: /bin/bash
@@ -106,16 +106,16 @@
   when: directory.changed
 
 - name: Ajust path needed for directories outside DocumentRoot
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "~/PrivateBin/index.php"
     regexp: ^define\('PATH', ''\);
     line: define('PATH', '../secret/');
   become_user: "{{ service }}"
 
 - name: Enable apache vhost for privatebin
-  command: "/usr/sbin/a2ensite {{ service }}"
+  ansible.builtin.command: "/usr/sbin/a2ensite {{ service }}"
 
 - name: Reload apache conf
-  service:
+  ansible.builtin.service:
     name: apache2
     state: reloaded

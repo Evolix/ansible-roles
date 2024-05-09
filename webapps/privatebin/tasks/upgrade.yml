@@ -2,14 +2,14 @@
 # tasks file for etherpad upgrade
 
 - name: Move some directories back to DocumentRoot
-  shell: 
+  ansible.builtin.shell: 
     cmd: "mv {bin,cfg,doc,lib,tpl,tst,vendor} ~/PrivateBin/"
     chdir: "~/secret/"
     executable: /bin/bash
   become_user: "{{ service }}"
 
 - name: Update privatebin repo (git)
-  git:
+  ansible.builtin.git:
     repo: "{{ privatebin_git_url }}"
     dest: "~/PrivateBin/"
     version: "{{ privatebin_git_version }}"
@@ -18,20 +18,20 @@
   become_user: "{{ service }}"
 
 - name: Move back some directories outside DocumentRoot
-  shell: 
+  ansible.builtin.shell: 
     cmd: "mv {bin,cfg,doc,lib,tpl,tst,vendor} ~/secret/"
     chdir: "~/PrivateBin/"
     executable: /bin/bash
   become_user: "{{ service }}"
 
 - name: Ajust path needed for directories outside DocumentRoot
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "~/PrivateBin/index.php"
     regexp: ^define\('PATH', ''\);
     line: define('PATH', '../secret/');
   become_user: "{{ service }}"
 
 - name: Reload apache conf
-  service:
+  ansible.builtin.service:
     name: apache2
     state: reloaded
