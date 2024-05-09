@@ -10,9 +10,9 @@
 
 - name: Update privatebin repo (git)
   git:
-    repo: "{{ git_url }}"
+    repo: "{{ privatebin_git_url }}"
     dest: "~/PrivateBin/"
-    version: "{{ git_version }}"
+    version: "{{ privatebin_git_version }}"
     update: yes
     force: true
   become_user: "{{ service }}"

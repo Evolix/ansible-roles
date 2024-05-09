@@ -31,7 +31,7 @@ Exemple de playbook
     - all
   vars:
     # Supplanter ici les variables du rôle
-    domains: ['votre-vrai-domaine.org']
+    privatebin_domains: ['votre-vrai-domaine.org']
     service: 'mon-privatebin'
 
   roles:

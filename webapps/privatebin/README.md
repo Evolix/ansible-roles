@@ -31,7 +31,7 @@ Example Playbook
     - all
   vars:
     # Overwrite the role variable here
-    domains: ['your-real-domain.org']
+    privatebin_domains: ['your-real-domain.org']
     service: 'my-privatebin'
 
   roles:

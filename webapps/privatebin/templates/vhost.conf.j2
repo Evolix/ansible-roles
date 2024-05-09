@@ -1,5 +1,5 @@
 <VirtualHost *:80>
-    ServerName {{ domains |first }}
+    ServerName {{ privatebin_domains |first }}
     
     {% if ssl.stat.exists %}
     RewriteEngine On
@@ -12,7 +12,7 @@
 
 {% if ssl.stat.exists %}
 <VirtualHost *:443>
-    ServerName {{ domains |first }}
+    ServerName {{ privatebin_domains |first }}
 
     DocumentRoot /home/{{ service }}/PrivateBin
     
