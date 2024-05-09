@@ -32,6 +32,6 @@
   become_user: "{{ service }}"
 
 - name: Reload apache conf
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: apache2
     state: reloaded

@@ -21,19 +21,15 @@
     umask: '0022'
   become_user: "{{ service }}"
 
-#- name: Create the conf-available dir if needed
-#  file:
-#    path: /etc/apache2/conf-available
-#    state: directory
-#    mode: '0750'
-
 - name: Template apache conf for Let's Encrypt/Certbot
   ansible.builtin.template: 
     src: "letsencrypt.conf.j2"
     dest: "/etc/apache2/conf-available/letsencrypt.conf"
 
 - name: Enable apache conf for Let's Encrypt/Certbot
-  ansible.builtin.command: "/usr/sbin/a2enconf letsencrypt.conf"
+  ansible.builtin.command: 
+    cmd: "/usr/sbin/a2enconf letsencrypt.conf"
+  notify: reload apache
 
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
@@ -46,19 +42,21 @@
     ansible.builtin.template: 
       src: "vhost.conf.j2"
       dest: "/etc/apache2/sites-available/{{ service }}.conf"
+    notify: reload apache
   - name: Enable apache vhost for privatebin
-    command: "/usr/sbin/a2ensite {{ service }}"
-  - name: Reload apache conf
-    ansible.builtin.service:
-      name: apache2
-      state: reloaded
+    ansible.builtin.command: 
+      cmd: "/usr/sbin/a2ensite {{ service }}"
+    notify: reload apache
+  - name: Flush handlers
+    ansible.builtin.meta: flush_handlers
   - name: Make sure /var/lib/letsencrypt exists and has correct permissions
     ansible.builtin.file: 
       path: /var/lib/letsencrypt
       state: directory
       mode: '0755'
   - name: Generate certificate with certbot
-    ansible.builtin.shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ privatebin_certbot_admin_email }} -d {{ privatebin_domains | first }}
+    ansible.builtin.command:
+      cmd: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ privatebin_certbot_admin_email }} -d {{ privatebin_domains | first }}
   - name: Create the ssl dir if needed
     ansible.builtin.file:
       path: /etc/apache2/ssl
@@ -68,6 +66,7 @@
     ansible.builtin.template: 
       src: "ssl.conf.j2"
       dest: "/etc/apache2/ssl/{{ service }}.conf"
+    notify: reload apache
   when: ssl.stat.exists != true
 
 - name: (Re)check if SSL certificate is present and register result
@@ -79,9 +78,12 @@
   ansible.builtin.template:
     src: "vhost.conf.j2"
     dest: "/etc/apache2/sites-available/{{ service }}.conf"
+    notify: reload apache
 
 - name: Enable apache mode_rewrite
-  ansible.builtin.command: "/usr/sbin/a2enmod ssl rewrite"
+  ansible.builtin.command: 
+    cmd: "/usr/sbin/a2enmod ssl rewrite"
+  notify: restart apache
   
 - name: Enable .htaccess configuration
   ansible.builtin.copy:
@@ -113,9 +115,6 @@
   become_user: "{{ service }}"
 
 - name: Enable apache vhost for privatebin
-  ansible.builtin.command: "/usr/sbin/a2ensite {{ service }}"
-
-- name: Reload apache conf
-  ansible.builtin.service:
-    name: apache2
-    state: reloaded
+  ansible.builtin.command: 
+    cmd: "/usr/sbin/a2ensite {{ service }}"
+  notify: reload apache
