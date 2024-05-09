@@ -6,6 +6,17 @@
     name: "{{ etherpad_system_dep }}"
     update_cache: yes
 
+- name: Install pnpm (via npm)
+  ansible.builtin.command:
+    cmd: npm install -g pnpm
+
+- name: Fix permissions for pnpm
+  ansible.builtin.file:
+    path: /usr/local/lib/node_modules/
+    state: directory
+    mode: o+rx
+    recurse: yes
+
 - name: Add UNIX account
   ansible.builtin.user:
     name: "{{ service }}"
@@ -34,13 +45,13 @@
 
 - name: Fix run.sh so it does not start etherpad at the end
   ansible.builtin.lineinfile: 
-    path: "~/etherpad-lite/src/bin/run.sh"
+    path: "~/etherpad-lite/bin/run.sh"
     state: absent
-    regexp: 'exec node src/node/server.js'
+    regexp: '^exec pnpm run dev'
   become_user: "{{ service }}"
 
 - name: Run setup
-  ansible.builtin.shell: "src/bin/run.sh"
+  ansible.builtin.shell: "bin/run.sh"
   args:
     chdir: "~/etherpad-lite"
   become_user: "{{ service }}"
