@@ -105,7 +105,7 @@ test_server() {
 pick_server() {
     local -i increment=${1:-0}
     local -i list_length=${#SERVERS[@]}
-    local sync_name=${2:""}
+    local sync_name=${2:-""}
 
     if (( increment >= list_length )); then
         # We've reached the end of the list
