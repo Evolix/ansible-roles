@@ -21,6 +21,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: improve adding the current user to SSH AllowGroups of AllowUsers
 * evolinux-users: improve SSH configuration
 * evomaintenance: upstream release 24.05
+* evomaintenance: move upstream files into upstream folder
 
 ### Fixed
 
