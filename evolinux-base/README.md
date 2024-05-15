@@ -37,6 +37,6 @@ Main variables are:
 * `evolinux_postfix_purge_exim`: purge Exim packages (default: `True`) ;
 * `evolinux_ssh_password_auth_addresses`: list of addresses that can authenticate with a password (default: `[]`)
 * `evolinux_ssh_disable_root`: disable SSH access for root (default: `False`)
-* `evolinux_ssh_allow_current_user`: don't lock yourself out (default: `False`)
+* `evolinux_ssh_allow_current_user`: don't lock yourself out is there is an AllowUsers or AllowGroups directive (default: `False`)
 
 The full list of variables (with default values) can be found in `defaults/main.yml`.

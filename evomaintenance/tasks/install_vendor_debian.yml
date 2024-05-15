@@ -35,15 +35,12 @@
 
 - name: Evomaintenance script and template are installed
   ansible.builtin.copy:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
+    src: "upstream/evomaintenance.sh"
+    dest: "/usr/share/scripts/"
     owner: root
     group: root
-    mode: "{{ item.mode }}"
+    mode: "0700"
     force: true
     backup: yes
-  loop:
-    - { src: 'evomaintenance.sh', dest: '/usr/share/scripts/', mode: '0700' }
-    - { src: 'evomaintenance.tpl', dest: '/usr/share/scripts/', mode: '0600' }
   tags:
     - evomaintenance

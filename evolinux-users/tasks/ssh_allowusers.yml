@@ -1,55 +1,84 @@
 ---
 
-# this check must be repeated for each user
+###
+# these checks must be repeated for each user
 # even if it's been done before
-- name: verify AllowUsers directive
+
+- name: Fetch SSHd config files
   ansible.builtin.command:
-    cmd: "grep -E '^AllowUsers' /etc/ssh/sshd_config"
+    cmd: "find /etc/ssh -type f \\( -name 'sshd_config' -o -path '/etc/ssh/sshd_config.d/*.conf' \\)"
+  changed_when: False
+  check_mode: no
+  register: _ssh_config_paths
+
+- name: Verify AllowUsers directive
+  ansible.builtin.command:
+    cmd: "grep --extended-regexp --recursive --files-with-matches '^AllowUsers' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
   changed_when: False
   failed_when: False
   check_mode: no
   register: grep_allowusers_ssh
 
-- name: "Add AllowUsers sshd directive with '{{ user.name }}'"
+###
+
+- name: "Add AllowUsers sshd directive with '{{ user.name }}' (Debian < 12)"
   ansible.builtin.lineinfile:
     dest: /etc/ssh/sshd_config
     line: "\nAllowUsers {{ user.name }}"
     insertafter: 'Subsystem'
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
-  when: grep_allowusers_ssh.rc != 0
+  when:
+    - grep_allowusers_ssh.rc != 0
+    - ansible_distribution_major_version is version('12', '<')
+
+- name: "Add AllowUsers sshd directive with '{{ user.name }}' (Debian >= 12)"
+  ansible.builtin.lineinfile:
+    dest: /etc/ssh/sshd_config.d/z-evolinux-users.conf
+    line: "\nAllowUsers {{ user.name }}"
+    insertafter: 'Subsystem'
+    validate: '/usr/sbin/sshd -t -f %s'
+  notify: reload sshd
+  when:
+    - grep_allowusers_ssh.rc != 0
+    - ansible_distribution_major_version is version('12', '>=')
 
 - name: "Append '{{ user.name }}' to AllowUsers sshd directive"
   ansible.builtin.replace:
-    dest: /etc/ssh/sshd_config
+    dest: "{{ grep_allowusers_ssh.stdout_lines[0] }}"
     regexp: '^(AllowUsers ((?!\b{{ user.name }}\b).)*)$'
     replace: '\1 {{ user.name }}'
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
-  when: grep_allowusers_ssh.rc == 0
+  when:
+    - grep_allowusers_ssh.rc == 0
 
 - name: "verify Match User directive"
   ansible.builtin.command:
-    cmd: "grep -E '^Match User' /etc/ssh/sshd_config"
+    cmd: "grep --extended-regexp --recursive --files-with-matches '^Match User' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
   changed_when: False
   failed_when: False
   check_mode: no
   register: grep_matchuser_ssh
 
-- name: "Add Match User sshd directive with '{{ user.name }}'"
+- name: "Add Match User sshd directive with '{{ user.name }}' (Debian <= 10)"
   ansible.builtin.lineinfile:
     dest: /etc/ssh/sshd_config
     line: "\nMatch User {{ user.name }}\n    PasswordAuthentication no"
     insertafter: "# END EVOLINUX PASSWORD RESTRICTIONS BY ADDRESS"
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
-  when: grep_matchuser_ssh.rc != 0
+  when:
+    - grep_matchuser_ssh.rc != 0
+    - ansible_distribution_major_version is version('10', '<=')
 
-- name: "Append '{{ user.name }}' to Match User's sshd directive"
+- name: "Append '{{ user.name }}' to Match User's sshd directive (Debian <= 10)"
   ansible.builtin.replace:
-    dest: /etc/ssh/sshd_config
+    dest: "{{ grep_matchuser_ssh.stdout_lines[0] }}"
     regexp: '^(Match User ((?!{{ user.name }}).)*)$'
     replace: '\1,{{ user.name }}'
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
-  when: grep_matchuser_ssh.rc == 0
+  when:
+    - grep_matchuser_ssh.rc == 0
+    - ansible_distribution_major_version is version('10', '<=')

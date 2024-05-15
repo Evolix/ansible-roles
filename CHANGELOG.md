@@ -21,11 +21,29 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
+## [24.05] 2024-05-15
+
+### Added
+
+* apt: add list-upgradable-held-packages.sh
+
+### Changed
+
+* evobackup-client: upstream release 24.05.1
+* evolinux-base: improve adding the current user to SSH AllowGroups of AllowUsers
+* evolinux-users: improve SSH configuration
+* evomaintenance: upstream release 24.05
+* evomaintenance: move upstream files into upstream folder
+
+### Fixed
+
+* apt: use archive.debian.org with Buster
+
 ## [24.04] 2024-04-30
 
 ### Added
 
-proftpd: optional configuration of IP whitelists per groups of users
+* proftpd: optional configuration of IP whitelists per groups of users
 
 ### Changed
 

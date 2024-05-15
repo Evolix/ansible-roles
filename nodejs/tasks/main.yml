@@ -24,7 +24,7 @@
 
 - name: Add NodeJS repository (Debian <12)
   ansible.builtin.apt_repository:
-    repo: "deb [signed-by={{ apt_keyring_dir }}/nodesource.asc] https://deb.nodesource.com/{{ nodejs_apt_version }} {{ ansible_distribution_release }} main"
+    repo: "deb [signed-by={{ apt_keyring_dir }}/nodesource.asc] https://deb.nodesource.com/{{ nodejs_apt_version }} nodistro main"
     filename: nodesource
     update_cache: yes
     state: present

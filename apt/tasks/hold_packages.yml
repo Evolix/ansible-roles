@@ -76,7 +76,16 @@
   tags:
     - apt
 
-- name: Check if Cron is installed
+- name: List scripts is installed
+  ansible.builtin.copy:
+    src: list-upgradable-held-packages.sh
+    dest: /usr/share/scripts/list-upgradable-held-packages.sh
+    force: true
+    mode: "0755"
+  tags:
+    - apt
+
+- name: Check if cron is installed
   ansible.builtin.shell:
     cmd: "dpkg --list 'cron' 2>/dev/null | grep -q -E '^(i|h)i'"
   register: is_cron
@@ -98,6 +107,18 @@
     day: "{{ apt_check_hold_cron_day }}"
     month: "{{ apt_check_hold_cron_month }}"
     state: "present"
+  tags:
+    - apt
+  when: is_cron.rc == 0
+
+- name: List upgradable held packages (script)
+  ansible.builtin.cron:
+    cron_file: apt-hold-packages
+    name: list-upgradable-held-packages
+    job: "/usr/share/scripts/list-upgradable-held-packages.sh"
+    user: root
+    special_time: "{{ apt_list_upgradable_held_special_time | mandatory }}"
+    state: "{{ apt_list_upgradable_held_enabled | bool | ternary('present', 'absent') }}"
   tags:
     - apt
   when: is_cron.rc == 0

@@ -31,11 +31,11 @@
     marker: "## {mark} ANSIBLE MANAGED INPUT RULES FOR VRID {{ vrrp_address.id }}"
     block: |
       {% if vrrp_address.peers | default([]) | length <= 0 %}
-        /sbin/iptables -A INPUT -i {{ vrrp_address.interface }} -d 224.0.0.0/8 -j ACCEPT # Allow VRRP input on {{ vrrp_address.interface }} for VRID {{ vrrp_address.id }}
+      /sbin/iptables -A INPUT -i {{ vrrp_address.interface }} -d 224.0.0.0/8 -j ACCEPT # Allow VRRP input on {{ vrrp_address.interface }} for VRID {{ vrrp_address.id }}
       {% else %}
-        {% for peer in vrrp_address.peers %}
-          /sbin/iptables -A INPUT -i {{ vrrp_address.interface }} -s {{ peer }} -d 224.0.0.0/8 -j ACCEPT # Allow VRRP input on {{ vrrp_address.interface }} from {{ peer }} for VRID {{ vrrp_address.id }}
-        {% endfor %}
+      {% for peer in vrrp_address.peers %}
+      /sbin/iptables -A INPUT -i {{ vrrp_address.interface }} -s {{ peer }} -d 224.0.0.0/8 -j ACCEPT # Allow VRRP input on {{ vrrp_address.interface }} from {{ peer }} for VRID {{ vrrp_address.id }}
+      {% endfor %}
       {% endif %}
     create: yes
     mode: "0600"

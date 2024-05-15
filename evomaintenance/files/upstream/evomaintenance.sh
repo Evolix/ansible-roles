@@ -1,12 +1,12 @@
 #!/bin/sh
 
-VERSION="23.10.1"
+VERSION="24.05"
 
 show_version() {
     cat <<END
 evomaintenance version ${VERSION}
 
-Copyright 2007-2023 Evolix <info@evolix.fr>,
+Copyright 2007-2024 Evolix <info@evolix.fr>,
                     Gregory Colpart <reg@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>,
                     Brice Waegeneire <bwaegeneire@evolix.fr>,
@@ -437,6 +437,14 @@ while :; do
             printf 'ERROR: "--message" requires a non-empty option argument.\n' >&2
             exit 1
             ;;
+        --no-evocheck)
+            # disable evocheck hook
+            EVOCHECK=0
+            ;;
+        --evocheck)
+            # enable evocheck hook
+            EVOCHECK=1
+            ;;
         --no-commit)
             # disable commit hook
             HOOK_COMMIT=0
@@ -581,7 +589,7 @@ GIT_REPOSITORIES="/etc /etc/bind /usr/share/scripts"
 
 # Add /etc directories from lxc containers if they are git directories
 if [ -d /var/lib/lxc ]; then
-    GIT_REPOSITORIES="${GIT_REPOSITORIES} $(find /var/lib/lxc/ -maxdepth 3 -name 'etc' | tr '\n' ' ' | sed 's/[[:space:]]\+$//')"
+    GIT_REPOSITORIES="${GIT_REPOSITORIES} $(find -L /var/lib/lxc/ -maxdepth 3 -name 'etc' | tr '\n' ' ' | sed 's/[[:space:]]\+$//')"
 fi
 
 # initialize variable

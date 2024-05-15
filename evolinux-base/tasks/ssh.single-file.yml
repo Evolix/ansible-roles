@@ -61,40 +61,66 @@
   notify: reload sshd
   when: ansible_distribution_major_version is version('9', '>=')
 
-- name: "Get current user"
-  ansible.builtin.command:
-    cmd: logname
-  changed_when: False
-  register: logname
-  check_mode: no
+# Should we allow the current user?
+- name: Allow the current user
+  block:
+  - name: "Get current user"
+    ansible.builtin.command:
+      cmd: logname
+    changed_when: False
+    register: _logname
+    check_mode: no
+
+  - name: verify AllowUsers directive
+    ansible.builtin.command:
+      cmd: "grep -E '^AllowUsers' /etc/ssh/sshd_config"
+    failed_when: False
+    changed_when: False
+    register: grep_allowusers_ssh
+    check_mode: no
+
+  - name: verify AllowGroups directive
+    ansible.builtin.command:
+      cmd: "grep -E '^AllowGroups' /etc/ssh/sshd_config"
+    failed_when: False
+    changed_when: False
+    register: grep_allowgroups_ssh
+    check_mode: no
+
+  # If we have AllowUsers but not AllowGroups, append the user to the list
+
+  - name: "Modify AllowUsers sshd directive for current user"
+    ansible.builtin.replace:
+      dest: /etc/ssh/sshd_config
+      regexp: '^(AllowUsers ((?!{{ _logname.stdout }}).)*)$'
+      replace: '\1 {{ _logname.stdout }}'
+      validate: '/usr/sbin/sshd -t -f %s'
+    notify: reload sshd
+    when:
+      - grep_allowusers_ssh.rc == 0
+      - grep_allowgroups_ssh.rc != 0
+
+  # If we have AllowGroups but not AllowUsers, add the user to the group and append the group to the list
+  
+  - name: "Add current user to {{ evolinux_ssh_group }} group"
+    ansible.builtin.user:
+      name: "{{ _logname.stdout }}"
+      group: "{{ evolinux_ssh_group }}"
+      append: yes
+    when:
+      - grep_allowusers_ssh.rc != 0
+      - grep_allowgroups_ssh.rc == 0
+
+  - name: "Append '{{ evolinux_ssh_group }}' to AllowGroups sshd directive"
+    ansible.builtin.replace:
+      dest: "/etc/ssh/sshd_config"
+      regexp: '^(AllowGroups ((?!{{ evolinux_ssh_group }}).)*)$'
+      replace: '\1 {{ evolinux_ssh_group }}'
+      validate: '/usr/sbin/sshd -t -f %s'
+    notify: reload sshd
+    when:
+      - grep_allowusers_ssh.rc != 0
+      - grep_allowgroups_ssh.rc == 0
   when: evolinux_ssh_allow_current_user | bool
-
-# we must double-escape caracters, because python
-- name: verify AllowUsers directive
-  ansible.builtin.command:
-    cmd: "grep -E '^AllowUsers' /etc/ssh/sshd_config"
-  failed_when: False
-  changed_when: False
-  register: grep_allowusers_ssh
-  check_mode: no
-  when: evolinux_ssh_allow_current_user | bool
-
-- name: "Add AllowUsers sshd directive for current user"
-  ansible.builtin.lineinfile:
-    dest: /etc/ssh/sshd_config
-    line: "\nAllowUsers {{ logname.stdout }}"
-    insertafter: 'Subsystem'
-    validate: '/usr/sbin/sshd -t -f %s'
-  notify: reload sshd
-  when: evolinux_ssh_allow_current_user and grep_allowusers_ssh.rc != 0
-
-- name: "Modify AllowUsers sshd directive for current user"
-  ansible.builtin.replace:
-    dest: /etc/ssh/sshd_config
-    regexp: '^(AllowUsers ((?!{{ logname.stdout }}).)*)$'
-    replace: '\1 {{ logname.stdout }}'
-    validate: '/usr/sbin/sshd -t -f %s'
-  notify: reload sshd
-  when: evolinux_ssh_allow_current_user and grep_allowusers_ssh.rc == 0
 
 - ansible.builtin.meta: flush_handlers
