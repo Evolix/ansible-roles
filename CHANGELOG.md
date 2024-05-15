@@ -13,6 +13,18 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [24.05] 2024-05-15
+
+### Added
+
 * apt: add list-upgradable-held-packages.sh
 
 ### Changed
@@ -26,10 +38,6 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * apt: use archive.debian.org with Buster
-
-### Removed
-
-### Security
 
 ## [24.04] 2024-04-30
 
