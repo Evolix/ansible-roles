@@ -5,19 +5,19 @@
   ansible.builtin.include_tasks: apt_sources.yml
 
 - name: Install main system dependencies
-  apt:
+  ansible.builtin.apt:
     name: "{{ peertube_system_dep }}"
     update_cache: yes
 
 - name: Upgrade redis-server to the latest version from bullseye-backports on Debian 11
-  apt:
+  ansible.builtin.apt:
     name: redis-server
     state: latest
     default_release: bullseye-backports
   when: ansible_distribution_major_version is version('11')
 
 - name: Install corepack via npm on Debian 12
-  shell: npm install -g corepack
+  ansible.builtin.shell: npm install -g corepack
   when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Fix permissions for corepack
@@ -29,23 +29,23 @@
   when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Enable yarn (via corepack)
-  shell: "corepack enable; yarn set version classic"
+  ansible.builtin.shell: "corepack enable; yarn set version classic"
 
 - name: Add UNIX account
-  user:
+  ansible.builtin.user:
     name: "{{ service }}"
     home: "{{ peertube_service_home }}"
     shell: /bin/bash
 
 - name: Add PostgreSQL user
-  postgresql_user:
+  ansible.builtin.postgresql_user:
     name: "{{ peertube_db_user }}"
     password: "{{ peertube_db_password }}"
     no_password_changes: true
   become_user: postgres
 
 - name: Add PostgreSQL database
-  postgresql_db:
+  ansible.builtin.postgresql_db:
     name: "{{ peertube_db_name }}"
     owner: "{{ peertube_db_user }}"
     template: template0
@@ -53,7 +53,7 @@
   become_user: postgres
 
 - name: Add dirs required by peertube
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
   loop:
@@ -63,101 +63,101 @@
   become_user: "{{ service }}"
 
 - name: Unarchive peertube archive
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ peertube_download_url }}"
     dest: ~/versions
     remote_src: yes
   become_user: "{{ service }}"
 
 - name: Symbolic link to unarchived version
-  file:
+  ansible.builtin.file:
     src: "~/versions/peertube-{{ peertube_version }}"
     dest:  "~/peertube-latest"
     state: link
   become_user: "{{ service }}"
 
 - name: Install PeerTube nodejs deps (via yarn)
-  shell: "yarn install --production --pure-lockfile"
+  ansible.builtin.shell: "yarn install --production --pure-lockfile"
   args:
     chdir: "~/peertube-latest"
   become_user: "{{ service }}"
 
 - name: Copy default.yaml to prod dir
-  copy:
+  ansible.builtin.copy:
     src: "~/peertube-latest/config/default.yaml"
     dest: "~/config/default.yaml"
     remote_src: true
   become_user: "{{ service }}"
 
 - name: Template peertube conf file
-  template: 
+  ansible.builtin.template: 
     src: "production.yaml.j2"
     dest: "~/config/production.yaml"
   become_user: "{{ service }}"
 
 - name: Template peertube systemd unit
-  template: 
+  ansible.builtin.template: 
     src: "peertube.service.j2"
     dest: "/etc/systemd/system/{{ service }}.service"
 
 - name: Start peertube systemd unit
-  service:
+  ansible.builtin.service:
     name: "{{ service }}"
     enabled: true
     state: started
 
 - name: Check if SSL certificate is present and register result
-  stat:
+  ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ peertube_domains |first }}/fullchain.pem"
   register: ssl
 
 - name: Generate certificate only if required (first time)
   block:
   - name: Template vhost without SSL for successfull LE challengce
-    template: 
+    ansible.builtin.template: 
       src: "vhost.conf.j2"
       dest: "/etc/nginx/sites-available/{{ service }}.conf"
   - name: Enable temporary nginx vhost for peertube
-    file:
+    ansible.builtin.file:
       src: "/etc/nginx/sites-available/{{ service }}.conf"
       dest: "/etc/nginx/sites-enabled/{{ service }}.conf"
       state: link
   - name: Reload nginx conf
-    service:
+    ansible.builtin.service:
       name: nginx
       state: reloaded
   - name: Make sure /var/lib/letsencrypt exists and has correct permissions
-    file: 
+    ansible.builtin.file: 
       path: /var/lib/letsencrypt
       state: directory
       mode: '0755'
   - name: Generate certificate with certbot
-    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ peertube_certbot_admin_email }} -d {{ peertube_domains |first }}
+    ansible.builtin.shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ peertube_certbot_admin_email }} -d {{ peertube_domains |first }}
   when: ssl.stat.exists != true
 
 - name: (Re)check if SSL certificate is present and register result
-  stat:
+  ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ peertube_domains |first }}/fullchain.pem"
   register: ssl
 
 - name: (Re)template conf file for nginx vhost with SSL
-  template:
+  ansible.builtin.template:
     src: "vhost.conf.j2"
     dest: "/etc/nginx/sites-available/{{ service }}.conf"
 
 - name: Enable nginx vhost for peertube
-  file:
+  ansible.builtin.file:
     src: "/etc/nginx/sites-available/{{ service }}.conf"
     dest: "/etc/nginx/sites-enabled/{{ service }}.conf"
     state: link
 
 - name: Reload nginx conf
-  service:
+  ansible.builtin.service:
     name: nginx
     state: reloaded
 
 - name: Adjust permissions of files/folders for nginx
-  file:
+  ansible.builtin.file:
     path: "~/"
     state: directory
     mode: 'o=rX'
