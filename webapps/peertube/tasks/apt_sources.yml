@@ -1,0 +1,7 @@
+---
+
+- name: Add bullseye-backports repo into sources list (for redis) when Debian 11
+  apt_repository:
+    repo: deb http://mirror.evolix.org/debian bullseye-backports main
+    state: present
+  when: ansible_distribution_major_version is version('11')

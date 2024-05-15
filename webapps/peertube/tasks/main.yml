@@ -1,21 +1,32 @@
 ---
 # tasks file for peertube install
 
-- name: Add bullseye-backports repo into sources list (for redis)
-  apt_repository:
-    repo: deb http://mirror.evolix.org/debian bullseye-backports main
-    state: present
+- name: APT sources
+  ansible.builtin.include_tasks: apt_sources.yml
 
 - name: Install main system dependencies
   apt:
     name: "{{ peertube_system_dep }}"
     update_cache: yes
 
-- name: Upgrade redis-server to the latest version from bullseye-backports
+- name: Upgrade redis-server to the latest version from bullseye-backports on Debian 11
   apt:
     name: redis-server
     state: latest
     default_release: bullseye-backports
+  when: ansible_distribution_major_version is version('11')
+
+- name: Install corepack via npm on Debian 12
+  shell: npm install -g corepack
+  when: ansible_distribution_major_version is version('12')
+
+- name: Fix permissions for corepack
+  ansible.builtin.file:
+    path: /usr/local/lib/node_modules/
+    state: directory
+    mode: o+rx
+    recurse: yes
+  when: ansible_distribution_major_version is version('12')
 
 - name: Enable yarn (via corepack)
   shell: "corepack enable; yarn set version classic"
