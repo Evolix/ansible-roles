@@ -124,6 +124,7 @@ storage:
   avatars: '/var/www/peertube/storage/avatars/'
   web_videos: '/var/www/peertube/storage/web-videos/'
   streaming_playlists: '/var/www/peertube/storage/streaming-playlists/'
+  original_video_files: '/var/www/peertube/storage/original-video-files/'
   redundancy: '/var/www/peertube/storage/redundancy/'
   logs: '/var/www/peertube/storage/logs/'
   previews: '/var/www/peertube/storage/previews/'
@@ -193,9 +194,25 @@ object_storage:
     # Useful when you want to use a CDN/external proxy
     base_url: '' # Example: 'https://mirror.example.com'
 
-  # Same settings but for webtorrent videos
+    # PeerTube makes many small requests to the object storage provider to upload/delete/update live chunks
+    # which can be a problem depending on your object storage provider
+    # You can also choose to disable this feature to reduce live streams latency
+    # Live stream replays are not affected by this setting, so they are uploaded in object storage as regular VOD videos
+    store_live_streams: true
+
   web_videos:
-    bucket_name: 'videos'
+    bucket_name: 'web-videos'
+    prefix: ''
+    base_url: ''
+
+  user_exports:
+    bucket_name: 'user-exports'
+    prefix: ''
+    base_url: ''
+
+  # Same settings but for original video files
+  original_video_files:
+    bucket_name: 'original-video-files'
     prefix: ''
     base_url: ''
 
@@ -328,7 +345,7 @@ views:
     # PeerTube buffers local video views before updating and federating the video
     local_buffer_update_interval: '30 minutes'
 
-    ip_view_expiration: '1 hour'
+    view_expiration: '1 hour'
 
 # Used to get country location of views of local videos
 geo_ip:
