@@ -3,47 +3,47 @@
 
 - name: Install main system dependencies
   apt:
-    name: "{{ system_dep }}"
+    name: "{{ mattermost_system_dep }}"
     update_cache: yes
 
 - name: Add UNIX account
   user:
-    name: "{{ service }}"
+    name: "{{ mattermost_service }}"
     shell: /bin/bash
-    home: "{{ home_base }}/{{ service }}"
+    home: "{{ mattermost_home_base }}/{{ mattermost_service }}"
 
 - name: Add PostgreSQL user
   postgresql_user:
-    name: "{{ db_user }}"
-    password: "{{ db_password }}"
+    name: "{{ mattermost_db_user }}"
+    password: "{{ mattermost_db_password }}"
     no_password_changes: true
   become_user: postgres
 
 - name: Add PostgreSQL database
   postgresql_db:
-    name: "{{ db_name }}"
-    owner: "{{ db_user }}"
+    name: "{{ mattermost_db_name }}"
+    owner: "{{ mattermost_db_user }}"
   become_user: postgres
 
 - name: Unarchive mattermost archive
   unarchive:
-    src: "{{ download_url }}"
+    src: "{{ mattermost_download_url }}"
     dest: ~/
     remote_src: yes
-  become_user: "{{ service }}"
+  become_user: "{{ mattermost_service }}"
 
 - name: Create the mattermost data dir if needed
   file:
     path: ~/mattermost/data
     state: directory
     mode: '0750'
-  become_user: "{{ service }}"
+  become_user: "{{ mattermost_service }}"
 
 - name: Template mattermost conf file
   template: 
     src: "config.json.j2"
     dest: "~/mattermost/config/config.json"
-  become_user: "{{ service }}"
+  become_user: "{{ mattermost_service }}"
 
 - name: Template mattermost systemd unit
   template: 
@@ -52,7 +52,7 @@
 
 - name: Start mattermost systemd unit
   service:
-    name: "mattermost@{{ service }}"
+    name: "mattermost@{{ mattermost_service }}"
     state: restarted
 
 - name: Template nginx snippet for Let's Encrypt/Certbot
@@ -62,7 +62,7 @@
 
 - name: Check if SSL certificate is present and register result
   stat:
-    path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ mattermost_domains |first }}/fullchain.pem"
   register: ssl
 
 - name: Generate certificate only if required (first time)
@@ -70,11 +70,11 @@
   - name: Template vhost without SSL for successfull LE challengce
     template: 
       src: "vhost.conf.j2"
-      dest: "/etc/nginx/sites-available/{{ service }}.conf"
+      dest: "/etc/nginx/sites-available/{{ mattermost_service }}.conf"
   - name: Enable temporary nginx vhost for mattermost
     file:
-      src: "/etc/nginx/sites-available/{{ service }}.conf"
-      dest: "/etc/nginx/sites-enabled/{{ service }}.conf"
+      src: "/etc/nginx/sites-available/{{ mattermost_service }}.conf"
+      dest: "/etc/nginx/sites-enabled/{{ mattermost_service }}.conf"
       state: link
   - name: Reload nginx conf
     service:
@@ -86,7 +86,7 @@
       state: directory
       mode: '0755'
   - name: Generate certificate with certbot
-    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ certbot_admin_email }} -d {{ domains |first }}
+    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ mattermost_certbot_admin_email }} -d {{ mattermost_domains |first }}
   - name: Create the ssl dir if needed
     file:
       path: /etc/nginx/ssl
@@ -95,23 +95,23 @@
   - name: Template ssl bloc for nginx vhost
     template: 
       src: "ssl.conf.j2"
-      dest: "/etc/nginx/ssl/{{ domains |first }}.conf"
+      dest: "/etc/nginx/ssl/{{ mattermost_domains |first }}.conf"
   when: ssl.stat.exists != true
 
 - name: (Re)check if SSL certificate is present and register result
   stat:
-    path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ mattermost_domains |first }}/fullchain.pem"
   register: ssl
 
 - name: (Re)template conf file for nginx vhost with SSL
   template:
     src: "vhost.conf.j2"
-    dest: "/etc/nginx/sites-available/{{ service }}.conf"
+    dest: "/etc/nginx/sites-available/{{ mattermost_service }}.conf"
 
 - name: Enable nginx vhost for mattermost
   file:
-    src: "/etc/nginx/sites-available/{{ service }}.conf"
-    dest: "/etc/nginx/sites-enabled/{{ service }}.conf"
+    src: "/etc/nginx/sites-available/{{ mattermost_service }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ mattermost_service }}.conf"
     state: link
 
 - name: Reload nginx conf

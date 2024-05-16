@@ -7,8 +7,8 @@ Requires=postgresql.service
 [Service]
 Type=notify
 Restart=always
-WorkingDirectory={{ home_base }}/%i/mattermost
-ExecStart=/{{ home_base }}/%i/mattermost/bin/mattermost
+WorkingDirectory={{ mattermost_home_base }}/%i/mattermost
+ExecStart=/{{ mattermost_home_base }}/%i/mattermost/bin/mattermost
 TimeoutStartSec=3600
 LimitNOFILE=49152
 RestartSec=10

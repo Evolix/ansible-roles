@@ -1,9 +1,9 @@
 {
     "ServiceSettings": {
-        "SiteURL": "http://{{ domains | first }}",
+        "SiteURL": "http://{{ mattermost_domains | first }}",
         "WebsocketURL": "",
         "LicenseFileLocation": "",
-        "ListenAddress": "127.0.0.1:{{ mm_port }}",
+        "ListenAddress": "127.0.0.1:{{ mattermost_app_port }}",
         "ConnectionSecurity": "",
         "TLSCertFile": "",
         "TLSKeyFile": "",
@@ -136,7 +136,7 @@
     },
     "SqlSettings": {
         "DriverName": "postgres",
-        "DataSource": "postgres://{{ db_user }}:{{ db_password }}@{{ db_host }}:5432/{{ db_name }}?sslmode=disable&connect_timeout=10",
+        "DataSource": "postgres://{{ mattermost_db_user }}:{{ mattermost_db_password }}@{{ mattermost_db_host }}:5432/{{ mattermost_db_name }}?sslmode=disable&connect_timeout=10",
         "DataSourceReplicas": [],
         "DataSourceSearchReplicas": [],
         "MaxIdleConns": 20,

@@ -2,8 +2,8 @@
 # Certificates
 # you need a certificate to run in production. see https://letsencrypt.org/
 ##
-ssl_certificate     /etc/letsencrypt/live/{{ domains | first }}/fullchain.pem;
-ssl_certificate_key /etc/letsencrypt/live/{{ domains | first }}/privkey.pem;
+ssl_certificate     /etc/letsencrypt/live/{{ mattermost_domains | first }}/fullchain.pem;
+ssl_certificate_key /etc/letsencrypt/live/{{ mattermost_domains | first }}/privkey.pem;
 
 ##
 # Security hardening (as of Nov 15, 2020)

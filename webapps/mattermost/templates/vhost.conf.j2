@@ -1,12 +1,12 @@
-upstream backend_{{ service }} {
-   server 127.0.0.1:{{ mm_port }};
+upstream backend_{{ mattermost_service }} {
+   server 127.0.0.1:{{ mattermost_app_port }};
    keepalive 32;
 }
 
 server {
   listen 80;
   listen [::]:80;
-  server_name {{ domains | first }};
+  server_name {{ mattermost_domains | first }};
   
   # For certbot
   include /etc/nginx/snippets/letsencrypt.conf;
@@ -21,13 +21,13 @@ server {
    listen 443 ssl;
    listen [::]:443 ssl;
 
-   server_name {{ domains | first }};
+   server_name {{ mattermost_domains | first }};
    
-    access_log /var/log/nginx/{{ service }}.access.log;
-    error_log  /var/log/nginx/{{ service }}.error.log;
+    access_log /var/log/nginx/{{ mattermost_service }}.access.log;
+    error_log  /var/log/nginx/{{ mattermost_service }}.error.log;
 
     include /etc/nginx/snippets/letsencrypt.conf;
-    include /etc/nginx/ssl/{{ domains | first }}.conf;
+    include /etc/nginx/ssl/{{ mattermost_domains | first }}.conf;
 
    location ~ /api/v[0-9]+/(users/)?websocket$ {
        proxy_set_header Upgrade $http_upgrade;
@@ -46,7 +46,7 @@ server {
        proxy_connect_timeout 90;
        proxy_send_timeout 300;
        proxy_read_timeout 90s;
-       proxy_pass http://backend_{{ service }};
+       proxy_pass http://backend_{{ mattermost_service }};
    }
 
    location / {
@@ -67,7 +67,7 @@ server {
        #proxy_cache_use_stale timeout;
        #proxy_cache_lock on;
        proxy_http_version 1.1;
-       proxy_pass http://backend_{{ service }};
+       proxy_pass http://backend_{{ mattermost_service }};
    }
 }
 {% endif %}

@@ -1,13 +1,13 @@
 ---
 # defaults file for vars
-system_dep: "['git', 'nginx', 'postgresql', 'python3-psycopg2', 'certbot', 'acl']"
-version: '7.8.1'
-download_url: "https://releases.mattermost.com/{{ version }}/mattermost-team-{{ version }}-linux-amd64.tar.gz"
-domains: ['example.domain.org']
-certbot_admin_email: 'mgauthier@evolix.ca'
-home_base: '/home'
-mm_port: '8065'
-db_host: '127.0.0.1'
-db_name: "{{ service }}"
-db_user: "{{ service }}"
-db_password: 'UQ6_CHANGE_ME_Gzb'
+mattermost_system_dep: "['git', 'nginx', 'postgresql', 'python3-psycopg2', 'certbot', 'acl']"
+mattermost_version: '7.8.1'
+mattermost_download_url: "https://releases.mattermost.com/{{ mattermost_version }}/mattermost-team-{{ mattermost_version }}-linux-amd64.tar.gz"
+mattermost_domains: ['example.domain.org']
+mattermost_certbot_admin_email: 'mgauthier@evolix.ca'
+mattermost_home_base: '/home'
+mattermost_app_port: '8065'
+mattermost_db_host: '127.0.0.1'
+mattermost_db_name: "{{ mattermost_service }}"
+mattermost_db_user: "{{ mattermost_service }}"
+mattermost_db_password: 'UQ6_CHANGE_ME_Gzb'

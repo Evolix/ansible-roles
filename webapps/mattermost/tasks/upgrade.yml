@@ -3,29 +3,29 @@
 
 - name: Start mattermost systemd unit
   service:
-    name: "mattermost@{{ service }}"
+    name: "mattermost@{{ mattermost_service }}"
     state: stopped
 
 - name: set current date and time as a fact
   set_fact: backup_date="{{ ansible_date_time.iso8601_basic_short }}"
 
 - name: backup current mattermost files
-  command: "mv  ~/mattermost/ ~/mattermost_{{ backup_date }}"
-  become_user: "{{ service }}"
+  command: "mv  ~/mattermost/ ~/mattermost_{{ mattermost_backup_date }}"
+  become_user: "{{ mattermost_service }}"
 
 - name: Dump database to a file with compression
   postgresql_db:
-    name: "{{ db_name }}"
+    name: "{{ mattermost_db_name }}"
     state: dump
-    target: "~/{{ db_name }}.sql.gz"
+    target: "~/{{ mattermost_db_name }}.sql.gz"
   become_user: postgres
 
 - name: Unarchive new mattermost archive
   unarchive:
-    src: "{{ download_url }}"
+    src: "{{ mattermost_download_url }}"
     dest: ~/
     remote_src: yes
-  become_user: "{{ service }}"
+  become_user: "{{ mattermost_service }}"
 
 - name: restore dirs from backup
   copy: 
@@ -33,16 +33,16 @@
     dest: ~/mattermost
     remote_src: true
   loop:
-    - "~/mattermost_{{ backup_date }}/config"
-    - "~/mattermost_{{ backup_date }}/data"
-    - "~/mattermost_{{ backup_date }}/logs"
-    - "~/mattermost_{{ backup_date }}/plugins"
-    - "~/mattermost_{{ backup_date }}/client/plugins"
-  become_user: "{{ service }}"
+    - "~/mattermost_{{ mattermost_backup_date }}/config"
+    - "~/mattermost_{{ mattermost_backup_date }}/data"
+    - "~/mattermost_{{ mattermost_backup_date }}/logs"
+    - "~/mattermost_{{ mattermost_backup_date }}/plugins"
+    - "~/mattermost_{{ mattermost_backup_date }}/client/plugins"
+  become_user: "{{ mattermost_service }}"
 
 - name: Start mattermost systemd unit
   service:
-    name: "mattermost@{{ service }}"
+    name: "mattermost@{{ mattermost_service }}"
     state: restarted
 
 - name: Reload nginx conf
@@ -56,7 +56,7 @@
 
 - name: Remove database dump
   file:
-    path: "~/{{ db_name }}.sql.gz"
+    path: "~/{{ mattermost_db_name }}.sql.gz"
     state: absent
   become_user: postgres
   when: keep_db_dump is undefined
