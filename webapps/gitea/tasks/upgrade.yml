@@ -10,13 +10,13 @@
 
 - name: Create symbolic link
   file:
-    src: "/usr/local/bin/gitea-{{ git_version }}-linux-amd64"
+    src: "/usr/local/bin/gitea-{{ gitea_git_version }}-linux-amd64"
     dest: "/usr/local/bin/gitea"
     state: link
 
 - name: Start gitea systemd unit
   service:
-    name: "gitea@{{ service }}"
+    name: "gitea@{{ gitea_service }}"
     state: restarted
 
 - name: Reload nginx conf

@@ -1,21 +1,21 @@
 APP_NAME = Gitea
-RUN_USER = {{ service }}
+RUN_USER = {{ gitea_service }}
 RUN_MODE = prod
 
 [server]
 PROTOCOL               = unix
-DOMAIN                 = {{ domains | first }}
-HTTP_ADDR              = /home/{{ service }}/gitea.sock
+DOMAIN                 = {{ gitea_domains | first }}
+HTTP_ADDR              = /home/{{ gitea_service }}/gitea.sock
 UNIX_SOCKET_PERMISSION = 660
 OFFLINE_MODE           = true
-SSH_DOMAIN             = {{ domains | first }}
-ROOT_URL               = https://{{ domains | first }}/
+SSH_DOMAIN             = {{ gitea_domains | first }}
+ROOT_URL               = https://{{ gitea_domains | first }}/
 
 [repository]
-ROOT = /home/{{ service }}/repositories
+ROOT = /home/{{ gitea_service }}/repositories
 
 [log]
-ROOT_PATH = /home/{{ service }}/log/
+ROOT_PATH = /home/{{ gitea_service }}/log/
 MODE      = console
 LEVEL     = info
 
@@ -25,15 +25,15 @@ NAMES = Français,English
 
 [database]
 DB_TYPE  = mysql
-HOST     = {{ db_host }}
-NAME     = {{ db_name }}
-USER     = {{ db_user }}
-PASSWD   = {{ db_password }}
+HOST     = {{ gitea_db_host }}
+NAME     = {{ gitea_db_name }}
+USER     = {{ gitea_db_user }}
+PASSWD   = {{ gitea_db_password }}
 
 [session]
 PROVIDER         = redis
-PROVIDER_CONFIG  = network=unix,addr=/home/{{ service }}/redis/redis.sock,db=0,pool_size=100,idle_timeout=180
+PROVIDER_CONFIG  = network=unix,addr=/home/{{ gitea_service }}/redis/redis.sock,db=0,pool_size=100,idle_timeout=180
 
 [cache]
 ADAPTER = redis
-HOST    = network=unix,addr=/home/{{ service }}/redis/redis.sock,db=1,pool_size=100,idle_timeout=180
+HOST    = network=unix,addr=/home/{{ gitea_service }}/redis/redis.sock,db=1,pool_size=100,idle_timeout=180
