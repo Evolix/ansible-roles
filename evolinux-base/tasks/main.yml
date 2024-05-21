@@ -158,6 +158,11 @@
     name: 'evolix/autosysadmin-restart_nrpe'
   when: evolinux_autosysadmin_include | bool
 
+- name: Evobackup (client)
+  ansible.builtin.include_role:
+    name: 'evolix/evobackup-client'
+  when: evolinux_evobackup_client_include | bool
+
 - name: fail2ban
   ansible.builtin.include_role:
     name: evolix/fail2ban
