@@ -46,6 +46,7 @@
     dest: '/usr/share/munin/plugins/{{ item }}'
   loop:
     - dhcp_pool
+    - linux-psi
   tags:
     - munin
 
@@ -77,6 +78,7 @@
     - postfix_mailqueue
     - postfix_mailstats
     - postfix_mailvolume
+    - linux-psi
   notify: restart munin-node
   tags:
     - munin
