@@ -20,13 +20,7 @@ Dependencies
 
 This Ansible role depends on the following other roles:
 
-- nodejs
-- postgresql
-- redis
-- elasticsearch
 - rbenv
-- nginx
-- certbot
 
 Example Playbook
 ----------------
@@ -37,17 +31,17 @@ Example Playbook
     - all
   vars:
     # Overwrite the role variable here
-    domains: ['your-real-domain.org']
-    service: 'my-mastodon'
-    db_host: 'localhost'
-    db_user: "{{ service }}"
-    db_name: "{{ service }}"
-    db_password: 'zKEh-CHANGE-ME-qIKc'
-    app_secret_key_base: ""
-    app_otp_secret: ""
-    app_vapid_private_key: ""
-    app_vapid_public_key: ""
-    app_smtp_from_address: "mastodon@your-real-domain.org"
+    mastodon_domains: ['your-real-domain.org']
+    mastodon_service: 'my-mastodon'
+    mastodon_db_host: 'localhost'
+    mastodon_db_user: "{{ service }}"
+    mastodon_db_name: "{{ service }}"
+    mastodon_db_password: 'zKEh-CHANGE-ME-qIKc'
+    mastodon_app_secret_key_base: ""
+    mastodon_app_otp_secret: ""
+    mastodon_app_vapid_private_key: ""
+    mastodon_app_vapid_public_key: ""
+    mastodon_app_smtp_from_address: "mastodon@your-real-domain.org"
 
   pre_tasks:
     - name: "Install system roles"

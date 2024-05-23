@@ -3,18 +3,39 @@
 
 - name: Install main system dependencies
   apt:
-    name: "{{ system_dep }}"
+    name: "{{ mastodon_system_dep }}"
+    update_cache: yes
+
+- name: Install npm on Debian 12
+  apt:
+    name: npm
+  when: ansible_distribution_major_version is version('12', '>=')
+
+- name: Install corepack via npm on Debian 12
+  shell: npm install -g corepack
+  when: ansible_distribution_major_version is version('12', '>=')
+
+- name: Fix permissions for corepack
+  ansible.builtin.file:
+    path: /usr/local/lib/node_modules/
+    state: directory
+    mode: o+rx
+    recurse: yes
+  when: ansible_distribution_major_version is version('12', '>=')
+
+- name: Enable yarn (via corepack)
+  shell: "corepack enable; yarn set version classic"
 
 - name: Add PostgreSQL user
   postgresql_user:
-    name: "{{ db_user }}"
-    password: "{{ db_password }}"
+    name: "{{ mastodon_db_user }}"
+    password: "{{ mastodon_db_password }}"
     role_attr_flags: CREATEDB
   become_user: postgres
 
 - name: Add UNIX account
   user:
-    name: "{{ service }}"
+    name: "{{ mastodon_service }}"
     shell: /bin/bash
 #    umask: "0022" nécessite ansible-core 2.12
 
@@ -22,18 +43,18 @@
   include_role:
     name: rbenv
   vars:
-    - username: "{{ service }}"
-    - rbenv_ruby_version: "{{ ruby_version }}"
+    - username: "{{ mastodon_service }}"
+    - rbenv_ruby_version: "{{ mastodon_ruby_version }}"
 
 - name: Clone Mastodon repo (git)
   git:
-    repo: "{{ git_url }}"
+    repo: "{{ mastodon_git_url }}"
     dest: "~/mastodon/"
-    version: "{{ git_version | default(omit) }}"
+    version: "{{ mastodon_git_version | default(omit) }}"
     #force: yes
     update: yes
     umask: '0022'
-  become_user: "{{ service }}"
+  become_user: "{{ mastodon_service }}"
 
 - block:
   - name: Install bundler
@@ -51,21 +72,21 @@
     args:
       chdir: "~/mastodon"
       executable: /bin/bash # fails with /bin/sh
-  become_user: "{{ service }}"
+  become_user: "{{ mastodon_service }}"
 
 - name: Template .env.production configuration file
   template:
     src: "env.j2"
-    dest: "~{{ service }}/mastodon/.env.production"
-    owner: "{{ service }}"
-    group: "{{ service }}"
+    dest: "~{{ mastodon_service }}/mastodon/.env.production"
+    owner: "{{ mastodon_service }}"
+    group: "{{ mastodon_service }}"
     mode: "0640"
 
 - name: Check if secrets need to be generated or not
   shell: "grep -P SECRET_KEY_BASE=[[:alnum:]]{128} .env.production"
   args:
     chdir: "~/mastodon"
-  become_user: "{{ service }}"
+  become_user: "{{ mastodon_service }}"
   register: secrets
   failed_when: "secrets.rc == 2"
 
@@ -103,18 +124,18 @@
     lineinfile:
       path: "~/mastodon/.env.production"
       regexp: '^VAPID_PRIVATE_KEY='
-      line: "VAPID_PRIVATE_KEY={{ app_vapid_private_key.stdout }}" 
+      line: "VAPID_PRIVATE_KEY={{ mastodon_app_vapid_private_key.stdout }}" 
   - name: Write app_vapid_public_key to production .env file
     lineinfile:
       path: "~/mastodon/.env.production"
       regexp: '^VAPID_PUBLIC_KEY='
-      line: "VAPID_PUBLIC_KEY={{ app_vapid_public_key.stdout }}"
-  become_user: "{{ service }}"
+      line: "VAPID_PUBLIC_KEY={{ mastodon_app_vapid_public_key.stdout }}"
+  become_user: "{{ mastodon_service }}"
   when: "secrets.rc == 1"
 
 - name: Check if mastodon database is already present or not
   shell: |
-   psql -lqt | cut -d \| -f 1 | grep -qw {{ service }}_production
+   psql -lqt | cut -d \| -f 1 | grep -qw {{ mastodon_service }}_production
   become_user: postgres
   register: db_present
   failed_when: "db_present.rc == 2"
@@ -124,7 +145,7 @@
   args:
     chdir: "~/mastodon"
     executable: /bin/bash # fails with /bin/sh
-  become_user: "{{ service }}"
+  become_user: "{{ mastodon_service }}"
   when: "db_present.rc == 1"
 
 - name: Precompile assets
@@ -132,7 +153,7 @@
   args:
     chdir: "~/mastodon"
     executable: /bin/bash # fails with /bin/sh
-  become_user: "{{ service }}"
+  become_user: "{{ mastodon_service }}"
 
 - name: Adjust permissions of files in public folder
   file:
@@ -140,27 +161,27 @@
     state: directory
     mode: 'o=rX'
     recurse: true
-  become_user: "{{ service }}"
+  become_user: "{{ mastodon_service }}"
 
 - name: Add systemd target
   template:
     src: "mastodon.target.j2"
-    dest: "/etc/systemd/system/{{ service }}.target"
+    dest: "/etc/systemd/system/{{ mastodon_service }}.target"
 
 - name: Add systemd web unit
   template:
     src: "mastodon-web.service.j2"
-    dest: "/etc/systemd/system/{{ service }}-web.service"
+    dest: "/etc/systemd/system/{{ mastodon_service }}-web.service"
 
 - name: Add systemd sidekiq unit
   template:
     src: "mastodon-sidekiq.service.j2"
-    dest: "/etc/systemd/system/{{ service }}-sidekiq.service"
+    dest: "/etc/systemd/system/{{ mastodon_service }}-sidekiq.service"
 
 - name: Add systemd streaming unit
   template:
     src: "mastodon-streaming.service.j2"
-    dest: "/etc/systemd/system/{{ service }}-streaming.service"
+    dest: "/etc/systemd/system/{{ mastodon_service }}-streaming.service"
 
 - name: Enable systemd units
   systemd:
@@ -168,19 +189,19 @@
     enabled: yes
     daemon_reload: yes
   loop:
-    - "{{ service }}.target"
-    - "{{ service }}-web.service"
-    - "{{ service }}-sidekiq.service"
-    - "{{ service }}-streaming.service"
+    - "{{ mastodon_service }}.target"
+    - "{{ mastodon_service }}-web.service"
+    - "{{ mastodon_service }}-sidekiq.service"
+    - "{{ mastodon_service }}-streaming.service"
 
 - name: Start services
   service:
-    name: "{{ service }}.target"
+    name: "{{ mastodon_service }}.target"
     state: started
 
 - name: Check if SSL certificate is present and register result
   stat:
-    path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ mastodon_domains |first }}/fullchain.pem"
   register: ssl
 
 - name: Generate certificate only if required (first time)
@@ -188,34 +209,34 @@
   - name: Template vhost without SSL for successfull LE challengce
     template: 
       src: "vhost.j2"
-      dest: "/etc/nginx/sites-available/{{ service }}"
+      dest: "/etc/nginx/sites-available/{{ mastodon_service }}"
   - name: Enable temporary nginx vhost for LE
     file:
-      src: "/etc/nginx/sites-available/{{ service }}"
-      dest: "/etc/nginx/sites-enabled/{{ service }}"
+      src: "/etc/nginx/sites-available/{{ mastodon_service }}"
+      dest: "/etc/nginx/sites-enabled/{{ mastodon_service }}"
       state: link
   - name: Reload nginx conf
     service:
       name: nginx
       state: reloaded
   - name: Generate certificate with certbot
-    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt -d {{ domains |first }}
+    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt -d {{ mastodon_domains |first }}
   when: ssl.stat.exists == false
 
 - name: (Re)check if SSL certificate is present and register result
   stat:
-    path: "/etc/letsencrypt/live/{{ domains |first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ mastodon_domains |first }}/fullchain.pem"
   register: ssl
 
 - name: (Re)template conf file for nginx vhost with SSL
   template:
     src: "vhost.j2"
-    dest: "/etc/nginx/sites-available/{{ service }}"
+    dest: "/etc/nginx/sites-available/{{ mastodon_service }}"
 
 - name: Enable nginx vhost for mastodon
   file:
-    src: "/etc/nginx/sites-available/{{ service }}"
-    dest: "/etc/nginx/sites-enabled/{{ service }}"
+    src: "/etc/nginx/sites-available/{{ mastodon_service }}"
+    dest: "/etc/nginx/sites-enabled/{{ mastodon_service }}"
     state: link
 
 - name: Reload nginx conf
