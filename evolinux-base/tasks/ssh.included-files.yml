@@ -16,6 +16,14 @@
     dest: /etc/ssh/sshd_config.d/z-evolinux-defaults.conf
     mode: "0644"
 
+- name: create custom SSH server configuration file
+  ansible.builtin.file:
+    path: /etc/ssh/sshd_config.d/zzz-evolinux-custom.conf
+    state: touch
+    mode: "0644"
+    modification_time: preserve
+    access_time: preserve
+
 # Should we allow the current user?
 - name: Allow the current user
   block:
