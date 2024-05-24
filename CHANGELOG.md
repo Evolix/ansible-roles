@@ -13,8 +13,6 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
-* evolinux-base: Create custom SSH configuration file
-
 ### Changed
 
 ### Fixed
