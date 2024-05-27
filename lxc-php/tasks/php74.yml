@@ -1,17 +1,17 @@
 ---
 
-- name: "{{ lxc_php_version }} - Install PHP packages"
+- name: "{{ lxc_php_container_name }} - Install PHP packages"
   community.general.lxc_container:
-    name: "{{ lxc_php_version }}"
+    name: "{{ lxc_php_container_name }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer"
 
-- name: "{{ lxc_php_version }} - fix bullseye repository"
+- name: "{{ lxc_php_container_name }} - fix bullseye repository"
   ansible.builtin.replace:
     dest: "{{ lxc_rootfs }}/etc/apt/sources.list"
     regexp: 'bullseye/updates'
     replace: 'bullseye-security'
 
-- name: "{{ lxc_php_version }} - Copy evolinux PHP configuration"
+- name: "{{ lxc_php_container_name }} - Copy evolinux PHP configuration"
   ansible.builtin.template:
     src: z-evolinux-defaults.ini.j2
     dest: "{{ line_item }}"

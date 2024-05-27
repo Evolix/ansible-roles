@@ -4,24 +4,24 @@
   ansible.builtin.set_fact:
     lxc_apt_keyring_dir: /etc/apt/trusted.gpg.d
 
-- name: "{{ lxc_php_version }} - Install dependency packages"
+- name: "{{ lxc_php_container_name }} - Install dependency packages"
   community.general.lxc_container:
-    name: "{{ lxc_php_version }}"
+    name: "{{ lxc_php_container_name }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt install -y wget gnupg"
 
-- name: "{{ lxc_php_version }} - delete sources.list bookworm repository"
+- name: "{{ lxc_php_container_name }} - delete sources.list bookworm repository"
   ansible.builtin.file:
     path: "{{ lxc_rootfs }}/etc/apt/sources.list"
     state: absent
 
-- name: "{{ lxc_php_version }} - system bookworm repository"
+- name: "{{ lxc_php_container_name }} - system bookworm repository"
   ansible.builtin.template:
     src: bookworm_basics.sources.j2
     dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/system.sources"
     force: true
     mode: "0644"
 
-- name: "{{ lxc_php_version }} - security bookworm repository"
+- name: "{{ lxc_php_container_name }} - security bookworm repository"
   ansible.builtin.template:
     src: bookworm_security.sources.j2
     dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/security.sources"
@@ -44,17 +44,17 @@
     owner: root
     group: root
 
-- name: "{{ lxc_php_version }} - Update APT cache"
+- name: "{{ lxc_php_container_name }} - Update APT cache"
   community.general.lxc_container:
-    name: "{{ lxc_php_version }}"
+    name: "{{ lxc_php_container_name }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt update"
 
-- name: "{{ lxc_php_version }} - Install PHP packages"
+- name: "{{ lxc_php_container_name }} - Install PHP packages"
   community.general.lxc_container:
-    name: "{{ lxc_php_version }}"
+    name: "{{ lxc_php_container_name }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer"
 
-- name: "{{ lxc_php_version }} - Copy evolinux PHP configuration"
+- name: "{{ lxc_php_container_name }} - Copy evolinux PHP configuration"
   ansible.builtin.template:
     src: z-evolinux-defaults.ini.j2
     dest: "{{ line_item }}"
