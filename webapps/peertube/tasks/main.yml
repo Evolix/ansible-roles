@@ -16,11 +16,16 @@
     default_release: bullseye-backports
   when: ansible_distribution_major_version is version('11')
 
+- name: Install npm on Debian 12
+  apt:
+    name: npm
+  when: ansible_distribution_major_version is version('12', '>=')
+
 - name: Install corepack via npm on Debian 12
   ansible.builtin.shell: npm install -g corepack
   when: ansible_distribution_major_version is version('12', '>=')
 
-- name: Fix permissions for corepack
+- name: Fix permissions for corepack on Debian 12
   ansible.builtin.file:
     path: /usr/local/lib/node_modules/
     state: directory
