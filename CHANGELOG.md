@@ -19,6 +19,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* log2mail: task log2mail.yml of evolinux-base converted to a role
+
 ### Fixed
 
 ### Removed

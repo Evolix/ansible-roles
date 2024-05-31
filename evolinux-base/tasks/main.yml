@@ -116,7 +116,8 @@
   when: evolinux_provider_orange_fce_include | bool
 
 - name: Override Log2mail service
-  ansible.builtin.import_tasks: log2mail.yml
+  ansible.builtin.include_role:
+    name: evolix/log2mail
   when: evolinux_log2mail_include | bool
 
 - ansible.builtin.import_tasks: motd.yml
