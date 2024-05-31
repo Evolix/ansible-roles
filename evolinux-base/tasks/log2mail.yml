@@ -4,11 +4,15 @@
     src: log2mail.service
     dest: /etc/systemd/system/log2mail.service
     mode: "0644"
+  tags:
+    - log2mail
 
 - name: Remove log2mail sysvinit service
   ansible.builtin.file:
     path: /etc/init.d/log2mail
     state: absent
+  tags:
+    - log2mail
 
 - name: Enable and start log2mail service
   ansible.builtin.systemd:
@@ -16,6 +20,8 @@
     daemon-reload: yes
     state: started
     enabled: yes
+  tags:
+    - log2mail
 
 - name: log2mail evolinux config is absent from default config
   ansible.builtin.blockinfile:
