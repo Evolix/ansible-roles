@@ -16,6 +16,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: install evobackup-client (default: true)
 * munin: add linux_psi contrib plugin
 * evolinux-base: Create custom SSH configuration file
+* lxc: new lxc_template_mirror option (useful to get old Debian from archive.debian.org)
 
 ### Changed
 
