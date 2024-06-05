@@ -47,6 +47,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * apt: use archive.debian.org with Buster
+* fail2ban: remount-usr added because it is needed for last task
 
 ## [24.04] 2024-04-30
 

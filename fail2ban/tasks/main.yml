@@ -112,6 +112,9 @@
   tags:
     - fail2ban
 
+- include_role:
+    name: evolix/remount-usr
+
 - name: Script unban_ip is installed
   ansible.builtin.copy:
     src: unban_ip.sh
