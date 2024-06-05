@@ -37,6 +37,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* certbot: allow haproxy deploy hook to work with evoacme too (using env variables)
 * evobackup-client: upstream release 24.05.1
 * evolinux-base: improve adding the current user to SSH AllowGroups of AllowUsers
 * evolinux-users: improve SSH configuration

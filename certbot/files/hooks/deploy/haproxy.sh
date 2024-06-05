@@ -1,4 +1,6 @@
 #!/bin/sh
+# /!\ MODIFIED to work with evoacme OR certbot
+private_keys_dirs="/etc/ssl/private" # Only used for evoacme
 
 error() {
     >&2 echo "${PROGNAME}: $1"
@@ -13,7 +15,7 @@ daemon_found_and_running() {
     test -n "$(pidof haproxy)" && test -n "${haproxy_bin}"
 }
 found_renewed_lineage() {
-    test -f "${RENEWED_LINEAGE}/fullchain.pem" && test -f "${RENEWED_LINEAGE}/privkey.pem"
+    test -f "${RENEWED_LINEAGE}/fullchain.pem" && test -f "${private_key}"
 }
 config_check() {
     ${haproxy_bin} -c -f "${haproxy_config_file}" > /dev/null 2>&1
@@ -24,7 +26,7 @@ concat_files() {
     chown root: "${haproxy_cert_dir}"
 
     debug "Concatenating certificate files to ${haproxy_cert_file}"
-    cat "${RENEWED_LINEAGE}/fullchain.pem" "${RENEWED_LINEAGE}/privkey.pem" > "${haproxy_cert_file}"
+    cat "${RENEWED_LINEAGE}/fullchain.pem" "${private_key}" > "${haproxy_cert_file}"
     chmod 600 "${haproxy_cert_file}"
     chown root: "${haproxy_cert_file}"
 }
@@ -58,10 +60,19 @@ main() {
     if daemon_found_and_running; then
         readonly haproxy_config_file="/etc/haproxy/haproxy.cfg"
         readonly haproxy_cert_dir=$(detect_haproxy_cert_dir)
+        if  [ -z "${EVOACME_VHOST_NAME}" ]; then
+            # CERTBOT
+            private_key=${RENEWED_LINEAGE}/privkey.pem
+            cert_name=$(basename "${RENEWED_LINEAGE}")
+        else
+            # EVOACME
+            private_key=${private_keys_dirs}/$(basename $(dirname ${RENEWED_LINEAGE})).key
+	    cert_name=$(basename $(dirname "${RENEWED_LINEAGE}"))
+        fi
 
         if found_renewed_lineage; then
-            haproxy_cert_file="${haproxy_cert_dir}/$(basename "${RENEWED_LINEAGE}").pem"
-            failed_cert_file="/root/$(basename "${RENEWED_LINEAGE}").failed.pem"
+            haproxy_cert_file="${haproxy_cert_dir}/${cert_name}.pem"
+            failed_cert_file="/root/${cert_name}.failed.pem"
 
             concat_files
 
@@ -77,7 +88,8 @@ main() {
                 error "HAProxy config is broken, you must fix it !"
             fi
         else
-            error "Couldn't find ${RENEWED_LINEAGE}/fullchain.pem or ${RENEWED_LINEAGE}/privkey.pem"
+
+            error "Couldn't find ${RENEWED_LINEAGE}/fullchain.pem or "${private_key}""
         fi
     else
         debug "HAProxy is not running or missing. Skip."
@@ -91,3 +103,4 @@ readonly QUIET=${QUIET:-"0"}
 readonly haproxy_bin=$(command -v haproxy)
 
 main
+
