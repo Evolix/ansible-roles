@@ -201,7 +201,7 @@
   ansible.builtin.lineinfile:
     dest: "/etc/nagios/nrpe.d/evolix.cfg"
     regexp: '^command\[check_openvpn\]='
-    line: "command[check_openvpn]=/usr/local/lib/nagios/plugins/check_openvpn -H 127.0.0.1 -p 1195 -P {{ management_pwd }}"
+    line: "command[check_openvpn]=/usr/local/lib/monitoringctl/alerts_wrapper --name openvpn /usr/local/lib/nagios/plugins/check_openvpn -H 127.0.0.1 -p 1195 -P {{ management_pwd }}"
   notify: restart nagios-nrpe-server
   when: nrpe_evolix_config.stat.exists
 
@@ -233,7 +233,7 @@
   ansible.builtin.lineinfile:
     dest: "/etc/nagios/nrpe.d/evolix.cfg"
     regexp: '^command\[check_openvpn_certificates\]='
-    line: "command[check_openvpn_certificates]=sudo /usr/local/lib/nagios/plugins/check_openvpn_certificates.sh"
+    line: "command[check_openvpn_certificates]=/usr/local/lib/monitoringctl/alerts_wrapper --name openvpn_certificates sudo /usr/local/lib/nagios/plugins/check_openvpn_certificates.sh"
   notify: restart nagios-nrpe-server
   when: nrpe_evolix_config.stat.exists
 

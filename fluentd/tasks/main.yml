@@ -75,7 +75,7 @@
 - name: NRPE check is configured
   ansible.builtin.lineinfile:
     path: /etc/nagios/nrpe.d/evolix.cfg
-    line: 'command[check_fluentd]=/usr/lib/nagios/plugins/check_tcp -p {{ fluentd_port }}'
+    line: 'command[check_fluentd]=/usr/local/lib/monitoringctl/alerts_wrapper --name fluentd /usr/lib/nagios/plugins/check_tcp -p {{ fluentd_port }}'
   notify: "restart nagios-nrpe-server"
   tags:
     - fluentd

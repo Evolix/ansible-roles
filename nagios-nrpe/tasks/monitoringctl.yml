@@ -1,0 +1,162 @@
+---
+
+- name: "Remount /usr if needed"
+  ansible.builtin.include_role:
+    name: remount-usr
+
+### alerts_wrapper and alerts_switch section
+
+- name: "dir /usr/local/lib/monitoringctl/ exists"
+  ansible.builtin.file:
+    path: /usr/local/lib/monitoringctl/
+    state: directory
+    mode: '0755'
+
+- name: "check if old alerts_switch script is present"
+  ansible.builtin.stat:
+    path: /usr/share/scripts/alerts_switch
+  register: old_alerts_switch
+
+- name: "alerts_switch is at the right place"
+  ansible.builtin.command:
+    cmd: "mv /usr/share/scripts/alerts_switch /usr/local/bin/alerts_switch"
+  args:
+    creates: /usr/local/bin/alerts_switch
+  when: old_alerts_switch.stat.exists
+
+- name: "copy alerts_switch"
+  ansible.builtin.copy:
+    src: alerts_switch
+    dest: /usr/local/bin/alerts_switch
+    owner: root
+    group: root
+    mode: "0750"
+    force: true
+
+- name: "alerts_switch symlink for backward compatibility"
+  ansible.builtin.file:
+    src: /usr/local/bin/alerts_switch
+    path: /usr/share/scripts/alerts_switch
+    state: link
+  when: old_alerts_switch.stat.exists
+
+- name: "nagios user can run alerts_switch with sudo (used by alerts_wrapper)"
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers.d/monitoringctl
+    regexp: "nagios.*alerts_switch"
+    line: "nagios           ALL = NOPASSWD:/usr/local/bin/alerts_switch *"
+    create: true
+    owner: root
+    group: root
+    mode: "640"
+    validate: "visudo -c -f %s"
+
+- name: "check if old alerts_wrapper script is present"
+  ansible.builtin.stat:
+    path: "{{ nagios_plugins_directory }}/alerts_wrapper"
+  register: old_alerts_wrapper
+
+- name: "alerts_wrapper is at the right place"
+  ansible.builtin.command:
+    cmd: "mv {{ nagios_plugins_directory }}/alerts_wrapper /usr/local/lib/monitoringctl/alerts_wrapper"
+    creates: /usr/local/lib/monitoringctl/alerts_wrapper
+  when: old_alerts_wrapper.stat.exists
+
+- name: "copy alerts_wrapper"
+  ansible.builtin.copy:
+    src: alerts_wrapper
+    dest: "/usr/local/lib/monitoringctl/alerts_wrapper"
+    owner: root
+    group: staff
+    mode: "0755"
+    force: true
+
+- name: "alerts_wrapper symlink for backward compatibility"
+  ansible.builtin.file:
+    src: /usr/local/lib/monitoringctl/alerts_wrapper
+    path: "{{ nagios_plugins_directory }}/alerts_wrapper"
+    state: link
+  when:
+    - old_alerts_wrapper.stat.exists
+    - not ansible_check_mode
+
+- name: "copy monitoringctl_common lib"
+  ansible.builtin.copy:
+    src: monitoringctl_common
+    dest: /usr/local/lib/monitoringctl/common
+    owner: root
+    group: root
+    mode: "0644"
+    force: true
+
+
+### monitoringctl section
+
+- name: "package bash-completion is installed"
+  ansible.builtin.apt:
+    name: bash-completion
+
+- name: "package nagios-nrpe-plugin is installed"
+  ansible.builtin.apt:
+    name: nagios-nrpe-plugin
+
+- name: "directory /etc/bash_completion.d exists"
+  ansible.builtin.file:
+    path: '/etc/bash_completion.d'
+    state: directory
+    mode: '0755'
+
+- name: "dir /var/lib/monitoringctl/ exists"
+  ansible.builtin.file:
+    path: /var/lib/monitoringctl/
+    state: directory
+    mode: '0755'
+
+- name: "monitoringctl is not in /usr/local/sbin/"
+  ansible.builtin.file:
+    path: /usr/local/sbin/monitoringctl
+    state: absent
+
+- name: "copy monitoringctl"
+  ansible.builtin.copy:
+    src: monitoringctl
+    dest: /usr/local/bin/monitoringctl
+    owner: root
+    group: root
+    mode: "0755"
+    force: true
+
+- name: "copy monitoringctl_common lib"
+  ansible.builtin.copy:
+    src: monitoringctl_common
+    dest: /usr/local/lib/monitoringctl/common
+    owner: root
+    group: root
+    mode: "0644"
+    force: true
+
+- name: "copy monitoringctl_completion script"
+  ansible.builtin.copy:
+    src: monitoringctl_completion
+    dest: /etc/bash_completion.d/monitoringctl
+    owner: root
+    group: root
+    mode: "0644"
+    force: true
+
+- name: "copy check-local (it's just a wrapper calling 'monitoringctl check' for backward compatibility)"
+  ansible.builtin.copy:
+    src: check-local
+    dest: /usr/local/bin/check-local
+    owner: root
+    group: root
+    mode: "0755"
+    force: true
+
+- name: "copy completion for check-local"
+  ansible.builtin.copy:
+    src: check-local_completion
+    dest: /etc/bash_completion.d/check-local
+    mode: "0755"
+
+

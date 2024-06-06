@@ -34,7 +34,7 @@
     ansible.builtin.lineinfile:
       name: /etc/nagios/nrpe.d/evolix.cfg
       regexp: '^command\[check_memcached\]='
-      line: 'command[check_memcached]=/usr/local/lib/nagios/plugins/check_memcached.pl -H 127.0.0.1 -p {{ memcached_port }}'
+      line: 'command[check_memcached]=/usr/local/lib/monitoringctl/alerts_wrapper --name memcached /usr/local/lib/nagios/plugins/check_memcached.pl -H 127.0.0.1 -p {{ memcached_port }}'
     notify: restart nagios-nrpe-server
     when: memcached_instance_name | length == 0
 
@@ -42,7 +42,7 @@
     ansible.builtin.lineinfile:
       name: /etc/nagios/nrpe.d/evolix.cfg
       regexp: '^command\[check_memcached\]='
-      line: 'command[check_memcached]=/usr/local/lib/nagios/plugins/check_memcached_instances'
+      line: 'command[check_memcached]=/usr/local/lib/monitoringctl/alerts_wrapper --name memcached /usr/local/lib/nagios/plugins/check_memcached_instances'
     notify: restart nagios-nrpe-server
     when: memcached_instance_name | length > 0
 

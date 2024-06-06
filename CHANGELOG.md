@@ -20,6 +20,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc: new lxc_template_mirror option (useful to get old Debian from archive.debian.org)
 * nagios-nrpe: add new check_ftp_users
 * proftpd: add new munin graph (users count)
+* nagios-nrpe: new monitoringctl command
 
 ### Changed
 

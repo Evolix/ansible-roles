@@ -1,0 +1,88 @@
+#!/usr/bin/bash
+#
+
+function _get_wrappers_names() {
+    grep "alerts_wrapper" --no-filename --no-messages -R /etc/nagios/ | grep --invert-match --extended-regexp "^\s*#" | awk '{ for (i=1 ; i<=NF; i++) { if ($i ~ /^(-n|--name)$/) { print $(i+1); break } } }' | tr ',' '\n' | sort | uniq
+}
+
+function _get_checks_names() {
+    grep --extended-regexp --no-filename --no-messages -R "command\[check_.*\]="  /etc/nagios/ | grep --invert-match --extended-regexp "^\s*#" | awk -F"[\\\[\\\]=]" '{sub("check_", "", $2); print $2}' | sort | uniq
+}
+
+function _monitoringctl_completion() {
+    local cur=${COMP_WORDS[COMP_CWORD]};
+    local prev=${COMP_WORDS[COMP_CWORD-1]};
+
+    local action=""
+    for w in "${COMP_WORDS[@]}"; do
+        case "$w" in
+            status|check|enable|disable|show|list)
+                action="${w}"
+                ;;
+        esac
+    done
+
+    local words="--help"
+    case "${action}" in
+        check|show)
+            checks="$(_get_checks_names)"
+            check=""
+            for w in "${COMP_WORDS[@]}"; do
+                for c in ${checks}; do
+                    if [ "${c}" == "${w}" ]; then
+                        check="${w}"
+                        break
+                    fi
+                done
+            done
+            if [ -z "${check}" ]; then
+                words="${checks} ${words}"
+            fi
+            if [ "${action}" == "check" ]; then
+                words="all --bypass-nrpe ${words}"
+            fi
+            ;;
+        status)
+            if [ "${prev}" == "status" ]; then
+                words="all $(_get_checks_names)"
+            fi
+            ;;
+        enable)
+            if [ "${prev}" == "enable" ]; then
+                words="all $(_get_wrappers_names)"
+            else
+                words="--message ${words}"
+            fi
+            ;;
+        disable)
+            if [ "${prev}" == "disable" ]; then
+                words="all $(_get_wrappers_names)"
+            elif [ "${prev}" == "-d" ] || [ "${prev}" == "--during" ]; then
+                words="1d 1d12h 1h 1h30m 1m 1m30s 30s"
+            else
+                words="--during --message ${words}"
+            fi
+            ;;
+        *)
+            words="status check enable disable show list ${words}"
+            ;;
+    esac
+
+    # Avoid double
+    opts=();
+    for i in ${words}; do
+        for j in "${COMP_WORDS[@]}"; do
+            if [[ "$i" == "$j" ]]; then
+                continue 2
+            fi
+        done
+        opts+=("$i")
+    done
+
+    COMPREPLY=($(compgen -W "${opts[*]}" -- "${cur}"))
+    return 0
+
+}
+
+complete -F _monitoringctl_completion monitoringctl
+
