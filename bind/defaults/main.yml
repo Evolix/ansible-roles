@@ -1,12 +1,26 @@
 ---
-bind_recursive_server: False
-bind_authoritative_server: True
-bind_chroot_set: True
-# Until chroot-bind.sh is migrated to ansible, we hardcode the chroot paths.
-#bind_chroot_path: /var/chroot-bind
+bind_recursive_server: false
+bind_authoritative_server: true
+bind_chroot_set: true
+
 bind_systemd_service_path: /etc/systemd/system/bind9.service
+
 bind_statistics_file: /var/run/named.stats
 bind_log_file: /var/log/bind.log
 bind_query_file: /var/log/bind_queries.log
-bind_query_file_enabled: False
+bind_query_file_enabled: false
 bind_cache_dir: /var/cache/bind
+
+# String (bind syntax) of IPv4/ to listen on (or any by default)
+# eg. "192.0.2.1; 192.0.2.3"   or all interfaces : "any ;"
+bind_listen_on_ipv4: "any;"
+
+# String (bind syntax) of IPv6 to listen on (or any by default)
+# eg. "2001:db8::1; 2001:db8::42"   or all interfaces : "any ;" or not at all "none;"
+bind_listen_on_ipv6: "any;"
+
+# For server with multiples IP Adresses, enforce the usage of a specific IP for NOTIFY commands
+bind_notify_source: ''
+
+# For server with multiples IP Adresses, enforce the usage of a specific IP for TRANSFER commands
+bind_transfer_source: ''

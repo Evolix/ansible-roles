@@ -13,6 +13,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* bind: New variables to change IPs bind will listen on & send notify/transfer commands
 * evolinux-base: install evobackup-client (default: true)
 * munin: add linux_psi contrib plugin
 * evolinux-base: Create custom SSH configuration file
