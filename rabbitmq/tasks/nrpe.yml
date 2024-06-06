@@ -45,7 +45,7 @@
 
 - name: sudo without password for nagios
   ansible.builtin.lineinfile:
-    dest: /etc/sudoers.d/evolinux
+    dest: /etc/sudoers.d/nagios
     regexp: 'check_rabbitmq'
     line: 'nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_rabbitmq'
     insertafter: '^nagios'

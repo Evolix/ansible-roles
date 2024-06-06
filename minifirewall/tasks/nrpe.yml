@@ -50,16 +50,21 @@
   notify: restart nagios-nrpe-server
   when: nrpe_evolix_cfg.stat.exists
 
-- name: Is evolinux sudoers installed?
+- name: Is evolinux sudoers installed? (old way)
   ansible.builtin.stat:
     path: /etc/sudoers.d/evolinux
   register: sudoers_evolinux
 
+- name: Is nagios sudoers installed?
+  ansible.builtin.stat:
+    path: /etc/sudoers.d/nagios
+  register: sudoers_nagios
+
 - name: sudo without password for nagios
   ansible.builtin.lineinfile:
-    dest: /etc/sudoers.d/evolinux
+    dest: /etc/sudoers.d/nagios
     regexp: 'check_minifirewall'
     line: 'nagios          ALL = NOPASSWD: {{ nagios_plugins_directory }}/check_minifirewall'
     insertafter: '^nagios'
     validate: "visudo -cf %s"
-  when: sudoers_evolinux.stat.exists
+  when: sudoers_evolinux.stat.exists or sudoers_nagios.stat.exists

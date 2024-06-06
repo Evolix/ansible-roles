@@ -23,6 +23,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * log2mail: task log2mail.yml of evolinux-base converted to a role
 * lxc-solr: update solr9 version + fix URL in README
+* evolinux-users, nagios-nrpe: sudoers conf for nagios splitted and moved from evolinux-users to nagios-nrpe
 
 ### Fixed
 

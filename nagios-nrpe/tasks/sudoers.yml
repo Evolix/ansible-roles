@@ -1,0 +1,28 @@
+---
+- name: "/etc/sudoers.d presence and permissions"
+  ansible.builtin.file:
+    path: /etc/sudoers.d
+    owner: root
+    group: root
+    mode: "0750"
+    state: directory
+
+- name: "Copy nagios sudoers conf (Debian 9 Stretch and later)"
+  ansible.builtin.copy:
+    src: sudoers
+    dest: /etc/sudoers.d/nagios
+    mode: "0440"
+    validate: '/usr/sbin/visudo -cf %s'
+  register: copy_sudoers_evolinux
+  when:
+    - ansible_distribution_major_version is defined
+    - ansible_distribution_major_version is version('9', '>=')
+
+- name: "Copy nagios sudoers conf (Debian 8 Jessie) "
+  ansible.builtin.copy:
+    src: sudoers_jessie
+    dest: /etc/sudoers.d/nagios
+    mode: "0440"
+    validate: '/usr/sbin/visudo -cf %s'
+  register: copy_sudoers_evolinux
+  when: ansible_distribution_release == "jessie"
