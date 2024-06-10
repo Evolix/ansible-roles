@@ -18,6 +18,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * munin: add linux_psi contrib plugin
 * evolinux-base: Create custom SSH configuration file
 * lxc: new lxc_template_mirror option (useful to get old Debian from archive.debian.org)
+* nagios-nrpe: add new check_ftp_users
 
 ### Changed
 
