@@ -33,6 +33,7 @@ command[check_imapproxy]=/usr/lib/nagios/plugins/check_imap -H localhost -p 1143
 command[check_pop]=/usr/lib/nagios/plugins/check_pop -H localhost
 command[check_pops]=/usr/lib/nagios/plugins/check_pop -S -H localhost -p 995
 command[check_ftp]=/usr/lib/nagios/plugins/check_ftp -H localhost
+command[check_ftp_users]=/usr/local/lib/nagios/plugins/check_ftp_users -w 20 -c 40
 command[check_http]=/usr/lib/nagios/plugins/check_http -e 301 -I 127.0.0.1 -H localhost
 command[check_https]=/usr/lib/nagios/plugins/check_http -e 401,403 -I 127.0.0.1 -S -p 443 --sni -H ssl.evolix.net
 command[check_bind]=/usr/lib/nagios/plugins/check_dig -l evolix.net -H localhost
