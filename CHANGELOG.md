@@ -27,6 +27,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* openvpn: Make it work on OpenBSD in check mode
+
 ### Removed
 
 ### Security
