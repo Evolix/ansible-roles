@@ -47,6 +47,7 @@
   loop:
     - dhcp_pool
     - linux-psi
+    - ipmi_
   tags:
     - munin
 
@@ -108,6 +109,14 @@
     - temp
     - power
     - volts
+    - amp
+
+- name: Ensure ipmitool is installed on dedicated hardware
+  ansible.builtin.apt:
+    name: ipmitool
+    state: present
+  when: ansible_virtualization_role == "host"
+  notify: restart munin-node
 
 - name: adjustments for grsec kernel
   ansible.builtin.blockinfile:
