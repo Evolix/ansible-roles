@@ -96,3 +96,15 @@
 
 - ansible.builtin.include: accounts.yml
   when: proftpd_accounts | length > 0
+
+- name: Munin plugin is copied
+  ansible.builtin.copy:
+    src: munin_plugin
+    dest: /usr/share/munin/plugins/proftpd
+    mode: 755
+
+- name: Munin plugin is enabled
+  ansible.builtin.file:
+    src: /usr/share/munin/plugins/proftpd
+    dest: /etc/munin/plugins/proftpd
+    state: link
