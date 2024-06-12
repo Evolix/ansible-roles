@@ -91,8 +91,6 @@
   tags:
     - nagios-nrpe
 
-- ansible.builtin.include_tasks: sudoers.yml
-
 - ansible.builtin.include_tasks: wrapper.yml
 
 - ansible.builtin.include_tasks: check-local.yml

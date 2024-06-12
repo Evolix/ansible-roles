@@ -45,7 +45,7 @@
 
 - name: sudo without password for nagios
   ansible.builtin.lineinfile:
-    dest: /etc/sudoers.d/nagios
+    dest: /etc/sudoers.d/evolinux
     regexp: 'check_redis$'
     line: 'nagios          ALL = NOPASSWD: {{ redis_check_redis_path }}'
     insertafter: '^nagios'
@@ -69,7 +69,7 @@
 
 - name: sudo without password for nagios
   ansible.builtin.lineinfile:
-    dest: /etc/sudoers.d/nagios
+    dest: /etc/sudoers.d/evolinux
     regexp: 'check_redis$'
     line: 'nagios          ALL = NOPASSWD: {{ redis_check_redis_path }}'
     insertafter: '^nagios'
@@ -108,7 +108,7 @@
 
 - name: sudo without password for nagios
   ansible.builtin.lineinfile:
-    dest: /etc/sudoers.d/nagios
+    dest: /etc/sudoers.d/evolinux
     regexp: 'check_redis_instances$'
     line: 'nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_redis_instances'
     insertafter: '^nagios'
