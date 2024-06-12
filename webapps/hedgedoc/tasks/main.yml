@@ -7,10 +7,16 @@
     update_cache: yes
 
 - name: Install node-gyp from npm
-  shell: npm install --global node-gyp
+  shell: npm install --global node-gyp corepack
 
 - name: Enable yarn (via corepack)
-  shell: "corepack enable; yarn set version classic"
+  shell: "corepack enable"
+
+- name: Fix permissions 
+  file:
+    path: /usr/local/lib/node_modules
+    mode: g+rx,o+rx
+    recurse: yes
 
 - name: Add UNIX account
   user:
