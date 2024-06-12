@@ -1,0 +1,63 @@
+---
+# tasks file for mattermost upgrade
+
+- name: Start mattermost systemd unit
+  ansible.builtin.service:
+    name: "mattermost@{{ mattermost_service }}"
+    state: stopped
+
+- name: set current date and time as a fact
+  ansible.builtin.set_fact: backup_date="{{ ansible_date_time.iso8601_basic_short }}"
+
+- name: backup current mattermost files
+  ansible.builtin.command: "mv  ~/mattermost/ ~/mattermost_{{ mattermost_backup_date }}"
+  become_user: "{{ mattermost_service }}"
+
+- name: Dump database to a file with compression
+  ansible.builtin.postgresql_db:
+    name: "{{ mattermost_db_name }}"
+    state: dump
+    target: "~/{{ mattermost_db_name }}.sql.gz"
+  become_user: postgres
+
+- name: Unarchive new mattermost archive
+  ansible.builtin.unarchive:
+    src: "{{ mattermost_download_url }}"
+    dest: ~/
+    remote_src: yes
+  become_user: "{{ mattermost_service }}"
+
+- name: restore dirs from backup
+  ansible.builtin.copy: 
+    src: "{{ item }}" 
+    dest: ~/mattermost
+    remote_src: true
+  loop:
+    - "~/mattermost_{{ mattermost_backup_date }}/config"
+    - "~/mattermost_{{ mattermost_backup_date }}/data"
+    - "~/mattermost_{{ mattermost_backup_date }}/logs"
+    - "~/mattermost_{{ mattermost_backup_date }}/plugins"
+    - "~/mattermost_{{ mattermost_backup_date }}/client/plugins"
+  become_user: "{{ mattermost_service }}"
+
+- name: Start mattermost systemd unit
+  ansible.builtin.service:
+    name: "mattermost@{{ mattermost_service }}"
+    state: restarted
+
+- name: Reload nginx conf
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
+
+- name: Define variable to skip next task by default
+  ansible.builtin.set_fact:
+    keep_db_dump: true
+
+- name: Remove database dump
+  ansible.builtin.file:
+    path: "~/{{ mattermost_db_name }}.sql.gz"
+    state: absent
+  become_user: postgres
+  when: keep_db_dump is undefined
+  tags: clean

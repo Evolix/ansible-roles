@@ -1,0 +1,120 @@
+---
+# tasks file for mattermost install
+
+- name: Install main system dependencies
+  ansible.builtin.apt:
+    name: "{{ mattermost_system_dep }}"
+    update_cache: yes
+
+- name: Add UNIX account
+  ansible.builtin.user:
+    name: "{{ mattermost_service }}"
+    shell: /bin/bash
+    home: "{{ mattermost_home_base }}/{{ mattermost_service }}"
+
+- name: Add PostgreSQL user
+  ansible.builtin.postgresql_user:
+    name: "{{ mattermost_db_user }}"
+    password: "{{ mattermost_db_password }}"
+    no_password_changes: true
+  become_user: postgres
+
+- name: Add PostgreSQL database
+  ansible.builtin.postgresql_db:
+    name: "{{ mattermost_db_name }}"
+    owner: "{{ mattermost_db_user }}"
+  become_user: postgres
+
+- name: Unarchive mattermost archive
+  ansible.builtin.unarchive:
+    src: "{{ mattermost_download_url }}"
+    dest: ~/
+    remote_src: yes
+  become_user: "{{ mattermost_service }}"
+
+- name: Create the mattermost data dir if needed
+  ansible.builtin.file:
+    path: ~/mattermost/data
+    state: directory
+    mode: '0750'
+  become_user: "{{ mattermost_service }}"
+
+- name: Template mattermost conf file
+  ansible.builtin.template: 
+    src: "config.json.j2"
+    dest: "~/mattermost/config/config.json"
+  become_user: "{{ mattermost_service }}"
+
+- name: Template mattermost systemd unit
+  template: 
+    src: "mattermost.service.j2"
+    dest: "/etc/systemd/system/mattermost@.service"
+
+- name: Start mattermost systemd unit
+  ansible.builtin.service:
+    name: "mattermost@{{ mattermost_service }}"
+    state: restarted
+
+- name: Template nginx snippet for Let's Encrypt/Certbot
+  ansible.builtin.template: 
+    src: "letsencrypt.conf.j2"
+    dest: "/etc/nginx/snippets/letsencrypt.conf"
+
+- name: Check if SSL certificate is present and register result
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ mattermost_domains |first }}/fullchain.pem"
+  register: ssl
+
+- name: Generate certificate only if required (first time)
+  block:
+  - name: Template vhost without SSL for successfull LE challengce
+    ansible.builtin.template: 
+      src: "vhost.conf.j2"
+      dest: "/etc/nginx/sites-available/{{ mattermost_service }}.conf"
+  - name: Enable temporary nginx vhost for mattermost
+    ansible.builtin.file:
+      src: "/etc/nginx/sites-available/{{ mattermost_service }}.conf"
+      dest: "/etc/nginx/sites-enabled/{{ mattermost_service }}.conf"
+      state: link
+  - name: Reload nginx conf
+    ansible.builtin.service:
+      name: nginx
+      state: reloaded
+  - name: Make sure /var/lib/letsencrypt exists and has correct permissions
+    ansible.builtin.file: 
+      path: /var/lib/letsencrypt
+      state: directory
+      mode: '0755'
+  - name: Generate certificate with certbot
+    ansible.builtin.shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ mattermost_certbot_admin_email }} -d {{ mattermost_domains |first }}
+  - name: Create the ssl dir if needed
+    ansible.builtin.file:
+      path: /etc/nginx/ssl
+      state: directory
+      mode: '0750'
+  - name: Template ssl bloc for nginx vhost
+    ansible.builtin.template: 
+      src: "ssl.conf.j2"
+      dest: "/etc/nginx/ssl/{{ mattermost_domains |first }}.conf"
+  when: ssl.stat.exists != true
+
+- name: (Re)check if SSL certificate is present and register result
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ mattermost_domains |first }}/fullchain.pem"
+  register: ssl
+
+- name: (Re)template conf file for nginx vhost with SSL
+  ansible.builtin.template:
+    src: "vhost.conf.j2"
+    dest: "/etc/nginx/sites-available/{{ mattermost_service }}.conf"
+
+- name: Enable nginx vhost for mattermost
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ mattermost_service }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ mattermost_service }}.conf"
+    state: link
+
+- name: Reload nginx conf
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded

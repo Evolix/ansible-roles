@@ -1,0 +1,5 @@
+location ~ /.well-known/acme-challenge {
+  alias /var/lib/letsencrypt/;
+  try_files $uri =404;
+  allow all;
+}
