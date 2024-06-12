@@ -1,0 +1,71 @@
+---
+# tasks file for other domains if any
+
+- name: Template config files
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { src: 'meet/config.js.j2', dest: "/etc/jitsi/meet/{{ domain }}-config.js", owner: "root", group: "root", mode: "0644" }
+    - { src: 'meet/interface_config.js.j2', dest: "/etc/jitsi/meet/{{ domain }}-interface_config.js", owner: "root", group: "root", mode: "0644" }
+  notify: reload nginx
+
+- name: Check if SSL certificate is present and register result
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ domain }}/fullchain.pem"
+  register: jitsimeet_ssl
+
+- name: Generate certificate only if required (first time)
+  block:
+  - name: Template vhost without SSL for successfull LE challengce
+    ansible.builtin.template: 
+      src: "nginx/other.vhost.conf.j2"
+      dest: "/etc/nginx/sites-available/{{ domain }}.conf"
+    notify: reload nginx
+  - name: Enable temporary nginx vhost
+    ansible.builtin.file:
+      src: "/etc/nginx/sites-available/{{ domain }}.conf"
+      dest: "/etc/nginx/sites-enabled/{{ domain }}.conf"
+      state: link
+    notify: reload nginx
+  - name: Flush handlers
+    ansible.builtin.meta: flush_handlers
+  - name: Make sure /var/lib/letsencrypt exists and has correct permissions
+    ansible.builtin.file: 
+      path: /var/lib/letsencrypt
+      state: directory
+      mode: '0755'
+  - name: Generate certificate with certbot
+    ansible.builtin.command: 
+      cmd: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ jitsimeet_certbot_admin_email }} -d {{ domain }}
+  when: jitsimeet_ssl.stat.exists != true
+
+- name: (Re)check if SSL certificate is present and register result
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ domain }}/fullchain.pem"
+  register: jitsimeet_ssl
+
+- name: (Re)template conf file for nginx vhost with SSL
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - { src: 'nginx/other.vhost.conf.j2', dest: "/etc/nginx/sites-available/{{ domain }}.conf" }
+  notify: reload nginx
+
+- name: Insert block in multiplex.conf
+  ansible.builtin.lineinfile:
+    path: /etc/nginx/modules-enabled/multiplex.conf
+    insertafter: "web_backend;"
+    line: "{{ domain }} web_backend;"
+  notify: reload nginx
+
+- name: Enable nginx vhost
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ domain }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ domain }}.conf"
+    state: link
+  notify: reload nginx

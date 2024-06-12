@@ -1,0 +1,20 @@
+videobridge {
+    http-servers {
+        public {
+            port = 9090
+        }
+        private {
+            port = 8080
+        }
+    }
+    websockets {
+        enabled = true
+        domain = "{{ jitsimeet_domains | first }}:443"
+        tls = true
+    }
+    apis {
+        rest {
+            enabled = true
+        }
+    }
+}
