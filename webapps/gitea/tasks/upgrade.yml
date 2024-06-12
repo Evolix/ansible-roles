@@ -1,0 +1,26 @@
+---
+# tasks file for gitea upgrade
+
+- name: Download gitea binary
+  ansible.builtin.get_url:
+    url: "{{ gitea_url }}"
+    dest: /usr/local/bin
+    checksum: "{{ gitea_checksum }}"
+    mode: '0755'
+
+- name: Create symbolic link
+  ansible.builtin.file:
+    src: "/usr/local/bin/gitea-{{ gitea_git_version }}-linux-amd64"
+    dest: "/usr/local/bin/gitea"
+    state: link
+
+- name: Start gitea systemd unit
+  ansible.builtin.service:
+    name: "gitea@{{ gitea_service }}"
+    state: restarted
+
+- name: Reload nginx conf
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
+

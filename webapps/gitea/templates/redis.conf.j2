@@ -1,0 +1,22 @@
+bind 127.0.0.1 ::1
+protected-mode yes
+
+port 0
+unixsocket /home/{{ gitea_service }}/redis/redis.sock
+unixsocketperm 770
+timeout 0
+tcp-keepalive 300
+
+loglevel notice
+logfile /home/{{ gitea_service }}/log/redis-server.log
+
+databases 16
+save 900 1
+save 300 10
+save 60 10000
+
+dbfilename dump.rdb
+dir /home/{{ gitea_service }}/redis
+
+maxclients {{ gitea_redis_maxclients }}
+maxmemory {{ gitea_redis_maxmemory }}

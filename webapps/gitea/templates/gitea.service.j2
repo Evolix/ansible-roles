@@ -1,0 +1,22 @@
+[Unit]
+Description=Gitea (Git with a cup of tea)
+After=syslog.target
+After=network.target
+After=mysqld.service
+
+[Service]
+User=%i
+Group=%i
+
+Type=simple
+RestartSec=2s
+Restart=always
+
+WorkingDirectory=/home/%i
+ExecStart=/usr/local/bin/gitea web --config /etc/gitea/%i.ini
+Environment=GITEA_WORK_DIR=/home/%i/internals
+
+
+[Install]
+WantedBy=multi-user.target
+
