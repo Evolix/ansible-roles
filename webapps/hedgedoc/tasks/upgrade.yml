@@ -1,0 +1,57 @@
+---
+# tasks file for hedgedoc upgrade
+
+- name: Dump database to a file with compression
+  postgresql_db:
+    name: "{{ service }}"
+    state: dump
+    target: "~/{{ service }}.sql.gz"
+  become_user: postgres
+
+- name: Stop service
+  service:
+    name: "{{ service }}.service"
+    state: stopped
+
+- block:
+  - name: Clone hedgedoc repo (git)
+    git:
+      repo: "{{ git_url }}"
+      dest: "~/hedgedoc/"
+      version: "{{ git_version }}"
+      update: yes
+  - name: Run setup
+    shell: "bin/setup"
+    args:
+      chdir: "~/hedgedoc"
+  - name: Install dependencies for frontend app
+    shell: "yarn install --frozen-lockfile"
+    args:
+      chdir: "~/hedgedoc"
+  - name: Build frontend app
+    shell: "yarn build"
+    args:
+      chdir: "~/hedgedoc"
+  become_user: "{{ service }}"
+
+- name: Restart services
+  service:
+    name: "{{ service }}.service"
+    state: restarted
+
+- name: Define variable to skip next task by default
+  set_fact:
+    keep_db_dump: true
+
+- name: Remove database dump
+  file:
+    path: "~/{{ service }}.sql.gz"
+    state: absent
+  become_user: postgres
+  when: keep_db_dump is undefined
+  tags: clean
+
+- name: Reload nginx conf
+  service:
+    name: nginx
+    state: reloaded
