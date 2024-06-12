@@ -60,20 +60,11 @@
     path: /etc/sudoers.d/nagios
   register: sudoers_nagios
 
-- name: sudo without password for nagios (sudoers.d/evolinux)
-  ansible.builtin.lineinfile:
-    dest: /etc/sudoers.d/evolinux
-    regexp: 'check_minifirewall'
-    line: 'nagios          ALL = NOPASSWD: {{ nagios_plugins_directory }}/check_minifirewall'
-    insertafter: '^nagios'
-    validate: "visudo -cf %s"
-  when: sudoers_evolinux.stat.exists or not sudoers_nagios.stat.exists
-
-- name: sudo without password for nagios (sudoers.d/nagios)
+- name: sudo without password for nagios
   ansible.builtin.lineinfile:
     dest: /etc/sudoers.d/nagios
     regexp: 'check_minifirewall'
     line: 'nagios          ALL = NOPASSWD: {{ nagios_plugins_directory }}/check_minifirewall'
     insertafter: '^nagios'
     validate: "visudo -cf %s"
-  when: sudoers_nagios.stat.exists
+  when: sudoers_evolinux.stat.exists or sudoers_nagios.stat.exists
