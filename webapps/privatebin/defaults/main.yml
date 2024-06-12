@@ -1,0 +1,7 @@
+---
+# defaults file for vars
+privatebin_system_dep: "['apt-transport-https', 'git', 'certbot', 'acl', 'apache2', 'libapache2-mpm-itk', 'libapache2-mod-php', 'php-gd']"
+privatebin_git_url: 'https://github.com/PrivateBin/PrivateBin'
+privatebin_git_version: '1.5.1'
+privatebin_domains: ['example.domain.net']
+privatebin_certbot_admin_email: 'security@example.net'
