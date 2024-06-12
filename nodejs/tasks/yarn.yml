@@ -37,8 +37,6 @@
   ansible.builtin.template:
     src: yarn.sources.j2
     dest: /etc/apt/sources.list.d/yarn.sources
-    state: present
-    update_cache: yes
   register: yarn_sources
   tags:
     - system
