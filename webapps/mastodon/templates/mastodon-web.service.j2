@@ -1,0 +1,23 @@
+[Unit]
+Description=mastodon-web
+After=network.target
+PartOf={{ mastodon_service }}.target
+
+[Service]
+Type=simple
+User={{ mastodon_service }}
+Group={{ mastodon_service }}
+UMask=0027
+WorkingDirectory=/home/{{ mastodon_service }}/mastodon/
+Environment="RAILS_ENV=production"
+Environment="PORT={{ mastodon_puma_port | default('3000') }}"
+Environment="RAILS_LOG_LEVEL=warn"
+Environment="LD_PRELOAD=libjemalloc.so"
+ExecStart=/home/{{ mastodon_service }}/.rbenv/shims/bundle exec puma -C config/puma.rb
+ExecReload=/bin/kill -SIGUSR1 $MAINPID
+TimeoutSec=15
+Restart=always
+SyslogIdentifier=%p
+
+[Install]
+WantedBy={{ mastodon_service }}.target

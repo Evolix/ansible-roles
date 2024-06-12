@@ -1,0 +1,98 @@
+---
+# tasks file for mastodon upgrade
+
+- name: Dump database to a file with compression
+  community.postgresql.postgresql_db:
+    name: "{{ mastodon_service }}_production"
+    state: dump
+    target: "~/{{ mastodon_service }}_production.sql.gz"
+  become_user: postgres
+
+- name: Install Ruby for service user (rbenv)
+  include_role:
+    name: rbenv
+  vars:
+    - username: "{{ mastodon_service }}"
+    - rbenv_ruby_version: "{{ mastodon_ruby_version }}"
+
+- name: Checkout (git)
+  ansible.builtin.git:
+    repo: "{{ mastodon_git_url }}"
+    dest: "~/mastodon/"
+    version: "{{ mastodon_git_version | default(omit) }}"
+    force: yes
+    update: yes
+  become_user: "{{ mastodon_service }}"
+
+- block:
+  - name: Install bundler
+    ansible.builtin.shell: ". ~/.profile && gem install bundler --no-document"
+    args:
+      chdir: "~/mastodon"
+      executable: /bin/bash # fails with /bin/sh
+  - name: Install gem dependencies
+    ansible.builtin.shell: ". ~/.profile && bundle install --deployment --without development test -j{{ ansible_processor_count }}"
+    args:
+      chdir: "~/mastodon"
+      executable: /bin/bash # fails with /bin/sh
+  - name: Install javascript dependencies
+    ansible.builtin.shell: ". ~/.profile && yarn install --pure-lockfile"
+    args:
+      chdir: "~/mastodon"
+      executable: /bin/bash # fails with /bin/sh
+  - name: Upgrade browsers list db
+    ansible.builtin.shell: ". ~/.profile && npx update-browserslist-db@latest"
+    args:
+      chdir: "~/mastodon"
+      executable: /bin/bash # fails with /bin/sh
+  - name: Run database migrations, skipping post-deployment
+    ansible.builtin.shell: ". ~/.profile && SKIP_POST_DEPLOYMENT_MIGRATIONS=true RAILS_ENV=production bundle exec rails db:migrate"
+    args:
+      chdir: "~/mastodon"
+      executable: /bin/bash # fails with /bin/sh
+  - name: Precompile assets
+    ansible.builtin.shell: ". ~/.profile && RAILS_ENV=production bundle exec rails assets:precompile"
+    args:
+      chdir: "~/mastodon"
+      executable: /bin/bash # fails with /bin/sh
+  - name: Adjust permissions of files in public folder
+    ansible.builtin.file:
+      path: "~/mastodon/public"
+      state: directory
+      mode: 'o=rX'
+      recurse: true
+  become_user: "{{ mastodon_service }}"
+
+- name: Restart services
+  ansible.builtin.service:
+    name: "{{ mastodon_service }}.target"
+    state: restarted
+
+- name: Run database migrations, this time including post-deployment
+  ansible.builtin.shell: ". ~/.profile && RAILS_ENV=production bundle exec rails db:migrate"
+  args:
+    chdir: "~/mastodon"
+    executable: /bin/bash # fails with /bin/sh
+  become_user: "{{ mastodon_service }}"
+
+- name: Restart services
+  ansible.builtin.service:
+    name: "{{ mastodon_service }}.target"
+    state: restarted
+
+- name: Define variable to skip next task by default
+  ansible.builtin.set_fact:
+    keep_db_dump: true
+
+- name: Remove database dump
+  ansible.builtin.file:
+    path: "~/{{ mastodon_service }}_production.sql.gz"
+    state: absent
+  become_user: postgres
+  when: keep_db_dump is undefined
+  tags: clean
+
+- name: Reload nginx conf
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
