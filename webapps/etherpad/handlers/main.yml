@@ -1,0 +1,11 @@
+---
+# handlers file for etherpad
+- name: reload nginx
+  ansible.builtin.systemd:
+    name: nginx
+    state: reloaded
+
+- name: restart etherpad
+  ansible.builtin.systemd:
+    name: "{{ service }}.service"
+    state: restarted

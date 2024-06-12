@@ -1,0 +1,28 @@
+---
+# defaults file for etherpad
+service: 'example'
+etherpad_system_dep: "['apt-transport-https', 'mariadb-server', 'python3-mysqldb', 'nginx', 'ssl-cert', 'git', 'wget', 'certbot', 'npm']"
+etherpad_git_url: 'https://github.com/ether/etherpad-lite.git'
+etherpad_git_version: '1.8.18'
+etherpad_node_version: 'node_18.x'
+etherpad_node_port: '9001'
+etherpad_domains: ['example.domain.org']
+etherpad_certbot_admin_email: 'mgauthier@evolix.ca'
+
+etherpad_db_host: '127.0.0.1'
+etherpad_db_port: '3306'
+etherpad_db_user: "{{ service }}"
+etherpad_db_name: "{{ service }}"
+etherpad_db_password: 'CHANGE_ME'
+
+etherpad_app_ip: '127.0.0.1'
+etherpad_app_title: 'My Etherpad'
+etherpad_app_db_type: 'mysql'
+etherpad_app_skin_name: 'colibris'
+etherpad_app_skin_variants: 'super-light-toolbar super-light-editor light-background'
+etherpad_app_trust_proxy: 'true'
+etherpad_app_require_authentication: 'false'
+etherpad_app_require_authorization: 'true'
+etherpad_app_admin_password: 'CHANGE_ME_TOO'
+etherpad_app_default_pad_text: 'Bienvenue sur Etherpad !\n\nLe texte de ce bloc-notes est synchronisé sur le serveur au fur et à mesure que vous tapez, de sorte que toutes les personnes qui consultent cette page voient le même texte. Cela vous permet de collaborer de manière transparente et collaborative sur des documents !\n\nParticipez à Etherpad sur https:\/\/etherpad.org\n'
+etherpad_app_file_ends: 'false'
