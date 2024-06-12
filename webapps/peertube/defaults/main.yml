@@ -1,0 +1,15 @@
+---
+# defaults file for vars
+peertube_system_dep: "['curl', 'python3-dev', 'python-is-python3', 'python3-psycopg2','certbot', 'nginx', 'ffmpeg', 'postgresql', 'postgresql-contrib', 'openssl', 'g++', 'make', 'redis-server', 'git', 'unzip', 'acl']"
+peertube_version: 'v6.1.0'
+peertube_download_url: "https://github.com/Chocobozzz/PeerTube/releases/download/{{ peertube_version }}/peertube-{{ peertube_version }}.zip"
+peertube_domains: ['example.domain.org']
+peertube_certbot_admin_email: 'security@evolix.fr'
+peertube_service_home: '/var/www/peertube'
+peertube_db_host: '127.0.0.1'
+peertube_db_port: '5432'
+peertube_db_name: "{{ service }}"
+peertube_db_user: "{{ service }}"
+peertube_db_password: 'UQ6_CHANGE_ME_Gzb'
+peertube_app_secret: 'd98a73_CHANGE_ME_c00c7c'
+peertube_app_host: '127.0.0.1:9000'
