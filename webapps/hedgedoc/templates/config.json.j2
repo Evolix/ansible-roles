@@ -16,7 +16,7 @@
         "urlAddPort": true
     },
     "production": {
-        "domain": "{{ domains }}",
+        "domain": "{{ hedgedoc_domains }}",
         "loglevel": "info",
         "protocolUseSSL": "true",
         "urlAddPort": false,
@@ -35,10 +35,10 @@
         },
         "cookiePolicy": "lax",
         "db": {
-            "username": "{{ db_user }}",
-            "password": "{{ db_password }}",
-            "database": "{{ db_name }}",
-            "host": "{{ db_host }}",
+            "username": "{{ hedgedoc_db_user }}",
+            "password": "{{ hedgedoc_db_password }}",
+            "database": "{{ hedgedoc_db_name }}",
+            "host": "{{ hedgedoc_db_host }}",
             "port": "5432",
             "dialect": "postgres"
         }

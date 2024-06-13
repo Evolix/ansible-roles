@@ -35,9 +35,9 @@ SystemCallArchitectures=native
 SystemCallFilter=@system-service
 
 # You may have to adjust these settings
-User={{service}}
-Group={{service}}
-WorkingDirectory=/home/{{service}}/hedgedoc
+User={{ hedgedoc_service }}
+Group={{ hedgedoc_service }}
+WorkingDirectory=/home/{{ hedgedoc_service }}/hedgedoc
 
 # Example: local storage for uploads and SQLite
 # ReadWritePaths=/opt/hedgedoc/public/uploads /opt/hedgedoc/db

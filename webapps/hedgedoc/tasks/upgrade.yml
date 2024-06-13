@@ -3,22 +3,22 @@
 
 - name: Dump database to a file with compression
   postgresql_db:
-    name: "{{ service }}"
+    name: "{{ hedgedoc_service }}"
     state: dump
-    target: "~/{{ service }}.sql.gz"
+    target: "~/{{ hedgedoc_service }}.sql.gz"
   become_user: postgres
 
 - name: Stop service
   service:
-    name: "{{ service }}.service"
+    name: "{{ hedgedoc_service }}.service"
     state: stopped
 
 - block:
   - name: Clone hedgedoc repo (git)
     git:
-      repo: "{{ git_url }}"
+      repo: "{{ hedgedoc_git_url }}"
       dest: "~/hedgedoc/"
-      version: "{{ git_version }}"
+      version: "{{ hedgedoc_git_version }}"
       update: yes
   - name: Run setup
     shell: "bin/setup"
@@ -32,11 +32,11 @@
     shell: "yarn build"
     args:
       chdir: "~/hedgedoc"
-  become_user: "{{ service }}"
+  become_user: "{{ hedgedoc_service }}"
 
 - name: Restart services
   service:
-    name: "{{ service }}.service"
+    name: "{{ hedgedoc_service }}.service"
     state: restarted
 
 - name: Define variable to skip next task by default
@@ -45,7 +45,7 @@
 
 - name: Remove database dump
   file:
-    path: "~/{{ service }}.sql.gz"
+    path: "~/{{ hedgedoc_service }}.sql.gz"
     state: absent
   become_user: postgres
   when: keep_db_dump is undefined

@@ -1,15 +1,15 @@
 ---
 # defaults file for mastodon
-system_dep: "['apt-transport-https', 'postgresql', 'python3-psycopg2', 'nginx', 'git', 'wget', 'certbot', 'npm']"
-git_url: 'https://github.com/hedgedoc/hedgedoc.git'
-git_version: '1.9.7'
-node_version: 'node_18.x' # Node 18 is NOT supported as of May 2023; See https://docs.hedgedoc.org/setup/manual-setup/
-node_port: '3000'
-service: 'example'
-domains: ['example.domain.org']
-certbot_admin_email: 'mgauthier@evolix.ca'
+hedgedoc_system_dep: "['apt-transport-https', 'postgresql', 'python3-psycopg2', 'nginx', 'git', 'wget', 'certbot']"
+hedgedoc_git_url: 'https://github.com/hedgedoc/hedgedoc.git'
+hedgedoc_git_version: '1.9.9'
+hedgedoc_node_version: 'node_18.x'
+hedgedoc_node_port: '3000'
+hedgedoc_service: 'example'
+hedgedoc_domains: ['example.domain.org']
+hedgedoc_certbot_admin_email: 'security@example.org'
 
-db_host: 'localhost'
-db_user: "{{ service }}"
-db_name: "{{ service }}"
-db_password: 'CHANGE_ME'
+hedgedoc_db_host: 'localhost'
+hedgedoc_db_user: "{{ hedgedoc_service }}"
+hedgedoc_db_name: "{{ hedgedoc_service }}"
+hedgedoc_db_password: 'CHANGE_ME'
