@@ -2,68 +2,68 @@
 # tasks file for hedgedoc install
 
 - name: Install main system dependencies
-  apt:
+  ansible.builtin.apt:
     name: "{{ hedgedoc_system_dep }}"
     update_cache: yes
 
 #- name: Install node-gyp from npm
-#  shell: npm install --global node-gyp corepack
+#  ansible.builtin.shell: npm install --global node-gyp corepack
 
 #- name: Enable yarn (via corepack)
-#  shell: "corepack enable"
+#  ansible.builtin.shell: "corepack enable"
 
 #- name: Fix permissions 
-#  file:
+#  ansible.builtin.file:
 #    path: /usr/local/lib/node_modules
 #    mode: g+rx,o+rx
 #    recurse: yes
 
 - name: Add UNIX account
-  user:
+  ansible.builtin.user:
     name: "{{ hedgedoc_service }}"
     shell: /bin/bash
 
 - name: Add PostgreSQL user
-  postgresql_user:
+  community.postgresql.postgresql_user:
     name: "{{ hedgedoc_db_user }}"
     password: "{{ hedgedoc_db_password }}"
     no_password_changes: true
   become_user: postgres
 
 - name: Add PostgreSQL database
-  postgresql_db:
+  community.postgresql.postgresql_db:
     name: "{{ hedgedoc_db_name }}"
     owner: "{{ hedgedoc_db_user }}"
   become_user: postgres
 
 - block:
   - name: Clone hedgedoc repo (git)
-    git:
+    ansible.builtin.git:
       repo: "{{ hedgedoc_git_url }}"
       dest: "~/hedgedoc/"
       version: "{{ hedgedoc_git_version | default(omit) }}"
       update: yes
       umask: '0022'
 #  - name: Set cache dir for yarn
-#    shell: yarn config set cache-folder /var/tmp/cache/yarn
+#    ansible.builtin.shell: yarn config set cache-folder /var/tmp/cache/yarn
 #    args:
 #      chdir: "~/"
   - name: Run setup
-    shell: "bin/setup"
+    ansible.builtin.shell: "bin/setup"
     args:
       chdir: "~/hedgedoc"
   - name: Install dependencies for frontend app
-    shell: "yarn install --frozen-lockfile"
+    ansible.builtin.shell: "yarn install --frozen-lockfile"
     args:
       chdir: "~/hedgedoc"
   - name: Build frontend app
-    shell: "yarn build"
+    ansible.builtin.shell: "yarn build"
     args:
       chdir: "~/hedgedoc"
   become_user: "{{ hedgedoc_service }}"
 
 - name: Template json config file
-  template:
+  ansible.builtin.template:
     src: "config.json.j2"
     dest: "~{{ hedgedoc_service }}/hedgedoc/config.json"
     owner: "{{ hedgedoc_service }}"
@@ -71,81 +71,81 @@
     mode: "0640"
 
 - name: Add systemd unit
-  template:
+  ansible.builtin.template:
     src: "hedgedoc.service.j2"
     dest: "/etc/systemd/system/{{ hedgedoc_service }}.service"
 
 - name: Enable systemd units
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ hedgedoc_service }}.service"
     enabled: yes
     daemon_reload: yes
 
 - name: Start service
-  service:
+  ansible.builtin.service:
     name: "{{ hedgedoc_service }}.service"
     state: restarted
 
 - name: Template nginx snippet for Let's Encrypt/Certbot
-  template: 
+  ansible.builtin.template: 
     src: "letsencrypt.conf.j2"
     dest: "/etc/nginx/snippets/letsencrypt.conf"
 
 - name: Check if SSL certificate is present and register result
-  stat:
+  ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ hedgedoc_domains |first }}/fullchain.pem"
   register: ssl
 
 - name: Generate certificate only if required (first time)
   block:
   - name: Template vhost without SSL for successfull LE challengce
-    template: 
+    ansible.builtin.template: 
       src: "vhost.conf.j2"
       dest: "/etc/nginx/sites-available/{{ hedgedoc_service }}"
   - name: Enable temporary nginx vhost for LE
-    file:
+    ansible.builtin.file:
       src: "/etc/nginx/sites-available/{{ hedgedoc_service }}"
       dest: "/etc/nginx/sites-enabled/{{ hedgedoc_service }}"
       state: link
   - name: Reload nginx conf
-    service:
+    ansible.builtin.service:
       name: nginx
       state: reloaded
   - name: Make sure /var/lib/letsencrypt exists and has correct permissions
-    file: 
+    ansible.builtin.file: 
       path: /var/lib/letsencrypt
       state: directory
       mode: '0755'
   - name: Generate certificate with certbot
-    shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ hedgedoc_certbot_admin_email }} -d {{ hedgedoc_domains |first }}
+    ansible.builtin.shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ hedgedoc_certbot_admin_email }} -d {{ hedgedoc_domains |first }}
   - name: Create the ssl dir if needed
-    file:
+    ansible.builtin.file:
       path: /etc/nginx/ssl
       state: directory
       mode: '0750'
   - name: Template ssl bloc for nginx vhost
-    template: 
+    ansible.builtin.template: 
       src: "ssl.conf.j2"
       dest: "/etc/nginx/ssl/{{ hedgedoc_domains |first }}.conf"
   when: ssl.stat.exists != true
 
 - name: (Re)check if SSL certificate is present and register result
-  stat:
+  ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ hedgedoc_domains |first }}/fullchain.pem"
   register: ssl
 
 - name: (Re)template conf file for nginx vhost with SSL
-  template:
+  ansible.builtin.template:
     src: "vhost.conf.j2"
     dest: "/etc/nginx/sites-available/{{ hedgedoc_service }}"
 
 - name: Enable nginx vhost for hedgedoc
-  file:
+  ansible.builtin.file:
     src: "/etc/nginx/sites-available/{{ hedgedoc_service }}"
     dest: "/etc/nginx/sites-enabled/{{ hedgedoc_service }}"
     state: link
 
 - name: Reload nginx conf
-  service:
+  ansible.builtin.service:
     name: nginx
     state: reloaded
