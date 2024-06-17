@@ -1,5 +1,5 @@
 ---
-elastic_stack_version: "7.x"
+elastic_stack_version: "8.x"
 
 elasticsearch_cluster_name: Null
 elasticsearch_cluster_members: Null

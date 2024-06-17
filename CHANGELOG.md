@@ -14,19 +14,20 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Added
 
 * bind: New variables to change IPs bind will listen on & send notify/transfer commands
-* evolinux-base: install evobackup-client (default: true)
-* munin: add linux_psi contrib plugin
 * evolinux-base: Create custom SSH configuration file
+* evolinux-base: install evobackup-client (default: true)
 * lxc: new lxc_template_mirror option (useful to get old Debian from archive.debian.org)
+* munin: add linux_psi contrib plugin
 * nagios-nrpe: add new check_ftp_users
 * proftpd: add new munin graph (users count)
 * nagios-nrpe: new monitoringctl command
 
 ### Changed
 
+* Elastic Stack : default to version 8.x
+* evolinux-base: Customize logcheck recipient when serveur-base is installed
 * log2mail: task log2mail.yml of evolinux-base converted to a role
 * lxc-solr: update solr9 version + fix URL in README
-* evolinux-base: Customize logcheck recipient when serveur-base is installed
 
 ### Fixed
 
