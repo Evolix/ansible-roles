@@ -24,6 +24,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* autosysadmin-agent: release 24.06
 * Elastic Stack : default to version 8.x
 * evolinux-base: Customize logcheck recipient when serveur-base is installed
 * log2mail: task log2mail.yml of evolinux-base converted to a role
