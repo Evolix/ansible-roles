@@ -21,18 +21,18 @@ main() {
     export GIT_WORK_TREE="/etc"
 
     if test -x "${git_bin}" && test -d "${GIT_DIR}" && test -d "${GIT_WORK_TREE}"; then
-      changed_lines=$(${git_bin} status --porcelain | wc -l | tr -d ' ')
+      changed_lines=$(${git_bin} status --porcelain -- letsencrypt | wc -l | tr -d ' ')
 
       if [ "${changed_lines}" != "0" ]; then
           if [ -z "${RENEWED_DOMAINS}" ] && [ -n "${RENEWED_LINEAGE}" ]; then
               RENEWED_DOMAINS=$(domain_from_cert)
           fi
           debug "Committing for ${RENEWED_DOMAINS}"
-          ${git_bin} add --all
+          ${git_bin} add letsencrypt
           message="[letsencrypt] certificates renewal (${RENEWED_DOMAINS})"
-          ${git_bin} commit --message "${message}" --quiet
+          ${git_bin} commit --message "${message}" --quiet --only letsencrypt
       else
-          debug "Weird, nothing has changed but the hook has been executed for '${RENEWED_DOMAINS}'"
+          debug "Weird, nothing has changed in /etc/letsencrypt but the hook has been executed for '${RENEWED_DOMAINS}'"
       fi
     fi
 }
