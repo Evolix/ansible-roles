@@ -101,6 +101,8 @@ server {
   gzip_min_length 512;
 
   include /etc/jitsi/meet/jaas/*.conf;
+  
+  include /etc/nginx/snippets/blocked_room_names;
 
   location = /config.js {
       alias $config_js_location;

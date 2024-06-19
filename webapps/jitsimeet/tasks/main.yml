@@ -152,6 +152,7 @@
   loop:
     - { src: 'nginx/vhost.conf.j2', dest: "/etc/nginx/sites-available/{{ jitsimeet_domains |first }}.conf" }
     - { src: 'nginx/multiplex.conf.j2', dest: '/etc/nginx/modules-available/multiplex.conf' }
+    - { src: 'nginx/blocked_room_names.j2', dest: '/etc/nginx/snippets/blocked_room_names' }
   notify: reload nginx
 
 - name: Enable multiplex module conf
