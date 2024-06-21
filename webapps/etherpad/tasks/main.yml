@@ -68,11 +68,11 @@
 - name: Add systemd unit
   ansible.builtin.template:
     src: "etherpad.service.j2"
-    dest: "/etc/systemd/system/{{ etherpad_instance }}.service"
+    dest: "/etc/systemd/system/etherpad@.service"
 
 - name: Enable systemd unit
   ansible.builtin.systemd:
-    name: "{{ etherpad_instance }}.service"
+    name: "etherpad@{{ etherpad_instance }}.service"
     enabled: true
     daemon_reload: true
   notify: 
@@ -95,6 +95,7 @@
     ansible.builtin.template: 
       src: "vhost.conf.j2"
       dest: "/etc/nginx/sites-available/{{ etherpad_instance }}.conf"
+
   - name: Enable temporary nginx vhost for LE
     ansible.builtin.file:
       src: "/etc/nginx/sites-available/{{ etherpad_instance }}.conf"
@@ -105,6 +106,7 @@
 
   - name: Flush handlers
     ansible.builtin.meta: flush_handlers
+
   - name: Make sure /var/lib/letsencrypt exists and has correct permissions
     ansible.builtin.file: 
       path: /var/lib/letsencrypt
@@ -125,7 +127,6 @@
     ansible.builtin.template: 
       src: "ssl.conf.j2"
       dest: "/etc/nginx/ssl/{{ etherpad_domains |first }}.conf"
-
 
 - name: (Re)check if SSL certificate is present and register result
   ansible.builtin.stat:
