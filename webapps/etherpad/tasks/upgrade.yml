@@ -9,7 +9,7 @@
 
 - name: Stop service
   ansible.builtin.systemd:
-    name: "{{ etherpad_instance }}.service"
+    name: "etherpad@{{ etherpad_instance }}.service"
     state: stopped
 
 - name: Clone etherpad repo (git)
@@ -36,7 +36,7 @@
 
 - name: Start service
   ansible.builtin.systemd:
-    name: "{{ etherpad_instance }}.service"
+    name: "etherpad@{{ etherpad_instance }}.service"
     state: started
 
 - name: Define variable to skip next task by default
