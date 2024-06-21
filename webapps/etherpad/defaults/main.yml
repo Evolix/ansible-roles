@@ -1,7 +1,7 @@
 ---
 # defaults file for etherpad
 etherpad_instance: 'example'
-etherpad_system_dep: "['apt-transport-https', 'python3-mysqldb', 'ssl-cert', 'git', 'wget', 'npm']"
+etherpad_system_dep: "['apt-transport-https', 'python3-mysqldb', 'ssl-cert', 'git', 'wget']"
 etherpad_git_url: 'https://github.com/ether/etherpad-lite.git'
 etherpad_git_version: '1.8.18'
 etherpad_node_version: 'node_18.x'

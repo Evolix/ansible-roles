@@ -6,17 +6,10 @@
     name: "{{ etherpad_system_dep }}"
     update_cache: true
 
-- name: Install pnpm (via npm)
-  ansible.builtin.command:
-    cmd: corepack enable pnpm
+- name: Install pnpm (via corepack)
+  ansible.builtin.shell:
+    cmd: "mount -o remount,rw /usr; corepack enable pnpm; mount -o remount,ro /usr"
     creates: /usr/bin/pnpm
-
-- name: Fix permissions for pnpm
-  ansible.builtin.file:
-    path: /usr/local/lib/node_modules/
-    state: directory
-    mode: o+rx
-    recurse: true
 
 - name: Add UNIX account
   ansible.builtin.user:
@@ -77,11 +70,6 @@
     daemon_reload: true
   notify: 
     - restart etherpad
-
-- name: Template nginx snippet for Let's Encrypt/Certbot
-  ansible.builtin.template: 
-    src: "letsencrypt.conf.j2"
-    dest: "/etc/nginx/snippets/letsencrypt.conf"
 
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
