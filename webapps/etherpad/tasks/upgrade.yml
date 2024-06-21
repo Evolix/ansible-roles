@@ -17,7 +17,7 @@
     repo: "{{ etherpad_git_url }}"
     dest: "~/etherpad-lite/"
     version: "{{ etherpad_git_version }}"
-    update: yes
+    update: true
     force: true
   become_user: "{{ service }}"
 
