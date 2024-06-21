@@ -1,6 +1,6 @@
 ---
 # defaults file for etherpad
-service: 'example'
+etherpad_instance: 'example'
 etherpad_system_dep: "['apt-transport-https', 'mariadb-server', 'python3-mysqldb', 'nginx', 'ssl-cert', 'git', 'wget', 'certbot', 'npm']"
 etherpad_git_url: 'https://github.com/ether/etherpad-lite.git'
 etherpad_git_version: '1.8.18'
@@ -11,8 +11,8 @@ etherpad_certbot_admin_email: 'security@etherpad.example.com'
 
 etherpad_db_host: '127.0.0.1'
 etherpad_db_port: '3306'
-etherpad_db_user: "{{ service }}"
-etherpad_db_name: "{{ service }}"
+etherpad_db_user: "{{ etherpad_instance }}"
+etherpad_db_name: "{{ etherpad_instance }}"
 etherpad_db_password: 'PASSWORD'
 
 etherpad_app_ip: '127.0.0.1'

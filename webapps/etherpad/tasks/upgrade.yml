@@ -3,13 +3,13 @@
 
 - name: Dump database to a file with compression
   ansible.builtin.mysql_db:
-    name: "{{ service }}"
+    name: "{{ etherpad_instance }}"
     state: dump
-    target: "~/{{ service }}.sql.gz"
+    target: "~/{{ etherpad_instance }}.sql.gz"
 
 - name: Stop service
   ansible.builtin.systemd:
-    name: "{{ service }}.service"
+    name: "{{ etherpad_instance }}.service"
     state: stopped
 
 - name: Clone etherpad repo (git)
@@ -19,24 +19,24 @@
     version: "{{ etherpad_git_version }}"
     update: true
     force: true
-  become_user: "{{ service }}"
+  become_user: "{{ etherpad_instance }}"
 
 - name: Fix run.sh so it does not start etherpad at the end
   ansible.builtin.lineinfile: 
     path: "~/etherpad-lite/src/bin/run.sh"
     state: absent
     regexp: 'exec node src/node/server.js'
-  become_user: "{{ service }}"
+  become_user: "{{ etherpad_instance }}"
 
 - name: Run setup
   ansible.builtin.shell: "src/bin/run.sh"
   args:
     chdir: "~/etherpad-lite"
-  become_user: "{{ service }}"
+  become_user: "{{ etherpad_instance }}"
 
 - name: Start service
   ansible.builtin.systemd:
-    name: "{{ service }}.service"
+    name: "{{ etherpad_instance }}.service"
     state: started
 
 - name: Define variable to skip next task by default
@@ -45,7 +45,7 @@
 
 - name: Remove database dump
   ansible.builtin.file:
-    path: "~/{{ service }}.sql.gz"
+    path: "~/{{ etherpad_instance }}.sql.gz"
     state: absent
   when: keep_db_dump is undefined
   tags: clean
