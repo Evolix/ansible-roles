@@ -8,7 +8,8 @@
 
 - name: Install pnpm (via npm)
   ansible.builtin.command:
-    cmd: npm install -g pnpm
+    cmd: corepack enable pnpm
+    creates: /usr/bin/pnpm
 
 - name: Fix permissions for pnpm
   ansible.builtin.file:
