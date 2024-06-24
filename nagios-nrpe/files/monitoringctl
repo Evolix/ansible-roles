@@ -114,12 +114,21 @@ function check() {
     for check in $checks; do
         printf "\033[KChecking %s…\r" "${check}"
         err_msg=""
+
+        check_commands="$(get_check_commands "${check}")"
+        if [ -n "${check_commands}" ]; then
+            check_command="$(echo "${check_commands}" |  tail -n1)"
+            if [ -n "${1}" ]; then
+                printf "\033[K\n"  # erase tmp line « Checking check_toto…»
+                echo "Found command in /etc/nagios (take care, in some cases, Nagios can play another command):"
+                echo -e "    ${orange}${check_command}${nocolor}"
+            fi
+        fi
+
         if [ "${bypass_nrpe}" = "False" ]; then
             request_command="${check_nrpe_bin} -H ${server_address} -p ${server_port} -c check_${check} 2&>1"
         else
-            check_commands="$(get_check_commands "${check}")"
-            if [ -n "${check_commands}" ]; then
-                check_command="$(echo "${check_commands}" |  tail -n1)"
+            if [ -n "${check_command}" ]; then
                 request_command="sudo -u nagios -- ${check_command}"
             else
                 if [ -z "${1}" ] || [ "${1}" = "all" ]; then
@@ -129,6 +138,7 @@ function check() {
                 fi
             fi
         fi
+
         if [ -z "${err_msg}" ]; then
             check_output="$(${request_command})"
             rc="$?"
