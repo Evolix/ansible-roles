@@ -58,7 +58,7 @@ function main() {
         timeout_command="timeout 8"
     fi
 
-    check_stdout="$(${timeout_command} ${check_command})"
+    check_stdout="$(eval "${timeout_command} ${check_command}")"
     check_rc=$?
 
     if [ "${is_disabled}" = "True" ] && [ "${check_rc}" -eq 124 ] && [ -z "${check_stdout}" ]; then
@@ -141,15 +141,22 @@ if [[ "${1}" =~ -.* ]]; then
 
         shift
     done
-    # The rest is the command
-    check_command="$*"
 else
     # no option is passed (backward compatibility with previous version)
     # treat the first argument as wrapper_name and the rest as the command
     wrapper_name="${1}"
     shift
-    check_command="$*"
 fi
+
+# The rest is the command
+while [ "$#" -ne 0 ]; do
+    if [ -n "${1}" ]; then
+        check_command="${check_command} ${1}"
+    else
+        check_command="${check_command} ''"
+    fi
+    shift
+done
 
 if [ -z "${wrapper_name}" ]; then
     printf 'ERROR: You must specify a wrapper name, with --names.\n' >&2
