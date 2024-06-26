@@ -2,6 +2,6 @@
 
 Types: deb
 URIs: http://mirror.evolix.org/debian
-Suites: bullseye-backports
+Suites: bookworm-backports
 Components: {{ apt_backports_components | mandatory }}
 Enabled: {{ apt_install_backports | bool | ternary('yes', 'no') }}

@@ -61,8 +61,8 @@
   tags:
     - apt
   when:
+    - apt_install_backports | bool
     - ansible_distribution_major_version is version('12', '>=')
-
 
 - name: Install Evolix Public repositories (Debian <12)
   ansible.builtin.import_tasks: evolix_public.oneline.yml
