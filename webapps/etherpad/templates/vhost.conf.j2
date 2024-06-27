@@ -23,8 +23,8 @@ server {
   
   server_name {{ etherpad_domains |first }};
 
-  access_log /var/log/nginx/{{ service }}.access.log;
-  error_log  /var/log/nginx/{{ service }}.error.log;
+  access_log /var/log/nginx/{{ etherpad_instance }}.access.log;
+  error_log  /var/log/nginx/{{ etherpad_instance }}.error.log;
   
   include /etc/nginx/snippets/letsencrypt.conf;
   include /etc/nginx/ssl/{{ etherpad_domains | first }}.conf;

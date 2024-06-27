@@ -6,21 +6,14 @@
     name: "{{ etherpad_system_dep }}"
     update_cache: true
 
-- name: Install pnpm (via npm)
-  ansible.builtin.command:
-    cmd: corepack enable pnpm
+- name: Install pnpm (via corepack)
+  ansible.builtin.shell:
+    cmd: "mount -o remount,rw /usr; corepack enable pnpm; mount -o remount,ro /usr"
     creates: /usr/bin/pnpm
-
-- name: Fix permissions for pnpm
-  ansible.builtin.file:
-    path: /usr/local/lib/node_modules/
-    state: directory
-    mode: o+rx
-    recurse: true
 
 - name: Add UNIX account
   ansible.builtin.user:
-    name: "{{ service }}"
+    name: "{{ etherpad_instance }}"
     shell: /bin/bash
 
 - name: Add database
@@ -42,46 +35,41 @@
     update: true
     force: true
     umask: '0022'
-  become_user: "{{ service }}"
+  become_user: "{{ etherpad_instance }}"
 
 - name: Fix run.sh so it does not start etherpad at the end
   ansible.builtin.lineinfile: 
     path: "~/etherpad-lite/bin/run.sh"
     state: absent
     regexp: '^exec pnpm run dev'
-  become_user: "{{ service }}"
+  become_user: "{{ etherpad_instance }}"
 
 - name: Run setup
   ansible.builtin.shell: "bin/run.sh"
   args:
     chdir: "~/etherpad-lite"
-  become_user: "{{ service }}"
+  become_user: "{{ etherpad_instance }}"
 
 - name: Template json config file
   ansible.builtin.template:
     src: "settings.json.j2"
-    dest: "~{{ service }}/etherpad-lite/settings.json"
-    owner: "{{ service }}"
-    group: "{{ service }}"
+    dest: "~{{ etherpad_instance }}/etherpad-lite/settings.json"
+    owner: "{{ etherpad_instance }}"
+    group: "{{ etherpad_instance }}"
     mode: "0640"
 
 - name: Add systemd unit
   ansible.builtin.template:
     src: "etherpad.service.j2"
-    dest: "/etc/systemd/system/{{ service }}.service"
+    dest: "/etc/systemd/system/etherpad@.service"
 
 - name: Enable systemd unit
   ansible.builtin.systemd:
-    name: "{{ service }}.service"
+    name: "etherpad@{{ etherpad_instance }}.service"
     enabled: true
     daemon_reload: true
   notify: 
     - restart etherpad
-
-- name: Template nginx snippet for Let's Encrypt/Certbot
-  ansible.builtin.template: 
-    src: "letsencrypt.conf.j2"
-    dest: "/etc/nginx/snippets/letsencrypt.conf"
 
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
@@ -94,17 +82,19 @@
   - name: Template vhost without SSL for successfull LE challengce
     ansible.builtin.template: 
       src: "vhost.conf.j2"
-      dest: "/etc/nginx/sites-available/{{ service }}.conf"
+      dest: "/etc/nginx/sites-available/{{ etherpad_instance }}.conf"
+
   - name: Enable temporary nginx vhost for LE
     ansible.builtin.file:
-      src: "/etc/nginx/sites-available/{{ service }}.conf"
-      dest: "/etc/nginx/sites-enabled/{{ service }}.conf"
+      src: "/etc/nginx/sites-available/{{ etherpad_instance }}.conf"
+      dest: "/etc/nginx/sites-enabled/{{ etherpad_instance }}.conf"
       state: link
     notify: 
       - reload nginx
 
   - name: Flush handlers
     ansible.builtin.meta: flush_handlers
+
   - name: Make sure /var/lib/letsencrypt exists and has correct permissions
     ansible.builtin.file: 
       path: /var/lib/letsencrypt
@@ -126,7 +116,6 @@
       src: "ssl.conf.j2"
       dest: "/etc/nginx/ssl/{{ etherpad_domains |first }}.conf"
 
-
 - name: (Re)check if SSL certificate is present and register result
   ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ etherpad_domains |first }}/fullchain.pem"
@@ -135,14 +124,14 @@
 - name: (Re)template conf file for nginx vhost with SSL
   ansible.builtin.template:
     src: "vhost.conf.j2"
-    dest: "/etc/nginx/sites-available/{{ service }}.conf"
+    dest: "/etc/nginx/sites-available/{{ etherpad_instance }}.conf"
   notify: 
     - reload nginx
 
 - name: Enable nginx vhost for etherpad
   ansible.builtin.file:
-    src: "/etc/nginx/sites-available/{{ service }}.conf"
-    dest: "/etc/nginx/sites-enabled/{{ service }}.conf"
+    src: "/etc/nginx/sites-available/{{ etherpad_instance }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ etherpad_instance }}.conf"
     state: link
   notify: 
     - reload nginx

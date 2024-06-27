@@ -30,12 +30,12 @@ Example Playbook
   hosts: 
     - all
   vars:
-    # Overwrite the role variable here
-    service: 'my-etherpad'
+    # Overwrite the role variables here
+    etherpad_instance: 'my-etherpad'
     etherpad_domains: ['your-real-domain.org']
     etherpad_db_host: 'localhost'
-    etherpad_db_user: "{{ service }}"
-    etherpad_db_name: "{{ service }}"
+    etherpad_db_user: "{{ etherpad_instance }}"
+    etherpad_db_name: "{{ etherpad_instance }}"
     etherpad_db_password: 'zKEh-CHANGE-ME-qIKc'
 
   pre_tasks:

@@ -9,9 +9,9 @@ Type=simple
 Environment=NODE_ENV=production
 ExecStart=pnpm run prod
 Restart=always
-User={{service}}
-Group={{service}}
-WorkingDirectory=/home/{{service}}/etherpad-lite
+User=%i
+Group=%i
+WorkingDirectory=/home/%i/etherpad-lite
 
 [Install]
 WantedBy=multi-user.target

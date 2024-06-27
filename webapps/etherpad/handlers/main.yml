@@ -7,5 +7,5 @@
 
 - name: restart etherpad
   ansible.builtin.systemd:
-    name: "{{ service }}.service"
+    name: "etherpad@{{ etherpad_instance }}.service"
     state: restarted

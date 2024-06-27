@@ -31,11 +31,11 @@ Exemple de playbook
     - all
   vars:
     # Supplanter ici les variables du rôle
-    service: 'mon-etherpad'
+    etherpad_instance: 'mon-etherpad'
     etherpad_domains: ['votre-vrai-domaine.org']
     etherpad_db_host: 'localhost'
-    etherpad_db_user: "{{ service }}"
-    etherpad_db_name: "{{ service }}"
+    etherpad_db_user: "{{ etherpad_instance }}"
+    etherpad_db_name: "{{ etherpad_instance }}"
     etherpad_db_password: 'zKEh-CHANGEZ-MOI-qIKc'
 
   pre_tasks:
