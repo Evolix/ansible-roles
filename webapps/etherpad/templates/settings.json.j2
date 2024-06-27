@@ -518,7 +518,7 @@
   /*
    * Restrict socket.io transport methods
    */
-  "socketTransportProtocols" : ["xhr-polling", "jsonp-polling", "htmlfile"],
+  "socketTransportProtocols" : ["websocket", "polling"],
 
   "socketIo": {
     /*
@@ -528,7 +528,7 @@
      * value to work properly, but increasing the value increases susceptibility
      * to denial of service attacks (malicious clients can exhaust memory).
      */
-    "maxHttpBufferSize": 10000
+    "maxHttpBufferSize": 50000
   },
 
   /*
@@ -637,5 +637,41 @@
   "customLocaleStrings": {},
 
   /* Disable Admin UI tests */
-  "enableAdminUITests": false
+  "enableAdminUITests": false,
+
+  /*
+   * Enable/Disable case-insensitive pad names.
+   */
+  "lowerCasePadIds": false,
+
+  "sso": {
+    "issuer": "${SSO_ISSUER:http://localhost:9001}",
+      "clients": [
+        {
+          "client_id": "${ADMIN_CLIENT:admin_client}",
+          "client_secret": "${ADMIN_SECRET:admin}",
+          "grant_types": ["authorization_code"],
+          "response_types": ["code"],
+          "redirect_uris": ["${ADMIN_REDIRECT:http://localhost:9001/admin/}"]
+        },
+        {
+          "client_id": "${USER_CLIENT:user_client}",
+          "client_secret": "${USER_SECRET:user}",
+          "grant_types": ["authorization_code"],
+          "response_types": ["code"],
+          "redirect_uris": ["${USER_REDIRECT:http://localhost:9001/}"]
+        }
+      ]
+    }
+
+    /* Set the time to live for the tokens
+         This is the time of seconds a user is logged into Etherpad
+    "ttl":  {
+        "AccessToken": 3600,
+        "AuthorizationCode": 600,
+        "ClientCredentials": 3600,
+        "IdToken": 3600,
+        "RefreshToken": 86400
+    }
+    */
 }
