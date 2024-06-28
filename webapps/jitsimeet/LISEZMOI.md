@@ -30,9 +30,10 @@ Exemple de playbook
   vars:
     # Supplanter ici les variables du rôle
     jitsimeet_domains: ['votre-vrai-domaine.org']
-    service: 'mon-jitsimeet'
+    jitsimeet_instance: 'mon-jitsimeet'
 
   roles:
+    - { role: certbot }
     - { role: webapps/jitsimeet , tags: "jitsimeet" }
 ```
 

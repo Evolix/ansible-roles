@@ -35,8 +35,8 @@ server {
   listen [::]:8088 ssl http2;
   server_name {{ domain }};
   
-  access_log /var/log/nginx/{{ service }}.access.log; # reduce I/0 with buffer=10m flush=5m
-  error_log  /var/log/nginx/{{ service }}.error.log;
+  access_log /var/log/nginx/{{ jitsimeet_instance }}.access.log; # reduce I/0 with buffer=10m flush=5m
+  error_log  /var/log/nginx/{{ jitsimeet_instance }}.error.log;
 
   # For certbot
   location ~ /.well-known/acme-challenge {
