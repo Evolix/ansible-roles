@@ -42,7 +42,7 @@
   ansible.builtin.apt:
     name: jitsi-meet
     state: present
-    install_recommends: yes
+    install_recommends: true
 
 - name: Install stream module for nginx
   ansible.builtin.apt:

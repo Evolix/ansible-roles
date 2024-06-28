@@ -31,7 +31,7 @@
     repo: "deb [signed-by={{ apt_keyring_dir }}/prosody.gpg] https://packages.prosody.im/debian {{ ansible_distribution_release }} main"
     filename: prosody
     state: present
-    update_cache: yes
+    update_cache: true
   when: ansible_distribution_major_version is version('12', '<')
 
 - name: Add Prosody repository (Debian >=12)
@@ -45,7 +45,7 @@
     repo: "deb [signed-by={{ apt_keyring_dir }}/jitsimeet.gpg] https://download.jitsi.org stable/"
     filename: jitsimeet
     state: present
-    update_cache: yes
+    update_cache: true
   when: ansible_distribution_major_version is version('12', '<')
 
 - name: Add Jitsi Meet repository (Debian >=12)
