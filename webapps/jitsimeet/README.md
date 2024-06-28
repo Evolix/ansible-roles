@@ -33,6 +33,7 @@ Example Playbook
     jitsimeet_instance: 'my-jitsimeet'
 
   roles:
+    - { role: certbot }
     - { role: webapps/jitsimeet , tags: "jitsimeet" }
 ```
 
