@@ -30,7 +30,7 @@ Example Playbook
   vars:
     # Overwrite the role variables here
     jitsimeet_domains: ['your-real-domain.org']
-    service: 'my-jitsimeet'
+    jitsimeet_instance: 'my-jitsimeet'
 
   roles:
     - { role: webapps/jitsimeet , tags: "jitsimeet" }
