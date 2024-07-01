@@ -55,8 +55,10 @@
       - mutt
       - tree
       - git
+      - colordiff
       - rsync
       - bc
+      - tree
       - pinentry-curses
       - ncurses-term
   when: evolinux_packages_common | bool

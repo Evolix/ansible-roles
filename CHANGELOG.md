@@ -16,6 +16,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * bind: New variables to change IPs bind will listen on & send notify/transfer commands
 * evolinux-base: Create custom SSH configuration file
 * evolinux-base: install evobackup-client (default: true)
+* evolinux-base: install colordiff and tree by default
 * lxc: new lxc_template_mirror option (useful to get old Debian from archive.debian.org)
 * munin: add linux_psi contrib plugin
 * nagios-nrpe: add new check_ftp_users
