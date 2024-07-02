@@ -10,19 +10,23 @@
     insertbefore: BOF
   notify: reload ssh
 
-- name: add SSH server configuration template
+- name: Evolinux defaults config is present
   ansible.builtin.template:
-    src: sshd/defaults.j2
+    src: sshd/z-evolinux-defaults.conf.j2
     dest: /etc/ssh/sshd_config.d/z-evolinux-defaults.conf
     mode: "0644"
+    owner: root
+    group: root
+    force: yes
 
-- name: create custom SSH server configuration file
-  ansible.builtin.file:
-    path: /etc/ssh/sshd_config.d/zzz-evolinux-custom.conf
-    state: touch
+- name: Evolinux custom config is present
+  ansible.builtin.template:
+    src: sshd/zzz-evolinux-custom.conf.j2
+    dest: /etc/ssh/sshd_config.d/zzz-evolinux-custom.conf
     mode: "0644"
-    modification_time: preserve
-    access_time: preserve
+    owner: root
+    group: root
+    force: no
 
 # Should we allow the current user?
 - name: Allow the current user
@@ -66,17 +70,6 @@
 
   # If we have AllowGroups but not AllowUsers, add the user to the group and append the group to the list
   # (in the first file where we found the directive)
-
-  - name: "Append evolinux ssh group to AllowGroups sshd directive"
-    ansible.builtin.replace:
-      dest: "{{ grep_allowgroups_ssh.stdout_lines[0] }}"
-      regexp: '^(AllowGroups ((?!{{ evolinux_ssh_group }}).)*)$'
-      replace: '\1 {{ evolinux_ssh_group }}'
-      validate: '/usr/sbin/sshd -t -f %s'
-    notify: reload sshd
-    when:
-      - grep_allowusers_ssh.rc != 0
-      - grep_allowgroups_ssh.rc == 0
   
   - name: "evolinux ssh group is present"
     ansible.builtin.group:
@@ -90,6 +83,17 @@
       name: "{{ _logname.stdout }}"
       group: "{{ evolinux_ssh_group }}"
       append: yes
+    when:
+      - grep_allowusers_ssh.rc != 0
+      - grep_allowgroups_ssh.rc == 0
+
+  - name: "Append evolinux ssh group to AllowGroups sshd directive"
+    ansible.builtin.replace:
+      dest: "{{ grep_allowgroups_ssh.stdout_lines[0] }}"
+      regexp: '^(AllowGroups ((?!{{ evolinux_ssh_group }}).)*)$'
+      replace: '\1 {{ evolinux_ssh_group }}'
+      validate: '/usr/sbin/sshd -t -f %s'
+    notify: reload sshd
     when:
       - grep_allowusers_ssh.rc != 0
       - grep_allowgroups_ssh.rc == 0

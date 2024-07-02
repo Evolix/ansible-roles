@@ -29,19 +29,20 @@
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
   when:
-    - ansible_distribution_major_version is version('11', '<=')
-    - grep_allowgroups_ssh.rc == 1 # Not found
+    - ansible_distribution_major_version is version('12', '<')
+    - grep_allowgroups_ssh.rc != 0
 
 - name: "Add AllowGroups sshd directive with '{{ evolinux_ssh_group }}' (Debian >= 12)"
   ansible.builtin.lineinfile:
-    dest: /etc/ssh/sshd_config.d/z-evolinux-users.conf
-    line: "\nAllowGroups {{ evolinux_ssh_group }}"
+    dest: /etc/ssh/sshd_config.d/zzz-evolinux-custom.conf
+    line: "AllowGroups {{ evolinux_ssh_group }}"
+    regexp: "^#? ?AllowGroups "
     validate: '/usr/sbin/sshd -t -f %s'
     create: yes
   notify: reload sshd
   when:
     - ansible_distribution_major_version is version('12', '>=')
-    - grep_allowgroups_ssh.rc == 1 # Not found
+    - grep_allowgroups_ssh.rc != 0
 
 - name: "Append '{{ evolinux_ssh_group }}' to AllowGroups sshd directive"
   ansible.builtin.replace:
@@ -51,4 +52,4 @@
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
   when:
-    - grep_allowgroups_ssh.rc == 0 or grep_allowgroups_ssh.rc == 2 # Found, return code can be 0 or 2
+    - grep_allowgroups_ssh.rc == 0

@@ -1,0 +1,17 @@
+### You can change the root access restrictions with the following line
+{% if evolinux_root_disable_ssh %}
+PermitRootLogin no
+{% else %}
+# PermitRootLogin no
+{% endif %}
+
+### To restrict SSH access to one or more groups, uncomment the following line
+# AllowGroups {{ evolinux_ssh_group }}
+
+### To allow root access from specific IP addresses, uncomment the following block
+# Match User root Address 10.0.0.1,192.168.0.1
+#     AllowGroups root
+#     PubkeyAuthentication yes
+#     PasswordAuthentication no
+#     PermitRootLogin without-password
+

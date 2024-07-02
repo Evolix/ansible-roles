@@ -29,6 +29,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * certbot: let's encrypt commit hook deal only with /etc/letsencrypt
 * Elastic Stack : default to version 8.x
 * evolinux-base: Customize logcheck recipient when serveur-base is installed
+* evolinux-base/evolinux-users: simplify ssh split configuration
 * log2mail: task log2mail.yml of evolinux-base converted to a role
 * lxc-solr: update solr9 version + fix URL in README
 
