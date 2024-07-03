@@ -120,7 +120,7 @@ function check() {
             check_command="$(echo "${check_commands}" |  tail -n1)"
             if [ -n "${1}" ]; then
                 printf "\033[K\n"  # erase tmp line « Checking check_toto…»
-                echo "Found command in /etc/nagios (take care, in some cases, Nagios can play another command):"
+                echo "Command played by NRPE:"
                 echo -e "    ${orange}${check_command}${nocolor}"
             fi
         fi
