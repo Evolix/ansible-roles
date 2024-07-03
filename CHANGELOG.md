@@ -32,6 +32,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base/evolinux-users: simplify ssh split configuration
 * log2mail: task log2mail.yml of evolinux-base converted to a role
 * lxc-solr: update solr9 version + fix URL in README
+* evolinux-base: Add commented Match all
 
 ### Fixed
 
