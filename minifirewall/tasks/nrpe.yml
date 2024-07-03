@@ -46,7 +46,8 @@
   ansible.builtin.lineinfile:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: 'command\[check_minifirewall\]'
-    line: 'command[check_minifirewall]=/usr/local/lib/monitoringctl/alerts_wrapper --name minifirewall sudo {{ nagios_plugins_directory }}/check_minifirewall'
+#    line: 'command[check_minifirewall]=/usr/local/lib/monitoringctl/alerts_wrapper --name minifirewall sudo {{ nagios_plugins_directory }}/check_minifirewall'
+    line: 'command[check_minifirewall]=sudo {{ nagios_plugins_directory }}/check_minifirewall'
   notify: restart nagios-nrpe-server
   when: nrpe_evolix_cfg.stat.exists
 
