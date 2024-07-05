@@ -36,11 +36,26 @@
     force: true
   when: ansible_distribution_major_version is version('11', '>=')
 
+- name: Is alerts_wrapper present?
+  ansible.builtin.stat:
+    path: /usr/local/lib/monitoringctl/alerts_wrapper
+  register:
+    alerts_wrapper
+
 - name: check_rabbitmq is available for NRPE
   ansible.builtin.lineinfile:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: 'command\[check_rab_connection_count\]'
     line: 'command[check_rab_connection_count]=/usr/local/lib/monitoringctl/alerts_wrapper --name rab_connection_count sudo /usr/local/lib/nagios/plugins/check_rabbitmq -a connection_count -C {{ rabbitmq_connections_critical }} -W {{ rabbitmq_connections_warning }}'
+  when: alerts_wrapper.stat.exists
+  notify: restart nagios-nrpe-server
+
+- name: check_rabbitmq is available for NRPE
+  ansible.builtin.lineinfile:
+    dest: /etc/nagios/nrpe.d/evolix.cfg
+    regexp: 'command\[check_rab_connection_count\]'
+    line: 'command[check_rab_connection_count]=sudo /usr/local/lib/nagios/plugins/check_rabbitmq -a connection_count -C {{ rabbitmq_connections_critical }} -W {{ rabbitmq_connections_warning }}'
+  when: not alerts_wrapper.stat.exists
   notify: restart nagios-nrpe-server
 
 - name: sudo without password for nagios

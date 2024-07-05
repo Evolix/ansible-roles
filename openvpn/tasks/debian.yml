@@ -197,13 +197,31 @@
     group: nagios
   when: nrpe_evolix_config.stat.exists
 
+- name: Is alerts_wrapper present?
+  ansible.builtin.stat:
+    path: /usr/local/lib/monitoringctl/alerts_wrapper
+  register:
+    alerts_wrapper
+
 - name: Configure NRPE OpenVPN check
   ansible.builtin.lineinfile:
     dest: "/etc/nagios/nrpe.d/evolix.cfg"
     regexp: '^command\[check_openvpn\]='
     line: "command[check_openvpn]=/usr/local/lib/monitoringctl/alerts_wrapper --name openvpn /usr/local/lib/nagios/plugins/check_openvpn -H 127.0.0.1 -p 1195 -P {{ management_pwd }}"
   notify: restart nagios-nrpe-server
-  when: nrpe_evolix_config.stat.exists
+  when:
+    - nrpe_evolix_config.stat.exists
+    - alerts_wrapper.stat.exists
+
+- name: Configure NRPE OpenVPN check
+  ansible.builtin.lineinfile:
+    dest: "/etc/nagios/nrpe.d/evolix.cfg"
+    regexp: '^command\[check_openvpn\]='
+    line: "command[check_openvpn]=/usr/local/lib/nagios/plugins/check_openvpn -H 127.0.0.1 -p 1195 -P {{ management_pwd }}"
+  notify: restart nagios-nrpe-server
+  when:
+    - nrpe_evolix_config.stat.exists
+    - not alerts_wrapper.stat.exists
 
 - ansible.builtin.include_role:
     name: evolix/remount-usr
@@ -235,7 +253,19 @@
     regexp: '^command\[check_openvpn_certificates\]='
     line: "command[check_openvpn_certificates]=/usr/local/lib/monitoringctl/alerts_wrapper --name openvpn_certificates sudo /usr/local/lib/nagios/plugins/check_openvpn_certificates.sh"
   notify: restart nagios-nrpe-server
-  when: nrpe_evolix_config.stat.exists
+  when:
+    - nrpe_evolix_config.stat.exists
+    - alerts_wrapper.stat.exists
+
+- name: Configure NRPE certificates check
+  ansible.builtin.lineinfile:
+    dest: "/etc/nagios/nrpe.d/evolix.cfg"
+    regexp: '^command\[check_openvpn_certificates\]='
+    line: "command[check_openvpn_certificates]=sudo /usr/local/lib/nagios/plugins/check_openvpn_certificates.sh"
+  notify: restart nagios-nrpe-server
+  when:
+    - nrpe_evolix_config.stat.exists
+    - not alerts_wrapper.stat.exists
 
 - ansible.builtin.include_role:
     name: evolix/remount-usr

@@ -56,12 +56,33 @@
     - redis
     - nrpe
 
+- name: Is alerts_wrapper present?
+  ansible.builtin.stat:
+    path: /usr/local/lib/monitoringctl/alerts_wrapper
+  register:
+    alerts_wrapper
+
 - name: Use check_redis for NRPE
   ansible.builtin.replace:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: '^command\[check_redis\]=.+'
     replace: 'command[check_redis]=/usr/local/lib/monitoringctl/alerts_wrapper --name redis sudo {{ redis_check_redis_path }} -H {{ redis_bind_interfaces | first }} -p {{ redis_port }}'
-  when: redis_instance_name is undefined
+  when:
+    - redis_instance_name is undefined
+    - alerts_wrapper.stat.exists
+  notify: restart nagios-nrpe-server
+  tags:
+    - redis
+    - nrpe
+
+- name: Use check_redis for NRPE
+  ansible.builtin.replace:
+    dest: /etc/nagios/nrpe.d/evolix.cfg
+    regexp: '^command\[check_redis\]=.+'
+    replace: 'command[check_redis]=sudo {{ redis_check_redis_path }} -H {{ redis_bind_interfaces | first }} -p {{ redis_port }}'
+  when:
+    - redis_instance_name is undefined
+    - not alerts_wrapper.stat.exists
   notify: restart nagios-nrpe-server
   tags:
     - redis
