@@ -20,19 +20,19 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc: new lxc_template_mirror option (useful to get old Debian from archive.debian.org)
 * munin: add linux_psi contrib plugin
 * nagios-nrpe: add new check_ftp_users
-* proftpd: add new munin graph (users count)
 * nagios-nrpe: new monitoringctl command
+* proftpd: add new munin graph (users count)
 
 ### Changed
 
 * autosysadmin-agent: release 24.06
 * certbot: let's encrypt commit hook deal only with /etc/letsencrypt
 * Elastic Stack : default to version 8.x
+* evolinux-base: Add commented Match all
 * evolinux-base: Customize logcheck recipient when serveur-base is installed
 * evolinux-base/evolinux-users: simplify ssh split configuration
 * log2mail: task log2mail.yml of evolinux-base converted to a role
 * lxc-solr: update solr9 version + fix URL in README
-* evolinux-base: Add commented Match all
 * minifirewall: Update from upsteam (24.07)
 
 ### Fixed
