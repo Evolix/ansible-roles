@@ -46,6 +46,7 @@
     - mysql_custom_logdir != mysql_current_real_logdir_test.stdout
     - not mysql_custom_logdir_test.stat.exists
 
+- block:
   - name: "Create undo log dir"
     ansible.builtin.file:
       path: "/var/log/mysql/innodb_undo"
@@ -55,4 +56,4 @@
       state: directory
     tags:
       - mysql
-    when: innodb_undo_log | length > 0
+    when: innodb_undo_log == "True"
