@@ -45,3 +45,12 @@ performance-schema-instrument='stage/%=ON'
 performance-schema-consumer-events-stages-current=ON
 performance-schema-consumer-events-stages-history=ON
 {% endif %}
+{% if innodb_undo_log | bool %}
+# Configuration directory for innodb undo log + truncation
+innodb_undo_tablespaces = 6
+innodb_undo_directory = /var/log/mysql/innodb_undo
+innodb_undo_log_truncate = 1
+innodb_max_undo_log_size = 2G
+innodb_purge_rseg_truncate_frequency = 64
+innodb_purge_threads = 6
+{% endif %}
