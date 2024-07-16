@@ -13,19 +13,17 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
-<<<<<<< Updated upstream
 * bind: New variables to change IPs bind will listen on & send notify/transfer commands
+* evobackup-client : Upstream release 24.07
 * evolinux-base: Create custom SSH configuration file
-* evolinux-base: install evobackup-client (default: true)
 * evolinux-base: install colordiff and tree by default
+* evolinux-base: install evobackup-client (default: true)
 * lxc: new lxc_template_mirror option (useful to get old Debian from archive.debian.org)
 * munin: add linux_psi contrib plugin
+* mysql : Add configuration for external undo log and purge.
 * nagios-nrpe: add new check_ftp_users
 * nagios-nrpe: new monitoringctl command
 * proftpd: add new munin graph (users count)
-=======
-* mysql : Add configuration for external undo log and purge.
->>>>>>> Stashed changes
 
 ### Changed
 

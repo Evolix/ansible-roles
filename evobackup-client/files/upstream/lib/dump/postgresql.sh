@@ -99,15 +99,7 @@ dump_postgresql_global() {
     esac
 
     if [ -z "${option_dump_label}" ]; then
-        if [ -n "${option_defaults_group_suffix}" ]; then
-            option_dump_label="${option_defaults_group_suffix}"
-        elif [ -n "${option_port}" ]; then
-            option_dump_label="${option_port}"
-        elif [ -n "${option_socket}" ]; then
-            option_dump_label=$(path_to_str "${option_socket}")
-        else
-            option_dump_label="default"
-        fi
+        option_dump_label="default"
     fi
 
     local dump_dir="${LOCAL_BACKUP_DIR}/postgresql-${option_dump_label}-global"
@@ -132,7 +124,7 @@ dump_postgresql_global() {
     
     dump_cmd="(sudo -u postgres pg_dumpall ${dump_options[*]}) 2> ${error_file} | ${compress_cmd} > ${dump_file}"
     log "LOCAL_TASKS - ${FUNCNAME[0]}: ${dump_cmd}"
-    ${dump_cmd}
+    eval "${dump_cmd}"
 
     local last_rc=$?
     # shellcheck disable=SC2086
@@ -251,15 +243,7 @@ dump_postgresql_per_base() {
     esac
 
     if [ -z "${option_dump_label}" ]; then
-        if [ -n "${option_defaults_group_suffix}" ]; then
-            option_dump_label="${option_defaults_group_suffix}"
-        elif [ -n "${option_port}" ]; then
-            option_dump_label="${option_port}"
-        elif [ -n "${option_socket}" ]; then
-            option_dump_label=$(path_to_str "${option_socket}")
-        else
-            option_dump_label="default"
-        fi
+        option_dump_label="default"
     fi
 
     local dump_dir="${LOCAL_BACKUP_DIR}/postgresql-${option_dump_label}-per-base"
@@ -291,7 +275,7 @@ dump_postgresql_per_base() {
 
             dump_cmd="(sudo -u postgres /usr/bin/pg_dump ${dump_options[*]}) 2> ${error_file} | ${compress_cmd} > ${dump_file}"
             log "LOCAL_TASKS - ${FUNCNAME[0]}: ${dump_cmd}"
-            ${dump_cmd}
+            eval "${dump_cmd}"
 
             local last_rc=$?
             # shellcheck disable=SC2086
