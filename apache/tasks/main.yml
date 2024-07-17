@@ -78,6 +78,18 @@
   tags:
   - apache
 
+- name: Copy Apache defaults config file
+  ansible.builtin.copy:
+    src: evolinux-badbots.conf
+    dest: "/etc/apache2/conf-available/z-evolinux-badbots.conf"
+    owner: root
+    group: root
+    mode: "0640"
+    force: true
+  notify: reload apache
+  tags:
+  - apache
+
 - name: Copy Apache custom config file
   ansible.builtin.copy:
     src: evolinux-custom.conf
