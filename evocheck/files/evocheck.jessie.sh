@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # EvoCheck
-# Script to verify compliance of a Linux (Debian) server
+# Script to verify compliance of a Linux (Debian 8 only) server
 # powered by Evolix
 
-VERSION="24.01"
+VERSION="<24.07>"
 readonly VERSION
 
 # base functions
@@ -13,7 +13,7 @@ show_version() {
     cat <<END
 evocheck version ${VERSION} (Jessie)
 
-Copyright 2009-2022 Evolix <info@evolix.fr>,
+Copyright 2009-2024 Evolix <info@evolix.fr>,
                     Romain Dessort <rdessort@evolix.fr>,
                     Benoit Série <bserie@evolix.fr>,
                     Gregory Colpart <reg@evolix.fr>,

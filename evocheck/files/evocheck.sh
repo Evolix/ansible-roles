@@ -1,10 +1,12 @@
 #!/bin/bash
 
 # EvoCheck
-# Script to verify compliance of a Linux (Debian) server
+# Script to verify compliance of a Linux (Debian 9+) server
 # powered by Evolix
 
-VERSION="24.01"
+#set -x
+
+VERSION="<24.07>"
 readonly VERSION
 
 # base functions
@@ -13,7 +15,7 @@ show_version() {
     cat <<END
 evocheck version ${VERSION}
 
-Copyright 2009-2022 Evolix <info@evolix.fr>,
+Copyright 2009-2024 Evolix <info@evolix.fr>,
                     Romain Dessort <rdessort@evolix.fr>,
                     Benoit Série <bserie@evolix.fr>,
                     Gregory Colpart <reg@evolix.fr>,
@@ -193,8 +195,13 @@ check_logrotateconf() {
     test -e /etc/logrotate.d/zsyslog || failed "IS_LOGROTATECONF" "missing zsyslog in logrotate.d"
 }
 check_syslogconf() {
-    grep -q "^# Syslog for Pack Evolix serveur" /etc/*syslog.conf \
-        || failed "IS_SYSLOGCONF" "syslog evolix config file missing"
+    # Test for modern servers
+    if [ ! -f /etc/rsyslog.d/10-evolinux-default.conf ]; then
+        # Fallback test for legacy servers
+        if ! grep --quiet --ignore-case "Syslog for Pack Evolix" /etc/*syslog*/*.conf /etc/*syslog.conf; then
+            failed "IS_SYSLOGCONF" "Evolix syslog config is missing"
+        fi
+    fi
 }
 check_debiansecurity() {
     # Look for enabled "Debian-Security" sources from the "Debian" origin
@@ -203,12 +210,14 @@ check_debiansecurity() {
 }
 check_debiansecurity_lxc() {
     if is_installed lxc; then
-        container_list=$(lxc-ls)
+        container_list=$(lxc-ls --active)
         for container in $container_list; do
-            DEBIAN_LXC_VERSION=$(cut -d "." -f 1 < /var/lib/lxc/${container}/rootfs/etc/debian_version)
-            if [ $DEBIAN_LXC_VERSION -ge 9 ]; then
-                lxc-attach --name $container apt-cache policy | grep "\bl=Debian-Security\b" | grep "\bo=Debian\b" | grep --quiet "\bc=main\b"
-                test $? -eq 0 || failed "IS_DEBIANSECURITY_LXC" "missing Debian-Security repository in container ${container}"
+            if [ -f /var/lib/lxc/${container}/rootfs/etc/debian_version ]; then
+                DEBIAN_LXC_VERSION=$(cut -d "." -f 1 < /var/lib/lxc/${container}/rootfs/etc/debian_version)
+                if [ $DEBIAN_LXC_VERSION -ge 9 ]; then
+                    lxc-attach --name $container apt-cache policy | grep "\bl=Debian-Security\b" | grep "\bo=Debian\b" | grep --quiet "\bc=main\b"
+                    test $? -eq 0 || failed "IS_DEBIANSECURITY_LXC" "missing Debian-Security repository in container ${container}"
+                fi
             fi
         done
     fi
@@ -228,10 +237,13 @@ check_oldpub() {
 check_oldpub_lxc() {
     # Look for enabled pub.evolix.net sources (supersed by pub.evolix.org since Buster as Sury safeguard)
     if is_installed lxc; then
-        container_list=$(lxc-ls)
+        container_list=$(lxc-ls --active)
         for container in $container_list; do
-            lxc-attach --name $container apt-cache policy | grep --quiet pub.evolix.net
-            test $? -eq 1 || failed "IS_OLDPUB_LXC" "Old pub.evolix.net repository is still enabled in container ${container}"
+            APT_CACHE_BIN=$(lxc-attach --name $container -- bash -c "command -v apt-cache")
+            if [ -x "${APT_CACHE_BIN}" ]; then
+                lxc-attach --name $container apt-cache policy | grep --quiet pub.evolix.net
+                test $? -eq 1 || failed "IS_OLDPUB_LXC" "Old pub.evolix.net repository is still enabled in container ${container}"
+            fi
         done
     fi
 }
@@ -250,12 +262,15 @@ check_sury() {
 }
 check_sury_lxc() {
     if is_installed lxc; then
-        container_list=$(lxc-ls)
+        container_list=$(lxc-ls --active)
         for container in $container_list; do
-            lxc-attach --name $container apt-cache policy | grep --quiet packages.sury.org
-            if [ $? -eq 0 ]; then
-                 lxc-attach --name $container apt-cache policy | grep "\bl=Evolix\b" | grep php --quiet
-                 test $? -eq 0 || failed "IS_SURY_LXC" "packages.sury.org is present but our safeguard pub.evolix.org repository is missing in container ${container}"
+            APT_CACHE_BIN=$(lxc-attach --name $container -- bash -c "command -v apt-cache")
+            if [ -x "${APT_CACHE_BIN}" ]; then
+                lxc-attach --name $container apt-cache policy | grep --quiet packages.sury.org
+                if [ $? -eq 0 ]; then
+                    lxc-attach --name $container apt-cache policy | grep "\bl=Evolix\b" | grep php --quiet
+                    test $? -eq 0 || failed "IS_SURY_LXC" "packages.sury.org is present but our safeguard pub.evolix.org repository is missing in container ${container}"
+                fi
             fi
         done
     fi
@@ -299,13 +314,23 @@ check_customcrontab() {
 }
 check_sshallowusers() {
     if is_debian_bookworm; then
-        grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config.d \
-            || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config.d/*"
-        grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config \
+        if [ -d /etc/ssh/sshd_config.d/ ]; then
+            # AllowUsers or AllowGroups should be in /etc/ssh/sshd_config.d/
+            grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config.d/ \
+                || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config.d/*"
+        fi
+        # AllowUsers or AllowGroups should not be in /etc/ssh/sshd_config
+        grep -E -qi "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config \
             && failed "IS_SSHALLOWUSERS" "AllowUsers or AllowGroups directive present in sshd_config"
     else
-        grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d \
-            || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
+        # AllowUsers or AllowGroups should be in /etc/ssh/sshd_config or /etc/ssh/sshd_config.d/
+        if [ -d /etc/ssh/sshd_config.d/ ]; then
+            grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d/ \
+                || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
+        else
+            grep -E -qi "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config \
+                || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
+        fi
     fi
 }
 check_diskperf() {
@@ -579,6 +604,7 @@ check_evobackup() {
 }
 # Vérification de la mise en place d'un cron de purge de la base SQLite de Fail2ban
 check_fail2ban_purge() {
+    # Nécessaire seulement en Debian 9 ou 10
     if is_debian_stretch || is_debian_buster; then
       if is_installed fail2ban; then
         test -f /etc/cron.daily/fail2ban_dbpurge || failed "IS_FAIL2BAN_PURGE" "missing script fail2ban_dbpurge cron"
@@ -751,9 +777,10 @@ check_etcgit() {
 }
 check_etcgit_lxc() {
     if is_installed lxc; then
-        container_list=$(lxc-ls)
+        container_list=$(lxc-ls --active)
         for container in $container_list; do
-            export GIT_DIR="/var/lib/lxc/${container}/rootfs/etc/.git" GIT_WORK_TREE="/var/lib/lxc/${container}/rootfs/etc"
+            export GIT_DIR="/var/lib/lxc/${container}/rootfs/etc/.git"
+            export GIT_WORK_TREE="/var/lib/lxc/${container}/rootfs/etc"
             git rev-parse --is-inside-work-tree > /dev/null 2>&1 \
                 || failed "IS_ETCGIT_LXC" "/etc is not a git repository in container ${container}"
         done
@@ -770,7 +797,7 @@ check_gitperms() {
 }
 check_gitperms_lxc() {
     if is_installed lxc; then
-        container_list=$(lxc-ls)
+        container_list=$(lxc-ls --active)
         for container in $container_list; do
             GIT_DIR="/var/lib/lxc/${container}/rootfs/etc/.git"
             if test -d $GIT_DIR; then
@@ -1066,7 +1093,7 @@ check_mysqlnrpe() {
             || [ "$(stat -c %a ${nagios_file})" != "600" ]; then
             failed "IS_MYSQLNRPE" "${nagios_file} has wrong permissions"
         else
-            grep -q -F "command[check_mysql]=/usr/lib/nagios/plugins/check_mysql" /etc/nagios/nrpe.d/evolix.cfg \
+            grep -q -E "command\[check_mysql\]=.*/usr/lib/nagios/plugins/check_mysql" /etc/nagios/nrpe.d/evolix.cfg \
             || failed "IS_MYSQLNRPE" "check_mysql is missing"
         fi
     fi
@@ -1126,6 +1153,13 @@ check_duplicate_fs_label() {
 check_evolix_user() {
     grep -q -E "^evolix:" /etc/passwd \
         && failed "IS_EVOLIX_USER" "evolix user should be deleted, used only for install"
+}
+check_evolix_group() {
+    users=$(grep ":20..:20..:" /etc/passwd | cut -d ":" -f 1)
+    for user in ${users}; do
+        grep -E "^evolix:" /etc/group | grep -q -E "\b${user}\b" \
+            || failed "IS_EVOLIX_GROUP" "user \`${user}' should be in \`evolix' group"
+    done
 }
 check_evoacme_cron() {
     if [ -f "/usr/local/sbin/evoacme" ]; then
@@ -1328,7 +1362,7 @@ check_nginx_letsencrypt_uptodate() {
 }
 check_lxc_container_resolv_conf() {
     if is_installed lxc; then
-        container_list=$(lxc-ls)
+        container_list=$(lxc-ls --active)
         current_resolvers=$(grep nameserver /etc/resolv.conf | sed 's/nameserver//g' )
 
         for container in $container_list; do
@@ -1349,16 +1383,16 @@ check_lxc_container_resolv_conf() {
 # Check that there are containers if lxc is installed.
 check_no_lxc_container() {
     if is_installed lxc; then
-        containers_count=$(lxc-ls | wc -l)
+        containers_count=$(lxc-ls --active | wc -l)
         if [ "$containers_count" -eq 0 ]; then
-            failed "IS_NO_LXC_CONTAINER" "LXC is installed but have no container. Consider removing it."
+            failed "IS_NO_LXC_CONTAINER" "LXC is installed but have no active container. Consider removing it."
         fi
     fi
 }
 # Check that in LXC containers, phpXX-fpm services have UMask set to 0007.
 check_lxc_php_fpm_service_umask_set() {
     if is_installed lxc; then
-        php_containers_list=$(lxc-ls --filter php)
+        php_containers_list=$(lxc-ls --active --filter php)
         missing_umask=""
         for container in $php_containers_list; do
             # Translate container name in service name
@@ -1380,7 +1414,7 @@ check_lxc_php_fpm_service_umask_set() {
 # Check that LXC containers have the proper Debian version.
 check_lxc_php_bad_debian_version() {
     if is_installed lxc; then
-        php_containers_list=$(lxc-ls --filter php)
+        php_containers_list=$(lxc-ls --active --filter php)
         missing_umask=""
         for container in $php_containers_list; do
             if [ "$container" = "php56" ]; then
@@ -1399,7 +1433,7 @@ check_lxc_php_bad_debian_version() {
 }
 check_lxc_openssh() {
     if is_installed lxc; then
-        container_list=$(lxc-ls)
+        container_list=$(lxc-ls --active)
         for container in $container_list; do
             test -e /var/lib/lxc/${container}/rootfs/usr/sbin/sshd && failed "IS_LXC_OPENSSH" "openssh-server should not be installed in container ${container}"
         done
@@ -1603,7 +1637,7 @@ main() {
     test "${IS_INTERFACESGW:=1}" = 1 && check_interfacesgw
     test "${IS_NETWORKING_SERVICE:=1}" = 1 && check_networking_service
     test "${IS_EVOBACKUP:=1}" = 1 && check_evobackup
-    test "${IS_PURGE_FAIL2BAN:=1}" = 1 && check_fail2ban_purge
+    test "${IS_FAIL2BAN_PURGE:=1}" = 1 && check_fail2ban_purge
     test "${IS_SSH_FAIL2BAN_JAIL_RENAMED:=1}" = 1 && check_ssh_fail2ban_jail_renamed
     test "${IS_EVOBACKUP_EXCLUDE_MOUNT:=1}" = 1 && check_evobackup_exclude_mount
     test "${IS_USERLOGROTATE:=1}" = 1 && check_userlogrotate
@@ -1648,6 +1682,7 @@ main() {
     test "${IS_SQUIDEVOLINUXCONF:=1}" = 1 && check_squidevolinuxconf
     test "${IS_DUPLICATE_FS_LABEL:=1}" = 1 && check_duplicate_fs_label
     test "${IS_EVOLIX_USER:=1}" = 1 && check_evolix_user
+    test "${IS_EVOLIX_GROUP:=1}" = 1 && check_evolix_group
     test "${IS_EVOACME_CRON:=1}" = 1 && check_evoacme_cron
     test "${IS_EVOACME_LIVELINKS:=1}" = 1 && check_evoacme_livelinks
     test "${IS_APACHE_CONFENABLED:=1}" = 1 && check_apache_confenabled
