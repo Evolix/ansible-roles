@@ -152,3 +152,10 @@
   notify:
     - systemd daemon-reload
     - restart munin-node
+
+- name: Copy custom index template (4 colons with month and year instead of 2)
+  ansible.builtin.template:
+    src: munin-nodeview.tmpl.j2
+    dest: /etc/munin/templates/munin-nodeview.tmpl
+    mode: '0755'
+

@@ -24,6 +24,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * nagios-nrpe: add new check_ftp_users
 * nagios-nrpe: new monitoringctl command
 * proftpd: add new munin graph (users count)
+* munin: add 2 graph colons in index with month and year
 
 ### Changed
 
