@@ -28,6 +28,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* docker-host: split tasks in differents tasks files
+* docker-host: install docker compose and buildx by default
 * autosysadmin-agent: release 24.06
 * certbot: let's encrypt commit hook deal only with /etc/letsencrypt
 * Elastic Stack : default to version 8.x
