@@ -1,0 +1,86 @@
+---
+
+- name: Fail if docker_conf_use_iptables is defined
+  ansible.builtin.fail:
+    msg: "Variable docker_conf_use_iptables is deprecated and not configurable anymore. Please remove it from your variables. Also double-check the daemon.json config for docker"
+  when:
+    - docker_conf_use_iptables is defined
+  tags:
+    - always
+
+- name: Remove older docker packages
+  ansible.builtin.apt:
+    name:
+      - docker
+      - docker-engine
+      - docker.io
+    state: absent
+
+- name: Install source requirements
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - gnupg2
+    state: present
+
+- name: Install apt-transport-https (Debian <10)
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+    state: present
+  when: ansible_distribution_major_version is version('10', '<')
+
+- name: "Ensure {{ apt_keyring_dir }} directory exists"
+  ansible.builtin.file:
+    path: "{{ apt_keyring_dir }}"
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+
+- name: Add Docker's official GPG key
+  ansible.builtin.copy:
+    src: docker-debian.asc
+    dest: "{{ apt_keyring_dir }}/docker-debian.asc"
+    force: true
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Add Docker repository (Debian <12)
+  ansible.builtin.apt_repository:
+    repo: 'deb [signed-by={{ apt_keyring_dir }}/docker-debian.asc] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable'
+    filename: docker
+    state: present
+    update_cache: true
+  when: ansible_distribution_major_version is version('12', '<')
+
+- name: Add Docker repository (Debian >=12)
+  ansible.builtin.template:
+    src: docker.sources.j2
+    dest: /etc/apt/sources.list.d/docker.sources
+    owner: root
+    group: root
+    mode: "0644"
+  when: ansible_distribution_major_version is version('12', '>=')
+
+- name: Install Docker
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Package python-docker is installed
+  ansible.builtin.apt:
+    name: python-docker
+    state: present
+  when: ansible_python_version is version('3', '<')
+
+- name: Package python3-docker is installed
+  ansible.builtin.apt:
+    name: python3-docker
+    state: present
+  when: ansible_python_version is version('3', '>=')

@@ -1,0 +1,30 @@
+---
+- name: Creating Docker TLS directory
+  ansible.builtin.file:
+    path: "{{ docker_tls_path }}"
+    state: directory
+    mode: "0644"
+    owner: root
+  when: docker_tls_enabled | bool
+
+- name: Copy shellpki utility to Docker TLS directory
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ docker_tls_path }}/{{ item }}"
+    mode: "0744"
+  loop:
+    - shellpki.sh
+    - openssl.cnf
+  when: docker_tls_enabled | bool
+
+- name: Check if certs are already created
+  ansible.builtin.stat:
+    path: "{{ docker_tls_path }}/certs"
+  register: tls_certs_stat
+
+- name: Creating a CA, server key
+  ansible.builtin.command:
+    cmd: "{{ docker_tls_path }}/shellpki.sh init"
+  when:
+    - docker_tls_enabled | bool
+    - not (tls_certs_stat.stat.exists and tls_certs_stat.stat.isdir)
