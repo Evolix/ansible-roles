@@ -4,6 +4,16 @@
   ansible.builtin.include_role:
     name: remount-usr
 
+
+### Dependencies
+
+- name: base nrpe & plugins packages are installed
+  ansible.builtin.apt:
+    name:
+      - python3-distro
+    state: present
+
+
 ### alerts_wrapper and alerts_switch section
 
 - name: "dir /usr/local/lib/monitoringctl/ exists"
@@ -67,7 +77,7 @@
 
 - name: "copy alerts_wrapper"
   ansible.builtin.copy:
-    src: alerts_wrapper
+    src: alerts_wrapper.py
     dest: "/usr/local/lib/monitoringctl/alerts_wrapper"
     owner: root
     group: staff
@@ -88,6 +98,15 @@
   ansible.builtin.copy:
     src: monitoringctl_common
     dest: /usr/local/lib/monitoringctl/common
+    owner: root
+    group: root
+    mode: "0644"
+    force: true
+
+- name: "copy monitoringctl_common.py lib (for alerts_wrapper only)"
+  ansible.builtin.copy:
+    src: monitoringctl_common.py
+    dest: /usr/local/lib/monitoringctl/common.py
     owner: root
     group: root
     mode: "0644"
