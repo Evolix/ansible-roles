@@ -1,0 +1,26 @@
+- name: "Ensure that docker_rootless_user is defined"
+  ansible.builtin.fail:
+    msg: Please configure var docker_rootless_user
+  when: docker_rootless_user is none or docker_rootless_user | length == 0
+
+- name: "Ensure that docker_rootless_user_uid is defined"
+  ansible.builtin.fail:
+    msg: Please configure var docker_rootless_user_uid
+  when: docker_rootless_user_uid is none or docker_rootless_user_uid | length == 0
+
+- name: "Ensure that docker_rootless_user_home is defined"
+  ansible.builtin.fail:
+    msg: Please configure var docker_rootless_user_home
+  when: docker_rootless_user_home is none or docker_rootless_user_home | length == 0
+
+- name: "Test if '{{ docker_rootless_user }}' exists"
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ docker_rootless_user }}"
+  check_mode: no
+
+- name: "Test if uid '{{ docker_rootless_user_uid }}' exists"
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ docker_rootless_user_uid }}"
+  check_mode: no

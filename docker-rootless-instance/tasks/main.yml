@@ -1,0 +1,10 @@
+---
+- ansible.builtin.include: checks.yml
+
+- name: ensure docker is installed
+  include_role:
+    name: docker-host
+    tasks_from: install.yml
+
+- ansible.builtin.include: install-deps.yml
+- ansible.builtin.include: install.yml
