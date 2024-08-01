@@ -36,6 +36,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: Add commented Match all
 * evolinux-base: Customize logcheck recipient when serveur-base is installed
 * evolinux-base/evolinux-users: simplify ssh split configuration
+* evomaintenance: upstream release 24.08
 * log2mail: task log2mail.yml of evolinux-base converted to a role
 * lxc-solr: update solr9 version + fix URL in README
 * minifirewall: Update from upsteam (24.07)

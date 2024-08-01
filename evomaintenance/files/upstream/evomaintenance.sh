@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION="24.05"
+VERSION="24.08"
 
 show_version() {
     cat <<END
@@ -545,10 +545,10 @@ set -u
 HOSTNAME_TEXT=$(get_complete_hostname)
 # TTY=$(get_tty)
 # WHO=$(get_who)
+USER=$(get_user)
 IP=$(get_ip)
 BEGIN_DATE=$(get_begin_date)
 END_DATE=$(get_end_date)
-USER=$(get_user)
 
 PATH=${PATH}:/usr/sbin
 

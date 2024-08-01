@@ -5,8 +5,6 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Added
 
-Add missing (but documented) `--(no-)evocheck` options
-
 ### Changed
 
 ### Deprecated
@@ -16,6 +14,22 @@ Add missing (but documented) `--(no-)evocheck` options
 ### Fixed
 
 ### Security
+
+## [24.08] - 2024-08-01
+
+### Added
+
+* Add contrib/post-release.sh to help with post-release tasks
+
+### Fixed
+
+* Define $USER before it is used
+
+## [24.05] - 2024-05-15
+
+### Added
+
+* Add missing (but documented) `--(no-)evocheck` options
 
 ## [23.10.1] - 2023-10-09
 
