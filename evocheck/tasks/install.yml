@@ -32,7 +32,7 @@
 
 - name: Copy evocheck.sh
   ansible.builtin.copy:
-    src: "{{ evocheck_script_src }}"
+    src: "upstream/{{ evocheck_script_src }}"
     dest: "{{ evocheck_bin_dir }}/evocheck.sh"
     mode: "0700"
     owner: root
@@ -42,7 +42,7 @@
 
 - name: Copy evocheck.cf
   ansible.builtin.copy:
-    src: evocheck.cf
+    src: upstream/evocheck.cf
     dest: /etc/evocheck.cf
     force: false
   tags:

@@ -19,20 +19,21 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: install colordiff and tree by default
 * evolinux-base: install evobackup-client (default: true)
 * lxc: new lxc_template_mirror option (useful to get old Debian from archive.debian.org)
+* munin: add 2 graph colons in index with month and year
 * munin: add linux_psi contrib plugin
 * mysql : Add configuration for external undo log and purge.
 * nagios-nrpe: add new check_ftp_users
 * nagios-nrpe: new monitoringctl command
 * proftpd: add new munin graph (users count)
-* munin: add 2 graph colons in index with month and year
 
 ### Changed
 
-* docker-host: split tasks in differents tasks files
-* docker-host: install docker compose and buildx by default
 * autosysadmin-agent: release 24.06
 * certbot: let's encrypt commit hook deal only with /etc/letsencrypt
+* docker-host: install docker compose and buildx by default
+* docker-host: split tasks in differents tasks files
 * Elastic Stack : default to version 8.x
+* evocheck: upstream release 24.08
 * evolinux-base: Add commented Match all
 * evolinux-base: Customize logcheck recipient when serveur-base is installed
 * evolinux-base/evolinux-users: simplify ssh split configuration

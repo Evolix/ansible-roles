@@ -1,17 +1,17 @@
 #!/bin/bash
 
 # EvoCheck
-# Script to verify compliance of a Linux (Debian 7 only) server
+# Script to verify compliance of a Linux (Debian 8 only) server
 # powered by Evolix
 
-VERSION="<24.07>"
+VERSION="24.08"
 readonly VERSION
 
 # base functions
 
 show_version() {
     cat <<END
-evocheck version ${VERSION} (Wheezy)
+evocheck version ${VERSION} (Jessie)
 
 Copyright 2009-2024 Evolix <info@evolix.fr>,
                     Romain Dessort <rdessort@evolix.fr>,
@@ -54,32 +54,14 @@ detect_os() {
     if [ -e /etc/debian_version ]; then
         DEBIAN_MAIN_VERSION=$(cut -d "." -f 1 < /etc/debian_version)
 
-        if [ "${DEBIAN_MAIN_VERSION}" -ne "7" ]; then
+        if [ "${DEBIAN_MAIN_VERSION}" -ne "8" ]; then
             echo "Debian ${DEBIAN_MAIN_VERSION} is incompatible with this version of evocheck." >&2 
-            echo "This version is built for Debian 7 only." >&2
+            echo "This version is built for Debian 8 only." >&2
             exit
         fi
 
-        if [ -x "${LSB_RELEASE_BIN}" ]; then
-            DEBIAN_RELEASE=$(${LSB_RELEASE_BIN} --codename --short)
-        else
-            case ${DEBIAN_MAIN_VERSION} in
-                5) DEBIAN_RELEASE="lenny";;
-                6) DEBIAN_RELEASE="squeeze";;
-                7) DEBIAN_RELEASE="wheezy";;
-            esac
-        fi
+        DEBIAN_RELEASE="jessie"
     fi
-}
-
-is_debian_lenny() {
-    test "${DEBIAN_RELEASE}" = "lenny"
-}
-is_debian_squeeze() {
-    test "${DEBIAN_RELEASE}" = "squeeze"
-}
-is_debian_wheezy() {
-    test "${DEBIAN_RELEASE}" = "wheezy"
 }
 
 is_pack_web(){
@@ -123,14 +105,7 @@ check_lsbrelease(){
         failed "IS_LSBRELEASE" "lsb_release is missing or not executable"
     fi
 }
-check_dpkgwarning() {
-    if [ "$IS_USRRO" = 1 ] || [ "$IS_TMPNOEXEC" = 1 ]; then
-        test -e /etc/apt/apt.conf.d/80evolinux \
-            || failed "IS_DPKGWARNING" "/etc/apt/apt.conf.d/80evolinux is missing"
-        test -e /etc/apt/apt.conf \
-            && failed "IS_DPKGWARNING" "/etc/apt/apt.conf is missing"
-    fi
-}
+
 # Verifying check_mailq in Nagios NRPE config file. (Option "-M postfix" need to be set if the MTA is Postfix)
 check_nrpepostfix() {
     if is_installed postfix; then
@@ -140,11 +115,6 @@ check_nrpepostfix() {
     fi
 }
 # Check if mod-security config file is present
-check_modsecurity() {
-    if is_installed libapache2-modsecurity; then
-        test -e /etc/apache2/conf.d/mod-security2.conf || failed "IS_MODSECURITY" "missing configuration file"
-    fi
-}
 check_customsudoers() {
     grep -E -qr "umask=0077" /etc/sudoers* || failed "IS_CUSTOMSUDOERS" "missing umask=0077 in sudoers file"
 }
@@ -171,18 +141,11 @@ check_debiansecurity() {
     apt-cache policy | grep "\bl=Debian-Security\b" | grep "\bo=Debian\b" | grep --quiet "\bc=main\b"
     test $? -eq 0 || failed "IS_DEBIANSECURITY" "missing Debian-Security repository"
 }
-check_aptitudeonly() {
-    test -e /usr/bin/apt-get && failed "IS_APTITUDEONLY" \
-        "only aptitude may be enabled on Debian <=7, apt-get should be disabled"
+check_aptitude() {
+    test -e /usr/bin/aptitude && failed "IS_APTITUDE" "aptitude may not be installed on Debian >=8"
 }
-
-check_apticron() {
-    status="OK"
-    test -e /etc/cron.d/apticron || status="fail"
-    test -e /etc/cron.daily/apticron && status="fail"
-    test "$status" = "fail" || test -e /usr/bin/apt-get.bak || status="fail"
-
-    test "$status" = "fail" && failed "IS_APTICRON" "apticron must be in cron.d not cron.daily"
+check_aptgetbak() {
+    test -e /usr/bin/apt-get.bak && failed "IS_APTGETBAK" "prohibit the installation of apt-get.bak with dpkg-divert(1)"
 }
 check_usrro() {
     grep /usr /etc/fstab | grep -qE "\bro\b" || failed "IS_USRRO" "missing ro directive on fstab for /usr"
@@ -264,10 +227,10 @@ check_nrpeperms() {
     fi
 }
 check_minifwperms() {
-    if [ -f "/etc/firewall.rc" ]; then
-        actual=$(stat --format "%a" "/etc/firewall.rc")
+    if [ -f "/etc/default/minifirewall" ]; then
+        actual=$(stat --format "%a" "/etc/default/minifirewall")
         expected="600"
-        test "$expected" = "$actual" || failed "IS_MINIFWPERMS" "/etc/firewall.rc must be ${expected}"
+        test "$expected" = "$actual" || failed "IS_MINIFWPERMS" "/etc/default/minifirewall must be ${expected}"
     fi
 }
 check_nrpedisks() {
@@ -345,18 +308,18 @@ check_squid() {
         host=$(hostname -i)
         # shellcheck disable=SC2086
         http_port=$(grep -E "^http_port\s+[0-9]+" $squidconffile | awk '{ print $2 }')
-        { grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -m owner --uid-owner proxy -j ACCEPT" "/etc/firewall.rc" \
-            && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d $host -j ACCEPT" "/etc/firewall.rc" \
-            && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d 127.0.0.(1|0/8) -j ACCEPT" "/etc/firewall.rc" \
-            && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port.* $http_port" "/etc/firewall.rc";
-        } || grep -qE "^PROXY='?on'?" "/etc/firewall.rc" \
+        { grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -m owner --uid-owner proxy -j ACCEPT" "/etc/default/minifirewall" \
+            && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d $host -j ACCEPT" "/etc/default/minifirewall" \
+            && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d 127.0.0.(1|0/8) -j ACCEPT" "/etc/default/minifirewall" \
+            && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port.* $http_port" "/etc/default/minifirewall";
+        } || grep -qE "^PROXY='?on'?" "/etc/default/minifirewall" \
           || failed "IS_SQUID" "missing squid rules in minifirewall"
     fi
 }
 check_evomaintenance_fw() {
-    if [ -f "/etc/firewall.rc" ]; then
+    if [ -f "/etc/default/minifirewall" ]; then
         hook_db=$(grep -E '^\s*HOOK_DB' /etc/evomaintenance.cf | tr -d ' ' | cut -d= -f2)
-        rulesNumber=$(grep -c "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s .* -m state --state ESTABLISHED,RELATED -j ACCEPT" "/etc/firewall.rc")
+        rulesNumber=$(grep -c "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s .* -m state --state ESTABLISHED,RELATED -j ACCEPT" "/etc/default/minifirewall")
         if [ "$hook_db" = "1" ] && [ "$rulesNumber" -lt 2 ]; then
             failed "IS_EVOMAINTENANCE_FW" "HOOK_DB is enabled but missing evomaintenance rules in minifirewall"
         fi
@@ -506,7 +469,7 @@ check_apacheipinallow() {
 }
 # Check if default Apache configuration file for munin is absent (or empty or commented).
 check_muninapacheconf() {
-    muninconf="/etc/apache2/conf.d/munin"
+    muninconf="/etc/apache2/conf-available/munin.conf"
     if is_installed apache2; then
         test -e $muninconf && grep -vEq "^( |\t)*#" "$muninconf" \
             && failed "IS_MUNINAPACHECONF" "default munin configuration may be commented or disabled"
@@ -662,7 +625,6 @@ check_tune2fs_m5() {
         fi
     done
 }
-
 check_broadcomfirmware() {
     LSPCI_BIN=$(command -v lspci)
     if [ -x "${LSPCI_BIN}" ]; then
@@ -689,6 +651,12 @@ check_hardwareraidtool() {
     else
         failed "IS_HARDWARERAIDTOOL" "lspci not found in ${PATH}"
     fi
+}
+check_listupgrade() {
+    test -f /etc/cron.d/listupgrade \
+        || failed "IS_LISTUPGRADE" "missing listupgrade cron"
+    test -x /usr/share/scripts/listupgrade.sh \
+        || failed "IS_LISTUPGRADE" "missing listupgrade script or not executable"
 }
 check_sql_backup() {
     if (is_installed "mysql-server" || is_installed "mariadb-server"); then
@@ -788,6 +756,66 @@ check_evolix_user() {
     grep -q -E "^evolix:" /etc/passwd \
         && failed "IS_EVOLIX_USER" "evolix user should be deleted, used only for install"
 }
+check_evoacme_cron() {
+    if [ -f "/usr/local/sbin/evoacme" ]; then
+        # Old cron file, should be deleted
+        test -f /etc/cron.daily/certbot && failed "IS_EVOACME_CRON" "certbot cron is incompatible with evoacme"
+        # evoacme cron file should be present
+        test -f /etc/cron.daily/evoacme || failed "IS_EVOACME_CRON" "evoacme cron is missing"
+    fi
+}
+check_evoacme_livelinks() {
+    EVOACME_BIN=$(command -v evoacme)
+    if [ -x "$EVOACME_BIN" ]; then
+        # Sometimes evoacme is installed but no certificates has been generated
+        numberOfLinks=$(find /etc/letsencrypt/ -type l | wc -l)
+        if [ "$numberOfLinks" -gt 0 ]; then
+            for live in /etc/letsencrypt/*/live; do
+                actualLink=$(readlink -f "$live")
+                actualVersion=$(basename "$actualLink")
+
+                certDir=$(dirname "$live")
+                certName=$(basename "$certDir")
+                # shellcheck disable=SC2012
+                lastCertDir=$(ls -ds "${certDir}"/[0-9]* | tail -1)
+                lastVersion=$(basename "$lastCertDir")
+
+                if [[ "$lastVersion" != "$actualVersion" ]]; then
+                    failed "IS_EVOACME_LIVELINKS" "Certificate \`$certName' hasn't been updated"
+                    test "${VERBOSE}" = 1 || break
+                fi
+            done
+        fi
+    fi
+}
+check_apache_confenabled() {
+    # Starting from Jessie and Apache 2.4, /etc/apache2/conf.d/
+    # must be replaced by conf-available/ and config files symlinked
+    # to conf-enabled/
+    if [ -f /etc/apache2/apache2.conf ]; then
+        test -d /etc/apache2/conf.d/ \
+            && failed "IS_APACHE_CONFENABLED" "apache's conf.d directory must not exists"
+        grep -q 'Include conf.d' /etc/apache2/apache2.conf \
+            && failed "IS_APACHE_CONFENABLED" "apache2.conf must not Include conf.d"
+    fi
+}
+check_meltdown_spectre() {
+    # For Jessie this is quite complicated to verify and we need to use kernel config file
+    if grep -q "BOOT_IMAGE=" /proc/cmdline; then
+        kernelPath=$(grep -Eo 'BOOT_IMAGE=[^ ]+' /proc/cmdline | cut -d= -f2)
+        kernelVer=${kernelPath##*/vmlinuz-}
+        kernelConfig="config-${kernelVer}"
+        # Sometimes autodetection of kernel config file fail, so we test if the file really exists.
+        if [ -f "/boot/${kernelConfig}" ]; then
+            grep -Eq '^CONFIG_PAGE_TABLE_ISOLATION=y' "/boot/$kernelConfig" \
+                || failed "IS_MELTDOWN_SPECTRE" \
+                "PAGE_TABLE_ISOLATION must be enabled in kernel, outdated kernel?"
+            grep -Eq '^CONFIG_RETPOLINE=y' "/boot/$kernelConfig" \
+                || failed "IS_MELTDOWN_SPECTRE" \
+                "RETPOLINE must be enabled in kernel, outdated kernel?"
+        fi
+    fi
+}
 check_old_home_dir() {
     homeDir=${homeDir:-/home}
     for dir in "$homeDir"/*; do
@@ -817,8 +845,9 @@ check_usrsharescripts() {
     test "$expected" = "$actual" || failed "IS_USRSHARESCRIPTS" "/usr/share/scripts must be $expected"
 }
 check_sshpermitrootno() {
+    sshd_args="-C addr=,user=,host=,laddr=,lport=0"
     # shellcheck disable=SC2086
-    if ! (sshd -T 2> /dev/null | grep -qi 'permitrootlogin no'); then
+    if ! (sshd -T ${sshd_args} 2> /dev/null | grep -qi 'permitrootlogin no'); then
         failed "IS_SSHPERMITROOTNO" "PermitRoot should be set to no"
     fi
 }
@@ -830,7 +859,6 @@ check_evomaintenanceusers() {
     fi
     # combine users from User_Alias and sudo group
     users=$({ grep "^User_Alias *ADMIN" $sudoers | cut -d= -f2 | tr -d " "; grep "^sudo" /etc/group | cut -d: -f 4; } | tr "," "\n" | sort -u)
-
     for user in $users; do
         user_home=$(getent passwd "$user" | cut -d: -f6)
         if [ -n "$user_home" ] && [ -d "$user_home" ]; then
@@ -893,6 +921,15 @@ check_osprober() {
     fi
 }
 
+check_jessie_backports() {
+    jessieBackports=$(grep -hs "jessie-backports" /etc/apt/sources.list /etc/apt/sources.list.d/*)
+    if test -n "$jessieBackports"; then
+        if ! grep -q "archive.debian.org" <<< "$jessieBackports"; then
+            failed "IS_JESSIE_BACKPORTS" "You must use deb http://archive.debian.org/debian/ jessie-backports main"
+        fi
+    fi
+}
+
 check_apt_valid_until() {
     aptvalidFile="/etc/apt/apt.conf.d/99no-check-valid-until"
     aptvalidText="Acquire::Check-Valid-Until no;"
@@ -925,6 +962,18 @@ check_chrooted_binary_uptodate() {
             fi
         done
     done
+}
+check_nginx_letsencrypt_uptodate() {
+    if [ -d /etc/nginx ]; then
+        snippets=$(find /etc/nginx -type f -name "letsencrypt.conf")
+        if [ -n "${snippets}" ]; then
+            while read -r snippet; do
+                if ! grep -qE "^\s*alias\s+/.+/\.well-known/acme-challenge" "${snippet}"; then
+                    failed "IS_NGINX_LETSENCRYPT_UPTODATE" "Nginx snippet ${snippet} is not compatible with Nginx on Debian 8."
+                fi
+            done <<< "${snippets}"
+        fi
+    fi
 }
 
 check_lxc_container_resolv_conf() {
@@ -1090,17 +1139,15 @@ main() {
     test "${IS_PRIVKEYWOLRDREADABLE:=1}" = 1 && check_privatekeyworldreadable
 
     test "${IS_LSBRELEASE:=1}" = 1 && check_lsbrelease
-    test "${IS_DPKGWARNING:=1}" = 1 && check_dpkgwarning
     test "${IS_NRPEPOSTFIX:=1}" = 1 && check_nrpepostfix
-    test "${IS_MODSECURITY:=1}" = 1 && check_modsecurity
     test "${IS_CUSTOMSUDOERS:=1}" = 1 && check_customsudoers
     test "${IS_VARTMPFS:=1}" = 1 && check_vartmpfs
     test "${IS_SERVEURBASE:=1}" = 1 && check_serveurbase
     test "${IS_LOGROTATECONF:=1}" = 1 && check_logrotateconf
     test "${IS_SYSLOGCONF:=1}" = 1 && check_syslogconf
     test "${IS_DEBIANSECURITY:=1}" = 1 && check_debiansecurity
-    test "${IS_APTITUDEONLY:=1}" = 1 && check_aptitudeonly
-    test "${IS_APTICRON:=0}" = 1 && check_apticron
+    test "${IS_APTITUDE:=1}" = 1 && check_aptitude
+    test "${IS_APTGETBAK:=1}" = 1 && check_aptgetbak
     test "${IS_USRRO:=1}" = 1 && check_usrro
     test "${IS_TMPNOEXEC:=1}" = 1 && check_tmpnoexec
     test "${IS_MOUNT_FSTAB:=1}" = 1 && check_mountfstab
@@ -1151,6 +1198,7 @@ main() {
     test "${IS_TUNE2FS_M5:=1}" = 1 && check_tune2fs_m5
     test "${IS_BROADCOMFIRMWARE:=1}" = 1 && check_broadcomfirmware
     test "${IS_HARDWARERAIDTOOL:=1}" = 1 && check_hardwareraidtool
+    test "${IS_LISTUPGRADE:=1}" = 1 && check_listupgrade
     test "${IS_SQL_BACKUP:=1}" = 1 && check_sql_backup
     test "${IS_POSTGRES_BACKUP:=1}" = 1 && check_postgres_backup
     test "${IS_MONGO_BACKUP:=1}" = 1 && check_mongo_backup
@@ -1159,11 +1207,18 @@ main() {
     test "${IS_ELASTIC_BACKUP:=1}" = 1 && check_elastic_backup
     test "${IS_DUPLICATE_FS_LABEL:=1}" = 1 && check_duplicate_fs_label
     test "${IS_EVOLIX_USER:=1}" = 1 && check_evolix_user
+    test "${IS_EVOACME_CRON:=1}" = 1 && check_evoacme_cron
+    test "${IS_EVOACME_LIVELINKS:=1}" = 1 && check_evoacme_livelinks
+    test "${IS_APACHE_CONFENABLED:=1}" = 1 && check_apache_confenabled
+    test "${IS_MELTDOWN_SPECTRE:=1}" = 1 && check_meltdown_spectre
     test "${IS_OLD_HOME_DIR:=0}" = 1 && check_old_home_dir
     test "${IS_EVOBACKUP_INCS:=1}" = 1 && check_evobackup_incs
     test "${IS_OSPROBER:=1}" = 1 && check_osprober
+    test "${IS_JESSIE_BACKPORTS:=1}" = 1 && check_jessie_backports
     test "${IS_APT_VALID_UNTIL:=1}" = 1 && check_apt_valid_until
     test "${IS_CHROOTED_BINARY_UPTODATE:=1}" = 1 && check_chrooted_binary_uptodate
+    test "${IS_NGINX_LETSENCRYPT_UPTODATE:=1}" = 1 && check_nginx_letsencrypt_uptodate
+    test "${IS_LXC_CONTAINER_RESOLV_CONF:=1}" = 1 && check_lxc_container_resolv_conf
     test "${IS_CHECK_VERSIONS:=1}" = 1 && check_versions
 
     if [ -f "${main_output_file}" ]; then

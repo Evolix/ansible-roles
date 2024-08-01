@@ -1,0 +1,550 @@
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+and this project **does not adhere to [Semantic Versioning](http://semver.org/spec/v2.0.0.html)**.
+
+## [Unreleased]
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+
+## [24.08] 2024-08-01
+
+### Fixed
+
+* VERSION variable must contain valid characters only
+
+### Added
+
+* IS_EVOLIX_GROUP: new check to verify that all Evolix users are in "evolix" group
+
+### Changed
+
+* IS_SYSLOGCONF: modern and legacy tests
+* IS_MYSQLNRPE: ajust check for monitoringctl new nagios conf
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+* Fix errors in some LXC checks: list only active LXC containers, add conditions to filter containers that are not in evo-standards.
+* IS_SSHALLOWUSERS: fix unwanted sterr when /etc/ssh/sshd_condig.d does not exist.
+* IS_PURGE_FAIL2BAN: Fix bad name, rename to IS_FAIL2BAN_PURGE.
+* IS_SYSLOGCONF: better detection
+
+
+## [24.01] 2024-01-03
+
+### Added
+
+* IS_BACKPORTS_VERSION: check if the Backports release matches the Debian release
+
+### Changed
+
+* IS_BROADCOMFIRMWARE: use apt policy
+* Prefer long options
+* IS_POSTFIX_MYDESTINATION: use fixed string instead of escaping characters
+
+### Fixed
+
+* IS_EVOBACKUP_EXCLUDE_MOUNT: correctly treat old versions of evobackup
+* IS_DEBIANSECURITY_LXC: don’t test older than Debian 9 containers
+* IS_KERNELUPTODATE: address false positive in case of kernel removal
+* IS_SSHPERMITROOTNO: specify lport, avoiding failure if sshd listens to more than one port
+* IS_DRBDTWOPRIMARIES: fix false positive (#151)
+* IS_ETCGIT_LXC, IS_GITPERMS_LXC: fix path
+
+## [23.11.1] 2023-11-27
+
+### Fixed
+
+* IS_EVOBACKUP_EXCLUDE_MOUNT: fix another regression introduced in previous release
+
+### Security
+
+## [23.11] 2023-11-27
+
+### Added
+
+* trixie and forky support (Debian 13, 14)
+* IS_LXC_OPENSSH: check in openssh is installed in containers
+* IS_LXC_PHP_BAD_DEBIAN_VERSION: check if php containers use the expected Debian release
+* IS_DEBIANSECURITY_LXC: IS_DEBIANSECURITY in containers
+* IS_SURY_LXC: IS_SURY in containers
+* IS_OLDPUB_LXC: IS_OLDPUB in containers
+* IS_ETCGIT_LXC: IS_ETCGIT in containers
+* IS_GITPERMS_LXC: IS_GITPERMS in containers
+
+### Changed
+
+* IS_SSHALLOWUSERS: add Debian 12 condition
+* IS_PHPEVOLINUXCONF: update for bookworm
+* IS_MINIFWINCLUDES, IS_NRPEPID: Change Debian release detection logic
+
+### Fixed
+
+* IS_EVOBACKUP_EXCLUDE_MOUNT: fix regression introduced in previous version
+
+## [23.10] 2023-10-26
+
+### Added
+
+* IS_MINIFW: better detection of minifirewall status
+* IS_OLDPUB: pub.evolix.net has been supersed by pub.evolix.org since Stretch
+* IS_NEWPUB: verify that the new public repository is present
+* IS_DRBDTWOPRIMARIES: check there are not 2 DRBD primaries at the same time.
+* IS_SURY: check that if sury is enabled, then a safeguard must be in place
+
+### Changed
+
+* IS_BACKPORTSCONF: does not require preferences anymore
+
+### Fixed
+
+* IS_BINDCHROOT: fix /etc/default path for Debian >= 11 (renamed from bind9 to named)
+* IS_EVOBACKUP_EXCLUDE_MOUNT: adapt to new version of evobackup (#148)
+
+## [23.07] 2023-07-07
+
+### Fixed
+* IS_REDIS_BACKUP: full rewrite of the check to be more flexible, and also check time of dump.
+
+## [23.04.01] 2023-04-07
+
+### Fixed
+* IS_POSTFIX_MYDESTINATION: fix regex not working (again).
+
+## [23.04] 2023-04-07
+
+### Changed
+* IS_LOCALHOST_IN_POSTFIX_MYDESTINATION: renamed to IS_POSTFIX_MYDESTINATION
+
+### Fixed
+* IS_POSTFIX_MYDESTINATION: fix regex not working.
+
+## [23.03.01] 2023-03-01
+
+### Fixed
+* Fix version number.
+
+## [23.03] 2023-03-01
+
+### Added
+
+* Log output and runtime config to /var/log/evocheck.log.
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+* IS_LOCALHOST_IN_POSTFIX_MYDESTINATION: set grep quiet.
+* IS_LXC_PHP_FPM_SERVICE_UMASK_SET: fix inverted test condition.
+
+### Security
+
+## [23.02] 2023-02-10
+
+### Fixed
+
+* Release with the correct version number.
+
+## [22.12] 2023-02-10
+
+### Added
+
+New checks :
+
+* IS_LOCALHOST_IN_POSTFIX_MYDESTINATION
+* IS_SSH_FAIL2BAN_JAIL_RENAMED
+* IS_NO_LXC_CONTAINER
+* IS_LXC_PHP_FPM_SERVICE_UMASK_SET
+
+### Changed
+
+* Use bash array for tmp files to cleanup.
+
+### Fixed
+
+* IS_EVOBACKUP_INCS: fix quote.
+* IS_PURGE_FAIL2BAN: fix function never called in main().
+* IS_NOTUPGRADED: silence "grep: (...) binary file matches" messages.
+
+## [22.11] 2022-11-27
+
+### Added
+
+* New script for Debian 7 and earlier
+* New script for Debian 8
+* IS_PHPMYADMINAPACHECONF: check that package configuration has not been pulled in
+
+### Changed
+
+* IS_DEBIANSECURITY: check Debian Security repository from apt-cache policy output
+
+### Removed
+
+* Main script is not compatible with Debian 8 and earlier anymore
+
+
+## [22.09] 2022-09-14
+
+### Fixed
+
+* restore deleted MINIFW_FILE variable
+
+## [22.08.1] 2022-08-29
+
+### Changed
+
+* IS_AUTOIF: check only statically defined interfaces
+
+## [22.08] 2022-08-29
+
+### Added
+
+* IS_AUTOIF: add support for /etc/network/interfaces.d
+
+### Removed
+
+* remove all BSD specific code
+
+## [22.07.1] 2022-07-28
+
+### Changed
+
+* IS_SSHPERMITROOTNO: do not display sshd errors
+
+## [22.07] 2022-07-28
+
+### Added
+
+* IS_FAIL2BAN_PURGE: workaround to purge fail2ban database on stretch and buster
+
+### Changed
+
+* IS_NETWORKING_SERVICE: not in cron mode 
+
+### Fixed:
+
+* IS_BACKUPUPTODATE: correct order for find(1) arguments
+
+## [22.06.2] 2022-06-09
+
+### Changed
+
+* IS_BACKUPUPTODATE: add --max-depth=1 to limit the number of evaluated files
+
+## [22.06.1] 2022-06-06
+
+### Changed
+
+* IS_BACKUPUPTODATE: look for all files (with find) instead of simple "file globbing" on first level.
+* IS_DEBIANSECURITY: support source list options
+* IS_SSHPERMITROOTNO: analyze real configuration, instead of parsing the file
+
+
+## [22.06] 2022-06-03
+
+### Added
+
+* IS_AUTOIF: Ignore WireGuard interfaces
+* IS_NETWORKING_SERVICE: check if networking service is enabled
+
+### Changed
+
+* IS_DEBIANSECURITY: Fix Debian security repo for Bullseye, cf https://www.debian.org/releases/stable/errata
+
+## [22.05] 2022-05-12
+
+### Changed
+
+* IS_EVOBACKUP_EXCLUDE_MOUNT: exclude scripts without Rsync command
+
+## [22.04.1] 2022-04-25
+
+### Changed
+
+* fix various shellcheck violations
+
+### Fixed
+
+* IS_EVOBACKUP_EXCLUDE_MOUNT: fix one-file-system restriction
+
+## [22.04] 2022-04-25
+
+### Changed
+
+* IS_EVOBACKUP_EXCLUDE_MOUNT : skip if --one-file-system is used
+
+### Fixed
+
+* check_versions: "IS_CHECK_VERSIONS" was checked but "IS_VERSIONS_CHECK" was echoed, now "IS_CHECK_VERSIONS" everywhere
+
+### Security
+
+* check_debiansecurity: Consider both https://deb\.debian\.org/debian-security/ and https://security\.debian\.org/debian-security/ as valid since both are documented as such.
+
+## [22.03.1] 2022-03-22
+
+### Changed
+
+* check_autoif : Ignore lxcbr interfaces, new since bullseye
+
+## [22.03] 2022-03-15
+
+### Added
+
+* check_mysqlmunin : Complain if munin plugin mysql_commands returns an error
+* check_versions : track minifirewall version
+
+## [21.10.4] 2021-10-25
+
+### Changed
+
+* IS_CHECK_VERSIONS disabled in cron mode
+
+## [21.10.3] 2021-10-22
+
+### Added
+
+* Check for newer versions
+* don't use "add-vm --version" yet
+
+## [21.10.2] 2021-10-22
+
+### Changed
+
+* Let's try the --version flag before falling back to grep for the constant
+
+## [21.10.1] 2021-10-01
+
+### Added
+
+* IS_SSHALLOWUSERS: also scan /etc/ssh/sshd_config.d
+* IS_CHECK_VERSIONS: check installed versions of Evolix programs
+
+## [21.10] 2021-10-01
+
+### Fixed
+
+* IS_DEBIANSECURITY: optional trailing slash 
+
+## [21.09] 2021-09-30
+
+### Added
+
+* Check for bullseye security repository
+* Checks for new minifirewall configuration
+* Improve MySQL utils configuration checks
+
+## [21.07] 2021-07-07
+
+### Added
+
+* Preliminary Debian 11 « Bullseye » support
+
+### Fixed
+
+* IS_HARDWARERAIDTOOL: match more RAID PCI cards
+
+### Security
+
+## [20.12] 2021-01-18
+
+### Fixed
+
+* IS_EVOLIX_USER: Match on if account name begin by evolix, don't match account name testevolix for example
+
+## [20.12] 2020-04-28
+
+### Added
+
+* support multiple values for SQL_BACKUP_PATH and POSTGRES_BACKUP_PATH
+
+### Changed
+
+* IS_EVOBACKUP_EXCLUDE_MOUNT: exclude disabled backup scripts
+* IS_DUPLICATE_FS_LABEL: disable blkid cache
+* IS_POSTGRES_BACKUP: look for compressed backup too
+* IS_VARTMPFS: use findmnt if available
+
+### Removed
+
+* Remove unused PROGDIR variable
+
+## [20.04.4] 2020-04-28
+
+### Added
+
+* IS_NGINX_LETSENCRYPT_UPTODATE: verify that the letsencrypt snippet is compatible with the current version of Nginx
+
+## [20.04.3] 2020-04-24
+
+### Fixed
+
+* IS_EVOBACKUP_INCS: also look for the new command
+
+## [20.04.2] 2020-04-15
+
+### Added
+
+* IS_CHROOTED_BINARY_NOT_UPTODATE: verify that chrooted processes run up-to-date binaries
+
+## [20.04.1] 2020-04-12
+
+### Added
+
+* IS_EVOBACKUP_EXCLUDE_MOUNT : verify that mount points are excluded in evobackup scripts
+
+## [20.02.1] - 2020-02-27
+
+### Changed
+
+* IS_EVOLINUXSUDOGROUP : improve sudoer directive detection
+
+## [19.11.2] - 2019-11-07
+
+### Changed
+
+* IS_EVOMAINTENANCE_FW : warn only if HOOK_DB is enabled
+* IS_BACKUPUPTODATE : check backup dates in the correct directory
+
+## [19.11.1] - 2019-11-06
+
+### Fixed
+
+* IS_TMPUSRRO : improve grep for options detection
+* IS_TMPNOEXEC : fix grep for options detection
+
+## [19.11] - 2019-11-05
+
+### Changed
+
+* IS_TUNE2FS_M5 displays the name of the partition
+* IS_MARIADBEVOLINUXCONF is disabled by default in cron mode
+* IS_PHPEVOLINUXCONF is disabled by default in cron mode
+* IS_OLD_HOME_DIR is disabled by default in cron mode
+* IS_TMPNOEXEC : better "noexec" detection for /tmp
+
+### Fixed
+
+* squid: better http port detection
+
+## [19.08] - 2019-08-30
+
+### Changed
+
+* better error messages for missing commands
+
+## [19.06] - 2019-06-21
+
+### Added
+
+* new check: IS_OSPROBER
+
+### Changed
+
+* IS_DISKPERF is disabled by default
+* verbose mode added for IS_APACHESYMLINK
+
+### Fixed
+
+* fix 5 apache checks (wrong package name was used)
+* fix IS_MYSQLNRPE (wrong test on a tilde expansion variable)
+
+## [19.04] - 2019-04-25
+
+### Added
+
+* IS_EVOBACKUP_INCS
+
+### Changed
+
+* change versioning scheme : year.month.patch
+* extracts tests into functions
+* add verbose and quiet modes
+* add usage output on error
+* add braces and quotes
+
+## [0.13] - 2018-04-10
+
+### Added
+
+* New checks:
+  IS_EVOLIX_USER
+
+### Changed
+
+* Fixing IS_DUPLICATE_FS_LEVEL check
+* Custom limit for IS_NOTUPGRADED
+* IS_SSHALLOWUSERS now check also for AllowGroups
+
+## [0.12] - 2018-03-19
+
+### Added
+
+* New checks:
+  IS_DUPLICATE_FS_LEVEL
+
+### Changed
+
+* Enabling IS_EVOBACKUP by default
+* Better output for IS_MYSQLMUNIN
+
+## [0.11] - 2018-02-07
+
+### Added
+
+  * Bunch of new checks:
+    IS_PRIVKEYWOLRDREADABLE
+    IS_EVOLINUXSUDOGROUP
+    IS_USERINADMGROUP
+    IS_APACHE2EVOLINUXCONF
+    IS_BACKPORTSCONF
+    IS_BIND9MUNIN
+    IS_BIND9LOGROTATE
+    IS_BROADCOMFIRMWARE
+    IS_HARDWARERAIDTOOL
+    IS_LOG2MAILSYSTEMDUNIT
+    IS_LISTUPGRADE
+    IS_MARIADBEVOLINUXCONF
+    IS_MARIADBSYSTEMDUNIT
+    IS_MYSQLMUNIN
+    IS_PHPEVOLINUXCONF
+    IS_SQUIDLOGROTATE
+    IS_SQUIDEVOLINUXCONF
+    IS_SQL_BACKUP
+    IS_POSTGRES_BACKUP
+    IS_LDAP_BACKUP
+    IS_REDIS_BACKUP
+    IS_ELASTIC_BACKUP
+    IS_MONGO_BACKUP
+    IS_MOUNT_FSTAB
+    IS_NETWORK_INTERFACES
+
+### Changed
+
+  * IS_UPTIME added in --cron mode
+  * is_pack_web() for Stretch
+  * IS_DPKGWARNING for Stretch
+  * IS_MOUNT_FSTAB is disabled if lsblk not available
+  * IS_MINIFWPERMS for Stretch
+  * IS_SQUID for Stretch
+  * IS_LOG2MAILAPACHE for Stretch
+  * IS_AUTOIF for Stretch
+  * IS_UPTIME warn if uptime is more than 2y, was 1y
+  * IS_NOTUPGRADED warn if last upgrade is older than 90d, was 30d
+  * IS_TUNE2FS_M5 use python in place of bc for calculation
+  * IS_EVOMAINTENANCEUSERS for Stretch
+  * IS_EVOMAINTENANCECONF check also the mode of the file (600)
