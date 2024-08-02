@@ -31,7 +31,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * autosysadmin-agent: release 24.06
 * certbot: let's encrypt commit hook deal only with /etc/letsencrypt
 * docker-host: install docker compose and buildx by default
-* docker-host: split tasks in differents tasks files
+* docker-host: split tasks in different task files
 * Elastic Stack : default to version 8.x
 * evocheck: upstream release 24.08
 * evolinux-base: Add commented Match all
