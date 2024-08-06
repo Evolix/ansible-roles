@@ -40,10 +40,11 @@
 - ansible.builtin.include_role:
     name: evolix/remount-usr
 
-- name: Install some Munin plugins (disabled)
+- name: Install some Munin plugins (not enabled yet)
   ansible.builtin.copy:
     src: 'plugins/{{ item }}'
     dest: '/usr/share/munin/plugins/{{ item }}'
+    mode: 755
   loop:
     - dhcp_pool
     - linux-psi
