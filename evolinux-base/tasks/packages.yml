@@ -36,6 +36,7 @@
       - traceroute
       - man
       - molly-guard
+      - jq
   when: evolinux_packages_diagnostic | bool
 
 - name: Install/Update hardware tools

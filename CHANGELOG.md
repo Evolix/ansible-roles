@@ -18,6 +18,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: Create custom SSH configuration file
 * evolinux-base: install colordiff and tree by default
 * evolinux-base: install evobackup-client (default: true)
+* evolinux-base: Install jq by default
 * lxc: new lxc_template_mirror option (useful to get old Debian from archive.debian.org)
 * munin: add 2 graph colons in index with month and year
 * munin: add linux_psi contrib plugin
