@@ -32,7 +32,7 @@ Example Playbook
   vars:
     # Overwrite the role variable here
     privatebin_domains: ['your-real-domain.org']
-    service: 'my-privatebin'
+    privatebin_instance: 'my-privatebin'
 
   roles:
     - { role: webapps/privatebin , tags: "privatebin" }

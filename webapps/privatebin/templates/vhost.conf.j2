@@ -14,17 +14,17 @@
 <VirtualHost *:443>
     ServerName {{ privatebin_domains |first }}
 
-    DocumentRoot /home/{{ service }}/PrivateBin
+    DocumentRoot /home/{{ privatebin_instance }}/PrivateBin
     
-    <Directory /home/{{ service }}/PrivateBin>
+    <Directory /home/{{ privatebin_instance }}/PrivateBin>
         Options SymLinksIfOwnerMatch
         AllowOverride Options=All AuthConfig Limit FileInfo Indexes
         Require all granted
     </Directory>
     
-    AssignUserID {{ service }} {{ service }}
+    AssignUserID {{ privatebin_instance }} {{ privatebin_instance }}
 
-    IncludeOptional /etc/apache2/ssl/{{ service }}.conf
+    IncludeOptional /etc/apache2/ssl/{{ privatebin_instance }}.conf
 
 </VirtualHost>
 {% endif %}

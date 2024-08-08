@@ -32,7 +32,7 @@ Exemple de playbook
   vars:
     # Supplanter ici les variables du rôle
     privatebin_domains: ['votre-vrai-domaine.org']
-    service: 'mon-privatebin'
+    privatebin_instance: 'mon-privatebin'
 
   roles:
     - { role: webapps/privatebin , tags: "privatebin" }
