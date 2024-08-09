@@ -14,6 +14,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Added
 
 * bind: New variables to change IPs bind will listen on & send notify/transfer commands
+* etc-git: add cron job for daily autocommits
 * evobackup-client : Upstream release 24.07
 * evolinux-base: Create custom SSH configuration file
 * evolinux-base: install colordiff and tree by default

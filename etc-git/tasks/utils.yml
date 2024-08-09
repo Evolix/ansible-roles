@@ -88,6 +88,19 @@
       day: "*"
       month: "*"
       state: "{{ etc_git_monitor_status | bool | ternary('present','absent') }}"
+
+  - name: Cron job for daily git commit
+    ansible.builtin.cron:
+      name: "Daily autocommit for Git repositories"
+      cron_file: etc-git
+      user: root
+      job: "for rep in /etc /etc/bind /usr/share/scripts; do test -d \"${rep}/.git\" && evocommit --repository \"${rep}\" --message \"daily autocommit\"; done"
+      minute: "25"
+      hour: "3"
+      weekday: "*"
+      day: "*"
+      month: "*"
+      state: "{{ etc_git_broom_commit | bool | ternary('present','absent') }}"
   when: is_cron_installed.rc == 0
   tags:
     - etc-git
