@@ -13,6 +13,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* apt: force PATH for apt-hold-packages crontab
 * bind: New variables to change IPs bind will listen on & send notify/transfer commands
 * etc-git: add cron job for daily autocommits
 * evobackup-client : Upstream release 24.07
