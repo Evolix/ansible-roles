@@ -1,10 +1,4 @@
 ---
-
-- name: "Remount /usr if needed"
-  ansible.builtin.include_role:
-    name: remount-usr
-
-
 ### Dependencies
 
 - name: base nrpe & plugins packages are installed
@@ -13,6 +7,9 @@
       - python3-distro
     state: present
 
+- name: "Remount /usr if needed"
+  ansible.builtin.include_role:
+    name: remount-usr
 
 ### alerts_wrapper and alerts_switch section
 
