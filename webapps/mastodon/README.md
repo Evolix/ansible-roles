@@ -32,10 +32,10 @@ Example Playbook
   vars:
     # Overwrite the role variable here
     mastodon_domains: ['your-real-domain.org']
-    mastodon_service: 'my-mastodon'
+    mastodon_instance: 'my-mastodon'
     mastodon_db_host: 'localhost'
-    mastodon_db_user: "{{ service }}"
-    mastodon_db_name: "{{ service }}"
+    mastodon_db_user: "{{ mastodon_instance }}"
+    mastodon_db_name: "{{ mastodon_instance }}"
     mastodon_db_password: 'zKEh-CHANGE-ME-qIKc'
     mastodon_app_secret_key_base: ""
     mastodon_app_otp_secret: ""
@@ -46,7 +46,7 @@ Example Playbook
   pre_tasks:
     - name: "Install system roles"
       roles:
-        - { role: nodejs, nodejs_apt_version: 'node_16.x', nodejs_install_yarn: True }
+        - { role: nodejs, nodejs_apt_version: 'node_16.x', nodejs_install_yarn: true }
         - { role: postgresql }
         - { role: redis }
         - { role: elasticsearch }

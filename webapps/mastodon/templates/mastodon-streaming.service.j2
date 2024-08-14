@@ -1,14 +1,14 @@
 [Unit]
 Description=mastodon-streaming
 After=network.target
-PartOf={{ mastodon_service }}.target
+PartOf={{ mastodon_instance }}.target
 
 [Service]
 Type=simple
-User={{ mastodon_service }}
-Group={{ mastodon_service }}
+User={{ mastodon_instance }}
+Group={{ mastodon_instance }}
 UMask=0027
-WorkingDirectory=/home/{{ mastodon_service }}/mastodon/
+WorkingDirectory=/home/{{ mastodon_instance }}/mastodon/
 Environment="NODE_ENV=production"
 Environment="PORT={{ mastodon_node_port | default('4000') }}"
 Environment="STREAMING_CLUSTER_NUM=1"
@@ -18,4 +18,4 @@ Restart=always
 SyslogIdentifier=%p
 
 [Install]
-WantedBy={{ mastodon_service }}.target
+WantedBy={{ mastodon_instance }}.target

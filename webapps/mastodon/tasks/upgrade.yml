@@ -3,16 +3,16 @@
 
 - name: Dump database to a file with compression
   community.postgresql.postgresql_db:
-    name: "{{ mastodon_service }}_production"
+    name: "{{ mastodon_instance }}_production"
     state: dump
-    target: "~/{{ mastodon_service }}_production.sql.gz"
+    target: "~/{{ mastodon_instance }}_production.sql.gz"
   become_user: postgres
 
-- name: Install Ruby for service user (rbenv)
+- name: Install Ruby for instance user (rbenv)
   include_role:
     name: rbenv
   vars:
-    - username: "{{ mastodon_service }}"
+    - username: "{{ mastodon_instance }}"
     - rbenv_ruby_version: "{{ mastodon_ruby_version }}"
 
 - name: Checkout (git)
@@ -20,9 +20,9 @@
     repo: "{{ mastodon_git_url }}"
     dest: "~/mastodon/"
     version: "{{ mastodon_git_version | default(omit) }}"
-    force: yes
-    update: yes
-  become_user: "{{ mastodon_service }}"
+    force: true
+    update: true
+  become_user: "{{ mastodon_instance }}"
 
 - block:
   - name: Install bundler
@@ -61,11 +61,11 @@
       state: directory
       mode: 'o=rX'
       recurse: true
-  become_user: "{{ mastodon_service }}"
+  become_user: "{{ mastodon_instance }}"
 
 - name: Restart services
-  ansible.builtin.service:
-    name: "{{ mastodon_service }}.target"
+  ansible.builtin.systemd:
+    name: "{{ mastodon_instance }}.target"
     state: restarted
 
 - name: Run database migrations, this time including post-deployment
@@ -73,11 +73,11 @@
   args:
     chdir: "~/mastodon"
     executable: /bin/bash # fails with /bin/sh
-  become_user: "{{ mastodon_service }}"
+  become_user: "{{ mastodon_instance }}"
 
 - name: Restart services
-  ansible.builtin.service:
-    name: "{{ mastodon_service }}.target"
+  ansible.builtin.systemd:
+    name: "{{ mastodon_instance }}.target"
     state: restarted
 
 - name: Define variable to skip next task by default
@@ -86,13 +86,13 @@
 
 - name: Remove database dump
   ansible.builtin.file:
-    path: "~/{{ mastodon_service }}_production.sql.gz"
+    path: "~/{{ mastodon_instance }}_production.sql.gz"
     state: absent
   become_user: postgres
   when: keep_db_dump is undefined
   tags: clean
 
 - name: Reload nginx conf
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: nginx
     state: reloaded

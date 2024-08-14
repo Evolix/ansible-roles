@@ -1,15 +1,16 @@
 ---
 # defaults file for mastodon
-mastodon_system_dep: "['imagemagick', 'ffmpeg', 'libpq-dev', 'libxml2-dev', 'libxslt1-dev', 'file', 'git-core', 'g++', 'libprotobuf-dev', 'protobuf-compiler', 'pkg-config', 'nodejs', 'gcc', 'autoconf', 'bison', 'build-essential', 'libssl-dev', 'libyaml-dev', 'libreadline6-dev', 'zlib1g-dev', 'libncurses5-dev', 'libffi-dev', 'libgdbm-dev', 'nginx', 'redis-server', 'redis-tools', 'postgresql', 'postgresql-contrib', 'certbot', 'python3-certbot-nginx', 'python3-psycopg2', 'libidn11-dev', 'libicu-dev', 'libjemalloc-dev']"
+mastodon_system_dep: "['imagemagick', 'ffmpeg', 'libpq-dev', 'libxml2-dev', 'libxslt1-dev', 'file', 'git-core', 'g++', 'libprotobuf-dev', 'protobuf-compiler', 'pkg-config', 'nodejs', 'gcc', 'autoconf', 'bison', 'build-essential', 'libssl-dev', 'libyaml-dev', 'libreadline6-dev', 'zlib1g-dev', 'libncurses5-dev', 'libffi-dev', 'libgdbm-dev', 'python3-psycopg2', 'libidn11-dev', 'libicu-dev', 'libjemalloc-dev']"
 mastodon_domains: ['example.somedomain.org']
 mastodon_git_url: 'https://github.com/mastodon/mastodon.git'
-mastodon_git_version: 'v4.0.2'
+mastodon_git_version: 'v4.2.10'
 mastodon_ruby_version: '3.0.4'
-mastodon_service: 'example'
+mastodon_instance: 'example'
+mastodon_certbot_admin_email: 'security@somedomain.org'
 
 mastodon_db_host: 'localhost'
-mastodon_db_user: "{{ mastodon_service }}"
-mastodon_db_name: "{{ mastodon_service }}_production"
+mastodon_db_user: "{{ mastodon_instance }}"
+mastodon_db_name: "{{ mastodon_instance }}_production"
 mastodon_db_password: 'CHANGE_ME'
 
 mastodon_app_secret_key_base: ""

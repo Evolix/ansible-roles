@@ -4,7 +4,7 @@
 - name: Install main system dependencies
   ansible.builtin.apt:
     name: "{{ mastodon_system_dep }}"
-    update_cache: yes
+    update_cache: true
 
 - name: Install npm on Debian 12
   ansible.builtin.apt:
@@ -12,7 +12,8 @@
   when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Install corepack via npm on Debian 12
-  ansible.builtin.shell: npm install -g corepack
+  ansible.builtin.command: 
+    cmd: npm install -g corepack
   when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Fix permissions for corepack
@@ -20,11 +21,12 @@
     path: /usr/local/lib/node_modules/
     state: directory
     mode: o+rx
-    recurse: yes
+    recurse: true
   when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Enable yarn (via corepack)
-  ansible.builtin.shell: "corepack enable; yarn set version classic"
+  ansible.builtin.shell: 
+    cmd: corepack enable; yarn set version classic
 
 - name: Add PostgreSQL user
   community.postgresql.postgresql_user:
@@ -35,15 +37,15 @@
 
 - name: Add UNIX account
   ansible.builtin.user:
-    name: "{{ mastodon_service }}"
+    name: "{{ mastodon_instance }}"
     shell: /bin/bash
 #    umask: "0022" nécessite ansible-core 2.12
 
-- name: Install Ruby for service user (rbenv)
+- name: Install Ruby for instance user (rbenv)
   include_role:
     name: rbenv
   vars:
-    - username: "{{ mastodon_service }}"
+    - username: "{{ mastodon_instance }}"
     - rbenv_ruby_version: "{{ mastodon_ruby_version }}"
 
 - name: Clone Mastodon repo (git)
@@ -51,10 +53,10 @@
     repo: "{{ mastodon_git_url }}"
     dest: "~/mastodon/"
     version: "{{ mastodon_git_version | default(omit) }}"
-    #force: yes
-    update: yes
+    #force: true
+    update: true
     umask: '0022'
-  become_user: "{{ mastodon_service }}"
+  become_user: "{{ mastodon_instance }}"
 
 - block:
   - name: Install bundler
@@ -72,21 +74,21 @@
     args:
       chdir: "~/mastodon"
       executable: /bin/bash # fails with /bin/sh
-  become_user: "{{ mastodon_service }}"
+  become_user: "{{ mastodon_instance }}"
 
 - name: Template .env.production configuration file
   ansible.builtin.template:
     src: "env.j2"
-    dest: "~{{ mastodon_service }}/mastodon/.env.production"
-    owner: "{{ mastodon_service }}"
-    group: "{{ mastodon_service }}"
+    dest: "~{{ mastodon_instance }}/mastodon/.env.production"
+    owner: "{{ mastodon_instance }}"
+    group: "{{ mastodon_instance }}"
     mode: "0640"
 
 - name: Check if secrets need to be generated or not
   ansible.builtin.shell: "grep -P SECRET_KEY_BASE=[[:alnum:]]{128} .env.production"
   args:
     chdir: "~/mastodon"
-  become_user: "{{ mastodon_service }}"
+  become_user: "{{ mastodon_instance }}"
   register: secrets
   failed_when: "secrets.rc == 2"
 
@@ -130,12 +132,12 @@
       path: "~/mastodon/.env.production"
       regexp: '^VAPID_PUBLIC_KEY='
       line: "VAPID_PUBLIC_KEY={{ mastodon_app_vapid_public_key.stdout }}"
-  become_user: "{{ mastodon_service }}"
+  become_user: "{{ mastodon_instance }}"
   when: "secrets.rc == 1"
 
 - name: Check if mastodon database is already present or not
   ansible.builtin.shell: |
-   psql -lqt | cut -d \| -f 1 | grep -qw {{ mastodon_service }}_production
+   psql -lqt | cut -d \| -f 1 | grep -qw {{ mastodon_instance }}_production
   become_user: postgres
   register: db_present
   failed_when: "db_present.rc == 2"
@@ -145,7 +147,7 @@
   args:
     chdir: "~/mastodon"
     executable: /bin/bash # fails with /bin/sh
-  become_user: "{{ mastodon_service }}"
+  become_user: "{{ mastodon_instance }}"
   when: "db_present.rc == 1"
 
 - name: Precompile assets
@@ -153,7 +155,7 @@
   args:
     chdir: "~/mastodon"
     executable: /bin/bash # fails with /bin/sh
-  become_user: "{{ mastodon_service }}"
+  become_user: "{{ mastodon_instance }}"
 
 - name: Adjust permissions of files in public folder
   ansible.builtin.file:
@@ -161,47 +163,47 @@
     state: directory
     mode: 'o=rX'
     recurse: true
-  become_user: "{{ mastodon_service }}"
+  become_user: "{{ mastodon_instance }}"
 
 - name: Add systemd target
   ansible.builtin.template:
     src: "mastodon.target.j2"
-    dest: "/etc/systemd/system/{{ mastodon_service }}.target"
+    dest: "/etc/systemd/system/{{ mastodon_instance }}.target"
 
 - name: Add systemd web unit
   ansible.builtin.template:
     src: "mastodon-web.service.j2"
-    dest: "/etc/systemd/system/{{ mastodon_service }}-web.service"
+    dest: "/etc/systemd/system/{{ mastodon_instance }}-web.service"
 
 - name: Add systemd sidekiq unit
   ansible.builtin.template:
     src: "mastodon-sidekiq.service.j2"
-    dest: "/etc/systemd/system/{{ mastodon_service }}-sidekiq.service"
+    dest: "/etc/systemd/system/{{ mastodon_instance }}-sidekiq.service"
 
 - name: Add systemd streaming unit
   ansible.builtin.template:
     src: "mastodon-streaming.service.j2"
-    dest: "/etc/systemd/system/{{ mastodon_service }}-streaming.service"
+    dest: "/etc/systemd/system/{{ mastodon_instance }}-streaming.service"
 
 - name: Enable systemd units
   ansible.builtin.systemd:
     name: "{{ item }}"
-    enabled: yes
-    daemon_reload: yes
+    enabled: true
+    daemon_reload: true
   loop:
-    - "{{ mastodon_service }}.target"
-    - "{{ mastodon_service }}-web.service"
-    - "{{ mastodon_service }}-sidekiq.service"
-    - "{{ mastodon_service }}-streaming.service"
+    - "{{ mastodon_instance }}.target"
+    - "{{ mastodon_instance }}-web.service"
+    - "{{ mastodon_instance }}-sidekiq.service"
+    - "{{ mastodon_instance }}-streaming.service"
 
 - name: Start services
-  ansible.builtin.service:
-    name: "{{ mastodon_service }}.target"
+  ansible.builtin.systemd:
+    name: "{{ mastodon_instance }}.target"
     state: started
 
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ mastodon_domains |first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ mastodon_domains | first }}/fullchain.pem"
   register: ssl
 
 - name: Generate certificate only if required (first time)
@@ -209,37 +211,38 @@
   - name: Template vhost without SSL for successfull LE challengce
     ansible.builtin.template: 
       src: "vhost.j2"
-      dest: "/etc/nginx/sites-available/{{ mastodon_service }}"
+      dest: "/etc/nginx/sites-available/{{ mastodon_instance }}"
   - name: Enable temporary nginx vhost for LE
     ansible.builtin.file:
-      src: "/etc/nginx/sites-available/{{ mastodon_service }}"
-      dest: "/etc/nginx/sites-enabled/{{ mastodon_service }}"
+      src: "/etc/nginx/sites-available/{{ mastodon_instance }}"
+      dest: "/etc/nginx/sites-enabled/{{ mastodon_instance }}"
       state: link
   - name: Reload nginx conf
-    ansible.builtin.service:
+    ansible.builtin.systemd:
       name: nginx
       state: reloaded
   - name: Generate certificate with certbot
-    ansible.builtin.shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt -d {{ mastodon_domains |first }}
+    ansible.builtin.command: 
+      cmd: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ mastodon_certbot_admin_email }} -d {{ mastodon_domains | first }}
   when: ssl.stat.exists == false
 
 - name: (Re)check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ mastodon_domains |first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ mastodon_domains | first }}/fullchain.pem"
   register: ssl
 
 - name: (Re)template conf file for nginx vhost with SSL
   ansible.builtin.template:
     src: "vhost.j2"
-    dest: "/etc/nginx/sites-available/{{ mastodon_service }}"
+    dest: "/etc/nginx/sites-available/{{ mastodon_instance }}"
 
 - name: Enable nginx vhost for mastodon
   ansible.builtin.file:
-    src: "/etc/nginx/sites-available/{{ mastodon_service }}"
-    dest: "/etc/nginx/sites-enabled/{{ mastodon_service }}"
+    src: "/etc/nginx/sites-available/{{ mastodon_instance }}"
+    dest: "/etc/nginx/sites-enabled/{{ mastodon_instance }}"
     state: link
 
 - name: Reload nginx conf
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: nginx
     state: reloaded
