@@ -32,7 +32,7 @@ Exemple de playbook
   vars:
     # Supplanter ici les variables du rôle
     peertube_domains: ['votre-vrai-domaine.org']
-    service: 'mon-peertube'
+    peertube_instance: 'mon-peertube'
 
   roles:
     - { role: webapps/peertube , tags: "peertube" }

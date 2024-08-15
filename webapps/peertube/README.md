@@ -32,7 +32,7 @@ Example Playbook
   vars:
     # Overwrite the role variables here
     peertube_domains: ['your-real-domain.org']
-    service: 'my-peertube'
+    peertube_instance: 'my-peertube'
 
   roles:
     - { role: webapps/peertube , tags: "peertube" }

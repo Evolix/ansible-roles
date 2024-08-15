@@ -5,7 +5,7 @@ listen:
 # Correspond to your reverse proxy server_name/listen configuration (i.e., your public PeerTube instance URL)
 webserver:
   https: true
-  hostname: '{{ peertube_domains| first }}'
+  hostname: '{{ peertube_domains | first }}'
   port: 443
 
 # Secrets you need to generate the first time you run PeerTube

@@ -7,7 +7,7 @@
 - name: Install main system dependencies
   ansible.builtin.apt:
     name: "{{ peertube_system_dep }}"
-    update_cache: yes
+    update_cache: true
 
 - name: Upgrade redis-server to the latest version from bullseye-backports on Debian 11
   ansible.builtin.apt:
@@ -33,8 +33,8 @@
 
 - name: Add UNIX account
   ansible.builtin.user:
-    name: "{{ service }}"
-    home: "{{ peertube_service_home }}"
+    name: "{{ peertube_instance }}"
+    home: "{{ peertube_instance_home }}"
     shell: /bin/bash
 
 - name: Add PostgreSQL user
@@ -60,49 +60,49 @@
     - "~/config"
     - "~/storage"
     - "~/versions"
-  become_user: "{{ service }}"
+  become_user: "{{ peertube_instance }}"
 
 - name: Unarchive peertube archive
   ansible.builtin.unarchive:
     src: "{{ peertube_download_url }}"
     dest: ~/versions
     remote_src: yes
-  become_user: "{{ service }}"
+  become_user: "{{ peertube_instance }}"
 
 - name: Symbolic link to unarchived version
   ansible.builtin.file:
     src: "~/versions/peertube-{{ peertube_version }}"
     dest:  "~/peertube-latest"
     state: link
-  become_user: "{{ service }}"
+  become_user: "{{ peertube_instance }}"
 
 - name: Install PeerTube nodejs deps (via yarn)
   ansible.builtin.shell: "yarn install --production --pure-lockfile"
   args:
     chdir: "~/peertube-latest"
-  become_user: "{{ service }}"
+  become_user: "{{ peertube_instance }}"
 
 - name: Copy default.yaml to prod dir
   ansible.builtin.copy:
     src: "~/peertube-latest/config/default.yaml"
     dest: "~/config/default.yaml"
     remote_src: true
-  become_user: "{{ service }}"
+  become_user: "{{ peertube_instance }}"
 
 - name: Template peertube conf file
   ansible.builtin.template: 
     src: "production.yaml.j2"
     dest: "~/config/production.yaml"
-  become_user: "{{ service }}"
+  become_user: "{{ peertube_instance }}"
 
 - name: Template peertube systemd unit
   ansible.builtin.template: 
     src: "peertube.service.j2"
-    dest: "/etc/systemd/system/{{ service }}.service"
+    dest: "/etc/systemd/system/{{ peertube_instance }}.service"
 
 - name: Start peertube systemd unit
-  ansible.builtin.service:
-    name: "{{ service }}"
+  ansible.builtin.systemd:
+    name: "{{ peertube_instance }}"
     enabled: true
     state: started
 
@@ -116,14 +116,14 @@
   - name: Template vhost without SSL for successfull LE challengce
     ansible.builtin.template: 
       src: "vhost.conf.j2"
-      dest: "/etc/nginx/sites-available/{{ service }}.conf"
+      dest: "/etc/nginx/sites-available/{{ peertube_instance }}.conf"
   - name: Enable temporary nginx vhost for peertube
     ansible.builtin.file:
-      src: "/etc/nginx/sites-available/{{ service }}.conf"
-      dest: "/etc/nginx/sites-enabled/{{ service }}.conf"
+      src: "/etc/nginx/sites-available/{{ peertube_instance }}.conf"
+      dest: "/etc/nginx/sites-enabled/{{ peertube_instance }}.conf"
       state: link
   - name: Reload nginx conf
-    ansible.builtin.service:
+    ansible.builtin.systemd:
       name: nginx
       state: reloaded
   - name: Make sure /var/lib/letsencrypt exists and has correct permissions
@@ -143,16 +143,16 @@
 - name: (Re)template conf file for nginx vhost with SSL
   ansible.builtin.template:
     src: "vhost.conf.j2"
-    dest: "/etc/nginx/sites-available/{{ service }}.conf"
+    dest: "/etc/nginx/sites-available/{{ peertube_instance }}.conf"
 
 - name: Enable nginx vhost for peertube
   ansible.builtin.file:
-    src: "/etc/nginx/sites-available/{{ service }}.conf"
-    dest: "/etc/nginx/sites-enabled/{{ service }}.conf"
+    src: "/etc/nginx/sites-available/{{ peertube_instance }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ peertube_instance }}.conf"
     state: link
 
 - name: Reload nginx conf
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: nginx
     state: reloaded
 
@@ -162,4 +162,4 @@
     state: directory
     mode: 'o=rX'
     recurse: true
-  become_user: "{{ service }}"
+  become_user: "{{ peertube_instance }}"
