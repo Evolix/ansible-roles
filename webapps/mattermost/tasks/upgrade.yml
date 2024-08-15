@@ -2,8 +2,8 @@
 # tasks file for mattermost upgrade
 
 - name: Start mattermost systemd unit
-  ansible.builtin.service:
-    name: "mattermost@{{ mattermost_service }}"
+  ansible.builtin.systemd:
+    name: "mattermost@{{ mattermost_instance }}"
     state: stopped
 
 - name: set current date and time as a fact
@@ -11,7 +11,7 @@
 
 - name: backup current mattermost files
   ansible.builtin.command: "mv  ~/mattermost/ ~/mattermost_{{ mattermost_backup_date }}"
-  become_user: "{{ mattermost_service }}"
+  become_user: "{{ mattermost_instance }}"
 
 - name: Dump database to a file with compression
   ansible.builtin.postgresql_db:
@@ -24,8 +24,8 @@
   ansible.builtin.unarchive:
     src: "{{ mattermost_download_url }}"
     dest: ~/
-    remote_src: yes
-  become_user: "{{ mattermost_service }}"
+    remote_src: true
+  become_user: "{{ mattermost_instance }}"
 
 - name: restore dirs from backup
   ansible.builtin.copy: 
@@ -38,15 +38,15 @@
     - "~/mattermost_{{ mattermost_backup_date }}/logs"
     - "~/mattermost_{{ mattermost_backup_date }}/plugins"
     - "~/mattermost_{{ mattermost_backup_date }}/client/plugins"
-  become_user: "{{ mattermost_service }}"
+  become_user: "{{ mattermost_instance }}"
 
 - name: Start mattermost systemd unit
-  ansible.builtin.service:
-    name: "mattermost@{{ mattermost_service }}"
+  ansible.builtin.systemd:
+    name: "mattermost@{{ mattermost_instance }}"
     state: restarted
 
 - name: Reload nginx conf
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: nginx
     state: reloaded
 

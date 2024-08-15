@@ -32,7 +32,7 @@ Example Playbook
   vars:
     # Overwrite the role variables here
     domains: ['your-real-domain.org']
-    service: 'my-mattermost'
+    mattermost_instance: 'my-mattermost'
 
   roles:
     - { role: webapps/mattermost , tags: "mattermost" }

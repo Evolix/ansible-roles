@@ -1,4 +1,4 @@
-upstream backend_{{ mattermost_service }} {
+upstream backend_{{ mattermost_instance }} {
    server 127.0.0.1:{{ mattermost_app_port }};
    keepalive 32;
 }
@@ -23,8 +23,8 @@ server {
 
    server_name {{ mattermost_domains | first }};
    
-    access_log /var/log/nginx/{{ mattermost_service }}.access.log;
-    error_log  /var/log/nginx/{{ mattermost_service }}.error.log;
+    access_log /var/log/nginx/{{ mattermost_instance }}.access.log;
+    error_log  /var/log/nginx/{{ mattermost_instance }}.error.log;
 
     include /etc/nginx/snippets/letsencrypt.conf;
     include /etc/nginx/ssl/{{ mattermost_domains | first }}.conf;
@@ -46,7 +46,7 @@ server {
        proxy_connect_timeout 90;
        proxy_send_timeout 300;
        proxy_read_timeout 90s;
-       proxy_pass http://backend_{{ mattermost_service }};
+       proxy_pass http://backend_{{ mattermost_instance }};
    }
 
    location / {
@@ -67,7 +67,7 @@ server {
        #proxy_cache_use_stale timeout;
        #proxy_cache_lock on;
        proxy_http_version 1.1;
-       proxy_pass http://backend_{{ mattermost_service }};
+       proxy_pass http://backend_{{ mattermost_instance }};
    }
 }
 {% endif %}

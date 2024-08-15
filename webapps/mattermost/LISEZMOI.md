@@ -32,7 +32,7 @@ Exemple de playbook
   vars:
     # Supplanter ici les variables du rôle
     domains: ['votre-vrai-domaine.org']
-    service: 'mon-mattermost'
+    mattermost_instance: 'mon-mattermost'
 
   roles:
     - { role: webapps/mattermost , tags: "mattermost" }
