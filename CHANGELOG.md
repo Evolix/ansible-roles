@@ -52,6 +52,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * munin: add missing executable bit to added munin plugins
 * openvpn: Make it work on OpenBSD in check mode
 * openvpn: Set a default date of last OpenVPN startup for OpenBSD when it's not running so that date(1) doesn't fail
+* evoacme: Certificates directory path (remove apostrophes)
 
 ### Removed
 
