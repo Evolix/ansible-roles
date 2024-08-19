@@ -38,9 +38,16 @@
     register: _logname
     check_mode: no
 
+  - name: Fetch SSHd config files
+    ansible.builtin.command:
+      cmd: "find /etc/ssh -type f \\( -name 'sshd_config' -o -path '/etc/ssh/sshd_config.d/*.conf' \\)"
+    changed_when: False
+    check_mode: no
+    register: _ssh_config_paths
+
   - name: verify AllowUsers directive
     ansible.builtin.command:
-      cmd: "grep --extended-regexp --recursive --files-with-matches '^AllowUsers' /etc/ssh/sshd_config /etc/ssh/sshd_config.d"
+      cmd: "grep --extended-regexp --files-with-matches '^AllowUsers' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
     failed_when: False
     changed_when: False
     register: grep_allowusers_ssh
@@ -48,7 +55,7 @@
 
   - name: verify AllowGroups directive
     ansible.builtin.command:
-      cmd: "grep --extended-regexp --recursive --files-with-matches '^AllowGroups' /etc/ssh/sshd_config /etc/ssh/sshd_config.d"
+      cmd: "grep --extended-regexp --files-with-matches '^AllowGroups' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
     failed_when: False
     changed_when: False
     register: grep_allowgroups_ssh
