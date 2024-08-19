@@ -91,7 +91,7 @@ BEGIN {
     CTEMPS = "graph_title Machine temperature based on IPMI\ngraph_vlabel Degrees celcius\ngraph_category Sensors\n";
     CPOWER = "graph_title Power usage based on IPMI\ngraph_vlabel W\ngraph_category Sensors\n";
     CVOLTS = "graph_title Volts based on IPMI\ngraph_vlabel V\ngraph_category Sensors\n";
-    CAMP = "graph_title Amps based on IPMI\ngraph_vlabel A\ngraph_category Sensors\n";
+    CAMP = "graph_title Amps based on IPMI\ngraph_vlabel A\ngraph_category Sensors\ngraph_total Total\n";
 }
 
 # Remove extraneous spaces to make output prettyer
