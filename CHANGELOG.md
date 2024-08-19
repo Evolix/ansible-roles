@@ -40,7 +40,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evocheck: upstream release 24.08
 * evolinux-base: Add commented Match all
 * evolinux-base: Customize logcheck recipient when serveur-base is installed
-* evolinux-base: search only files that matter
+* evolinux-base/evolinux-users: search only files that matter
 * evolinux-base/evolinux-users: simplify ssh split configuration
 * evomaintenance: upstream release 24.08
 * haproxy: send logs to local5 by default, to be compatible with default evolinux rsyslog config
