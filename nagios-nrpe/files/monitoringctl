@@ -266,7 +266,7 @@ EOF
         wrapper="all"
     fi
 
-    if [ "${is_interactive}" = "True" ]; then
+    if [ "${is_interactive}" = "True" ] && [ "${confirm}" != "False" ]; then
         echo -n "> Confirm (y/N)? "
         read -r answer
         if [ "${answer}" != "Y" ] && [ "${answer}" != "y" ]; then
@@ -529,6 +529,7 @@ message=""
 duration="${default_disabled_time}"
 bypass_nrpe="False"
 default_duration="True"
+confirm="True"
 
 # Parse arguments and options
 while :; do
@@ -541,6 +542,9 @@ while :; do
             exit 0;;
         -b|--bypass-nrpe)
             bypass_nrpe="True"
+            shift;;
+        --no-confirm)
+            confirm="False"
             shift;;
         -d|--during)
             if [ "${default_duration}" = "False" ]; then
