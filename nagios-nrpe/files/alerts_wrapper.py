@@ -7,7 +7,7 @@
 #
 
 lib_dir = '/usr/local/lib/monitoringctl'
-prog_version="24.07.00"
+prog_version="24.07"
 
 import sys, os
 import argparse

@@ -5,7 +5,7 @@
 #
 
 readonly PROGNAME=$(basename $0)
-readonly VERSION="24.06.00"
+readonly VERSION="24.06"
 
 # Load common functions and vars
 readonly lib_dir="/usr/local/lib/monitoringctl"

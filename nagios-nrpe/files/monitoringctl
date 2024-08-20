@@ -2,7 +2,7 @@
 
 #set -x
 
-readonly VERSION="24.06.00"
+readonly VERSION="24.07"
 
 function show_help() {
     cat <<EOF
