@@ -97,14 +97,25 @@
 - ansible.builtin.include: accounts.yml
   when: proftpd_accounts | length > 0
 
+- name: Local Munin plugins directory exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: "0755"
+    owner: root
+    group: root
+    state: directory
+  loop:
+    - /usr/local/share/munin
+    - /usr/local/share/munin/plugins
+
 - name: Munin plugin is copied
   ansible.builtin.copy:
     src: munin_plugin
-    dest: /usr/share/munin/plugins/proftpd
+    dest: /usr/local/share/munin/plugins/proftpd
     mode: "0755"
 
 - name: Munin plugin is enabled
   ansible.builtin.file:
-    src: /usr/share/munin/plugins/proftpd
+    src: /usr/local/share/munin/plugins/proftpd
     dest: /etc/munin/plugins/proftpd
     state: link

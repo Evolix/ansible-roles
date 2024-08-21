@@ -48,13 +48,14 @@ The **patch** part is incremented if multiple releases happen the same month
 * log2mail: task log2mail.yml of evolinux-base converted to a role
 * lxc-solr: update solr9 version + fix URL in README
 * minifirewall: Update from upsteam (24.07)
+* proftpd: store Munin plugin in local directory
 
 ### Fixed
 
+* evoacme: Certificates directory path (remove apostrophes)
 * munin: add missing executable bit to added munin plugins
 * openvpn: Make it work on OpenBSD in check mode
 * openvpn: Set a default date of last OpenVPN startup for OpenBSD when it's not running so that date(1) doesn't fail
-* evoacme: Certificates directory path (remove apostrophes)
 * proftpd: permissions must be set as string with 4 digits
 
 ### Removed
