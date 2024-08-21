@@ -2,7 +2,7 @@
 # tasks file for etherpad upgrade
 
 - name: Dump database to a file with compression
-  ansible.builtin.mysql_db:
+  community.mysql.mysql_db:
     name: "{{ etherpad_instance }}"
     state: dump
     target: "~/{{ etherpad_instance }}.sql.gz"
@@ -22,17 +22,25 @@
   become_user: "{{ etherpad_instance }}"
 
 - name: Fix run.sh so it does not start etherpad at the end
-  ansible.builtin.lineinfile: 
-    path: "~/etherpad-lite/src/bin/run.sh"
+  ansible.builtin.lineinfile:
+    path: "~/etherpad-lite/bin/run.sh"
     state: absent
-    regexp: 'exec node src/node/server.js'
+    regexp: '^exec pnpm run prod'
   become_user: "{{ etherpad_instance }}"
 
 - name: Run setup
-  ansible.builtin.shell: "src/bin/run.sh"
+  ansible.builtin.shell: "bin/run.sh"
   args:
     chdir: "~/etherpad-lite"
   become_user: "{{ etherpad_instance }}"
+
+- name: Template json config file
+  ansible.builtin.template:
+    src: "settings.json.j2"
+    dest: "~{{ etherpad_instance }}/etherpad-lite/settings.json"
+    owner: "{{ etherpad_instance }}"
+    group: "{{ etherpad_instance }}"
+    mode: '0640'
 
 - name: Start service
   ansible.builtin.systemd:
