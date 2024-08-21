@@ -101,7 +101,7 @@
   ansible.builtin.copy:
     src: munin_plugin
     dest: /usr/share/munin/plugins/proftpd
-    mode: 755
+    mode: "0755"
 
 - name: Munin plugin is enabled
   ansible.builtin.file:
