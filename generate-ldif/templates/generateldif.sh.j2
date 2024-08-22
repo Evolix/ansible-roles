@@ -714,6 +714,20 @@ ServiceVersion: PHP-FPM 8.3 (multiphp)
 EOT
 fi
 
+if lxc-ls | grep -q php84 ; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=php-fpm84,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: php-fpm84
+ipServicePort: 443
+ServiceType: web
+ServiceVersion: PHP-FPM 8.4 (multiphp)
+EOT
+fi
+
 fi
 # END - LXC (multiphp)
 
