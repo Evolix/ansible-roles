@@ -47,7 +47,7 @@
 
   - name: verify AllowUsers directive
     ansible.builtin.command:
-      cmd: "grep --extended-regexp --files-with-matches '^AllowUsers' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
+      cmd: "grep --extended-regexp --files-with-matches --ignore-case '^AllowUsers' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
     failed_when: False
     changed_when: False
     register: grep_allowusers_ssh
@@ -55,7 +55,7 @@
 
   - name: verify AllowGroups directive
     ansible.builtin.command:
-      cmd: "grep --extended-regexp --files-with-matches '^AllowGroups' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
+      cmd: "grep --extended-regexp --files-with-matches --ignore-case '^AllowGroups' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
     failed_when: False
     changed_when: False
     register: grep_allowgroups_ssh

@@ -13,7 +13,7 @@
 
 - name: verify AllowGroups directive
   ansible.builtin.command:
-    cmd: "grep --extended-regexp --files-with-matches '^AllowGroups' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
+    cmd: "grep --extended-regexp --files-with-matches --ignore-case '^AllowGroups' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
   changed_when: False
   failed_when: False
   check_mode: no

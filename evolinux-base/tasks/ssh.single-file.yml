@@ -73,7 +73,7 @@
 
   - name: verify AllowUsers directive
     ansible.builtin.command:
-      cmd: "grep -E '^AllowUsers' /etc/ssh/sshd_config"
+      cmd: "grep --extended-regexp --ignore-case '^AllowUsers' /etc/ssh/sshd_config"
     failed_when: False
     changed_when: False
     register: grep_allowusers_ssh
@@ -81,7 +81,7 @@
 
   - name: verify AllowGroups directive
     ansible.builtin.command:
-      cmd: "grep -E '^AllowGroups' /etc/ssh/sshd_config"
+      cmd: "grep --extended-regexp --ignore-case '^AllowGroups' /etc/ssh/sshd_config"
     failed_when: False
     changed_when: False
     register: grep_allowgroups_ssh
