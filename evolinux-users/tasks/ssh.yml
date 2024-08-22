@@ -141,7 +141,7 @@
   block:
   - name: Check if evolinux ssh group is used
     ansible.builtin.command:
-      cmd: "grep --extended-regexp --files-with-matches '^AllowGroups.+{{ evolinux_ssh_group }}' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
+      cmd: "grep --extended-regexp --files-with-matches --ignore-case '^AllowGroups.+{{ evolinux_ssh_group }}' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
     changed_when: False
     failed_when: False
     check_mode: no
