@@ -2,7 +2,7 @@
 # tasks file for privatebin upgrade
 
 - name: Move some directories back to DocumentRoot
-  ansible.builtin.shell: 
+  ansible.builtin.shell:
     cmd: "mv {bin,cfg,doc,lib,tpl,tst,vendor} ~/PrivateBin/"
     chdir: "~/secret/"
     executable: /bin/bash
@@ -13,12 +13,12 @@
     repo: "{{ privatebin_git_url }}"
     dest: "~/PrivateBin/"
     version: "{{ privatebin_git_version }}"
-    update: yes
+    update: true
     force: true
   become_user: "{{ privatebin_instance }}"
 
 - name: Move back some directories outside DocumentRoot
-  ansible.builtin.shell: 
+  ansible.builtin.shell:
     cmd: "mv {bin,cfg,doc,lib,tpl,tst,vendor} ~/secret/"
     chdir: "~/PrivateBin/"
     executable: /bin/bash
