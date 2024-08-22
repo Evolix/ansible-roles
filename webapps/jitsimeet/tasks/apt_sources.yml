@@ -1,7 +1,7 @@
 ---
 
-- name: "Ensure {{ apt_keyring_dir }} directory exists"
-  file:
+- name: Ensure directory exists {{ apt_keyring_dir }}
+  ansible.builtin.file:
     path: "{{ apt_keyring_dir }}"
     state: directory
     mode: "755"
@@ -38,6 +38,7 @@
   ansible.builtin.template:
     src: apt/prosody.sources.j2
     dest: /etc/apt/sources.list.d/prosody.sources
+    mode: "0644"
   when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Add Jitsi Meet repository (Debian <12)
@@ -52,4 +53,5 @@
   ansible.builtin.template:
     src: apt/jitsimeet.sources.j2
     dest: /etc/apt/sources.list.d/jitsimeet.sources
+    mode: "0644"
   when: ansible_distribution_major_version is version('12', '>=')

@@ -33,6 +33,6 @@
 
 - name: restart jitsimeet_all
   loop: "{{ jitsimeet_all.results | selectattr('changed', 'equalto', true) | map(attribute='item') | map(attribute='name') | list }}"
-  systemd:
+  ansible.builtin.systemd:
     name: '{{ item }}'
     state: restarted
