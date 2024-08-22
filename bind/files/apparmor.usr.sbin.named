@@ -1,4 +1,6 @@
-/var/chroot-bind/etc/bind/** r,
+/var/chroot-bind/ r,
+/var/chroot-bind/** r,
+/var/chroot-bind/etc/bind/** rw,
 /var/chroot-bind/var/** rw,
 /var/chroot-bind/dev/** rw,
 /var/chroot-bind/run/** rw,
