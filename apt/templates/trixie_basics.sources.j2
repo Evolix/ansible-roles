@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+
+Types: deb
+URIs: http://mirror.evolix.org/debian
+Suites: trixie trixie-updates
+Components: {{ apt_basics_components | mandatory }}
+Enabled: yes
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
