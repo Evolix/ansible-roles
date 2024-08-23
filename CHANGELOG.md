@@ -21,8 +21,8 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: install colordiff and tree by default
 * evolinux-base: install evobackup-client (default: true)
 * evolinux-base: Install jq by default
-* lxc: new lxc_template_mirror option (useful to get old Debian from archive.debian.org)
 * lxc-php: Allow one to install php84 on Bookworm container
+* lxc: new lxc_template_mirror option (useful to get old Debian from archive.debian.org)
 * munin: add 2 graph colons in index with month and year
 * munin: add linux_psi contrib plugin
 * mysql : Add configuration for external undo log and purge.
@@ -30,6 +30,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * nagios-nrpe: new monitoringctl command
 * nagios-nrpe: quick patch for monitoringctl to enable --no-confirm
 * proftpd: add new munin graph (users count)
+* project-users: new role to manage sets of users for a project
 * trixie-detect : add role to force Debian 13 detection (temporary, until release)
 
 ### Changed

@@ -1,0 +1,15 @@
+---
+
+- name: "Sudoers group is present"
+  ansible.builtin.group:
+    name: "{{ project_users_sudoers_group | mandatory }}"
+    state: present
+    system: true
+
+- name: Sudoers file is present
+  ansible.builtin.template:
+    src: "{{ project_users_sudoers_template | mandatory }}"
+    dest: "{{ project_users_sudoers_path | mandatory }}"
+    mode: "0640"
+    force: yes
+    validate: '/usr/sbin/visudo -cf %s'

@@ -1,0 +1,109 @@
+---
+
+- name: "Test if uid exists for '{{ user.name | mandatory }}'"
+  ansible.builtin.command:
+    cmd: 'getent passwd {{ user.uid }}'
+  register: uidisbusy
+  failed_when: False
+  changed_when: False
+  check_mode: no
+  when:
+    - user.uid is defined
+
+- name: "Add Unix account with classical uid for '{{ user.name }}'"
+  ansible.builtin.user:
+    uid: '{{ user.uid }}'
+    name: "{{ user.name }}"
+    comment: '{{ user.fullname }}'
+    shell: "{{ user.shell | default('/bin/bash') }}"
+    password: '{{ user.password_hash }}'
+    update_password: "{{ user.update_password | default('always') }}"
+    state: present
+  when:
+    - user.uid is defined
+    - uidisbusy.rc != 0
+
+- name: "Add Unix account with random uid for '{{ user.name }}'"
+  ansible.builtin.user:
+    name: "{{ user.name }}"
+    comment: '{{ user.fullname | default(user.name) }}'
+    shell: "{{ user.shell | default('/bin/bash') }}"
+    password: '{{ user.password_hash }}'
+    update_password: "{{ user.update_password | default('always') }}"
+    state: present
+  when: user.uid is not defined or uidisbusy.rc == 0
+
+- name: "Secondary groups are mixed for '{{ user.name }}'"
+  ansible.builtin.set_fact:
+    _secondary_groups: "{{ [project_users_main_group] | union(user.groups | default([])) | sort | unique | list }}"
+
+- name: "Create secondary group ({{ _secondary_groups | join(',') }})"
+  ansible.builtin.group:
+    name: "{{ group }}"
+    system: true
+  loop: "{{ _secondary_groups }}"
+  loop_control:
+    loop_var: group
+
+## Group for SSH authorizations
+
+- name: "Unix user {{ user.name }} belongs to group '{{ evolinux_ssh_group }}' (Debian 10 or later)"
+  ansible.builtin.user:
+    name: "{{ user.name }}"
+    groups: "{{ evolinux_ssh_group | mandatory }}"
+    append: yes
+  when: ansible_distribution_major_version is version('10', '>=')
+
+- name: Determine available groups
+  ansible.builtin.getent:
+    database: group
+
+- name: "Add user {{ user.name }} to secondary groups ({{ _secondary_groups | join(',') }}"
+  ansible.builtin.user:
+    name: "{{ user.name }}"
+    groups: "{{ _secondary_groups | join(',') }}"
+    append: yes
+
+- name: "Fix perms on home directory for '{{ user.name }}'"
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}"
+    mode: "{{ project_users_homedir_mode }}"
+    state: directory
+
+- name: "Create .ssh directory for '{{ user.name }}'"
+  ansible.builtin.file:
+    path: '/home/{{ user.name }}/.ssh/'
+    state: directory
+    mode: "0700"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+
+- name: "Add user's SSH public keys for '{{ user.name }}'"
+  ansible.builtin.blockinfile:
+    dest: "/home/{{ user.name }}/.ssh/authorized_keys"
+    marker: "# {mark} ANSIBLE MANAGED KEYS"
+    mode: "0600"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    create: yes
+    content : |
+      {% for ssh_key in user.ssh_keys %}
+      {{ ssh_key }}
+      {% endfor %}
+
+- ansible.builtin.include: ssh.yml
+
+- name: "Evomaintenance trap is configured for '{{ user.name }}'"
+  ansible.builtin.blockinfile:
+    dest: "/home/{{ user.name }}/.profile"
+    insertafter: EOF
+    marker: "# {mark} ANSIBLE MANAGED EVOMAINTENANCE TRAP"
+    content: "{{ project_evomaintenance_trap_command }}"
+    state: "{{ (user.groups is defined and project_users_sudoers_group in user.groups) | ternary('present','absent') }}"
+  when:
+    - project_users_sudoers_group is defined
+    - project_users_sudoers_group != none
+    - project_users_sudoers_group | length > 0
+
+- ansible.builtin.meta: flush_handlers
+

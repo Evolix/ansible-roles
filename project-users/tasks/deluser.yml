@@ -1,0 +1,6 @@
+---
+
+- name: "Remove Unix account '{{ username }}'"
+  user:
+    name: "{{ username }}"
+    state: absent

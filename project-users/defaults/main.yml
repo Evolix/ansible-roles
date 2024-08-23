@@ -1,0 +1,22 @@
+---
+
+project_users_disable_ssh_password: False
+
+project_users_main_group: Null
+project_users_sudoers_group: Null
+project_users_sudoers_template: Null
+project_users_sudoers_path: "/etc/sudoers.d/{{ project_users_main_group | default('project') }}"
+
+project_evomaintenance_trap_command: "trap \"sudo /usr/share/scripts/evomaintenance.sh\" 0"
+
+project_users_db: {}
+
+project_users_homedir_mode: "0700"
+
+project_users_absent_for_all: []
+project_users_absent_for_group: []
+project_users_absent_for_host: []
+
+project_users_present_for_all: []
+project_users_present_for_group: []
+project_users_present_for_host: []
