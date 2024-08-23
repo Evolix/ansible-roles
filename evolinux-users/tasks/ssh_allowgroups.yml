@@ -46,7 +46,7 @@
 
 - name: "Append '{{ evolinux_ssh_group }}' to AllowGroups sshd directive"
   ansible.builtin.replace:
-    dest: "{{ grep_allowgroups_ssh.stdout_lines[0] }}"
+    dest: "{{ grep_allowgroups_ssh.stdout_lines | sort | first }}"
     regexp: '^(AllowGroups ((?!\b{{ evolinux_ssh_group }}\b).)*)$'
     replace: '\1 {{ evolinux_ssh_group }}'
     validate: '/usr/sbin/sshd -t -f %s'

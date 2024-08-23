@@ -66,7 +66,7 @@
 
   - name: "Append user to existing AllowUsers sshd directive"
     ansible.builtin.replace:
-      dest: "{{ grep_allowusers_ssh.stdout_lines[0] }}"
+      dest: "{{ grep_allowusers_ssh.stdout_lines | sort | first }}"
       regexp: '^(AllowUsers ((?!{{ _logname.stdout }}).)*)$'
       replace: '\1 {{ _logname.stdout }}'
       validate: '/usr/sbin/sshd -t -f %s'
@@ -96,7 +96,7 @@
 
   - name: "Append evolinux ssh group to AllowGroups sshd directive"
     ansible.builtin.replace:
-      dest: "{{ grep_allowgroups_ssh.stdout_lines[0] }}"
+      dest: "{{ grep_allowgroups_ssh.stdout_lines | sort | first }}"
       regexp: '^(AllowGroups ((?!{{ evolinux_ssh_group }}).)*)$'
       replace: '\1 {{ evolinux_ssh_group }}'
       validate: '/usr/sbin/sshd -t -f %s'
