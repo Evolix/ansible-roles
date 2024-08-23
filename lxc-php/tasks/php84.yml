@@ -74,7 +74,7 @@
 - name: "{{ lxc_php_container_name }} - Install PHP packages"
   community.general.lxc_container:
     name: "{{ lxc_php_container_name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer"
 
 - name: "{{ lxc_php_container_name }} - Copy evolinux PHP configuration"
   ansible.builtin.template:
