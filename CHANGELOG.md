@@ -52,6 +52,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc-solr: update solr9 version + fix URL in README
 * minifirewall: Update from upsteam (24.07)
 * proftpd: store Munin plugin in local directory
+* redis: add variable to force redis check interface
 
 ### Fixed
 
