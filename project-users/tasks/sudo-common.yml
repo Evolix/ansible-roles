@@ -8,8 +8,12 @@
 
 - name: Sudoers file is present
   ansible.builtin.template:
-    src: "{{ project_users_sudoers_template | mandatory }}"
+    src: "{{ project_users_sudoers_template }}"
     dest: "{{ project_users_sudoers_path | mandatory }}"
     mode: "0640"
     force: yes
     validate: '/usr/sbin/visudo -cf %s'
+  when: 
+    - project_users_sudoers_template is defined
+    - project_users_sudoers_template != none
+    - project_users_sudoers_template | length > 0

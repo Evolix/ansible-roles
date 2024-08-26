@@ -35,25 +35,24 @@
     msg: "Warning: empty variable 'project_users_present'!"
   when: project_users_present == []
 
-- ansible.builtin.include_tasks: sudo.yml
-  when:
-    - project_users_sudoers_group is defined
-    - project_users_sudoers_group != none
-    - project_users_sudoers_group | length > 0
-    - project_users_sudoers_template is defined
-    - project_users_sudoers_template != none
-    - project_users_sudoers_template | length > 0
+# Common tasks, run once
 
 - name: "Main group '{{ project_users_main_group }}' is present "
   ansible.builtin.group:
     name: "{{ project_users_main_group | mandatory }}"
     state: present
 
-- name: "Group '{{ evolinux_ssh_group }}' is present (Debian 10 or later)"
-  ansible.builtin.group:
-    name: "{{ evolinux_ssh_group | mandatory }}"
-    state: present
-  when: ansible_distribution_major_version is version('10', '>=')
+- name: Common SSH tasks
+  ansible.builtin.include_tasks: ssh-common.yml
+
+- name: Common sudo tasks
+  ansible.builtin.include_tasks: sudo-common.yml
+  when:
+    - project_users_sudoers_group is defined
+    - project_users_sudoers_group != none
+    - project_users_sudoers_group | length > 0
+
+# Loop to create users
 
 - ansible.builtin.include: adduser.yml
   vars:
@@ -61,6 +60,8 @@
   loop: "{{ project_users_present | default([]) }}"
   loop_control:
     loop_var: username
+
+# Loop to delete users
 
 - ansible.builtin.include: deluser.yml
   loop_control:

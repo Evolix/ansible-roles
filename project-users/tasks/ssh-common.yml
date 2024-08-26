@@ -1,0 +1,19 @@
+---
+
+- name: "Group '{{ evolinux_ssh_group }}' is present (Debian 10 or later)"
+  ansible.builtin.group:
+    name: "{{ evolinux_ssh_group | mandatory }}"
+    state: present
+  when: ansible_distribution_major_version is version('10', '>=')
+
+- name: "Disable password auth for users (if required)"
+  ansible.builtin.blockinfile:
+    dest: /etc/ssh/sshd_config
+    marker: "# {mark} {{ project_users_main_group }} PASSWORD RESTRICTIONS"
+    block: |
+      Match Group {{ project_users_main_group }}
+          PasswordAuthentication no
+    insertafter: EOF
+    validate: '/usr/sbin/sshd -t -f %s'
+    state: "{{ project_users_disable_ssh_password | bool | ternary('present', 'absent') }}"
+  notify: reload debian_sshd

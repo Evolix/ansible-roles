@@ -1,5 +1,28 @@
 ---
 
+- name: "Create .ssh directory for '{{ user.name }}'"
+  ansible.builtin.file:
+    path: '/home/{{ user.name }}/.ssh/'
+    state: directory
+    mode: "0700"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+  when: check_user.rc == 0
+
+- name: "Add user's SSH public keys for '{{ user.name }}'"
+  ansible.builtin.blockinfile:
+    dest: "/home/{{ user.name }}/.ssh/authorized_keys"
+    marker: "# {mark} ANSIBLE MANAGED KEYS"
+    mode: "0600"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    create: yes
+    content : |
+      {% for ssh_key in user.ssh_keys | default([]) %}
+      {{ ssh_key }}
+      {% endfor %}
+  when: check_user.rc == 0
+
 - name: Fetch SSHd config files
   ansible.builtin.command:
     cmd: "find /etc/ssh -type f \\( -name 'sshd_config' -o -path '/etc/ssh/sshd_config.d/*.conf' \\)"
@@ -65,15 +88,3 @@
   when:
     - ssh_allowusers
     - not ssh_allowgroups
-
-- name: "Disable password auth for users (if required)"
-  ansible.builtin.blockinfile:
-    dest: /etc/ssh/sshd_config
-    marker: "# {mark} {{ project_users_main_group }} PASSWORD RESTRICTIONS"
-    block: |
-      Match Group {{ project_users_main_group }}
-          PasswordAuthentication no
-    insertafter: EOF
-    validate: '/usr/sbin/sshd -t -f %s'
-    state: "{{ project_users_disable_ssh_password | bool | ternary('present', 'absent') }}"
-  notify: reload debian_sshd
