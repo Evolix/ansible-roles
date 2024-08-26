@@ -37,24 +37,13 @@
 
 # Common tasks, run once
 
-- name: "Main group '{{ project_users_main_group }}' is present "
-  ansible.builtin.group:
-    name: "{{ project_users_main_group | mandatory }}"
-    state: present
-
-- name: Common SSH tasks
-  ansible.builtin.include_tasks: ssh-common.yml
-
-- name: Common sudo tasks
-  ansible.builtin.include_tasks: sudo-common.yml
-  when:
-    - project_users_sudoers_group is defined
-    - project_users_sudoers_group != none
-    - project_users_sudoers_group | length > 0
+- name: Common tasks
+  ansible.builtin.include_tasks: common.yml
 
 # Loop to create users
 
-- ansible.builtin.include: adduser.yml
+- name: User add
+  ansible.builtin.include: user/add.yml
   vars:
     user: "{{ project_users_db[username] }}"
   loop: "{{ project_users_present | default([]) }}"
@@ -63,7 +52,8 @@
 
 # Loop to delete users
 
-- ansible.builtin.include: deluser.yml
+- name: User del
+  ansible.builtin.include: user/del.yml
   loop_control:
     loop_var: username
   loop: "{{ project_users_absent | default([]) }}"
