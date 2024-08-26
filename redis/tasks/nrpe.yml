@@ -79,7 +79,7 @@
   ansible.builtin.replace:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: '^command\[check_redis\]=.+'
-    replace: 'command[check_redis]=sudo {{ redis_check_redis_path }} -H {{ redis_bind_interfaces | first }} -p {{ redis_port }}'
+    replace: 'command[check_redis]=sudo {{ redis_check_redis_path }} -H {{ redis_check_interface }} -p {{ redis_port }}'
   when:
     - redis_instance_name is undefined
     - not alerts_wrapper.stat.exists
