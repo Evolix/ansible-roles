@@ -12,7 +12,7 @@
   when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Install corepack via npm on Debian 12
-  ansible.builtin.command: 
+  ansible.builtin.command:
     cmd: npm install -g corepack
   when: ansible_distribution_major_version is version('12', '>=')
 
@@ -25,7 +25,7 @@
   when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Enable yarn (via corepack)
-  ansible.builtin.shell: 
+  ansible.builtin.shell:
     cmd: corepack enable; yarn set version classic
 
 - name: Add PostgreSQL user
@@ -42,7 +42,7 @@
 #    umask: "0022" nécessite ansible-core 2.12
 
 - name: Install Ruby for instance user (rbenv)
-  include_role:
+  ansible.builtin.include_role:
     name: rbenv
   vars:
     - username: "{{ mastodon_instance }}"
@@ -53,28 +53,29 @@
     repo: "{{ mastodon_git_url }}"
     dest: "~/mastodon/"
     version: "{{ mastodon_git_version | default(omit) }}"
-    #force: true
+    # force: true
     update: true
     umask: '0022'
   become_user: "{{ mastodon_instance }}"
 
-- block:
-  - name: Install bundler
-    ansible.builtin.shell: ". ~/.profile && gem install bundler --no-document"
-    args:
-      chdir: "~/mastodon"
-      executable: /bin/bash # fails with /bin/sh
-  - name: Install gem dependencies
-    ansible.builtin.shell: ". ~/.profile && bundle install --deployment --without development test -j{{ ansible_processor_count }}"
-    args:
-      chdir: "~/mastodon"
-      executable: /bin/bash # fails with /bin/sh
-  - name: Install javascript dependencies
-    ansible.builtin.shell: ". ~/.profile && yarn install --pure-lockfile"
-    args:
-      chdir: "~/mastodon"
-      executable: /bin/bash # fails with /bin/sh
+- name: Install et configure app with bundler and yarn
   become_user: "{{ mastodon_instance }}"
+  block:
+    - name: Install bundler
+      ansible.builtin.shell: ". ~/.profile && gem install bundler --no-document"
+      args:
+        chdir: "~/mastodon"
+        executable: /bin/bash # fails with /bin/sh
+    - name: Install gem dependencies
+      ansible.builtin.shell: ". ~/.profile && bundle install --deployment --without development test -j{{ ansible_processor_count }}"
+      args:
+        chdir: "~/mastodon"
+        executable: /bin/bash # fails with /bin/sh
+    - name: Install javascript dependencies
+      ansible.builtin.shell: ". ~/.profile && yarn install --pure-lockfile"
+      args:
+        chdir: "~/mastodon"
+        executable: /bin/bash # fails with /bin/sh
 
 - name: Template .env.production configuration file
   ansible.builtin.template:
@@ -92,51 +93,53 @@
   register: secrets
   failed_when: "secrets.rc == 2"
 
-- block:
-  - name: Generate secret for SECRET_KEY_BASE
-    ansible.builtin.shell: '. ~/.profile && sed -i -r "s/SECRET_KEY_BASE=/SECRET_KEY_BASE=$(RAILS_ENV=production bundle exec rake secret)/" .env.production' 
-    args:
-      chdir: "~/mastodon"
-      executable: /bin/bash # fails with /bin/sh
-  - name: Generate secret for OTP_SECRET
-    ansible.builtin.shell:  '. ~/.profile && sed -i -r "s/OTP_SECRET=/OTP_SECRET=$(RAILS_ENV=production bundle exec rake secret)/" .env.production'
-    args:
-      chdir: "~/mastodon"
-      executable: /bin/bash # fails with /bin/sh
-  - name: Generate secret for VAPID_PRIVATE_KEY and VAPID_PUBLIC_KEY
-    ansible.builtin.shell: . ~/.profile && RAILS_ENV=production bundle exec rake mastodon:webpush:generate_vapid_key > vapid.tmp | head -1 | cut -c 19-
-    args:
-      chdir: "~/mastodon"
-      executable: /bin/bash # fails with /bin/sh
-  - name: Read VAPID_PRIVATE_KEY secret from temp file
-    ansible.builtin.shell: "cat vapid.tmp | head -1 | cut -c 19-"
-    args:
-      chdir: "~/mastodon"
-    register: app_vapid_private_key
-  - name: Read VAPID_PUBLIC_KEY secret from temp file
-    ansible.builtin.shell: "cat vapid.tmp | tail -1 | cut -c 18-"
-    args:
-      chdir: "~/mastodon"
-    register: app_vapid_public_key
-  - name: Delete secrets temp file
-    ansible.builtin.file:
-      path: "~/mastodon/vapid.tmp"
-      state: absent
-  - name: Write app_vapid_private_key to production .env file
-    ansible.builtin.lineinfile:
-      path: "~/mastodon/.env.production"
-      regexp: '^VAPID_PRIVATE_KEY='
-      line: "VAPID_PRIVATE_KEY={{ mastodon_app_vapid_private_key.stdout }}" 
-  - name: Write app_vapid_public_key to production .env file
-    ansible.builtin.lineinfile:
-      path: "~/mastodon/.env.production"
-      regexp: '^VAPID_PUBLIC_KEY='
-      line: "VAPID_PUBLIC_KEY={{ mastodon_app_vapid_public_key.stdout }}"
+- name: Generate secrets if needed
   become_user: "{{ mastodon_instance }}"
   when: "secrets.rc == 1"
+  block:
+    - name: Generate secret for SECRET_KEY_BASE
+      ansible.builtin.shell: '. ~/.profile && sed -i -r "s/SECRET_KEY_BASE=/SECRET_KEY_BASE=$(RAILS_ENV=production bundle exec rake secret)/" .env.production'
+      args:
+        chdir: "~/mastodon"
+        executable: /bin/bash # fails with /bin/sh
+    - name: Generate secret for OTP_SECRET
+      ansible.builtin.shell: '. ~/.profile && sed -i -r "s/OTP_SECRET=/OTP_SECRET=$(RAILS_ENV=production bundle exec rake secret)/" .env.production'
+      args:
+        chdir: "~/mastodon"
+        executable: /bin/bash # fails with /bin/sh
+    - name: Generate secret for VAPID_PRIVATE_KEY and VAPID_PUBLIC_KEY
+      ansible.builtin.shell: . ~/.profile && RAILS_ENV=production bundle exec rake mastodon:webpush:generate_vapid_key > vapid.tmp | head -1 | cut -c 19-
+      args:
+        chdir: "~/mastodon"
+        executable: /bin/bash # fails with /bin/sh
+    - name: Read VAPID_PRIVATE_KEY secret from temp file
+      ansible.builtin.shell: "cat vapid.tmp | head -1 | cut -c 19-"
+      args:
+        chdir: "~/mastodon"
+      register: app_vapid_private_key
+    - name: Read VAPID_PUBLIC_KEY secret from temp file
+      ansible.builtin.shell: "cat vapid.tmp | tail -1 | cut -c 18-"
+      args:
+        chdir: "~/mastodon"
+      register: app_vapid_public_key
+    - name: Delete secrets temp file
+      ansible.builtin.file:
+        path: "~/mastodon/vapid.tmp"
+        state: absent
+    - name: Write app_vapid_private_key to production .env file
+      ansible.builtin.lineinfile:
+        path: "~/mastodon/.env.production"
+        regexp: '^VAPID_PRIVATE_KEY='
+        line: "VAPID_PRIVATE_KEY={{ mastodon_app_vapid_private_key.stdout }}"
+    - name: Write app_vapid_public_key to production .env file
+      ansible.builtin.lineinfile:
+        path: "~/mastodon/.env.production"
+        regexp: '^VAPID_PUBLIC_KEY='
+        line: "VAPID_PUBLIC_KEY={{ mastodon_app_vapid_public_key.stdout }}"
 
 - name: Check if mastodon database is already present or not
   ansible.builtin.shell: |
+   set -o pipefail
    psql -lqt | cut -d \| -f 1 | grep -qw {{ mastodon_instance }}_production
   become_user: postgres
   register: db_present
@@ -169,21 +172,25 @@
   ansible.builtin.template:
     src: "mastodon.target.j2"
     dest: "/etc/systemd/system/{{ mastodon_instance }}.target"
+    mode: '0600'
 
 - name: Add systemd web unit
   ansible.builtin.template:
     src: "mastodon-web.service.j2"
     dest: "/etc/systemd/system/{{ mastodon_instance }}-web.service"
+    mode: '0600'
 
 - name: Add systemd sidekiq unit
   ansible.builtin.template:
     src: "mastodon-sidekiq.service.j2"
     dest: "/etc/systemd/system/{{ mastodon_instance }}-sidekiq.service"
+    mode: '0600'
 
 - name: Add systemd streaming unit
   ansible.builtin.template:
     src: "mastodon-streaming.service.j2"
     dest: "/etc/systemd/system/{{ mastodon_instance }}-streaming.service"
+    mode: '0600'
 
 - name: Enable systemd units
   ansible.builtin.systemd:
@@ -207,24 +214,31 @@
   register: ssl
 
 - name: Generate certificate only if required (first time)
+  when: not ssl.stat.exists
   block:
-  - name: Template vhost without SSL for successfull LE challengce
-    ansible.builtin.template: 
-      src: "vhost.j2"
-      dest: "/etc/nginx/sites-available/{{ mastodon_instance }}"
-  - name: Enable temporary nginx vhost for LE
-    ansible.builtin.file:
-      src: "/etc/nginx/sites-available/{{ mastodon_instance }}"
-      dest: "/etc/nginx/sites-enabled/{{ mastodon_instance }}"
-      state: link
-  - name: Reload nginx conf
-    ansible.builtin.systemd:
-      name: nginx
-      state: reloaded
-  - name: Generate certificate with certbot
-    ansible.builtin.command: 
-      cmd: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ mastodon_certbot_admin_email }} -d {{ mastodon_domains | first }}
-  when: ssl.stat.exists == false
+    - name: Template vhost without SSL for successfull LE challengce
+      ansible.builtin.template:
+        src: "vhost.j2"
+        dest: "/etc/nginx/sites-available/{{ mastodon_instance }}"
+        mode: '0640'
+    - name: Enable temporary nginx vhost for LE
+      ansible.builtin.file:
+        src: "/etc/nginx/sites-available/{{ mastodon_instance }}"
+        dest: "/etc/nginx/sites-enabled/{{ mastodon_instance }}"
+        state: link
+    - name: Reload nginx conf
+      ansible.builtin.systemd:
+        name: nginx
+        state: reloaded
+    - name: Generate certificate with certbot
+      ansible.builtin.command:
+        cmd: |
+          certbot certonly --webroot
+           --webroot-path /var/lib/letsencrypt
+           --non-interactive
+           --agree-tos
+           --email {{ mastodon_certbot_admin_email }}
+           -d {{ mastodon_domains | first }}
 
 - name: (Re)check if SSL certificate is present and register result
   ansible.builtin.stat:
@@ -235,6 +249,7 @@
   ansible.builtin.template:
     src: "vhost.j2"
     dest: "/etc/nginx/sites-available/{{ mastodon_instance }}"
+    mode: '0640'
 
 - name: Enable nginx vhost for mastodon
   ansible.builtin.file:
