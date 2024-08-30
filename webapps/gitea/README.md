@@ -32,7 +32,7 @@ Example Playbook
   vars:
     # Overwrite the role variable here
     domains: ['your-real-domain.org']
-    service: 'my-gitea'
+    gitea_instance: 'my-gitea'
 
   roles:
     - { role: webapps/gitea , tags: "gitea" }

@@ -15,12 +15,11 @@
     state: link
 
 - name: Start gitea systemd unit
-  ansible.builtin.service:
-    name: "gitea@{{ gitea_service }}"
+  ansible.builtin.systemd:
+    name: "gitea@{{ gitea_instance }}"
     state: restarted
 
 - name: Reload nginx conf
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: nginx
     state: reloaded
-
