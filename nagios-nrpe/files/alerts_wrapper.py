@@ -68,7 +68,7 @@ def main(wrapper_name, check_command):
     except subprocess.CalledProcessError as e:
         check_rc = e.returncode
         stdout = e.stdout
-    check_stdout = stdout.decode('utf8')
+    check_stdout = stdout.decode('utf8').strip()  # strip() removes trailing \n
 
     if is_disabled and check_rc == 124 and not check_stdout:
         check_stdout = 'Check timeout (> 8 sec)'
