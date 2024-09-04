@@ -74,7 +74,7 @@
 - name: "Re-test if '{{ user.name }}' exists"
   ansible.builtin.command:
     cmd: "getent passwd {{ user.name }}"
-  register: check_user
+  register: _check_user
   failed_when: False
   changed_when: False
   check_mode: no
@@ -121,7 +121,7 @@
     path: "/home/{{ user.name }}"
     mode: "{{ project_users_homedir_mode }}"
     state: directory
-  when: check_user.rc == 0
+  when: _check_user.rc == 0
 
 ## SSH
 

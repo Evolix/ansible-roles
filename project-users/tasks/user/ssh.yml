@@ -7,7 +7,7 @@
     mode: "0700"
     owner: "{{ user.name }}"
     group: "{{ user.name }}"
-  when: check_user.rc == 0
+  when: _check_user.rc == 0
 
 - name: "Add user's SSH public keys for '{{ user.name }}'"
   ansible.builtin.blockinfile:
@@ -21,7 +21,7 @@
       {% for ssh_key in user.ssh_keys | default([]) %}
       {{ ssh_key }}
       {% endfor %}
-  when: check_user.rc == 0
+  when: _check_user.rc == 0
 
 - name: Fetch SSHd config files
   ansible.builtin.command:
