@@ -19,16 +19,22 @@
   ansible.builtin.set_fact:
     evocheck_script_src: evocheck.wheezy.sh
   when: ansible_distribution_major_version is version('7', '<=')
+  tags:
+    - evocheck-script-only
 
 - name: Script for Debian 8
   ansible.builtin.set_fact:
     evocheck_script_src: evocheck.jessie.sh
   when: ansible_distribution_major_version is version('8', '=')
+  tags:
+    - evocheck-script-only
 
 - name: Script for Debian 9 and later
   ansible.builtin.set_fact:
     evocheck_script_src: evocheck.sh
   when: ansible_distribution_major_version is version('9', '>=')
+  tags:
+    - evocheck-script-only
 
 - name: Copy evocheck.sh
   ansible.builtin.copy:
@@ -38,6 +44,7 @@
     owner: root
     force: true
   tags:
+    - evocheck-script-only
     - evocheck
 
 - name: Copy evocheck.cf
