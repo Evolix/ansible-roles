@@ -120,6 +120,10 @@
   ansible.builtin.apt:
     name: nagios-nrpe-plugin
 
+- name: "Remount /usr if needed"
+  ansible.builtin.include_role:
+    name: remount-usr
+
 - name: "directory /etc/bash_completion.d exists"
   ansible.builtin.file:
     path: '/etc/bash_completion.d'

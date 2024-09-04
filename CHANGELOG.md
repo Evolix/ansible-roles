@@ -62,6 +62,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * openvpn: Make it work on OpenBSD in check mode
 * openvpn: Set a default date of last OpenVPN startup for OpenBSD when it's not running so that date(1) doesn't fail
 * proftpd: permissions must be set as string with 4 digits
+* monitoringctl: remount /usr RW after apt module call
 
 ### Removed
 
