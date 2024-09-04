@@ -2,7 +2,7 @@
 
 #set -x
 
-readonly VERSION="24.07"
+readonly VERSION="24.09"
 
 function show_help() {
     cat <<EOF
@@ -43,6 +43,7 @@ ${bold}ACTIONS${no_bold}
 
         -d, --during DURATION            See section DURATION.
         -m, --message 'DISABLE MESSAGE'  See section MESSAGE.
+        -n, --non-interactive            Do not ask confirmation (--message is mandatory then).
 
     ${bold}enable CHECK_NAME|all [-m|--message 'ENABLE MESSAGE']${no_bold}
 
@@ -57,9 +58,10 @@ ${bold}ACTIONS${no_bold}
 ${bold}MESSAGE${no_bold}
 
     Message that will be written in log and in check output when disabled.
-    It is mandatory, but in interactive shells it can be omitted. In tgis case it is asked interactively.
+    It is mandatory, but in interactive shells it can be omitted. In this case it is asked interactively.
 
-    Warning: In non-interactive shells (scripts, crons…), this option is mandatory.
+    Warning: In non-interactive shells (scripts, crons…) or with option --non-interactive,
+    this option is mandatory.
 
 ${bold}DURATION${no_bold}
 
@@ -117,7 +119,7 @@ function check() {
 
         check_commands="$(get_check_commands "${check}")"
         if [ -n "${check_commands}" ]; then
-            check_command="$(echo "${check_commands}" |  tail -n1)"
+            check_command="$(echo "${check_commands}" | tail -n1)"
             if [ -n "${1}" ]; then
                 printf "\033[K\n"  # erase tmp line « Checking check_toto…»
                 echo "Command played by NRPE:"
@@ -213,6 +215,7 @@ function disable_alerts() {
     fi
 
     warn_not_wrapped "${checks}"
+    warn_options_not_ended_properly "${checks}"
     warn_wrapper_names "${checks}"
 
     if [ -z "${2}" ]; then
@@ -266,7 +269,7 @@ EOF
         wrapper="all"
     fi
 
-    if [ "${is_interactive}" = "True" ] && [ "${confirm}" != "False" ]; then
+    if [ "${is_interactive}" = "True" ]; then
         echo -n "> Confirm (y/N)? "
         read -r answer
         if [ "${answer}" != "Y" ] && [ "${answer}" != "y" ]; then
@@ -384,6 +387,24 @@ function warn_wrapper_names() {
     fi
 }
 
+# Print a warning if the wrapper does not end its options with -- (to not interpret the wrapped NRPE command options)
+function warn_options_not_ended_properly() {
+    #$1: checks to verify
+    wrappers_without_ddash=''  # double dash --
+    for check in ${1}; do
+        if is_wrapped "${check}"; then
+            check_command=$(get_check_commands "${check}" | tail -n1)
+            if [[ ! ${check_command} == *" -- "* ]]; then
+                wrappers_without_ddash="${wrappers_without_ddash} ${check}"
+            fi
+        fi
+    done
+    if [ -n "${wrappers_without_ddash}" ]; then
+        >&2 echo -e "${orange}Some wrappers do not end their options with '--' before the NRPE command:${wrappers_without_ddash}"
+        >&2 echo -e "Using '--' is strongly recommended to avoid the options of the NRPE command to be interpreted by alerts_wrapper.${nocolor}\n"
+    fi
+}
+
 # Print a warning if some checks are not wrapped
 function warn_not_wrapped() {
     #$1: checks to verify
@@ -431,6 +452,7 @@ function alerts_status() {
         checks="${1}"
     fi
 
+    warn_options_not_ended_properly "${checks}"
     warn_wrapper_names "${checks}"
 
     header="Check\tStatus\tRe-enable time\tDisable message"
@@ -485,7 +507,7 @@ no_bold=''
 
 # Is interactive shell ?
 if [ -t 0 ] && [ -t 1 ]; then
-    readonly is_interactive="True"
+    is_interactive="True"
     red="\e[0;31m"
     green="\e[0;32m"
     orange="\e[0;33m"
@@ -494,7 +516,7 @@ if [ -t 0 ] && [ -t 1 ]; then
     bold="$(tput bold)"
     no_bold="$(tput sgr0)"
 else
-    readonly is_interactive="False"
+    is_interactive="False"
 fi
 
 # Load common functions and vars
@@ -529,7 +551,6 @@ message=""
 duration="${default_disabled_time}"
 bypass_nrpe="False"
 default_duration="True"
-confirm="True"
 
 # Parse arguments and options
 while :; do
@@ -543,8 +564,8 @@ while :; do
         -b|--bypass-nrpe)
             bypass_nrpe="True"
             shift;;
-        --no-confirm)
-            confirm="False"
+        -n|--non-interactive)
+            is_interactive="False"
             shift;;
         -d|--during)
             if [ "${default_duration}" = "False" ]; then
