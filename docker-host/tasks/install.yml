@@ -73,7 +73,6 @@
       - docker-buildx-plugin 
       - docker-compose-plugin
     update_cache: true
-    cache_valid_time: 3600
 
 - name: Package python-docker is installed
   ansible.builtin.apt:
