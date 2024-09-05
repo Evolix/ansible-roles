@@ -26,7 +26,7 @@
     insertafter: EOF
     validate: '/usr/sbin/sshd -t -f %s'
     state: "{{ project_users_disable_ssh_password | bool | ternary('present', 'absent') }}"
-  notify: reload debian_sshd
+  notify: reload sshd
 
 
 # Sudo
