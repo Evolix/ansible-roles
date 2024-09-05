@@ -9,6 +9,8 @@ project_users_sudoers_path: "/etc/sudoers.d/{{ project_users_main_group | defaul
 
 project_evomaintenance_trap_command: "trap \"sudo /usr/share/scripts/evomaintenance.sh\" 0"
 
+project_users_strict_uid: False
+
 project_users_db: {}
 
 project_users_homedir_mode: "0700"

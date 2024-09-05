@@ -4,88 +4,123 @@
 # Unix account
 # =================
 
-- ansible.builtin.fail:
+- ansible.builtin.assert:
+    that:
+      - user.name is defined
+      - user.name != none
+      - user.name | length > 0
     msg: "You must provide a value for the 'user.name ' variable."
-  when: (user.name is not defined) or (user.name | length == 0)
 
-- ansible.builtin.fail:
-    msg: "You must provide a value for the 'user.uid ' variable."
-  when: (user.uid is not defined) or (user.uid | string | length == 0)
-
+# If a User exist by that name it will return:
+# * rc = 0
+# * stdout = UID
+# If no User exists by that name it will return:
+# * rc = 1
+# * stdout = empty
 - name: "Test if '{{ user.name }}' exists"
   ansible.builtin.command:
     cmd: 'id -u "{{ user.name }}"'
-  register: get_id_from_login
+  register: _user_id_from_name
   failed_when: False
   changed_when: False
   check_mode: no
 
+- ansible.builtin.debug:
+    var: _user_id_from_name
+    verbosity: 1
+
+# If a User exist by that UID it will return:
+# * rc = 0
+# * stdout = username
+# If no User exists by that UID it will return:
+# * rc = 1
+# * stdout = empty
 - name: "Test if uid '{{ user.uid }}' exists"
   ansible.builtin.command:
     cmd: 'id -un -- "{{ user.uid }}"'
-  register: get_login_from_id
+  register: _user_name_from_id
   failed_when: False
   changed_when: False
   check_mode: no
 
-# Error if
-# the uid already exists
-# and the user associated with this uid is not the desired user
-- name: "Fail if uid already exists for another user"
-  ansible.builtin.fail:
-    msg: "Uid '{{ user.uid }}' is already used by '{{ get_login_from_id.stdout }}'. You must change uid for '{{ user.name }}'"
-  when:
-    - get_login_from_id.rc == 0
-    - get_login_from_id.stdout != user.name
+- ansible.builtin.debug:
+    var: _user_name_from_id
+    verbosity: 1
 
-# Create/Update the user account with defined uid if
-# the user doesn't already exist and the uid isn't already used
-# or the user exists with the defined uid
-- name: "Unix account for '{{ user.name }}' is present (with uid '{{ user.uid }}')"
+- ansible.builtin.debug:
+    var: project_users_strict_uid
+    verbosity: 1
+
+- name: "In strict mode, UID/name must match for '{{ user.name }}' (look by name)"
+  ansible.builtin.assert:
+    that:
+      # User exists with wrong UID
+      # …or User doesn't exist by wanted UID is already used
+      - user.uid | string == _user_id_from_name.stdout
+    msg: "User {{ user.name }} exists but with UID {{ _user_id_from_name.stdout }} instead of {{ user.uid }}"
+  when:
+    # Strict mode
+    - project_users_strict_uid | bool
+    # user.uid is set
+    - user.uid is defined and user.uid != none and (user.uid | string | length > 0)
+    # User exists
+    - _user_id_from_name.rc == 0
+
+- name: "In strict mode, UID/name must match for '{{ user.name }}' (look by UID)"
+  ansible.builtin.assert:
+    that:
+      # User exists with wrong UID
+      # …or User doesn't exist by wanted UID is already used
+      - user.name == _user_name_from_id.stdout
+    msg: "UID {{ user.uid }} is already used by user {{ _user_name_from_id.stdout }} instead of {{ user.name }}"
+  when:
+    # Strict mode
+    - project_users_strict_uid | bool
+    # user.uid is set
+    - user.uid is defined and user.uid != none and (user.uid | string | length > 0)
+    # UID is used
+    - _user_name_from_id.rc == 0
+
+
+- name: "Unix account '{{ user.name }}' is present with uid '{{ user.uid }}'"
   ansible.builtin.user:
-    state: present
-    uid: '{{ user.uid }}'
-    name: '{{ user.name }}'
-    comment: '{{ user.fullname | default(user.name) }}'
+    uid: "{{ user.uid }}"
+    name: "{{ user.name }}"
+    comment: "{{ user.fullname | default(user.name) }}"
     shell: "{{ user.shell | default('/bin/bash') }}"
-    password: '{{ user.password_hash }}'
+    password: "{{ user.password_hash }}"
     update_password: "{{ user.update_password | default('always') }}"
+    state: present
   when:
-    - (get_id_from_login.rc != 0 and get_login_from_id.rc != 0) \
-      or (get_id_from_login.rc == 0 and get_login_from_id.stdout == user.name)
+    # user.uid is set
+    - user.uid is defined and user.uid != none and (user.uid | string | length > 0) 
+    # User doesn't exist and its wanted uid is not already used
+    # … or User exists and its uid matches the wanted uid
+    - (_user_id_from_name.rc != 0 and _user_name_from_id.rc != 0) or (_user_id_from_name.rc == 0 and user.name == _user_name_from_id.stdout)
 
-# Create/Update the user account without defined uid if
-# the user doesn't already exist but the defined uid is already used
-# or another user already exists with a the same uid
-- name: "Unix account for '{{ user.name }}' is present (with random uid)"
+
+- name: "Unix account '{{ user.name }}' is present with random uid"
   ansible.builtin.user:
-    state: present
-    name: '{{ user.name }}'
-    comment: '{{ user.fullname | default(user.name) }}'
+    name: "{{ user.name }}"
+    comment: "{{ user.fullname | default(user.name) }}"
     shell: "{{ user.shell | default('/bin/bash') }}"
-    password: '{{ user.password_hash }}'
+    password: "{{ user.password_hash }}"
     update_password: "{{ user.update_password | default('always') }}"
+    state: present
   when:
-    - (get_id_from_login.rc != 0 and get_login_from_id.rc == 0) \
-      or (get_id_from_login.rc == 0 and get_login_from_id.stdout != user.name)
+    # user.uid is not set
+    # … or User exists and its uid doesn't match the wanted uid
+    - (not user.uid is defined) or (user.uid == none) or (user.uid | string | length <= 0) or (_user_id_from_name.rc == 0 and user.uid | string != _user_id_from_name | string)
 
-# We need to re-test if the user exist
-# because in check mode it wouldn't be created and subsequent tasks would fail
-- name: "Re-test if '{{ user.name }}' exists"
-  ansible.builtin.command:
-    cmd: "getent passwd {{ user.name }}"
-  register: _check_user
-  failed_when: False
-  changed_when: False
-  check_mode: no
+- name: "Get user info for '{{ user.name }}'"
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ user.name }}"
+    fail_key: False
 
 # =================
 # Unix groups
 # =================
-
-- name: Determine available groups
-  ansible.builtin.getent:
-    database: group
 
 - name: "Secondary groups are mixed for '{{ user.name }}'"
   ansible.builtin.set_fact:
@@ -121,7 +156,7 @@
     path: "/home/{{ user.name }}"
     mode: "{{ project_users_homedir_mode }}"
     state: directory
-  when: _check_user.rc == 0
+  when: ansible_facts.getent_passwd[user.name] != none
 
 ## SSH
 

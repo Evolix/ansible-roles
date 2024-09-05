@@ -1,5 +1,11 @@
 ---
 
+- name: "Get user info for '{{ user.name }}'"
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ user.name }}"
+    fail_key: False
+
 - name: "Create .ssh directory for '{{ user.name }}'"
   ansible.builtin.file:
     path: '/home/{{ user.name }}/.ssh/'
@@ -7,7 +13,7 @@
     mode: "0700"
     owner: "{{ user.name }}"
     group: "{{ user.name }}"
-  when: _check_user.rc == 0
+  when: ansible_facts.getent_passwd[user.name] != none
 
 - name: "Add user's SSH public keys for '{{ user.name }}'"
   ansible.builtin.blockinfile:
@@ -21,7 +27,7 @@
       {% for ssh_key in user.ssh_keys | default([]) %}
       {{ ssh_key }}
       {% endfor %}
-  when: _check_user.rc == 0
+  when: ansible_facts.getent_passwd[user.name] != none
 
 - name: Fetch SSHd config files
   ansible.builtin.command:
