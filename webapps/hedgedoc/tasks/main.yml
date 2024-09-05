@@ -4,15 +4,15 @@
 - name: Install main system dependencies
   ansible.builtin.apt:
     name: "{{ hedgedoc_system_dep }}"
-    update_cache: yes
+    update_cache: true
 
-#- name: Install node-gyp from npm
+# - name: Install node-gyp from npm
 #  ansible.builtin.shell: npm install --global node-gyp corepack
 
-#- name: Enable yarn (via corepack)
+# - name: Enable yarn (via corepack)
 #  ansible.builtin.shell: "corepack enable"
 
-#- name: Fix permissions 
+# - name: Fix permissions
 #  ansible.builtin.file:
 #    path: /usr/local/lib/node_modules
 #    mode: g+rx,o+rx
@@ -36,31 +36,32 @@
     owner: "{{ hedgedoc_db_user }}"
   become_user: postgres
 
-- block:
-  - name: Clone hedgedoc repo (git)
-    ansible.builtin.git:
-      repo: "{{ hedgedoc_git_url }}"
-      dest: "~/hedgedoc/"
-      version: "{{ hedgedoc_git_version | default(omit) }}"
-      update: yes
-      umask: '0022'
-#  - name: Set cache dir for yarn
-#    ansible.builtin.shell: yarn config set cache-folder /var/tmp/cache/yarn
-#    args:
-#      chdir: "~/"
-  - name: Run setup
-    ansible.builtin.shell: "bin/setup"
-    args:
-      chdir: "~/hedgedoc"
-  - name: Install dependencies for frontend app
-    ansible.builtin.shell: "yarn install --frozen-lockfile"
-    args:
-      chdir: "~/hedgedoc"
-  - name: Build frontend app
-    ansible.builtin.shell: "yarn build"
-    args:
-      chdir: "~/hedgedoc"
+- name: Get code and run app setup
   become_user: "{{ hedgedoc_service }}"
+  block:
+    - name: Clone hedgedoc repo (git)
+      ansible.builtin.git:
+        repo: "{{ hedgedoc_git_url }}"
+        dest: "~/hedgedoc/"
+        version: "{{ hedgedoc_git_version | default(omit) }}"
+        update: true
+        umask: '0022'
+#    - name: Set cache dir for yarn
+#      ansible.builtin.shell: yarn config set cache-folder /var/tmp/cache/yarn
+#      args:
+#        chdir: "~/"
+    - name: Run setup
+      ansible.builtin.shell: "bin/setup"
+      args:
+        chdir: "~/hedgedoc"
+    - name: Install dependencies for frontend app
+      ansible.builtin.shell: "yarn install --frozen-lockfile"
+      args:
+        chdir: "~/hedgedoc"
+    - name: Build frontend app
+      ansible.builtin.shell: "yarn build"
+      args:
+        chdir: "~/hedgedoc"
 
 - name: Template json config file
   ansible.builtin.template:
@@ -78,8 +79,8 @@
 - name: Enable systemd units
   ansible.builtin.systemd:
     name: "{{ hedgedoc_service }}.service"
-    enabled: yes
-    daemon_reload: yes
+    enabled: true
+    daemon_reload: true
 
 - name: Start service
   ansible.builtin.service:
@@ -87,51 +88,57 @@
     state: restarted
 
 - name: Template nginx snippet for Let's Encrypt/Certbot
-  ansible.builtin.template: 
+  ansible.builtin.template:
     src: "letsencrypt.conf.j2"
     dest: "/etc/nginx/snippets/letsencrypt.conf"
 
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ hedgedoc_domains |first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ hedgedoc_domains | first }}/fullchain.pem"
   register: ssl
 
 - name: Generate certificate only if required (first time)
+  when: not ssl.stat.exists
   block:
-  - name: Template vhost without SSL for successfull LE challengce
-    ansible.builtin.template: 
-      src: "vhost.conf.j2"
-      dest: "/etc/nginx/sites-available/{{ hedgedoc_service }}"
-  - name: Enable temporary nginx vhost for LE
-    ansible.builtin.file:
-      src: "/etc/nginx/sites-available/{{ hedgedoc_service }}"
-      dest: "/etc/nginx/sites-enabled/{{ hedgedoc_service }}"
-      state: link
-  - name: Reload nginx conf
-    ansible.builtin.service:
-      name: nginx
-      state: reloaded
-  - name: Make sure /var/lib/letsencrypt exists and has correct permissions
-    ansible.builtin.file: 
-      path: /var/lib/letsencrypt
-      state: directory
-      mode: '0755'
-  - name: Generate certificate with certbot
-    ansible.builtin.shell: certbot certonly --webroot --webroot-path /var/lib/letsencrypt --non-interactive --agree-tos --email {{ hedgedoc_certbot_admin_email }} -d {{ hedgedoc_domains |first }}
-  - name: Create the ssl dir if needed
-    ansible.builtin.file:
-      path: /etc/nginx/ssl
-      state: directory
-      mode: '0750'
-  - name: Template ssl bloc for nginx vhost
-    ansible.builtin.template: 
-      src: "ssl.conf.j2"
-      dest: "/etc/nginx/ssl/{{ hedgedoc_domains |first }}.conf"
-  when: ssl.stat.exists != true
+    - name: Template vhost without SSL for successfull LE challengce
+      ansible.builtin.template:
+        src: "vhost.conf.j2"
+        dest: "/etc/nginx/sites-available/{{ hedgedoc_service }}"
+    - name: Enable temporary nginx vhost for LE
+      ansible.builtin.file:
+        src: "/etc/nginx/sites-available/{{ hedgedoc_service }}"
+        dest: "/etc/nginx/sites-enabled/{{ hedgedoc_service }}"
+        state: link
+    - name: Reload nginx conf
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+    - name: Make sure /var/lib/letsencrypt exists and has correct permissions
+      ansible.builtin.file:
+        path: /var/lib/letsencrypt
+        state: directory
+        mode: '0755'
+    - name: Generate certificate with certbot
+      ansible.builtin.command:
+        cmd: |
+          certbot certonly --webroot --webroot-path /var/lib/letsencrypt
+           --non-interactive
+           --agree-tos
+           --email {{ hedgedoc_certbot_admin_email }}
+           -d {{ hedgedoc_domains | first }}
+    - name: Create the ssl dir if needed
+      ansible.builtin.file:
+        path: /etc/nginx/ssl
+        state: directory
+        mode: '0750'
+    - name: Template ssl bloc for nginx vhost
+      ansible.builtin.template:
+        src: "ssl.conf.j2"
+        dest: "/etc/nginx/ssl/{{ hedgedoc_domains | first }}.conf"
 
 - name: (Re)check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ hedgedoc_domains |first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ hedgedoc_domains | first }}/fullchain.pem"
   register: ssl
 
 - name: (Re)template conf file for nginx vhost with SSL

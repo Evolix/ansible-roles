@@ -13,26 +13,27 @@
     name: "{{ hedgedoc_service }}.service"
     state: stopped
 
-- block:
-  - name: Clone hedgedoc repo (git)
-    ansible.builtin.git:
-      repo: "{{ hedgedoc_git_url }}"
-      dest: "~/hedgedoc/"
-      version: "{{ hedgedoc_git_version }}"
-      update: yes
-  - name: Run setup
-    ansible.builtin.shell: "bin/setup"
-    args:
-      chdir: "~/hedgedoc"
-  - name: Install dependencies for frontend app
-    ansible.builtin.shell: "yarn install --frozen-lockfile"
-    args:
-      chdir: "~/hedgedoc"
-  - name: Build frontend app
-    ansible.builtin.shell: "yarn build"
-    args:
-      chdir: "~/hedgedoc"
+- name: Get code and run app setup
   become_user: "{{ hedgedoc_service }}"
+  block:
+    - name: Clone hedgedoc repo (git)
+      ansible.builtin.git:
+        repo: "{{ hedgedoc_git_url }}"
+        dest: "~/hedgedoc/"
+        version: "{{ hedgedoc_git_version }}"
+        update: true
+    - name: Run setup
+      ansible.builtin.shell: "bin/setup"
+      args:
+        chdir: "~/hedgedoc"
+    - name: Install dependencies for frontend app
+      ansible.builtin.shell: "yarn install --frozen-lockfile"
+      args:
+        chdir: "~/hedgedoc"
+    - name: Build frontend app
+      ansible.builtin.shell: "yarn build"
+      args:
+        chdir: "~/hedgedoc"
 
 - name: Restart services
   ansible.builtin.service:
