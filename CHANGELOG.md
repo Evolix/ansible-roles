@@ -17,13 +17,13 @@ The **patch** part is incremented if multiple releases happen the same month
 * apt: temporary trixie source lists
 * bind: New variables to change IPs bind will listen on & send notify/transfer commands
 * certbot: support evoacme in haproxy renewal hook
-* etc-git: add cron job for daily autocommits
+* etc-git: add cron job for daily autocommits (broom commits)
 * evobackup-client : Upstream release 24.07
 * evocheck: add tag "evocheck-script-only"
 * evolinux-base: Create custom SSH configuration file
-* evolinux-base: install colordiff and tree by default
+* evolinux-base: install colordiff, jq and tree by default
 * evolinux-base: install evobackup-client (default: true)
-* evolinux-base: Install jq by default
+* generate-ldif: add bloc for php-fpm84
 * lxc-php: Allow one to install php84 on Bookworm container
 * lxc: new lxc_template_mirror option (useful to get old Debian from archive.debian.org)
 * munin: add 2 graph colons in index with month and year
@@ -34,7 +34,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * nagios-nrpe: quick patch for monitoringctl to enable --no-confirm
 * proftpd: add new munin graph (users count)
 * project-users: new role to manage sets of users for a project
-* trixie-detect : add role to force Debian 13 detection (temporary, until release)
+* trixie-detect: add role to force Debian 13 detection (temporary, until release)
 
 ### Changed
 
@@ -42,8 +42,8 @@ The **patch** part is incremented if multiple releases happen the same month
 * autosysadmin-agent: release 24.06
 * bind: Update AppArmor rules
 * certbot: let's encrypt commit hook deal only with /etc/letsencrypt
-* docker-host: install docker compose and buildx by default
 * docker-host: fix update cache for install task
+* docker-host: install docker compose and buildx by default
 * docker-host: split tasks in different task files
 * Elastic Stack : default to version 8.x
 * evocheck: upstream release 24.08
@@ -55,18 +55,20 @@ The **patch** part is incremented if multiple releases happen the same month
 * haproxy: send logs to local5 by default, to be compatible with default evolinux rsyslog config
 * log2mail: task log2mail.yml of evolinux-base converted to a role
 * lxc-solr: update solr9 version + fix URL in README
-* minifirewall: Update from upsteam (24.07)
+* minifirewall: upsteam release 24.07
 * proftpd: store Munin plugin in local directory
 * redis: add variable to force redis check interface
 
 ### Fixed
 
 * evoacme: Certificates directory path (remove apostrophes)
+* fail2ban: remount /usr if needed
 * munin: add missing executable bit to added munin plugins
 * openvpn: Make it work on OpenBSD in check mode
 * openvpn: Set a default date of last OpenVPN startup for OpenBSD when it's not running so that date(1) doesn't fail
 * proftpd: permissions must be set as string with 4 digits
 * monitoringctl: remount /usr RW after apt module call
+* haproxy: send logs to local5 in default template
 
 ### Removed
 
