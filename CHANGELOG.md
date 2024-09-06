@@ -36,6 +36,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* apache: improve BadBots configuration
 * autosysadmin-agent: release 24.06
 * bind: Update AppArmor rules
 * certbot: let's encrypt commit hook deal only with /etc/letsencrypt
