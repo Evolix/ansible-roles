@@ -16,6 +16,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * apt: force PATH for apt-hold-packages crontab
 * apt: temporary trixie source lists
 * bind: New variables to change IPs bind will listen on & send notify/transfer commands
+* certbot: support evoacme in haproxy renewal hook
 * etc-git: add cron job for daily autocommits
 * evobackup-client : Upstream release 24.07
 * evocheck: add tag "evocheck-script-only"

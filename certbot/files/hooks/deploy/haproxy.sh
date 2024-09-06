@@ -15,7 +15,7 @@ daemon_found_and_running() {
     test -n "$(pidof haproxy)" && test -n "${haproxy_bin}"
 }
 found_renewed_lineage() {
-    test -f "${RENEWED_LINEAGE}/fullchain.pem" && test -f "${private_key}"
+    test -f "${full_chain}" && test -f "${private_key}"
 }
 config_check() {
     ${haproxy_bin} -c -f "${haproxy_config_file}" > /dev/null 2>&1
@@ -26,7 +26,7 @@ concat_files() {
     chown root: "${haproxy_cert_dir}"
 
     debug "Concatenating certificate files to ${haproxy_cert_file}"
-    cat "${RENEWED_LINEAGE}/fullchain.pem" "${private_key}" > "${haproxy_cert_file}"
+    cat "${full_chain}" "${private_key}" > "${haproxy_cert_file}"
     chmod 600 "${haproxy_cert_file}"
     chown root: "${haproxy_cert_file}"
 }
@@ -60,14 +60,16 @@ main() {
     if daemon_found_and_running; then
         readonly haproxy_config_file="/etc/haproxy/haproxy.cfg"
         readonly haproxy_cert_dir=$(detect_haproxy_cert_dir)
-        if  [ -z "${EVOACME_VHOST_NAME}" ]; then
+        
+        full_chain="${RENEWED_LINEAGE}/fullchain.pem"
+        if  [ -n "${EVOACME_VHOST_NAME}" ]; then
+            # EVOACME
+            private_key=${private_keys_dirs}/$(basename "$(dirname "${RENEWED_LINEAGE}")").key
+	        cert_name=$(basename "$(dirname "${RENEWED_LINEAGE}")")
+        else
             # CERTBOT
             private_key=${RENEWED_LINEAGE}/privkey.pem
             cert_name=$(basename "${RENEWED_LINEAGE}")
-        else
-            # EVOACME
-            private_key=${private_keys_dirs}/$(basename $(dirname ${RENEWED_LINEAGE})).key
-	    cert_name=$(basename $(dirname "${RENEWED_LINEAGE}"))
         fi
 
         if found_renewed_lineage; then
@@ -88,8 +90,7 @@ main() {
                 error "HAProxy config is broken, you must fix it !"
             fi
         else
-
-            error "Couldn't find ${RENEWED_LINEAGE}/fullchain.pem or "${private_key}""
+            error "Couldn't find '${full_chain}' or '${private_key}'"
         fi
     else
         debug "HAProxy is not running or missing. Skip."
