@@ -13,12 +13,33 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Fixed
 
+## [24.09] 2024-09-06
+
+### Added
+
+### Changed
+
+* Merge CONTRIBUTING files in README
+* Move LICENSE file at the root of the repo
+* IS_LXC_PHP_BAD_DEBIAN_VERSION: Trixie support
+* IS_PHPEVOLINUXCONF: Trixie support
+* IS_SSHALLOWUSERS: Trixie support
+
+### Removed
+
+* IS_EVOLIX_GROUP: too many false positive
+
+### Fixed
+
+* IS_LXC_PHP_FPM_SERVICE_UMASK_SET: suffixed container name support
 
 ## [24.08] 2024-08-01
 
 ### Fixed
 
 * VERSION variable must contain valid characters only
+
+## [24.07] 2024-07-18
 
 ### Added
 
@@ -233,7 +254,7 @@ New checks :
 
 ### Changed
 
-* IS_NETWORKING_SERVICE: not in cron mode 
+* IS_NETWORKING_SERVICE: not in cron mode
 
 ### Fixed:
 
@@ -338,7 +359,7 @@ New checks :
 
 ### Fixed
 
-* IS_DEBIANSECURITY: optional trailing slash 
+* IS_DEBIANSECURITY: optional trailing slash
 
 ## [21.09] 2021-09-30
 

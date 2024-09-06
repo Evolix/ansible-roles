@@ -46,7 +46,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * docker-host: install docker compose and buildx by default
 * docker-host: split tasks in different task files
 * Elastic Stack : default to version 8.x
-* evocheck: upstream release 24.08
+* evocheck: upstream release 24.09
 * evolinux-base: Add commented Match all
 * evolinux-base: Customize logcheck recipient when serveur-base is installed
 * evolinux-base/evolinux-users: search only files that matter
