@@ -77,11 +77,11 @@
       INTLAN='{{ minifirewall_intlan }}'
 
       # Trusted IPv4 addresses for private and semi-public services
-      TRUSTEDIPS='{{ minifirewall_trusted_ips | join(' ') }}'
+      TRUSTEDIPS='{{ minifirewall_trusted_ips | unique | join(' ') }}'
 
       # Privilegied IPv4 addresses for semi-public services
       # (no need to add again TRUSTEDIPS)
-      PRIVILEGIEDIPS='{{ minifirewall_privilegied_ips | join(' ') }}'
+      PRIVILEGIEDIPS='{{ minifirewall_privilegied_ips | unique | join(' ') }}'
     create: no
   register: minifirewall_config_ips
 
@@ -106,27 +106,27 @@
     block: |
       # Protected services
       # (add also in Public services if needed)
-      SERVICESTCP1p='{{ minifirewall_protected_ports_tcp | join(' ') }}'
-      SERVICESUDP1p='{{ minifirewall_protected_ports_udp | join(' ') }}'
+      SERVICESTCP1p='{{ minifirewall_protected_ports_tcp | unique | join(' ') }}'
+      SERVICESUDP1p='{{ minifirewall_protected_ports_udp | unique | join(' ') }}'
 
       # Public services (IPv4/IPv6)
-      SERVICESTCP1='{{ minifirewall_public_ports_tcp | join(' ') }}'
-      SERVICESUDP1='{{ minifirewall_public_ports_udp | join(' ') }}'
+      SERVICESTCP1='{{ minifirewall_public_ports_tcp | unique | join(' ') }}'
+      SERVICESUDP1='{{ minifirewall_public_ports_udp | unique | join(' ') }}'
 
       # Semi-public services (IPv4)
-      SERVICESTCP2='{{ minifirewall_semipublic_ports_tcp | join(' ') }}'
-      SERVICESUDP2='{{ minifirewall_semipublic_ports_udp | join(' ') }}'
+      SERVICESTCP2='{{ minifirewall_semipublic_ports_tcp | unique | join(' ') }}'
+      SERVICESUDP2='{{ minifirewall_semipublic_ports_udp | unique | join(' ') }}'
 
       # Private services (IPv4)
-      SERVICESTCP3='{{ minifirewall_private_ports_tcp | join(' ') }}'
-      SERVICESUDP3='{{ minifirewall_private_ports_udp | join(' ') }}'
+      SERVICESTCP3='{{ minifirewall_private_ports_tcp | unique | join(' ') }}'
+      SERVICESUDP3='{{ minifirewall_private_ports_udp | unique | join(' ') }}'
     create: no
   register: minifirewall_config_ports
 
 - name: Configure DNSSERVEURS
   ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
-    line: "DNSSERVEURS='{{ minifirewall_dns_servers | join(' ') }}'"
+    line: "DNSSERVEURS='{{ minifirewall_dns_servers | unique | join(' ') }}'"
     regexp: "DNSSERVEURS=('|\").*('|\")"
     create: no
   when: minifirewall_dns_servers is not none
@@ -134,7 +134,7 @@
 - name: Configure HTTPSITES
   ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
-    line: "HTTPSITES='{{ minifirewall_http_sites | join(' ') }}'"
+    line: "HTTPSITES='{{ minifirewall_http_sites | unique | join(' ') }}'"
     regexp: "HTTPSITES=('|\").*('|\")"
     create: no
   when: minifirewall_http_sites is not none
@@ -142,7 +142,7 @@
 - name: Configure HTTPSSITES
   ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
-    line: "HTTPSSITES='{{ minifirewall_https_sites | join(' ') }}'"
+    line: "HTTPSSITES='{{ minifirewall_https_sites | unique | join(' ') }}'"
     regexp: "HTTPSSITES=('|\").*('|\")"
     create: no
   when: minifirewall_https_sites is not none
@@ -150,7 +150,7 @@
 - name: Configure FTPSITES
   ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
-    line: "FTPSITES='{{ minifirewall_ftp_sites | join(' ') }}'"
+    line: "FTPSITES='{{ minifirewall_ftp_sites | unique | join(' ') }}'"
     regexp: "FTPSITES=('|\").*('|\")"
     create: no
   when: minifirewall_ftp_sites is not none
@@ -158,7 +158,7 @@
 - name: Configure SSHOK
   ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
-    line: "SSHOK='{{ minifirewall_ssh_ok | join(' ') }}'"
+    line: "SSHOK='{{ minifirewall_ssh_ok | unique | join(' ') }}'"
     regexp: "SSHOK=('|\").*('|\")"
     create: no
   when: minifirewall_ssh_ok is not none
@@ -166,7 +166,7 @@
 - name: Configure SMTPOK
   ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
-    line: "SMTPOK='{{ minifirewall_smtp_ok | join(' ') }}'"
+    line: "SMTPOK='{{ minifirewall_smtp_ok | unique | join(' ') }}'"
     regexp: "SMTPOK=('|\").*('|\")"
     create: no
   when: minifirewall_smtp_ok is not none
@@ -174,7 +174,7 @@
 - name: Configure SMTPSECUREOK
   ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
-    line: "SMTPSECUREOK='{{ minifirewall_smtp_secure_ok | join(' ') }}'"
+    line: "SMTPSECUREOK='{{ minifirewall_smtp_secure_ok | unique | join(' ') }}'"
     regexp: "SMTPSECUREOK=('|\").*('|\")"
     create: no
   when: minifirewall_smtp_secure_ok is not none
@@ -208,7 +208,7 @@
 - name: Configure PROXYBYPASS
   ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
-    line: "PROXYBYPASS=\"{{ minifirewall_proxybypass | join(' ') }}\""
+    line: "PROXYBYPASS=\"{{ minifirewall_proxybypass | unique | join(' ') }}\""
     regexp: "PROXYBYPASS=('|\").*('|\")"
     create: no
   when: minifirewall_proxybypass is not none
@@ -216,7 +216,7 @@
 - name: Configure BACKUPSERVERS
   ansible.builtin.lineinfile:
     dest: "/etc/default/minifirewall"
-    line: "BACKUPSERVERS='{{ minifirewall_backupservers | join(' ') }}'"
+    line: "BACKUPSERVERS='{{ minifirewall_backupservers | unique | join(' ') }}'"
     regexp: "BACKUPSERVERS=('|\").*('|\")"
     create: no
   when: minifirewall_backupservers is not none
