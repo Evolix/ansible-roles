@@ -70,6 +70,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * proftpd: permissions must be set as string with 4 digits
 * monitoringctl: remount /usr RW after apt module call
 * haproxy: send logs to local5 in default template
+* spamassassin: fix missing directory for bayes rules
 
 ### Removed
 

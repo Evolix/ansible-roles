@@ -25,6 +25,14 @@
   tags:
     - spamassassin
 
+- name: Ensure /var/spool/spam (for bayes rules) is present and accessible
+  ansible.builtin.file:
+    path: /var/spool/spam
+    state: directory
+    owner: amavis
+  tags:
+    - spamassassin
+
 - name: Configure SpamAssassin
   ansible.builtin.copy:
     src: spamassassin.cf
