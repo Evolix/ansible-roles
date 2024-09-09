@@ -1,0 +1,19 @@
+---
+evodomains_script_name: evodomains
+evodomains_config_path: /etc/evolinux/domains
+evodomains_ignored_domains_list: ignored_domains_check.list
+evodomains_included_domains_list: included_domains_check.list
+evodomains_allowed_ips_list: allowed_ips_check.list
+evodomains_dependencies:
+  - bash-completion
+#  - python3-cryptography
+#  - socat
+evodomains_allowed_ips:
+  - 127.0.0.1
+  - 31.170.13.1  # boost05
+  - 31.170.8.100  # boost04
+  - 54.39.237.40  # cariboost
+  - 31.170.11.208  # boost-mrs00
+  - 31.170.13.9  # boost-par00
+  - 31.170.11.118  # boost-pp00
+

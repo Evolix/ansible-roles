@@ -5,12 +5,13 @@
 # Evodomains is a Python script to ease the management of a server's domains.
 #
 # Features:
-# - Supports Apache, Nginx, HaProxy and SSL certificates domains
+# - Supports Apache, Nginx and SSL certificates domains
 # - List domains
 # - Check domains name records
 # Roadmap :
 # - Remove domains from vhosts configuration
 # - Remove certificate files
+# - Someday support HaProxy domains (with limitations like regex ACLs)
 #
 # Authors: Will
 #
@@ -40,11 +41,11 @@ config_dir_path = '/etc/evolinux/domains'
 ignored_domains_file = 'ignored_domains_check.list'
 included_domains_file = 'included_domains_check.list'
 allowed_ips_file = 'allowed_ips_check.list'
-haproxy_conf_path = '/etc/haproxy/haproxy.cfg'
+#haproxy_conf_path = '/etc/haproxy/haproxy.cfg'
 domain_cn_regex = re.compile('CN=(((?!-)[A-Za-z0-9-\*]{1,63}(?<!-)\.)+[A-Za-z]{2,6})')
 domain_san_regex = re.compile('DNS:(((?!-)[A-Za-z0-9-\*]{1,63}(?<!-)\.)+[A-Za-z]{2,6})')
 
-# Time to wait for DNS answer before considering a domain in timeouted.
+# Time to wait for DNS answer before considering a domain has timeout.
 # Note: DNS check of all domains must be <10s to avoid Icinga timeout.
 DNS_timeout = 5
 
@@ -55,8 +56,8 @@ class DomainProvider:
     """Abstract class to store the infos about where a domain was found.
     For inheritance only, should not be instantiated.
     Attributes:
-        - domain: the domain
-        - provider: 'apache', 'nginx', 'haproxy', 'certbot', 'evoacme'
+        - domain: the domain or subdomain
+        - provider: 'apache', 'nginx', 'certbot', 'evoacme', 'evodomains', 'manual'
         - type: type of provider ('config', 'certificate')
         - path: config or certificate path where the domain was found
         - line: line in config file or certificate where the domain was found
@@ -1052,7 +1053,7 @@ def check_domains(domains):
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('action', metavar='ACTION', help='Values: check-dns, list')
-    parser.add_argument('-o', '--output', help='Output format. Values: human (default), json, nrpe')
+    parser.add_argument('-o', '--output', help='Output format. Values: human (default), json, nrpe (only with check-dns action)')
     #parser.add_argument('-s', '--ssl-only', action='store_true', help='SSL/TLS domains only (not implemented.')
     parser.add_argument('-w', '--warning', action='store_true', help='Print warnings to stdout.')
     parser.add_argument('-d', '--debug', action='store_true', help='Print debug to stdout (includes warnings).')
@@ -1070,6 +1071,13 @@ def parse_arguments():
 
     if action not in ['check-dns', 'list']:
         print_error_and_exit('Unknown {} action, use -h option for help.'.format(args.action))
+
+    if not output:
+        output = 'human'
+
+    if output not in ['human', 'json', 'nrpe']:
+        err_msg = 'Unknown {} argument for --output option.'.format(output)
+        print_error_and_exit(err_msg)
 
 
 def check_deps():
@@ -1130,7 +1138,7 @@ def main(argv):
             print_error_and_exit('Action \'list\' is not available for \'--output nrpe\'.')
         elif output == 'json':
             output_domains_json(domains)
-        else:  # defaults to output == 'human'
+        elif output == 'human':
             output_domains_human(domains)
 
     elif action == 'check-dns':
@@ -1140,7 +1148,7 @@ def main(argv):
             output_check_result_nrpe(domains)
         elif output == 'json':
             output_check_result_json(domains)
-        else:  # defaults to output == 'human'
+        elif output == 'human':
             output_check_result_human(domains)
 
 

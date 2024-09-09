@@ -1,7 +1,6 @@
 - name: Install check_domains dependency
   include_role:
-    name: evolinux-base
-    tasks_from: evodomains
+    name: evodomains
 
 - name: Configure check_domains in /etc/nagios/nrpe.d/evolix.cfg
   ansible.builtin.lineinfile:
@@ -22,5 +21,5 @@
     line: 'nagios          ALL = NOPASSWD: {{ nagios_plugins_directory }}/check_domains'
     insertafter: '^nagios'
     validate: "visudo -cf %s"
-  when: sudoers_evolinux.stat.exists 
+  when: sudoers_evolinux.stat.exists
 
