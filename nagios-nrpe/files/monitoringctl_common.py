@@ -220,6 +220,8 @@ def _get_conf_from_file(file_path):
                     conf_dir = line.split('=')[1]
                     include = _get_conf_from_dir(conf_dir)
                     conf_lines.extend(include)
+                elif 'check_hda1' in line:
+                    continue # Ludo dirty hack to avoid modifying /etc/nrpe/nrpe.cfg
                 else:
                     conf_lines.append(line)
     return conf_lines

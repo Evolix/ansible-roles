@@ -190,6 +190,8 @@ function _get_conf_from_file() {
         elif [[ "${_line}" =~ .*'include_dir='.* ]]; then
             _conf_dir=$(echo "${_line}" | cut -d= -f2)
             _get_conf_from_dir "${_conf_dir}"
+        elif [[ "${_line}" =~ .*'check_hda1'.* ]]; then
+            continue # Ludo dirty hack to avoid modifying /etc/nrpe/nrpe.cfg
         else
             echo "${_line}"
         fi
