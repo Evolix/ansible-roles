@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
-
-readonly orange="\e[0;33m"
-readonly nocolor="\e[0m"
-
-echo -e "${orange}'check-local' is now an alias for 'monitoringctl check'. See 'monitoringctl -h' for more information.${nocolor}"
+# Replaced by monitoringctl.
+# check-local executable is kept for retrocompatibility purposes.
 
 monitoringctl check "${1}"
 
