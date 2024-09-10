@@ -113,6 +113,8 @@ function check() {
         checks="${1}"
     fi
 
+    warn_options_not_ended_properly "${checks}"
+
     for check in $checks; do
         printf "\033[KChecking %s…\r" "${check}"
         err_msg=""
@@ -121,9 +123,17 @@ function check() {
         if [ -n "${check_commands}" ]; then
             check_command="$(echo "${check_commands}" | tail -n1)"
             if [ -n "${1}" ]; then
-                printf "\033[K\n"  # erase tmp line « Checking check_toto…»
+                printf "\033[K"  # erase tmp line "Checking check_toto…"
                 echo "Command played by NRPE:"
                 echo -e "    ${orange}${check_command}${nocolor}"
+
+                if is_wrapped "${check}"; then
+                    if [[ "${check_command}" == *" -- "* ]]; then
+                        check_command_no_wrapper="$(echo "${check_command}" | awk -F' -- ' '{print $2}')"
+                        echo "Command without 'alerts_wrapper':"
+                        echo -e "    ${orange}${check_command_no_wrapper}${nocolor}"
+                    fi
+                fi
             fi
         fi
 
@@ -359,6 +369,8 @@ function show_check_commands() {
         usage_error "Error: no command found in NRPE configuration for check '${1}."
     fi
 
+    warn_options_not_ended_properly "${1}"
+
     n_commands="$(echo "${check_commands}" | wc -l)"
     if [ "${n_commands}" -ne 1 ]; then
         echo "Available commands (in config order, the last one overwrites the others):"
@@ -368,6 +380,13 @@ function show_check_commands() {
     check_command=$(echo "${check_commands}" | tail -n1)
     echo "Command used by NRPE:"
     echo "    ${check_command}"
+
+    if [[ "${check_command}" == *" -- "* ]]; then
+        check_command_no_wrapper="$(echo "${check_command}" | awk -F' -- ' '{print $2}')"
+        echo
+        echo "Command without 'alerts_wrapper':"
+        echo -e "    ${check_command_no_wrapper}"
+    fi
 }
 
 # Print a warning if some wrappers have the same name
@@ -401,7 +420,7 @@ function warn_options_not_ended_properly() {
     done
     if [ -n "${wrappers_without_ddash}" ]; then
         >&2 echo -e "${orange}Some wrappers do not end their options with '--' before the NRPE command:${wrappers_without_ddash}"
-        >&2 echo -e "Using '--' is strongly recommended to avoid the options of the NRPE command to be interpreted by alerts_wrapper.${nocolor}\n"
+        >&2 echo -e "Use of '--' is strongly recommended to separate 'alerts_wrapper' and the wrapped command in NRPE configuration.${nocolor}\n"
     fi
 }
 
@@ -593,30 +612,50 @@ while :; do
         *)
             if [ -z "${1}" ]; then
                 break
+            else
+                input="${1}"
+            fi
+
+            # Add some flexibility with - and _ in check name
+            if ! is_check "${input}"; then
+                if [[ "${1}" == *"-"* ]]; then
+                   input_underscore="$(echo "${input}" | tr '-' '_')"
+                   if is_check "${input_underscore}"; then
+                        >&2 echo -e "${orange}Warning: '${input}' real name is '${input_underscore}'!${nocolor}\n"
+                       input="${input_underscore}"
+                   fi
+                fi
+                if [[ "${1}" == *"_"* ]]; then
+                    input_dash="$(echo "${input}" | tr '_' '-')"
+                    if is_check "${input_dash}"; then
+                        >&2 echo -e "${orange}Warning: '${input}' real name is '${input_dash}'!${nocolor}\n"
+                        input="${input_dash}"
+                    fi
+                fi
             fi
 
             case "${action}" in
                 status|check)
-                    if is_check "${1}" || [ "${1}" = "all" ]; then
-                        check_name="${1}"
+                    if is_check "${input}" || [ "${input}" = "all" ]; then
+                        check_name="${input}"
                     else
-                        usage_error "Action ${action}: unknown check '${1}'."
+                        usage_error "Action ${action}: unknown check '${input}'."
                     fi
                     ;;
                 show)
-                    if is_check "${1}"; then
-                        check_name="${1}"
+                    if is_check "${input}"; then
+                        check_name="${input}"
                     else
-                        usage_error "Action ${action}: unknown check '${1}'."
+                        usage_error "Action ${action}: unknown check '${input}'."
                     fi
                     ;;
                 enable|disable)
-                    if is_wrapper "${1}" || is_check "${1}" || [ "${1}" = "all" ]; then
-                        check_name="${1}"
+                    if is_wrapper "${input}" || is_check "${input}" || [ "${input}" = "all" ]; then
+                        check_name="${input}"
                     else
                         # We use the word "check" for the end user,
                         # but this is actually "unknown wrapper"
-                        usage_error "Action ${action}: unknown check '${1}'."
+                        usage_error "Action ${action}: unknown check '${input}'."
                     fi
                     ;;
                 *)
