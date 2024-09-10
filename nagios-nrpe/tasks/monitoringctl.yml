@@ -67,7 +67,7 @@
 
 - name: "alerts_wrapper is at the right place"
   ansible.builtin.command:
-    cmd: "mv {{ nagios_plugins_directory }}/alerts_wrapper /usr/local/lib/monitoringctl/alerts_wrapper"
+    cmd: "mv {{ nagios_plugins_directory }}/alerts_wrapper {{ monitoringctl_wrapper_path }}"
   when:
     - old_alerts_wrapper.stat.exists
     - not old_alerts_wrapper.stat.islnk
@@ -75,7 +75,7 @@
 - name: "copy alerts_wrapper"
   ansible.builtin.copy:
     src: alerts_wrapper.py
-    dest: "/usr/local/lib/monitoringctl/alerts_wrapper"
+    dest: "{{ monitoringctl_wrapper_path }}"
     owner: root
     group: staff
     mode: "0755"
@@ -83,7 +83,7 @@
 
 - name: "alerts_wrapper symlink for backward compatibility"
   ansible.builtin.file:
-    src: /usr/local/lib/monitoringctl/alerts_wrapper
+    src: "{{ monitoringctl_wrapper_path }}"
     path: "{{ nagios_plugins_directory }}/alerts_wrapper"
     state: link
   when:

@@ -32,48 +32,29 @@
 
   - name: Is alerts_wrapper present?
     ansible.builtin.stat:
-      path: /usr/local/lib/monitoringctl/alerts_wrapper
-    register:
-      alerts_wrapper
+      path: "{{ monitoringctl_wrapper_path }}"
+    register: alerts_wrapper
+
+  - set_fact:
+      memcached_monitoringctl_wrapper_cmd: "{{ monitoringctl_wrapper_path }} --name memcached -- "
+    when: alerts_wrapper.stat.exists
 
   - name: Add NRPE check (single instance)
     ansible.builtin.lineinfile:
       name: /etc/nagios/nrpe.d/evolix.cfg
       regexp: '^command\[check_memcached\]='
-      line: 'command[check_memcached]=/usr/local/lib/monitoringctl/alerts_wrapper --name memcached /usr/local/lib/nagios/plugins/check_memcached.pl -H 127.0.0.1 -p {{ memcached_port }}'
+      line: 'command[check_memcached]={{ memcached_monitoringctl_wrapper_cmd }}/usr/local/lib/nagios/plugins/check_memcached.pl -H 127.0.0.1 -p {{ memcached_port }}'
     notify: restart nagios-nrpe-server
     when:
       - memcached_instance_name | length == 0
-      - alerts_wrapper.stat.exists
-
-  - name: Add NRPE check (single instance)
-    ansible.builtin.lineinfile:
-      name: /etc/nagios/nrpe.d/evolix.cfg
-      regexp: '^command\[check_memcached\]='
-      line: 'command[check_memcached]=/usr/local/lib/nagios/plugins/check_memcached.pl -H 127.0.0.1 -p {{ memcached_port }}'
-    notify: restart nagios-nrpe-server
-    when:
-      - memcached_instance_name | length == 0
-      - not alerts_wrapper.stat.exists
 
   - name: Add NRPE check (multi instance)
     ansible.builtin.lineinfile:
       name: /etc/nagios/nrpe.d/evolix.cfg
       regexp: '^command\[check_memcached\]='
-      line: 'command[check_memcached]=/usr/local/lib/monitoringctl/alerts_wrapper --name memcached /usr/local/lib/nagios/plugins/check_memcached_instances'
+      line: 'command[check_memcached]={{ memcached_monitoringctl_wrapper_cmd }}/usr/local/lib/nagios/plugins/check_memcached_instances'
     notify: restart nagios-nrpe-server
     when:
-      - alerts_wrapper.stat.exists
-      - memcached_instance_name | length > 0
-
-  - name: Add NRPE check (multi instance)
-    ansible.builtin.lineinfile:
-      name: /etc/nagios/nrpe.d/evolix.cfg
-      regexp: '^command\[check_memcached\]='
-      line: 'command[check_memcached]=/usr/local/lib/nagios/plugins/check_memcached_instances'
-    notify: restart nagios-nrpe-server
-    when:
-      - not alerts_wrapper.stat.exists
       - memcached_instance_name | length > 0
 
   when: nrpe_evolix_config.stat.exists

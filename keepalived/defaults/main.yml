@@ -4,3 +4,6 @@ keepalived_router_id: "42"
 keepalived_priority: "{% if keepalived_role == 'master' %}100{% else %}50{% endif %}"
 keepalived_ip: ""
 keepalived_password: ""
+
+monitoringctl_wrapper_path: /usr/local/lib/monitoringctl/alerts_wrapper
+keepalived_monitoringctl_wrapper_cmd: ""

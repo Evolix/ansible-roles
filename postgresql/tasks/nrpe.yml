@@ -41,29 +41,21 @@
 
   - name: Is alerts_wrapper present?
     ansible.builtin.stat:
-      path: /usr/local/lib/monitoringctl/alerts_wrapper
-    register:
-      alerts_wrapper
+      path: "{{ monitoringctl_wrapper_path }}"
+    register: alerts_wrapper
 
-#  - name: Add NRPE check
-#    ansible.builtin.lineinfile:
-#      name: /etc/nagios/nrpe.d/evolix.cfg
-#      regexp: '^command\[check_pgsql\]='
-#      line: 'command[check_pgsql]=/usr/local/lib/monitoringctl/alerts_wrapper --name pgsql /usr/lib/nagios/plugins/check_pgsql -H localhost -l nrpe -p "{{ postgresql_nrpe_password.stdout }}"'
-#    notify: restart nagios-nrpe-server
-#    when:
-#      - postgresql_create_nrpe_user is changed
-#      - alerts_wrapper.stat.exists
+  - set_fact:
+      postgresql_monitoringctl_wrapper_cmd: "{{ monitoringctl_wrapper_path }} --name postgresql -- "
+    when: alerts_wrapper.stat.exists
 
   - name: Add NRPE check
     ansible.builtin.lineinfile:
       name: /etc/nagios/nrpe.d/evolix.cfg
       regexp: '^command\[check_pgsql\]='
-      line: 'command[check_pgsql]=/usr/lib/nagios/plugins/check_pgsql -H localhost -l nrpe -p "{{ postgresql_nrpe_password.stdout }}"'
+      line: 'command[check_pgsql]={{ openvpn_monitoringctl_wrapper_cmd }}/usr/lib/nagios/plugins/check_pgsql -H localhost -l nrpe -p "{{ postgresql_nrpe_password.stdout }}"'
     notify: restart nagios-nrpe-server
     when:
       - postgresql_create_nrpe_user is changed
-#      - not alerts_wrapper.stat.exists
 
   when: nrpe_evolix_config.stat.exists
 

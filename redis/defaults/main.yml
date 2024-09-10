@@ -70,3 +70,6 @@ redis_sysctl_transparent_hugepage_enabled: Null
 
 general_alert_email: "root@localhost"
 log2mail_alert_email: Null
+
+monitoringctl_wrapper_path: /usr/local/lib/monitoringctl/alerts_wrapper
+redis_monitoringctl_wrapper_cmd: ""
