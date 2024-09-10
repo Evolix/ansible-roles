@@ -85,7 +85,6 @@
   ansible.builtin.lineinfile:
     path: /etc/nagios/nrpe.d/evolix.cfg
     line: 'command[check_fluentd]={{ fluentd_monitoringctl_wrapper_cmd }}/usr/lib/nagios/plugins/check_tcp -p {{ fluentd_port }}'
-  when: not alerts_wrapper.stat.exists
   notify: "restart nagios-nrpe-server"
   tags:
     - fluentd
