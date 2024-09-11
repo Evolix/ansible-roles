@@ -13,6 +13,18 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [24.09] 2024-09-11
+
+### Added
+
 * apt: force PATH for apt-hold-packages crontab
 * apt: temporary trixie source lists
 * bind: New variables to change IPs bind will listen on & send notify/transfer commands
@@ -71,10 +83,6 @@ The **patch** part is incremented if multiple releases happen the same month
 * monitoringctl: remount /usr RW after apt module call
 * haproxy: send logs to local5 in default template
 * spamassassin: fix missing directory for bayes rules
-
-### Removed
-
-### Security
 
 ## [24.05] 2024-05-15
 
