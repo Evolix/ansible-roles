@@ -4,6 +4,7 @@
   when: evocheck_bin_dir is search("/usr")
   tags:
     - evocheck
+    - evocheck-script-only
 
 - name: Scripts dir is present
   ansible.builtin.file:
