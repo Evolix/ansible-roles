@@ -1,5 +1,5 @@
 ---
-- ansible.builtin.include_role:
+- ansible.builtin.import_role:
     name: evolix/remount-usr
   when: evocheck_bin_dir is search("/usr")
   tags:
