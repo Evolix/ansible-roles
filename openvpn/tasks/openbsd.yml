@@ -9,6 +9,7 @@
   ansible.builtin.command:
     cmd: pkg_info -Iq inst:openvpn
   register: is_installed
+  check_mode: false
   ignore_errors: true
   changed_when: false
 
@@ -138,6 +139,7 @@
   ansible.builtin.command:
     cmd: pkg_info -Iq inst:p5-Net-Telnet
   register: is_installed
+  check_mode: false
   ignore_errors: true
   changed_when: false
 

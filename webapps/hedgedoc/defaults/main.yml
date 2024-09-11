@@ -1,0 +1,15 @@
+---
+# defaults file for mastodon
+hedgedoc_system_dep: "['apt-transport-https', 'postgresql', 'python3-psycopg2', 'nginx', 'git', 'wget', 'certbot']"
+hedgedoc_git_url: 'https://github.com/hedgedoc/hedgedoc.git'
+hedgedoc_git_version: '1.9.9'
+hedgedoc_node_version: 'node_18.x'
+hedgedoc_node_port: '3000'
+hedgedoc_service: 'example'
+hedgedoc_domains: ['example.domain.org']
+hedgedoc_certbot_admin_email: 'security@example.org'
+
+hedgedoc_db_host: 'localhost'
+hedgedoc_db_user: "{{ hedgedoc_service }}"
+hedgedoc_db_name: "{{ hedgedoc_service }}"
+hedgedoc_db_password: 'CHANGE_ME'

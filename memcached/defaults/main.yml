@@ -13,3 +13,7 @@ phpmemcachedadmin_clusters:
       { name: 'localhost', hostname: '127.0.0.1', port: 11211 }
     ]
   }
+
+
+monitoringctl_wrapper_path: /usr/local/lib/monitoringctl/alerts_wrapper
+memcached_monitoringctl_wrapper_cmd: ""

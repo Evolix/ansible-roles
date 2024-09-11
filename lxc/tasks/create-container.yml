@@ -6,13 +6,16 @@
   check_mode: no
   register: container_exists
 
+- ansible.builtin.set_fact:
+    lxc_template_mirror_option: "{{ '--mirror ' + lxc_template_mirror if lxc_template_mirror != '' else '' }}"
+
 - name: "Create container {{ name }}"
   community.general.lxc_container:
     name: "{{ name }}"
     container_log: true
     template: debian
     state: stopped
-    template_options: "--arch amd64 --release {{ release }}"
+    template_options: "--arch amd64 --release {{ release }} {{ lxc_template_mirror_option }}"
   when: container_exists.stdout_lines | length == 0
 
 - name: "Disable network configuration inside container {{ name }}"

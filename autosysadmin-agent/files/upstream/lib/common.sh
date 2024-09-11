@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="24.03.2"
+VERSION="24.06"
 
 # Common functions for "repair" and "restart" scripts
 
@@ -420,7 +420,7 @@ ensure_not_too_soon_or_exit() {
     if [ -f "${lastrun_file}" ]; then
         lastrun_age="$(($(date +%s)-$(stat -c "%Y" "${lastrun_file}")))"
         log_run "Last run was ${lastrun_age} seconds ago."
-        if [ "${lastrun_age}" -lt 1800 ]; then
+        if [ "${lastrun_age}" -lt 900 ]; then
             if is_interactive; then
                 echo "${PROGNAME} was run ${lastrun_age} seconds ago."
                 answer=""

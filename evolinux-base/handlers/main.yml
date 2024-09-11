@@ -74,11 +74,6 @@
     name: postfix
     state: reloaded
 
-- name: restart log2mail
-  ansible.builtin.service:
-    name: log2mail
-    state: restarted
-
 - name: restart systemd-journald
   ansible.builtin.service:
     name: systemd-journald.service

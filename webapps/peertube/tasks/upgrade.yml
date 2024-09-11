@@ -1,0 +1,103 @@
+---
+# tasks file for peertube upgrade
+
+- name: Stop peertube systemd unit
+  ansible.builtin.systemd:
+    name: "{{ peertube_instance }}"
+    state: stopped
+
+- name: Stat videos dir
+  ansible.builtin.stat:
+    path: "{{ peertube_instance_home }}/storage/videos/"
+  register: videos
+
+- name: Move videos to web-videos (needed when upgrading to version 6)
+  ansible.builtin.command:
+    cmd: "mv {{ peertube_instance_home }}/storage/videos/{{ peertube_instance_home }}/storage/web-videos/"
+  when: videos.stat.exists
+  become_user: "{{ peertube_instance }}"
+
+- name: Dump database to a file with compression
+  community.postgresql.postgresql_db:
+    name: "{{ peertube_db_name }}"
+    state: dump
+    target: "~/{{ peertube_db_name }}.sql.gz"
+  become_user: postgres
+
+- name: Unarchive new peertube archive
+  ansible.builtin.unarchive:
+    src: "{{ peertube_download_url }}"
+    dest: ~/versions
+    remote_src: true
+  become_user: "{{ peertube_instance }}"
+
+- name: Adjust permissions
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: o+rx
+  loop:
+    - "~/versions/peertube-{{ peertube_version }}"
+    - "~/versions/peertube-{{ peertube_version }}/client"
+  become_user: "{{ peertube_instance }}"
+
+- name: Symbolic link to new version
+  ansible.builtin.file:
+    src: "~/versions/peertube-{{ peertube_version }}"
+    dest: "~/peertube-latest"
+    state: link
+  become_user: "{{ peertube_instance }}"
+
+- name: Install PeerTube nodejs deps (via yarn)
+  ansible.builtin.shell: "yarn install --production --pure-lockfile"
+  args:
+    chdir: "~/peertube-latest"
+  become_user: "{{ peertube_instance }}"
+
+- name: Copy default.yaml to prod dir
+  ansible.builtin.copy:
+    src: "~/peertube-latest/config/default.yaml"
+    dest: "~/config/default.yaml"
+    mode: '0644'
+    remote_src: true
+  become_user: "{{ peertube_instance }}"
+
+- name: Template peertube conf file
+  ansible.builtin.template:
+    src: "production.yaml.j2"
+    dest: "~/config/production.yaml"
+    mode: '0644'
+  become_user: "{{ peertube_instance }}"
+
+- name: Restart peertube systemd unit
+  ansible.builtin.systemd:
+    name: "{{ peertube_instance }}"
+    daemon_reload: true
+    state: restarted
+
+- name: Check if SSL certificate is present and register result
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ peertube_domains | first }}/fullchain.pem"
+  register: ssl
+
+- name: Retemplate conf file for nginx vhost
+  ansible.builtin.template:
+    src: "vhost.conf.j2"
+    dest: "/etc/nginx/sites-available/{{ peertube_instance }}.conf"
+    mode: '0600'
+
+- name: Reload nginx conf
+  ansible.builtin.systemd:
+    name: nginx
+    state: reloaded
+
+- name: Define variable to skip next task by default
+  ansible.builtin.set_fact:
+    keep_db_dump: true
+
+- name: Remove database dump
+  ansible.builtin.file:
+    path: "~/{{ peertube_db_name }}.sql.gz"
+    state: absent
+  become_user: postgres
+  when: keep_db_dump is undefined
+  tags: clean

@@ -1,0 +1,16 @@
+---
+- name: Copy Docker daemon configuration file
+  ansible.builtin.template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart docker
+
+- name: Creating Docker tmp directory
+  ansible.builtin.file:
+    path: "{{ docker_tmpdir }}"
+    state: directory
+    mode: "0644"
+    owner: root

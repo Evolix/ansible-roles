@@ -10,6 +10,7 @@ redis_force_instance_port: False
 redis_port: 6379
 redis_bind_interfaces:
   - 127.0.0.1
+redis_check_interface: "{{ redis_bind_interfaces | first }}"
 
 redis_socket_enabled: True
 redis_socket_dir_prefix: '/run/redis'
@@ -69,3 +70,6 @@ redis_sysctl_transparent_hugepage_enabled: Null
 
 general_alert_email: "root@localhost"
 log2mail_alert_email: Null
+
+monitoringctl_wrapper_path: /usr/local/lib/monitoringctl/alerts_wrapper
+redis_monitoringctl_wrapper_cmd: ""

@@ -1,0 +1,21 @@
+[Unit]
+Description=mastodon-streaming
+After=network.target
+PartOf={{ mastodon_instance }}.target
+
+[Service]
+Type=simple
+User={{ mastodon_instance }}
+Group={{ mastodon_instance }}
+UMask=0027
+WorkingDirectory=/home/{{ mastodon_instance }}/mastodon/
+Environment="NODE_ENV=production"
+Environment="PORT={{ mastodon_node_port | default('4000') }}"
+Environment="STREAMING_CLUSTER_NUM=1"
+ExecStart=/bin/bash -lc "node ./streaming"
+TimeoutSec=15
+Restart=always
+SyslogIdentifier=%p
+
+[Install]
+WantedBy={{ mastodon_instance }}.target

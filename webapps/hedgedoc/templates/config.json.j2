@@ -1,0 +1,46 @@
+{
+    "test": {
+        "db": {
+            "dialect": "sqlite",
+            "storage": ":memory:"
+        },
+        "linkifyHeaderStyle": "gfm"
+    },
+    "development": {
+        "loglevel": "debug",
+        "db": {
+            "dialect": "sqlite",
+            "storage": "./db.hedgedoc.sqlite"
+        },
+        "domain": "localhost",
+        "urlAddPort": true
+    },
+    "production": {
+        "domain": "{{ hedgedoc_domains }}",
+        "loglevel": "info",
+        "protocolUseSSL": "true",
+        "urlAddPort": false,
+        "hsts": {
+            "enable": true,
+            "maxAgeSeconds": 31536000,
+            "includeSubdomains": true,
+            "preload": true
+        },
+        "csp": {
+            "enable": true,
+            "directives": {
+            },
+            "upgradeInsecureRequests": "auto",
+            "addDefaults": true
+        },
+        "cookiePolicy": "lax",
+        "db": {
+            "username": "{{ hedgedoc_db_user }}",
+            "password": "{{ hedgedoc_db_password }}",
+            "database": "{{ hedgedoc_db_name }}",
+            "host": "{{ hedgedoc_db_host }}",
+            "port": "5432",
+            "dialect": "postgres"
+        }
+    }
+}

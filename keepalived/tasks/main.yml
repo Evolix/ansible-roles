@@ -32,11 +32,20 @@
     - keepalived
     - nrpe
 
+- name: Is alerts_wrapper present?
+  ansible.builtin.stat:
+    path: "{{ monitoringctl_wrapper_path }}"
+  register: alerts_wrapper
+
+- set_fact:
+    keepalived_monitoringctl_wrapper_cmd: "{{ monitoringctl_wrapper_path }} --name keepalived -- "
+  when: alerts_wrapper.stat.exists
+
 - name: Use check_keepalived for NRPE
   ansible.builtin.lineinfile:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: 'command\[check_keepalived\]'
-    replace: 'command[check_keepalived]=/usr/local/lib/nagios/plugins/check_keepalived'
+    replace: 'command[check_keepalived]={{ keepalived_monitoringctl_wrapper_cmd }}/usr/local/lib/nagios/plugins/check_keepalived'
   notify: restart nagios-nrpe-server
   tags:
     - keepalived

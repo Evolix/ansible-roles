@@ -91,6 +91,5 @@
   tags:
     - nagios-nrpe
 
-- ansible.builtin.include_tasks: wrapper.yml
+- ansible.builtin.include_tasks: monitoringctl.yml
 
-- ansible.builtin.include_tasks: check-local.yml

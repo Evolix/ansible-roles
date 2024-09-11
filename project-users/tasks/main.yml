@@ -1,0 +1,59 @@
+---
+
+- name: Verify that project_users_db is not empty
+  ansible.builtin.assert:
+    that:
+      - project_users_db != {}
+    msg: "Error: empty variable 'project_users_db'!"
+
+- name: Verify that project_users_main_group is not empty
+  ansible.builtin.assert:
+    that:
+      - project_users_main_group is defined
+      - project_users_main_group != none
+      - project_users_main_group | length > 0
+    msg: "Error: empty variable 'project_users_main_group'!"
+
+# Merge variables from group_vars and host_vars
+- name: Compose project_users_absent variable
+  ansible.builtin.set_fact:
+    project_users_absent: "{{ project_users_absent_for_all | union(project_users_absent_for_group) | union(project_users_absent_for_host) | unique }}" # noqa 204
+
+- name: Compose project_users_present variable
+  ansible.builtin.set_fact:
+    project_users_present: "{{ project_users_present_for_all | union(project_users_present_for_group) | union(project_users_present_for_host) | unique | difference(project_users_absent) }}" # noqa 204
+
+- ansible.builtin.debug:
+    var: project_users_absent
+    verbosity: 1
+
+- ansible.builtin.debug:
+    var: project_users_present
+    verbosity: 1
+
+- ansible.builtin.debug:
+    msg: "Warning: empty variable 'project_users_present'!"
+  when: project_users_present == []
+
+# Common tasks, run once
+
+- name: Common tasks
+  ansible.builtin.include_tasks: common.yml
+
+# Loop to create users
+
+- name: User add
+  ansible.builtin.include: user/add.yml
+  vars:
+    user: "{{ project_users_db[username] }}"
+  loop: "{{ project_users_present | default([]) }}"
+  loop_control:
+    loop_var: username
+
+# Loop to delete users
+
+- name: User del
+  ansible.builtin.include: user/del.yml
+  loop_control:
+    loop_var: username
+  loop: "{{ project_users_absent | default([]) }}"

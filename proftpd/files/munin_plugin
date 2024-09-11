@@ -1,0 +1,18 @@
+#! /bin/bash
+# 
+
+if [ "$1" = 'config' ]; then
+        echo "graph_args --base 1000 -l 0"
+        echo "graph_title ProFTPd"
+        echo "graph_category network"
+        echo "graph_vlabel Stats Proftpd"
+        echo "users_count.label Connected users"
+        echo "users_count.draw AREA"
+fi
+
+n_users="$(ftpcount | awk '/users/{print $4}')"
+
+echo "users_count.value ${n_users}"
+
+exit 0
+

@@ -1,0 +1,118 @@
+#!/bin/bash
+
+: "${AUTOSYSADMIN_LIB:=/usr/local/lib/autosysadmin}"
+source "${AUTOSYSADMIN_LIB}/common.sh"  || exit 1
+source "${AUTOSYSADMIN_LIB}/restart.sh" || exit 1
+
+# shellcheck disable=SC2034
+RUNNING="always"
+
+## Possible values for RUNNING :
+##   never    => disabled
+##   always   => enabled
+##   nwh-fr   => enabled during non-working-hours in France
+##   nwh-ca   => enabled during non-working-hours in Canada (not supported yet)
+##   custom   => enabled if `running_custom()` function returns 0, otherwise disabled.
+
+## The name of the service, mainly for logging
+service_name="hapee-extras-vrrp"
+## The systemd service name
+systemd_service="${service_name}.service"
+
+is_ping_ok() {
+    /usr/lib/nagios/plugins/check_ping -H "$1" -w 2,20% -c 5,50% > /dev/null
+
+    test $? -ge 2
+}
+
+## Action for systemd system
+systemd_action() {
+    # Save service status before restart
+    systemctl status "${systemd_service}" | save_in_log_dir "${service_name}.before.status"
+
+    # Try to restart
+    # systemctl (only for NRPE ?) sometimes returns 0 even if the service has failed to start
+    # so we check the status explicitly
+    timeout 20 systemctl restart "${systemd_service}" > /dev/null \
+        && sleep 1 \
+        && systemctl status "${systemd_service}" > /dev/null
+    rc=$?
+    if [ "${rc}" -eq "0" ]; then
+        log_action "Restart ${service_name}: OK"
+    else
+        log_action "Restart ${service_name}: failed"
+    fi
+
+    # Save service status after restart
+    systemctl status "${systemd_service}" | save_in_log_dir "${service_name}.after.status"
+}
+
+# Should we run?
+if ! is_supposed_to_run; then
+    # log_global "${PROGNAME} is not supposed to run (RUNNING=${RUNNING})."
+    exit 0
+fi
+if is_service_alive; then
+    # log_global "${service_name} process alive. Aborting"
+    exit 0
+fi
+
+
+if ! is_systemd_enabled "${systemd_service}"; then
+    # log_global "${service_name} is disabled (or missing), nothing left to do."
+    exit 0
+fi
+# if is_systemd_active "${systemd_service}"; then
+#     # log_global "${service_name} is active, nothing left to do."
+#     exit 0
+# fi
+
+# Let's finally do the action
+pre_restart
+
+
+
+vip="54.37.170.194"
+
+vip_peer1="delubac-delupay-pp-lb00"
+wan_ip1="54.37.170.195"
+lan_ip1="172.19.1.20"
+
+vip_peer2="delubac-delupay-pp-lb01"
+wan_ip2="54.37.170.196"
+lan_ip2="172.19.1.21"
+
+/usr/lib/nagios/plugins/check_ping -H "${vip}" -w 2,20% -c 5,50% > /dev/null
+ping_vip_rc=$?
+
+if ! is_ping_ok "${vip}"; then
+
+    if is_ping_ok "${wan_ip1}"; then
+        ssh "${lan_ip1}" -t "systemctl restart ${systemd_service}"
+        rc=$?
+        if [ "${rc}" -eq "0" ]; then
+            log_action "Restart ${service_name} on ${vip_peer1}: OK"
+        else
+            log_action "Restart ${service_name} on ${vip_peer1}: failed"
+        fi
+    fi
+fi
+
+sleep 2
+
+if ! is_ping_ok "${vip}"; then
+
+    if is_ping_ok "${wan_ip2}"; then
+        ssh "${lan_ip2}" -t "systemctl restart ${systemd_service}"
+        rc=$?
+        if [ "${rc}" -eq "0" ]; then
+            log_action "Restart ${service_name} on ${vip_peer2}: OK"
+        else
+            log_action "Restart ${service_name} on ${vip_peer2}: failed"
+        fi
+    fi
+fi
+
+
+
+post_restart

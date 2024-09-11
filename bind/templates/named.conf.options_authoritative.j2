@@ -4,18 +4,25 @@
 // };
 
 options {
-      directory "{{ bind_cache_dir }}";
-      version "Bingo";
-      auth-nxdomain no;
-      masterfile-format text;
-      statistics-file "{{ bind_statistics_file }}";
+    directory "{{ bind_cache_dir }}";
+    version "Bingo";
+    auth-nxdomain no;
+    masterfile-format text;
+    statistics-file "{{ bind_statistics_file }}";
 
-      listen-on-v6 { any; };
-      listen-on { any; };
+    listen-on { {{ bind_listen_on_ipv4 }} };
+    listen-on-v6 { {{ bind_listen_on_ipv6 }} };
 
-      allow-query { localhost; };
-      allow-recursion { localhost; };
-      allow-transfer { localhost; };
+{% if bind_notify_source is defined and bind_notify_source|length %}
+    notify-source {{ bind_notify_source }};
+{% endif %}
+{% if bind_transfer_source is defined and bind_transfer_source|length %}
+    transfer-source {{ bind_transfer_source }};
+{% endif %}
+
+    allow-query { localhost; };
+    allow-recursion { localhost; };
+    allow-transfer { localhost; };
 };
 
 logging {

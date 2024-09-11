@@ -10,11 +10,23 @@
     insertbefore: BOF
   notify: reload ssh
 
-- name: add SSH server configuration template
+- name: Evolinux defaults config is present
   ansible.builtin.template:
-    src: sshd/defaults.j2
+    src: sshd/z-evolinux-defaults.conf.j2
     dest: /etc/ssh/sshd_config.d/z-evolinux-defaults.conf
     mode: "0644"
+    owner: root
+    group: root
+    force: yes
+
+- name: Evolinux custom config is present
+  ansible.builtin.template:
+    src: sshd/zzz-evolinux-custom.conf.j2
+    dest: /etc/ssh/sshd_config.d/zzz-evolinux-custom.conf
+    mode: "0644"
+    owner: root
+    group: root
+    force: no
 
 # Should we allow the current user?
 - name: Allow the current user
@@ -26,9 +38,16 @@
     register: _logname
     check_mode: no
 
+  - name: Fetch SSHd config files
+    ansible.builtin.command:
+      cmd: "find /etc/ssh -type f \\( -name 'sshd_config' -o -path '/etc/ssh/sshd_config.d/*.conf' \\)"
+    changed_when: False
+    check_mode: no
+    register: _ssh_config_paths
+
   - name: verify AllowUsers directive
     ansible.builtin.command:
-      cmd: "grep --extended-regexp --recursive --files-with-matches '^AllowUsers' /etc/ssh/sshd_config /etc/ssh/sshd_config.d"
+      cmd: "grep --extended-regexp --files-with-matches --ignore-case '^AllowUsers' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
     failed_when: False
     changed_when: False
     register: grep_allowusers_ssh
@@ -36,7 +55,7 @@
 
   - name: verify AllowGroups directive
     ansible.builtin.command:
-      cmd: "grep --extended-regexp --recursive --files-with-matches '^AllowGroups' /etc/ssh/sshd_config /etc/ssh/sshd_config.d"
+      cmd: "grep --extended-regexp --files-with-matches --ignore-case '^AllowGroups' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
     failed_when: False
     changed_when: False
     register: grep_allowgroups_ssh
@@ -47,7 +66,7 @@
 
   - name: "Append user to existing AllowUsers sshd directive"
     ansible.builtin.replace:
-      dest: "{{ grep_allowusers_ssh.stdout_lines[0] }}"
+      dest: "{{ grep_allowusers_ssh.stdout_lines | sort | first }}"
       regexp: '^(AllowUsers ((?!{{ _logname.stdout }}).)*)$'
       replace: '\1 {{ _logname.stdout }}'
       validate: '/usr/sbin/sshd -t -f %s'
@@ -58,17 +77,6 @@
 
   # If we have AllowGroups but not AllowUsers, add the user to the group and append the group to the list
   # (in the first file where we found the directive)
-
-  - name: "Append evolinux ssh group to AllowGroups sshd directive"
-    ansible.builtin.replace:
-      dest: "{{ grep_allowgroups_ssh.stdout_lines[0] }}"
-      regexp: '^(AllowGroups ((?!{{ evolinux_ssh_group }}).)*)$'
-      replace: '\1 {{ evolinux_ssh_group }}'
-      validate: '/usr/sbin/sshd -t -f %s'
-    notify: reload sshd
-    when:
-      - grep_allowusers_ssh.rc != 0
-      - grep_allowgroups_ssh.rc == 0
   
   - name: "evolinux ssh group is present"
     ansible.builtin.group:
@@ -82,6 +90,17 @@
       name: "{{ _logname.stdout }}"
       group: "{{ evolinux_ssh_group }}"
       append: yes
+    when:
+      - grep_allowusers_ssh.rc != 0
+      - grep_allowgroups_ssh.rc == 0
+
+  - name: "Append evolinux ssh group to AllowGroups sshd directive"
+    ansible.builtin.replace:
+      dest: "{{ grep_allowgroups_ssh.stdout_lines | sort | first }}"
+      regexp: '^(AllowGroups ((?!{{ evolinux_ssh_group }}).)*)$'
+      replace: '\1 {{ evolinux_ssh_group }}'
+      validate: '/usr/sbin/sshd -t -f %s'
+    notify: reload sshd
     when:
       - grep_allowusers_ssh.rc != 0
       - grep_allowgroups_ssh.rc == 0

@@ -72,10 +72,19 @@
   tags:
     - fluentd
 
+- name: Is alerts_wrapper present?
+  ansible.builtin.stat:
+    path: "{{ monitoringctl_wrapper_path }}"
+  register: alerts_wrapper
+
+- set_fact:
+    fluentd_monitoringctl_wrapper_cmd: "{{ monitoringctl_wrapper_path }} --name fluentd -- "
+  when: alerts_wrapper.stat.exists
+
 - name: NRPE check is configured
   ansible.builtin.lineinfile:
     path: /etc/nagios/nrpe.d/evolix.cfg
-    line: 'command[check_fluentd]=/usr/lib/nagios/plugins/check_tcp -p {{ fluentd_port }}'
+    line: 'command[check_fluentd]={{ fluentd_monitoringctl_wrapper_cmd }}/usr/lib/nagios/plugins/check_tcp -p {{ fluentd_port }}'
   notify: "restart nagios-nrpe-server"
   tags:
     - fluentd

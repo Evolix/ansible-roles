@@ -1,83 +1,143 @@
 #!/bin/bash
-
-# https://forge.evolix.org/projects/evolix-private/repository
 #
-# You should not alter this file.
-# If you need to, create and customize a copy.
-
-set -e
+# Source:
+# https://gitea.evolix.org/evolix/ansible-roles/src/branch/stable/nagios-nrpe
+#
 
 readonly PROGNAME=$(basename $0)
-readonly PROGDIR=$(readlink -m $(dirname $0))
-readonly ARGS="$@"
+readonly VERSION="24.06"
 
-usage() {
-    echo "$PROGNAME action prefix"
+# Load common functions and vars
+readonly lib_dir="/usr/local/lib/monitoringctl"
+if [ -r "${lib_dir}/common" ]; then
+    # shellcheck source=monitoringctl_common
+    source "${lib_dir}/common"
+else
+    >&2 echo "Error: missing ${lib_dir}/common file."
+    exit 1
+fi
+
+if [ ! -e "${var_dir}" ]; then
+    >&2 echo "Warning: missing ${var_dir} directory."
+fi
+
+function show_help() {
+    cat <<END
+$PROGNAME disables or enables NRPE alerts wrapped by the script 'alerts_wrapper' in NRPE configuration.
+
+Usage: $PROGNAME disable [-d|--during <DURATION>] [--message '<DISABLE_MESSAGE>'] <WRAPPER_NAME|all>
+       $PROGNAME enable [--message '<ENABLE_MESSAGE>'] <WRAPPER_NAME|all>
+       $PROGNAME help
+
+WRAPPER_NAME:    The name given to '--name' option of 'alerts_wrapper'.
+DURATION:        Duration of alert disabling.
+                 Can be '1d' for 1 day, '5m' for 5 minutes or more complex
+                 expressions like '1w2d10m42s' (if no time unit is provided,
+                 hour is assumed)
+                 Default value: 1h
+DISABLE_MESSAGE: Message that will be logged and printed by alerts_wrapper
+                 when alert is disabled.
+ENABLE_MESSAGE:  Message that will be logged when alert is enabled
+END
 }
 
-disable_alerts () {
-    disabled_file="$1_disabled"
-    enabled_file="$1_enabled"
+function disable_alerts() {
+    # $1: wrapper name, $2: duration_sec, $3: disable message
+    now_secs=$(date +"%s")
+    disable_until_secs=$(( now_secs + ${2} ))
+    disable_file_path="$(get_disable_file_path "${1}")"
+    echo "${disable_until_secs}" > "${disable_file_path}"
+    echo "$(logname || echo unknown): \"${3}\"" >> "${disable_file_path}"
+    chmod 0644 "${disable_file_path}"
+    log "${1} alerts disabled by $(logname || echo unknown)"
+    log "Disable message: ${3}"
+}
 
-    if [ -e "${enabled_file}" ]; then
-        mv "${enabled_file}" "${disabled_file}"
-    else
-        touch "${disabled_file}"
-        chmod 0644 "${disabled_file}"
+function enable_alerts() {
+    # $1: wrapper name, $2: enable message
+    disable_file_path="$(get_disable_file_path "${1}")"
+    if [ -e "${disable_file_path}" ]; then
+        rm "${disable_file_path}"
+    fi
+    log "${1} alerts enabled by $(logname || echo unknown)"
+    log "Enable message: ${2}"
+}
+
+function main() {
+    if [ "${action}" == 'enable' ]; then
+        if [ "${wrapper_name}" == "all" ]; then
+            for wrapper in $(get_wrappers_names); do
+                enable_alerts "${wrapper}" "${message}"
+            done
+        else
+            enable_alerts "${wrapper_name}" "${message}"
+        fi
+    elif [ "${action}" == 'disable' ]; then
+        duration_sec=$(time_to_seconds "${duration}")
+        if [ "${wrapper_name}" == "all" ]; then
+            for wrapper in $(get_wrappers_names); do
+                disable_alerts "${wrapper}" "${duration_sec}" "${message}"
+            done
+        else
+            disable_alerts "${wrapper_name}" "${duration_sec}" "${message}"
+        fi
+    elif [ "${action}" == 'help' ]; then
+        show_help
     fi
 }
 
-enable_alerts () {
-    disabled_file="$1_disabled"
-    enabled_file="$1_enabled"
 
-    if [ -e "${disabled_file}" ]; then
-        mv "${disabled_file}" "${enabled_file}"
-    else
-        touch "${enabled_file}"
-        chmod 0644 "${enabled_file}"
-    fi
-}
+while :; do
+    case "${1}" in
+        enable|disable|help)
+            action="${1}"
+            shift;;
+        -d|--during)
+            if [ "$#" -gt 1 ]; then
+                if filter_duration "${2}"; then
+                    duration="${2}"
+                else
+                    usage_error "Option --during: \"${2}\" is not a valid duration."
+                fi
+            else
+                error "Missing --during argument."
+            fi
+            shift; shift;;
+        -m|--message)
+            if [ "$#" -gt 1 ]; then
+                message="${2}"
+            else
+                error "Missing --message argument."
+            fi
+            shift; shift;;
+        *)
+            if [ -n "${1}" ]; then
+                if is_wrapper "${1}" || [ "${1}" == "all" ]; then
+                    wrapper_name="${1}"
+                else
+                    error "Unknown argument '${1}', or NAME not defined in NRPE configuration."
+                fi
+            else
+                if [ -z "${action}" ]; then
+                    error "Missing action argument."
+                elif [ -z "${1}" ]; then
+                    break
+                fi
+            fi
 
-now () {
-  date --iso-8601=seconds
-}
-
-log_disable () {
-    echo "$(now) - alerts disabled by $(logname || echo unknown)" >> $1
-}
-
-log_enable () {
-    echo "$(now) - alerts enabled by $(logname || echo unknown)" >> $1
-}
-
-main () {
-    local action=$1
-    local prefix=$2
-
-    local base_dir="/var/lib/misc"
-    mkdir -p "${base_dir}"
-
-    local file_path="${base_dir}/${prefix}_alerts"
-    local log_file="/var/log/${prefix}_alerts.log"
-
-    case "$action" in
-    enable)
-        enable_alerts ${file_path}
-        log_enable ${log_file}
-        ;;
-    disable)
-        disable_alerts ${file_path}
-        log_disable ${log_file}
-        ;;
-    help)
-        usage
-        ;;
-    *)
-        >&2 echo "Unknown action '$action'"
-        exit 1
-        ;;
+            shift;;
     esac
-}
+done
 
-main $ARGS
+if [ -z "${wrapper_name}" ] && [ "${action}" != 'help' ] ; then
+    error "Missing WRAPPER_NAME."
+fi
+
+if [ -z "${duration}" ]; then
+    duration="${default_disabled_time}"
+fi
+
+readonly wrapper_name duration action
+
+main
+

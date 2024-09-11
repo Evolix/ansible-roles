@@ -1,0 +1,21 @@
+- name: Install docker rootless needed package
+  ansible.builtin.apt:
+    name:
+      - dbus-user-session
+      - fuse-overlayfs
+      - slirp4netns
+      - docker-ce-rootless-extras
+      - uidmap 
+      - systemd-container
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Adjust sysctl config (except rp_filter)
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/docker-rootless.conf
+    sysctl_set: yes
+    state: present
+  loop:
+    - { name: "net.ipv4.ping_group_range", value: "0 2147483647" }

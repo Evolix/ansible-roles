@@ -42,13 +42,23 @@
     path: /etc/nagios/nrpe.d/evolix.cfg
   register: nrpe_evolix_cfg
 
+- name: Is alerts_wrapper present?
+  ansible.builtin.stat:
+    path: "{{ monitoringctl_wrapper_path }}"
+  register: alerts_wrapper
+
+- set_fact:
+    minifirewall_monitoringctl_wrapper_cmd: "{{ monitoringctl_wrapper_path }} --name minifirewall -- "
+  when: alerts_wrapper.stat.exists
+
 - name: check_minifirewall is available for NRPE
   ansible.builtin.lineinfile:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: 'command\[check_minifirewall\]'
-    line: 'command[check_minifirewall]=sudo {{ nagios_plugins_directory }}/check_minifirewall'
+    line: 'command[check_minifirewall]={{ minifirewall_monitoringctl_wrapper_cmd }}sudo {{ nagios_plugins_directory }}/check_minifirewall'
   notify: restart nagios-nrpe-server
-  when: nrpe_evolix_cfg.stat.exists
+  when:
+    - alerts_wrapper.stat.exists
 
 - name: Is evolinux sudoers installed?
   ansible.builtin.stat:

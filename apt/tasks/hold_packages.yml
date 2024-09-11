@@ -95,6 +95,17 @@
   tags:
     - apt
 
+- name: PATH is customized
+  ansible.builtin.cron:
+    cron_file: apt-hold-packages
+    user: root
+    env: yes
+    name: PATH
+    value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  tags:
+    - apt
+  when: is_cron.rc == 0
+
 - name: Check for held packages (script)
   ansible.builtin.cron:
     cron_file: apt-hold-packages

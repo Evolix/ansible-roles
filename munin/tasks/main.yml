@@ -40,12 +40,15 @@
 - ansible.builtin.include_role:
     name: evolix/remount-usr
 
-- name: Install some Munin plugins (disabled)
+- name: Install some Munin plugins (not enabled yet)
   ansible.builtin.copy:
     src: 'plugins/{{ item }}'
     dest: '/usr/share/munin/plugins/{{ item }}'
+    mode: 755
   loop:
     - dhcp_pool
+    - linux-psi
+    - ipmi_
   tags:
     - munin
 
@@ -77,6 +80,7 @@
     - postfix_mailqueue
     - postfix_mailstats
     - postfix_mailvolume
+    - linux-psi
   notify: restart munin-node
   tags:
     - munin
@@ -106,6 +110,14 @@
     - temp
     - power
     - volts
+    - amp
+
+- name: Ensure ipmitool is installed on dedicated hardware
+  ansible.builtin.apt:
+    name: ipmitool
+    state: present
+  when: ansible_virtualization_role == "host"
+  notify: restart munin-node
 
 - name: adjustments for grsec kernel
   ansible.builtin.blockinfile:
@@ -141,3 +153,10 @@
   notify:
     - systemd daemon-reload
     - restart munin-node
+
+- name: Copy custom index template (4 colons with month and year instead of 2)
+  ansible.builtin.template:
+    src: munin-nodeview.tmpl.j2
+    dest: /etc/munin/templates/munin-nodeview.tmpl
+    mode: '0755'
+

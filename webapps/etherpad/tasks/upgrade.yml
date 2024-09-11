@@ -1,0 +1,60 @@
+---
+# tasks file for etherpad upgrade
+
+- name: Dump database to a file with compression
+  community.mysql.mysql_db:
+    name: "{{ etherpad_instance }}"
+    state: dump
+    target: "~/{{ etherpad_instance }}.sql.gz"
+
+- name: Stop service
+  ansible.builtin.systemd:
+    name: "etherpad@{{ etherpad_instance }}.service"
+    state: stopped
+
+- name: Clone etherpad repo (git)
+  ansible.builtin.git:
+    repo: "{{ etherpad_git_url }}"
+    dest: "~/etherpad-lite/"
+    version: "{{ etherpad_git_version }}"
+    update: true
+    force: true
+  become_user: "{{ etherpad_instance }}"
+
+- name: Fix run.sh so it does not start etherpad at the end
+  ansible.builtin.lineinfile:
+    path: "~/etherpad-lite/bin/run.sh"
+    state: absent
+    regexp: '^exec pnpm run prod'
+  become_user: "{{ etherpad_instance }}"
+
+- name: Run setup
+  ansible.builtin.shell: "bin/run.sh"
+  args:
+    chdir: "~/etherpad-lite"
+  become_user: "{{ etherpad_instance }}"
+
+- name: Template json config file
+  ansible.builtin.template:
+    src: "settings.json.j2"
+    dest: "~{{ etherpad_instance }}/etherpad-lite/settings.json"
+    owner: "{{ etherpad_instance }}"
+    group: "{{ etherpad_instance }}"
+    mode: '0640'
+
+- name: Start service
+  ansible.builtin.systemd:
+    name: "etherpad@{{ etherpad_instance }}.service"
+    state: started
+
+- name: Define variable to skip next task by default
+  ansible.builtin.set_fact:
+    keep_db_dump: true
+
+- name: Remove database dump
+  ansible.builtin.file:
+    path: "~/{{ etherpad_instance }}.sql.gz"
+    state: absent
+  when: keep_db_dump is undefined
+  tags: clean
+  notify: reload nginx

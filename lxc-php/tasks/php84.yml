@@ -1,0 +1,91 @@
+---
+
+- name: set APT keyring
+  ansible.builtin.set_fact:
+    lxc_apt_keyring_dir: /etc/apt/trusted.gpg.d
+
+- name: "{{ lxc_php_container_name }} - Install dependency packages"
+  community.general.lxc_container:
+    name: "{{ lxc_php_container_name }}"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y wget gnupg"
+
+- name: "{{ lxc_php_container_name }} - delete sources.list bookworm repository"
+  ansible.builtin.file:
+    path: "{{ lxc_rootfs }}/etc/apt/sources.list"
+    state: absent
+
+- name: "{{ lxc_php_container_name }} - system bookworm repository"
+  ansible.builtin.template:
+    src: bookworm_basics.sources.j2
+    dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/system.sources"
+    force: true
+    mode: "0644"
+
+- name: "{{ lxc_php_container_name }} - security bookworm repository"
+  ansible.builtin.template:
+    src: bookworm_security.sources.j2
+    dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/security.sources"
+    force: true
+    mode: "0644"
+
+- name: "{{ lxc_php_container_name }} - Add sury repo"
+  ansible.builtin.template:
+    src: sury.sources.j2
+    dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/sury.sources"
+    force: true
+    mode: "0644"
+
+- name: "{{ lxc_php_container_name }} - Add sury failsafe repo"
+  ansible.builtin.template:
+    src: evolix_sury.sources.j2
+    dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/evolix_sury.sources"
+    force: true
+    mode: "0644"
+
+- name: "Ensure {{ lxc_rootfs }}{{ lxc_apt_keyring_dir }} directory exists"
+  file:
+    path: "{{ lxc_rootfs }}{{ lxc_apt_keyring_dir }}"
+    state: directory
+    mode: "755"
+    owner: root
+    group: root
+
+- name: copy pub.evolix.org GPG key
+  ansible.builtin.copy:
+    src: pub_evolix.asc
+    dest: "{{ lxc_rootfs }}{{ lxc_apt_keyring_dir }}/pub_evolix.asc"
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: copy packages.sury.org GPG Key
+  ansible.builtin.copy:
+    src: sury.gpg
+    dest: "{{ lxc_rootfs }}{{ lxc_apt_keyring_dir }}/sury.gpg"
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: "{{ lxc_php_container_name }} - Update APT cache"
+  community.general.lxc_container:
+    name: "{{ lxc_php_container_name }}"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt update"
+
+- name: "{{ lxc_php_container_name }} - Install PHP packages"
+  community.general.lxc_container:
+    name: "{{ lxc_php_container_name }}"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer"
+
+- name: "{{ lxc_php_container_name }} - Copy evolinux PHP configuration"
+  ansible.builtin.template:
+    src: z-evolinux-defaults.ini.j2
+    dest: "{{ line_item }}"
+    mode: "0644"
+  notify: "Reload {{ lxc_php_version }}-fpm"
+  loop:
+    - "{{ lxc_rootfs }}/etc/php/8.4/fpm/conf.d/z-evolinux-defaults.ini"
+    - "{{ lxc_rootfs }}/etc/php/8.4/cli/conf.d/z-evolinux-defaults.ini"
+  loop_control:
+    loop_var: line_item
+
+- ansible.builtin.include: "mail_opensmtpd.yml"

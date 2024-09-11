@@ -1,0 +1,4 @@
+docker_rootless_user: ""
+docker_rootless_user_uid: ""
+docker_rootless_user_home: ""
+docker_rootfull_disabled: false

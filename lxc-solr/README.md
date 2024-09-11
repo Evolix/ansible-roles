@@ -15,7 +15,7 @@ Since this role depend on the lxc role, please refer to it for a full variable l
 * `lxc_containers`: list of LXC containers to create. Default: `[]` (empty).
   * `name`: name of the LXC container to create.
   * `release`: Debian version to install
-  * `solr_version`: Solr version to install *(refer to https://archive.apache.org/dist/lucene/solr/ for a full version list)*
+  * `solr_version`: Solr version to install *(refer to https://archive.apache.org/dist/solr/solr/ for a full version list)*
   * `solr_port`: port for Solr to listen on
   Eg.:
   ```

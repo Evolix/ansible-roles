@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+
+function help() {
+    echo "Check the number of proftpd user with 'ftpcount' output."
+    echo "Usage:"
+    echo "    check_proftpd_user -w|warning <WARN_THRESHOLD> -c|critical <CRITICAL_THRESHOLD>"
+}
+
+
+warn="-1"
+crit="-1"
+
+while [ $# -gt 0 ]; do
+    case "${1}" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -c|--critical)
+            crit="${2}"
+            shift
+            shift
+            ;;
+        -w|--warning)
+            warn="${2}"
+            shift
+            shift
+            ;;
+        *)
+            >&2 echo "Error: unknown argument ${1}, exit."
+            help
+            exit 3
+    esac
+done
+
+if [ "${warn}" == "-1" ]; then
+    echo "Error: warning threshold no defined, exit."
+    help
+    exit 3
+fi
+
+if [ "${crit}" == "-1" ]; then
+    echo "Error: critical threshold no defined, exit."
+    help
+    exit 3
+fi
+if [[ "${warn}" =~ [^0-9] ]]; then
+    echo "Error: warning threshold must be an integer, exit."
+    help
+    exit 3
+fi
+if [[ "${crit}" =~ [^0-9] ]]; then
+    echo "Error: critical threshold must be an integer, exit."
+    help
+    exit 3
+fi
+
+if ! command -v ftpcount > /dev/null; then
+    echo "Error: missing 'ftpcount' command, cannot check users count."
+    exit 3
+fi
+
+n_users="$(ftpcount | awk '/users/{print $4}')"
+
+if [ "${n_users}" -gt "${crit}" ]; then
+    echo "CRITICAL - ${n_users} ftp users connected (warning: ${warn}, critical: ${crit})"
+    exit 2
+elif [ "${n_users}" -gt "${warn}" ]; then
+    echo "WARNING - ${n_users} ftp users connected (warning: ${warn}, critical: ${crit})"
+    exit 1
+else
+    echo "OK - ${n_users} ftp users connected (warning: ${warn}, critical: ${crit})"
+    exit 0
+fi
+

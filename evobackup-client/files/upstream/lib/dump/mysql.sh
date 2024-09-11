@@ -1510,8 +1510,8 @@ dump_mysql_tabs() {
         rm -rf "${dump_dir}" "${errors_dir}"
         mkdir -p "${dump_dir}" "${errors_dir}"
         # No need to change recursively, the top directory is enough
-        chmod 700 "${dump_dir}" "${errors_dir}"
-        chown -RL mysql "${dump_dir}"
+        chmod 750 "$(dirname "${dump_dir}")" "${errors_dir}"
+        chown -RL mysql:mysql "$(dirname "${dump_dir}")"
 
         local error_file="${errors_dir}.err"
         log "LOCAL_TASKS - ${FUNCNAME[0]}: start ${dump_dir}"

@@ -1,0 +1,30 @@
+<VirtualHost *:80>
+    ServerName {{ privatebin_domains |first }}
+    
+    {% if ssl.stat.exists %}
+    RewriteEngine On
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+    RewriteRule ^/(.*) https://%{SERVER_NAME}/$1 [L,R=permanent]
+    {% endif %}
+
+</VirtualHost>
+
+{% if ssl.stat.exists %}
+<VirtualHost *:443>
+    ServerName {{ privatebin_domains |first }}
+
+    DocumentRoot /home/{{ privatebin_instance }}/PrivateBin
+    
+    <Directory /home/{{ privatebin_instance }}/PrivateBin>
+        Options SymLinksIfOwnerMatch
+        AllowOverride Options=All AuthConfig Limit FileInfo Indexes
+        Require all granted
+    </Directory>
+    
+    AssignUserID {{ privatebin_instance }} {{ privatebin_instance }}
+
+    IncludeOptional /etc/apache2/ssl/{{ privatebin_instance }}.conf
+
+</VirtualHost>
+{% endif %}

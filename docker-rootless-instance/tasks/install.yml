@@ -1,0 +1,68 @@
+---
+- name: Disable rootful Docker daemon
+  become: true
+  ansible.builtin.systemd:
+    name: docker
+    state: stopped
+    enabled: false
+  when:
+    - docker_rootfull_disabled
+
+- name: Enable systemd user mode
+  ansible.builtin.command:
+    cmd: "loginctl enable-linger {{ docker_rootless_user }}"
+  changed_when: False
+
+- name: Stat Docker user docker.sock
+  become: true
+  become_user: "{{ docker_rootless_user }}"
+  ansible.builtin.stat:
+    path: /run/user/{{ docker_rootless_user_uid }}/docker.sock
+  register: docker_rootless_sock
+
+- name: Load the ip_tables module
+  become: true
+  community.general.modprobe:
+    name: ip_tables
+    state: present
+
+- name: Install rootless Docker for user {{ docker_rootless_user }}
+  become: true
+  become_user: "{{ docker_rootless_user }}"
+  environment:
+    PATH: "{{ docker_rootless_user_home }}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    XDG_RUNTIME_DIR: /run/user/{{ docker_rootless_user_uid }}
+  ansible.builtin.command:
+    cmd: dockerd-rootless-setuptool.sh install
+  register: install_rootless_docker
+  changed_when: install_rootless_docker.rc != 0
+  failed_when: install_rootless_docker.rc != 0
+  when:
+    - not docker_rootless_sock.stat.exists
+
+- name: Ensure docker rootless instanc is enabled and started
+  become: true
+  become_user: "{{ docker_rootless_user }}"
+  ansible.builtin.systemd_service:
+    name: docker
+    enabled: true
+    state: started
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ docker_rootless_user_uid }}"
+
+#- name: Stat .bashrc
+#  ansible.builtin.stat:
+#    path: "{{ ansible_env.HOME }}/.bashrc"
+#  register: user_bashrc
+
+#- name: Add rootless Docker alias to user's .bashrc
+#  ansible.builtin.lineinfile:
+#    path: "{{ ansible_env.HOME }}/.bashrc"
+#    line: "export DOCKER_HOST=unix:///run/user/{{ docker_rootless_user_uid }}/docker.sock"
+#  when:
+#    - user_bashrc.stat.exists
+
+- name: Add docker context to root docker
+  ansible.builtin.command:
+    cmd: 'docker context create rootless-{{ docker_rootless_user }} --docker "host=unix:///run/user/{{ docker_rootless_user_uid }}/docker.sock"'

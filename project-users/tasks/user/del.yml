@@ -1,0 +1,18 @@
+---
+
+- name: "Remove Unix account '{{ username }}'"
+  ansible.builtin.user:
+    name: "{{ username }}"
+    state: absent
+
+- name: "check if /home/{{ username }}"
+  ansible.builtin.stat:
+    path: "/home/{{ username }}"
+  register: _user_home
+
+- name: "Give /home/{{ username }}' ownership to root"
+  ansible.builtin.file:
+    path: "/home/{{ username }}"
+    owner: root
+    group: root
+  when: _user_home.stat.exists

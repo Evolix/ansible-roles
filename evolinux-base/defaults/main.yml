@@ -243,3 +243,6 @@ evolinux_utils_include: True
 
 # Autosysadmin
 evolinux_autosysadmin_include: false
+
+# Evobackup client
+evolinux_evobackup_client_include: True

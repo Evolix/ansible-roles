@@ -1,0 +1,54 @@
+---
+
+# Main group
+
+- name: "Main group '{{ project_users_main_group }}' is present "
+  ansible.builtin.group:
+    name: "{{ project_users_main_group | mandatory }}"
+    state: present
+
+
+# SSH
+
+- name: "Group '{{ evolinux_ssh_group }}' is present (Debian 10 or later)"
+  ansible.builtin.group:
+    name: "{{ evolinux_ssh_group | mandatory }}"
+    state: present
+  when: ansible_distribution_major_version is version('10', '>=')
+
+- name: "Disable password auth for users (if required)"
+  ansible.builtin.blockinfile:
+    dest: /etc/ssh/sshd_config
+    marker: "# {mark} {{ project_users_main_group }} PASSWORD RESTRICTIONS"
+    block: |
+      Match Group {{ project_users_main_group }}
+          PasswordAuthentication no
+    insertafter: EOF
+    validate: '/usr/sbin/sshd -t -f %s'
+    state: "{{ project_users_disable_ssh_password | bool | ternary('present', 'absent') }}"
+  notify: reload sshd
+
+
+# Sudo
+
+- name: "Sudoers group is present"
+  ansible.builtin.group:
+    name: "{{ project_users_sudoers_group | mandatory }}"
+    state: present
+    system: true
+  when:
+    - project_users_sudoers_group is defined
+    - project_users_sudoers_group != none
+    - project_users_sudoers_group | length > 0
+
+- name: Sudoers file is present
+  ansible.builtin.template:
+    src: "{{ project_users_sudoers_template }}"
+    dest: "{{ project_users_sudoers_path | mandatory }}"
+    mode: "0640"
+    force: yes
+    validate: '/usr/sbin/visudo -cf %s'
+  when:
+    - project_users_sudoers_template is defined
+    - project_users_sudoers_template != none
+    - project_users_sudoers_template | length > 0

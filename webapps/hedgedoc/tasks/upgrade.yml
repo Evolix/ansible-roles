@@ -1,0 +1,58 @@
+---
+# tasks file for hedgedoc upgrade
+
+- name: Dump database to a file with compression
+  community.postgresql.postgresql_db:
+    name: "{{ hedgedoc_service }}"
+    state: dump
+    target: "~/{{ hedgedoc_service }}.sql.gz"
+  become_user: postgres
+
+- name: Stop service
+  ansible.builtin.service:
+    name: "{{ hedgedoc_service }}.service"
+    state: stopped
+
+- name: Get code and run app setup
+  become_user: "{{ hedgedoc_service }}"
+  block:
+    - name: Clone hedgedoc repo (git)
+      ansible.builtin.git:
+        repo: "{{ hedgedoc_git_url }}"
+        dest: "~/hedgedoc/"
+        version: "{{ hedgedoc_git_version }}"
+        update: true
+    - name: Run setup
+      ansible.builtin.shell: "bin/setup"
+      args:
+        chdir: "~/hedgedoc"
+    - name: Install dependencies for frontend app
+      ansible.builtin.shell: "yarn install --frozen-lockfile"
+      args:
+        chdir: "~/hedgedoc"
+    - name: Build frontend app
+      ansible.builtin.shell: "yarn build"
+      args:
+        chdir: "~/hedgedoc"
+
+- name: Restart services
+  ansible.builtin.service:
+    name: "{{ hedgedoc_service }}.service"
+    state: restarted
+
+- name: Define variable to skip next task by default
+  ansible.builtin.set_fact:
+    keep_db_dump: true
+
+- name: Remove database dump
+  ansible.builtin.file:
+    path: "~/{{ hedgedoc_service }}.sql.gz"
+    state: absent
+  become_user: postgres
+  when: keep_db_dump is undefined
+  tags: clean
+
+- name: Reload nginx conf
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded

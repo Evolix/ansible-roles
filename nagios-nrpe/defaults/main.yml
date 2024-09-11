@@ -28,3 +28,4 @@ nagios_nrpe_check_proxy_host: "www.example.com"
 
 nagios_plugins_directory: "/usr/local/lib/nagios/plugins"
 
+monitoringctl_wrapper_path: /usr/local/lib/monitoringctl/alerts_wrapper

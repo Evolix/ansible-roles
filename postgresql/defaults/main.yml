@@ -23,3 +23,6 @@ locales_default: fr_FR.UTF-8
 postgresql_install_postgis: False
 
 apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"
+
+monitoringctl_wrapper_path: /usr/local/lib/monitoringctl/alerts_wrapper
+postgresql_monitoringctl_wrapper_cmd: ""

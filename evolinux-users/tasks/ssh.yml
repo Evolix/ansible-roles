@@ -17,7 +17,7 @@
 
 - name: verify AllowGroups directive
   ansible.builtin.command:
-    cmd: "grep --extended-regexp --recursive --files-with-matches '^AllowGroups' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
+    cmd: "grep --extended-regexp --files-with-matches --ignore-case '^AllowGroups' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
   changed_when: False
   failed_when: False
   check_mode: no
@@ -29,7 +29,7 @@
 
 - name: verify AllowUsers directive
   ansible.builtin.command:
-    cmd: "grep --extended-regexp --recursive --files-with-matches '^AllowUsers' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
+    cmd: "grep --extended-regexp --files-with-matches --ignore-case '^AllowUsers' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
   changed_when: False
   failed_when: False
   check_mode: no
@@ -82,6 +82,10 @@
   check_mode: no
   register: _ssh_config_paths
 
+- ansible.builtin.debug:
+    var: _ssh_config_paths
+    verbosity: 1
+
 ##################
 # PermitRootLogin
 ##################
@@ -93,7 +97,7 @@
 - name: Root login is disabled (Debian < 12)
   ansible.builtin.replace:
     dest: /etc/ssh/sshd_config
-    regexp: '^#PermitRootLogin (yes|without-password|prohibit-password)'
+    regexp: '^#? ?PermitRootLogin (yes|without-password|prohibit-password)'
     replace: "PermitRootLogin no"
   notify: reload sshd
   when:
@@ -102,11 +106,11 @@
 
 ### For Debian >= 12
 #   if there is no value for PermitRootLogin (anywhere)
-#   we add a "no" in z-evolinux-users.conf 
+#   we add a "no" in zzz-evolinux-custom.conf 
 
 - name: verify PermitRootLogin directive (Debian >= 12)
   ansible.builtin.command:
-    cmd: "grep --extended-regexp --recursive --files-with-matches '^PermitRootLogin' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
+    cmd: "grep --extended-regexp --files-with-matches '^PermitRootLogin' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
   changed_when: False
   failed_when: False
   check_mode: no
@@ -116,8 +120,9 @@
 
 - name: Root login is disabled (Debian >= 12)
   ansible.builtin.lineinfile:
-    path: /etc/ssh/sshd_config.d/z-evolinux-users.conf
+    path: /etc/ssh/sshd_config.d/zzz-evolinux-custom.conf
     line: "PermitRootLogin no"
+    regexp: '^#? ?PermitRootLogin '
     create: yes
     mode: "0644"
     validate: '/usr/sbin/sshd -t -f %s'
@@ -136,7 +141,7 @@
   block:
   - name: Check if evolinux ssh group is used
     ansible.builtin.command:
-      cmd: "grep --extended-regexp --recursive --files-with-matches '^AllowGroups.+{{ evolinux_ssh_group }}' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
+      cmd: "grep --extended-regexp --files-with-matches --ignore-case '^AllowGroups.+{{ evolinux_ssh_group }}' {{ _ssh_config_paths.stdout_lines | join(' ') }}"
     changed_when: False
     failed_when: False
     check_mode: no

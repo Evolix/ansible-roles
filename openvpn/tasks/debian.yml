@@ -197,13 +197,23 @@
     group: nagios
   when: nrpe_evolix_config.stat.exists
 
+- name: Is alerts_wrapper present?
+  ansible.builtin.stat:
+    path: "{{ monitoringctl_wrapper_path }}"
+  register: alerts_wrapper
+
+- set_fact:
+    openvpn_monitoringctl_wrapper_cmd: "{{ monitoringctl_wrapper_path }} --name openvpn -- "
+  when: alerts_wrapper.stat.exists
+
 - name: Configure NRPE OpenVPN check
   ansible.builtin.lineinfile:
     dest: "/etc/nagios/nrpe.d/evolix.cfg"
     regexp: '^command\[check_openvpn\]='
-    line: "command[check_openvpn]=/usr/local/lib/nagios/plugins/check_openvpn -H 127.0.0.1 -p 1195 -P {{ management_pwd }}"
+    line: "command[check_openvpn]={{ openvpn_monitoringctl_wrapper_cmd }}/usr/local/lib/nagios/plugins/check_openvpn -H 127.0.0.1 -p 1195 -P {{ management_pwd }}"
   notify: restart nagios-nrpe-server
-  when: nrpe_evolix_config.stat.exists
+  when:
+    - nrpe_evolix_config.stat.exists
 
 - ansible.builtin.include_role:
     name: evolix/remount-usr
@@ -229,13 +239,18 @@
     validate: 'visudo -cf %s'
   when: nrpe_evolix_config.stat.exists
 
+- set_fact:
+    openvpn_monitoringctl_wrapper_cmd: "{{ monitoringctl_wrapper_path }} --name openvpn_certificates -- "
+  when: alerts_wrapper.stat.exists
+
 - name: Configure NRPE certificates check
   ansible.builtin.lineinfile:
     dest: "/etc/nagios/nrpe.d/evolix.cfg"
     regexp: '^command\[check_openvpn_certificates\]='
-    line: "command[check_openvpn_certificates]=sudo /usr/local/lib/nagios/plugins/check_openvpn_certificates.sh"
+    line: "command[check_openvpn_certificates]={{ openvpn_monitoringctl_wrapper_cmd }}sudo /usr/local/lib/nagios/plugins/check_openvpn_certificates.sh"
   notify: restart nagios-nrpe-server
-  when: nrpe_evolix_config.stat.exists
+  when:
+    - nrpe_evolix_config.stat.exists
 
 - ansible.builtin.include_role:
     name: evolix/remount-usr

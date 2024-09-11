@@ -161,7 +161,7 @@ main() {
             test_openvpn_restarted_since_last_ca_cert_modification 0
         else
             # Last OpenVPN restart in POSIX format, then in seconds
-            posix_last_openvpn_restart_date=$(echo "$last_openvpn_restart_date" | awk '{ printf $4" "(index("JanFebMarAprMayJunJulAugSepOctNovDec",$1)+2)/3" "$2" ",split($3,time,":"); print time[1],time[2],time[3]}' | awk '{printf "%04d%02d%02d%02d%02d.%02d\n", $1, $2, $3, $4, $5, $6}')
+            posix_last_openvpn_restart_date=$(echo "${last_openvpn_restart_date:-$(date "+%b %d %T %G")}" | awk '{ printf $4" "(index("JanFebMarAprMayJunJulAugSepOctNovDec",$1)+2)/3" "$2" ",split($3,time,":"); print time[1],time[2],time[3]}' | awk '{printf "%04d%02d%02d%02d%02d.%02d\n", $1, $2, $3, $4, $5, $6}')
             seconds_last_openvpn_restart_date=$($date_cmd -j "$posix_last_openvpn_restart_date" +%s)
 
             test_openvpn_restarted_since_last_ca_cert_modification $seconds_last_openvpn_restart_date

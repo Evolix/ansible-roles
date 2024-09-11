@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034,SC2317
 
-readonly VERSION="24.05.1"
+readonly VERSION="24.07"
 
 # set all programs to C language (english)
 export LC_ALL=C
@@ -378,7 +378,7 @@ setup() {
 
     : "${LOCAL_BACKUP_DIR:="/home/backup"}"
     # shellcheck disable=SC2174
-    mkdir -p -m 700 "${LOCAL_BACKUP_DIR}"
+    mkdir -p -m 711 "${LOCAL_BACKUP_DIR}"
 
     : "${ERRORS_DIR:="${LOCAL_BACKUP_DIR}/${PROGNAME}.errors-${START_TIME}"}"
     # shellcheck disable=SC2174

@@ -1,0 +1,14 @@
+---
+# defaults file for vars
+gitea_system_dep: "['apt-transport-https', 'git', 'nginx', 'mariadb-server', 'mariadb-client', 'python3-mysqldb', 'redis-server', 'certbot']"
+gitea_git_version: '1.21.3'
+gitea_url: "https://dl.gitea.io/gitea/{{ gitea_git_version }}/gitea-{{ gitea_git_version }}-linux-amd64"
+gitea_checksum: "sha256:ccf6cc2077401e382bca0d000553a781a42c9103656bd33ef32bf093cca570eb"
+gitea_domains: ['example.domain.org']
+gitea_certbot_admin_email: 'security@example.domain.org'
+gitea_db_host: '127.0.0.1:3306'
+gitea_db_name: "{{ gitea_instance }}"
+gitea_db_user: "{{ gitea_instance }}"
+gitea_db_password: 'UQ6_CHANGE_ME_Gzb'
+gitea_redis_maxclients: '128'
+gitea_redis_maxmemory: '300M'

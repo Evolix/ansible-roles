@@ -27,7 +27,7 @@ check_server() {
     host=$(config_var "-l" "${conf_file}")
     port=$(config_var "-p" "${conf_file}")
 
-    cmd="${check_bin} -H ${host} -p ${port}"
+    cmd="${check_bin} -H ${host%%,*} -p ${port}"
 
     result=$($cmd)
     ret="${?}"

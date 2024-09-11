@@ -1,0 +1,5 @@
+---
+- name: restart log2mail
+  ansible.builtin.service:
+    name: log2mail
+    state: restarted

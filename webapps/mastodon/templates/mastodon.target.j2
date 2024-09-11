@@ -1,0 +1,8 @@
+[Unit]
+Description=Mastodon Microblogging service
+Wants=redis-server.service
+After=redis-server.service
+Requires={{ mastodon_instance }}-web.service {{ mastodon_instance }}-sidekiq.service {{ mastodon_instance }}-streaming.service
+
+[Install]
+WantedBy=multi-user.target

@@ -21,6 +21,69 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
+## [24.09] 2024-09-11
+
+### Added
+
+* apt: force PATH for apt-hold-packages crontab
+* apt: temporary trixie source lists
+* bind: New variables to change IPs bind will listen on & send notify/transfer commands
+* certbot: support evoacme in haproxy renewal hook
+* etc-git: add cron job for daily autocommits (broom commits)
+* evobackup-client : Upstream release 24.07
+* evocheck: add tag "evocheck-script-only"
+* evolinux-base: Create custom SSH configuration file
+* evolinux-base: install colordiff, jq and tree by default
+* evolinux-base: install evobackup-client (default: true)
+* generate-ldif: add bloc for php-fpm84
+* lxc-php: Allow one to install php84 on Bookworm container
+* lxc: new lxc_template_mirror option (useful to get old Debian from archive.debian.org)
+* minifirewall: remove duplicates in lists of ports, IP addresses…
+* munin: add 2 graph colons in index with month and year
+* munin: add linux_psi contrib plugin
+* mysql : Add configuration for external undo log and purge.
+* nagios-nrpe: add new check_ftp_users
+* nagios-nrpe: new monitoringctl command
+* nagios-nrpe: quick patch for monitoringctl to enable --no-confirm
+* proftpd: add new munin graph (users count)
+* project-users: new role to manage sets of users for a project
+* trixie-detect: add role to force Debian 13 detection (temporary, until release)
+
+### Changed
+
+* apache: improve BadBots configuration
+* autosysadmin-agent: release 24.06
+* bind: Update AppArmor rules
+* certbot: let's encrypt commit hook deal only with /etc/letsencrypt
+* docker-host: fix update cache for install task
+* docker-host: install docker compose and buildx by default
+* docker-host: split tasks in different task files
+* Elastic Stack : default to version 8.x
+* evocheck: upstream release 24.09
+* evolinux-base: Add commented Match all
+* evolinux-base: Customize logcheck recipient when serveur-base is installed
+* evolinux-base/evolinux-users: search only files that matter
+* evolinux-base/evolinux-users: simplify ssh split configuration
+* evomaintenance: upstream release 24.08
+* haproxy: send logs to local5 by default, to be compatible with default evolinux rsyslog config
+* log2mail: task log2mail.yml of evolinux-base converted to a role
+* lxc-solr: update solr9 version + fix URL in README
+* minifirewall: upsteam release 24.07
+* proftpd: store Munin plugin in local directory
+* redis: add variable to force redis check interface
+
+### Fixed
+
+* evoacme: Certificates directory path (remove apostrophes)
+* fail2ban: remount /usr if needed
+* munin: add missing executable bit to added munin plugins
+* openvpn: Make it work on OpenBSD in check mode
+* openvpn: Set a default date of last OpenVPN startup for OpenBSD when it's not running so that date(1) doesn't fail
+* proftpd: permissions must be set as string with 4 digits
+* monitoringctl: remount /usr RW after apt module call
+* haproxy: send logs to local5 in default template
+* spamassassin: fix missing directory for bayes rules
+
 ## [24.05] 2024-05-15
 
 ### Added
@@ -29,6 +92,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* certbot: allow haproxy deploy hook to work with evoacme too (using env variables)
 * evobackup-client: upstream release 24.05.1
 * evolinux-base: improve adding the current user to SSH AllowGroups of AllowUsers
 * evolinux-users: improve SSH configuration
@@ -38,6 +102,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * apt: use archive.debian.org with Buster
+* fail2ban: remount-usr added because it is needed for last task
 
 ## [24.04] 2024-04-30
 

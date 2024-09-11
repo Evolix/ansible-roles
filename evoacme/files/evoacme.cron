@@ -7,7 +7,7 @@
 #
 
 [ -f /etc/default/evoacme ] && . /etc/default/evoacme
-CRT_DIR="${CRT_DIR:-'/etc/letsencrypt'}"
+CRT_DIR="${CRT_DIR:-/etc/letsencrypt}"
 
 export QUIET=1
 

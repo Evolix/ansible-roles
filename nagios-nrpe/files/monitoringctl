@@ -1,0 +1,708 @@
+#!/usr/bin/env bash
+
+#set -x
+
+readonly VERSION="24.09"
+
+function show_help() {
+    cat <<EOF
+${bold}monitoringctl${no_bold} version ${VERSION}.
+
+${bold}monitoringctl${no_bold} gives some control over NRPE checks and alerts.
+
+Usage: ${bold}monitoringctl${no_bold} [OPTIONS] ACTION ARGUMENTS
+
+${bold}GENERAL OPTIONS${no_bold}
+
+    -h, --help                  Print this message and exit.
+    -V, --version               Print version number and exit.
+
+${bold}ACTIONS${no_bold}
+
+    ${bold}list${no_bold}
+
+        List the checks defined in NRPE configuration.
+
+    ${bold}status [CHECK_NAME|all]${no_bold}
+
+        Print whether alerts are enabled or not (silenced).
+        If alerts are disabled (silenced), show disable message and time left before automatic re-enabling.
+
+    ${bold}check [-b|--bypass-nrpe] CHECK_NAME|all${no_bold}
+
+        Ask CHECK_NAME status to NRPE as an HTTP request.
+        Indicates which command NRPE has supposedly run (from its configuration).
+
+        -b, --bypass-nrpe       Execute directly command from NRPE configuration,
+                                as user nagios, without passing the request to NRPE.
+
+    ${bold}disable CHECK_NAME|all [-d|--during DURATION] [-m|--message 'DISABLE MESSAGE']${no_bold}
+
+        Disable (silence) CHECK_NAME or all alerts for DURATION and write DISABLE MESSAGE into the log.
+        Checks output is still printed, so alerts history won't be lost.
+
+        -d, --during DURATION            See section DURATION.
+        -m, --message 'DISABLE MESSAGE'  See section MESSAGE.
+        -n, --non-interactive            Do not ask confirmation (--message is mandatory then).
+
+    ${bold}enable CHECK_NAME|all [-m|--message 'ENABLE MESSAGE']${no_bold}
+
+        Re-enable CHECK_NAME or all alerts
+
+        -m, --message 'ENABLE MESSAGE'   See section MESSAGE.
+
+    ${bold}show CHECK_NAME${no_bold}
+
+        Show NPRE command(s) configured for CHECK_NAME
+
+${bold}MESSAGE${no_bold}
+
+    Message that will be written in log and in check output when disabled.
+    It is mandatory, but in interactive shells it can be omitted. In this case it is asked interactively.
+
+    Warning: In non-interactive shells (scripts, crons…) or with option --non-interactive,
+    this option is mandatory.
+
+${bold}DURATION${no_bold}
+
+    Time (string) during which alerts will be disabled (optional, default: "1h").
+
+    ${bold}Format${no_bold}
+        You can use 'd' (day), 'h' (hour) and 'm' (minute) , or a combination of them, to specify a duration.
+        Examples: '2d', '1h', '10m', '1h10' ('m' is guessed).
+
+${bold}OTHER NOTES${no_bold}
+
+    For actions disable, enable and status, CHECK_NAME is actually the --name option passed to alerts_wrapper, and not the NRPE check name. Both check name and alerts_wrapper --name option should be equal in NRPE configuration to avoid confusion.
+
+    Log path: ${log_file}
+
+EOF
+}
+
+function list_checks() {
+    checks="$(get_checks_names)"
+    for check in $checks; do
+        echo "${check}"
+    done
+}
+
+function check() {
+    # $1: check name, "all" or empty
+    readonly check_nrpe_bin="/usr/lib/nagios/plugins/check_nrpe"
+    if [ ! -f "${check_nrpe_bin}" ]; then
+        >&2 echo "${check_nrpe_bin} is missing, please install nagios-nrpe-plugin package."
+        exit 1
+    fi
+
+    conf_lines="$(get_nrpe_conf "${nrpe_conf_path}")"
+
+    server_address=$(echo "$conf_lines" | grep "server_address" | tail -n1 | cut -d'=' -f2)
+    if [ -z "${server_address}" ]; then server_address="127.0.0.1"; fi
+
+    server_port=$(echo "$conf_lines" | grep "server_port" | tail -n1 | cut -d'=' -f2)
+    if [ -z "${server_port}" ]; then server_port="5666"; fi
+
+    if [ -z "${1}" ] || [ "${1}" = "all" ]; then
+        # Array header for multi-checks
+        checks="$(get_checks_names)"
+        header="Check\tStatus\tOutput (truncated)"
+        underline="-----\t------\t------------------"
+        str_out="\n${header}\n${underline}\n"
+    else
+        checks="${1}"
+    fi
+
+    warn_options_not_ended_properly "${checks}"
+
+    for check in $checks; do
+        printf "\033[KChecking %s…\r" "${check}"
+        err_msg=""
+
+        check_commands="$(get_check_commands "${check}")"
+        if [ -n "${check_commands}" ]; then
+            check_command="$(echo "${check_commands}" | tail -n1)"
+            if [ -n "${1}" ]; then
+                printf "\033[K"  # erase tmp line "Checking check_toto…"
+                echo "Command played by NRPE:"
+                echo -e "    ${orange}${check_command}${nocolor}"
+
+                if is_wrapped "${check}"; then
+                    if [[ "${check_command}" == *" -- "* ]]; then
+                        check_command_no_wrapper="$(echo "${check_command}" | awk -F' -- ' '{print $2}')"
+                        echo "Command without 'alerts_wrapper':"
+                        echo -e "    ${orange}${check_command_no_wrapper}${nocolor}"
+                    fi
+                fi
+            fi
+        fi
+
+        if [ "${bypass_nrpe}" = "False" ]; then
+            request_command="${check_nrpe_bin} -H ${server_address} -p ${server_port} -b 127.0.0.1 -c check_${check} 2&>1"
+        else
+            if [ -n "${check_command}" ]; then
+                request_command="sudo -u nagios -- ${check_command}"
+            else
+                if [ -z "${1}" ] || [ "${1}" = "all" ]; then
+                    err_msg="Check command not found in NRPE configuration."
+                else
+                    err_msg="Error: no command found in NRPE configuration for check '${check}'. Aborted."
+                fi
+            fi
+        fi
+
+        if [ -z "${err_msg}" ]; then
+            check_output="$(${request_command})"
+            rc="$?"
+            check_output="$(echo "${check_output}" | tr '\n' ' ')"
+            if [ -z "${1}" ] || [ "${1}" = "all" ]; then
+                if [ "${#check_output}" -gt 60 ]; then
+                    check_output="$(echo "${check_output}" | cut -c-80) [...]"
+                fi
+            fi
+        else
+            check_output="${err_msg}"
+            rc="3"
+        fi
+
+        case "${rc}" in
+            0)
+                rc_str="OK"
+                color="${green}"
+                ;;
+            1)
+                rc_str="Warning"
+                color="${orange}"
+                ;;
+            2)
+                rc_str="Critical"
+                color="${red}"
+                ;;
+            3)
+                rc_str="Unknown"
+                color="${purple}"
+                ;;
+            *)
+                rc_str="Unknown"
+                color="${purple}"
+        esac
+
+        if [ -z "${1}" ] || [ "${1}" = "all" ]; then
+            str_out="${str_out}${color}${check}\t${rc_str}${nocolor}\t${check_output}\n"
+        fi
+    done
+
+    if [ -z "${1}" ] || [ "${1}" = "all" ]; then
+        echo -e "${str_out}" | column -t -s $'\t'
+    else
+        printf "\033[K\n"  # erase tmp line « Checking check_toto…»
+        if [ "${bypass_nrpe}" = "False" ]; then
+            echo -e "NRPE service output (on ${server_address}:${server_port}):\n"
+        else
+            echo -e "Direct check output (bypassing NRPE):\n"
+        fi
+        echo -e "${color}${check_output}${nocolor}\n" | sed 's/|/\n/g'
+        exit "${rc}"
+    fi
+}
+
+# Print error message and exit if not installed
+function alerts_switch_is_installed() {
+    if ! command -v alerts_switch &> /dev/null; then
+        error "Error: script 'alerts_switch' is not installed. Aborted."
+    fi
+}
+
+function disable_alerts() {
+    # $1: check name | all
+    # $2: disable message
+    alerts_switch_is_installed
+
+    if [ "${1}" = "all" ]; then
+        checks="$(get_checks_names)"
+    else
+        checks="${1}"
+    fi
+
+    warn_not_wrapped "${checks}"
+    warn_options_not_ended_properly "${checks}"
+    warn_wrapper_names "${checks}"
+
+    if [ -z "${2}" ]; then
+        if [ "${is_interactive}" = "False" ]; then
+            error "Error: disable message option is mandatory in non-interactive shell."
+        fi
+        echo -n "> Please provide a disable message (for logging and check output): "
+        read -r message
+        echo ''
+        if [ -z "${message}" ]; then
+            error "${red}Error:${nocolor} disable message is mandatory."
+        fi
+    else
+        message="${2}"
+    fi
+
+    default_msg=""
+    if [ "${default_duration}" = "True" ]; then
+        default_msg=" (use --during to change default time)"
+    fi
+
+    if [ "${1}" = "all" ]; then
+        check_txt="All checks"
+    else
+        check_txt="Check ${1}"
+    fi
+
+    echo_box "${check_txt} will be disabled for ${duration}${default_msg}."
+    cat <<EOF
+
+Additional information:
+* Alerts history is kept in our monitoring system.
+* To see when the will be re-enabled, execute 'monitoringctl status ${1}'.
+* To re-enable alert(s) before ${duration}, execute as root or with sudo: 'monitoringctl enable ${1}'.
+
+EOF
+
+    if [ "${1}" != "all" ]; then
+        if is_check "${1}"; then
+            wrapper="$(get_check_wrapper_name "${1}")"
+        else
+            wrapper="${1}"
+        fi
+        checks="$(get_wrapper_checks "${wrapper}")"
+        n_checks="$(echo "${checks}" | wc -w)"
+        if [ "${n_checks}" -gt 1 ]; then
+            >&2 echo -e "${orange}Warning:${nocolor} because they have the same configuration, disabling ${1} will disable: ${checks}.\n"
+            log "Warning: disabling ${1} will disable ${checks} (which have the same wrapper name)."
+        fi
+    else
+        wrapper="all"
+    fi
+
+    if [ "${is_interactive}" = "True" ]; then
+        echo -n "> Confirm (y/N)? "
+        read -r answer
+        if [ "${answer}" != "Y" ] && [ "${answer}" != "y" ]; then
+            echo -e "${orange}Canceled.${nocolor}" && exit 0
+        fi
+    fi
+
+    log "Action disable ${1} requested for ${duration} by user $(logname || echo unknown)."
+
+    alerts_switch disable "${wrapper}" --during "${duration}" --message "${message}"
+
+    if [ "${1}" != "all" ]; then
+        if [ "${n_checks}" -eq 1 ]; then
+            echo -e "${orange}Check ${1} alerts are now disabled for ${duration}.${nocolor}"
+        else
+            echo -e "${orange}Alerts are now disabled for ${duration} for checks: ${checks}.${nocolor}"
+        fi
+    else
+        echo -e "${orange}All alerts are now disabled for ${duration}.${nocolor}"
+    fi
+}
+
+function enable_alerts() {
+    # $1: check name, $2: enable message
+    alerts_switch_is_installed
+
+    if [ "${1}" != "all" ]; then
+        # Verify that check is not already enabled
+        is_disabled="$(is_disabled_check "${1}")"
+        if [ "${is_disabled}" = "False" ]; then
+            echo "${1} is already enabled, see 'monitoringctl status'"
+            exit 0
+        fi
+    fi
+
+    if [ -z "${2}" ]; then
+        if [ "${is_interactive}" = "False" ]; then
+            error "Error: disable message option is mandatory in non-interactive shell."
+        fi
+        echo -n "> Please provide an enable message (for logging): "
+        read -r message
+        echo ''
+        if [ -z "${message}" ]; then
+            error "${red}Error:${nocolor} disable message is mandatory."
+        fi
+    else
+        message="${2}"
+    fi
+
+    log "Action enable ${1} requested by user $(logname || echo unknown)."
+
+    if [ "${1}" != "all" ]; then
+        if is_check "${1}"; then
+            wrapper="$(get_check_wrapper_name "${1}")"
+        else
+            wrapper="${1}"
+        fi
+        checks="$(get_wrapper_checks "${wrapper}")"
+        n_checks="$(echo "${checks}" | wc -w)"
+        if [ "${n_checks}" -gt 1 ]; then
+            >&2 echo -e "${orange}Warning:${nocolor} because they have the same configuration, enabling ${1} will enable: ${checks}.\n"
+            log "Warning: check ${1} will enable ${checks} (which have the same wrapper name)."
+        fi
+    else
+        wrapper="all"
+    fi
+
+    alerts_switch enable "${wrapper}" --message "${message}"
+
+    if [ "${1}" != "all" ]; then
+        if [ "${n_checks}" -eq 1 ]; then
+            echo -e "${green}Check ${1} alerts are now enabled.${nocolor}"
+        else
+            echo -e "${green}Alerts are now enabled for checks: ${checks}.${nocolor}"
+        fi
+    else
+        echo -e "${green}All alerts are now enabled.${nocolor}"
+    fi
+}
+
+# Show NRPE command(s) configured for a check
+function show_check_commands() {
+    # $1: check name
+    check_commands=$(get_check_commands "${1}")
+
+    if [ -z "${check_commands}" ]; then
+        usage_error "Error: no command found in NRPE configuration for check '${1}."
+    fi
+
+    warn_options_not_ended_properly "${1}"
+
+    n_commands="$(echo "${check_commands}" | wc -l)"
+    if [ "${n_commands}" -ne 1 ]; then
+        echo "Available commands (in config order, the last one overwrites the others):"
+        echo "    $check_commands"
+    fi
+
+    check_command=$(echo "${check_commands}" | tail -n1)
+    echo "Command used by NRPE:"
+    echo "    ${check_command}"
+
+    if [[ "${check_command}" == *" -- "* ]]; then
+        check_command_no_wrapper="$(echo "${check_command}" | awk -F' -- ' '{print $2}')"
+        echo
+        echo "Command without 'alerts_wrapper':"
+        echo -e "    ${check_command_no_wrapper}"
+    fi
+}
+
+# Print a warning if some wrappers have the same name
+# or if a name is different from the check.
+function warn_wrapper_names() {
+    #$1: checks to verify
+    warned="False"
+    for check in ${1}; do
+        wrapper_name="$(get_check_wrapper_name "${check}")"
+        if [ -n "${wrapper_name}" ] && [ "${wrapper_name}" != "${check}" ]; then
+            >&2 echo -e "${orange}Warning:${nocolor} ${check} check has wrapper name ${wrapper_name}."
+            warned="True"
+        fi
+    done
+    if [ "${warned}" = "True" ]; then
+        >&2 echo -e "${orange}It is recommanded to name the wrappers the same as the checks.${nocolor}\n"
+    fi
+}
+
+# Print a warning if the wrapper does not end its options with -- (to not interpret the wrapped NRPE command options)
+function warn_options_not_ended_properly() {
+    #$1: checks to verify
+    wrappers_without_ddash=''  # double dash --
+    for check in ${1}; do
+        if is_wrapped "${check}"; then
+            check_command=$(get_check_commands "${check}" | tail -n1)
+            if [[ ! ${check_command} == *" -- "* ]]; then
+                wrappers_without_ddash="${wrappers_without_ddash} ${check}"
+            fi
+        fi
+    done
+    if [ -n "${wrappers_without_ddash}" ]; then
+        >&2 echo -e "${orange}Some wrappers do not end their options with '--' before the NRPE command:${wrappers_without_ddash}"
+        >&2 echo -e "Use of '--' is strongly recommended to separate 'alerts_wrapper' and the wrapped command in NRPE configuration.${nocolor}\n"
+    fi
+}
+
+# Print a warning if some checks are not wrapped
+function warn_not_wrapped() {
+    #$1: checks to verify
+    unwrappeds="$(not_wrapped_checks)"
+    unwrapped_checks="$(comm -12 <(echo "${1}") <(echo "${unwrappeds}"))"
+    if [ -n "${unwrapped_checks}" ]; then
+        n_checks="$(echo "${1}" | wc -w)"
+        n_unwrapped="$(echo "${unwrapped_checks}" | wc -w)"
+        if [ "${n_unwrapped}" == "${n_checks}" ]; then
+            if [ "${n_unwrapped}" -eq 1 ]; then
+                error "${red}Error:${nocolor} ${1} check is not wrapped, it cannot be disabled."
+            else
+                error "${red}Error:${nocolor} these checks are not wrapped, they cannot be disabled: $(echo "${unwrapped_checks}" | xargs)"
+            fi
+        else
+            if [ "${n_unwrapped}" -eq 1 ]; then
+                >&2 echo -e "${orange}Warning:${nocolor} ${unwrapped_checks} check is not wrapped, it will not be disabled."
+            else
+                >&2 echo -e -n "${orange}Warning:${nocolor} some checks are not configured, they will not be disabled: $(echo "${unwrapped_checks}" | xargs)\n\n"
+            fi
+        fi
+
+        log "Warning: some checks have no alerts_wrapper, they will not be disabled: $(echo "${unwrapped_checks}" | xargs)"
+    fi
+}
+
+# Echo a message in a box
+function echo_box() {
+    # $1: message
+    msg_len="${#1}"
+    line="$(printf '─%.0s' $(eval "echo {1.."${msg_len}"}"))"
+    cat <<EOF
+┌${line}┐
+│${1}│
+└${line}┘
+EOF
+}
+
+# Echo which checks are enabled or disabled and time left
+function alerts_status() {
+    # $1: check name, "all" or empty
+    if [ -z "${1}" ] || [ "${1}" = "all" ]; then
+        checks="$(get_checks_names)"
+    else
+        checks="${1}"
+    fi
+
+    warn_options_not_ended_properly "${checks}"
+    warn_wrapper_names "${checks}"
+
+    header="Check\tStatus\tRe-enable time\tDisable message"
+    underline="-----\t------\t--------------\t---------------"
+    str_out="${header}\n${underline}\n"
+
+    for check in $checks; do
+        enable_str=""
+        status_str="Enabled"
+        disable_msg=""
+        if ! is_wrapped "${check}"; then
+            status_str="Not configured"
+        else
+            is_disabled="$(is_disabled_check "${check}")"
+            wrapper_name="$(get_check_wrapper_name "${check}")"
+            if [ "${is_disabled}" = "True" ]; then
+                status_str="Disabled"
+                enable_time="$(get_enable_time "${wrapper_name}")"
+                enable_delay="$(enable_delay "${enable_time}")"
+                delay_str="$(delay_to_string "${enable_delay}")"
+                enable_date="$(date --date "+${enable_delay} seconds" "+%d %h %Y at %H:%M:%S")"
+                enable_str="${enable_date} (${delay_str} left)"
+                disable_msg="$(get_disable_message "${wrapper_name}")"
+            fi
+        fi
+        case "${status_str}" in
+            "Enabled")
+                color="${green}"
+                ;;
+            "Disabled")
+                color="${orange}"
+                ;;
+            *)
+                color="${red}"
+        esac
+        str_out="${str_out}${color}${check}\t${status_str}${nocolor}\t${enable_str}\t${disable_msg}\n"
+    done
+
+    echo -e "${str_out}" | column -t -s $'\t'
+}
+
+
+### MAIN #########################################
+
+red=''
+green=''
+orange=''
+purple=''
+nocolor=''
+bold=''
+no_bold=''
+
+# Is interactive shell ?
+if [ -t 0 ] && [ -t 1 ]; then
+    is_interactive="True"
+    red="\e[0;31m"
+    green="\e[0;32m"
+    orange="\e[0;33m"
+    purple="\e[0;35m"
+    nocolor="\e[0m"
+    bold="$(tput bold)"
+    no_bold="$(tput sgr0)"
+else
+    is_interactive="False"
+fi
+
+# Load common functions and vars
+readonly lib_dir="/usr/local/lib/monitoringctl"
+if [ -r "${lib_dir}/common" ]; then
+    # shellcheck source=monitoringctl_common
+    source "${lib_dir}/common"
+else
+    >&2 echo "Error: missing ${lib_dir}/common file."
+    exit 1
+fi
+
+if [[ ! "${PATH}" =~ /usr/local/bin ]]; then
+    PATH="/usr/local/bin:${PATH}"
+fi
+
+# Must be root
+if [ "$(id -u)" -ne 0 ]; then
+    >&2 echo "You need to be root (or use sudo) to run ${0}!"
+    exit 1
+fi
+
+# No argument
+if [ "$#" = "0" ]; then
+    show_help
+    exit 1
+fi
+
+# Default arguments and options
+action=""
+message=""
+duration="${default_disabled_time}"
+bypass_nrpe="False"
+default_duration="True"
+
+# Parse arguments and options
+while :; do
+    case "${1}" in
+        -h|-\?|--help)
+            show_help
+            exit 0;;
+        -V|--version)
+            show_version
+            exit 0;;
+        -b|--bypass-nrpe)
+            bypass_nrpe="True"
+            shift;;
+        -n|--non-interactive)
+            is_interactive="False"
+            shift;;
+        -d|--during)
+            if [ "${default_duration}" = "False" ]; then
+                 usage_error "Option --during: defined multiple times."
+            fi
+            if [ "$#" -lt 2 ]; then
+                usage_error "Option --during: missing value."
+            fi
+            if filter_duration "${2}"; then
+                duration="${2}"
+            else
+                usage_error "Option --during: \"${2}\" is not a valid duration."
+            fi
+            default_duration="False"
+            shift; shift;;
+        -m|--message)
+            if [ "$#" -lt 2 ]; then
+                usage_error "Option --message: missing message string."
+            fi
+            message="${2}"
+            shift; shift;;
+        status|check|enable|disable|show|list)
+            action="${1}"
+            shift;;
+        *)
+            if [ -z "${1}" ]; then
+                break
+            else
+                input="${1}"
+            fi
+
+            # Add some flexibility with - and _ in check name
+            if ! is_check "${input}"; then
+                if [[ "${1}" == *"-"* ]]; then
+                   input_underscore="$(echo "${input}" | tr '-' '_')"
+                   if is_check "${input_underscore}"; then
+                        >&2 echo -e "${orange}Warning: '${input}' real name is '${input_underscore}'!${nocolor}\n"
+                       input="${input_underscore}"
+                   fi
+                fi
+                if [[ "${1}" == *"_"* ]]; then
+                    input_dash="$(echo "${input}" | tr '_' '-')"
+                    if is_check "${input_dash}"; then
+                        >&2 echo -e "${orange}Warning: '${input}' real name is '${input_dash}'!${nocolor}\n"
+                        input="${input_dash}"
+                    fi
+                fi
+            fi
+
+            case "${action}" in
+                status|check)
+                    if is_check "${input}" || [ "${input}" = "all" ]; then
+                        check_name="${input}"
+                    else
+                        usage_error "Action ${action}: unknown check '${input}'."
+                    fi
+                    ;;
+                show)
+                    if is_check "${input}"; then
+                        check_name="${input}"
+                    else
+                        usage_error "Action ${action}: unknown check '${input}'."
+                    fi
+                    ;;
+                enable|disable)
+                    if is_wrapper "${input}" || is_check "${input}" || [ "${input}" = "all" ]; then
+                        check_name="${input}"
+                    else
+                        # We use the word "check" for the end user,
+                        # but this is actually "unknown wrapper"
+                        usage_error "Action ${action}: unknown check '${input}'."
+                    fi
+                    ;;
+                *)
+                    usage_error "Missing or invalid ACTION argument."
+                    ;;
+            esac
+            shift;;
+    esac
+done
+
+
+if [ "$#" -gt 0 ]; then
+    usage_error "Too many arguments."
+fi
+
+case "${action}" in
+    disable|enable|show)
+        if [ -z "${check_name}" ]; then
+            usage_error "Action ${action}: missing CHECK_NAME argument."
+        fi
+        ;;
+esac
+
+if [ ! "${action}" = "disable" ]; then
+    if [ "${default_duration}" = "False" ]; then
+        usage_error "Action ${action}: there is no --during option."
+    fi
+fi
+
+case "${action}" in
+    list)
+        list_checks
+        ;;
+    status)
+        alerts_status "${check_name}"
+        ;;
+    check)
+        check "${check_name}"
+        ;;
+    show)
+        show_check_commands "${check_name}"
+        ;;
+    enable)
+        enable_alerts "${check_name}" "${message}"
+        ;;
+    disable)
+        disable_alerts "${check_name}" "${message}"
+        ;;
+esac
+

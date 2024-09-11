@@ -1,0 +1,34 @@
+---
+
+- name: "Add AllowGroups sshd directive with '{{ evolinux_ssh_group }}' (Debian < 12)"
+  ansible.builtin.lineinfile:
+    dest: /etc/ssh/sshd_config
+    line: "\nAllowGroups {{ evolinux_ssh_group | mandatory }}"
+    insertafter: 'Subsystem'
+    validate: '/usr/sbin/sshd -t -f %s'
+  notify: reload sshd
+  when:
+    - ansible_distribution_major_version is version('12', '<')
+    - grep_allowgroups_ssh.rc != 0
+
+- name: "Add AllowGroups sshd directive with '{{ evolinux_ssh_group }}' (Debian >= 12)"
+  ansible.builtin.lineinfile:
+    dest: /etc/ssh/sshd_config.d/zzz-evolinux-custom.conf
+    line: "AllowGroups {{ evolinux_ssh_group | mandatory }}"
+    regexp: "^#? ?AllowGroups "
+    validate: '/usr/sbin/sshd -t -f %s'
+    create: yes
+  notify: reload sshd
+  when:
+    - ansible_distribution_major_version is version('12', '>=')
+    - grep_allowgroups_ssh.rc != 0
+
+- name: "Append '{{ evolinux_ssh_group }}' to AllowGroups sshd directive"
+  ansible.builtin.replace:
+    dest: "{{ grep_allowgroups_ssh.stdout_lines | sort | first }}"
+    regexp: '^(AllowGroups ((?!\b{{ evolinux_ssh_group | mandatory }}\b).)*)$'
+    replace: '\1 {{ evolinux_ssh_group | mandatory }}'
+    validate: '/usr/sbin/sshd -t -f %s'
+  notify: reload sshd
+  when:
+    - grep_allowgroups_ssh.rc == 0

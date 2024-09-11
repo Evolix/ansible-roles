@@ -1,0 +1,13 @@
+---
+
+- ansible.builtin.debug:
+    var: ansible_lsb
+
+# Force facts until Debian 12 is released because Ansible is dumb
+- ansible.builtin.set_fact:
+    ansible_distribution_major_version: 13
+    ansible_distribution: "Debian"
+    ansible_distribution_release: "trixie"
+    ansible_release: 13
+    ansible_major_release: 13
+  when: "'trixie' in ansible_lsb.codename or 'trixie' in ansible_lsb.description"

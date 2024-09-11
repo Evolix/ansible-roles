@@ -1,114 +1,101 @@
 #!/bin/bash
-
-# https://forge.evolix.org/projects/evolix-private/repository
 #
-# You should not alter this file.
-# If you need to, create and customize a copy.
+# Source:
+# https://gitea.evolix.org/evolix/ansible-roles/src/branch/stable/nagios-nrpe
+#
 
-VERSION="21.04"
-readonly VERSION
+readonly PROGNAME=$(basename $0)
+readonly VERSION="24.06"
 
-# base functions
+# Load common functions and vars
+readonly lib_dir="/usr/local/lib/monitoringctl"
+if [ -r "${lib_dir}/common" ]; then
+    # shellcheck source=monitoringctl_common
+    source "${lib_dir}/common"
+else
+    >&2 echo "Error: missing ${lib_dir}/common file."
+    exit 1
+fi
 
-show_version() {
+if [ ! -e "${var_dir}" ]; then
+    >&2 echo "Warning: missing ${var_dir} directory."
+fi
+
+
+function show_help() {
     cat <<END
-alerts_wrapper version ${VERSION}
+alerts_wrapper wraps an NRPE command and overrides the return code.
 
-Copyright 2018-2021 Evolix <info@evolix.fr>,
-                    Jérémy Lecour <jlecour@evolix.fr>
-                    and others.
-
-alerts_wrapper comes with ABSOLUTELY NO WARRANTY.This is free software,
-and you are welcome to redistribute it under certain conditions.
-See the GNU General Public License v3.0 for details.
-END
-}
-show_help() {
-    cat <<END
-alerts_wrapper is supposed to wrap an NRPE command and overrides the return code.
-
-Usage: alerts_wrapper --limit=1d --name=check_name command with optional arguments
-  or   alerts_wrapper --name=check_name command with optional arguments
-  or   alerts_wrapper check_name command with optional arguments
+Usage: alerts_wrapper --name <WRAPPER_NAME> <CHECK_COMMAND>
+Usage: alerts_wrapper <WRAPPER_NAME> <CHECK_COMMAND> (deprecated)
 
 Options
- --limit            max age of the "check file" ;
-                    can be "1d" for 1 day, "5m" for 5 minutes…
-                    or more complex expressions like "1w2d10m42s"
- --name             check name
- -h, --help         print this message and exit
- -V, --version      print version and exit
+  --name               Wrapper name, it is very recommended to use the check name (like load, disk1…).
+                       Special name: 'all' is already hard-coded.
+  -h, --help           Print this message and exit.
+  -V, --version        Print version and exit.
 END
 }
 
-time_in_seconds() {
-    if echo "${1}" | grep -E -q '^([0-9]+[wdhms])+$'; then
-        echo "${1}" | sed 's/w/ * 604800 + /g; s/d/ * 86400 + /g; s/h/ * 3600 + /g; s/m/ * 60 + /g; s/s/ + /g; s/+ $//' | xargs expr
-    elif echo "${1}" | grep -E -q '^([0-9]+$)'; then
-        echo "${1} * 3600" | xargs expr
-    else
-        return 1
-    fi
-}
-
-delay_from_alerts_disabled_file() {
-    last_change=$(stat -c %Z "${alerts_disabled_file}")
-    limit_seconds=$(time_in_seconds "${wrapper_limit}" || time_in_seconds "${wrapper_limit_default}") 
-    limit_date=$(date --date "${limit_seconds} seconds ago" +"%s")
-
-    echo $(( last_change - limit_date ))
-}
-
-enable_check() {
+function enable_wrapper() {
+    # $1: wrapper name
     if [ "$(id -u)" -eq "0" ] ; then
-        /usr/local/bin/alerts_switch enable "${check_name}"
+        /usr/local/bin/alerts_switch enable "${1}"
     else
-        sudo /usr/local/bin/alerts_switch enable "${check_name}"
+        sudo /usr/local/bin/alerts_switch enable "${1}"
     fi
 }
 
-main() {
-    ${check_command} > "${check_stdout}"
-    check_rc=$?
-    readonly check_rc
+function main() {
+    is_disabled="$(is_disabled_wrapper "${wrapper_name}")"
 
-    delay=0
-
-    if [ -e "${alerts_disabled_file}" ]; then
-        delay=$(delay_from_alerts_disabled_file)
-
-        if [ "${delay}" -le "0" ]; then
-            enable_check
-        fi
+    if [ -e "${disable_file}" ] && [ "${is_disabled}" = "False" ]; then
+        enable_wrapper "${wrapper_name}"
     fi
 
-    if [ -e "${alerts_disabled_file}" ]; then
-        formatted_last_change=$(date --date "@$(stat -c %Z "${alerts_disabled_file}")" +'%c')
-        readonly formatted_last_change
+    timeout_command=""
+    if [ "${is_disabled}" = "True" ]; then
+        timeout_command="timeout 8"
+    fi
 
-        echo "ALERTS DISABLED for ${check_name} (since ${formatted_last_change}, delay: ${delay} sec) - $(cat "${check_stdout}")"
+    check_stdout="$(${timeout_command} ${check_command})"
+    check_rc=$?
+
+    if [ "${is_disabled}" = "True" ] && [ "${check_rc}" -eq 124 ] && [ -z "${check_stdout}" ]; then
+        check_stdout="Check timeout (> 8 sec)"
+    fi
+
+    if [ "${is_disabled}" = "True" ]; then
+        enable_time="$(get_enable_time "${wrapper_name}")"
+        enable_delay="$(enable_delay "${enable_time}")"
+        delay_str="$(delay_to_string "${enable_delay}")"
+        enable_date="$(date --date "+${enable_delay} seconds" "+%d %h %Y at %H:%M:%S")"
+        disable_msg="$(get_disable_message "${wrapper_name}")"
+        if [ -n "${disable_msg}" ]; then
+            disable_msg="- ${disable_msg} "
+        fi
+        echo "ALERT DISABLED until ${enable_date} (${delay_str} left) ${disable_msg}- Check output: ${check_stdout}"
+    else
+        echo "${check_stdout}"
+    fi
+
+    if [ "${is_disabled}" = "True" ]; then
         if [ ${check_rc} = 0 ]; then
-            # Nagios OK
-            exit 0
+            exit 0  # Nagios OK
         else
-            # Nagios WARNING
-            exit 1
+            exit 1  # Nagios WARNING
         fi
     else
-        cat "${check_stdout}"
         exit ${check_rc}
     fi
 }
 
-# Default: 1 day before re-enabling the check
-wrapper_limit_default="1d"
-readonly wrapper_limit_default
 
 if [[ "${1}" =~ -.* ]]; then
     # parse options
     # based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
     while :; do
-        case $1 in
+        case "${1}" in
             -h|-\?|--help)
                 show_help
                 exit 0
@@ -117,47 +104,25 @@ if [[ "${1}" =~ -.* ]]; then
                 show_version
                 exit 0
                 ;;
-
-            --limit)
+            -n|--name)
                 # with value separated by space
-                if [ -n "$2" ]; then
-                    wrapper_limit=$2
-                    shift
-                else
-                    printf 'ERROR: "--limit" requires a non-empty option argument.\n' >&2
-                    exit 1
-                fi
-                ;;
-            --limit=?*)
-                # with value speparated by =
-                wrapper_limit=${1#*=}
-                ;;
-            --limit=)
-                # without value
-                printf 'ERROR: "--limit" requires a non-empty option argument.\n' >&2
-                exit 1
-                ;;
-
-            --name)
-                # with value separated by space
-                if [ -n "$2" ]; then
-                    check_name=$2
+                if [ -n "${2}" ]; then
+                    wrapper_name="${2}"
                     shift
                 else
                     printf 'ERROR: "--name" requires a non-empty option argument.\n' >&2
-                    exit 1
+                    exit 2
                 fi
                 ;;
-            --name=?*)
-                # with value speparated by =
-                check_name=${1#*=}
+            -n|--name=?*)
+                # with value separated by =
+                wrapper_name="${1#*=}"
                 ;;
-            --name=)
+            -n|--name=)
                 # without value
                 printf 'ERROR: "--name" requires a non-empty option argument.\n' >&2
-                exit 1
+                exit 2
                 ;;
-
             --)
                 # End of all options.
                 shift
@@ -165,8 +130,8 @@ if [[ "${1}" =~ -.* ]]; then
                 ;;
             -?*)
                 # ignore unknown options
-                printf 'WARN: Unknown option : %s\n' "$1" >&2
-                exit 1
+                printf 'ERROR: Unknown option : %s\n' "${1}" >&2
+                exit 2
                 ;;
             *)
                 # Default case: If no more options then break out of the loop.
@@ -176,42 +141,26 @@ if [[ "${1}" =~ -.* ]]; then
 
         shift
     done
-    # The rest is the command
-    check_command="$*"
 else
     # no option is passed (backward compatibility with previous version)
-    # treat the first argument as check_name and the rest as the command
-    check_name="${1}"
+    # treat the first argument as wrapper_name and the rest as the command
+    wrapper_name="${1}"
     shift
-    check_command="$*"
 fi
 
-# Default values or errors
-if [ -z "${wrapper_limit}" ]; then
-    wrapper_limit="${wrapper_limit_default}"
-fi
-if [ -z "${check_name}" ]; then
-    printf 'ERROR: You must specify a check name, with --name.\n' >&2
-    exit 1
+# The rest is the command
+check_command="$@"
+
+if [ -z "${wrapper_name}" ]; then
+    printf 'ERROR: You must specify a wrapper name, with --names.\n' >&2
+    exit 2
 fi
 if [ -z "${check_command}" ]; then
     printf 'ERROR: You must specify a command to execute.\n' >&2
-    exit 1
+    exit 2
 fi
 
-readonly check_name
-readonly check_command
-readonly wrapper_limit
-alerts_disabled_file="/var/lib/misc/${check_name}_alerts_disabled"
-readonly alerts_disabled_file
-
-check_file="/var/lib/misc/${check_name}_alerts_disabled"
-readonly check_file
-
-check_stdout=$(mktemp --tmpdir=/tmp "${check_name}_stdout.XXXX")
-readonly check_stdout
-
-# shellcheck disable=SC2064
-trap "rm ${check_stdout}" EXIT
+disable_file="$(get_disable_file_path "${wrapper_name}")"
+readonly wrapper_name check_command disable_file
 
 main

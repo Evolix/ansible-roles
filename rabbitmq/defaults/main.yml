@@ -2,3 +2,6 @@
 
 rabbitmq_connections_critical: 200
 rabbitmq_connections_warning: 150
+
+monitoringctl_wrapper_path: /usr/local/lib/monitoringctl/alerts_wrapper
+rabbitmq_monitoringctl_wrapper_cmd: ""

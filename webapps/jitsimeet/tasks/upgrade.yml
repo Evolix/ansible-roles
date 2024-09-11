@@ -1,0 +1,11 @@
+---
+# tasks file for jitsimeet upgrade
+#
+# 1. Check what may have changed in release notes and changelogs:
+# https://github.com/jitsi/jitsi-meet-release-notes
+# https://github.com/jitsi/jitsi-meet/releases
+#
+# 2. Upgrade Debian packages with these commands (as root):
+# apt update
+# apt list --upgradeable
+# apt install jitsi-meet

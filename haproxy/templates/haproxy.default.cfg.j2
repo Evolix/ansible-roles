@@ -1,8 +1,8 @@
 # {{ ansible_managed }}
 
 global
-    log /dev/log    local0
-    log /dev/log    local1 notice
+    log /dev/log    local5
+    log /dev/log    local5 notice
     chroot {{ haproxy_chroot }}
     stats socket {{ haproxy_socket }} mode 660 level admin
     stats timeout 30s

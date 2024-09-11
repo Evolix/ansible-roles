@@ -36,6 +36,7 @@
       - traceroute
       - man
       - molly-guard
+      - jq
   when: evolinux_packages_diagnostic | bool
 
 - name: Install/Update hardware tools
@@ -55,8 +56,10 @@
       - mutt
       - tree
       - git
+      - colordiff
       - rsync
       - bc
+      - tree
       - pinentry-curses
       - ncurses-term
   when: evolinux_packages_common | bool
@@ -111,7 +114,9 @@
     dest: /etc/logcheck/logcheck.conf
     regexp: '^SENDMAILTO=".*"$'
     line: 'SENDMAILTO="{{ logcheck_alert_email or general_alert_email | mandatory }}"'
-  when: evolinux_packages_logcheck_recipient | bool
+  when:
+    - evolinux_packages_serveur_base | bool
+    - evolinux_packages_logcheck_recipient | bool
 
 - name: Deleting rpcbind and nfs-common
   ansible.builtin.apt:

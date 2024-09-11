@@ -29,7 +29,7 @@
 # Description:       Firewall designed for standalone server
 ### END INIT INFO
 
-VERSION="23.07"
+VERSION="24.07"
 
 PROGNAME="minifirewall"
 # shellcheck disable=SC2034
@@ -555,6 +555,10 @@ start() {
         ${IPT6} -A LOG_ACCEPT -j ACCEPT
     fi
 
+    if is_docker_enabled; then
+        ${IPT} -N MINIFW-DOCKER-INPUT-MANUAL
+    fi
+
     # Source additional rules and commands
     # * from legacy configuration file (/etc/default/minifirewall)
     # * from configuration directory (/etc/minifirewall.d/*)
@@ -663,6 +667,10 @@ start() {
         ${IPT} -A MINIFW-DOCKER-PUB -j MINIFW-DOCKER-PRIVILEGED
         ${IPT} -A MINIFW-DOCKER-PUB -j RETURN
 
+        # Chain MINIFW-DOCKER-INPUT-MANUAL is created earlier, to allow usage in additionnal config/command files
+        ${IPT} -A MINIFW-DOCKER-INPUT-MANUAL -j MINIFW-DOCKER-PUB
+        ${IPT} -A MINIFW-DOCKER-INPUT-MANUAL -j RETURN
+
         # Flush DOCKER-USER if exist, create it if absent
         if chain_exists 'DOCKER-USER'; then
             ${IPT} -F DOCKER-USER
@@ -670,8 +678,8 @@ start() {
             ${IPT} -N DOCKER-USER
         fi;
 
-        # Pipe new connection through MINIFW-DOCKER-PUB
-        ${IPT} -A DOCKER-USER -i ${INT} -m state  --state NEW -j MINIFW-DOCKER-PUB
+        # Pipe new connection through MINIFW-DOCKER-INPUT-MANUAL
+        ${IPT} -A DOCKER-USER -i ${INT} -m state  --state NEW -j MINIFW-DOCKER-INPUT-MANUAL
         ${IPT} -A DOCKER-USER -j RETURN
     fi
 
@@ -818,12 +826,12 @@ start() {
         if is_ipv6 ${IP}; then
             if is_ipv6_enabled; then
                 ${IPT6} -A INPUT -p tcp ! --syn --sport 53 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
-                ${IPT6} -A INPUT -p udp --sport 53 --dport ${PORTSUSER} -s ${IP} -m state --state ESTABLISHED,RELATED -j ACCEPT
+                ${IPT6} -A INPUT -p udp --sport 53 --dport ${PORTSUSER} -s ${IP} -m state --state ESTABLISHED -j ACCEPT
                 ${IPT6} -A OUTPUT -o ${INT} -p udp -d ${IP} --dport 53 --match state --state NEW -j ACCEPT
             fi
         else 
             ${IPT} -A INPUT -p tcp ! --syn --sport 53 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
-            ${IPT} -A INPUT -p udp --sport 53 --dport ${PORTSUSER} -s ${IP} -m state --state ESTABLISHED,RELATED -j ACCEPT
+            ${IPT} -A INPUT -p udp --sport 53 --dport ${PORTSUSER} -s ${IP} -m state --state ESTABLISHED -j ACCEPT
             ${IPT} -A OUTPUT -o ${INT} -p udp -d ${IP} --dport 53 --match state --state NEW -j ACCEPT
         fi
     done
@@ -943,10 +951,10 @@ start() {
         if [ -n "${server_ip}" ] && [ -n "${server_port}" ]; then
             if is_ipv6 ${server_ip}; then
                 if is_ipv6_enabled; then
-                    ${IPT6} -A INPUT -p tcp --sport "${server_port}" --dport 1024:65535 -s "${server_ip}" -m state --state ESTABLISHED,RELATED -j ACCEPT
+                    ${IPT6} -A INPUT -p tcp --sport "${server_port}" --dport 1024:65535 -s "${server_ip}" -m state --state ESTABLISHED -j ACCEPT
                 fi
             else 
-                ${IPT} -A INPUT -p tcp --sport "${server_port}" --dport 1024:65535 -s "${server_ip}" -m state --state ESTABLISHED,RELATED -j ACCEPT
+                ${IPT} -A INPUT -p tcp --sport "${server_port}" --dport 1024:65535 -s "${server_ip}" -m state --state ESTABLISHED -j ACCEPT
             fi
         else
             printf "${RED}ERROR: unrecognized syntax for BACKUPSERVERS '%s\`. Use space-separated IP:PORT tuples.${RESET}\n" "${server}" >&2
@@ -990,9 +998,9 @@ start() {
         ${IPT6} -A OUTPUT -o ${INT} -p udp --dport 33434:33523 --match state --state NEW -j ACCEPT
     fi
 
-    ${IPT} -A OUTPUT -p udp --match state --state ESTABLISHED,RELATED -j ACCEPT
+    ${IPT} -A OUTPUT -p udp --match state --state ESTABLISHED -j ACCEPT
     if is_ipv6_enabled; then
-        ${IPT6} -A OUTPUT -p udp --match state --state ESTABLISHED,RELATED -j ACCEPT
+        ${IPT6} -A OUTPUT -p udp --match state --state ESTABLISHED -j ACCEPT
     fi
 
     ${IPT} -A OUTPUT -p udp -j DROP
@@ -1062,6 +1070,8 @@ stop() {
         ${IPT} -F DOCKER-USER
         ${IPT} -A DOCKER-USER -j RETURN
 
+        ${IPT} -F MINIFW-DOCKER-INPUT-MANUAL
+        ${IPT} -X MINIFW-DOCKER-INPUT-MANUAL
         ${IPT} -F MINIFW-DOCKER-PUB
         ${IPT} -X MINIFW-DOCKER-PUB
         ${IPT} -F MINIFW-DOCKER-PRIVILEGED
@@ -1156,16 +1166,25 @@ reset() {
     printf "${GREEN}${BOLD}${PROGNAME} reset${RESET}\n"
 }
 
+safety_timer() {
+    if [ "${SAFETY_TIMER}" -le "0" ] || [ "${SAFETY_TIMER}" -gt "3600" ]; then
+        syslog_info "safety timer value '${SAFETY_TIMER}' is out of range (1 < 3600), reverted to default value of '30'."
+        SAFETY_TIMER=30
+        readonly SAFETY_TIMER
+    fi
+    echo "${SAFETY_TIMER}"
+}
+
 stop_if_locked() {
     count=0
 
-    while [ ${count} -lt ${SAFETY_TIMER} ] && [ -f "${SAFETY_LOCK}" ]; do
+    while [ "${count}" -lt "$(safety_timer)" ] && [ -f "${SAFETY_LOCK}" ]; do
         count=$(( count + 1 ))
         sleep 1
     done
 
     if [ -f "${SAFETY_LOCK}" ]; then
-        syslog_error "safety lock is still here after ${SAFETY_TIMER} seconds, we need to stop"
+        syslog_error "safety lock is still here after $(safety_timer) seconds, we need to stop"
 
         stop
 
@@ -1188,22 +1207,22 @@ safe_start() {
     nohup "${0}" stop-if-locked > "${SAFETY_OUTPUT}" 2>&1 &
 
     if is_interactive; then
-        syslog_info "safe-restart in interactive mode ; if safety lock (${SAFETY_LOCK}) is not removed in the next ${SAFETY_TIMER} seconds, minifirewall will be stopped."
+        syslog_info "safe-restart in interactive mode ; if safety lock (${SAFETY_LOCK}) is not removed in the next $(safety_timer) seconds, minifirewall will be stopped."
         # Ask for input
         confirm_default="I'm locked out, please stop the firewall"
         # printf "If the restart has locked you out you might see this but you shouldn't be able to type anything.\n"
-        printf "Minifirewall will be stopped in ${SAFETY_TIMER} seconds if you do nothing.\n"
+        printf "Minifirewall will be stopped in $(safety_timer) seconds if you do nothing.\n"
         printf "Remove \`${SAFETY_LOCK}' or type anything to keep minifirewall started: "
 
         read -r confirm
 
         if [ ! -f "${SAFETY_LOCK}" ]; then
-            printf "Safety lock is not there anymore.\nYou've probably been rescued by the safety checks.\n"
+            printf "${YELLOW}Safety lock is not there anymore.\nYou've probably been rescued by the safety checks.\n${BOLD}Minifirewall is probably stopped.${RESET}\n"
         elif [ "${confirm}" != "${confirm_default}" ]; then
-            rm -f "${SAFETY_LOCK}" && printf "OK. Safety lock is removed.\n"
+            rm -f "${SAFETY_LOCK}" && printf "${GREEN}OK. Safety lock is removed.${RESET}\n"
         fi
     else
-        syslog_info "safe-restart in non-interactive mode ; if safety lock (${SAFETY_LOCK}) is not removed in the next ${SAFETY_TIMER} seconds, minifirewall will be stopped."
+        syslog_info "safe-restart in non-interactive mode ; if safety lock (${SAFETY_LOCK}) is not removed in the next $(safety_timer) seconds, minifirewall will be stopped."
     fi
 }
 

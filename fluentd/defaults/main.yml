@@ -12,3 +12,6 @@ fluentd_flush_interval:
 fluentd_heartbeat_type:
 
 apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"
+
+monitoringctl_wrapper_path: /usr/local/lib/monitoringctl/alerts_wrapper
+fluentd_monitoringctl_wrapper_cmd: ""

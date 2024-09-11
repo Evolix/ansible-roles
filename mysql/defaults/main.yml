@@ -52,6 +52,8 @@ mysql_performance_schema: True
 
 mysql_skip_enabled: False
 
+innodb_undo_log: False
+
 # replication variables:
 mysql_replication: False
 mysql_log_bin: null

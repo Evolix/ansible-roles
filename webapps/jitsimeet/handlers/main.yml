@@ -1,0 +1,38 @@
+---
+# handlers file
+
+- name: reload nginx
+  ansible.builtin.systemd:
+    name: nginx
+    state: reloaded
+
+- name: restart nginx
+  ansible.builtin.systemd:
+    name: nginx
+    state: restarted
+
+- name: restart jvb
+  ansible.builtin.systemd:
+    name: jitsi-videobridge2
+    state: restarted
+
+- name: restart prosody
+  ansible.builtin.systemd:
+    name: prosody
+    state: restarted
+
+- name: restart jicofo
+  ansible.builtin.systemd:
+    name: jicofo
+    state: restarted
+
+- name: restart coturn
+  ansible.builtin.systemd:
+    name: coturn
+    state: restarted
+
+- name: restart jitsimeet_all
+  loop: "{{ jitsimeet_all.results | selectattr('changed', 'equalto', true) | map(attribute='item') | map(attribute='name') | list }}"
+  ansible.builtin.systemd:
+    name: '{{ item }}'
+    state: restarted

@@ -1,0 +1,171 @@
+---
+# tasks file for gitea install
+
+- name: Install main system dependencies
+  ansible.builtin.apt:
+    name: "{{ gitea_system_dep }}"
+    update_cache: true
+
+- name: Download gitea binary
+  ansible.builtin.get_url:
+    url: "{{ gitea_url }}"
+    dest: /usr/local/bin
+    checksum: "{{ gitea_checksum }}"
+    mode: '0755'
+
+- name: Create symbolic link
+  ansible.builtin.file:
+    src: "/usr/local/bin/gitea-{{ gitea_git_version }}-linux-amd64"
+    dest: "/usr/local/bin/gitea"
+    state: link
+
+- name: Add UNIX account
+  ansible.builtin.user:
+    name: "{{ gitea_instance }}"
+    shell: /bin/bash
+
+- name: Add www-data (nginx) to instance group
+  ansible.builtin.user:
+    name: www-data
+    # group: www-data
+    groups: "{{ gitea_instance }}"
+    append: true
+
+- name: Add database
+  community.mysql.mysql_db:
+    name: "{{ gitea_db_name }}"
+
+- name: Add database user
+  community.mysql.mysql_user:
+    name: "{{ gitea_db_user }}"
+    password: "{{ gitea_db_password }}"
+    priv: "{{ gitea_db_name }}.*:{{ privileges | default('SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,INDEX,ALTER,CREATE TEMPORARY TABLES') }}"
+    update_password: on_create
+
+- name: Create the gitea conf dir if needed
+  ansible.builtin.file:
+    path: /etc/gitea
+    state: directory
+    mode: '0755'
+
+- name: Template gitea ini file
+  ansible.builtin.template:
+    src: "gitea.ini.j2"
+    dest: "/etc/gitea/{{ gitea_instance }}.ini"
+    owner: 'root'
+    group: "{{ gitea_instance }}"
+    mode: '0660'
+
+- name: Template gitea systemd unit
+  ansible.builtin.template:
+    src: "gitea.service.j2"
+    dest: "/etc/systemd/system/gitea@.service"
+
+- name: Start gitea systemd unit
+  ansible.builtin.systemd:
+    name: "gitea@{{ gitea_instance }}"
+    state: restarted
+
+- name: Create the redis dir if needed
+  ansible.builtin.file:
+    path: /home/{{ gitea_instance }}/redis
+    state: directory
+    owner: "{{ gitea_instance }}"
+    group: "{{ gitea_instance }}"
+    mode: '0750'
+
+- name: Create the log dir if needed
+  ansible.builtin.file:
+    path: /home/{{ gitea_instance }}/log
+    state: directory
+    owner: "{{ gitea_instance }}"
+    group: "{{ gitea_instance }}"
+    mode: '0750'
+
+- name: Template redis conf
+  ansible.builtin.template:
+    src: "redis.conf.j2"
+    dest: "/home/{{ gitea_instance }}/redis/redis.conf"
+    owner: "{{ gitea_instance }}"
+    group: "{{ gitea_instance }}"
+    mode: '0640'
+
+- name: Template redis systemd unit
+  ansible.builtin.template:
+    src: "redis.service.j2"
+    dest: "/etc/systemd/system/redis@.service"
+
+- name: Start redis systemd unit
+  ansible.builtin.systemd:
+    name: "redis@{{ gitea_instance }}"
+    state: started
+
+- name: Template nginx snippet for Let's Encrypt/Certbot
+  ansible.builtin.template:
+    src: "letsencrypt.conf.j2"
+    dest: "/etc/nginx/snippets/letsencrypt.conf"
+
+- name: Check if SSL certificate is present and register result
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ gitea_domains | first }}/fullchain.pem"
+  register: ssl
+
+- name: Generate certificate only if required (first time)
+  when: not ssl.stat.exists
+  block:
+    - name: Template vhost without SSL for successfull LE challengce
+      ansible.builtin.template:
+        src: "vhost.conf.j2"
+        dest: "/etc/nginx/sites-available/{{ gitea_instance }}.conf"
+    - name: Enable temporary nginx vhost for gitea
+      ansible.builtin.file:
+        src: "/etc/nginx/sites-available/{{ gitea_instance }}.conf"
+        dest: "/etc/nginx/sites-enabled/{{ gitea_instance }}.conf"
+        state: link
+    - name: Reload nginx conf
+      ansible.builtin.systemd:
+        name: nginx
+        state: reloaded
+    - name: Make sure /var/lib/letsencrypt exists and has correct permissions
+      ansible.builtin.file:
+        path: /var/lib/letsencrypt
+        state: directory
+        mode: '0755'
+    - name: Generate certificate with certbot
+      ansible.builtin.command:
+        cmd: |
+          certbot certonly --webroot --webroot-path /var/lib/letsencrypt
+           --non-interactive
+           --agree-tos
+           --email {{ gitea_certbot_admin_email }}
+           -d {{ gitea_domains | first }}
+    - name: Create the ssl dir if needed
+      ansible.builtin.file:
+        path: /etc/nginx/ssl
+        state: directory
+        mode: '0750'
+    - name: Template ssl bloc for nginx vhost
+      ansible.builtin.template:
+        src: "ssl.conf.j2"
+        dest: "/etc/nginx/ssl/{{ gitea_domains | first }}.conf"
+
+- name: (Re)check if SSL certificate is present and register result
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ gitea_domains | first }}/fullchain.pem"
+  register: ssl
+
+- name: (Re)template conf file for nginx vhost with SSL
+  ansible.builtin.template:
+    src: "vhost.conf.j2"
+    dest: "/etc/nginx/sites-available/{{ gitea_instance }}.conf"
+
+- name: Enable nginx vhost for gitea
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ gitea_instance }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ gitea_instance }}.conf"
+    state: link
+
+- name: Reload nginx conf
+  ansible.builtin.systemd:
+    name: nginx
+    state: reloaded

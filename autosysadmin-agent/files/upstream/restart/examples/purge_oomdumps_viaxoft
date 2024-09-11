@@ -1,0 +1,65 @@
+#!/bin/bash
+
+: "${AUTOSYSADMIN_LIB:=/usr/local/lib/autosysadmin}"
+source "${AUTOSYSADMIN_LIB}/common.sh"  || exit 1
+source "${AUTOSYSADMIN_LIB}/restart.sh" || exit 1
+
+# shellcheck disable=SC2034
+RUNNING="nwh-fr"
+
+list_hprof_files() {
+    find /srv/oomdumps -name '*.hprof' -printf "%T+ %p\n" | sort -h | awk '{ print $2 }'
+}
+check_disk() {
+    /usr/lib/nagios/plugins/check_disk -c 20% -K 20% -p /srv/oomdumps > /dev/null
+}
+is_status_ok() {
+    ## this must return 0 if the service is alive, otherwise return 1
+    check_disk
+    rc=$?
+
+    test $rc -lt 2
+}
+
+oomdumps_action() {
+    # Save service status before restart
+    check_disk | save_in_log_dir "du_srv_oomdumps.before.status"
+
+    nb_run=0
+    max_run=100
+
+    while ! is_status_ok; do
+        if [ ${nb_run} -lt ${max_run} ]; then
+            oldest_hprof_file=$(list_hprof_files | head -n 1)
+            if [ -n "${oldest_hprof_file}" ]; then
+                rm -f "${oldest_hprof_file}"
+                log_action "File ${oldest_hprof_file} deleted."
+                (( nb_run += 1 ))
+            else
+                log_action "No hprof file found. Abort."
+                break
+            fi
+        else
+            log_action "Status is still critical after ${max_run} files deleted. Abort."
+            break
+        fi
+    done
+
+    # Save service status after restart
+    check_disk | save_in_log_dir "du_srv_oomdumps.after.status"
+}
+
+# Should we run?
+if ! is_supposed_to_run; then
+    # log_global "${PROGNAME} is not supposed to run (RUNNING=${RUNNING})."
+    exit 0
+fi
+if is_status_ok; then
+    # log_global "${service_name} process alive. Aborting"
+    exit 0
+fi
+
+# Yes we do, let's do the action
+pre_restart
+oomdumps_action
+post_restart
