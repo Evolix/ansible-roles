@@ -14,11 +14,8 @@ _evodomains_dynamic_completion() {
                 words="nrpe json human"
             fi
             ;;
-        check-dns)
-            words="--output --help"
-            ;;
-        list)
-            words="--output --help"
+        check-dns|list)
+            words="--output --verbose --no-warnings --help"
             ;;
         nrpe|json|human)
             if [[ ! "${COMP_LINE}" =~ (check-dns|list) ]]; then

@@ -5,9 +5,9 @@
 # Evodomains is a Python script to ease the management of a server's domains.
 #
 # Features:
-# - Supports Apache, Nginx and SSL certificates domains
-# - List domains
-# - Check domains name records
+# - Search for domains in Apache, Nginx and SSL certificates.
+# - Check domains DNS A record.
+#
 # Roadmap :
 # - Remove domains from vhosts configuration
 # - Remove certificate files
@@ -41,7 +41,11 @@ config_dir_path = '/etc/evolinux/domains'
 ignored_domains_file = 'ignored_domains_check.list'
 included_domains_file = 'included_domains_check.list'
 allowed_ips_file = 'allowed_ips_check.list'
+wildcard_replacements_file = 'wildcard_replacements'
 #haproxy_conf_path = '/etc/haproxy/haproxy.cfg'
+ip_regex = re.compile('^([0-9abcdef\.:]+)$')
+domain_regex = re.compile('^(((?!-)[A-Za-z0-9-\*]{1,63}(?<!-)\.)+[A-Za-z]{2,6})$')
+wildcard_regex = re.compile('^(\*\.((?!-)[A-Za-z0-9-\*]{1,63}(?<!-)\.)+[A-Za-z]{2,6})$')
 domain_cn_regex = re.compile('CN=(((?!-)[A-Za-z0-9-\*]{1,63}(?<!-)\.)+[A-Za-z]{2,6})')
 domain_san_regex = re.compile('DNS:(((?!-)[A-Za-z0-9-\*]{1,63}(?<!-)\.)+[A-Za-z]{2,6})')
 
@@ -52,22 +56,22 @@ DNS_timeout = 5
 
 """ Data structures """
 
-class DomainProvider:
+class DomainSource:
     """Abstract class to store the infos about where a domain was found.
     For inheritance only, should not be instantiated.
     Attributes:
         - domain: the domain or subdomain
-        - provider: 'apache', 'nginx', 'certbot', 'evoacme', 'evodomains', 'manual'
-        - type: type of provider ('config', 'certificate')
+        - source: 'apache', 'nginx', 'certbot', 'evoacme', 'evodomains', 'manual'
+        - type: type of source ('config', 'certificate')
         - path: config or certificate path where the domain was found
         - line: line in config file or certificate where the domain was found
         - port: listening port
         - attribute: certificate attribute ('CN', 'SAN')
     """
-    def __init__(self, domain: str, provider: str, provider_type: str, path: str, line: int, port: int, attribute: str):
+    def __init__(self, domain: str, source: str, source_type: str, path: str, line: int, port: int, attribute: str):
         self.domain = domain
-        self.provider = provider
-        self.type = provider_type
+        self.source = source
+        self.type = source_type
         self.path = path
         self.line = line
         self.port = port
@@ -77,11 +81,11 @@ class DomainProvider:
         return str(self.__dict__)
 
     def __eq__(self, other):
-        if not isinstance(other, DomainProvider):
+        if not isinstance(other, DomainSource):
             return False
 
         return (self.domain == other.domain
-                and self.provider == other.provider
+                and self.source == other.source
                 and self.type == other.type
                 and self.path == other.path
                 and self.line == other.line
@@ -89,50 +93,50 @@ class DomainProvider:
                 and self.attribute == other.attribute
                )
 
-class Domain:
-    """
-    """
-    def __init__(self, domain: str):
+class DomainSummary:
+    """Data structure to contain infos about a domain and its DNS test results."""
+    def __init__(self, domain: str, replacement_domain: str = None):
         self.domain = domain
-        self.providers = []
+        self.replacement_domain = replacement_domain
+        self.sources = []
         self.DNS_check_result = None
 
-    def add_provider(self, provider: Type[DomainProvider]):
-        self.providers.append(provider)
+    def add_source(self, source: Type[DomainSource]):
+        self.sources.append(source)
 
-    def add_providers(self, providers: List[Type[DomainProvider]]):
-        self.providers.extend(providers)
+    def add_sources(self, sources: List[Type[DomainSource]]):
+        self.sources.extend(sources)
 
     def set_DNS_check_result(self, DNS_check_result):
         self.DNS_check_result = DNS_check_result
 
 
-class IncludedProvider(DomainProvider):
-    """DomainProvider for domains from included_domains_file."""
+class EvodomainSource(DomainSource):
+    """DomainSource for domains from included_domains_file."""
     def __init__(self, domain: str, path=None, line=None, port=None, attribute=None):
         if not path:
             path = os.path.join(config_dir_path, included_domains_file)
         super().__init__(domain, 'evodomains', 'config', path, line, port, attribute)
 
-class ApacheProvider(DomainProvider):
-    """DomainProvider for Apache."""
+class ApacheSource(DomainSource):
+    """DomainSource for Apache."""
     def __init__(self, domain: str, path: str, line: int, port: int, attribute=None):
         super().__init__(domain, 'apache', 'config', path, line, port, attribute)
 
-class NginxProvider(DomainProvider):
-    """DomainProvider for Nginx."""
+class NginxSource(DomainSource):
+    """DomainSource for Nginx."""
     def __init__(self, domain: str, path: str, line: int, port: int, attribute=None):
         super().__init__(domain, 'nginx', 'config', path, line, port, attribute)
 
-class CertificateProvider(DomainProvider):
-    """DomainProvider for X.509 certificates."""
-    def __init__(self, domain: str, provider: str, path: str, attribute: str):
-        super().__init__(domain, provider, 'certificate', path, None, None, attribute)
+class CertificateSource(DomainSource):
+    """DomainSource for X.509 certificates."""
+    def __init__(self, domain: str, source: str, path: str, attribute: str):
+        super().__init__(domain, source, 'certificate', path, None, None, attribute)
 
-#class HaProxyProvider(DomainProvider):
-#    """DomainProvider for HaProxy."""
-#    def __init__(self, domain, provider_type, path, line, port=None, attribute=None):
-#        super().__init__(domain, 'haproxy', provider_type, path, line, port, attribute)
+#class HaProxySource(DomainSource):
+#    """DomainSource for HaProxy."""
+#    def __init__(self, domain, source_type, path, line, port=None, attribute=None):
+#        super().__init__(domain, 'haproxy', source_type, path, line, port, attribute)
 
 
 class CheckStatus(Enum):
@@ -140,14 +144,15 @@ class CheckStatus(Enum):
     OK = 1
     UNKNOWN = 2
     DNS_TIMEOUT = 3
-    DOMAIN_NOT_FOUND = 4
-    IP_NOT_ALLOWED = 5
+    NO_DNS_RECORD = 4
+    UNKNOWN_IPS = 5
 
 
 class DNSCheckResult:
     def __init__(self):
         self.status = CheckStatus.UNKNOWN
-        self.unexpected_ips = {}
+        self.ips = {}  # { IP: reverse, … }
+        self.unknown_ips = []
         self.comments = []
 
     def set_status(self, status):
@@ -155,22 +160,22 @@ class DNSCheckResult:
             raise ValueError('Unknown DNS status {}'.format(status))
         self.status = status
 
-    def add_unexpected_ip(self, ip, reverse=None):
-        if reverse is not None:
-            self.unexpected_ips[ip] = reverse
+    def add_ip(self, ip, reverse, known):
+        if reverse:
+            self.ips[ip] = reverse
         else:
-            self.unexpected_ips[ip] = ip
+            self.ips[ip] = ip
+        if not known:
+            self.unknown_ips.append(ip)
 
     def add_comment(self, comment):
         self.comments.append(comment)
 
 
 class CustomJSONEncoder(json.JSONEncoder):
-    """Custom JSONEncoder that also encodes DomainProvider objects
-    as JSON.
-    """
+    """Custom JSONEncoder that also encodes DomainSource objects as JSON."""
     def default(self, object):
-        if isinstance(object, Domain) or isinstance(object, DomainProvider) or isinstance(object, DNSCheckResult):
+        if isinstance(object, DomainSummary) or isinstance(object, DomainSource) or isinstance(object, DNSCheckResult):
             # Remove None values
             d = { key:value for key, value in object.__dict__.items() if value }
             return d
@@ -193,7 +198,7 @@ def print_error_and_exit(s):
         sys.exit(1)
 
 def print_warning(s):
-    if warning or debug:
+    if warning and output != 'nrpe':
         print('Warning: {}'.format(s), file=sys.stderr, flush=True)
 
 def print_debug(s):
@@ -229,7 +234,7 @@ def strip_comments(string: str):
 def get_main_domain(domain: str):
     """Return main domain without subdomain.
     Example:
-    - input "www.example.com" will return "example.com".
+    - input 'www.example.com' will return 'example.com'.
     """
     splitted = domain.strip('.').split('.')[-2:]
     return '.'.join(splitted)
@@ -238,18 +243,16 @@ def get_main_domain(domain: str):
 def get_sub_domain(domain: str):
     """Return subdomain without main domain.
     Example:
-    - input "dev.www.example.com" will return "dev.www".
+    - input 'dev.www.example.com' will return 'dev.www'.
     """
     splitted = domain.strip('.').split('.')[:-2]
     return '.'.join(splitted)
 
 
 def sorted_domains(domains: List[str]):
-    """Returns the list sorted by main domain (and not sub-domain).
-    """
+    """Returns the list sorted by main domain (and not sub-domain)."""
     s = sorted(domains, key=get_sub_domain)
     return sorted(s, key=get_main_domain)
-
 
 
 #def merge_dicts(*dicts):
@@ -266,7 +269,7 @@ def sorted_domains(domains: List[str]):
 
 
 def dig(domain):
-    """Return "dig +short $domain", as a list of lines."""
+    """Return 'dig +short DOMAIN', as a list of lines."""
     stdout, stderr, rc = execute('dig +short {}'.format(domain))
     return stdout
 
@@ -274,18 +277,23 @@ def dig(domain):
 class DNSResolutionThread(threading.Thread):
     """Thread that executes a dig."""
 
-    def __init__(self, domain):
+    def __init__(self, domain_summary):
         threading.Thread.__init__(self, daemon=True)
-        self.domain = domain
+        self.domain_summary = domain_summary
+        self.exception = ''
         self.ips = {}
 
     def run(self):
         """Resolve domain with dig."""
         try:
-            domain = self.domain.domain
-            # Wilcards hanling: check www.example.com for *.example.com
+            domain = self.domain_summary.domain
+
+            # Wilcards handling: check www.example.com for *.example.com
             if '*' in domain:
-                domain = domain.replace('*', 'www')
+                if self.domain_summary.replacement_domain:
+                    domain = self.domain_summary.replacement_domain
+                else:
+                    domain = domain.replace('*', 'www')
 
             dig_results = dig(domain)
 
@@ -293,7 +301,7 @@ class DNSResolutionThread(threading.Thread):
                 return
 
             for line in dig_results:
-                match = re.search('^([0-9abcdef\.:]+)$', line)
+                match = ip_regex.search(line)
                 if match:
                     ip = match.group(1)
                     if ip not in self.ips:
@@ -301,7 +309,7 @@ class DNSResolutionThread(threading.Thread):
 
             # Reverse
             for ip in self.ips:
-                dig_results = dig("-x " + ip)
+                dig_results = dig('-x ' + ip)
                 for line in dig_results:
                     match = re.search('^([0-9a-z\.-]+)$', line)
                     if match:
@@ -311,8 +319,7 @@ class DNSResolutionThread(threading.Thread):
                     self.ips[ip] = ip
 
         except Exception as e:
-            print_warning(e)
-            return
+            self.exception = e
 
 
 
@@ -320,8 +327,9 @@ class DNSResolutionThread(threading.Thread):
 
 
 def read_config_file(file_path):
-    """Return a list of not empty lines and without the comments (as strings).
-    """
+    """Return a list of not empty lines and without the comments (as strings)."""
+    open(file_path, 'a').close()  # touch, in case of missing file
+
     cleaned_lines = []
     with open(file_path, encoding='utf-8') as f:
         for line in f:
@@ -331,21 +339,55 @@ def read_config_file(file_path):
     return cleaned_lines
 
 
-def get_allowed_ips():
-    """Return the list of IPs the domains are allowed to point to.
-    """
-
+def load_allowed_ips(allowed_ips_path):
+    """Return the list of IPs the domains are allowed to point to, from configuration file."""
     # Server IPs
     stdout, stderr, rc = execute('hostname -I')
     if not stdout:
         return []
-    ips = stdout[0].strip().split()
+    allowed_ips = stdout[0].strip().split()
 
-    # Read custom allowed IPs in config file
-    allowed_ips_path = os.path.join(config_dir_path, allowed_ips_file)
-    ips.extend(read_config_file(allowed_ips_path))
+    # Read allowed IPs in config file
+    conf_ips = read_config_file(allowed_ips_path)
 
-    return ips
+    for ip in conf_ips:
+        if ip_regex.search(ip):
+            allowed_ips.append(ip)
+        else:
+            print_warning('Malformed IP {} in {}'.format(ip, allowed_ips_path))
+
+    return allowed_ips
+
+
+def load_wildcard_replacements(wildcard_replacements_path):
+    """Return a dict containing wildcard domains as keys, and replacement domains as values,
+    from configuration file.
+    """
+    wildcard_replacement_lines = read_config_file(wildcard_replacements_path)
+
+    wildcard_replacements = {}
+    for line in wildcard_replacement_lines:
+        words = line.split()
+        if len(words) != 2:
+            print_warning('Malformed configuration line \'{}\' in {}. Two domains expected.'.format(line, wildcard_replacements_path))
+        else:
+            match = wildcard_regex.search(words[0])
+            if match:
+                wildcard = match.group(1)
+            else:
+                print_warning('Malformed wildcard \'{}\' in {}'.format(words[0], wildcard_replacements_path))
+                continue
+
+            match = domain_regex.search(words[1])
+            if match:
+                wildcard_replacement = match.group(1)
+            else:
+                print_warning('Malformed wildcard replacement \'{}\' in {}'.format(words[1], wildcard_replacements_path))
+                continue
+
+            wildcard_replacements[wildcard] = wildcard_replacement
+
+    return wildcard_replacements
 
 
 
@@ -353,8 +395,7 @@ def get_allowed_ips():
 
 
 def is_certbot():
-    """Return True if /etc/letsencrypt/live is not empty.
-    """
+    """Return True if /etc/letsencrypt/live is not empty."""
     certbot_live_path = '/etc/letsencrypt/live'
     if not os.path.exists(certbot_live_path):
         return False
@@ -362,14 +403,14 @@ def is_certbot():
     return len(certs) > 0
 
 
-def get_certificate_domains(cert_path, provider):
+def get_certificate_domains(cert_path, source):
     """List the domains in the certificate with OpenSSL binary
     (Python module cryptography.x509 is not available on Debian 8).
-    Return a list of CertificateProvider."
+    Return a list of CertificateSource.
     """
-    providers = []
+    sources = []
     if not os.path.exists(cert_path) or not os.path.isfile(cert_path):
-        return providers
+        return sources
 
     command = 'openssl x509 -text -noout -in {}'.format(cert_path)
     try:
@@ -378,7 +419,7 @@ def get_certificate_domains(cert_path, provider):
             raise RuntimeError('{}\n'.format(command) + '\n'.join(stderr))
     except:
         print_debug('Could not read certificate file {} or execute {}.'.format(cert_path, command))
-        return providers
+        return sources
 
     for line in stdout:
         if 'Subject:' in line:
@@ -387,8 +428,8 @@ def get_certificate_domains(cert_path, provider):
             match = domain_cn_regex.search(line)
             if match:
                 domain = match.group(1)
-                p = CertificateProvider(domain, provider, cert_path , 'CN')
-                providers.append(p)
+                p = CertificateSource(domain, source, cert_path , 'CN')
+                sources.append(p)
 
         if 'DNS:' in line:
             # SAN
@@ -396,147 +437,162 @@ def get_certificate_domains(cert_path, provider):
             matches = domain_san_regex.findall(line)
             for m in matches:
                 domain = m[0]
-                p = CertificateProvider(domain, provider, cert_path , 'SAN')
-                providers.append(p)
+                p = CertificateSource(domain, source, cert_path , 'SAN')
+                sources.append(p)
 
-    return providers
+    return sources
 
 
 
 """ Print and output functions """
 
 
-def output_providers_human(domain, prefix='', suffix=''):
-    """Print providers of domain object in human readable format.
-    """
-    for p in domain.providers:
-        if p.provider in ['apache', 'nginx'] and p.type in ['config']:
+def output_domain_sources_human(domain_summary, prefix='', suffix=''):
+    """Print domain sources of DomainSummary object in human readable format."""
+    for p in domain_summary.sources:
+        if p.source in ['apache', 'nginx'] and p.type in ['config']:
             print('{}{}:{} port(s) {}{}'.format(prefix, p.path, p.line, p.port, suffix))
-        elif p.provider in ['certbot', 'evoacme', 'manual'] and p.type in ['certificate']:
+        elif p.source in ['certbot', 'evoacme', 'manual'] and p.type in ['certificate']:
             print('{}{}:{}{}'.format(prefix, p.path, p.attribute, suffix))
-        elif p.provider in ['evodomains'] and p.type in ['config']:
+        elif p.source in ['evodomains'] and p.type in ['config']:
             print('{}{}{}'.format(prefix, p.path, suffix))
         else:
-            print('{}Unknown provider {}{}'.format(prefix, p, suffix))
+            print('{}Unknown source {}{}'.format(prefix, p, suffix))
 
 
-def output_comments_human(domain, prefix='', suffix=''):
-    """Print providers of domain object in human readable format.
-    """
-    for comment in domain.DNS_check_result.comments:
-        print('{}{}{}'.format(prefix, comment + ".", suffix))
+def output_comments_human(domain_summary, prefix='', suffix=''):
+    """Print comments of DomainSummary object in human readable format."""
+    for comment in domain_summary.DNS_check_result.comments:
+        print('{}{}{}'.format(prefix, comment + '.', suffix))
 
 
-def output_domains_json(domains):
-    """Print domains dict to stdout in JSON format.
-    """
-    print(json.dumps(domains, sort_keys=True, indent=4, cls=CustomJSONEncoder))
+def output_domain_summaries_json(domain_summaries):
+    """Print domain_summaries dict to stdout in JSON format."""
+    print(json.dumps(domain_summaries, sort_keys=True, indent=4, cls=CustomJSONEncoder))
 
 
-def output_domains_human(domains):
-    """Print domains dict to stdout in human readable format.
-    """
-    for dom in sorted_domains(domains.keys()):
-        print('{}'.format(dom))
-        output_providers_human(domains[dom], prefix='\t')
+def output_domain_summaries_human(domain_summaries):
+    """Print domain_summaries dict to stdout in human readable format."""
+    for domain_summary in sorted_domains(domain_summaries.keys()):
+        print('{}'.format(domain_summary))
+        output_domain_sources_human(domain_summaries[domain_summary], prefix='  ')
 
 
-def output_check_result_nrpe(domains):
+def output_check_result_nrpe(domain_summaries):
     """Print DNS check results to stdout in NRPE format.
     For now, never output critical alerts.
     """
     # Filter domains in function of check results
-    ok_domains = dict(filter(filter_ok_domains, domains.items()))
-    timeout_domains = dict(filter(filter_timeout_domains, domains.items()))
-    not_found_domains = dict(filter(filter_not_found_domains, domains.items()))
-    unexpected_domains = dict(filter(filter_unexpected_domains, domains.items()))
-    unknown_domains = dict(filter(filter_unknown_domains, domains.items()))
+    ok_domains = dict(filter(filter_ok_domains, domain_summaries.items()))
+    timeout_domains = dict(filter(filter_timeout_domains, domain_summaries.items()))
+    no_dns_record_domains = dict(filter(filter_no_dns_record_domains, domain_summaries.items()))
+    unknown_ips_domains = dict(filter(filter_unknown_ips_domains, domain_summaries.items()))
+    unknown_domains = dict(filter(filter_unknown_domains, domain_summaries.items()))
 
     n_ok = len(ok_domains)
-    n_warnings = len(timeout_domains) + len(not_found_domains) + len(unexpected_domains)
+    n_warnings = len(timeout_domains) + len(no_dns_record_domains) + len(unknown_ips_domains)
     n_unknown = len(unknown_domains)
 
     msg = 'WARNING' if n_warnings or n_unknown else 'OK'
 
     print('{} - {} UNK / 0 CRIT / {} WARN / {} OK \n'.format(msg, n_unknown, n_warnings, n_ok))
 
-    for d in sorted_domains(unknown_domains.keys()):
-        comments = " (" + ", ".join(domains[d].DNS_check_result.comments).lower() + ")" if domains[d].DNS_check_result.comments else ""
-        print('UNKNOWN - DNS status of {}{}'.format(d, comments))
-    for d in sorted_domains(timeout_domains.keys()):
-        comments = " (" + ", ".join(domains[d].DNS_check_result.comments).lower() + ")" if domains[d].DNS_check_result.comments else ""
-        print('WARNING - timeout resolving {}{}'.format(d, comments))
-    for d in sorted_domains(not_found_domains.keys()):
-        comments = " (" + ", ".join(domains[d].DNS_check_result.comments).lower() + ")" if domains[d].DNS_check_result.comments else ""
-        print('WARNING - no resolution for {}{}'.format(d, comments))
-    for d in sorted_domains(unexpected_domains.keys()):
-        ips = ", ".join(unexpected_domains[d].DNS_check_result.unexpected_ips.values())
-        comments = " (" + ", ".join(domains[d].DNS_check_result.comments).lower() + ")" if domains[d].DNS_check_result.comments else ""
-        print('WARNING - {} resolves to unexpected server(s): {}{}'.format(d, ips, comments))
+    for domain in sorted_domains(unknown_domains.keys()):
+        comments = ' (' + ', '.join(domain_summaries[domain].DNS_check_result.comments).lower() + ')' if domain_summaries[domain].DNS_check_result.comments else ''
+        print('UNKNOWN - DNS status of {}{}'.format(domain, comments))
+    for domain in sorted_domains(timeout_domains.keys()):
+        comments = ' (' + ', '.join(domain_summaries[domain].DNS_check_result.comments).lower() + ')' if domain_summaries[domain].DNS_check_result.comments else ''
+        print('WARNING - timeout resolving {}{}'.format(domain, comments))
+    for domain in sorted_domains(no_dns_record_domains.keys()):
+        comments = ' (' + ', '.join(domain_summaries[domain].DNS_check_result.comments).lower() + ')' if domain_summaries[domain].DNS_check_result.comments else ''
+        print('WARNING - no DNS record for {}{}'.format(domain, comments))
+    for domain in sorted_domains(unknown_ips_domains.keys()):
+        ips = ', '.join(unknown_ips_domains[domain].DNS_check_result.unknown_ips.values())
+        comments = ' (' + ', '.join(domain_summaries[domain].DNS_check_result.comments).lower() + ')' if domain_summaries[domain].DNS_check_result.comments else ''
+        print('WARNING - {} resolves to unknown IP(s): {}{}'.format(domain, ips, comments))
 
     sys.exit(1) if n_warnings or n_unknown else sys.exit(0)
 
 
-def output_check_result_json(domains):
-    """Print result of check domains to stdout in JSON format.
-    """
+def output_check_result_json(domain_summaries):
+    """Print result of check domains to stdout in JSON format."""
     # Filter domains in function of check results
-    ok_domains = dict(filter(filter_ok_domains, domains.items()))
-    timeout_domains = dict(filter(filter_timeout_domains, domains.items()))
-    not_found_domains = dict(filter(filter_not_found_domains, domains.items()))
-    unexpected_domains = dict(filter(filter_unexpected_domains, domains.items()))
-    unknown_domains = dict(filter(filter_unknown_domains, domains.items()))
+    ok_domains = dict(filter(filter_ok_domains, domain_summaries.items()))
+    timeout_domains = dict(filter(filter_timeout_domains, domain_summaries.items()))
+    no_dns_record_domains = dict(filter(filter_no_dns_record_domains, domain_summaries.items()))
+    unknown_ips_domains = dict(filter(filter_unknown_ips_domains, domain_summaries.items()))
+    unknown_domains = dict(filter(filter_unknown_domains, domain_summaries.items()))
 
     output_dict = {
         'timeout_domains': sorted_domains(timeout_domains.keys()),
-        'not_found_domains': sorted_domains(not_found_domains.keys()),
-        'unexpected_domains': unexpected_domains,
-        'unknown_domains': unknown_domains,
-        'ok_domains': sorted_domains(ok_domains.keys()),
-        'domains': domains
+        'no_dns_record_domains': sorted_domains(no_dns_record_domains.keys()),
+        'unknown_ips_domains': sorted_domains(unknown_ips_domains.keys()),
+        'unknown_domains': sorted_domains(unknown_domains.keys())
     }
+    if verbose:
+        output_dict['ok_domains'] = sorted_domains(ok_domains.keys())
+        output_dict['details'] = domain_summaries
     print(json.dumps(output_dict, sort_keys=True, indent=4, cls=CustomJSONEncoder))
 
 
-def output_check_result_human(domains):
-    """Print result of check domains to stdout in human readable format.
-    """
+def output_check_result_human(domain_summaries):
+    """Print result of check domains to stdout in human readable format."""
     # Filter domains in function of check results
-    ok_domains = dict(filter(filter_ok_domains, domains.items()))
-    timeout_domains = dict(filter(filter_timeout_domains, domains.items()))
-    not_found_domains = dict(filter(filter_not_found_domains, domains.items()))
-    unexpected_domains = dict(filter(filter_unexpected_domains, domains.items()))
-    unknown_domains = dict(filter(filter_unknown_domains, domains.items()))
+    ok_domains = dict(filter(filter_ok_domains, domain_summaries.items()))
+    timeout_domains = dict(filter(filter_timeout_domains, domain_summaries.items()))
+    no_dns_record_domains = dict(filter(filter_no_dns_record_domains, domain_summaries.items()))
+    unknown_ips_domains = dict(filter(filter_unknown_ips_domains, domain_summaries.items()))
+    unknown_domains = dict(filter(filter_unknown_domains, domain_summaries.items()))
 
-    if timeout_domains or not_found_domains or unexpected_domains or unknown_domains:
+    if verbose and ok_domains:
+        print('\nOK DNS:')
+        for domain in sorted_domains(ok_domains.keys()):
+            ips = list(set(unknown_ips_domains[domain].DNS_check_result.ips.values()) - set(unknown_ips_domains[domain].DNS_check_result.unknown_ips))
+            ips = ', '.join(ips)
+            print('  {} -> [{}]'.format(domain, ips))
+            output_comments_human(domain_summaries[domain], '    Comment(s): ')
+            output_domain_sources_human(domain_summaries[domain], '    ')
 
-        if timeout_domains: print('\nTimeouts:')
-        for d in sorted_domains(timeout_domains.keys()):
-            print('\t{}'.format(d))
-            output_comments_human(domains[d], '\t\tComment(s): ')
-            output_providers_human(domains[d], '\t\t')
+    if timeout_domains or no_dns_record_domains or unknown_ips_domains or unknown_domains:
 
-        if not_found_domains: print('\nNo resolution:')
-        for d in sorted_domains(not_found_domains.keys()):
-            print('\t{}'.format(d))
-            output_comments_human(domains[d], '\t\tComment(s): ')
-            output_providers_human(domains[d], '\t\t')
+        if timeout_domains:
+            print('\nDNS timeouts:')
+            for domain in sorted_domains(timeout_domains.keys()):
+                print('  {}'.format(domain))
+                output_comments_human(domain_summaries[domain], '    Comment(s): ')
+                output_domain_sources_human(domain_summaries[domain], '    ')
 
-        if unexpected_domains: print('\nUnexpected resolved IPs:')
-        for d in sorted_domains(unexpected_domains.keys()):
-            print('\t{} -> [{}]'.format(d, ', '.join(unexpected_domains[d].DNS_check_result.unexpected_ips.values())))
-            output_comments_human(domains[d], '\t\tComment(s): ')
-            output_providers_human(domains[d], '\t\t')
+        if no_dns_record_domains:
+            print('\nNo DNS record:')
+            for domain in sorted_domains(no_dns_record_domains.keys()):
+                print('  {}'.format(domain))
+                output_comments_human(domain_summaries[domain], '    Comment(s): ')
+                output_domain_sources_human(domain_summaries[domain], '    ')
 
-        if unknown_domains: print('\nUnknown DNS status:')
-        for d in sorted_domains(unknown_domains.keys()):
-            print('\t{}'.format(d))
-            output_comments_human(domains[d], '\t\tComment(s): ')
-            output_providers_human(domains[d], '\t\t')
+        if unknown_ips_domains:
+            print('\nUnknown resolved IPs:')
+            for domain in sorted_domains(unknown_ips_domains.keys()):
+                unknown_ips = ', '.join(unknown_ips_domains[domain].DNS_check_result.unknown_ips)
+                output_str = '  {} -> unknown [{}]'.format(domain, unknown_ips)
+                known_ips = list(set(unknown_ips_domains[domain].DNS_check_result.ips.values()) - set(unknown_ips_domains[domain].DNS_check_result.unknown_ips))
+                if known_ips:
+                    known_ips = ', '.join(known_ips)
+                    output_str += ', known [{}]'.format(domain, known_ips)
+                print(output_str)
+                output_comments_human(domain_summaries[domain], '    Comment(s): ')
+                output_domain_sources_human(domain_summaries[domain], '    ')
+
+        if unknown_domains:
+            print('\nUnknown DNS status:')
+            for domain in sorted_domains(unknown_domains.keys()):
+                print('  {}'.format(domain))
+                output_comments_human(domain_summaries[domain], '    Comment(s): ')
+                output_domain_sources_human(domain_summaries[domain], '    ')
 
         sys.exit(1)
 
-    print('Domains resolve to right IPs!')
+    else:
+        print('Domains resolve to right IPs!')
 
 
 
@@ -545,17 +601,17 @@ def output_check_result_human(domains):
 
 def list_apache_domains():
     """Parse Apache live vhosts in search of domains.
-    Return a list of ApacheProvider.
+    Return a list of ApacheSource.
     """
     print_debug('Listing Apache domains.')
-    providers = []
+    sources = []
 
     # Dumps Apache vhosts
     try:
         stdout, stderr, rc = execute('apache2ctl -D DUMP_VHOSTS')
     except:
         print_debug('Apache is not present.')
-        return providers
+        return sources
 
     # Parse output of 'apache2ctl -D DUMP_VHOSTS'
     for line in stdout:
@@ -594,25 +650,25 @@ def list_apache_domains():
                                 line_numbers.append(i)
 
             for line_number in line_numbers:
-                provider = ApacheProvider(domain, config_path, line_number, port)
-                if provider not in providers:
-                    providers.append(provider)
+                source = ApacheSource(domain, config_path, line_number, port)
+                if source not in sources:
+                    sources.append(source)
 
-    return providers
+    return sources
 
 
 def list_nginx_domains():
     """Parse Nginx dynamic config in search of domains.
-    Return a list of NginxProvider.
+    Return a list of NginxSource.
     """
     print_debug('Listing Ningx domains.')
-    providers = []
+    sources = []
 
     try:
         stdout, stderr, rc = execute('nginx -T')
     except:
         print_debug('Nginx is not present.')
-        return providers
+        return sources
 
     line_number, config_file_path, ports, domains = None, None, None, None
 
@@ -638,9 +694,9 @@ def list_nginx_domains():
                     if domains and ports:
                         for domain in domains:
                             for port in ports:
-                                provider = NginxProvider(domain, config_file_path, line_number, port)
-                                if provider not in providers:
-                                    providers.append(provider)
+                                source = NginxSource(domain, config_file_path, line_number, port)
+                                if source not in sources:
+                                    sources.append(source)
                     domains, ports = [], []
 
             # Parse port
@@ -679,23 +735,23 @@ def list_nginx_domains():
     if domains and ports:
         for domain in domains:
             for port in ports:
-                provider = NginxProvider(domain, config_file_path, line_number, port)
-                if provider not in providers:
-                    providers.append(provider)
+                source = NginxSource(domain, config_file_path, line_number, port)
+                if source not in sources:
+                    sources.append(source)
 
-    return providers
+    return sources
 
 
-def list_certificates_domains(dir_path, provider):
+def list_certificates_domains(dir_path, source):
     """ Parse certificates in dir_path in search of domains (not recursive).
-    Return a list of CertificateProvider."
+    Return a list of CertificateSource."
     """
 
-    print_debug('Listing {} certificates domains for provider {}.'.format(dir_path, provider))
-    providers = []
+    print_debug('Listing {} certificates domains for source {}.'.format(dir_path, source))
+    sources = []
 
     if not os.path.exists(dir_path):
-        return providers
+        return sources
 
     for f in os.listdir(dir_path):
         cert_path = os.path.join(dir_path, f)
@@ -703,48 +759,48 @@ def list_certificates_domains(dir_path, provider):
             # Cert is a CA
             continue
 
-        cert_providers = get_certificate_domains(cert_path, provider)
-        if cert_providers:
-            providers.extend(cert_providers)
+        cert_sources = get_certificate_domains(cert_path, source)
+        if cert_sources:
+            sources.extend(cert_sources)
 
-    return providers
+    return sources
 
 
 def list_letsencrypt_domains():
     """ Parse certificates in /etc/letsencrypt in search of domains.
-    Return a list of CertificateProvider."
+    Return a list of CertificateSource."
     """
     print_debug('Listing Let\'s Encrypt certificates domains.')
-    providers = []
+    sources = []
 
     if is_certbot():
-        provider = 'certbot'
+        source = 'certbot'
         base_path = '/etc/letsencrypt/live'
         subdir = ''
         cert_name = 'cert.pem'
     else:
-        provider = 'evoacme'
+        source = 'evoacme'
         base_path = '/etc/letsencrypt'
         subdir = 'live'
         cert_name = 'cert.crt'
 
     if not os.path.exists(base_path):
-        return providers
+        return sources
 
     for dir_name in os.listdir(base_path):
         cert_path = os.path.join(base_path, dir_name, subdir, cert_name)
-        cert_providers = get_certificate_domains(cert_path, provider)
-        if cert_providers:
-            providers.extend(cert_providers)
+        cert_sources = get_certificate_domains(cert_path, source)
+        if cert_sources:
+            sources.extend(cert_sources)
 
-    return providers
+    return sources
 
 
 #def list_haproxy_acl_domains():
 #    """Parse HaProxy config file in search of domain ACLs or files containing list of domains.
 #    Return a dict containing :
 #    - key: HaProxy domains (from ACLs in /etc/haproxy/haproxy.cgf).
-#    - value: a list of strings "haproxy:/etc/haproxy/haproxy.cfg:<LINE_IN_CONF>"
+#    - value: a list of strings 'haproxy:/etc/haproxy/haproxy.cfg:<LINE_IN_CONF>'
 #    """
 #    print_debug('Listing HaProxy ACL domains')
 #    domains = {}
@@ -809,13 +865,13 @@ def list_letsencrypt_domains():
 #    return domains
 #
 #
-#def read_haproxy_domains_file(domains_file_path, origin):
+#def read_haproxy_domains_file(domains_file_path, source):
 #    """Process a file containing a list of domains :
 #    - domains_file_path: path of the file to parse
-#    - origin: string keyword to prepend to the domains infos. Exemple: 'haproxy'
+#    - source: string keyword to prepend to the domains infos. Exemple: 'haproxy'
 #    Return a dict containing :
 #    - key: domain (from domains_file_path)
-#    - value: a list of strings "origin:domains_file_path:<LINE_IN_BLOCK>"
+#    - value: a list of strings 'source:domains_file_path:<LINE_IN_BLOCK>'
 #    """
 #    domains = {}
 #
@@ -829,7 +885,7 @@ def list_letsencrypt_domains():
 #                if not dom:
 #                    continue
 #
-#                dom_infos = '{}:{}:{}'.format(origin, domains_file_path, line_number)
+#                dom_infos = '{}:{}:{}'.format(source, domains_file_path, line_number)
 #                if dom not in domains:
 #                    domains[dom] = []
 #                if dom_infos not in domains[dom]:
@@ -846,12 +902,12 @@ def list_letsencrypt_domains():
 #    """Return the domains present in HaProxy SSL certificates.
 #    Return a dict containing:
 #    - key: domain (from domains_file_path)
-#    - value: a list of strings "haproxy_certs:cert_path:CN|SAN"
+#    - value: a list of strings 'haproxy_certs:cert_path:CN|SAN'
 #    """
 #    print_debug('Listing HaProxy certificates domains')
 #    domains = {}
 #
-#    # Check if HaProxy version supports "show ssl cert" command
+#    # Check if HaProxy version supports 'show ssl cert' command
 #    supports_show_ssl_cert = does_haproxy_support_show_ssl_cert()
 #
 #    if supports_show_ssl_cert:
@@ -888,7 +944,7 @@ def list_letsencrypt_domains():
 #                    subs = line[crt_index+5:]
 #                    cert_path = subs.split(' ')[0]  # in case other options are after cert path
 #                    cert_paths.append(cert_path)
-#            print("hap certs", cert_paths)
+#            print('hap certs', cert_paths)
 #
 #        for cert_path in cert_paths:
 #            if os.path.isfile(cert_path):
@@ -938,13 +994,13 @@ def list_letsencrypt_domains():
 #    return None
 #
 #
-#def list_cert_domains(cert_path, origin):
+#def list_cert_domains(cert_path, source):
 #    """Return the domains present in a X.509 PEM certificate.
 #    - cert_path: path of the certificate
-#    - origin: string keyword to prepend to the domains infos. Exemple: 'haproxy_certs'
+#    - source: string keyword to prepend to the domains infos. Exemple: 'haproxy_certs'
 #    Return a dict containing :
 #    - key: domain (from the certificate)
-#    - value: a list of strings "origin:cert_path:CN|SAN"
+#    - value: a list of strings 'source:cert_path:CN|SAN'
 #    """
 #    domains = {}
 #
@@ -959,7 +1015,7 @@ def list_letsencrypt_domains():
 #        cn_list = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
 #        if cn_list and len(cn_list) > 0:
 #           dom = cn_list[0].value
-#           dom_infos = '{}:{}:CN'.format(origin, cert_path)
+#           dom_infos = '{}:{}:CN'.format(source, cert_path)
 #           if dom not in domains:
 #               domains[dom] = []
 #           if dom_infos not in domains[dom]:
@@ -969,7 +1025,7 @@ def list_letsencrypt_domains():
 #        try:
 #            san_ext = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
 #            for dom in san_ext.value.get_values_for_type(x509.DNSName):
-#                dom_infos = '{}:{}:SAN'.format(origin, cert_path)
+#                dom_infos = '{}:{}:SAN'.format(source, cert_path)
 #                if dom not in domains:
 #                    domains[dom] = []
 #                if dom_infos not in domains[dom]:
@@ -981,99 +1037,110 @@ def list_letsencrypt_domains():
 
 
 def list_domains():
-    """List domains from all providers.
-    Return a dict of { key: domain, value: Domain object }
+    """List domains from all sources.
+    Return a dict { key: domain, value: DomainSummary object }
     """
-    apache_providers = list_apache_domains()
-    nginx_providers = list_nginx_domains()
-    letsencrypt_providers = list_letsencrypt_domains()
-    etc_ssl_certs_providers = list_certificates_domains('/etc/ssl/certs', 'manual')
-    #haproxy_acl_providers = list_haproxy_acl_domains()
-    #haproxy_certs_providers = list_haproxy_certs_domains()
+    apache_sources = list_apache_domains()
+    nginx_sources = list_nginx_domains()
+    letsencrypt_sources = list_letsencrypt_domains()
+    etc_ssl_certs_sources = list_certificates_domains('/etc/ssl/certs', 'manual')
+    #haproxy_acl_sources = list_haproxy_acl_domains()
+    #haproxy_certs_sources = list_haproxy_certs_domains()
 
-    providers = apache_providers + nginx_providers + letsencrypt_providers + etc_ssl_certs_providers
+    sources = apache_sources + nginx_sources + letsencrypt_sources + etc_ssl_certs_sources
 
-    for domain in included_domains:
-        provider = IncludedProvider(domain)
-        if provider not in providers:
-            providers.append(provider)
+    for domain in evodomain_domains:
+        source = EvodomainSource(domain)
+        if source not in sources:
+            sources.append(source)
 
-    if not providers:
+    if not sources:
         print_error_and_exit('No domain found on this server.')
 
     domains = {}
-    for p in providers:
+    for p in sources:
         if p.domain not in domains:
-            domains[p.domain] = Domain(p.domain)
-        domains[p.domain].add_provider(p)
+            wildcard_replacement = ''
+            if '*' in p.domain:
+                if p.domain in wildcard_replacements:
+                    wildcard_replacement = wildcard_replacements[p.domain]
+                else:
+                    wildcard_replacements_path = os.path.join(config_dir_path, wildcard_replacements_file)
+                    print_warning('Wildcard {} has no replacement domain configured in {}'.format(p.domain, wildcard_replacements_path))
+            domains[p.domain] = DomainSummary(p.domain, wildcard_replacement)
+        domains[p.domain].add_source(p)
 
     return domains
 
 
-def check_domains(domains):
-    """Check resolution of domains and save it
-    in a DNSCheckResult object in Domain attribute DNS_check_result.
+def check_domains(domain_summaries):
+    """Check resolution of domains and save it in a DNSCheckResult object
+    in DomainSummary attribute DNS_check_result.
     Returns: nothing
     """
     jobs = []
-    for domain_txt, domain_obj in domains.items():
-        t = DNSResolutionThread(domain_obj)
+    for domain, domain_summary in domain_summaries.items():
+        t = DNSResolutionThread(domain_summary)
         t.start()
         jobs.append(t)
 
     # Let <DNS_timeout> secs to DNS servers to reply to jobs threads queries
     time.sleep(DNS_timeout)
 
-    for j in jobs:
+    for job in jobs:
         result = DNSCheckResult()
 
-        if '*' in j.domain.domain:
-            result.add_comment("Resolution checked for subdomain www".format(j.domain.domain))
-
-        for ip in j.ips:
-            if ip not in allowed_ips:
-                result.add_unexpected_ip(ip, j.ips[ip])
-
-        if j.domain.domain in ignored_domains:
-            result.set_status(CheckStatus.OK)
-            result.add_comment("Domain in ignored domains list")
-        elif j.is_alive():
-            result.set_status(CheckStatus.DNS_TIMEOUT)
-        elif not j.ips:
-            result.set_status(CheckStatus.DOMAIN_NOT_FOUND)
-        else:
-            if result.unexpected_ips:
-                result.set_status(CheckStatus.IP_NOT_ALLOWED)
+        if '*' in job.domain_summary.domain:
+            if job.domain_summary.replacement_domain:
+                result.add_comment('Resolution of wildcard {} checked on {}'.format(job.domain_summary.domain, job.domain_summary.replacement_domain))
             else:
-                result.set_status(CheckStatus.OK)
+                result.add_comment('Resolution of wildcard {} checked on subdomain www.'.format(job.domain_summary.domain))
 
-        j.domain.set_DNS_check_result(result)
+        for ip in job.ips:
+            result.add_ip(ip, job.ips[ip], ip in allowed_ips)
+
+        if job.is_alive():
+            result.set_status(CheckStatus.DNS_TIMEOUT)
+        elif not job.ips:
+            result.set_status(CheckStatus.NO_DNS_RECORD)
+        elif result.unknown_ips:
+            result.set_status(CheckStatus.UNKNOWN_IPS)
+        else:
+            result.set_status(CheckStatus.OK)
+
+        if job.domain_summary.domain in ignored_domains:
+            result.set_status(CheckStatus.OK)
+            result.add_comment('Domain in ignored domains list')
+
+        if job.exception:
+            result.set_status(CheckStatus.UNKNOWN)
+            result.add_comment('Exception occured during dig: {}'.format(str(result.exception)))
+
+        job.domain_summary.set_DNS_check_result(result)
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('action', metavar='ACTION', help='Values: check-dns, list')
-    parser.add_argument('-o', '--output', help='Output format. Values: human (default), json, nrpe (only with check-dns action)')
-    #parser.add_argument('-s', '--ssl-only', action='store_true', help='SSL/TLS domains only (not implemented.')
-    parser.add_argument('-w', '--warning', action='store_true', help='Print warnings to stdout.')
-    parser.add_argument('-d', '--debug', action='store_true', help='Print debug to stdout (includes warnings).')
+    parser.add_argument('-o', '--output', default='human', help='Output format. Values: human (default), json, nrpe (only with check-dns action)')
+    parser.add_argument('-d', '--debug', action='store_true', help='Print debug to stderr and enable --verbose.')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Print more output to stdout.')
+    parser.add_argument('-n', '--no-warnings', action='store_true', help='Do not print warnings (usefull for --output json)).')
     args = parser.parse_args()
 
-    global action, output, warning, debug #, ssl_only
+    global action, output, debug, verbose, warning
     action = args.action
     output = args.output
-    warning = args.warning
+    verbose = args.verbose
     debug = args.debug
-    #ssl_only = args.ssl_only
+    verbose = true if debug else args.verbose
+    warning = not args.no_warnings
 
     for arg, value in vars(args).items():
         print_debug('{} = {}'.format(arg, value))
 
     if action not in ['check-dns', 'list']:
         print_error_and_exit('Unknown {} action, use -h option for help.'.format(args.action))
-
-    if not output:
-        output = 'human'
 
     if output not in ['human', 'json', 'nrpe']:
         err_msg = 'Unknown {} argument for --output option.'.format(output)
@@ -1095,14 +1162,16 @@ def load_conf():
     ignored_domains_path = os.path.join(config_dir_path, ignored_domains_file)
     included_domains_path = os.path.join(config_dir_path, included_domains_file)
     allowed_ips_path = os.path.join(config_dir_path, allowed_ips_file)
-    for f in [ignored_domains_path, included_domains_path, allowed_ips_path]:
-        open(f, 'a').close()  # touch
+    wildcard_replacements_path = os.path.join(config_dir_path, wildcard_replacements_file)
+    for f in [ignored_domains_path, included_domains_path, allowed_ips_path, wildcard_replacements_path]:
+        open(f, 'a').close()  # touch, in case of missing file
 
     # Load config in global variables
-    global ignored_domains, included_domains, allowed_ips
+    global ignored_domains, evodomain_domains, allowed_ips, wildcard_replacements
     ignored_domains = read_config_file(ignored_domains_path)
-    included_domains = read_config_file(included_domains_path)
-    allowed_ips = get_allowed_ips()
+    evodomain_domains = read_config_file(included_domains_path)
+    allowed_ips = load_allowed_ips(allowed_ips_path)
+    wildcard_replacements = load_wildcard_replacements(wildcard_replacements_path)
 
     ignored_domains.append('_')
 
@@ -1114,17 +1183,17 @@ def filter_timeout_domains(pair):
     domain_name, domain_obj = pair
     return domain_obj.DNS_check_result.status == CheckStatus.DNS_TIMEOUT
 
-def filter_not_found_domains(pair):
+def filter_no_dns_record_domains(pair):
     domain_name, domain_obj = pair
-    return domain_obj.DNS_check_result.status == CheckStatus.DOMAIN_NOT_FOUND
+    return domain_obj.DNS_check_result.status == CheckStatus.NO_DNS_RECORD
 
-def filter_unexpected_domains(pair):
+def filter_unknown_ips_domains(pair):
     domain_name, domain_obj = pair
-    return domain_obj.DNS_check_result.status == CheckStatus.IP_NOT_ALLOWED
+    return domain_obj.DNS_check_result.status == CheckStatus.UNKNOWN_IPS
 
 def filter_unknown_domains(pair):
     domain_name, domain_obj = pair
-    return domain_obj.DNS_check_result.status not in [CheckStatus.OK, CheckStatus.DNS_TIMEOUT, CheckStatus.DOMAIN_NOT_FOUND, CheckStatus.IP_NOT_ALLOWED]
+    return domain_obj.DNS_check_result.status not in [CheckStatus.OK, CheckStatus.DNS_TIMEOUT, CheckStatus.NO_DNS_RECORD, CheckStatus.UNKNOWN_IPS]
 
 
 def main(argv):
@@ -1145,6 +1214,8 @@ def main(argv):
         check_domains(domains)
 
         if output == 'nrpe':
+            if verbose:
+                print_warning('Verbose mode is no available for \'--output nrpe\'')
             output_check_result_nrpe(domains)
         elif output == 'json':
             output_check_result_json(domains)

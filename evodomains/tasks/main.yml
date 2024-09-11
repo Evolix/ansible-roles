@@ -11,7 +11,7 @@
 
 - name: Remove {{ evodomains_script_name }} script from local sbin
   ansible.builtin.file:
-    path: '/usr/local/bin/{{ evodomains_script_name }}'
+    path: '/usr/local/sbin/{{ evodomains_script_name }}'
     state: absent
 
 - name: Copy {{ evodomains_script_name }} script to local bin
