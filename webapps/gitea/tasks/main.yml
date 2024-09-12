@@ -6,6 +6,10 @@
     name: "{{ gitea_system_dep }}"
     update_cache: true
 
+- name: Remount /usr as RW
+  ansible.builtin.command:
+    cmd: mount -o remount,rw /usr
+
 - name: Download gitea binary
   ansible.builtin.get_url:
     url: "{{ gitea_url }}"
@@ -18,6 +22,10 @@
     src: "/usr/local/bin/gitea-{{ gitea_git_version }}-linux-amd64"
     dest: "/usr/local/bin/gitea"
     state: link
+
+- name: Remount /usr as RO
+  ansible.builtin.command:
+    cmd: mount -o remount,ro /usr
 
 - name: Add UNIX account
   ansible.builtin.user:
@@ -60,19 +68,20 @@
   ansible.builtin.template:
     src: "gitea.service.j2"
     dest: "/etc/systemd/system/gitea@.service"
+    mode: '0644'
 
 - name: Start gitea systemd unit
   ansible.builtin.systemd:
     name: "gitea@{{ gitea_instance }}"
     state: restarted
 
-- name: Create the redis dir if needed
-  ansible.builtin.file:
-    path: /home/{{ gitea_instance }}/redis
-    state: directory
-    owner: "{{ gitea_instance }}"
-    group: "{{ gitea_instance }}"
-    mode: '0750'
+#- name: Create the redis dir if needed
+#  ansible.builtin.file:
+#    path: /home/{{ gitea_instance }}/redis
+#    state: directory
+#    owner: "{{ gitea_instance }}"
+#    group: "{{ gitea_instance }}"
+#    mode: '0750'
 
 - name: Create the log dir if needed
   ansible.builtin.file:
@@ -82,28 +91,33 @@
     group: "{{ gitea_instance }}"
     mode: '0750'
 
-- name: Template redis conf
-  ansible.builtin.template:
-    src: "redis.conf.j2"
-    dest: "/home/{{ gitea_instance }}/redis/redis.conf"
-    owner: "{{ gitea_instance }}"
-    group: "{{ gitea_instance }}"
-    mode: '0640'
+#- name: Template redis conf
+#  ansible.builtin.template:
+#    src: "redis.conf.j2"
+#    dest: "/home/{{ gitea_instance }}/redis/redis.conf"
+#    owner: "{{ gitea_instance }}"
+#    group: "{{ gitea_instance }}"
+#    mode: '0640'
+
+- name: Disable defaut redis systemd unit
+  ansible.builtin.systemd:
+    name: redis
+    enabled: false
 
 - name: Template redis systemd unit
   ansible.builtin.template:
-    src: "redis.service.j2"
-    dest: "/etc/systemd/system/redis@.service"
+    src: "redis-server.service.j2"
+    dest: "/etc/systemd/system/redis-server@.service"
 
 - name: Start redis systemd unit
   ansible.builtin.systemd:
-    name: "redis@{{ gitea_instance }}"
+    name: "redis-server@{{ gitea_instance }}"
     state: started
 
-- name: Template nginx snippet for Let's Encrypt/Certbot
-  ansible.builtin.template:
-    src: "letsencrypt.conf.j2"
-    dest: "/etc/nginx/snippets/letsencrypt.conf"
+#- name: Template nginx snippet for Let's Encrypt/Certbot
+#  ansible.builtin.template:
+#    src: "letsencrypt.conf.j2"
+#    dest: "/etc/nginx/snippets/letsencrypt.conf"
 
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
@@ -126,11 +140,11 @@
       ansible.builtin.systemd:
         name: nginx
         state: reloaded
-    - name: Make sure /var/lib/letsencrypt exists and has correct permissions
-      ansible.builtin.file:
-        path: /var/lib/letsencrypt
-        state: directory
-        mode: '0755'
+#    - name: Make sure /var/lib/letsencrypt exists and has correct permissions
+#      ansible.builtin.file:
+#        path: /var/lib/letsencrypt
+#        state: directory
+#        mode: '0755'
     - name: Generate certificate with certbot
       ansible.builtin.command:
         cmd: |
@@ -139,15 +153,15 @@
            --agree-tos
            --email {{ gitea_certbot_admin_email }}
            -d {{ gitea_domains | first }}
-    - name: Create the ssl dir if needed
-      ansible.builtin.file:
-        path: /etc/nginx/ssl
-        state: directory
-        mode: '0750'
-    - name: Template ssl bloc for nginx vhost
-      ansible.builtin.template:
-        src: "ssl.conf.j2"
-        dest: "/etc/nginx/ssl/{{ gitea_domains | first }}.conf"
+#    - name: Create the ssl dir if needed
+#      ansible.builtin.file:
+#        path: /etc/nginx/ssl
+#        state: directory
+#        mode: '0750'
+#    - name: Template ssl bloc for nginx vhost
+#      ansible.builtin.template:
+#        src: "ssl.conf.j2"
+#        dest: "/etc/nginx/ssl/{{ gitea_domains | first }}.conf"
 
 - name: (Re)check if SSL certificate is present and register result
   ansible.builtin.stat:
@@ -158,6 +172,7 @@
   ansible.builtin.template:
     src: "vhost.conf.j2"
     dest: "/etc/nginx/sites-available/{{ gitea_instance }}.conf"
+    mode: '0600'
 
 - name: Enable nginx vhost for gitea
   ansible.builtin.file:

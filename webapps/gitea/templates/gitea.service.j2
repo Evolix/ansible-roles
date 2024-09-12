@@ -1,10 +1,15 @@
 [Unit]
-Description=Gitea (Git with a cup of tea)
+Description=Gitea (Git with a cup of tea) for %i
 After=syslog.target
 After=network.target
 After=mysqld.service
 
 [Service]
+# Create /run/gitea/INSTANCE folder for socket
+ExecStartPre=/bin/mkdir -m 0755 -p /run/gitea/%i
+ExecStartPre=/bin/chown %i: /run/gitea/%i
+PermissionsStartOnly=yes
+
 User=%i
 Group=%i
 
