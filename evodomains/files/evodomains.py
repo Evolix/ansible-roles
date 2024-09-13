@@ -309,12 +309,13 @@ class DNSResolutionThread(threading.Thread):
 
             # Reverse
             for ip in self.ips:
-                dig_results = dig('-x ' + ip)
-                for line in dig_results:
-                    match = re.search('^([0-9a-z\.-]+)$', line)
-                    if match:
-                        reverse = match.group(1).rstrip('.')
-                        self.ips[ip] = reverse
+                if not numeric:
+                    dig_results = dig('-x ' + ip)
+                    for line in dig_results:
+                        match = re.search('^([0-9a-z\.-]+)$', line)
+                        if match:
+                            reverse = match.group(1).rstrip('.')
+                            self.ips[ip] = reverse
                 if not self.ips[ip]:
                     self.ips[ip] = ip
 
@@ -547,7 +548,7 @@ def output_check_result_human(domain_summaries):
     if verbose and ok_domains:
         print('\nOK DNS:')
         for domain in sorted_domains(ok_domains.keys()):
-            ips = list(set(unknown_ips_domains[domain].DNS_check_result.ips.values()) - set(unknown_ips_domains[domain].DNS_check_result.unknown_ips))
+            ips = list(set(ok_domains[domain].DNS_check_result.ips.values()) - set(ok_domains[domain].DNS_check_result.unknown_ips))
             ips = ', '.join(ips)
             print('  {} -> [{}]'.format(domain, ips))
             output_comments_human(domain_summaries[domain], '    Comment(s): ')
@@ -1122,19 +1123,21 @@ def check_domains(domain_summaries):
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('action', metavar='ACTION', help='Values: check-dns, list')
-    parser.add_argument('-o', '--output', default='human', help='Output format. Values: human (default), json, nrpe (only with check-dns action)')
     parser.add_argument('-d', '--debug', action='store_true', help='Print debug to stderr and enable --verbose.')
+    parser.add_argument('-n', '--numeric', action='store_true', help='Show only IPs, no reverse DNS.')
+    parser.add_argument('-o', '--output', default='human', help='Output format. Values: human (default), json, nrpe (only with check-dns action)')
+    parser.add_argument('-s', '--no-warnings', action='store_true', help='Silence warnings (useful for --output json).')
     parser.add_argument('-v', '--verbose', action='store_true', help='Print more output to stdout.')
-    parser.add_argument('-n', '--no-warnings', action='store_true', help='Do not print warnings (usefull for --output json)).')
     args = parser.parse_args()
 
-    global action, output, debug, verbose, warning
+    global action, debug, numeric, output, warning, verbose
     action = args.action
-    output = args.output
-    verbose = args.verbose
     debug = args.debug
-    verbose = true if debug else args.verbose
+    numeric = args.numeric
+    output = args.output
     warning = not args.no_warnings
+    verbose = args.verbose
+    verbose = true if debug else args.verbose
 
     for arg, value in vars(args).items():
         print_debug('{} = {}'.format(arg, value))

@@ -11,7 +11,7 @@ _evodomains_dynamic_completion() {
     done
 
     local prev="${COMP_WORDS[$COMP_CWORD - 1]}"
-    local words="--output --verbose --no-warnings --help"
+    local words="--output --numeric --verbose --no-warnings --help"
 
     if [ -z "${action}" ]; then
         words="check-dns list ${words}"
