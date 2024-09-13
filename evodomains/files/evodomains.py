@@ -24,15 +24,17 @@ import threading
 import time
 import argparse
 import json
+import shutil
 from enum import Enum
 from typing import Type, List
-try:
-    from cryptography import x509
-    from cryptography.hazmat.primitives import hashes
-    from cryptography.hazmat.backends import default_backend
-    from cryptography.x509.oid import NameOID, ExtensionOID
-except:
-    pass
+# Not used yet because not available in Debian <= 8
+#try:
+#    from cryptography import x509
+#    from cryptography.hazmat.primitives import hashes
+#    from cryptography.hazmat.backends import default_backend
+#    from cryptography.x509.oid import NameOID, ExtensionOID
+#except:
+#    pass
 
 
 """ Constants """
@@ -54,6 +56,11 @@ domain_san_regex = re.compile('DNS:(((?!-)[A-Za-z0-9-\*]{1,63}(?<!-)\.)+[A-Za-z]
 DNS_timeout = 5
 
 
+""" Global vars """
+
+dep_openssl = False
+
+
 """ Data structures """
 
 class DomainSource:
@@ -61,7 +68,10 @@ class DomainSource:
     For inheritance only, should not be instantiated.
     Attributes:
         - domain: the domain or subdomain
-        - source: 'apache', 'nginx', 'certbot', 'evoacme', 'evodomains', 'manual'
+        - source:
+            - 'apache', 'nginx', 'certbot', 'evoacme'
+            - 'evodomains' : from evodomains configuration (included_domains_check.list)
+            - 'manual' : from a manual certificate
         - type: type of source ('config', 'certificate')
         - path: config or certificate path where the domain was found
         - line: line in config file or certificate where the domain was found
@@ -142,7 +152,7 @@ class CertificateSource(DomainSource):
 class CheckStatus(Enum):
     """DNS answer status"""
     OK = 1
-    UNKNOWN = 2
+    ERROR = 2
     DNS_TIMEOUT = 3
     NO_DNS_RECORD = 4
     UNKNOWN_IPS = 5
@@ -150,7 +160,7 @@ class CheckStatus(Enum):
 
 class DNSCheckResult:
     def __init__(self):
-        self.status = CheckStatus.UNKNOWN
+        self.status = CheckStatus.ERROR  # default to error if set_status() not called
         self.ips = {}  # { IP: reverse, … }
         self.unknown_ips = []
         self.comments = []
@@ -406,7 +416,7 @@ def is_certbot():
 
 def get_certificate_domains(cert_path, source):
     """List the domains in the certificate with OpenSSL binary
-    (Python module cryptography.x509 is not available on Debian 8).
+    (Python module cryptography.x509 is not available on Debian <= 8).
     Return a list of CertificateSource.
     """
     sources = []
@@ -488,17 +498,17 @@ def output_check_result_nrpe(domain_summaries):
     timeout_domains = dict(filter(filter_timeout_domains, domain_summaries.items()))
     no_dns_record_domains = dict(filter(filter_no_dns_record_domains, domain_summaries.items()))
     unknown_ips_domains = dict(filter(filter_unknown_ips_domains, domain_summaries.items()))
-    unknown_domains = dict(filter(filter_unknown_domains, domain_summaries.items()))
+    error_domains = dict(filter(filter_error_domains, domain_summaries.items()))
 
     n_ok = len(ok_domains)
     n_warnings = len(timeout_domains) + len(no_dns_record_domains) + len(unknown_ips_domains)
-    n_unknown = len(unknown_domains)
+    n_errors = len(error_domains)
 
-    msg = 'WARNING' if n_warnings or n_unknown else 'OK'
+    msg = 'WARNING' if n_warnings or n_errors else 'OK'
 
-    print('{} - {} UNK / 0 CRIT / {} WARN / {} OK \n'.format(msg, n_unknown, n_warnings, n_ok))
+    print('{} - {} UNK / 0 CRIT / {} WARN / {} OK \n'.format(msg, n_errors, n_warnings, n_ok))
 
-    for domain in sorted_domains(unknown_domains.keys()):
+    for domain in sorted_domains(error_domains.keys()):
         comments = ' (' + ', '.join(domain_summaries[domain].DNS_check_result.comments).lower() + ')' if domain_summaries[domain].DNS_check_result.comments else ''
         print('UNKNOWN - DNS status of {}{}'.format(domain, comments))
     for domain in sorted_domains(timeout_domains.keys()):
@@ -512,7 +522,7 @@ def output_check_result_nrpe(domain_summaries):
         comments = ' (' + ', '.join(domain_summaries[domain].DNS_check_result.comments).lower() + ')' if domain_summaries[domain].DNS_check_result.comments else ''
         print('WARNING - {} resolves to unknown IP(s): {}{}'.format(domain, ips, comments))
 
-    sys.exit(1) if n_warnings or n_unknown else sys.exit(0)
+    sys.exit(1) if n_warnings or n_errors else sys.exit(0)
 
 
 def output_check_result_json(domain_summaries):
@@ -522,13 +532,13 @@ def output_check_result_json(domain_summaries):
     timeout_domains = dict(filter(filter_timeout_domains, domain_summaries.items()))
     no_dns_record_domains = dict(filter(filter_no_dns_record_domains, domain_summaries.items()))
     unknown_ips_domains = dict(filter(filter_unknown_ips_domains, domain_summaries.items()))
-    unknown_domains = dict(filter(filter_unknown_domains, domain_summaries.items()))
+    error_domains = dict(filter(filter_error_domains, domain_summaries.items()))
 
     output_dict = {
         'timeout_domains': sorted_domains(timeout_domains.keys()),
         'no_dns_record_domains': sorted_domains(no_dns_record_domains.keys()),
         'unknown_ips_domains': sorted_domains(unknown_ips_domains.keys()),
-        'unknown_domains': sorted_domains(unknown_domains.keys())
+        'error_domains': sorted_domains(error_domains.keys())
     }
     if verbose:
         output_dict['ok_domains'] = sorted_domains(ok_domains.keys())
@@ -543,7 +553,7 @@ def output_check_result_human(domain_summaries):
     timeout_domains = dict(filter(filter_timeout_domains, domain_summaries.items()))
     no_dns_record_domains = dict(filter(filter_no_dns_record_domains, domain_summaries.items()))
     unknown_ips_domains = dict(filter(filter_unknown_ips_domains, domain_summaries.items()))
-    unknown_domains = dict(filter(filter_unknown_domains, domain_summaries.items()))
+    error_domains = dict(filter(filter_error_domains, domain_summaries.items()))
 
     if verbose and ok_domains:
         print('\nOK DNS:')
@@ -554,7 +564,7 @@ def output_check_result_human(domain_summaries):
             output_comments_human(domain_summaries[domain], '    Comment(s): ')
             output_domain_sources_human(domain_summaries[domain], '    ')
 
-    if timeout_domains or no_dns_record_domains or unknown_ips_domains or unknown_domains:
+    if timeout_domains or no_dns_record_domains or unknown_ips_domains or error_domains:
 
         if timeout_domains:
             print('\nDNS timeouts:')
@@ -583,9 +593,9 @@ def output_check_result_human(domain_summaries):
                 output_comments_human(domain_summaries[domain], '    Comment(s): ')
                 output_domain_sources_human(domain_summaries[domain], '    ')
 
-        if unknown_domains:
-            print('\nUnknown DNS status:')
-            for domain in sorted_domains(unknown_domains.keys()):
+        if error_domains:
+            print('\nDNS error:')
+            for domain in sorted_domains(error_domains.keys()):
                 print('  {}'.format(domain))
                 output_comments_human(domain_summaries[domain], '    Comment(s): ')
                 output_domain_sources_human(domain_summaries[domain], '    ')
@@ -749,6 +759,10 @@ def list_certificates_domains(dir_path, source):
     """
 
     print_debug('Listing {} certificates domains for source {}.'.format(dir_path, source))
+    if not dep_openssl:
+        print_debug('OpenSSL not installed, passing.')
+        return []
+
     sources = []
 
     if not os.path.exists(dir_path):
@@ -772,6 +786,10 @@ def list_letsencrypt_domains():
     Return a list of CertificateSource."
     """
     print_debug('Listing Let\'s Encrypt certificates domains.')
+    if not dep_openssl:
+        print_debug('OpenSSL not installed, passing.')
+        return []
+
     sources = []
 
     if is_certbot():
@@ -1114,7 +1132,7 @@ def check_domains(domain_summaries):
             result.add_comment('Domain in ignored domains list')
 
         if job.exception:
-            result.set_status(CheckStatus.UNKNOWN)
+            result.set_status(CheckStatus.ERROR)
             result.add_comment('Exception occured during dig: {}'.format(str(result.exception)))
 
         job.domain_summary.set_DNS_check_result(result)
@@ -1151,11 +1169,18 @@ def parse_arguments():
 
 
 def check_deps():
-    #TODO: socat, openssl…
-    # Replaced by openssl (for now, it is useless to maintain 2 ways of reading certs)
+    #TODO: socat for HaProxy
+
+    if shutil.which('openssl'):
+        dep_openssl = True
+    else:
+        print_warning('Missing \'openssl\' dependency, cannot list nor check certificates domains.')
+
+    # Lib cryptography.x509 is more pythonic than OpenSSL, but not used for now because not available on Debian <= 8
+    # We don't want to maintain 2 ways of reading certs).
+    # See get_certificate_domains().
     #if 'cryptography.x509' not in sys.modules:
     #    print_warning('Python3 cryptography.x509 module missing (need python3-cryptography >= 0.9), failing over OpenSSL binary.')
-    pass
 
 
 def load_conf():
@@ -1194,9 +1219,9 @@ def filter_unknown_ips_domains(pair):
     domain_name, domain_obj = pair
     return domain_obj.DNS_check_result.status == CheckStatus.UNKNOWN_IPS
 
-def filter_unknown_domains(pair):
+def filter_error_domains(pair):
     domain_name, domain_obj = pair
-    return domain_obj.DNS_check_result.status not in [CheckStatus.OK, CheckStatus.DNS_TIMEOUT, CheckStatus.NO_DNS_RECORD, CheckStatus.UNKNOWN_IPS]
+    return domain_obj.DNS_check_result.status == CheckStatus.ERROR
 
 
 def main(argv):
