@@ -1,9 +1,10 @@
 ---
 evodomains_script_name: evodomains
-evodomains_config_path: /etc/evolinux/evodomains
-evodomains_ignored_domains_list: ignored_domains_check.list
-evodomains_included_domains_list: included_domains_check.list
-evodomains_allowed_ips_list: allowed_ips_check.list
+evodomains_conf_path: /etc/evolinux/evodomains
+evodomains_conf_file_ignored_domains_list: ignored_domains_check.list
+evodomains_conf_file_included_domains_list: included_domains_check.list
+evodomains_conf_file_allowed_ips_list: allowed_ips_check.list
+evodomains_conf_file_wildcard_replacements: wildcard_replacements
 evodomains_dependencies:
   - bash-completion
 #  - python3-cryptography

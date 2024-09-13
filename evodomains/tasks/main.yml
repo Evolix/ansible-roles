@@ -30,10 +30,11 @@
     dest: '/etc/bash_completion.d/{{ evodomains_script_name }}_completion'
     mode: "0644"
 
-- name: '{{ evodomains_config_path }} exists'
+- name: Directory {{ evodomains_conf_path }} exists
   ansible.builtin.file:
-    path: '{{ evodomains_config_path }}'
+    path: '{{ evodomains_conf_path }}'
     state: directory
+
 ### TMP tasks ###
 
 - name: Old configuration directory
@@ -46,56 +47,64 @@
     src: /etc/evolinux/domains/
     dest: /etc/evolinux/evodomains/
     remote_src: true
-  when: old_conf_dir.stat.isdir
+  when: old_conf_dir.stat.isdir is defined and old_conf_dir.stat.isdir
 
 - name: Remove old configuration directory
   ansible.builtin.file:
     path: /etc/evolinux/domains
     state: absent
-  when: old_conf_dir.stat.isdir
+  when: old_conf_dir.stat.isdir is defined and old_conf_dir.stat.isdir
 
 #################
 
-- name: Create config file {{ domains_ignored_domains_list }}
+- name: Create config file {{ domains_conf_file_ignored_domains_list }}
   ansible.builtin.blockinfile:
-    path: '{{ evodomains_config_path }}/{{ evodomains_ignored_domains_list }}'
+    path: '{{ evodomains_conf_path }}/{{ evodomains_conf_file_ignored_domains_list }}'
     create: true
     marker: '### {mark} ANSIBLE MANAGED HEADER'
     insertbefore: BOF
     block: |
-      # Domains present in vhosts or SSL certificates whose DNS records should
-      # not be checked by 'evodomains --check-dns'.
-      # Note: custom record IPs can also be added to /etc/evolinux/evodomains_allowed_ips.list,
-      # this is useful for load-balanced domains or NAT.
+      # Domains to exclude from check with command 'evodomains check-dns'.
       # Format: one domain per line, regex and wildcards not supported.
 
-- name: Create config file {{ evodomains_included_domains_list }}
+- name: Create config file {{ evodomains_conf_file_included_domains_list }}
   ansible.builtin.blockinfile:
-    path: '{{ evodomains_config_path }}/{{ evodomains_included_domains_list }}'
+    path: '{{ evodomains_conf_path }}/{{ evodomains_conf_file_included_domains_list }}'
     create: true
     marker: '### {mark} ANSIBLE MANAGED HEADER'
     insertbefore: BOF
     block: |
-      # Domains absent from vhosts or SSL certificates whose DNS records must
-      # be checked by 'evodomains --check-dns'.
+      # Domains to check explicitely with command 'evodomains check-dns'.
+      # This is useful to check a domain that is not in supported confs
+      # (Apache, Nginx, SSL certs…).
       # Format: one domain per line, regex and wildcards not supported.
 
-- name: Create config file {{ evodomains_allowed_ips_list }}
+- name: Create config file {{ evodomains_conf_file_allowed_ips_list }}
   ansible.builtin.blockinfile:
-    path: '{{ evodomains_config_path }}/{{ evodomains_allowed_ips_list }}'
+    path: '{{ evodomains_conf_path }}/{{ evodomains_conf_file_allowed_ips_list }}'
     create: true
     marker: '### {mark} ANSIBLE MANAGED HEADER'
     insertbefore: BOF
     block: |
-      # External IPs the domains of this server are allowed to point for
-      # 'evodomains --check-dns'.
+      # External IPs allowed with command 'evodomains check-dns'.
       # This is useful for load-balanced domains or NAT.
       # Note: the network interfaces IPs of the server are allowed by default.
       # Format: one IP per line, regex and wildcards not supported.
 
+- name: Create config file {{ evodomains_conf_file_wildcard_replacements }}
+  ansible.builtin.blockinfile:
+    path: '{{ evodomains_conf_path }}/{{ evodomains_conf_file_wildcard_replacements }}'
+    create: true
+    marker: '### {mark} ANSIBLE MANAGED HEADER'
+    insertbefore: BOF
+    block: |
+      # Domains to check for wildcards with command 'evodomains check-dns'
+      # By default, wildcards like *.example.com are replaced by www.example.com.
+      # Format: one wildcard par line 'WILDCARD_DOMAIN REPLACEMENT_DOMAIN'
+
 - name: Add default allowed IPs in config file
   ansible.builtin.lineinfile:
-    path: '{{ evodomains_config_path }}/{{ evodomains_allowed_ips_list }}'
+    path: '{{ evodomains_conf_path }}/{{ evodomains_conf_file_allowed_ips_list }}'
     line: '{{ item }}'
   loop: '{{ evodomains_allowed_ips }}'
 
