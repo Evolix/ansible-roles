@@ -9,10 +9,14 @@
   ansible.builtin.include_role:
     name: remount-usr
 
+### TMP task ###
+
 - name: Remove {{ evodomains_script_name }} script from local sbin
   ansible.builtin.file:
     path: '/usr/local/sbin/{{ evodomains_script_name }}'
     state: absent
+
+################
 
 - name: Copy {{ evodomains_script_name }} script to local bin
   ansible.builtin.copy:
@@ -25,6 +29,32 @@
     src: '{{ evodomains_script_name }}_completion'
     dest: '/etc/bash_completion.d/{{ evodomains_script_name }}_completion'
     mode: "0644"
+
+- name: '{{ evodomains_config_path }} exists'
+  ansible.builtin.file:
+    path: '{{ evodomains_config_path }}'
+    state: directory
+### TMP tasks ###
+
+- name: Old configuration directory
+  ansible.builtin.stat:
+    path: /etc/evolinux/domains
+  register: old_conf_dir
+
+- name: Copy old configuration directory to the new one
+  ansible.builtin.copy:
+    src: /etc/evolinux/domains/
+    dest: /etc/evolinux/evodomains/
+    remote_src: true
+  when: old_conf_dir.stat.isdir
+
+- name: Remove old configuration directory
+  ansible.builtin.file:
+    path: /etc/evolinux/domains
+    state: absent
+  when: old_conf_dir.stat.isdir
+
+#################
 
 - name: Create config file {{ domains_ignored_domains_list }}
   ansible.builtin.blockinfile:

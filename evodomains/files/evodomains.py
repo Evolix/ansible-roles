@@ -37,7 +37,7 @@ except:
 
 """ Constants """
 
-config_dir_path = '/etc/evolinux/domains'
+config_dir_path = '/etc/evolinux/evodomains'
 ignored_domains_file = 'ignored_domains_check.list'
 included_domains_file = 'included_domains_check.list'
 allowed_ips_file = 'allowed_ips_check.list'
