@@ -27,6 +27,7 @@ import json
 import shutil
 from enum import Enum
 from typing import Type, List
+
 # Not used yet because not available in Debian <= 8
 #try:
 #    from cryptography import x509
@@ -161,8 +162,8 @@ class CheckStatus(Enum):
 class DNSCheckResult:
     def __init__(self):
         self.status = CheckStatus.ERROR  # default to error if set_status() not called
-        self.ips = {}  # { IP: reverse, … }
-        self.unknown_ips = []
+        self.known_ips = {}  # { IP: reverse, … }
+        self.unknown_ips = {}  # idem
         self.comments = []
 
     def set_status(self, status):
@@ -171,14 +172,17 @@ class DNSCheckResult:
         self.status = status
 
     def add_ip(self, ip, reverse, known):
-        if reverse:
-            self.ips[ip] = reverse
+        value = reverse if reverse else ip
+        if known:
+            self.known_ips[ip] = reverse
         else:
-            self.ips[ip] = ip
-        if not known:
-            self.unknown_ips.append(ip)
+            self.unknown_ips[ip] = ip
 
-    def add_comment(self, comment):
+    def add_comment(self, comment: str):
+        """Argument 'comment' must be a simple sentence,
+        without capital letter nor dot at the end.
+        All comments will be concatenated, separated by commas.
+        """
         self.comments.append(comment)
 
 
@@ -509,18 +513,43 @@ def output_check_result_nrpe(domain_summaries):
     print('{} - {} UNK / 0 CRIT / {} WARN / {} OK \n'.format(msg, n_errors, n_warnings, n_ok))
 
     for domain in sorted_domains(error_domains.keys()):
-        comments = ' (' + ', '.join(domain_summaries[domain].DNS_check_result.comments).lower() + ')' if domain_summaries[domain].DNS_check_result.comments else ''
+        comments = ''
+        if domain_summaries[domain].DNS_check_result.comments:
+            comments = ' (' + ', '.join(domain_summaries[domain].DNS_check_result.comments).lower() + ')'
         print('UNKNOWN - DNS status of {}{}'.format(domain, comments))
+
     for domain in sorted_domains(timeout_domains.keys()):
+        comments = ''
         comments = ' (' + ', '.join(domain_summaries[domain].DNS_check_result.comments).lower() + ')' if domain_summaries[domain].DNS_check_result.comments else ''
         print('WARNING - timeout resolving {}{}'.format(domain, comments))
+
     for domain in sorted_domains(no_dns_record_domains.keys()):
-        comments = ' (' + ', '.join(domain_summaries[domain].DNS_check_result.comments).lower() + ')' if domain_summaries[domain].DNS_check_result.comments else ''
+        comments = ''
+        if domain_summaries[domain].DNS_check_result.comments:
+            comments = ' (' + ', '.join(domain_summaries[domain].DNS_check_result.comments).lower() + ')'
         print('WARNING - no DNS record for {}{}'.format(domain, comments))
+
     for domain in sorted_domains(unknown_ips_domains.keys()):
-        ips = ', '.join(unknown_ips_domains[domain].DNS_check_result.unknown_ips.values())
-        comments = ' (' + ', '.join(domain_summaries[domain].DNS_check_result.comments).lower() + ')' if domain_summaries[domain].DNS_check_result.comments else ''
-        print('WARNING - {} resolves to unknown IP(s): {}{}'.format(domain, ips, comments))
+        unknown_ips = ', '.join(unknown_ips_domains[domain].DNS_check_result.unknown_ips.values())
+        known_ips = ', '.join(unknown_ips_domains[domain].DNS_check_result.known_ips.values())
+        comments = ''
+        if domain_summaries[domain].DNS_check_result.comments:
+            comments = ' (' + ', '.join(domain_summaries[domain].DNS_check_result.comments).lower() + ')'
+        if known_ips:
+            print('WARNING - {} resolves to unknown IP(s): {} and known IPs:{}{}'.format(domain, unknown_ips, known_ips, comments))
+        else:
+            print('WARNING - {} resolves to unknown IP(s): {}{}'.format(domain, unknown_ips, comments))
+
+    if verbose:
+        for domain in sorted_domains(ok_domains.keys()):
+            known_ips = ', '.join(ok_domains[domain].DNS_check_result.known_ips.values())
+            comments = ''
+            if domain_summaries[domain].DNS_check_result.comments:
+                comments = ' (' + ', '.join(domain_summaries[domain].DNS_check_result.comments).lower() + ')'
+            if known_ips:
+                print('OK - {} resolves to known IP(s): {}{}'.format(domain, known_ips, comments))
+            else:  # case domain is in ignored domains list
+                print('OK - {}{}'.format(domain, comments))
 
     sys.exit(1) if n_warnings or n_errors else sys.exit(0)
 
@@ -534,15 +563,34 @@ def output_check_result_json(domain_summaries):
     unknown_ips_domains = dict(filter(filter_unknown_ips_domains, domain_summaries.items()))
     error_domains = dict(filter(filter_error_domains, domain_summaries.items()))
 
+    unknown_ips_domains_output_dict = {}
+    for domain in sorted_domains(unknown_ips_domains.keys()):
+        unknown_ips = unknown_ips_domains[domain].DNS_check_result.unknown_ips.values()
+        known_ips = unknown_ips_domains[domain].DNS_check_result.known_ips.values()
+        unknown_ips_domains_output_dict[domain] = {}
+        if known_ips:
+            unknown_ips_domains_output_dict[domain]['unknown_ips'] = sorted(unknown_ips)
+            unknown_ips_domains_output_dict[domain]['known_ips'] = sorted(known_ips)
+        else:
+            unknown_ips_domains_output_dict[domain] = sorted(unknown_ips)
+
+
+    if verbose:
+        ok_domains_output_dict = {}
+        for domain in sorted_domains(ok_domains.keys()):
+            known_ips = ok_domains[domain].DNS_check_result.known_ips.values()
+            ok_domains_output_dict[domain] = sorted(known_ips)
+
     output_dict = {
         'timeout_domains': sorted_domains(timeout_domains.keys()),
         'no_dns_record_domains': sorted_domains(no_dns_record_domains.keys()),
-        'unknown_ips_domains': sorted_domains(unknown_ips_domains.keys()),
-        'error_domains': sorted_domains(error_domains.keys())
+        'error_domains': sorted_domains(error_domains.keys()),
+        'unknown_ips_domains': unknown_ips_domains_output_dict
     }
     if verbose:
-        output_dict['ok_domains'] = sorted_domains(ok_domains.keys())
+        output_dict['ok_domains'] = ok_domains_output_dict
         output_dict['details'] = domain_summaries
+
     print(json.dumps(output_dict, sort_keys=True, indent=4, cls=CustomJSONEncoder))
 
 
@@ -558,9 +606,8 @@ def output_check_result_human(domain_summaries):
     if verbose and ok_domains:
         print('\nOK DNS:')
         for domain in sorted_domains(ok_domains.keys()):
-            ips = list(set(ok_domains[domain].DNS_check_result.ips.values()) - set(ok_domains[domain].DNS_check_result.unknown_ips))
-            ips = ', '.join(ips)
-            print('  {} -> [{}]'.format(domain, ips))
+            known_ips = ', '.join(ok_domains[domain].DNS_check_result.known_ips.values())
+            print('  {} -> [{}]'.format(domain, known_ips))
             output_comments_human(domain_summaries[domain], '    Comment(s): ')
             output_domain_sources_human(domain_summaries[domain], '    ')
 
@@ -583,9 +630,9 @@ def output_check_result_human(domain_summaries):
         if unknown_ips_domains:
             print('\nUnknown resolved IPs:')
             for domain in sorted_domains(unknown_ips_domains.keys()):
-                unknown_ips = ', '.join(unknown_ips_domains[domain].DNS_check_result.unknown_ips)
+                unknown_ips = ', '.join(unknown_ips_domains[domain].DNS_check_result.unknown_ips.values())
                 output_str = '  {} -> unknown [{}]'.format(domain, unknown_ips)
-                known_ips = list(set(unknown_ips_domains[domain].DNS_check_result.ips.values()) - set(unknown_ips_domains[domain].DNS_check_result.unknown_ips))
+                known_ips = unknown_ips_domains[domain].DNS_check_result.known_ips.values()
                 if known_ips:
                     known_ips = ', '.join(known_ips)
                     output_str += ', known [{}]'.format(domain, known_ips)
@@ -1111,9 +1158,9 @@ def check_domains(domain_summaries):
 
         if '*' in job.domain_summary.domain:
             if job.domain_summary.replacement_domain:
-                result.add_comment('Resolution of wildcard {} checked on {}'.format(job.domain_summary.domain, job.domain_summary.replacement_domain))
+                result.add_comment('resolution of {} checked on {}'.format(job.domain_summary.domain, job.domain_summary.replacement_domain))
             else:
-                result.add_comment('Resolution of wildcard {} checked on subdomain www.'.format(job.domain_summary.domain))
+                result.add_comment('resolution of {} checked on subdomain www'.format(job.domain_summary.domain))
 
         for ip in job.ips:
             result.add_ip(ip, job.ips[ip], ip in allowed_ips)
@@ -1129,11 +1176,11 @@ def check_domains(domain_summaries):
 
         if job.domain_summary.domain in ignored_domains:
             result.set_status(CheckStatus.OK)
-            result.add_comment('Domain in ignored domains list')
+            result.add_comment('domain is in ignored domains list')
 
         if job.exception:
             result.set_status(CheckStatus.ERROR)
-            result.add_comment('Exception occured during dig: {}'.format(str(result.exception)))
+            result.add_comment('exception occured during dig: {}'.format(str(result.exception)))
 
         job.domain_summary.set_DNS_check_result(result)
 
@@ -1242,8 +1289,6 @@ def main(argv):
         check_domains(domains)
 
         if output == 'nrpe':
-            if verbose:
-                print_warning('Verbose mode is no available for \'--output nrpe\'')
             output_check_result_nrpe(domains)
         elif output == 'json':
             output_check_result_json(domains)
