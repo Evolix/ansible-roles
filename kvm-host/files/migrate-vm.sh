@@ -1,27 +1,47 @@
-#!/bin/sh
+#!/bin/bash
 
 # WARN: This script is a work in progress!
 # The happy path works, but the rest is not finalized yet.
 
 # TODO:
-# * exit with error if there is no DRBD
 # * logging (stdout/stderr + syslog)
 # * more checks, rollback if needed…
 # * different return codes for different errors
-# * switch to Bash to use local and readonly variables
+# * use local and readonly variables
 
 VERSION="23.10.1"
 
+# If expansion is attempted on an unset variable or parameter, the shell prints an
+# error message, and, if not interactive, exits with a non-zero status.
+set -o nounset
+
+# The pipeline's return status is the value of the last (rightmost) command
+# to exit with a non-zero status, or zero if all commands exit successfully.
+set -o pipefail
+
+# Enable trace mode if called with environment variable TRACE=1
+if [[ "${TRACE-0}" == "1" ]]; then
+    set -o xtrace
+fi
+
+PROGPATH=$(readlink -m "${0}")
+readonly PROGPATH
+PROGNAME=$(basename "${PROGPATH}")
+readonly PROGNAME
+# # shellcheck disable=SC2124
+# ARGS=$@
+# readonly ARGS
+
 show_version() {
     cat <<END
-migrate-vm version ${VERSION}
+${PROGNAME} version ${VERSION}
 
-Copyright 2018-2023 Evolix <info@evolix.fr>,
+Copyright 2018-2024 Evolix <info@evolix.fr>,
                Jérémy Lecour <jlecour@evolix.fr>,
                Victor Laborie <vlaborie@evolix.fr>
                and others.
 
-migrate-vm comes with ABSOLUTELY NO WARRANTY.  This is free software,
+${PROGNAME} comes with ABSOLUTELY NO WARRANTY.  This is free software,
 and you are welcome to redistribute it under certain conditions.
 See the GNU General Public Licence for details.
 END
@@ -29,22 +49,44 @@ END
 
 show_help() {
     cat <<END
-migrate-vm migrates KVM/qemu virtual machines between hypervisors
+${PROGNAME} migrates KVM/qemu virtual machines between hypervisors
 
 END
     show_usage
 }
 show_usage() {
     cat <<END
-Usage: migrate-vm --vm <vm-name>
-  or   migrate-vm --vm <vm-name> --resource <drbd-resource-name>
+Usage: ${PROGNAME} --vms <vm1-name>[,<vm2-name>]
+  or   ${PROGNAME} --vms <vm-name>:<drbd-resource-name>
+  or   ${PROGNAME} --vms /path/to/list
+  or   printf "vm1-name\nvm2-name\n" | ${PROGNAME} --vms -
+  or   ${PROGNAME} --all
 
 Options
-  --vm              VM name (from libvirt point of view)
-  --resource        DRBD resource name (default to VM name)
-                    and define it on the destination (default)
-  --help            Print this message and exit
-  --version         Print version and exit
+  --vms         Migrate this list of VMs
+  --all         Migrate all running VMs
+  --[no-]report Store remotely (or not) the list of migrated VMs
+  --report-path Remote path for the report
+  --help        Print this message and exit
+  --version     Print version and exit
+
+For multi-line inputs, a line beginning with # is ignored.
+
+If the DRBD resource name defaults to VM name.
+Otherwise it can be specified by joining the VM name
+and the resource name with a colon : "vm-name:drbd-res".
+It is applicable to the inline parameter and to multi-line inputs.
+
+A list of migrated VM is built during the process.
+If more than 1 VM or if "--report" was passed, then the file is saved
+on the remote server.
+If only 1 VM or if "--no-report" is passed, then the file is not saved.
+The file path is "/root/migrate-vm.<hostname>.<date>" by default,
+but it can be customized with "--report-path <PATH>"
+
+For backward compatibility, "--vm" and "--resource" can be passed.
+Their value will be used to make a list with a single VM.
+These options are ignored if "--all" or "--vms" is used.
 END
 }
 
@@ -308,16 +350,25 @@ migrate_to() {
 
     sleep 1
     set_drbd_role secondary "${resource}"
+
+    # When the report is enabled, the VM name is added when the migration finishes.
+    # If the DRBD resource name is different than the VM name, it is also added on the same line.
+    if [ "${option_report}" -eq 1 ] && [ -n "${option_report_path}" ]; then
+        if [ "${vm}" = "${resource}" ]; then
+            execute_remotely "${remote_ip}" "echo \"${vm}\" >> ${option_report_path}"
+        else
+            execute_remotely "${remote_ip}" "echo \"${vm}:${resource}\" >> ${option_report_path}"
+        fi
+    fi
 }
 
-main() {
+migrate() {
     vm=${1:-}
     resource=${2:-}
     server_ips=$(server_ips)
 
     if ! is_drbd_resource "${resource}"; then
         echo "No DRBD resource found for '${resource}\`." >&2
-        exit 1
     fi
 
     for peer in $(drbd_peers "${resource}"); do
@@ -338,7 +389,6 @@ main() {
         migrate_to "${vm}" "${resource}" "${remote_ip}" "${remote_host}"
     else
         echo "VM \"${vm}\" is not defined." >&2
-        exit 1
     fi
 
     # if is_vm_running_locally "${vm}"; then
@@ -351,15 +401,90 @@ main() {
     # fi
 }
 
+main() {
+    # Temp file to store the list of VMs to migrate, destroyed at exit.
+    vm_list_tmp=$(mktemp --tmpdir "migrate-vm.XXXXX")
+    # shellcheck disable=SC2064
+    trap "rm -f \"${vm_list_tmp}\"" 0
+
+    # Prepare a temp file with list of VM to migrate
+
+    # If "--all" option is passed, ignore other options
+    if [ "${option_all}" -eq 1 ]; then
+        virsh list --name --state-running | grep -vE "^$" > "${vm_list_tmp}"
+    else
+        # Look for an existing path or stdin or a comma-separated list.
+        # Lines starting with # (comments) are ignored
+        vm_list_file=$(realpath "${option_vms}" 2> /dev/null)
+        if [ -n "${vm_list_file}" ] && [ -r "${vm_list_file}" ]; then
+            # echo "Using ${vm_list_file} as input."
+            grep --invert-match --extended-regexp "^#" < "${vm_list_file}" > "${vm_list_tmp}"
+        elif [ "${option_vms}" = "-" ]; then
+            # echo "Using stdin as input."
+            read -rd '' vm_list
+            echo "${vm_list}" | grep --invert-match --extended-regexp "^#" > "${vm_list_tmp}"
+        else
+            # echo "Using option as input."
+            echo "${option_vms}" | tr ',' '\n' > "${vm_list_tmp}"
+        fi
+    fi
+
+    # Initialize counters
+    count_total=$(wc -l "${vm_list_tmp}" | cut -d ' ' -f 1)
+    count_current=0
+
+    # If report is not explicitely enabled or disabed
+    if [ -z "${option_report}" ] ; then
+        # it is disabled for 1 VM, and enabled for more than 1 VM
+        if [ "${count_total}" -le 1 ]; then
+            option_report=0
+        else
+            option_report=1
+        fi
+    fi
+
+    # Default value for report path.
+    if [ -z "${option_report_path}" ]; then
+        option_report_path="/root/migrate-vm.$(hostname).$(date +'%Y%m%d%H%M%S')"
+    fi
+
+    # Migrate each VM in the list
+    while IFS= read -r line; do
+        count_current=$((count_current + 1))
+        vm=$(echo "${line}" | cut -d: -f1)
+        resource=$(echo "${line}" | cut -d: -f2)
+        echo "[$(date +'%Y-%m-%d %H:%M:%S')] VM ${count_current}/${count_total}: ${vm} (resource: ${resource})"
+        migrate "${vm}" "${resource}"
+    done < "${vm_list_tmp}"
+
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] Finish"
+
+    # if report is enabled, print instructions on how to use it.
+    if [ "${option_report}" -eq 1 ]; then
+        echo ""
+        echo "The list of migrated VMs has been saved remotely to '${option_report_path}'."
+        echo "You can migrate them back (from remote server) with:"
+        echo "# migrate-vm --vms ${option_report_path}"
+    fi
+}
+
 if [ "$(id -u)" -ne "0" ] ; then
     echo "This script must be run as root." >&2
     exit 1
 fi
 
+# Default values for options
+option_all=0
+option_report=""
+option_report_path=""
+option_vms=""
+option_vm=""
+option_resource=""
+
 # Parse options
 # based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
 while :; do
-    case $1 in
+    case ${1:-} in
         -h|-\?|--help)
             show_help
             exit 0
@@ -368,17 +493,59 @@ while :; do
             show_version
             exit 0
             ;;
-        --transient)
-            printf 'WARNING: "transient" mode has been removed.\n' >&2
+        --all)
+            option_all=1
+            ;;
+        --report)
+            option_report=1
+            ;;
+        --no-report)
+            option_report=0
+            ;;
+        --report-path)
+            # with value separated by space
+            if [ -n "$2" ]; then
+                option_report_path=$2
+                shift
+            else
+                printf 'ERROR: "--report-path" requires a non-empty option argument.\n' >&2
+                exit 1
+            fi
+            ;;
+        --report-path=?*)
+            # with value speparated by =
+            option_report_path=${1#*=}
+            ;;
+        --report-path=)
+            # without value
+            printf 'ERROR: "--report-path" requires a non-empty option argument.\n' >&2
             exit 1
             ;;
-        --persistent)
-            printf 'WARNING: "persistent" mode is the only one available. You can remove this argument from your command.\n' >&2
+        --vms)
+            # with value separated by space
+            if [ -n "$2" ]; then
+                option_vms=$2
+                shift
+            else
+                printf 'ERROR: "--vms" requires a non-empty option argument.\n' >&2
+                exit 1
+            fi
             ;;
+        --vms=?*)
+            # with value speparated by =
+            option_vms=${1#*=}
+            ;;
+        --vms=)
+            # without value
+            printf 'ERROR: "--vms" requires a non-empty option argument.\n' >&2
+            exit 1
+            ;;
+
+        # Backward compatibility and deprecations
         --vm)
             # with value separated by space
             if [ -n "$2" ]; then
-                vm=$2
+                option_vm=$2
                 shift
             else
                 printf 'ERROR: "--vm" requires a non-empty option argument.\n' >&2
@@ -387,7 +554,7 @@ while :; do
             ;;
         --vm=?*)
             # with value speparated by =
-            vm=${1#*=}
+            option_vm=${1#*=}
             ;;
         --vm=)
             # without value
@@ -397,7 +564,7 @@ while :; do
         --resource)
             # with value separated by space
             if [ -n "$2" ]; then
-                resource=$2
+                option_resource=$2
                 shift
             else
                 printf 'ERROR: "--resource" requires a non-empty option argument.\n' >&2
@@ -406,13 +573,21 @@ while :; do
             ;;
         --resource=?*)
             # with value speparated by =
-            resource=${1#*=}
+            option_resource=${1#*=}
             ;;
         --resource=)
             # without value
             printf 'ERROR: "--resource" requires a non-empty option argument.\n' >&2
             exit 1
             ;;
+        --transient)
+            printf 'WARNING: "transient" mode has been removed.\n' >&2
+            exit 1
+            ;;
+        --persistent)
+            printf 'WARNING: "persistent" mode is the only one available. You can remove this argument from your command.\n' >&2
+            ;;
+
         --)
             # End of all options.
             shift
@@ -434,20 +609,17 @@ while :; do
     shift
 done
 
-# Initial values
-vm=${vm:-}
-resource=${resource:-${vm}}
-
-set -u
-set -e
-
-if [ -z "${vm}" ]; then
-    echo "You must provide a VM name" >&2
-    echo "" >&2
-    show_usage >&2
-    exit 1
+# Backward compatibility
+if [ -z "${option_vms}" ] && [ -n "${option_vm}" ]; then
+    if [ -n "${option_resource}" ]; then
+        option_vms="${option_vm}:${option_resource}"
+    else
+        option_vms="${option_vm}"
+    fi
+    unset option_vm
+    unset option_resource
 fi
 
-main "${vm}" "${resource}"
+main
 
 exit 0
