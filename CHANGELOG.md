@@ -17,6 +17,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* evolinux-base: use seed for random time in periodic crontab
 
 ### Fixed
 
