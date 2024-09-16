@@ -39,6 +39,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: install evobackup-client (default: true)
 * generate-ldif: add bloc for php-fpm84
 * kvm-host: add options to migrate-vm.sh to migrate several VMs at once
+* kvm-host: migrate-vm.sh version 24.09
 * lxc-php: Allow one to install php84 on Bookworm container
 * lxc: new lxc_template_mirror option (useful to get old Debian from archive.debian.org)
 * minifirewall: remove duplicates in lists of ports, IP addresses…

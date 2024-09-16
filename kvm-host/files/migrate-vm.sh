@@ -9,7 +9,7 @@
 # * different return codes for different errors
 # * use local and readonly variables
 
-VERSION="23.10.1"
+VERSION="24.09"
 
 # If expansion is attempted on an unset variable or parameter, the shell prints an
 # error message, and, if not interactive, exits with a non-zero status.
