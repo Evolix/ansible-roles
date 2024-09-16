@@ -13,6 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* mysql : Add deploy check_mariabackup on nrpe task
+
 ### Changed
 
 ### Fixed

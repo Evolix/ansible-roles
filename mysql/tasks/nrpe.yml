@@ -56,3 +56,28 @@
   tags:
     - mysql
     - nrpe
+
+- name: "Install check_mariabackup"
+  ansible.builtin.copy:
+    src: check_mariabackup
+    dest: "/usr/local/lib/nagios/plugins/check_mariabackup"
+    mode: "0755"
+    owner: root
+    group: nagios
+    force: false
+  tags:
+    - mysql
+
+- name: Is evolinux sudoers installed?
+  ansible.builtin.stat:
+    path: /etc/sudoers.d/evolinux
+  register: sudoers_evolinux
+
+- name: sudo without password for nagios
+  ansible.builtin.lineinfile:
+    dest: /etc/sudoers.d/evolinux
+    regexp: 'check_mariabackup'
+    line: 'nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_mariabackup'
+    insertafter: '^nagios'
+    validate: "visudo -cf %s"
+  when: sudoers_evolinux.stat.exists

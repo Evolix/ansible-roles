@@ -1,0 +1,161 @@
+#!/bin/bash
+
+VERSION="24.01.2"
+
+show_version() {
+    cat <<END
+check_mariabackup version ${VERSION}
+
+Copyright 2004-2022 Evolix <info@evolix.fr>,
+                    Éric Morino <emorino@evolix.fr>
+
+check_mariabackup comes with ABSOLUTELY NO WARRANTY.  This is free software,
+and you are welcome to redistribute it under certain conditions.
+See the GNU Affero General Public License v3.0 for details.
+END
+}
+
+show_help() {
+    cat <<EOF
+Usage: check_mariabackup --backup-dir=/path/to/mariabackup/ -w "warning time value" -c "critical time value"
+--warning=: warning time value with d=days, h=hours, s=seconds
+--critical=: critical time value with d=days, h=hours, s=seconds
+EOF
+}
+
+# Declare variables
+
+CHECK_FILE="xtrabackup_info"
+DATE_NOW="$(date +%s)"
+backup_dir=""
+warning=""
+critical=""
+
+# Parse options
+# based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            show_help
+            exit 0
+            ;;
+        -V|--version)
+            show_version
+            exit 0
+            ;;
+        --backup-dir)
+            # with value separated by space
+            if [ -n "$2" ]; then
+                backup_dir="$2"
+                shift
+            else
+                echo 'ERROR: "--backup-dir" requires a non-empty option argument.'
+            fi
+            ;;
+        --backup-dir=?*)
+            # with value speparated by =
+            backup_dir=${1#*=}
+            ;;
+        --backup-dir=)
+            # without value
+            echo '"--backup-dir" requires a non-empty option argument.'
+            ;;
+        -w|--warning)
+            if [ -n "$2" ]; then
+                WARN="$2"
+                shift
+            else
+                echo '"--warning" requires a non-empty option argument.'
+            fi
+            ;;
+         --warning=?*)
+            # with value speparated by =
+            WARN=${1#*=}
+            echo '"--warning=" requires a non-empty option argument.'
+            ;;
+         --warning=)
+            # without value
+            echo '"--warning=" requires a non-empty option argument.'
+            ;;
+        -c|--critical=)
+            if [ -n "$2" ]; then
+                CRIT="$2"
+                shift
+            else
+                echo '"--critical" requires a non-empty option argument.'
+            fi
+            ;;
+        --critical=?*)
+            # with value speparated by =
+            CRIT=${1#*=}
+            echo '"--critical=" requires a non-empty option argument.'
+            ;;
+        --critical=)
+            # without value
+            echo '"--critical=" requires a non-empty option argument.'
+            ;;
+        --)
+            # End of all options.
+            shift
+            break
+            ;;
+        -?*|[[:alnum:]]*)
+            # ignore unknown options
+            if tty -s; then
+               printf 'Unknown option : %s\n' "$1" >&2
+                echo "" >&2
+                show_help >&2
+                exit 1
+            else
+                echo 'Unknown option : %s\n' "$1" >&2
+            fi
+            ;;
+        *)
+            # Default case: If no more options then break out of the loop.
+            break
+            ;;
+    esac
+
+    shift
+done
+
+## Check if mariabackup is running
+if ps -C mariabackup >/dev/null
+then
+   echo "mariabackup is pending"
+   exit 1
+fi
+
+get_backup_date() {
+    if [ -z "${backup_dir}" ]; then
+        echo "backup-dir option is empty"
+    fi
+
+   cat $backup_dir/*/$CHECK_FILE | grep 'end_time' | tail -1 | awk '{print $3" "$4}'
+}
+
+time_in_seconds() {
+    if echo "${1}" | grep -E -q '^([0-9]+[wdhms])+$'; then
+        echo "${1}" | sed 's/w/ * 604800 + /g; s/d/ * 86400 + /g; s/h/ * 3600 + /g; s/m/ * 60 + /g; s/s/ + /g; s/+ $//' | xargs expr
+    elif echo "${1}" | grep -E -q '^([0-9]+$)'; then
+        echo "${1} * 3600" | xargs expr
+    else
+        return 1
+    fi
+}
+
+WARN=$(time_in_seconds "$WARN")
+CRIT=$(time_in_seconds "$CRIT")
+
+LAST_BACKUP_DATE=$(( "$DATE_NOW" - $(date -d "$(get_backup_date)" +%s) ))
+
+if [ $LAST_BACKUP_DATE -ge $CRIT ]; then
+    echo "CRITICAL : Last mariabackup is $LAST_BACKUP_DATE seconds ago"
+    exit 2
+elif [ $LAST_BACKUP_DATE -ge $WARN ]; then
+    echo "WARNING : Last mariabackup is $LAST_BACKUP_DATE seconds ago"
+    exit 1
+else
+    echo "OK : Last mariabackup is $LAST_BACKUP_DATE seconds ago"
+    exit 0
+fi
