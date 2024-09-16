@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Common functions for monitoringctl, alerts_wrapper and alerts_switch
+# Common functions for monitoringctl and alerts_wrapper
 #
 # Source:
 #     https://gitea.evolix.org/evolix/ansible-roles/src/branch/stable/nagios-nrpe/
@@ -319,7 +319,7 @@ def get_check_wrapper_name(check_name):
     commands = get_check_commands(check_name)
     if not commands:
         return
-    return _get_wrapper_name_from_line(command)
+    return _get_wrapper_name_from_line(commands[-1])
 
 
 def is_check(check_name):

@@ -59,9 +59,9 @@ delay_from_check_file() {
 
 enable_check() {
     if [ "$(id -u)" -eq "0" ] ; then
-        /usr/local/bin/alerts_switch enable "${check_name}"
+        /usr/local/bin/monitoringctl enable "${check_name}" --message "check_async"
     else
-        sudo /usr/local/bin/alerts_switch enable "${check_name}"
+        sudo /usr/local/bin/monitoringctl enable "${check_name}" --message "check_async"
     fi
 }
 

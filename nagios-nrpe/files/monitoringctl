@@ -206,18 +206,47 @@ function check() {
     fi
 }
 
-# Print error message and exit if not installed
-function alerts_switch_is_installed() {
-    if ! command -v alerts_switch &> /dev/null; then
-        error "Error: script 'alerts_switch' is not installed. Aborted."
-    fi
+
+function disable_alert() {
+    # $1: wrapper name, $2: duration_sec, $3: disable message
+    now_secs=$(date +"%s")
+    disable_until_secs=$(( now_secs + ${2} ))
+    disable_file_path="$(get_disable_file_path "${1}")"
+    echo "${disable_until_secs}" > "${disable_file_path}"
+    echo "$(get_real_user): \"${3}\"" >> "${disable_file_path}"
+    chmod 0644 "${disable_file_path}"
+    log "${1} alerts disabled by user $(get_real_user)"
+    log "Disable message: ${3}"
 }
+
+
+function get_real_user() {
+    real_user="$(logname)"
+    if [ -z "${real_user}" ]; then
+        if [ -n "${SUDO_USER}" ]; then
+            real_user="${SUDO_USER}"
+        else
+            real_user="unknown"
+        fi
+    fi
+    echo "${real_user}"
+}
+
+
+function enable_alert() {
+    # $1: wrapper name, $2: enable message
+    disable_file_path="$(get_disable_file_path "${1}")"
+    if [ -e "${disable_file_path}" ]; then
+        rm "${disable_file_path}"
+    fi
+    log "${1} alerts enabled by user $(get_real_user)"
+    log "Enable message: ${2}"
+}
+
 
 function disable_alerts() {
     # $1: check name | all
     # $2: disable message
-    alerts_switch_is_installed
-
     if [ "${1}" = "all" ]; then
         checks="$(get_checks_names)"
     else
@@ -287,9 +316,14 @@ EOF
         fi
     fi
 
-    log "Action disable ${1} requested for ${duration} by user $(logname || echo unknown)."
-
-    alerts_switch disable "${wrapper}" --during "${duration}" --message "${message}"
+    duration_sec=$(time_to_seconds "${duration}")
+    if [ "${wrapper}" == "all" ]; then
+        for wrapper_name in $(get_wrappers_names); do
+            disable_alert "${wrapper_name}" "${duration_sec}" "${message}"
+        done
+    else
+        disable_alert "${wrapper}" "${duration_sec}" "${message}"
+    fi
 
     if [ "${1}" != "all" ]; then
         if [ "${n_checks}" -eq 1 ]; then
@@ -302,19 +336,9 @@ EOF
     fi
 }
 
+
 function enable_alerts() {
     # $1: check name, $2: enable message
-    alerts_switch_is_installed
-
-    if [ "${1}" != "all" ]; then
-        # Verify that check is not already enabled
-        is_disabled="$(is_disabled_check "${1}")"
-        if [ "${is_disabled}" = "False" ]; then
-            echo "${1} is already enabled, see 'monitoringctl status'"
-            exit 0
-        fi
-    fi
-
     if [ -z "${2}" ]; then
         if [ "${is_interactive}" = "False" ]; then
             error "Error: disable message option is mandatory in non-interactive shell."
@@ -328,8 +352,6 @@ function enable_alerts() {
     else
         message="${2}"
     fi
-
-    log "Action enable ${1} requested by user $(logname || echo unknown)."
 
     if [ "${1}" != "all" ]; then
         if is_check "${1}"; then
@@ -347,7 +369,13 @@ function enable_alerts() {
         wrapper="all"
     fi
 
-    alerts_switch enable "${wrapper}" --message "${message}"
+    if [ "${wrapper}" == "all" ]; then
+        for wrapper_name in $(get_wrappers_names); do
+            enable_alert "${wrapper_name}" "${message}"
+        done
+    else
+        enable_alert "${wrapper}" "${message}"
+    fi
 
     if [ "${1}" != "all" ]; then
         if [ "${n_checks}" -eq 1 ]; then

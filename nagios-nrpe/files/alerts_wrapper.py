@@ -46,7 +46,7 @@ Options
 
 
 def enable_wrapper(wrapper_name):
-    enable_command = '/usr/local/bin/alerts_switch enable {}'.format(wrapper_name)
+    enable_command = '/usr/local/bin/monitoringctl enable {} --message \'Disable time passed.\''.format(wrapper_name)
     if os.getuid() != 0:
         enable_command = 'sudo ' + enable_command
     subprocess.run(enable_command, shell=True)
