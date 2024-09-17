@@ -1,24 +1,32 @@
 ---
 
-    - name: "Remount /usr if needed"
-      ansible.builtin.include_role:
-        name: remount-usr
+- name: "Remount /usr if needed"
+  ansible.builtin.include_role:
+    name: remount-usr
 
-    - name: "Copy restart_nrpe"
-      ansible.builtin.copy:
-        src: upstream/restart_nrpe
-        dest: "{{ restart_nrpe_path }}"
-        owner: "root"
-        group: "root"
-        mode: "0750"
+- name: Create autosysadmin directories
+  ansible.builtin.file:
+    path: "{{ autosysadmin_agent_auto_dir }}"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "0750"
 
-    - name: "Customize RUNNING value"
-      ansible.builtin.lineinfile:
-        path: "{{ restart_nrpe_path }}"
-        line: "RUNNING=\"{{ restart_nrpe_running }}\""
-        regexp: "^ *RUNNING="
-        create: False
-      when:
-        - restart_nrpe_running is defined
-        - restart_nrpe_running != None
-        - restart_nrpe_running | length > 0
+- name: "Copy restart_nrpe"
+  ansible.builtin.copy:
+    src: upstream/restart_nrpe
+    dest: "{{ autosysadmin_agent_auto_dir }}/restart_nrpe"
+    owner: "root"
+    group: "root"
+    mode: "0750"
+
+- name: "Customize RUNNING value"
+  ansible.builtin.lineinfile:
+    path: "{{ autosysadmin_agent_auto_dir }}/restart_nrpe"
+    line: "RUNNING=\"{{ restart_nrpe_running }}\""
+    regexp: "^ *RUNNING="
+    create: False
+  when:
+    - restart_nrpe_running is defined
+    - restart_nrpe_running != None
+    - restart_nrpe_running | length > 0
