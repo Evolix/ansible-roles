@@ -2,15 +2,15 @@
 
 set -u
 
-VERSION="22.04"
+VERSION="24.09"
 
 show_version() {
     cat <<END
 evocommit version ${VERSION}
 
-Copyright 2022 Evolix <info@evolix.fr>,
-               Jérémy Lecour <jlecour@evolix.fr>
-               and others.
+Copyright 2022,2024 Evolix <info@evolix.fr>,
+                    Jérémy Lecour <jlecour@evolix.fr>
+                    and others.
 
 evocommit comes with ABSOLUTELY NO WARRANTY.  This is free software,
 and you are welcome to redistribute it under certain conditions.
@@ -47,6 +47,9 @@ syslog() {
 }
 get_system() {
     uname -s
+}
+get_real_user() {
+    logname 2> /dev/null || echo "${SUDO_USER:-unknown}"
 }
 is_repository_readonly() {
     if [ "$(get_system)" = "OpenBSD" ]; then
@@ -117,7 +120,7 @@ main() {
                 readonly_orig=1;
                 remount_repository_readwrite "${REPOSITORY}";
             fi
-            author=$(logname)
+            author=$(get_real_user)
             email=$(git config --get user.email)
             email=${email:-"${author}@evolix.net"}
 

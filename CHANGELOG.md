@@ -19,6 +19,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * autosysadmin-agent: upstream release 24.09.1
 * autosysadmin-restart_nrpe: fix missing directory
+* evocommit: search for other user info when logname(1) fails
 * evolinux-base: use seed for random time in periodic crontab
 * listupgrade: default cron execution time is randomized
 
