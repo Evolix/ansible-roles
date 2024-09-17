@@ -1,0 +1,35 @@
+#!/bin/bash
+
+: "${AUTOSYSADMIN_LIB:=/usr/local/lib/autosysadmin}"
+source "${AUTOSYSADMIN_LIB}/common.sh" || exit 1
+source "${AUTOSYSADMIN_LIB}/repair.sh" || exit 1
+
+pre_repair
+
+service="amavis.service"
+service_name="amavis"
+
+if is_systemd_enabled "${service}"; then
+    if is_systemd_active "${service}"; then
+        log_abort_and_quit "${service} is active, nothing left to do."
+    else
+        # Save service status before restart
+        systemctl status "${service}" | save_in_log_dir "${service_name}.before.status"
+
+        # Try to restart
+        timeout 20 systemctl restart "${service}" > /dev/null
+        rc=$?
+        if [ "${rc}" -eq "0" ]; then
+            log_action "Restart ${service_name}: OK"
+        else
+            log_action "Restart ${service_name}: failed"
+        fi
+
+        # Save service status after restart
+        systemctl status "${service}" | save_in_log_dir "${service_name}.after.status"
+    fi
+else
+    log_abort_and_quit "${service} is disabled (or missing). Abort."
+fi
+
+post_repair

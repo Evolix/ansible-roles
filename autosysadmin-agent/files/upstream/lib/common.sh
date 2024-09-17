@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="24.06"
+VERSION="24.09"
 
 # Common functions for "repair" and "restart" scripts
 
@@ -471,6 +471,7 @@ detect_os() {
                 11) DEBIAN_RELEASE="bullseye" ;;
                 12) DEBIAN_RELEASE="bookworm" ;;
                 13) DEBIAN_RELEASE="trixie"   ;;
+                14) DEBIAN_RELEASE="forky"   ;;
             esac
         fi
     #    log_run "Detected OS: Debian version=${DEBIAN_VERSION} release=${DEBIAN_RELEASE}"
@@ -500,6 +501,9 @@ is_debian_bookworm() {
 is_debian_trixie() {
     test "${DEBIAN_RELEASE}" = "trixie"
 }
+is_debian_forky() {
+    test "${DEBIAN_RELEASE}" = "forky"
+}
 is_debian_version() {
     local version=$1
     local relation=${2:-"eq"}
@@ -509,6 +513,10 @@ is_debian_version() {
     fi
 
     dpkg --compare-versions "${DEBIAN_VERSION}" "${relation}" "${version}"
+}
+
+is_systemd() {
+    ps --no-headers --format command -p 1 | grep --quiet systemd
 }
 
 # List systemd services (only names), even if stopped
