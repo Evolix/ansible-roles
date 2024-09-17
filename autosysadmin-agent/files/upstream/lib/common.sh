@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="24.09"
+VERSION="24.09.1"
 
 # Common functions for "repair" and "restart" scripts
 
@@ -516,7 +516,7 @@ is_debian_version() {
 }
 
 is_systemd() {
-    ps --no-headers --format command -p 1 | grep --quiet systemd
+    readlink /proc/1/exe | grep --quiet systemd
 }
 
 # List systemd services (only names), even if stopped
