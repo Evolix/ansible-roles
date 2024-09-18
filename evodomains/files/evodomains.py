@@ -28,7 +28,7 @@ import shutil
 from enum import Enum
 from typing import Type, List
 
-# Not used yet because not available in Debian <= 8
+# Not used (yet :) because not available in Debian <= 8
 #try:
 #    from cryptography import x509
 #    from cryptography.hazmat.primitives import hashes
@@ -1202,7 +1202,7 @@ def parse_arguments():
     output = args.output
     warning = not args.no_warnings
     verbose = args.verbose
-    verbose = true if debug else args.verbose
+    verbose = True if debug else args.verbose
 
     for arg, value in vars(args).items():
         print_debug('{} = {}'.format(arg, value))
@@ -1218,6 +1218,7 @@ def parse_arguments():
 def check_deps():
     #TODO: socat for HaProxy
 
+    global dep_openssl
     if shutil.which('openssl'):
         dep_openssl = True
     else:
