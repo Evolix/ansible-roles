@@ -358,9 +358,10 @@ def load_allowed_ips(allowed_ips_path):
     """Return the list of IPs the domains are allowed to point to, from configuration file."""
     # Server IPs
     stdout, stderr, rc = execute('hostname -I')
-    if not stdout:
-        return []
-    allowed_ips = stdout[0].strip().split()
+    if stdout:
+        allowed_ips = stdout[0].strip().split()
+    else:
+        print_warning('Allow hostname IPs : command \'hostname -I\' returned no result.')
 
     # Read allowed IPs in config file
     conf_ips = read_config_file(allowed_ips_path)
@@ -425,6 +426,7 @@ def get_certificate_domains(cert_path, source):
     """
     sources = []
     if not os.path.exists(cert_path) or not os.path.isfile(cert_path):
+        print_warning('Certificate {} does not exists or is not a file, passing.'.format(cert_path))
         return sources
 
     command = 'openssl x509 -text -noout -in {}'.format(cert_path)
@@ -433,7 +435,7 @@ def get_certificate_domains(cert_path, source):
         if stderr:
             raise RuntimeError('{}\n'.format(command) + '\n'.join(stderr))
     except:
-        print_debug('Could not read certificate file {} or execute {}.'.format(cert_path, command))
+        print_warning('Could not read certificate file {} or execute {}.'.format(cert_path, command))
         return sources
 
     for line in stdout:
@@ -668,7 +670,7 @@ def list_apache_domains():
     try:
         stdout, stderr, rc = execute('apache2ctl -D DUMP_VHOSTS')
     except:
-        print_debug('Apache is not present.')
+        print_debug('Apache is not present, passing.')
         return sources
 
     # Parse output of 'apache2ctl -D DUMP_VHOSTS'
@@ -725,7 +727,7 @@ def list_nginx_domains():
     try:
         stdout, stderr, rc = execute('nginx -T')
     except:
-        print_debug('Nginx is not present.')
+        print_debug('Nginx is not present, passing.')
         return sources
 
     line_number, config_file_path, ports, domains = None, None, None, None
@@ -807,12 +809,13 @@ def list_certificates_domains(dir_path, source):
 
     print_debug('Listing {} certificates domains for source {}.'.format(dir_path, source))
     if not dep_openssl:
-        print_debug('OpenSSL not installed, passing.')
+        print_debug('OpenSSL is not installed, passing.')
         return []
 
     sources = []
 
     if not os.path.exists(dir_path):
+        print_debug('Directory {} does not exist, passing.'.format(dir_path))
         return sources
 
     for f in os.listdir(dir_path):
@@ -851,6 +854,7 @@ def list_letsencrypt_domains():
         cert_name = 'cert.crt'
 
     if not os.path.exists(base_path):
+        print_debug('Directory {} does not exist, passing.'.format(base_path))
         return sources
 
     for dir_name in os.listdir(base_path):
@@ -1181,6 +1185,7 @@ def check_domains(domain_summaries):
         if job.exception:
             result.set_status(CheckStatus.ERROR)
             result.add_comment('exception occured during dig: {}'.format(str(result.exception)))
+            print_debug('Exception occured during dig of {}: {}'.format(job.domain_summary.domain, str(result.exception)))
 
         job.domain_summary.set_DNS_check_result(result)
 
