@@ -26,6 +26,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * monitoringctl: fix logged user name unknown when it was nagios, fix minor bug in monitoringctl_common.py
+* nginx: fix sometime missing dir /etc/nginx/snippets
 
 ### Removed
 
