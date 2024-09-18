@@ -45,7 +45,7 @@
 - name: Copy old configuration directory to the new one
   ansible.builtin.copy:
     src: /etc/evolinux/domains/
-    dest: /etc/evolinux/evodomains/
+    dest: '{{ evodomains_conf_path }}'
     remote_src: true
   when: old_conf_dir.stat.isdir is defined and old_conf_dir.stat.isdir
 
