@@ -3,37 +3,46 @@
   include_role:
     name: evodomains
 
-- ansible.builtin.set_fact:
-    monitoringctl_alerts_wrapper_path: /usr/local/lib/monitoringctl/alerts_wrapper
-    monitoringctl_alerts_wrapper_prefix: ''
-
-- name: Check alerts_wrapper presence
+- name: Is NRPE installed and EvolixiZ ?
   ansible.builtin.stat:
-    path: '{{ monitoringctl_alerts_wrapper_path }}'
-  register: monitoringctl_alerts_wrapper_infos
-
-- name: Add wrapper to NRPE command
-  ansible.builtin.set_fact:
-    monitoringctl_alerts_wrapper_prefix: '{{ monitoringctl_alerts_wrapper_path }} --name domains -- '
-
-- name: Configure check_domains in /etc/nagios/nrpe.d/evolix.cfg
-  ansible.builtin.lineinfile:
     path: /etc/nagios/nrpe.d/evolix.cfg
-    regexp: '^command\[check_domains\]='
-    line: command[check_domains]={{ monitoringctl_alerts_wrapper_prefix }}sudo {{ nagios_plugins_directory }}/check_domains
-  notify: restart nagios-nrpe-server
+  register: nrpe_conf
 
-- name: Is evolinux sudoers installed?
-  ansible.builtin.stat:
-    path: /etc/sudoers.d/evolinux
-  register: sudoers_evolinux
+- name: Configure check_domains
+  when: nrpe_conf.stat.exists
+  block:
 
-- name: Allow nagios user to execute check_domains without sudo password
-  ansible.builtin.lineinfile:
-    path: /etc/sudoers.d/evolinux
-    regexp: 'check_domains'
-    line: 'nagios          ALL = NOPASSWD: {{ nagios_plugins_directory }}/check_domains'
-    insertafter: '^nagios'
-    validate: "visudo -cf %s"
-  when: sudoers_evolinux.stat.exists
+    - ansible.builtin.set_fact:
+        monitoringctl_alerts_wrapper_path: /usr/local/lib/monitoringctl/alerts_wrapper
+        monitoringctl_alerts_wrapper_prefix: ''
+
+    - name: Check alerts_wrapper presence
+      ansible.builtin.stat:
+        path: '{{ monitoringctl_alerts_wrapper_path }}'
+      register: monitoringctl_alerts_wrapper_infos
+
+    - name: Add wrapper to NRPE command
+      ansible.builtin.set_fact:
+        monitoringctl_alerts_wrapper_prefix: '{{ monitoringctl_alerts_wrapper_path }} --name domains -- '
+
+    - name: Configure check_domains in /etc/nagios/nrpe.d/evolix.cfg
+      ansible.builtin.lineinfile:
+        path: /etc/nagios/nrpe.d/evolix.cfg
+        regexp: '^command\[check_domains\]='
+        line: command[check_domains]={{ monitoringctl_alerts_wrapper_prefix }}sudo {{ nagios_plugins_directory }}/check_domains
+      notify: restart nagios-nrpe-server
+
+    - name: Is evolinux sudoers installed?
+      ansible.builtin.stat:
+        path: /etc/sudoers.d/evolinux
+      register: sudoers_evolinux
+
+    - name: Allow nagios user to execute check_domains without sudo password
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers.d/evolinux
+        regexp: 'check_domains'
+        line: 'nagios          ALL = NOPASSWD: {{ nagios_plugins_directory }}/check_domains'
+        insertafter: '^nagios'
+        validate: "visudo -cf %s"
+      when: sudoers_evolinux.stat.exists
 
