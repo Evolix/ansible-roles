@@ -222,3 +222,11 @@
   when: apache_munin_include | bool
   tags:
     - apache
+
+- name: Install and configure check_domains
+  ansible.builtin.include_role:
+    name: nagios-nrpe
+    tasks_from: 'install_configure_check_domains.yml'
+  tags:
+    - apache
+
