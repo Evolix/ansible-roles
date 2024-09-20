@@ -1,5 +1,6 @@
 ---
 evodomains_script_name: evodomains
+evodomains_branch: main
 evodomains_conf_path: /etc/evolinux/evodomains
 evodomains_conf_file_ignored_domains_list: ignored_domains_check.list
 evodomains_conf_file_included_domains_list: included_domains_check.list

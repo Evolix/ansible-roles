@@ -18,17 +18,35 @@
 
 ################
 
-- name: Copy {{ evodomains_script_name }} script to local bin
+- name: Download evodomains files from Gitea to localhost in /tmp
+  delegate_to: localhost
+  become: false
+  ansible.builtin.get_url:
+    url: 'https://gitea.evolix.org/evolix/evodomains/raw/branch/{{ evodomains_branch }}/{{ item }}'
+    dest: '/tmp/83steu3Qeiu_{{ item }}'
+  loop:
+    - '{{ evodomains_script_name }}.py'
+    - '{{ evodomains_script_name }}_completion'
+
+- name: Copy {{ evodomains_script_name }} script to /usr/local/bin
   ansible.builtin.copy:
-    src: '{{ evodomains_script_name }}.py'
+    src: '/tmp/83steu3Qeiu_evodomains.py'
     dest: '/usr/local/bin/{{ evodomains_script_name }}'
     mode: '0700'
 
 - name: Copy {{ evodomains_script_name }} completion script
   ansible.builtin.copy:
-    src: '{{ evodomains_script_name }}_completion'
+    src: '/tmp/83steu3Qeiu_{{ evodomains_script_name }}_completion'
     dest: '/etc/bash_completion.d/{{ evodomains_script_name }}_completion'
     mode: "0644"
+
+- name: Remove tmp evodomains files on localhost
+  ansible.builtin.file:
+    path: '/tmp/83steu3Qeiu_{{ item }}'
+    state: absent
+  loop:
+    - '{{ evodomains_script_name }}.py'
+    - '{{ evodomains_script_name }}_completion'
 
 - name: Directory {{ evodomains_conf_path }} exists
   ansible.builtin.file:
