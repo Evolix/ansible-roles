@@ -805,6 +805,19 @@ ServiceVersion: Undefined
 EOT
 fi
 
+# Check domain
+if command -v evodomains &>/dev/null; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=domains,${computer_dn}
+objectClass: EvoService
+NagiosEnabled: TRUE
+ServiceName: domains
+ServiceType: domains
+ServiceVersion: Undefined
+EOT
+fi
+
 # test if we have a stdout
 if [ -t 1 ]; then
   echo "Output is in ${ldif_file}"
