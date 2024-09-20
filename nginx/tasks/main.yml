@@ -186,3 +186,11 @@
 - ansible.builtin.include: logrotate.yml
 
 - ansible.builtin.include: log2mail-nginx.yml
+
+- name: Install and configure check_domains
+  ansible.builtin.include_role:
+    name: nagios-nrpe
+    tasks_from: 'install_configure_check_domains.yml'
+  tags:
+    - nginx
+
