@@ -1,0 +1,19 @@
+---
+
+- name: log2mail is installed
+  ansible.builtin.apt:
+    name: log2mail
+    state: present
+  tags:
+    - nginx
+
+- name: Add log2mail config for Nginx
+  ansible.builtin.template:
+    src: log2mail-nginx.j2
+    dest: "/etc/log2mail/config/nginx"
+    owner: log2mail
+    group: adm
+    mode: "0644"
+    force: false
+  tags:
+    - nginx

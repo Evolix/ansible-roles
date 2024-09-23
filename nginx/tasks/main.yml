@@ -184,3 +184,5 @@
     - munin
 
 - ansible.builtin.include: logrotate.yml
+
+- ansible.builtin.include: log2mail-nginx.yml
