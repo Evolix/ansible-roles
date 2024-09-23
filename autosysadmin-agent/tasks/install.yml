@@ -85,14 +85,6 @@
   register: _line
   loop: "{{ autosysadmin_repair_scripts | union(['repair_all']) }}"
 
-- name: Ensure restart folder exists
-  ansible.builtin.file:
-    path: "auto"
-    state: directory
-    owner: "root"
-    group: "root"
-    mode: "0700"
-
 - name: Legacy scripts are removed
   ansible.builtin.file:
     path: "{{ general_scripts_dir }}/autosysadmin/{{ item }}"
