@@ -1,0 +1,92 @@
+#!/bin/bash
+
+: "${AUTOSYSADMIN_LIB:=/usr/local/lib/autosysadmin}"
+source "${AUTOSYSADMIN_LIB}/common.sh"  || exit 1
+source "${AUTOSYSADMIN_LIB}/restart.sh" || exit 1
+
+# shellcheck disable=SC2034
+RUNNING="nwh-fr"
+
+## Possible values for RUNNING :
+##   never    => disabled
+##   always   => enabled
+##   nwh-fr   => enabled during non-working-hours in France
+##   nwh-ca   => enabled during non-working-hours in Canada (not supported yet)
+##   custom   => enabled if `running_custom()` function returns 0, otherwise disabled.
+
+## Uncomment and customize this method if you want to have a special logic :
+##
+##   return 1 if we should not run
+##   return 0 if we should run
+##
+## Some available functions :
+##   is_weekend()  : Saturday or Sunday
+##   is_holiday()  : holiday in France (based on `gcal(1)`)
+##   is_workday()  : not weekend and not holiday
+##   is_worktime() : work day between 9-12h and 14-18h
+#
+# running_custom() {
+#     # implement your own custom method to decide if we should run or not
+# }
+
+## The name of the service, mainly for logging
+service_name="tomcat"
+
+check_http() {
+    /usr/local/bin/check-local http
+}
+
+is_service_alive() {
+    ## this must return 0 if the service is alive, otherwise return 1
+    check_http
+}
+
+## Action for Tomcat
+tomcat_action() {
+    # Save service status before restart
+    check_http | save_in_log_dir "${service_name}.before.status"
+
+    # Try to stop
+    timeout 120 sudo -i -u click2sell /home/click2sell/tomcat/bin/shutdown.sh
+    rc=$?
+    if [ "${rc}" -eq "0" ]; then
+        log_action "Stop ${service_name}: OK"
+    else
+        log_action "Stop ${service_name}: failed."
+
+        tomcat_pidfile="/home/click2sell/tomcat/pid/tomcat.pid"
+        if [ -f ${tomcat_pidfile} ]; then
+            tomcat_pid=$(cat "${tomcat_pidfile}")
+            kill -9 "${tomcat_pid}"
+            log_action "Kill ${service_name}."
+            sleep 5
+        fi
+    fi
+
+    # Try to start
+    timeout 120 sudo -i -u click2sell /home/click2sell/tomcat/bin/startup.sh
+    rc=$?
+    if [ "${rc}" -eq "0" ]; then
+        log_action "Start ${service_name}: OK"
+    else
+        log_action "Start ${service_name}: failed"
+    fi
+
+    # Save service status after restart
+    check_http | save_in_log_dir "${service_name}.after.status"
+}
+
+# Should we run?
+if ! is_supposed_to_run; then
+    # log_global "${PROGNAME} is not supposed to run (RUNNING=${RUNNING})."
+    exit 0
+fi
+if is_service_alive; then
+    # log_global "${service_name} process alive. Aborting"
+    exit 0
+fi
+
+# Yes we do, let's do the action
+pre_restart
+tomcat_action
+post_restart

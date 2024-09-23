@@ -45,17 +45,6 @@
     group: root
     mode: "0750"
 
-### WARNING: thos files are explicitly marked as non-executable
-### to prevent them from being run automatically by run-parts
-
-- name: Copy restart scripts
-  ansible.builtin.copy:
-    src: "upstream/restart/"
-    dest: "{{ autosysadmin_agent_auto_dir }}/"
-    owner: root
-    group: root
-    mode: "0640"
-
 - name: Ensure /etc/evolinux folder exists
   ansible.builtin.file:
     path: "/etc/evolinux"
@@ -76,6 +65,8 @@
 # Repair scripts are supposed to be 'on' by default
 # A line "repair_XXX=off" is added to the file only if the script is to be disabled.
 # That's why all the ternary logic for the state is reversed.
+#
+# This executed only if "autosysadmin_config" is not empty
 - name: Update value per variable
   ansible.builtin.lineinfile:
     dest: "/etc/evolinux/autosysadmin"
@@ -84,6 +75,7 @@
     state: "{{ autosysadmin_config[item] | default(true) | bool | ternary('absent', 'present') }}"
   register: _line
   loop: "{{ autosysadmin_repair_scripts | union(['repair_all']) }}"
+  when: autosysadmin_config | length > 0
 
 - name: Legacy scripts are removed
   ansible.builtin.file:

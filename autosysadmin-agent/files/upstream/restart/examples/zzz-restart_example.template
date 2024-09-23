@@ -14,8 +14,23 @@ RUNNING="nwh-fr"
 ##   nwh-ca   => enabled during non-working-hours in Canada (not supported yet)
 ##   custom   => enabled if `running_custom()` function returns 0, otherwise disabled.
 
+## Uncomment and customize this method if you want to have a special logic :
+##
+##   return 1 if we should not run
+##   return 0 if we should run
+##
+## Some available functions :
+##   is_weekend()  : Saturday or Sunday
+##   is_holiday()  : holiday in France (based on `gcal(1)`)
+##   is_workday()  : not weekend and not holiday
+##   is_worktime() : work day between 9-12h and 14-18h
+#
+# running_custom() {
+#     # implement your own custom method to decide if we should run or not
+# }
+
 ## The name of the service, mainly for logging
-service_name="nagios-nrpe-server"
+service_name="example"
 ## The SysVinit script name
 sysvinit_script="${service_name}"
 ## The systemd service name
@@ -24,7 +39,7 @@ systemd_service="${service_name}.service"
 is_service_alive() {
     ## this must return 0 if the service is alive, otherwise return 1
     ## Example:
-    pgrep -u nagios nrpe > /dev/null
+    pgrep -u USER PROCESS_NAME > /dev/null
 }
 
 ## Action for SysVinit system
@@ -78,7 +93,17 @@ if is_service_alive; then
 fi
 
 # Yes we do, so check for sysvinit or systemd
-if is_systemd; then
+if is_debian_version "8" "<="; then
+    if ! is_sysvinit_enabled "*${sysvinit_script}*"; then
+        # log_global "${service_name} not enabled. Aborting"
+        exit 0
+    fi
+
+    # Let's finally do the action
+    pre_restart
+    sysvinit_action
+    post_restart
+else
     if ! is_systemd_enabled "${systemd_service}"; then
         # log_global "${service_name} is disabled (or missing), nothing left to do."
         exit 0
@@ -91,15 +116,5 @@ if is_systemd; then
     # Let's finally do the action
     pre_restart
     systemd_action
-    post_restart
-else
-    if ! is_sysvinit_enabled "*${sysvinit_script}*"; then
-        # log_global "${service_name} not enabled. Aborting"
-        exit 0
-    fi
-
-    # Let's finally do the action
-    pre_restart
-    sysvinit_action
     post_restart
 fi
