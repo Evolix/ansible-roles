@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="24.09"
+VERSION="24.09.1"
 readonly VERSION
 
 # base functions
@@ -104,7 +104,7 @@ is_pack_samba(){
 }
 is_installed(){
     for pkg in "$@"; do
-        dpkg -l "$pkg" 2> /dev/null | grep -q -E '^(i|h)i' || return 1
+        dpkg -l "$pkg" 2> /dev/null | grep --quiet --extended-regexp '^(i|h)i' || return 1
     done
 }
 
@@ -172,20 +172,20 @@ check_postfix_mydestination() {
 check_nrpepostfix() {
     if is_installed postfix; then
         { test -e /etc/nagios/nrpe.cfg \
-            && grep -qr "^command.*check_mailq -M postfix" /etc/nagios/nrpe.*;
+            && grep --quiet --recursive "^command.*check_mailq -M postfix" /etc/nagios/nrpe.*;
         } || failed "IS_NRPEPOSTFIX" "NRPE \"check_mailq\" for postfix is missing"
     fi
 }
 # Check if mod-security config file is present
 check_customsudoers() {
-    grep -E -qr "umask=0077" /etc/sudoers* || failed "IS_CUSTOMSUDOERS" "missing umask=0077 in sudoers file"
+    grep --extended-regexp --quiet --recursive "umask=0077" /etc/sudoers* || failed "IS_CUSTOMSUDOERS" "missing umask=0077 in sudoers file"
 }
 check_vartmpfs() {
     FINDMNT_BIN=$(command -v findmnt)
     if [ -x "${FINDMNT_BIN}" ]; then
         ${FINDMNT_BIN} /var/tmp --type tmpfs --noheadings > /dev/null || failed "IS_VARTMPFS" "/var/tmp is not a tmpfs"
     else
-        df /var/tmp | grep -q tmpfs || failed "IS_VARTMPFS" "/var/tmp is not a tmpfs"
+        df /var/tmp | grep --quiet tmpfs || failed "IS_VARTMPFS" "/var/tmp is not a tmpfs"
     fi
 }
 check_serveurbase() {
@@ -210,13 +210,17 @@ check_debiansecurity() {
 }
 check_debiansecurity_lxc() {
     if is_installed lxc; then
+        lxc_path=$(lxc-config lxc.lxcpath)
         container_list=$(lxc-ls --active)
-        for container in $container_list; do
-            if [ -f /var/lib/lxc/${container}/rootfs/etc/debian_version ]; then
-                DEBIAN_LXC_VERSION=$(cut -d "." -f 1 < /var/lib/lxc/${container}/rootfs/etc/debian_version)
-                if [ $DEBIAN_LXC_VERSION -ge 9 ]; then
-                    lxc-attach --name $container apt-cache policy | grep "\bl=Debian-Security\b" | grep "\bo=Debian\b" | grep --quiet "\bc=main\b"
-                    test $? -eq 0 || failed "IS_DEBIANSECURITY_LXC" "missing Debian-Security repository in container ${container}"
+        for container_name in ${container_list}; do
+            if lxc-info --name "${container_name}" > /dev/null; then
+                rootfs="${lxc_path}/${container_name}/rootfs"
+                if [ -f "${rootfs}/etc/debian_version" ]; then
+                    DEBIAN_LXC_VERSION=$(cut -d "." -f 1 < "${rootfs}/etc/debian_version")
+                    if [ "${DEBIAN_LXC_VERSION}" -ge 9 ]; then
+                        lxc-attach --name "${container_name}" apt-cache policy | grep "\bl=Debian-Security\b" | grep "\bo=Debian\b" | grep --quiet "\bc=main\b"
+                        test $? -eq 0 || failed "IS_DEBIANSECURITY_LXC" "missing Debian-Security repository in container ${container_name}"
+                    fi
                 fi
             fi
         done
@@ -238,38 +242,38 @@ check_oldpub_lxc() {
     # Look for enabled pub.evolix.net sources (supersed by pub.evolix.org since Buster as Sury safeguard)
     if is_installed lxc; then
         container_list=$(lxc-ls --active)
-        for container in $container_list; do
-            APT_CACHE_BIN=$(lxc-attach --name $container -- bash -c "command -v apt-cache")
+        for container_name in ${container_list}; do
+            APT_CACHE_BIN=$(lxc-attach --name "${container_name}" -- bash -c "command -v apt-cache")
             if [ -x "${APT_CACHE_BIN}" ]; then
-                lxc-attach --name $container apt-cache policy | grep --quiet pub.evolix.net
-                test $? -eq 1 || failed "IS_OLDPUB_LXC" "Old pub.evolix.net repository is still enabled in container ${container}"
+                lxc-attach --name "${container_name}" apt-cache policy | grep --quiet pub.evolix.net
+                test $? -eq 1 || failed "IS_OLDPUB_LXC" "Old pub.evolix.net repository is still enabled in container ${container_name}"
             fi
         done
     fi
 }
 check_newpub() {
     # Look for enabled pub.evolix.org sources
-    apt-cache policy | grep "\bl=Evolix\b" | grep --quiet -v php
+    apt-cache policy | grep "\bl=Evolix\b" | grep --quiet --invert-match php
     test $? -eq 0 || failed "IS_NEWPUB" "New pub.evolix.org repository is missing"
 }
 check_sury() {
     # Look for enabled packages.sury.org sources
     apt-cache policy | grep --quiet packages.sury.org
     if [ $? -eq 0 ]; then
-         apt-cache policy | grep "\bl=Evolix\b" | grep php --quiet
+         apt-cache policy | grep "\bl=Evolix\b" | grep --quiet php
          test $? -eq 0 || failed "IS_SURY" "packages.sury.org is present but our safeguard pub.evolix.org repository is missing"
     fi
 }
 check_sury_lxc() {
     if is_installed lxc; then
         container_list=$(lxc-ls --active)
-        for container in $container_list; do
-            APT_CACHE_BIN=$(lxc-attach --name $container -- bash -c "command -v apt-cache")
+        for container_name in ${container_list}; do
+            APT_CACHE_BIN=$(lxc-attach --name "${container_name}" -- bash -c "command -v apt-cache")
             if [ -x "${APT_CACHE_BIN}" ]; then
-                lxc-attach --name $container apt-cache policy | grep --quiet packages.sury.org
+                lxc-attach --name "${container_name}" apt-cache policy | grep --quiet packages.sury.org
                 if [ $? -eq 0 ]; then
-                    lxc-attach --name $container apt-cache policy | grep "\bl=Evolix\b" | grep php --quiet
-                    test $? -eq 0 || failed "IS_SURY_LXC" "packages.sury.org is present but our safeguard pub.evolix.org repository is missing in container ${container}"
+                    lxc-attach --name "${container_name}" apt-cache policy | grep "\bl=Evolix\b" | grep --quiet php
+                    test $? -eq 0 || failed "IS_SURY_LXC" "packages.sury.org is present but our safeguard pub.evolix.org repository is missing in container ${container_name}"
                 fi
             fi
         done
@@ -282,15 +286,15 @@ check_aptgetbak() {
     test -e /usr/bin/apt-get.bak && failed "IS_APTGETBAK" "prohibit the installation of apt-get.bak with dpkg-divert(1)"
 }
 check_usrro() {
-    grep /usr /etc/fstab | grep -qE "\bro\b" || failed "IS_USRRO" "missing ro directive on fstab for /usr"
+    grep /usr /etc/fstab | grep --quiet --extended-regexp "\bro\b" || failed "IS_USRRO" "missing ro directive on fstab for /usr"
 }
 check_tmpnoexec() {
     FINDMNT_BIN=$(command -v findmnt)
     if [ -x "${FINDMNT_BIN}" ]; then
         options=$(${FINDMNT_BIN} --noheadings --first-only --output OPTIONS /tmp)
-        echo "${options}" | grep -qE "\bnoexec\b" || failed "IS_TMPNOEXEC" "/tmp is not mounted with 'noexec'"
+        echo "${options}" | grep --quiet --extended-regexp "\bnoexec\b" || failed "IS_TMPNOEXEC" "/tmp is not mounted with 'noexec'"
     else
-        mount | grep "on /tmp" | grep -qE "\bnoexec\b" || failed "IS_TMPNOEXEC" "/tmp is not mounted with 'noexec' (WARNING: findmnt(8) is not found)"
+        mount | grep "on /tmp" | grep --quiet --extended-regexp "\bnoexec\b" || failed "IS_TMPNOEXEC" "/tmp is not mounted with 'noexec' (WARNING: findmnt(8) is not found)"
     fi
 }
 check_mountfstab() {
@@ -298,7 +302,7 @@ check_mountfstab() {
     LSBLK_BIN=$(command -v lsblk)
     if test -x "${LSBLK_BIN}"; then
         for mountPoint in $(${LSBLK_BIN} -o MOUNTPOINT -l -n | grep '/'); do
-            grep -Eq "$mountPoint\W" /etc/fstab \
+            grep --quiet --extended-regexp "$mountPoint\W" /etc/fstab \
                 || failed "IS_MOUNT_FSTAB" "partition(s) detected mounted but no presence in fstab"
         done
     fi
@@ -309,26 +313,26 @@ check_listchangesconf() {
     fi
 }
 check_customcrontab() {
-    found_lines=$(grep -c -E "^(17 \*|25 6|47 6|52 6)" /etc/crontab)
+    found_lines=$(grep --count --extended-regexp "^(17 \*|25 6|47 6|52 6)" /etc/crontab)
     test "$found_lines" = 4 && failed "IS_CUSTOMCRONTAB" "missing custom field in crontab"
 }
 check_sshallowusers() {
     if { ! is_debian_stretch && ! is_debian_buster && ! is_debian_bullseye ; }; then
         if [ -d /etc/ssh/sshd_config.d/ ]; then
             # AllowUsers or AllowGroups should be in /etc/ssh/sshd_config.d/
-            grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config.d/ \
+            grep --extended-regexp --quiet --ignore-case --recursive "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config.d/ \
                 || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config.d/*"
         fi
         # AllowUsers or AllowGroups should not be in /etc/ssh/sshd_config
-        grep -E -qi "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config \
+        grep --extended-regexp --quiet --ignore-case "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config \
             && failed "IS_SSHALLOWUSERS" "AllowUsers or AllowGroups directive present in sshd_config"
     else
         # AllowUsers or AllowGroups should be in /etc/ssh/sshd_config or /etc/ssh/sshd_config.d/
         if [ -d /etc/ssh/sshd_config.d/ ]; then
-            grep -E -qir "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d/ \
+            grep --extended-regexp --quiet --ignore-case --recursive "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d/ \
                 || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
         else
-            grep -E -qi "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config \
+            grep --extended-regexp --quiet --ignore-case "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config \
                 || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
         fi
     fi
@@ -338,19 +342,19 @@ check_diskperf() {
     test -e $perfFile || failed "IS_DISKPERF" "missing ${perfFile}"
 }
 check_tmoutprofile() {
-    grep -sq "TMOUT=" /etc/profile /etc/profile.d/evolinux.sh || failed "IS_TMOUTPROFILE" "TMOUT is not set"
+    grep --no-messages --quiet "TMOUT=" /etc/profile /etc/profile.d/evolinux.sh || failed "IS_TMOUTPROFILE" "TMOUT is not set"
 }
 check_alert5boot() {
     if is_debian_stretch; then
         if [ -n "$(find /etc/rc2.d/ -name 'S*alert5')" ]; then
-            grep -q "^date" /etc/rc2.d/S*alert5 || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
+            grep --quiet "^date" /etc/rc2.d/S*alert5 || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
         elif [ -n "$(find /etc/init.d/ -name 'alert5')" ]; then
-            grep -q "^date" /etc/init.d/alert5 || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 int script"
+            grep --quiet "^date" /etc/init.d/alert5 || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 int script"
         else
             failed "IS_ALERT5BOOT" "alert5 init script is missing"
         fi
     else
-        grep -qs "^date" /usr/share/scripts/alert5.sh || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
+        grep --quiet --no-messages "^date" /usr/share/scripts/alert5.sh || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
         if [ -f /etc/systemd/system/alert5.service ]; then
             systemctl is-enabled alert5.service -q || failed "IS_ALERT5BOOT" "alert5 unit is not enabled"
         else
@@ -361,16 +365,16 @@ check_alert5boot() {
 check_alert5minifw() {
     if is_debian_stretch; then
         if [ -n "$(find /etc/rc2.d/ -name 'S*alert5')" ]; then
-            grep -q "^/etc/init.d/minifirewall" /etc/rc2.d/S*alert5 \
+            grep --quiet "^/etc/init.d/minifirewall" /etc/rc2.d/S*alert5 \
                 || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 init script"
         elif [ -n "$(find /etc/init.d/ -name 'alert5')" ]; then
-            grep -q "^/etc/init.d/minifirewall" /etc/init.d/alert5 \
+            grep --quiet "^/etc/init.d/minifirewall" /etc/init.d/alert5 \
                 || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 init script"
         else
             failed "IS_ALERT5MINIFW" "alert5 init script is missing"
         fi
     else
-        grep -qs "^/etc/init.d/minifirewall" /usr/share/scripts/alert5.sh \
+        grep --quiet --no-messages "^/etc/init.d/minifirewall" /usr/share/scripts/alert5.sh \
             || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 script or script is missing"
     fi
 }
@@ -382,14 +386,14 @@ check_minifw() {
             if test -x /usr/share/scripts/minifirewall_status; then
                 /usr/share/scripts/minifirewall_status > /dev/null 2>&1
             else
-                /sbin/iptables -L -n 2> /dev/null | grep -q -E "^(DROP\s+(udp|17)|ACCEPT\s+(icmp|1))\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
+                /sbin/iptables -L -n 2> /dev/null | grep --quiet --extended-regexp "^(DROP\s+(udp|17)|ACCEPT\s+(icmp|1))\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
             fi
         fi
     } || failed "IS_MINIFW" "minifirewall seems not started"
 }
 check_minifw_includes() {
     if { ! is_debian_stretch && ! is_debian_buster ; }; then
-        if grep -q -e '/sbin/iptables' -e '/sbin/ip6tables' "/etc/default/minifirewall"; then
+        if grep --quiet --regexp '/sbin/iptables' --regexp '/sbin/ip6tables' "/etc/default/minifirewall"; then
             failed "IS_MINIFWINCLUDES" "minifirewall has direct iptables invocations in /etc/default/minifirewall that should go in /etc/minifirewall.d/"
         fi
     fi
@@ -411,24 +415,24 @@ check_minifwperms() {
 }
 check_nrpedisks() {
     NRPEDISKS=$(grep command.check_disk /etc/nagios/nrpe.cfg | grep "^command.check_disk[0-9]" | sed -e "s/^command.check_disk\([0-9]\+\).*/\1/" | sort -n | tail -1)
-    DFDISKS=$(df -Pl | grep -c -E -v "(^Filesystem|/lib/init/rw|/dev/shm|udev|rpc_pipefs)")
+    DFDISKS=$(df -Pl | grep --count --extended-regexp --invert-match "(^Filesystem|/lib/init/rw|/dev/shm|udev|rpc_pipefs)")
     test "$NRPEDISKS" = "$DFDISKS" || failed "IS_NRPEDISKS" "there must be $DFDISKS check_disk in nrpe.cfg"
 }
 check_nrpepid() {
     if { is_debian_stretch || is_debian_buster ; }; then
         { test -e /etc/nagios/nrpe.cfg \
-            && grep -q "^pid_file=/var/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
+            && grep --quiet "^pid_file=/var/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
         } || failed "IS_NRPEPID" "missing or wrong pid_file directive in nrpe.cfg"
     else
         { test -e /etc/nagios/nrpe.cfg \
-            && grep -q "^pid_file=/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
+            && grep --quiet "^pid_file=/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
         } || failed "IS_NRPEPID" "missing or wrong pid_file directive in nrpe.cfg"
     fi
 }
 check_grsecprocs() {
-    if uname -a | grep -q grsec; then
-        { grep -q "^command.check_total_procs..sudo" /etc/nagios/nrpe.cfg \
-            && grep -A1 "^\[processes\]" /etc/munin/plugin-conf.d/munin-node | grep -q "^user root";
+    if uname -a | grep --quiet grsec; then
+        { grep --quiet "^command.check_total_procs..sudo" /etc/nagios/nrpe.cfg \
+            && grep --after-context=1 "^\[processes\]" /etc/munin/plugin-conf.d/munin-node | grep --quiet "^user root";
         } || failed "IS_GRSECPROCS" "missing munin's plugin processes directive for grsec"
     fi
 }
@@ -448,7 +452,7 @@ check_mysqlutils() {
         # With Debian 11 and later, root can connect to MariaDB with the socket
         if is_debian_stretch || is_debian_buster; then
             # You can configure MYSQL_ADMIN in evocheck.cf
-            if ! grep -qs "^user *= *${MYSQL_ADMIN}" /root/.my.cnf; then
+            if ! grep --quiet --no-messages "^user *= *${MYSQL_ADMIN}" /root/.my.cnf; then
                 failed "IS_MYSQLUTILS" "${MYSQL_ADMIN} missing in /root/.my.cnf"
             fi
         fi
@@ -457,17 +461,17 @@ check_mysqlutils() {
                 failed "IS_MYSQLUTILS" "mytop binary missing"
             fi
         fi
-        if ! grep -qs '^user *=' /root/.mytop; then
+        if ! grep --quiet --no-messages '^user *=' /root/.mytop; then
             failed "IS_MYSQLUTILS" "credentials missing in /root/.mytop"
         fi
     fi
 }
 # Verification de la configuration du raid soft (mdadm)
 check_raidsoft() {
-    if test -e /proc/mdstat && grep -q md /proc/mdstat; then
-        { grep -q "^AUTOCHECK=true" /etc/default/mdadm \
-            && grep -q "^START_DAEMON=true" /etc/default/mdadm \
-            && grep -qv "^MAILADDR ___MAIL___" /etc/mdadm/mdadm.conf;
+    if test -e /proc/mdstat && grep --quiet md /proc/mdstat; then
+        { grep --quiet "^AUTOCHECK=true" /etc/default/mdadm \
+            && grep --quiet "^START_DAEMON=true" /etc/default/mdadm \
+            && grep --quiet --invert-match "^MAILADDR ___MAIL___" /etc/mdadm/mdadm.conf;
         } || failed "IS_RAIDSOFT" "missing or wrong config for mdadm"
     fi
 }
@@ -475,7 +479,7 @@ check_raidsoft() {
 check_awstatslogformat() {
     if is_installed apache2 awstats; then
         awstatsFile="/etc/awstats/awstats.conf.local"
-        grep -qE '^LogFormat=1' $awstatsFile \
+        grep --quiet --extended-regexp '^LogFormat=1' $awstatsFile \
             || failed "IS_AWSTATSLOGFORMAT" "missing or wrong LogFormat directive in $awstatsFile"
     fi
 }
@@ -491,19 +495,19 @@ check_squid() {
     if is_pack_web && (is_installed squid || is_installed squid3); then
         host=$(hostname -i)
         # shellcheck disable=SC2086
-        http_port=$(grep -E "^http_port\s+[0-9]+" $squidconffile | awk '{ print $2 }')
-        { grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -m owner --uid-owner proxy -j ACCEPT" "/etc/default/minifirewall" \
-            && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d $host -j ACCEPT" "/etc/default/minifirewall" \
-            && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d 127.0.0.(1|0/8) -j ACCEPT" "/etc/default/minifirewall" \
-            && grep -qE "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port.* $http_port" "/etc/default/minifirewall";
-        } || grep -qE "^PROXY='?on'?" "/etc/default/minifirewall" \
+        http_port=$(grep --extended-regexp "^http_port\s+[0-9]+" $squidconffile | awk '{ print $2 }')
+        { grep --quiet --extended-regexp "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -m owner --uid-owner proxy -j ACCEPT" "/etc/default/minifirewall" \
+            && grep --quiet --extended-regexp "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d $host -j ACCEPT" "/etc/default/minifirewall" \
+            && grep --quiet --extended-regexp "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -d 127.0.0.(1|0/8) -j ACCEPT" "/etc/default/minifirewall" \
+            && grep --quiet --extended-regexp "^[^#]*iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port.* $http_port" "/etc/default/minifirewall";
+        } || grep --quiet --extended-regexp "^PROXY='?on'?" "/etc/default/minifirewall" \
           || failed "IS_SQUID" "missing squid rules in minifirewall"
     fi
 }
 check_evomaintenance_fw() {
     if [ -f "/etc/default/minifirewall" ]; then
-        hook_db=$(grep -E '^\s*HOOK_DB' /etc/evomaintenance.cf | tr -d ' ' | cut -d= -f2)
-        rulesNumber=$(grep -c "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s .* -m state --state ESTABLISHED,RELATED -j ACCEPT" "/etc/default/minifirewall")
+        hook_db=$(grep --extended-regexp '^\s*HOOK_DB' /etc/evomaintenance.cf | tr -d ' ' | cut -d= -f2)
+        rulesNumber=$(grep --count --extended-regexp "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s .* -m state --state ESTABLISHED(,RELATED)? -j ACCEPT" "/etc/default/minifirewall")
         if [ "$hook_db" = "1" ] && [ "$rulesNumber" -lt 2 ]; then
             failed "IS_EVOMAINTENANCE_FW" "HOOK_DB is enabled but missing evomaintenance rules in minifirewall"
         fi
@@ -513,9 +517,9 @@ check_evomaintenance_fw() {
 check_moddeflate() {
     f=/etc/apache2/mods-enabled/deflate.conf
     if is_installed apache2.2; then
-        { test -e $f && grep -q "AddOutputFilterByType DEFLATE text/html text/plain text/xml" $f \
-            && grep -q "AddOutputFilterByType DEFLATE text/css" $f \
-            && grep -q "AddOutputFilterByType DEFLATE application/x-javascript application/javascript" $f;
+        { test -e $f && grep --quiet "AddOutputFilterByType DEFLATE text/html text/plain text/xml" $f \
+            && grep --quiet "AddOutputFilterByType DEFLATE text/css" $f \
+            && grep --quiet "AddOutputFilterByType DEFLATE application/x-javascript application/javascript" $f;
         } || failed "IS_MODDEFLATE" "missing AddOutputFilterByType directive for apache mod deflate"
     fi
 }
@@ -528,31 +532,31 @@ check_log2mailrunning() {
 check_log2mailapache() {
     conf=/etc/log2mail/config/apache
     if is_pack_web && is_installed log2mail; then
-        grep -s -q "^file = /var/log/apache2/error.log" $conf \
+        grep --no-messages --quiet "^file = /var/log/apache2/error.log" $conf \
             || failed "IS_LOG2MAILAPACHE" "missing log2mail directive for apache"
     fi
 }
 check_log2mailmysql() {
     if is_pack_web && is_installed log2mail; then
-        grep -s -q "^file = /var/log/syslog" /etc/log2mail/config/{default,mysql,mysql.conf} \
+        grep --no-messages --quiet "^file = /var/log/syslog" /etc/log2mail/config/{default,mysql,mysql.conf} \
             || failed "IS_LOG2MAILMYSQL" "missing log2mail directive for mysql"
     fi
 }
 check_log2mailsquid() {
     if is_pack_web && is_installed log2mail; then
-        grep -s -q "^file = /var/log/squid.*/access.log" /etc/log2mail/config/* \
+        grep --no-messages --quiet "^file = /var/log/squid.*/access.log" /etc/log2mail/config/* \
             || failed "IS_LOG2MAILSQUID" "missing log2mail directive for squid"
     fi
 }
 # Verification si bind est chroote
 check_bindchroot() {
     if is_installed bind9; then
-        if netstat -utpln | grep "/named" | grep :53 | grep -qvE "(127.0.0.1|::1)"; then
+        if netstat -utpln | grep "/named" | grep :53 | grep --quiet --invert-match --extended-regexp "(127.0.0.1|::1)"; then
             default_conf=/etc/default/named
             if is_debian_buster || is_debian_stretch; then
                 default_conf=/etc/default/bind9
             fi
-            if grep -q '^OPTIONS=".*-t' "${default_conf}" && grep -q '^OPTIONS=".*-u' "${default_conf}"; then
+            if grep --quiet '^OPTIONS=".*-t' "${default_conf}" && grep --quiet '^OPTIONS=".*-u' "${default_conf}"; then
                 md5_original=$(md5sum /usr/sbin/named | cut -f 1 -d ' ')
                 md5_chrooted=$(md5sum /var/chroot-bind/usr/sbin/named | cut -f 1 -d ' ')
                 if [ "$md5_original" != "$md5_chrooted" ]; then
@@ -574,9 +578,9 @@ check_network_interfaces() {
 }
 # Verify if all if are in auto
 check_autoif() {
-    interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep -E -v "(lo|vnet|docker|veth|tun|tap|macvtap|vrrp|lxcbr|wg)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
+    interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep --extended-regexp --invert-match "(lo|vnet|docker|veth|tun|tap|macvtap|vrrp|lxcbr|wg)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
     for interface in $interfaces; do
-        if grep -Rq "^iface $interface" /etc/network/interfaces* && ! grep -Rq "^auto $interface" /etc/network/interfaces*; then
+        if grep --quiet --dereference-recursive "^iface $interface" /etc/network/interfaces* && ! grep --quiet --dereference-recursive "^auto $interface" /etc/network/interfaces*; then
             failed "IS_AUTOIF" "Network interface \`${interface}' is statically defined but not set to auto"
             test "${VERBOSE}" = 1 || break
         fi
@@ -584,9 +588,9 @@ check_autoif() {
 }
 # Network conf verification
 check_interfacesgw() {
-    number=$(grep -Ec "^[^#]*gateway [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" /etc/network/interfaces)
+    number=$(grep --extended-regexp --count "^[^#]*gateway [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" /etc/network/interfaces)
     test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv4 gateway"
-    number=$(grep -Ec "^[^#]*gateway [0-9a-fA-F]+:" /etc/network/interfaces)
+    number=$(grep --extended-regexp --count "^[^#]*gateway [0-9a-fA-F]+:" /etc/network/interfaces)
     test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv6 gateway"
 }
 # Verification de l’état du service networking
@@ -625,19 +629,19 @@ check_evobackup_exclude_mount() {
     files_to_cleanup+=("${excludes_file}")
 
     # shellcheck disable=SC2044
-    for evobackup_file in $(find /etc/cron* -name '*evobackup*' | grep -v -E ".disabled$"); do
+    for evobackup_file in $(find /etc/cron* -name '*evobackup*' | grep --invert-match --extended-regexp ".disabled$"); do
         # if the file seems to be a backup script, with an Rsync invocation
-        if grep -q "^\s*rsync" "${evobackup_file}"; then
+        if grep --quiet "^\s*rsync" "${evobackup_file}"; then
             # If rsync is not limited by "one-file-system"
             # then we verify that every mount is excluded
-            if ! grep -q -- "^\s*--one-file-system" "${evobackup_file}"; then
+            if ! grep --quiet -- "^\s*--one-file-system" "${evobackup_file}"; then
                 # old releases of evobackups don't have version
-                if grep -q  "^VERSION=" "${evobackup_file}" && dpkg --compare-versions "$(sed -E -n 's/VERSION="(.*)"/\1/p' "${evobackup_file}")" ge 22.12 ; then
+                if grep --quiet  "^VERSION=" "${evobackup_file}" && dpkg --compare-versions "$(sed -E -n 's/VERSION="(.*)"/\1/p' "${evobackup_file}")" ge 22.12 ; then
                   sed -En '/RSYNC_EXCLUDES="/,/"/ {s/(RSYNC_EXCLUDES=|")//g;p}' "${evobackup_file}" > "${excludes_file}"
                 else
-                  grep -- "--exclude " "${evobackup_file}" | grep -E -o "\"[^\"]+\"" | tr -d '"' > "${excludes_file}"
+                  grep -- "--exclude " "${evobackup_file}" | grep --extended-regexp --only-matching "\"[^\"]+\"" | tr -d '"' > "${excludes_file}"
                 fi
-                not_excluded=$(findmnt --type nfs,nfs4,fuse.sshfs, -o target --noheadings | grep -v -f "${excludes_file}")
+                not_excluded=$(findmnt --type nfs,nfs4,fuse.sshfs, -o target --noheadings | grep --invert-match --file="${excludes_file}")
                 for mount in ${not_excluded}; do
                     failed "IS_EVOBACKUP_EXCLUDE_MOUNT" "${mount} is not excluded from ${evobackup_file} backup script"
                 done
@@ -654,7 +658,7 @@ check_userlogrotate() {
 # Verification de la syntaxe de la conf d'Apache
 check_apachectl() {
     if is_installed apache2; then
-        /usr/sbin/apache2ctl configtest 2>&1 | grep -q "^Syntax OK$" \
+        /usr/sbin/apache2ctl configtest 2>&1 | grep --quiet "^Syntax OK$" \
             || failed "IS_APACHECTL" "apache errors detected, run a configtest"
     fi
 }
@@ -678,9 +682,9 @@ check_apachesymlink() {
 check_apacheipinallow() {
     # Note: Replace "exit 1" by "print" in Perl code to debug it.
     if is_installed apache2; then
-        grep -IrE "^[^#] *(Allow|Deny) from" /etc/apache2/ \
-            | grep -iv "from all" \
-            | grep -iv "env=" \
+        grep -I --recursive --extended-regexp "^[^#] *(Allow|Deny) from" /etc/apache2/ \
+            | grep --ignore-case --invert-match "from all" \
+            | grep --ignore-case --invert-match "env=" \
             | perl -ne 'exit 1 unless (/from( [\da-f:.\/]+)+$/i)' \
             || failed "IS_APACHEIPINALLOW" "bad (Allow|Deny) directives in apache"
     fi
@@ -689,7 +693,7 @@ check_apacheipinallow() {
 check_muninapacheconf() {
     muninconf="/etc/apache2/conf-available/munin.conf"
     if is_installed apache2; then
-        test -e $muninconf && grep --invert-match --extended-regexp --quiet "^( |\t)*#" "$muninconf" \
+        test -e $muninconf && grep --quiet --invert-match --extended-regexp "^( |\t)*#" "$muninconf" \
             && failed "IS_MUNINAPACHECONF" "default munin configuration may be commented or disabled"
     fi
 }
@@ -698,9 +702,9 @@ check_phpmyadminapacheconf() {
     phpmyadminconf0="/etc/apache2/conf-available/phpmyadmin.conf"
     phpmyadminconf1="/etc/apache2/conf-enabled/phpmyadmin.conf"
     if is_installed apache2; then
-        test -e $phpmyadminconf0 && grep --invert-match --extended-regexp --quiet "^( |\t)*#" "$phpmyadminconf0" \
+        test -e $phpmyadminconf0 && grep --quiet --invert-match --extended-regexp "^( |\t)*#" "$phpmyadminconf0" \
             && failed "IS_PHPMYADMINAPACHECONF" "default phpmyadmin configuration ($phpmyadminconf0) should be commented or disabled"
-        test -e $phpmyadminconf1 && grep --invert-match --extended-regexp --quiet "^( |\t)*#" "$phpmyadminconf1" \
+        test -e $phpmyadminconf1 && grep --quiet --invert-match --extended-regexp "^( |\t)*#" "$phpmyadminconf1" \
             && failed "IS_PHPMYADMINAPACHECONF" "default phpmyadmin configuration ($phpmyadminconf1) should be commented or disabled"
     fi
 }
@@ -741,7 +745,7 @@ check_muninrunning() {
 
         if [ -n "$(find  /var/cache/munin/www/ -name 'load-day.png')" ]; then
             updated_at=$(stat -c "%Y" /var/cache/munin/www/*/*/load-day.png |sort |tail -1)
-            grep -sq "^graph_strategy cron" /etc/munin/munin.conf && [ "$limit" -gt "$updated_at" ] && failed "IS_MUNINRUNNING" "Munin load PNG has not been updated in the last 10 minutes"
+            grep --no-messages --quiet "^graph_strategy cron" /etc/munin/munin.conf && [ "$limit" -gt "$updated_at" ] && failed "IS_MUNINRUNNING" "Munin load PNG has not been updated in the last 10 minutes"
         else
             failed "IS_MUNINRUNNING" "Munin is not installed properly (load PNG not found)"
         fi
@@ -777,33 +781,41 @@ check_etcgit() {
 }
 check_etcgit_lxc() {
     if is_installed lxc; then
+        lxc_path=$(lxc-config lxc.lxcpath)
         container_list=$(lxc-ls --active)
-        for container in $container_list; do
-            export GIT_DIR="/var/lib/lxc/${container}/rootfs/etc/.git"
-            export GIT_WORK_TREE="/var/lib/lxc/${container}/rootfs/etc"
-            git rev-parse --is-inside-work-tree > /dev/null 2>&1 \
-                || failed "IS_ETCGIT_LXC" "/etc is not a git repository in container ${container}"
+        for container_name in ${container_list}; do
+            if lxc-info --name "${container_name}" > /dev/null; then
+                rootfs="${lxc_path}/${container_name}/rootfs"
+                export GIT_DIR="${rootfs}/etc/.git"
+                export GIT_WORK_TREE="${rootfs}/etc"
+                git rev-parse --is-inside-work-tree > /dev/null 2>&1 \
+                    || failed "IS_ETCGIT_LXC" "/etc is not a git repository in container ${container_name}"
+            fi
         done
     fi
 }
 # Check if /etc/.git/ has read/write permissions for root only.
 check_gitperms() {
     GIT_DIR="/etc/.git"
-    if test -d $GIT_DIR; then
+    if [ -d "${GIT_DIR}" ]; then
         expected="700"
         actual=$(stat -c "%a" $GIT_DIR)
-        [ "$expected" = "$actual" ] || failed "IS_GITPERMS" "$GIT_DIR must be $expected"
+        [ "${expected}" = "${actual}" ] || failed "IS_GITPERMS" "${GIT_DIR} must be ${expected}"
     fi
 }
 check_gitperms_lxc() {
     if is_installed lxc; then
+        lxc_path=$(lxc-config lxc.lxcpath)
         container_list=$(lxc-ls --active)
-        for container in $container_list; do
-            GIT_DIR="/var/lib/lxc/${container}/rootfs/etc/.git"
-            if test -d $GIT_DIR; then
-                expected="700"
-                actual=$(stat -c "%a" $GIT_DIR)
-                [ "$expected" = "$actual" ] || failed "IS_GITPERMS_LXC" "$GIT_DIR must be $expected (in container ${container})"
+        for container_name in ${container_list}; do
+            if lxc-info --name "${container_name}" > /dev/null; then
+                rootfs="${lxc_path}/${container_name}/rootfs"
+                GIT_DIR="${rootfs}/etc/.git"
+                if test -d $GIT_DIR; then
+                    expected="700"
+                    actual=$(stat -c "%a" $GIT_DIR)
+                    [ "$expected" = "$actual" ] || failed "IS_GITPERMS_LXC" "$GIT_DIR must be $expected (in container ${container_name})"
+                fi
             fi
         done
     fi
@@ -822,8 +834,8 @@ check_notupgraded() {
     if $upgraded; then
         last_upgrade=$(date +%s -d "$(zgrep --no-filename --no-messages upgrade /var/log/dpkg.log* | sort -n | tail -1 | cut -f1 -d ' ')")
     fi
-    if grep -qs '^mailto="listupgrade-todo@' /etc/evolinux/listupgrade.cnf \
-        || grep -qs -E '^[[:digit:]]+[[:space:]]+[[:digit:]]+[[:space:]]+[^\*]' /etc/cron.d/listupgrade; then
+    if grep --quiet --no-messages '^mailto="listupgrade-todo@' /etc/evolinux/listupgrade.cnf \
+        || grep --quiet --no-messages --extended-regexp '^[[:digit:]]+[[:space:]]+[[:digit:]]+[[:space:]]+[^\*]' /etc/cron.d/listupgrade; then
         # Manual upgrade process
         limit=$(date +%s -d "now - 180 days")
     else
@@ -844,15 +856,15 @@ check_notupgraded() {
 # Check if reserved blocks for root is at least 5% on every mounted partitions.
 check_tune2fs_m5() {
     min=5
-    parts=$(grep -E "ext(3|4)" /proc/mounts | cut -d ' ' -f1 | tr -s '\n' ' ')
+    parts=$(grep --extended-regexp "ext(3|4)" /proc/mounts | cut -d ' ' -f1 | tr -s '\n' ' ')
     FINDMNT_BIN=$(command -v findmnt)
     for part in $parts; do
-        blockCount=$(dumpe2fs -h "$part" 2>/dev/null | grep -e "Block count:" | grep -Eo "[0-9]+")
+        blockCount=$(dumpe2fs -h "$part" 2>/dev/null | grep --regexp "Block count:" | grep --extended-regexp --only-matching "[0-9]+")
         # If buggy partition, skip it.
         if [ -z "$blockCount" ]; then
             continue
         fi
-        reservedBlockCount=$(dumpe2fs -h "$part" 2>/dev/null | grep -e "Reserved block count:" | grep -Eo "[0-9]+")
+        reservedBlockCount=$(dumpe2fs -h "$part" 2>/dev/null | grep --regexp "Reserved block count:" | grep --extended-regexp --only-matching "[0-9]+")
         # Use awk to have a rounded percentage
         # python is slow, bash is unable and bc rounds weirdly
         percentage=$(awk "BEGIN { pc=100*${reservedBlockCount}/${blockCount}; i=int(pc); print (pc-i<0.5)?i:i+1 }")
@@ -868,9 +880,9 @@ check_tune2fs_m5() {
     done
 }
 check_evolinuxsudogroup() {
-    if grep -q "^evolinux-sudo:" /etc/group; then
+    if grep --quiet "^evolinux-sudo:" /etc/group; then
         if [ -f /etc/sudoers.d/evolinux ]; then
-            grep -qE '^%evolinux-sudo +ALL ?= ?\(ALL:ALL\) ALL' /etc/sudoers.d/evolinux \
+            grep --quiet --extended-regexp '^%evolinux-sudo +ALL ?= ?\(ALL:ALL\) ALL' /etc/sudoers.d/evolinux \
                 || failed "IS_EVOLINUXSUDOGROUP" "missing evolinux-sudo directive in sudoers file"
         fi
     fi
@@ -878,7 +890,7 @@ check_evolinuxsudogroup() {
 check_userinadmgroup() {
     users=$(grep "^evolinux-sudo:" /etc/group | awk -F: '{print $4}' | tr ',' ' ')
     for user in $users; do
-        if ! groups "$user" | grep -q adm; then
+        if ! groups "$user" | grep --quiet adm; then
             failed "IS_USERINADMGROUP" "User $user doesn't belong to \`adm' group"
             test "${VERBOSE}" = 1 || break
         fi
@@ -893,7 +905,7 @@ check_apache2evolinuxconf() {
     fi
 }
 check_backportsconf() {
-    grep -qsE "^[^#].*backports" /etc/apt/sources.list \
+    grep --quiet --no-messages --extended-regexp "^[^#].*backports" /etc/apt/sources.list \
         && failed "IS_BACKPORTSCONF" "backports can't be in main sources list"
 }
 check_bind9munin() {
@@ -911,11 +923,11 @@ check_bind9logrotate() {
 check_drbd_two_primaries() {
     if is_installed drbd-utils; then
         if command -v drbd-overview >/dev/null; then
-            if drbd-overview 2>&1 | grep -q "Primary/Primary"; then
+            if drbd-overview 2>&1 | grep --quiet "Primary/Primary"; then
                 failed "IS_DRBDTWOPRIMARIES" "Some DRBD ressources have two primaries, you risk a split brain!"
             fi
         elif command -v drbdadm >/dev/null; then
-            if drbdadm role all 2>&1 | grep -q 'Primary/Primary'; then
+            if drbdadm role all 2>&1 | grep --quiet 'Primary/Primary'; then
                 failed "IS_DRBDTWOPRIMARIES" "Some DRBD ressources have two primaries, you risk a split brain!"
             fi
         fi
@@ -924,7 +936,7 @@ check_drbd_two_primaries() {
 check_broadcomfirmware() {
     LSPCI_BIN=$(command -v lspci)
     if [ -x "${LSPCI_BIN}" ]; then
-        if ${LSPCI_BIN} | grep -q 'NetXtreme II'; then
+        if ${LSPCI_BIN} | grep --quiet 'NetXtreme II'; then
             { is_installed firmware-bnx2 \
                 && apt-cache policy | grep "\bl=Debian\b" | grep --quiet -v "\b,c=non-free\b"
             } || failed "IS_BROADCOMFIRMWARE" "missing non-free repository"
@@ -936,12 +948,12 @@ check_broadcomfirmware() {
 check_hardwareraidtool() {
     LSPCI_BIN=$(command -v lspci)
     if [ -x "${LSPCI_BIN}" ]; then
-        if ${LSPCI_BIN} | grep -q 'MegaRAID'; then
+        if ${LSPCI_BIN} | grep --quiet 'MegaRAID'; then
             # shellcheck disable=SC2015
             is_installed megacli && { is_installed megaclisas-status || is_installed megaraidsas-status; } \
                 || failed "IS_HARDWARERAIDTOOL" "Mega tools not found"
         fi
-        if ${LSPCI_BIN} | grep -q 'Hewlett-Packard Company Smart Array'; then
+        if ${LSPCI_BIN} | grep --quiet 'Hewlett-Packard Company Smart Array'; then
             is_installed cciss-vol-status || failed "IS_HARDWARERAIDTOOL" "cciss-vol-status not installed"
         fi
     else
@@ -1093,7 +1105,7 @@ check_mysqlnrpe() {
             || [ "$(stat -c %a ${nagios_file})" != "600" ]; then
             failed "IS_MYSQLNRPE" "${nagios_file} has wrong permissions"
         else
-            grep -q -E "command\[check_mysql\]=.*/usr/lib/nagios/plugins/check_mysql" /etc/nagios/nrpe.d/evolix.cfg \
+            grep --quiet --extended-regexp "command\[check_mysql\]=.*/usr/lib/nagios/plugins/check_mysql" /etc/nagios/nrpe.d/evolix.cfg \
             || failed "IS_MYSQLNRPE" "check_mysql is missing"
         fi
     fi
@@ -1112,13 +1124,13 @@ check_phpevolinuxconf() {
 }
 check_squidlogrotate() {
     if is_installed squid; then
-        grep -q -e monthly -e daily /etc/logrotate.d/squid \
+        grep --quiet --regexp monthly --regexp daily /etc/logrotate.d/squid \
             || failed "IS_SQUIDLOGROTATE" "missing squid logrotate file"
     fi
 }
 check_squidevolinuxconf() {
     if is_installed squid; then
-        { grep -qs "^CONFIG=/etc/squid/evolinux-defaults.conf$" /etc/default/squid \
+        { grep --quiet --no-messages "^CONFIG=/etc/squid/evolinux-defaults.conf$" /etc/default/squid \
             && test -f /etc/squid/evolinux-defaults.conf \
             && test -f /etc/squid/evolinux-whitelist-defaults.conf \
             && test -f /etc/squid/evolinux-whitelist-custom.conf \
@@ -1135,7 +1147,7 @@ check_duplicate_fs_label() {
         tmpFile=$(mktemp --tmpdir "evocheck.duplicate_fs_label.XXXXX")
         files_to_cleanup+=("${tmpFile}")
 
-        parts=$($BLKID_BIN -c /dev/null | grep -ve raid_member -e EFI_SYSPART | grep -Eo ' LABEL=".*"' | cut -d'"' -f2)
+        parts=$($BLKID_BIN -c /dev/null | grep --invert-match --regexp raid_member --regexp EFI_SYSPART | grep --extended-regexp --only-matching ' LABEL=".*"' | cut -d'"' -f2)
         for part in $parts; do
             echo "$part" >> "$tmpFile"
         done
@@ -1152,7 +1164,7 @@ check_duplicate_fs_label() {
     fi
 }
 check_evolix_user() {
-    grep -q -E "^evolix:" /etc/passwd \
+    grep --quiet --extended-regexp "^evolix:" /etc/passwd \
         && failed "IS_EVOLIX_USER" "evolix user should be deleted, used only for install"
 }
 check_evoacme_cron() {
@@ -1194,7 +1206,7 @@ check_apache_confenabled() {
     if [ -f /etc/apache2/apache2.conf ]; then
         test -d /etc/apache2/conf.d/ \
             && failed "IS_APACHE_CONFENABLED" "apache's conf.d directory must not exists"
-        grep -q 'Include conf.d' /etc/apache2/apache2.conf \
+        grep --quiet 'Include conf.d' /etc/apache2/apache2.conf \
             && failed "IS_APACHE_CONFENABLED" "apache2.conf must not Include conf.d"
     fi
 }
@@ -1210,7 +1222,7 @@ check_old_home_dir() {
     homeDir=${homeDir:-/home}
     for dir in "$homeDir"/*; do
         statResult=$(stat -c "%n has owner %u resolved as %U" "$dir" \
-            | grep -Eve '.bak' -e '\.[0-9]{2}-[0-9]{2}-[0-9]{4}' \
+            | grep --invert-match --extended-regexp --regexp '.bak' --regexp '\.[0-9]{2}-[0-9]{2}-[0-9]{4}' \
             | grep "UNKNOWN")
         # There is at least one dir matching
         if [[ -n "$statResult" ]]; then
@@ -1220,9 +1232,26 @@ check_old_home_dir() {
     done
 }
 check_tmp_1777() {
-    actual=$(stat --format "%a" /tmp)
     expected="1777"
-    test "$expected" = "$actual" || failed "IS_TMP_1777" "/tmp must be $expected"
+
+    actual=$(stat --format "%a" /tmp)
+    test "${expected}" = "${actual}" || failed "IS_TMP_1777" "/tmp must be ${expected}"
+    test "${VERBOSE}" = 1 || return
+
+    if is_installed lxc; then
+        lxc_path=$(lxc-config lxc.lxcpath)
+        container_list=$(lxc-ls --active)
+
+        for container_name in ${container_list}; do
+            if lxc-info --name "${container_name}" > /dev/null; then
+                rootfs="${lxc_path}/${container_name}/rootfs"
+
+                actual=$(stat --format "%a" "${rootfs}/tmp")
+                test "${expected}" = "${actual}" || failed "IS_TMP_1777" "${rootfs}/tmp must be ${expected}"
+                test "${VERBOSE}" = 1 || break
+            fi
+        done
+    fi
 }
 check_root_0700() {
     actual=$(stat --format "%a" /root)
@@ -1241,7 +1270,7 @@ check_sshpermitrootno() {
         sshd_args="${sshd_args},rdomain="
     fi
     # shellcheck disable=SC2086
-    if ! (sshd -T ${sshd_args} 2> /dev/null | grep -qi 'permitrootlogin no'); then
+    if ! (sshd -T ${sshd_args} 2> /dev/null | grep --quiet --ignore-case 'permitrootlogin no'); then
         failed "IS_SSHPERMITROOTNO" "PermitRoot should be set to no"
     fi
 }
@@ -1250,7 +1279,7 @@ check_evomaintenanceusers() {
     for user in $users; do
         user_home=$(getent passwd "$user" | cut -d: -f6)
         if [ -n "$user_home" ] && [ -d "$user_home" ]; then
-            if ! grep -qs "^trap.*sudo.*evomaintenance.sh" "${user_home}"/.*profile; then
+            if ! grep --quiet --no-messages "^trap.*sudo.*evomaintenance.sh" "${user_home}"/.*profile; then
                 failed "IS_EVOMAINTENANCEUSERS" "${user} doesn't have an evomaintenance trap"
                 test "${VERBOSE}" = 1 || break
             fi
@@ -1263,15 +1292,15 @@ check_evomaintenanceconf() {
         perms=$(stat -c "%a" $f)
         test "$perms" = "600" || failed "IS_EVOMAINTENANCECONF" "Wrong permissions on \`$f' ($perms instead of 600)"
 
-        { grep "^export PGPASSWORD" $f | grep -qv "your-passwd" \
-            && grep "^PGDB" $f | grep -qv "your-db" \
-            && grep "^PGTABLE" $f | grep -qv "your-table" \
-            && grep "^PGHOST" $f | grep -qv "your-pg-host" \
-            && grep "^FROM" $f | grep -qv "jdoe@example.com" \
-            && grep "^FULLFROM" $f | grep -qv "John Doe <jdoe@example.com>" \
-            && grep "^URGENCYFROM" $f | grep -qv "mama.doe@example.com" \
-            && grep "^URGENCYTEL" $f | grep -qv "06.00.00.00.00" \
-            && grep "^REALM" $f | grep -qv "example.com"
+        { grep "^export PGPASSWORD" $f | grep --quiet --invert-match "your-passwd" \
+            && grep "^PGDB" $f | grep --quiet --invert-match "your-db" \
+            && grep "^PGTABLE" $f | grep --quiet --invert-match "your-table" \
+            && grep "^PGHOST" $f | grep --quiet --invert-match "your-pg-host" \
+            && grep "^FROM" $f | grep --quiet --invert-match "jdoe@example.com" \
+            && grep "^FULLFROM" $f | grep --quiet --invert-match "John Doe <jdoe@example.com>" \
+            && grep "^URGENCYFROM" $f | grep --quiet --invert-match "mama.doe@example.com" \
+            && grep "^URGENCYTEL" $f | grep --quiet --invert-match "06.00.00.00.00" \
+            && grep "^REALM" $f | grep --quiet --invert-match "example.com"
         } || failed "IS_EVOMAINTENANCECONF" "evomaintenance is not correctly configured"
     else
         failed "IS_EVOMAINTENANCECONF" "Configuration file \`$f' is missing"
@@ -1294,8 +1323,8 @@ check_evobackup_incs() {
         bkctld_cron_file=${bkctld_cron_file:-/etc/cron.d/bkctld}
         if [ -f "${bkctld_cron_file}" ]; then
             root_crontab=$(grep -v "^#" "${bkctld_cron_file}")
-            echo "${root_crontab}" | grep -q "bkctld inc" || failed "IS_EVOBACKUP_INCS" "'bkctld inc' is missing in ${bkctld_cron_file}"
-            echo "${root_crontab}" | grep -qE "(check-incs.sh|bkctld check-incs)" || failed "IS_EVOBACKUP_INCS" "'check-incs.sh' is missing in ${bkctld_cron_file}"
+            echo "${root_crontab}" | grep --quiet "bkctld inc" || failed "IS_EVOBACKUP_INCS" "'bkctld inc' is missing in ${bkctld_cron_file}"
+            echo "${root_crontab}" | grep --quiet --extended-regexp "(check-incs.sh|bkctld check-incs)" || failed "IS_EVOBACKUP_INCS" "'check-incs.sh' is missing in ${bkctld_cron_file}"
         else
             failed "IS_EVOBACKUP_INCS" "Crontab \`${bkctld_cron_file}' is missing"
         fi
@@ -1312,8 +1341,8 @@ check_osprober() {
 check_apt_valid_until() {
     aptvalidFile="/etc/apt/apt.conf.d/99no-check-valid-until"
     aptvalidText="Acquire::Check-Valid-Until no;"
-    if grep -qs "archive.debian.org" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
-        if ! grep -qs "$aptvalidText" /etc/apt/apt.conf.d/*; then
+    if grep --quiet --no-messages "archive.debian.org" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
+        if ! grep --quiet --no-messages "$aptvalidText" /etc/apt/apt.conf.d/*; then
             failed "IS_APT_VALID_UNTIL" \
                 "As you use archive.mirror.org you need ${aptvalidFile}: ${aptvalidText}"
         fi
@@ -1347,7 +1376,7 @@ check_nginx_letsencrypt_uptodate() {
         snippets=$(find /etc/nginx -type f -name "letsencrypt.conf")
         if [ -n "${snippets}" ]; then
             while read -r snippet; do
-                if grep -qE "^\s*alias\s+/.+/\.well-known/acme-challenge" "${snippet}"; then
+                if grep --quiet --extended-regexp "^\s*alias\s+/.+/\.well-known/acme-challenge" "${snippet}"; then
                     failed "IS_NGINX_LETSENCRYPT_UPTODATE" "Nginx snippet ${snippet} is not compatible with Nginx on Debian 9+."
                 fi
             done <<< "${snippets}"
@@ -1356,20 +1385,24 @@ check_nginx_letsencrypt_uptodate() {
 }
 check_lxc_container_resolv_conf() {
     if is_installed lxc; then
-        container_list=$(lxc-ls --active)
         current_resolvers=$(grep nameserver /etc/resolv.conf | sed 's/nameserver//g' )
+        lxc_path=$(lxc-config lxc.lxcpath)
+        container_list=$(lxc-ls --active)
 
-        for container in $container_list; do
-            if [ -f "/var/lib/lxc/${container}/rootfs/etc/resolv.conf" ]; then
+        for container_name in ${container_list}; do
+            if lxc-info --name "${container_name}" > /dev/null; then
+                rootfs="${lxc_path}/${container_name}/rootfs"
+                if [ -f "${rootfs}/etc/resolv.conf" ]; then
 
-                while read -r resolver; do
-                    if ! grep -qE "^nameserver\s+${resolver}" "/var/lib/lxc/${container}/rootfs/etc/resolv.conf"; then
-                        failed "IS_LXC_CONTAINER_RESOLV_CONF" "resolv.conf miss-match beween host and container : missing nameserver ${resolver} in container ${container} resolv.conf"
-                    fi
-                done <<< "${current_resolvers}"
+                    while read -r resolver; do
+                        if ! grep --quiet --extended-regexp "^nameserver\s+${resolver}" "${rootfs}/etc/resolv.conf"; then
+                            failed "IS_LXC_CONTAINER_RESOLV_CONF" "resolv.conf miss-match beween host and container : missing nameserver ${resolver} in container ${container_name} resolv.conf"
+                        fi
+                    done <<< "${current_resolvers}"
 
-            else
-                failed "IS_LXC_CONTAINER_RESOLV_CONF" "resolv.conf missing in container ${container}"
+                else
+                    failed "IS_LXC_CONTAINER_RESOLV_CONF" "resolv.conf missing in container ${container_name}"
+                fi
             fi
         done
     fi
@@ -1378,7 +1411,7 @@ check_lxc_container_resolv_conf() {
 check_no_lxc_container() {
     if is_installed lxc; then
         containers_count=$(lxc-ls --active | wc -l)
-        if [ "$containers_count" -eq 0 ]; then
+        if [ "${containers_count}" -eq 0 ]; then
             failed "IS_NO_LXC_CONTAINER" "LXC is installed but have no active container. Consider removing it."
         fi
     fi
@@ -1386,18 +1419,18 @@ check_no_lxc_container() {
 # Check that in LXC containers, phpXX-fpm services have UMask set to 0007.
 check_lxc_php_fpm_service_umask_set() {
     if is_installed lxc; then
-        php_containers_list=$(lxc-ls --active --filter php)
+        containers_list=$(lxc-ls --active --filter php)
         missing_umask=""
-        for container in $php_containers_list; do
+        for container_name in ${containers_list}; do
             # Translate container name in service name
-            if [ "$container" = "php56" ]; then
+            if [ "${container_name}" = "php56" ]; then
                 service="php5-fpm"
             else
-                service="${container:0:4}.${container:4:1}-fpm"
+                service="${container_name:0:4}.${container_name:4:1}-fpm"
             fi
-            umask=$(lxc-attach --name "${container}" -- systemctl show -p UMask "$service" | cut -d "=" -f2)
+            umask=$(lxc-attach --name "${container_name}" -- systemctl show -p UMask "$service" | cut -d "=" -f2)
             if [ "$umask" != "0007" ]; then
-                missing_umask="${missing_umask} ${container}"
+                missing_umask="${missing_umask} ${container_name}"
             fi
         done
         if [ -n "${missing_umask}" ]; then
@@ -1408,30 +1441,38 @@ check_lxc_php_fpm_service_umask_set() {
 # Check that LXC containers have the proper Debian version.
 check_lxc_php_bad_debian_version() {
     if is_installed lxc; then
-        php_containers_list=$(lxc-ls --active --filter php)
+        lxc_path=$(lxc-config lxc.lxcpath)
+        containers_list=$(lxc-ls --active --filter php)
         missing_umask=""
-        for container in $php_containers_list; do
-            if [ "$container" = "php56" ]; then
-                grep --quiet 'VERSION_ID="8"' /var/lib/lxc/${container}/rootfs/etc/os-release || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container} should use Jessie"
-            elif [ "$container" = "php70" ]; then
-                grep --quiet 'VERSION_ID="9"' /var/lib/lxc/${container}/rootfs/etc/os-release || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container} should use Stretch"
-            elif [ "$container" = "php73" ]; then
-                grep --quiet 'VERSION_ID="10"' /var/lib/lxc/${container}/rootfs/etc/os-release || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container} should use Buster"
-            elif [ "$container" = "php74" ]; then
-                grep --quiet 'VERSION_ID="11"' /var/lib/lxc/${container}/rootfs/etc/os-release || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container} should use Bullseye"
-            elif [ "$container" = "php82" ]; then
-                grep --quiet 'VERSION_ID="12"' /var/lib/lxc/${container}/rootfs/etc/os-release || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container} should use Bookworm"
-            elif [ "$container" = "php84" ]; then
-                grep --quiet 'VERSION_ID="13"' /var/lib/lxc/${container}/rootfs/etc/os-release || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container} should use Trixie"
+        for container_name in ${containers_list}; do
+            if lxc-info --name "${container_name}" > /dev/null; then
+                rootfs="${lxc_path}/${container_name}/rootfs"
+                if [ "$container_name" = "php56" ]; then
+                    grep --quiet 'VERSION_ID="8"' "${rootfs}/etc/os-release" || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container_name} should use Jessie"
+                elif [ "$container_name" = "php70" ]; then
+                    grep --quiet 'VERSION_ID="9"' "${rootfs}/etc/os-release" || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container_name} should use Stretch"
+                elif [ "$container_name" = "php73" ]; then
+                    grep --quiet 'VERSION_ID="10"' "${rootfs}/etc/os-release" || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container_name} should use Buster"
+                elif [ "$container_name" = "php74" ]; then
+                    grep --quiet 'VERSION_ID="11"' "${rootfs}/etc/os-release" || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container_name} should use Bullseye"
+                elif [ "$container_name" = "php82" ]; then
+                    grep --quiet 'VERSION_ID="12"' "${rootfs}/etc/os-release" || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container_name} should use Bookworm"
+                elif [ "$container_name" = "php84" ]; then
+                    grep --quiet 'VERSION_ID="13"' "${rootfs}/etc/os-release" || failed "IS_LXC_PHP_BAD_DEBIAN_VERSION" "Container ${container_name} should use Trixie"
+                fi
             fi
         done
     fi
 }
 check_lxc_openssh() {
     if is_installed lxc; then
+        lxc_path=$(lxc-config lxc.lxcpath)
         container_list=$(lxc-ls --active)
-        for container in $container_list; do
-            test -e /var/lib/lxc/${container}/rootfs/usr/sbin/sshd && failed "IS_LXC_OPENSSH" "openssh-server should not be installed in container ${container}"
+        for container_name in ${containers_list}; do
+            if lxc-info --name "${container_name}" > /dev/null; then
+                rootfs="${lxc_path}/${container_name}/rootfs"
+                test -e "${rootfs}/usr/sbin/sshd" && failed "IS_LXC_OPENSSH" "openssh-server should not be installed in container ${container_name}"
+            fi
         done
     fi
 }
@@ -1535,7 +1576,7 @@ add_to_path() {
     local new_path
     new_path=${1:-}
 
-    echo "$PATH" | grep -qF "${new_path}" || export PATH="${PATH}:${new_path}"
+    echo "$PATH" | grep --quiet --fixed-strings "${new_path}" || export PATH="${PATH}:${new_path}"
 }
 check_versions() {
     versions_file=$(mktemp --tmpdir "evocheck.versions.XXXXX")
@@ -1544,7 +1585,7 @@ check_versions() {
     download_versions "${versions_file}"
     add_to_path "/usr/share/scripts"
 
-    grep -v '^ *#' < "${versions_file}" | while IFS= read -r line; do
+    grep --invert-match '^ *#' < "${versions_file}" | while IFS= read -r line; do
         local program
         local version
         program=$(echo "${line}" | cut -d ' ' -f 1)
