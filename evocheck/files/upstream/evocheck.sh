@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="24.09.1"
+VERSION="24.09.2"
 readonly VERSION
 
 # base functions
@@ -1245,10 +1245,11 @@ check_tmp_1777() {
         for container_name in ${container_list}; do
             if lxc-info --name "${container_name}" > /dev/null; then
                 rootfs="${lxc_path}/${container_name}/rootfs"
-
-                actual=$(stat --format "%a" "${rootfs}/tmp")
-                test "${expected}" = "${actual}" || failed "IS_TMP_1777" "${rootfs}/tmp must be ${expected}"
-                test "${VERBOSE}" = 1 || break
+                if [ -d "${rootfs}/tmp" ]; then
+                    actual=$(stat --format "%a" "${rootfs}/tmp")
+                    test "${expected}" = "${actual}" || failed "IS_TMP_1777" "${rootfs}/tmp must be ${expected}"
+                    test "${VERBOSE}" = 1 || break
+                fi
             fi
         done
     fi
