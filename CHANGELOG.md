@@ -31,6 +31,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * monitoringctl: fix logged user name unknown when it was nagios, fix minor bug in monitoringctl_common.py
 * nginx: fix sometime missing dir /etc/nginx/snippets
+* squid: add IPV6 authorization
 
 ### Removed
 
