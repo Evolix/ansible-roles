@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-# Replaced by monitoringctl.
-# check-local executable is kept for retrocompatibility purposes.
-
-monitoringctl check "${1}"
-

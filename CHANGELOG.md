@@ -37,6 +37,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * monitoringctl: alerts_switch removed and merged into monitoringctl
 * monitoringctl: old alerts_wrapper in Bash removed (now in Python)
+* monitoringctl: migrate to separate repo
 
 ### Security
 
