@@ -12,6 +12,7 @@ allowed_hosts={{ nagios_nrpe_allowed_hosts | join(',') }}
 command[check_disk1]=/usr/local/lib/monitoringctl/alerts_wrapper --name disk1 -- /usr/lib/nagios/plugins/check_disk -e -w 10% -c 3% -W 10% -K 3% -C -w 5% -c 2% -W 5% -K 2% -p /home -x /lib/init/rw -x /dev -x /dev/shm -x /run -I '^/run/' -I '^/sys/' -X overlay
 command[check_load]=/usr/local/lib/monitoringctl/alerts_wrapper --name load -- /usr/lib/nagios/plugins/check_load --percpu --warning=0.7,0.6,0.5 --critical=0.9,0.8,0.7
 command[check_mem]=/usr/local/lib/monitoringctl/alerts_wrapper --name mem -- {{ nagios_plugins_directory }}/check_mem -f -C -w 20 -c 10
+command[check_memory]=/usr/local/lib/monitoringctl/alerts_wrapper --name memory -- /usr/lib/nagios/plugins/check_memory --available --warning 20%: --critical 10%:
 command[check_pressure_cpu]=/usr/local/lib/monitoringctl/alerts_wrapper --name pressure_cpu -- /usr/lib/nagios/plugins/check_pressure --cpu -w 100000 -c 500000
 command[check_pressure_mem]=/usr/local/lib/monitoringctl/alerts_wrapper --name pressure_mem -- /usr/lib/nagios/plugins/check_pressure --mem --full -w 100000 -c 500000
 command[check_pressure_io]=/usr/local/lib/monitoringctl/alerts_wrapper --name pressure_io -- /usr/lib/nagios/plugins/check_pressure --io --full -w 100000 -c 500000
