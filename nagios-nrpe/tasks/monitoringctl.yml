@@ -1,7 +1,7 @@
 ---
 ### Dependencies
 
-- name: base nrpe & plugins packages are installed
+- name: "Install dependencies"
   ansible.builtin.apt:
     name:
       - python3-distro
@@ -11,13 +11,43 @@
   ansible.builtin.include_role:
     name: remount-usr
 
+### Get upstream
+
+- name: "Generate random string for /tmp dir"
+  ansible.builtin.set_fact:
+    tmp_path: /tmp/monitoringctl_{{ lookup('community.general.random_string', length=12, special=false) }}
+
+- name: Create tmp dir
+  delegate_to: localhost
+  become: false
+  ansible.builtin.file:
+    path: "{{ tmp_path }}"
+    state: directory
+  changed_when: false
+
+- name: "Download monitoringctl files from Gitea to localhost in /tmp"
+  delegate_to: localhost
+  become: false
+  ansible.builtin.get_url:
+    url: "https://gitea.evolix.org/evolix/monitoringctl/raw/branch/{{ monitoringctl_branch }}/{{ item }}"
+    dest: "{{ tmp_path }}/{{ item }}"
+  loop:
+    - alerts_wrapper.py
+    - check-local
+    - check-local_completion
+    - monitoringctl
+    - monitoringctl_common
+    - monitoringctl_common.py
+    - monitoringctl_completion
+  changed_when: false
+
 ### alerts_wrapper and alerts_switch section
 
 - name: "dir /usr/local/lib/monitoringctl/ exists"
   ansible.builtin.file:
     path: /usr/local/lib/monitoringctl/
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 - name: "alerts_switch is removed"
   ansible.builtin.file:
@@ -52,7 +82,7 @@
 
 - name: "Copy alerts_wrapper"
   ansible.builtin.copy:
-    src: alerts_wrapper.py
+    src: "{{ tmp_path }}/alerts_wrapper.py"
     dest: "{{ monitoringctl_wrapper_path }}"
     owner: root
     group: staff
@@ -61,7 +91,7 @@
 
 - name: "Copy monitoringctl_common lib"
   ansible.builtin.copy:
-    src: monitoringctl_common
+    src: "{{ tmp_path }}/monitoringctl_common"
     dest: /usr/local/lib/monitoringctl/common
     owner: root
     group: root
@@ -70,7 +100,7 @@
 
 - name: "Copy monitoringctl_common.py lib (for alerts_wrapper.py)"
   ansible.builtin.copy:
-    src: monitoringctl_common.py
+    src: "{{ tmp_path }}/monitoringctl_common.py"
     dest: /usr/local/lib/monitoringctl/common.py
     owner: root
     group: root
@@ -94,15 +124,15 @@
 
 - name: "Directory /etc/bash_completion.d exists"
   ansible.builtin.file:
-    path: '/etc/bash_completion.d'
+    path: /etc/bash_completion.d
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 - name: "Directory /var/lib/monitoringctl/ exists"
   ansible.builtin.file:
     path: /var/lib/monitoringctl/
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 - name: "monitoringctl is not in /usr/local/sbin/"
   ansible.builtin.file:
@@ -111,7 +141,7 @@
 
 - name: "Copy monitoringctl"
   ansible.builtin.copy:
-    src: monitoringctl
+    src: "{{ tmp_path }}/monitoringctl"
     dest: /usr/local/bin/monitoringctl
     owner: root
     group: root
@@ -120,7 +150,7 @@
 
 - name: "Copy monitoringctl_common lib"
   ansible.builtin.copy:
-    src: monitoringctl_common
+    src: "{{ tmp_path }}/monitoringctl_common"
     dest: /usr/local/lib/monitoringctl/common
     owner: root
     group: root
@@ -129,7 +159,7 @@
 
 - name: "Copy monitoringctl_completion script"
   ansible.builtin.copy:
-    src: monitoringctl_completion
+    src: "{{ tmp_path }}/monitoringctl_completion"
     dest: /etc/bash_completion.d/monitoringctl
     owner: root
     group: root
@@ -138,7 +168,7 @@
 
 - name: "Copy check-local (it's just a wrapper calling 'monitoringctl check' for backward compatibility)"
   ansible.builtin.copy:
-    src: check-local
+    src: "{{ tmp_path }}/check-local"
     dest: /usr/local/bin/check-local
     owner: root
     group: root
@@ -147,8 +177,15 @@
 
 - name: "Copy completion for check-local"
   ansible.builtin.copy:
-    src: check-local_completion
+    src: "{{ tmp_path }}/check-local_completion"
     dest: /etc/bash_completion.d/check-local
     mode: "0755"
 
+- name: "Remove tmp dir on localhost"
+  delegate_to: localhost
+  become: false
+  ansible.builtin.file:
+    path: "{{ tmp_path }}"
+    state: absent
+  changed_when: false
 
