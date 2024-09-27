@@ -9,51 +9,73 @@
   ansible.builtin.include_role:
     name: remount-usr
 
-### TMP task ###
+
+### TMP tasks
 
 - name: Remove {{ evodomains_script_name }} script from local sbin
   ansible.builtin.file:
     path: '/usr/local/sbin/{{ evodomains_script_name }}'
     state: absent
 
-################
+
+### Get upstream
+
+- name: "Generate random string for /tmp dir"
+  ansible.builtin.set_fact:
+    tmp_path: /tmp/evodomains_{{ lookup('community.general.random_string', length=12, special=false) }}
+
+- name: Create tmp dir
+  delegate_to: localhost
+  become: false
+  ansible.builtin.file:
+    path: "{{ tmp_path }}"
+    state: directory
+  changed_when: false
 
 - name: Download evodomains files from Gitea to localhost in /tmp
   delegate_to: localhost
   become: false
   ansible.builtin.get_url:
     url: 'https://gitea.evolix.org/evolix/evodomains/raw/branch/{{ evodomains_branch }}/{{ item }}'
-    dest: '/tmp/83steu3Qeiu_{{ item }}'
+    dest: '{{ tmp_path }}/{{ item }}'
   loop:
     - '{{ evodomains_script_name }}.py'
     - '{{ evodomains_script_name }}_completion'
+  changed_when: false
+
+
+### Installation
 
 - name: Copy {{ evodomains_script_name }} script to /usr/local/bin
   ansible.builtin.copy:
-    src: '/tmp/83steu3Qeiu_evodomains.py'
+    src: '{{ tmp_path }}/evodomains.py'
     dest: '/usr/local/bin/{{ evodomains_script_name }}'
     mode: '0700'
 
 - name: Copy {{ evodomains_script_name }} completion script
   ansible.builtin.copy:
-    src: '/tmp/83steu3Qeiu_{{ evodomains_script_name }}_completion'
+    src: '{{ tmp_path }}/{{ evodomains_script_name }}_completion'
     dest: '/etc/bash_completion.d/{{ evodomains_script_name }}_completion'
     mode: "0644"
 
 - name: Remove tmp evodomains files on localhost
+  delegate_to: localhost
+  become: false
   ansible.builtin.file:
-    path: '/tmp/83steu3Qeiu_{{ item }}'
+    path: '{{ tmp_path }}'
     state: absent
-  loop:
-    - '{{ evodomains_script_name }}.py'
-    - '{{ evodomains_script_name }}_completion'
+  changed_when: false
+
+
+### Setup
 
 - name: Directory {{ evodomains_conf_path }} exists
   ansible.builtin.file:
     path: '{{ evodomains_conf_path }}'
     state: directory
 
-### TMP tasks ###
+
+#### TMP tasks
 
 - name: Old configuration directory
   ansible.builtin.stat:
@@ -73,7 +95,8 @@
     state: absent
   when: old_conf_dir.stat.isdir is defined and old_conf_dir.stat.isdir
 
-#################
+
+### Setup
 
 - name: Create config file {{ domains_conf_file_ignored_domains_list }}
   ansible.builtin.blockinfile:
