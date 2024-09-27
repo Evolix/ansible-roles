@@ -27,10 +27,17 @@
   ansible.builtin.command:
     cmd: mount -o remount,ro /usr
 
-- name: Add UNIX account
+- name: Add redis UNIX account
+  ansible.builtin.user:
+    name: "redis-{{ gitea_instance }}"
+#    shell: /bin/bash
+
+- name: Add gitea UNIX account
   ansible.builtin.user:
     name: "{{ gitea_instance }}"
     shell: /bin/bash
+    groups: "redis-{{ gitea_instance }}"
+    append: yes
 
 - name: Add www-data (nginx) to instance group
   ansible.builtin.user:
@@ -74,30 +81,32 @@
   ansible.builtin.systemd:
     name: "gitea@{{ gitea_instance }}"
     state: restarted
+    enabled: true
 
-#- name: Create the redis dir if needed
-#  ansible.builtin.file:
-#    path: /home/{{ gitea_instance }}/redis
-#    state: directory
-#    owner: "{{ gitea_instance }}"
-#    group: "{{ gitea_instance }}"
-#    mode: '0750'
-
-- name: Create the log dir if needed
+- name: Create the redis directories if needed
   ansible.builtin.file:
-    path: /home/{{ gitea_instance }}/log
+    path: "{{ item.path }}"
     state: directory
-    owner: "{{ gitea_instance }}"
-    group: "{{ gitea_instance }}"
-    mode: '0750'
+    owner: "redis-{{ gitea_instance }}"
+    group: "redis-{{ gitea_instance }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: "/etc/redis-{{ gitea_instance }}", mode: "0750" }
+    - { path: "/etc/redis-{{ gitea_instance }}/redis-server.pre-up.d", mode: "0750" }
+    - { path: "/etc/redis-{{ gitea_instance }}/redis-server.post-up.d", mode: "0750" }
+    - { path: "/etc/redis-{{ gitea_instance }}/redis-server.pre-down.d", mode: "0750" }
+    - { path: "/etc/redis-{{ gitea_instance }}/redis-server.post-down.d", mode: "0750" }
+    - { path: "/var/lib/redis-{{ gitea_instance }}",  mode: "0750" }
+    - { path: "/var/log/redis-{{ gitea_instance }}",  mode: "0750" }
+    - { path: "/var/run/redis-{{ gitea_instance }}", mode: "0750" }
 
-#- name: Template redis conf
-#  ansible.builtin.template:
-#    src: "redis.conf.j2"
-#    dest: "/home/{{ gitea_instance }}/redis/redis.conf"
-#    owner: "{{ gitea_instance }}"
-#    group: "{{ gitea_instance }}"
-#    mode: '0640'
+- name: Template redis conf
+  ansible.builtin.template:
+    src: "redis.conf.j2"
+    dest: "/etc/redis-{{ gitea_instance }}/redis.conf"
+    owner: "redis-{{ gitea_instance }}"
+    group: "redis-{{ gitea_instance }}"
+    mode: '0640'
 
 - name: Disable defaut redis systemd unit
   ansible.builtin.systemd:
@@ -113,11 +122,6 @@
   ansible.builtin.systemd:
     name: "redis-server@{{ gitea_instance }}"
     state: started
-
-#- name: Template nginx snippet for Let's Encrypt/Certbot
-#  ansible.builtin.template:
-#    src: "letsencrypt.conf.j2"
-#    dest: "/etc/nginx/snippets/letsencrypt.conf"
 
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
@@ -140,11 +144,6 @@
       ansible.builtin.systemd:
         name: nginx
         state: reloaded
-#    - name: Make sure /var/lib/letsencrypt exists and has correct permissions
-#      ansible.builtin.file:
-#        path: /var/lib/letsencrypt
-#        state: directory
-#        mode: '0755'
     - name: Generate certificate with certbot
       ansible.builtin.command:
         cmd: |

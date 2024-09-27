@@ -1,14 +1,18 @@
+daemonize yes
+pidfile /var/run/redis-{{ gitea_instance }}/redis-server.pid
 bind 127.0.0.1 ::1
-protected-mode yes
+port 6380
 
-port 0
-unixsocket /home/{{ gitea_instance }}/redis/redis.sock
+unixsocket /var/run/redis-{{ gitea_instance }}/redis.sock
 unixsocketperm 770
-timeout 0
+
+timeout 300
 tcp-keepalive 300
 
+protected-mode yes
+
 loglevel notice
-logfile /home/{{ gitea_instance }}/log/redis-server.log
+logfile /var/log/redis-{{ gitea_instance }}/redis-server.log
 
 databases 16
 save 900 1
@@ -16,7 +20,7 @@ save 300 10
 save 60 10000
 
 dbfilename dump.rdb
-dir /home/{{ gitea_instance }}/redis
+dir /var/lib/redis-{{ gitea_instance }}
 
 maxclients {{ gitea_redis_maxclients }}
 maxmemory {{ gitea_redis_maxmemory }}
