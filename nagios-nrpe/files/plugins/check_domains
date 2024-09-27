@@ -2,7 +2,7 @@
 #
 # Check domains using script domains.
 #
-# Written by Will
+# Written by Will
 #
 
 if ! command -v evodomains >/dev/null; then
@@ -10,5 +10,5 @@ if ! command -v evodomains >/dev/null; then
     exit 3
 fi
 
-evodomains -o nrpe check-dns
+evodomains check-dns --output nrpe
 

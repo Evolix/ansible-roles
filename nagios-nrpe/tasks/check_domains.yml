@@ -12,6 +12,13 @@
   when: nrpe_conf.stat.exists
   block:
 
+    - name: Install check_domain (wrapper around evodomains)
+      ansible.builtin.copy:
+        src: plugins/check_domains
+        dest: "{{ nagios_plugins_directory }}/check_domains"
+        group: nagios
+        mode: '0755'
+
     - ansible.builtin.set_fact:
         monitoringctl_alerts_wrapper_path: /usr/local/lib/monitoringctl/alerts_wrapper
         monitoringctl_alerts_wrapper_prefix: ''
@@ -24,6 +31,7 @@
     - name: Add wrapper to NRPE command
       ansible.builtin.set_fact:
         monitoringctl_alerts_wrapper_prefix: '{{ monitoringctl_alerts_wrapper_path }} --name domains -- '
+      when: monitoringctl_alerts_wrapper_infos.stat.exists
 
     - name: Configure check_domains in /etc/nagios/nrpe.d/evolix.cfg
       ansible.builtin.lineinfile:
