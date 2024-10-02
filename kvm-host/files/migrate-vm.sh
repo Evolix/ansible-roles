@@ -269,7 +269,7 @@ undefine_vm() {
     vm=${1:-}
     remote=${2:-}
 
-    command="virsh undefine ${vm}"
+    command="virsh undefine --nvram ${vm}"
 
     if [ -z "${remote}" ]; then
         retval=$(eval "${command}")

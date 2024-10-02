@@ -13,7 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
-* mysql : Add deploy check_mariabackup on nrpe task
+* mysql: Add deploy check_mariabackup on nrpe task
+* kvm-host/migrate-vm: undefine with nvram option
 
 ### Changed
 
