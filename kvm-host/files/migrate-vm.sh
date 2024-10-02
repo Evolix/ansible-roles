@@ -145,11 +145,13 @@ interface_speed() {
             min_speed=""
             for bridge_iface in $(ls "${bridge_path}"); do
                 if realpath "/sys/class/net/${bridge_iface}" | grep --quiet --invert-match virtual; then
-                    speed=$(head -n 1 "/sys/class/net/${bridge_iface}/speed")
-                    # echo "${bridge_iface} is a physical interface, keep" >&2
-                    if [ -z "${min_speed}" ] || [ "${min_speed}" -gt "${speed}" ]; then
-                        # echo "new min speed with ${bridge_iface}: ${speed}" >&2
-                        min_speed="${speed}"
+                    speed=$(head -n 1 "/sys/class/net/${bridge_iface}/speed" 2> /dev/null)
+                    if [ -n "${speed}" ]; then
+                        # echo "${bridge_iface} is a physical interface, keep" >&2
+                        if [ -z "${min_speed}" ] || [ "${min_speed}" -gt "${speed}" ]; then
+                            # echo "new min speed with ${bridge_iface}: ${speed}" >&2
+                            min_speed="${speed}"
+                        fi
                     fi
                 else
                     # echo "${bridge_iface} is a virtual interface, skip" >&2
@@ -163,8 +165,19 @@ interface_speed() {
             fi
             ;;
         esac
+    elif realpath "/sys/class/net/${interface}" | grep --quiet --fixed-strings '/virtual/'; then
+        # If interface is virtual, try to find the real interface
+        lower_ifaces="$(ls -d /sys/class/net/${interface}/lower_* | wc -l)"
+        if [ -n "${lower_ifaces}" ] && [ "${lower_ifaces}" -eq "1" ]; then
+            first_lower_iface="$(ls -d /sys/class/net/${interface}/lower_* | head -n 1)"
+            new_iface=$(basename "$(realpath "${first_lower_iface}")")
+
+            interface_speed "${new_iface}"
+        else
+            echo "${fallback_speed}"
+        fi
     elif [ -e "${speed_path}" ]; then
-        head -n 1 "${speed_path}"
+        head -n 1 "${speed_path}" 2> /dev/null || echo "${fallback_speed}"
     else
         echo "${fallback_speed}"
     fi

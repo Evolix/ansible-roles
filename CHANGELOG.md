@@ -13,8 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
-* mysql: Add deploy check_mariabackup on nrpe task
 * kvm-host/migrate-vm: undefine with nvram option
+* mysql: Add deploy check_mariabackup on nrpe task
 
 ### Changed
 
@@ -25,6 +25,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evocommit: search for other user info when logname(1) fails
 * evolinux-base: deploy autosysadmin-agent and restart_nrpe by default
 * evolinux-base: use seed for random time in periodic crontab
+* kvm-host/migrate-vm: improve interface speed detection
 * listupgrade: default cron execution time is randomized
 * minifirewall: remove RELATED
 
