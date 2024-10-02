@@ -9,7 +9,7 @@
 # * different return codes for different errors
 # * use local and readonly variables
 
-VERSION="24.09"
+VERSION="24.10"
 
 # If expansion is attempted on an unset variable or parameter, the shell prints an
 # error message, and, if not interactive, exits with a non-zero status.
@@ -169,9 +169,10 @@ interface_speed() {
         # If interface is virtual, try to find the real interface
         lower_ifaces="$(ls -d /sys/class/net/${interface}/lower_* | wc -l)"
         if [ -n "${lower_ifaces}" ] && [ "${lower_ifaces}" -eq "1" ]; then
+            # Take the first parent interface
             first_lower_iface="$(ls -d /sys/class/net/${interface}/lower_* | head -n 1)"
             new_iface=$(basename "$(realpath "${first_lower_iface}")")
-
+            # recursice call to self, but with the real interface
             interface_speed "${new_iface}"
         else
             echo "${fallback_speed}"
