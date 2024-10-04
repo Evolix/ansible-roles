@@ -1,0 +1,72 @@
+# Ajoute plugin phpx-fpm pour Munin
+---
+
+- name: is Munin present ?
+  ansible.builtin.stat:
+    path: /etc/munin/plugins
+  check_mode: no
+  register: etc_munin_plugins
+  tags:
+    - php-lxc
+    - munin
+
+- name: Local Munin plugins directory exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: "0755"
+    owner: root
+    group: root
+    state: directory
+  loop:
+    - /usr/local/share/munin
+    - /usr/local/share/munin/plugins
+  tags:
+    - php-lxc
+    - munin
+
+- name: "Copie phpx-fpm"
+  ansible.builtin.copy:
+    src: phpx-fpm
+    dest: "/usr/local/share/munin/plugins/phpx-fpm"
+    force: true
+    mode: "0700"
+    owner: root
+    group: root
+  tags:
+    - php-lxc
+    - munin
+
+- name: is phpx-fpm Munin plugin available ?
+  ansible.builtin.stat:
+    path: /usr/local/share/munin/plugins/phpx-fpm
+  check_mode: no
+  register: phpx_fpm_munin_plugin
+  tags:
+    - php-lxc
+    - munin
+
+- name: Enable Munin plugin
+  ansible.builtin.file:
+    src: "/usr/local/share/munin/plugins/phpx-fpm"
+    dest: "/etc/munin/plugins/phpx-fpm"
+    state: link
+  notify: restart munin-node
+  when:
+    - etc_munin_plugins.stat.exists
+    - phpx_fpm_munin_plugin.stat.exists
+
+- name: "Copie config phpx-fpm"
+  ansible.builtin.copy:
+    src: phpx-fpm-munin
+    dest: "/etc/munin/plugin-conf.d/zzz_phpx-fpm"
+    force: true
+    mode: "0644"
+    owner: root
+    group: root
+  notify: restart munin-node
+  when:
+    - etc_munin_plugins.stat.exists
+    - phpx_fpm_munin_plugin.stat.exists
+  tags:
+    - php-lxc
+    - munin
