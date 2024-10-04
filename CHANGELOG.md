@@ -28,6 +28,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * kvm-host/migrate-vm: improve interface speed detection
 * listupgrade: default cron execution time is randomized
 * minifirewall: remove RELATED
+* docker-host: updated README with useful vars
 
 ### Fixed
 
