@@ -1,6 +1,11 @@
 #!/bin/bash
 
-sudo /usr/bin/supervisorctl status |while read line
+/usr/bin/supervisorctl status |while read line
 do
-	echo $line |grep RUNNING || exit 1
+    if echo $line |grep -q RUNNING; then
+        echo $line
+    else
+        echo $line
+        exit 2
+    fi
 done

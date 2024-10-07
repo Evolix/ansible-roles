@@ -28,6 +28,7 @@ nagios          ALL = NOPASSWD: /sbin/ssacli controller slot=0 logicaldrive all 
 nagios          ALL = NOPASSWD: /usr/local/bin/mvcli info -o blk
 nagios          ALL = NOPASSWD: /usr/local/bin/mvcli info -o vd
 nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_gluster.rb
+nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_supervisord
 
 nagios          ALL = (clamav) NOPASSWD: /usr/bin/clamscan /tmp/safe.txt
 
