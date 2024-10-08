@@ -12,3 +12,17 @@
         rndc reload > /dev/null
     endscript
 }
+
+{% if bind_chroot_set | bool %}
+{{ bind_chroot_path }}{{ bind_statistics_file }} {
+{% else %}
+{{ bind_log_file }} {
+{% endif %}
+    rotate 7
+    daily
+    missingok
+    notifempty
+    delaycompress
+    compress
+    su bind bind
+}
