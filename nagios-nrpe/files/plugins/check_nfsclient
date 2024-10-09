@@ -3,6 +3,20 @@
 HOSTNAME=$(hostname)
 nfsmount=/srv/data
 
+if [ ! -d "${nfsmount}" ]; then
+    echo "CRITICAL - ${nfsmount} is not a directory"
+    exit 2
+fi
+
+case "$(findmnt -no fstype "${nfsmount}")" in
+nfs*)
+    ;;
+*)
+    echo "CRITICAL - ${nfsmount} is not an NFS mountpoint"
+    exit 2
+    ;;
+esac
+
 mkdir $nfsmount/.nrpe
 
 touch $nfsmount/.nrpe/.nfstest.$HOSTNAME

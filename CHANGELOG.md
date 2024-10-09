@@ -37,6 +37,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * nginx: fix sometime missing dir /etc/nginx/snippets
 * squid: add IPV6 authorization
 * supervisord: fix wrong sudo permission, improve check (output, return code)
+* nagios-nrpe/check_nfsclient: check if nfsmount is an NFS mountpoint
 
 ### Removed
 
