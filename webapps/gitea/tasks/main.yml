@@ -27,22 +27,16 @@
   ansible.builtin.command:
     cmd: mount -o remount,ro /usr
 
-- name: Add redis UNIX account
-  ansible.builtin.user:
-    name: "redis-{{ gitea_instance }}"
-#    shell: /bin/bash
-
 - name: Add gitea UNIX account
   ansible.builtin.user:
     name: "{{ gitea_instance }}"
     shell: /bin/bash
-    groups: "redis-{{ gitea_instance }}"
+    groups: redis
     append: yes
 
 - name: Add www-data (nginx) to instance group
   ansible.builtin.user:
     name: www-data
-    # group: www-data
     groups: "{{ gitea_instance }}"
     append: true
 
@@ -83,29 +77,12 @@
     state: restarted
     enabled: true
 
-- name: Create the redis directories if needed
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: directory
-    owner: "redis-{{ gitea_instance }}"
-    group: "redis-{{ gitea_instance }}"
-    mode: "{{ item.mode }}"
-  loop:
-    - { path: "/etc/redis-{{ gitea_instance }}", mode: "0750" }
-    - { path: "/etc/redis-{{ gitea_instance }}/redis-server.pre-up.d", mode: "0750" }
-    - { path: "/etc/redis-{{ gitea_instance }}/redis-server.post-up.d", mode: "0750" }
-    - { path: "/etc/redis-{{ gitea_instance }}/redis-server.pre-down.d", mode: "0750" }
-    - { path: "/etc/redis-{{ gitea_instance }}/redis-server.post-down.d", mode: "0750" }
-    - { path: "/var/lib/redis-{{ gitea_instance }}",  mode: "0750" }
-    - { path: "/var/log/redis-{{ gitea_instance }}",  mode: "0750" }
-    - { path: "/var/run/redis-{{ gitea_instance }}", mode: "0750" }
-
 - name: Template redis conf
   ansible.builtin.template:
     src: "redis.conf.j2"
-    dest: "/etc/redis-{{ gitea_instance }}/redis.conf"
-    owner: "redis-{{ gitea_instance }}"
-    group: "redis-{{ gitea_instance }}"
+    dest: "/etc/redis/redis-{{ gitea_instance }}.conf"
+    owner: "redis"
+    group: "redis"
     mode: '0640'
 
 - name: Disable defaut redis systemd unit
@@ -152,15 +129,6 @@
            --agree-tos
            --email {{ gitea_certbot_admin_email }}
            -d {{ gitea_domains | first }}
-#    - name: Create the ssl dir if needed
-#      ansible.builtin.file:
-#        path: /etc/nginx/ssl
-#        state: directory
-#        mode: '0750'
-#    - name: Template ssl bloc for nginx vhost
-#      ansible.builtin.template:
-#        src: "ssl.conf.j2"
-#        dest: "/etc/nginx/ssl/{{ gitea_domains | first }}.conf"
 
 - name: (Re)check if SSL certificate is present and register result
   ansible.builtin.stat:
