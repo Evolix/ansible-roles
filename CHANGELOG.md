@@ -25,6 +25,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evocommit: search for other user info when logname(1) fails
 * evolinux-base: deploy autosysadmin-agent and restart_nrpe by default
 * evolinux-base: use seed for random time in periodic crontab
+* evolinux-base: comment the default rsyslog rules, to only keep them as examples
 * kvm-host/migrate-vm: improve interface speed detection
 * listupgrade: default cron execution time is randomized
 * minifirewall: remove RELATED
