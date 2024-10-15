@@ -100,7 +100,6 @@
 - name: Remount /usr if needed
   ansible.builtin.import_role:
     name: evolix/remount-usr
-    public: false
 
 - name: Local Munin plugins directory exist
   ansible.builtin.file:
