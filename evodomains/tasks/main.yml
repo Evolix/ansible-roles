@@ -146,6 +146,7 @@
 - name: Add default allowed IPs in config file
   ansible.builtin.lineinfile:
     path: '{{ evodomains_conf_path }}/{{ evodomains_conf_file_allowed_ips_list }}'
-    line: '{{ item }}'
+    line: '{{ item.ip }}  # {{ item.comment }}'
+    regexp: "{{ item.ip | replace('.', '\\.') }}"
   loop: '{{ evodomains_allowed_ips }}'
 

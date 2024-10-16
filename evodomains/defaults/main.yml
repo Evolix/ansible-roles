@@ -11,11 +11,11 @@ evodomains_dependencies:
 #  - python3-cryptography
 #  - socat
 evodomains_allowed_ips:
-  - 127.0.0.1
-  - 31.170.13.1  # boost05
-  - 31.170.8.100  # boost04
-  - 54.39.237.40  # cariboost
-  - 31.170.11.208  # boost-mrs00
-  - 31.170.13.9  # boost-par00
-  - 31.170.11.118  # boost-pp00
+  - { ip: 127.0.0.1, comment: "localhost" }
+  - { ip: 31.170.13.1, comment: "boost05" }
+  - { ip: 31.170.8.100, comment: "boost04" }
+  - { ip: 54.39.237.40, comment: "cariboost" }
+  - { ip: 31.170.11.208, comment: "boost-mrs00" }
+  - { ip: 31.170.13.9, comment: "boost-par00" }
+  - { ip: 31.170.11.118, comment: "boost-pp00" }
 
