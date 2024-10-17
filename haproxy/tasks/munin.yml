@@ -8,7 +8,7 @@
   tags:
   - haproxy
 
-- name: Enable Munin Haproxy plugins
+- name: Enable Munin HAProxy plugins
   ansible.builtin.file:
     src: /usr/share/munin/plugins/haproxy_ng
     dest: /etc/munin/plugins/haproxy_ng
@@ -18,7 +18,7 @@
   tags:
   - haproxy
 
-- name: Copy Munin Haproxy config
+- name: Copy Munin HAProxy config
   ansible.builtin.template:
     src: munin.conf.j2
     dest: /etc/munin/plugin-conf.d/haproxy

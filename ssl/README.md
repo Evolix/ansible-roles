@@ -1,6 +1,6 @@
 # ssl
 
-Deploy SSL certificate, key, dhparams and concatenate them when needed (eg. with Haproxy).
+Deploy SSL certificate, key, dhparams and concatenate them when needed (eg. with HAProxy).
 
 ## Available variables
 
