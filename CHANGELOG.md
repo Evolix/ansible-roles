@@ -41,6 +41,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * supervisord: fix wrong sudo permission, improve check (output, return code)
 * nagios-nrpe/check_nfsclient: check if nfsmount is an NFS mountpoint
 * proftpd: remount /usr if it is mounted read-only
+* nagios-nrpe/check_nfsclient: test whether nfsmount is a directory later
 
 ### Removed
 
