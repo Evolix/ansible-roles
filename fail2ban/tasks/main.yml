@@ -21,6 +21,15 @@
   tags:
     - fail2ban
 
+- name: local fail2ban is installed
+  ansible.builtin.copy:
+    src: fail2ban.local
+    dest: /etc/fail2ban/fail2ban.local
+    mode: "0644"
+  notify: restart fail2ban
+  tags:
+    - fail2ban
+
 - name: local jail is installed
   ansible.builtin.template:
     src: jail.local.j2

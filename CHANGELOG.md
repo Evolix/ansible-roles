@@ -43,6 +43,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * nagios-nrpe/check_nfsclient: check if nfsmount is an NFS mountpoint
 * proftpd: remount /usr if it is mounted read-only
 * nagios-nrpe/check_nfsclient: test whether nfsmount is a directory later
+* fail2ban: apply "dbfile = None"
 
 ### Removed
 
