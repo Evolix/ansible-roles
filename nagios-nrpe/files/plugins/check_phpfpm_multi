@@ -42,8 +42,8 @@ for pool_file in $POOL_FILES; do
   pool_listen=$(grep -E "^listen\s?=" "$pool_file" |  sed -E 's/.*=\s?(.*)\s?$/\1/g')
   pool_max_children=$(grep -E "^pm.max_children" "$pool_file" | sed -E 's/.*=\s?(.*)\s?$/\1/g' )
 
-  pool_crit_procs=$(expr $pool_max_children \* 85 / 100)
-  pool_warn_procs=$(expr $pool_max_children \* 55 / 100)
+  pool_crit_procs=$(expr $pool_max_children \* 100 / 100)
+  pool_warn_procs=$(expr $pool_max_children \* 75 / 100)
 
   if [[ "$pool_status_path" == '' ]]; then
       nb_unchk=$((nb_unchk + 1))

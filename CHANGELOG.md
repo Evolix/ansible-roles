@@ -30,6 +30,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * listupgrade: default cron execution time is randomized
 * minifirewall: remove RELATED
 * docker-host: updated README with useful vars
+* nagios-nrpe: increase check php_fpm_multi max children threshold
 
 ### Fixed
 
