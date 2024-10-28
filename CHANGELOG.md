@@ -37,6 +37,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * bind: Added missing logrotate rules for named.stats file
 * evomaintenance: rm dead task, document manual enable in README
 * monitoringctl: fix logged user name unknown when it was nagios, fix minor bug in monitoringctl_common.py
+* munin: fix pressure graphs
 * nginx: fix sometime missing dir /etc/nginx/snippets
 * squid: add IPV6 authorization
 * supervisord: fix wrong sudo permission, improve check (output, return code)
