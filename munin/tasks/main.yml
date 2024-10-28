@@ -44,7 +44,7 @@
   ansible.builtin.copy:
     src: 'plugins/{{ item }}'
     dest: '/usr/share/munin/plugins/{{ item }}'
-    mode: 755
+    mode: "0755"
   loop:
     - dhcp_pool
     - linux_psi
