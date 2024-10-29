@@ -28,6 +28,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: comment the default rsyslog rules, to only keep them as examples
 * kvm-host/migrate-vm: improve interface speed detection
 * listupgrade: default cron execution time is randomized
+* listupgrade: updated listupgrade.sh
 * minifirewall: remove RELATED
 * docker-host: updated README with useful vars
 * nagios-nrpe: increase check php_fpm_multi max children threshold
