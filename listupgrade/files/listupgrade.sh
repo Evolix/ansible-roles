@@ -34,7 +34,7 @@ get_value() {
     variable="$2"
     value="$(grep "^${variable}:" "${file}" | head -n 1 | cut -d ':' -f 2 | sed 's/^ //')"
 
-    if echo "${value}" | grep -q -E '^[-.: [:alnum:]]*$'; then
+    if echo "${value}" | grep --quiet --extended-regexp '^[-.: [:alnum:]]*$'; then
         echo "${value}"
     else
         printf >&2 "Error parsing value \"%s\" for variable %s.\n" "${value}" "${variable}"
@@ -85,6 +85,7 @@ X-Debian-Release: ${local_release}
 X-Packages: ${packagesParsable}
 X-Date: ${date}
 X-Listupgrade-Version: ${VERSION}
+Auto-Submitted: auto-generated
 
 Bonjour,
 
@@ -158,16 +159,16 @@ main() {
         echo "Updating lists..."
     fi
     # Update APT cache and get packages to upgrade and packages on hold.
-    aptUpdateOutput=$(apt -o Dir::State::Lists="${listupgrade_state_dir}"  update 2>&1 | (grep -E -ve '^(Listing|WARNING|$)' -e upgraded -e 'up to date' || true))
+    aptUpdateOutput=$(apt-get -o Dir::State::Lists="${listupgrade_state_dir}" update 2>&1 | (grep --extended-regexp --invert-match --regexp '^(Listing|WARNING|$)' --regexp upgraded --regexp 'up to date' || true))
 
-    if echo "${aptUpdateOutput}" | grep -E "^Err(:[0-9]+)? http"; then
+    if echo "${aptUpdateOutput}" | grep --extended-regexp "^Err(:[0-9]+)? http"; then
         echo "FATAL - Not able to fetch all sources (probably a pesky (mini)firewall). Please, fix me" >&2
         post_hooks_and_exit 100
     fi
 
     apt-mark showhold | sed -e 's/\(.\+\)/^\1\//' >"${packagesHold}"
-    apt -o Dir::State::Lists="${listupgrade_state_dir}" list --upgradable 2>&1 | grep -v -f "${packagesHold}" | grep -v -E '^(Listing|WARNING|$)' >"${packages}"
-    packagesParsable=$(cut -f 1 -d / <"${packages}" | tr '\n' ' ')
+    apt -o Dir::State::Lists="${listupgrade_state_dir}" list --upgradable 2>&1 | grep --invert-match --file "${packagesHold}" | grep --invert-match --extended-regexp '^(Listing|WARNING|$)' >"${packages}"
+    packagesParsable=$(cut -f 1 -d / <"${packages}" | tr '\n' ' ' | cut -c 900-)
 
     # No updates? Exit!
     if [ ! -s "${packages}" ]; then
@@ -253,27 +254,27 @@ main() {
 
     # Guess which services will be restarted.
     for pkg in ${packagesParsable}; do
-        if echo "${pkg}" | grep -qE "^(lib)?apache2"; then
+        if echo "${pkg}" | grep --quiet --extended-regexp "^(lib)?apache2"; then
             echo "Apache2" >>"${servicesToRestart}"
-        elif echo "${pkg}" | grep -q "^nginx"; then
+        elif echo "${pkg}" | grep --quiet "^nginx"; then
             echo "Nginx" >>"${servicesToRestart}"
-        elif echo "${pkg}" | grep -q "^php5-fpm"; then
+        elif echo "${pkg}" | grep --quiet "^php5-fpm"; then
             echo "PHP FPM" >>"${servicesToRestart}"
-        elif echo "${pkg}" | grep -q "^mysql-server"; then
+        elif echo "${pkg}" | grep --quiet "^mysql-server"; then
             echo "MySQL" >>"${servicesToRestart}"
-        elif echo "${pkg}" | grep -q "^mariadb-server"; then
+        elif echo "${pkg}" | grep --quiet "^mariadb-server"; then
             echo "MariaDB" >>"${servicesToRestart}"
-        elif echo "${pkg}" | grep -qE "^postgresql-[[:digit:]]+(\.[[:digit:]]+)?$"; then
+        elif echo "${pkg}" | grep --quiet --extended-regexp "^postgresql-[[:digit:]]+(\.[[:digit:]]+)?$"; then
             echo "PostgreSQL" >>"${servicesToRestart}"
-        elif echo "${pkg}" | grep -qE "^tomcat[[:digit:]]+$"; then
+        elif echo "${pkg}" | grep --quiet --extended-regexp "^tomcat[[:digit:]]+$"; then
             echo "Tomcat" >>"${servicesToRestart}"
         elif [ "${pkg}" = "redis-server" ]; then
             echo "Redis" >>"${servicesToRestart}"
         elif [ "${pkg}" = "mongodb-server" ]; then
             echo "MondoDB" >>"${servicesToRestart}"
-        elif echo "${pkg}" | grep -qE "^courier-(pop|imap)"; then
+        elif echo "${pkg}" | grep --quiet --extended-regexp "^courier-(pop|imap)"; then
             echo "Courier POP/IMAP" >>"${servicesToRestart}"
-        elif echo "${pkg}" | grep -qE "^dovecot-(pop|imap)d"; then
+        elif echo "${pkg}" | grep --quiet --extended-regexp "^dovecot-(pop|imap)d"; then
             echo "Dovecot POP/IMAP" >>"${servicesToRestart}"
         elif [ "${pkg}" = "samba" ]; then
             echo "Samba" >>"${servicesToRestart}"
@@ -301,7 +302,7 @@ main() {
         elif [ "${pkg}" = "libstdc++6" ]; then
             echo "Tous les services sont susceptibles d'être redémarrés (mise à jour de libstdc++6)." >"${servicesToRestart}"
             break
-        elif echo "${pkg}" | grep -q "^libssl"; then
+        elif echo "${pkg}" | grep --quiet "^libssl"; then
             echo "Tous les services sont susceptibles d'être redémarrés (mise à jour de libssl)." >"${servicesToRestart}"
             break
         fi
@@ -315,30 +316,32 @@ main() {
         echo "Dowloading packages..."
     fi
     # Now we try to fetch all the packages for the next update session
-    downloadstatus=$(apt -o Dir::State::Lists="${listupgrade_state_dir}" dist-upgrade --assume-yes --download-only -q2 2>&1)
-    echo "${downloadstatus}" | grep -q 'Download complete and in download only mode'
+    downloadstatus=$(apt-get -o Dir::State::Lists="${listupgrade_state_dir}" dist-upgrade --assume-yes --download-only -q2 2>&1)
+    echo "${downloadstatus}" | grep --quiet 'Download complete and in download only mode'
 
     # shellcheck disable=SC2181
     if [ $? -ne 0 ]; then
         echo "${downloadstatus}"
+        post_hooks_and_exit 110
     fi
 
     # Also, we try to update each container apt sources
     if which lxc-ls >/dev/null; then
         for container in $(lxc-ls); do
 
-            aptUpdateOutput=$(lxc-attach -n "${container}" -- apt -o Dir::State::Lists="${listupgrade_state_dir}" update 2>&1 | (grep -Eve '^(Listing|WARNING|$)' -e upgraded -e 'up to date' || true))
+            aptUpdateOutput=$(lxc-attach -n "${container}" -- apt-get -o Dir::State::Lists="${listupgrade_state_dir}" update 2>&1 | (grep --extended-regexp --invert-match --regexp '^(Listing|WARNING|$)' --regexp upgraded --regexp 'up to date' || true))
 
-            if (echo "${aptUpdateOutput}" | grep -E "^Err(:[0-9]+)? http"); then
+            if (echo "${aptUpdateOutput}" | grep --extended-regexp "^Err(:[0-9]+)? http"); then
                 echo "FATAL CONTAINER - Not able to fetch all sources (probably a pesky (mini)firewall). Please, fix me" >&2
                 post_hooks_and_exit 150
             fi
 
             # Now we try to fetch all the packages for the next update session
-            downloadstatus=$(lxc-attach -n "${container}" -- apt -o Dir::State::Lists="${listupgrade_state_dir}" dist-upgrade --assume-yes --download-only -q2 2>&1)
+            downloadstatus=$(lxc-attach -n "${container}" -- apt-get -o Dir::State::Lists="${listupgrade_state_dir}" dist-upgrade --assume-yes --download-only -q2 2>&1)
 
-            if echo "${downloadstatus}" | grep -q 'Download complete and in download only mode'; then
+            if echo "${downloadstatus}" | grep --quiet 'Download complete and in download only mode'; then
                 echo "${downloadstatus}"
+                post_hooks_and_exit 160
             fi
 
         done
