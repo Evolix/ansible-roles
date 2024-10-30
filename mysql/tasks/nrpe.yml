@@ -57,6 +57,9 @@
     - mysql
     - nrpe
 
+- ansible.builtin.include_role:
+    name: evolix/remount-usr
+
 - name: "Install check_mariabackup"
   ansible.builtin.copy:
     src: check_mariabackup
