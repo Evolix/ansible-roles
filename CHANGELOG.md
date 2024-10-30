@@ -26,6 +26,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: deploy autosysadmin-agent and restart_nrpe by default
 * evolinux-base: use seed for random time in periodic crontab
 * evolinux-base: comment the default rsyslog rules, to only keep them as examples
+* generate-ldif: Enforce IPv4 for ssh-keyscan
 * kvm-host/migrate-vm: improve interface speed detection
 * listupgrade: default cron execution time is randomized
 * listupgrade: updated listupgrade.sh

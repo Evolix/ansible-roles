@@ -265,11 +265,11 @@ fi
 # OpenSSH
 openssh_version=$(get_pkg_version openssh-server)
 if [ -n "${openssh_version}" ]; then
-    opensshFingerprintRSA=$(ssh-keyscan -t rsa localhost 2>/dev/null\
+    opensshFingerprintRSA=$(ssh-keyscan -4 -t rsa localhost 2>/dev/null\
       | sed -e 's/localhost //' -e 's/ssh-rsa /ssh-rsa,/')
-    opensshFingerprintED25519=$(ssh-keyscan -t ed25519 localhost 2>/dev/null\
+    opensshFingerprintED25519=$(ssh-keyscan -4 -t ed25519 localhost 2>/dev/null\
       | sed -e 's/localhost //' -e 's/ssh-ed25519 /ssh-ed25519,/')
-    opensshFingerprintECDSA=$(ssh-keyscan -t ecdsa-sha2-nistp256 localhost 2>/dev/null\
+    opensshFingerprintECDSA=$(ssh-keyscan -4 -t ecdsa-sha2-nistp256 localhost 2>/dev/null\
       | sed -e 's/localhost //' -e 's/ecdsa-sha2-nistp256 /ecdsa-sha2-nistp256,/')
     opensshFingerprint="${opensshFingerprintRSA}${opensshFingerprintRSA:+;}${opensshFingerprintED25519}${opensshFingerprintED25519:+;}${opensshFingerprintECDSA}"
 
