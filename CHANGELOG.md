@@ -34,6 +34,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * docker-host: updated README with useful vars
 * nagios-nrpe: increase check php_fpm_multi max children threshold
 * nginx: improve default VirtualHost to add Let's Encrypt snippet
+* evolinux-base: deny: $1 must be an IPv4 address
 
 ### Fixed
 
