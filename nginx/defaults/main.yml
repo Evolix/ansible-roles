@@ -29,3 +29,6 @@ nginx_default_template_minimal: "evolinux-default.minimal.conf.j2"
 
 nginx_service_state: started
 nginx_service_enabled: True
+
+log2mail_alert_email: Null
+general_alert_email: "root@localhost"
