@@ -1,4 +1,8 @@
 ---
+
+# WARNING: This task file is invoked directly from some playbooks
+# Do not change it significantly without verifying not to break those playbooks.
+
 - name: "Remount /usr if needed"
   ansible.builtin.include_role:
     name: remount-usr
@@ -44,55 +48,3 @@
     owner: root
     group: root
     mode: "0750"
-
-- name: Ensure /etc/evolinux folder exists
-  ansible.builtin.file:
-    path: "/etc/evolinux"
-    state: directory
-    owner: "root"
-    group: "root"
-    mode: "0700"
-
-- name: Copy the configuration file if missing
-  ansible.builtin.template:
-    src: "autosysadmin.cf.j2"
-    dest: "/etc/evolinux/autosysadmin"
-    owner: root
-    group: root
-    mode: "0640"
-    force: no
-
-# Repair scripts are supposed to be 'on' by default
-# A line "repair_XXX=off" is added to the file only if the script is to be disabled.
-# That's why all the ternary logic for the state is reversed.
-#
-# This executed only if "autosysadmin_config" is not empty
-- name: Update value per variable
-  ansible.builtin.lineinfile:
-    dest: "/etc/evolinux/autosysadmin"
-    line: "{{ item }}={{ autosysadmin_config[item] | default(true) | bool | ternary('on', 'off') }}"
-    regexp: '^(#\s*)?{{ item }}=.*'
-    state: "{{ autosysadmin_config[item] | default(true) | bool | ternary('absent', 'present') }}"
-  register: _line
-  loop: "{{ autosysadmin_repair_scripts | union(['repair_all']) }}"
-  when: autosysadmin_config | length > 0
-
-- name: Legacy scripts are removed
-  ansible.builtin.file:
-    path: "{{ general_scripts_dir }}/autosysadmin/{{ item }}"
-    state: absent
-  loop:
-    - repair_amavis.sh
-    - repair_disk.sh
-    - repair_elasticsearch.sh
-    - repair_http.sh
-    - repair_mysql.sh
-    - repair_opendkim.sh
-    - repair_php_fpm56.sh
-    - repair_php_fpm70.sh
-    - repair_php_fpm73.sh
-    - repair_php_fpm74.sh
-    - repair_php_fpm80.sh
-    - repair_php_fpm81.sh
-    - repair_redis.sh
-    - repair_tomcat_instance.sh

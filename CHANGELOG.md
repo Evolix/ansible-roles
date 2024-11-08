@@ -21,6 +21,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * autosysadmin-agent: remove restart_nrpe (deployed separately) and add examples
 * autosysadmin-agent: upstream release 24.11
+* autosysadmin-agent: split tasks files to include install.yml from a playbook
 * autosysadmin-restart_nrpe: fix missing directory
 * evocheck: upstream release 24.09.2
 * evocommit: search for other user info when logname(1) fails
