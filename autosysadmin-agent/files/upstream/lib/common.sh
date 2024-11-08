@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="24.09.1"
+VERSION="24.11"
 
 # Common functions for "repair" and "restart" scripts
 
@@ -876,7 +876,7 @@ hook_mail() {
         log_global "ERROR: No \`sendmail' command has been found, can't send mail."
     fi
     if [ -x "${SENDMAIL_BIN}" ]; then
-        echo "${MAIL_CONTENT}" | "${SENDMAIL_BIN}" -oi -t -f "equipe@evolix.fr"
+        echo "${MAIL_CONTENT}" | "${SENDMAIL_BIN}" -oi -t -f "${EMAIL_FROM}"
         log_global "Sent '$1' mail for RUN_ID: ${RUN_ID}"
     fi
 }
