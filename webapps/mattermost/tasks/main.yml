@@ -32,11 +32,22 @@
     remote_src: true
   become_user: "{{ mattermost_instance }}"
 
-- name: Create the mattermost data dir if needed
+- name: Create the mattermost data/tmp dir if needed
   ansible.builtin.file:
-    path: ~/mattermost/data
+    path: "{{ item.path }}"
     state: directory
-    mode: '0750'
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: '~/mattermost/data', mode: '0750' }
+    - { path: '~/mattermost/temp', mode: '0750' }
+  become_user: "{{ mattermost_instance }}"
+
+- name: Backup mattermost default conf file
+  ansible.builtin.copy:
+    src: "~/mattermost/config/config.json"
+    dest: "~/mattermost/config/config.defaults.json"
+    mode: '0644'
+    remote_src: true
   become_user: "{{ mattermost_instance }}"
 
 - name: Template mattermost conf file
