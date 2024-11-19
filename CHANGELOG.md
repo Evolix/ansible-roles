@@ -35,6 +35,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * minifirewall: remove RELATED
 * minifirewall: fix syntax in check_minifirewall
 * minifirewall: move upstream files in upstream directory
+* monitoringctl: improve deployment task
 * docker-host: updated README with useful vars
 * nagios-nrpe: increase check php_fpm_multi max children threshold
 * nginx: improve default VirtualHost to add Let's Encrypt snippet
