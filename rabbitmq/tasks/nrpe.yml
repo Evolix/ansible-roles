@@ -36,14 +36,8 @@
     force: true
   when: ansible_distribution_major_version is version('11', '>=')
 
-- name: Is alerts_wrapper present?
-  ansible.builtin.stat:
-    path: "{{ monitoringctl_wrapper_path }}"
-  register: alerts_wrapper
-
 - set_fact:
-    rabbitmq_monitoringctl_wrapper_cmd: "{{ monitoringctl_wrapper_path }} --name rab_connection_count -- "
-  when: alerts_wrapper.stat.exists
+    rabbitmq_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name rab_connection_count -- "
 
 - name: check_rabbitmq is available for NRPE
   ansible.builtin.lineinfile:

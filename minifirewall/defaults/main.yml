@@ -78,5 +78,3 @@ evomaintenance_hosts: []
 
 nagios_plugins_directory: "/usr/local/lib/nagios/plugins"
 
-monitoringctl_wrapper_path: /usr/local/lib/monitoringctl/alerts_wrapper
-minifirewall_monitoringctl_wrapper_cmd: ""

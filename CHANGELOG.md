@@ -19,6 +19,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* all checks: assume alerts_wrapper (ie. monitoringctl) is present, which simplifies NRPE checks definition
 * autosysadmin-agent: remove restart_nrpe (deployed separately) and add examples
 * autosysadmin-agent: upstream release 24.11
 * autosysadmin-agent: split tasks files to include install.yml from a playbook
