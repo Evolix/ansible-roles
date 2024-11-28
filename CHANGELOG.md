@@ -32,21 +32,26 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: deny: $1 must be an IPv4 address
 * evolinux-base: deploy autosysadmin-agent and restart_nrpe by default
 * evolinux-base: use seed for random time in periodic crontab
-* generate-ldif: Enforce IPv4 for ssh-keyscan
+* generate-ldif: enforce IPv4 for ssh-keyscan
 * kvm-host/migrate-vm: improve interface speed detection
 * listupgrade: default cron execution time is randomized
 * listupgrade: updated listupgrade.sh
+* log2mail: add tags
+* lxc-php: install packaged keyrings
 * minifirewall: fix syntax in check_minifirewall
 * minifirewall: move upstream files in upstream directory
 * minifirewall: remove RELATED
 * monitoringctl: improve deployment task
 * nagios-nrpe: increase check php_fpm_multi max children threshold
 * nginx: improve default VirtualHost to add Let's Encrypt snippet
+* update evolix repository openPGP key
 
 ### Fixed
 
 * bind: Added missing logrotate rules for named.stats file
 * evomaintenance: rm dead task, document manual enable in README
+* fail2ban: apply "dbfile = None"
+* filebeat: fix role that was broken
 * monitoringctl: fix logged user name unknown when it was nagios, fix minor bug in monitoringctl_common.py
 * munin: fix pressure graphs
 * nginx: fix sometime missing dir /etc/nginx/snippets
@@ -55,8 +60,6 @@ The **patch** part is incremented if multiple releases happen the same month
 * nagios-nrpe/check_nfsclient: check if nfsmount is an NFS mountpoint
 * proftpd: remount /usr if it is mounted read-only
 * nagios-nrpe/check_nfsclient: test whether nfsmount is a directory later
-* fail2ban: apply "dbfile = None"
-* filebeat: fix role that was broken
 
 ### Removed
 
