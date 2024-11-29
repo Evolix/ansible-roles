@@ -6,6 +6,7 @@
     state: present
   tags:
     - apache
+    - log2mail
 
 - name: Add log2mail config for Apache segfaults
   ansible.builtin.template:
@@ -17,3 +18,4 @@
     force: false
   tags:
     - apache
+    - log2mail

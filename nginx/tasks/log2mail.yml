@@ -6,6 +6,7 @@
     state: present
   tags:
     - nginx
+    - log2mail
 
 - name: Add log2mail config for Nginx
   ansible.builtin.template:
@@ -17,3 +18,4 @@
     force: false
   tags:
     - nginx
+    - log2mail
