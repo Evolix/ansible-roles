@@ -1,5 +1,12 @@
 ---
 
+- name: "Compatibility check"
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution == "Debian"
+      - ansible_distribution_major_version is version('10', '>=')
+    msg: Only compatible with Debian >= 10
+
 - name: Dependencies are present
   ansible.builtin.apt:
     name:
