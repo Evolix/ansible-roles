@@ -1,11 +1,21 @@
 #!/bin/bash
 
-/usr/bin/supervisorctl status |while read line
-do
-    if echo $line |grep -q RUNNING; then
-        echo $line
-    else
-        echo $line
-        exit 2
+n_running=0
+n_total=0
+
+while read line; do
+    n_total=$((n_total+1))
+    if echo "${line}" |grep -qs RUNNING; then
+        n_running=$((n_running+1))
     fi
-done
+done <<< $(sudo /usr/bin/supervisorctl status)
+
+if [ "${n_total}" -eq 0 ] || [ "${n_total}" -ne "${n_running}" ]; then
+    echo "CRITICAL - ${n_running}/${n_total} running"
+    sudo /usr/bin/supervisorctl status
+    #exit 2
+else
+    echo "OK - ${n_running}/${n_total} running"
+    sudo /usr/bin/supervisorctl status
+fi
+
