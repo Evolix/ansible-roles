@@ -8,12 +8,15 @@
 # --dump-label=[String] (default: "default")
 #   used as suffix of the dump dir to differenciate multiple instances
 # --compress=<gzip|pigz|bzip2|xz|none> (default: "gzip")
+# --host=<ip|socket_dir> (default: "/var/lib/postgresql")
 # Other options after -- are passed as-is to pg_dump
 #######################################################################
 dump_postgresql_global() {
     local option_dump_label=""
     local option_compress=""
     local option_others=""
+    local option_host=""
+    local option_port=""
 
     # Parse options, based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
     while :; do
@@ -54,6 +57,44 @@ dump_postgresql_global() {
             --compress=)
                 # compress options, without value
                 log_error "LOCAL_TASKS - ${FUNCNAME[0]}: '--compress' requires a non-empty option argument."
+                exit 1
+                ;;
+            --host)
+                # host options, with value separated by space
+                if [ -n "$2" ]; then
+                    option_host="${2}"
+                    shift
+                else
+                    log_error "LOCAL_TASKS - ${FUNCNAME[0]}: '--host' requires a non-empty option argument."
+                    exit 1
+                fi
+                ;;
+            --host=?*)
+                # host options, with value separated by =
+                option_host="${1#*=}"
+                ;;
+            --host=)
+                # host options, without value
+                log_error "LOCAL_TASKS - ${FUNCNAME[0]}: '--host' requires a non-empty option argument."
+                exit 1
+                ;;
+            --port)
+                # port options, with value separated by space
+                if [ -n "$2" ]; then
+                    option_port="${2}"
+                    shift
+                else
+                    log_error "LOCAL_TASKS - ${FUNCNAME[0]}: '--port' requires a non-empty option argument."
+                    exit 1
+                fi
+                ;;
+            --port=?*)
+                # port options, with value separated by =
+                option_port="${1#*=}"
+                ;;
+            --port=)
+                # port options, without value
+                log_error "LOCAL_TASKS - ${FUNCNAME[0]}: '--port' requires a non-empty option argument."
                 exit 1
                 ;;
             --)
@@ -116,6 +157,15 @@ dump_postgresql_global() {
 
     declare -a dump_options
     dump_options=()
+    if [ -n "${option_host}" ]; then
+       dump_options+=(--host ${option_host})
+       if [ -n "${option_port}" ]; then
+          dump_options+=(--port ${option_port})
+       else
+          dump_options+=(--port 5432)
+       fi
+    fi
+
     if [ -n "${option_others}" ]; then
         # word splitting is deliberate here
         # shellcheck disable=SC2206
@@ -158,6 +208,8 @@ dump_postgresql_per_base() {
     local option_dump_label=""
     local option_compress=""
     local option_others=""
+    local option_host=""
+    local option_port=""
 
     # Parse options, based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
     while :; do
@@ -198,6 +250,44 @@ dump_postgresql_per_base() {
             --compress=)
                 # compress options, without value
                 log_error "LOCAL_TASKS - ${FUNCNAME[0]}: '--compress' requires a non-empty option argument."
+                exit 1
+                ;;
+            --host)
+                # host options, with value separated by space
+                if [ -n "$2" ]; then
+                    option_host="${2}"
+                    shift
+                else
+                    log_error "LOCAL_TASKS - ${FUNCNAME[0]}: '--host' requires a non-empty option argument."
+                    exit 1
+                fi
+                ;;
+            --host=?*)
+                # host options, with value separated by =
+                option_host="${1#*=}"
+                ;;
+            --host=)
+                # host options, without value
+                log_error "LOCAL_TASKS - ${FUNCNAME[0]}: '--host' requires a non-empty option argument."
+                exit 1
+                ;;
+            --port)
+                # port options, with value separated by space
+                if [ -n "$2" ]; then
+                    option_port="${2}"
+                    shift
+                else
+                    log_error "LOCAL_TASKS - ${FUNCNAME[0]}: '--port' requires a non-empty option argument."
+                    exit 1
+                fi
+                ;;
+            --port=?*)
+                # port options, with value separated by =
+                option_port="${1#*=}"
+                ;;
+            --port=)
+                # port options, without value
+                log_error "LOCAL_TASKS - ${FUNCNAME[0]}: '--port' requires a non-empty option argument."
                 exit 1
                 ;;
             --)
@@ -255,8 +345,21 @@ dump_postgresql_per_base() {
 
     (
         # shellcheck disable=SC2164
-        cd /var/lib/postgresql
-        databases=$(sudo -u postgres psql -U postgres -lt | awk -F \| '{print $1}' | grep -v "template.*")
+        
+        declare -a connect_options
+        if [ -n "${option_host}" ]; then
+            connect_options+=(--host ${option_host})
+            if [ -n "${option_port}" ]; then
+                connect_options+=(--port ${option_port})
+            else
+                connect_options+=(--port 5432)
+            fi
+        fi
+
+        cd /var/lib/postgresql || { log "LOCAL_TASKS - ${FUNCNAME[0]}: /var/lib/postgresql not found"; return; }
+    
+        databases=$(sudo -u postgres psql -U postgres ${connect_options[*]} -lt | awk -F \| '{print $1}' | grep -v "template.*")
+
         for database in ${databases} ; do
             local error_file="${errors_dir}/${database}.err"
             local dump_file="${dump_dir}/${database}.sql${dump_ext}"
@@ -267,6 +370,16 @@ dump_postgresql_per_base() {
             dump_options+=(--create)
             dump_options+=(-U postgres)
             dump_options+=(-d "${database}")
+
+            if [ -n "${option_host}" ]; then
+                dump_options+=(--host ${option_host})
+                if [ -n "${option_port}" ]; then
+                    dump_options+=(--port ${option_port})
+                else
+                    dump_options+=(--port 5432)
+                fi
+            fi
+
             if [ -n "${option_others}" ]; then
                 # word splitting is deliberate here
                 # shellcheck disable=SC2206

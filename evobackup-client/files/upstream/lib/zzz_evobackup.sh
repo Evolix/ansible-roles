@@ -219,7 +219,9 @@ local_tasks() {
 
     # Copy data file for all instances
     #
-    ### dump_redis [--instances=<all|instance1|instance2>]
+    # The instance name is the config directory name
+    # eg. "redis" for "/etc/redis/", "redis-foo" for "/etc/redis-foo"
+    ### dump_redis [--instances=<all|instance1,instance2>]
 
     ########## Elasticsearch ##########
 

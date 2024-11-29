@@ -34,12 +34,13 @@ dump_ldap() {
 # Copy dump file of Redis instances
 #
 # Arguments:
-# --instances=[Integer] (default: all)
+# --instances=[String,String] (default: all)
 #######################################################################
 dump_redis() {
-    all_instances=$(find /var/lib/ -mindepth 1 -maxdepth 1 '(' -type d -o -type l ')' -name 'redis*')
+    all_instances=$( find /etc/redis*/redis.conf -print0 | xargs -0 -n 1 dirname  | xargs -n 1 basename | sort -h | xargs )
 
-    local option_instances=""
+    declare -a option_instances
+
     # Parse options, based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
     while :; do
         case ${1:-''} in
@@ -87,51 +88,70 @@ dump_redis() {
 
         shift
     done
-    
+
+    # If no instance has been give, use every instance found
+    if [ -z "${option_instances[*]}" ]; then
+        read -a option_instances <<< "${all_instances}"
+    fi
+
     for instance in "${option_instances[@]}"; do
-        name=$(basename "${instance}")
-        local dump_dir="${LOCAL_BACKUP_DIR}/${name}"
-        local errors_dir=$(errors_dir_from_dump_dir "${dump_dir}") 
-        rm -rf "${dump_dir}" "${errors_dir}"
-        mkdir -p "${dump_dir}" "${errors_dir}"
-        # No need to change recursively, the top directory is enough
-        chmod 700 "${dump_dir}" "${errors_dir}"
+        # Look for the config file for this instance
+        config_file="/etc/${instance}/redis.conf"
+        if [ -n "${instance}" ] && [ -f "${config_file}" ]; then
+            # Parse the config for he data dir and dump file
+            local instance_data_dir
+            local instance_data_file
+            local instance_dump_path
 
-        if [ -f "${instance}/dump.rdb" ]; then
-            local error_file="${errors_dir}/${name}.err"
-            log "LOCAL_TASKS - ${FUNCNAME[0]}: start ${dump_dir}"
+            instance_data_dir=$( grep --extended-regexp "^\s*dir " "${config_file}" | cut -d ' ' -f 2 | tr -d "'" | tr -d '"' )
+            instance_data_file=$( grep --extended-regexp "^\s*dbfilename " "${config_file}" | cut -d ' ' -f 2 | tr -d "'" | tr -d '"' )
+            instance_dump_path="${instance_data_dir}/${instance_data_file}"
 
-            # Copy the Redis database
-            dump_cmd="cp -a ${instance}/dump.rdb ${dump_dir}/dump.rdb"
-            log "LOCAL_TASKS - ${FUNCNAME[0]}: ${dump_cmd}"
-            ${dump_cmd} 2> "${error_file}"
+            if [ -n "${instance_dump_path}" ]; then
+                local dump_dir="${LOCAL_BACKUP_DIR}/${instance}"
+                local errors_dir=$(errors_dir_from_dump_dir "${dump_dir}") 
+                rm -rf "${dump_dir}" "${errors_dir}"
+                mkdir -p "${dump_dir}" "${errors_dir}"
+                # No need to change recursively, the top directory is enough
+                chmod 700 "${dump_dir}" "${errors_dir}"
 
-            local last_rc=$?
-            # shellcheck disable=SC2086
-            if [ ${last_rc} -ne 0 ]; then
-                log_error "LOCAL_TASKS - ${FUNCNAME[0]}: cp ${instance}/dump.rdb to ${dump_dir} returned an error ${last_rc}" "${error_file}"
-                GLOBAL_RC=${E_DUMPFAILED}
+                local error_file="${errors_dir}/${instance}.err"
+                log "LOCAL_TASKS - ${FUNCNAME[0]}: start ${dump_dir}"
+
+                # Copy the Redis database
+                dump_cmd="cp -a ${instance_dump_path} ${dump_dir}/${instance_data_file}"
+                log "LOCAL_TASKS - ${FUNCNAME[0]}: ${dump_cmd}"
+                ${dump_cmd} 2> "${error_file}"
+
+                local last_rc=$?
+                # shellcheck disable=SC2086
+                if [ ${last_rc} -ne 0 ]; then
+                    log_error "LOCAL_TASKS - ${FUNCNAME[0]}: cp ${instance_dump_path} to ${dump_dir} returned an error ${last_rc}" "${error_file}"
+                    GLOBAL_RC=${E_DUMPFAILED}
+                else
+                    rm -f "${error_file}"
+                fi
+
+                # Compress the Redis database
+                dump_cmd="gzip ${dump_dir}/${instance_data_file}"
+                log "LOCAL_TASKS - ${FUNCNAME[0]}: ${dump_cmd}"
+                ${dump_cmd}
+
+                local last_rc=$?
+                # shellcheck disable=SC2086
+                if [ ${last_rc} -ne 0 ]; then
+                    log_error "LOCAL_TASKS - ${FUNCNAME[0]}: gzip ${dump_dir}/${instance_data_file} returned an error ${last_rc}" "${error_file}"
+                    GLOBAL_RC=${E_DUMPFAILED}
+                else
+                    rm -f "${error_file}"
+                fi
+
+                log "LOCAL_TASKS - ${FUNCNAME[0]}: stop  ${dump_dir}"
             else
-                rm -f "${error_file}"
+                log_error "LOCAL_TASKS - ${FUNCNAME[0]}: '${dump_file}' not found."
             fi
-
-            # Compress the Redis database
-            dump_cmd="gzip ${dump_dir}/dump.rdb"
-            log "LOCAL_TASKS - ${FUNCNAME[0]}: ${dump_cmd}"
-            ${dump_cmd}
-
-            local last_rc=$?
-            # shellcheck disable=SC2086
-            if [ ${last_rc} -ne 0 ]; then
-                log_error "LOCAL_TASKS - ${FUNCNAME[0]}: gzip ${dump_dir}/dump.rdb returned an error ${last_rc}" "${error_file}"
-                GLOBAL_RC=${E_DUMPFAILED}
-            else
-                rm -f "${error_file}"
-            fi
-
-            log "LOCAL_TASKS - ${FUNCNAME[0]}: stop  ${dump_dir}"
         else
-            log_error "LOCAL_TASKS - ${FUNCNAME[0]}: '${instance}/dump.rdb' not found."
+            log_error "LOCAL_TASKS - ${FUNCNAME[0]}: '${config_file}' not found."
         fi
     done
 }
@@ -371,7 +391,7 @@ dump_raid_config() {
 # --targets=[IP,HOST] (default: <none>)
 #######################################################################
 dump_traceroute() {
-    local option_targets=""
+    declare -a option_targets
 
     # Parse options, based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
     while :; do

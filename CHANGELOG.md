@@ -21,26 +21,27 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * all checks: assume alerts_wrapper (ie. monitoringctl) is present, which simplifies NRPE checks definition
 * autosysadmin-agent: remove restart_nrpe (deployed separately) and add examples
-* autosysadmin-agent: upstream release 24.11
 * autosysadmin-agent: split tasks files to include install.yml from a playbook
+* autosysadmin-agent: upstream release 24.11
 * autosysadmin-restart_nrpe: fix missing directory
+* docker-host: updated README with useful vars
+* evobackup-client: upstream release 24.11
 * evocheck: upstream release 24.09.2
 * evocommit: search for other user info when logname(1) fails
+* evolinux-base: comment the default rsyslog rules, to only keep them as examples
+* evolinux-base: deny: $1 must be an IPv4 address
 * evolinux-base: deploy autosysadmin-agent and restart_nrpe by default
 * evolinux-base: use seed for random time in periodic crontab
-* evolinux-base: comment the default rsyslog rules, to only keep them as examples
 * generate-ldif: Enforce IPv4 for ssh-keyscan
 * kvm-host/migrate-vm: improve interface speed detection
 * listupgrade: default cron execution time is randomized
 * listupgrade: updated listupgrade.sh
-* minifirewall: remove RELATED
 * minifirewall: fix syntax in check_minifirewall
 * minifirewall: move upstream files in upstream directory
+* minifirewall: remove RELATED
 * monitoringctl: improve deployment task
-* docker-host: updated README with useful vars
 * nagios-nrpe: increase check php_fpm_multi max children threshold
 * nginx: improve default VirtualHost to add Let's Encrypt snippet
-* evolinux-base: deny: $1 must be an IPv4 address
 
 ### Fixed
 
@@ -250,7 +251,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * add-vm.sh: allow VM name max length > 20
 * amavis: make ldap_suffix mandatory
-* apache : fix goaway pattern for bad bots 
+* apache : fix goaway pattern for bad bots
 * apache : rename MaxRequestsPerChild to MaxConnectionsPerChild (new name)
 * apache: use backward compatible Redirect directive
 * apt: Disable archive repository for Debian 8
