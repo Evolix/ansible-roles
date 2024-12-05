@@ -46,6 +46,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * monitoringctl: improve deployment task
 * nagios-nrpe: increase check php_fpm_multi max children threshold
 * nginx: improve default VirtualHost to add Let's Encrypt snippet
+* squid: disable netdb journal #75115
 * supervisord: improve NRPE check
 * update evolix repository openPGP key
 
