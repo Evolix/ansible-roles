@@ -34,6 +34,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: deny: $1 must be an IPv4 address
 * evolinux-base: deploy autosysadmin-agent and restart_nrpe by default
 * evolinux-base: use seed for random time in periodic crontab
+* evolinux-base: Install ifenslave on host
 * generate-ldif: enforce IPv4 for ssh-keyscan
 * kvm-host/migrate-vm: improve interface speed detection
 * listupgrade: default cron execution time is randomized
