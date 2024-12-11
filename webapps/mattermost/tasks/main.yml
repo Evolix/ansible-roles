@@ -39,6 +39,7 @@
     mode: "{{ item.mode }}"
   loop:
     - { path: '~/data', mode: '0750' }
+    - { path: '~/temp', mode: '0750' }
     - { path: '~/mattermost/temp', mode: '0750' }
   become_user: "{{ mattermost_instance }}"
 
