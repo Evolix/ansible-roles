@@ -33,7 +33,6 @@
     src: "{{ item }}"
     dest: ~/mattermost
     remote_src: true
-    force: no
   loop:
     - "~/mattermost_{{ mattermost_backup_date }}/config"
 #    - "~/mattermost_{{ mattermost_backup_date }}/data"
