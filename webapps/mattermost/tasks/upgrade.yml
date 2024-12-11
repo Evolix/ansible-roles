@@ -8,7 +8,7 @@
 
 - name: Set current date and time as a fact
   ansible.builtin.set_fact:
-    backup_date: "{{ ansible_date_time.iso8601_basic_short }}"
+    mattermost_backup_date: "{{ ansible_date_time.iso8601_basic_short }}"
 
 - name: Backup current mattermost files
   ansible.builtin.command: "mv  ~/mattermost/ ~/mattermost_{{ mattermost_backup_date }}"
