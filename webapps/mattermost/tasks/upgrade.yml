@@ -1,7 +1,7 @@
 ---
 # tasks file for mattermost upgrade
 
-- name: Start mattermost systemd unit
+- name: Stop mattermost systemd unit
   ansible.builtin.systemd:
     name: "mattermost@{{ mattermost_instance }}"
     state: stopped
