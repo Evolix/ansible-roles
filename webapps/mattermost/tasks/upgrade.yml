@@ -33,9 +33,10 @@
     src: "{{ item }}"
     dest: ~/mattermost
     remote_src: true
+    force: no
   loop:
     - "~/mattermost_{{ mattermost_backup_date }}/config"
-    - "~/mattermost_{{ mattermost_backup_date }}/data"
+#    - "~/mattermost_{{ mattermost_backup_date }}/data"
     - "~/mattermost_{{ mattermost_backup_date }}/logs"
     - "~/mattermost_{{ mattermost_backup_date }}/plugins"
     - "~/mattermost_{{ mattermost_backup_date }}/client/plugins"

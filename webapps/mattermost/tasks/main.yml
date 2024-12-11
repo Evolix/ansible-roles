@@ -38,7 +38,7 @@
     state: directory
     mode: "{{ item.mode }}"
   loop:
-    - { path: '~/mattermost/data', mode: '0750' }
+    - { path: '~/data', mode: '0750' }
     - { path: '~/mattermost/temp', mode: '0750' }
   become_user: "{{ mattermost_instance }}"
 
