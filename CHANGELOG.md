@@ -33,13 +33,13 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: comment the default rsyslog rules, to only keep them as examples
 * evolinux-base: deny: $1 must be an IPv4 address
 * evolinux-base: deploy autosysadmin-agent and restart_nrpe by default
-* evolinux-base: use seed for random time in periodic crontab
 * evolinux-base: install ifenslave on host
 * evolinux-base: setup Nagios/NRPE earlier
+* evolinux-base: use seed for random time in periodic crontab
 * generate-ldif: enforce IPv4 for ssh-keyscan
 * kvm-host/migrate-vm: improve interface speed detection
 * listupgrade: default cron execution time is randomized
-* listupgrade: updated listupgrade.sh
+* listupgrade: upstream release 24.12
 * log2mail: add tags
 * lxc-php: install packaged keyrings
 * minifirewall: fix syntax in check_minifirewall
@@ -61,18 +61,18 @@ The **patch** part is incremented if multiple releases happen the same month
 * filebeat: fix role that was broken
 * monitoringctl: fix logged user name unknown when it was nagios, fix minor bug in monitoringctl_common.py
 * munin: fix pressure graphs
+* nagios-nrpe/check_nfsclient: check if nfsmount is an NFS mountpoint
+* nagios-nrpe/check_nfsclient: test whether nfsmount is a directory later
 * nginx: fix sometime missing dir /etc/nginx/snippets
+* proftpd: remount /usr if it is mounted read-only
 * squid: add IPV6 authorization
 * supervisord: fix wrong sudo permission, improve check (output, return code)
-* nagios-nrpe/check_nfsclient: check if nfsmount is an NFS mountpoint
-* proftpd: remount /usr if it is mounted read-only
-* nagios-nrpe/check_nfsclient: test whether nfsmount is a directory later
 
 ### Removed
 
 * monitoringctl: alerts_switch removed and merged into monitoringctl
-* monitoringctl: old alerts_wrapper in Bash removed (now in Python)
 * monitoringctl: migrate to separate repo
+* monitoringctl: old alerts_wrapper in Bash removed (now in Python)
 
 ### Security
 

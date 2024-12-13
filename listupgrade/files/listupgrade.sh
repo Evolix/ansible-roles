@@ -13,7 +13,7 @@
 # - 150 : Inside an LXC container: Failure to apt update
 # - 160 : Inside an LXC container: Failure to apt upgrade --download only
 
-VERSION="24.11.0"
+VERSION="24.12"
 
 show_version() {
     cat <<END
@@ -332,7 +332,7 @@ main() {
 
     # Also, we try to update each container apt sources
     if which lxc-ls >/dev/null; then
-        for container in $(lxc-ls); do
+        for container in $( lxc-ls -1 --active | grep --invert-match --regexp php56 --regexp php70 ); do
 
             aptUpdateOutput=$(lxc-attach -n "${container}" -- apt-get -o Dir::State::Lists="${listupgrade_state_dir}" update 2>&1 | (grep --extended-regexp --invert-match --regexp '^(Listing|WARNING|$)' --regexp upgraded --regexp 'up to date' || true))
 
