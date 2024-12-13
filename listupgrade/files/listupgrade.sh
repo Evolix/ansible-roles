@@ -8,18 +8,23 @@
 # - 50 : all upgradable packages are in the $skip_packages list
 # - 60 : current release is not in the $r_releases list
 # - 70 : at least an upgradable package is not in the $r_packages list
+# - 100 : Failure to apt update
+# - 110 : Failure to apt upgrade --download only
+# - 150 : Inside an LXC container: Failure to apt update
+# - 160 : Inside an LXC container: Failure to apt upgrade --download only
 
-VERSION="23.03.3"
+VERSION="24.11.0"
 
 show_version() {
     cat <<END
 listupgrade.sh version ${VERSION}
 
-Copyright 2018-2023 Evolix <info@evolix.fr>,
+Copyright 2018-2024 Evolix <info@evolix.fr>,
                Gregory Colpart <reg@evolix.fr>,
                Romain Dessort <rdessort@evolix.fr>,
                Ludovic Poujol <lpoujol@evolix.fr>,
-               Jérémy Lecour <jlecour@evolix.fr>
+               Jérémy Lecour <jlecour@evolix.fr>,
+               David Prevot <dprevot@evolix.fr>
                and others.
 
 listupgrade.sh comes with ABSOLUTELY NO WARRANTY.  This is free software,
@@ -339,7 +344,10 @@ main() {
             # Now we try to fetch all the packages for the next update session
             downloadstatus=$(lxc-attach -n "${container}" -- apt-get -o Dir::State::Lists="${listupgrade_state_dir}" dist-upgrade --assume-yes --download-only -q2 2>&1)
 
-            if echo "${downloadstatus}" | grep --quiet 'Download complete and in download only mode'; then
+            echo "${downloadstatus}" | grep --quiet 'Download complete and in download only mode'
+
+            # shellcheck disable=SC2181
+            if [ $? -ne 0 ]; then
                 echo "${downloadstatus}"
                 post_hooks_and_exit 160
             fi
