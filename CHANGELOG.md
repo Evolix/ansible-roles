@@ -46,6 +46,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * minifirewall: move upstream files in upstream directory
 * minifirewall: remove RELATED
 * monitoringctl: improve deployment task
+* mysql: store mysql-skip log in a better place
 * nagios-nrpe: increase check php_fpm_multi max children threshold
 * nginx: improve default VirtualHost to add Let's Encrypt snippet
 * squid: disable netdb journal #75115
