@@ -64,6 +64,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * nagios-nrpe/check_nfsclient: check if nfsmount is an NFS mountpoint
 * nagios-nrpe/check_nfsclient: test whether nfsmount is a directory later
 * nginx: fix sometime missing dir /etc/nginx/snippets
+* nginx: fix corner case with server status handling
 * proftpd: remount /usr if it is mounted read-only
 * squid: add IPV6 authorization
 * supervisord: fix wrong sudo permission, improve check (output, return code)

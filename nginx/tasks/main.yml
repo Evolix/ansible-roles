@@ -53,16 +53,11 @@
 # not too strict for ipaddr_whitelist
 # and not too loose for private_htpasswd
 
-- name: Verify /etc/nginx/snippets/ exists
-  ansible.builtin.stat:
-    path: /etc/nginx/snippets/
-  register: nginx_snippets_stats
-
 - name: Create /etc/nginx/snippets/ if missing
   ansible.builtin.file:
     path: /etc/nginx/snippets/
+    mode: "0750"
     state: directory
-  when: not nginx_snippets_stats.stat.exists
 
 - name: Copy ipaddr_whitelist
   ansible.builtin.copy:
@@ -185,4 +180,4 @@
 
 - ansible.builtin.include: logrotate.yml
 
-- ansible.builtin.include: log2mail.yml
+# - ansible.builtin.include: log2mail.yml
