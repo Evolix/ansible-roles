@@ -10,6 +10,9 @@
     - php-lxc
     - munin
 
+- ansible.builtin.include_role:
+    name: evolix/remount-usr
+
 - name: Local Munin plugins directory exist
   ansible.builtin.file:
     path: "{{ item }}"
