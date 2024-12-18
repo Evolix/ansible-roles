@@ -78,6 +78,20 @@
   when: "'php82' in packweb_multiphp_versions"
 
 - ansible.builtin.include_role:
+    name: evolix/lxc-php
+  vars:
+    lxc_php_version: php83
+    lxc_php_create_mysql_link: True
+  when: "'php83' in packweb_multiphp_versions"
+
+- ansible.builtin.include_role:
+    name: evolix/lxc-php
+  vars:
+    lxc_php_version: php84
+    lxc_php_create_mysql_link: True
+  when: "'php84' in packweb_multiphp_versions"
+
+- ansible.builtin.include_role:
     name: evolix/webapps/evoadmin-web
   vars:
     evoadmin_enable_vhost: "{{ packweb_enable_evoadmin_vhost }}"
