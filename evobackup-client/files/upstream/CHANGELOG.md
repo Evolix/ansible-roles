@@ -23,6 +23,16 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [24.12] - 2022-12-18
+
+### Changed
+
+* client: the template defaults to full Evolix backup
+
+### Fixed
+
+* client: add exclude for 'lxc/*/rootfs/dev'
+
 ## [24.11] - 2022-11-29
 
 ### Fixed

@@ -28,7 +28,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * autosysadmin-restart_nrpe: fix missing directory
 * docker-host: updated README with useful vars
 * evoadmin-mail: use latest version from our repository
-* evobackup-client: upstream release 24.11
+* evobackup-client: upstream release 24.12
 * evocheck: upstream release 24.09.2
 * evocommit: search for other user info when logname(1) fails
 * evolinux-base: comment the default rsyslog rules, to only keep them as examples
