@@ -57,6 +57,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * bind: Added missing logrotate rules for named.stats file
+* bind: fix logrotate filepath
 * evomaintenance: rm dead task, document manual enable in README
 * fail2ban: apply "dbfile = None"
 * filebeat: fix role that was broken
