@@ -15,6 +15,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * packweb-apache: enable php83 and php84
 * evobackup-client: not compatible with Debian <10
+* evolinux-todo: add task activate check pressure
 * kvm-host/migrate-vm: undefine with nvram option
 * mysql: Add deploy check_mariabackup on nrpe task
 * proftpd: Logrotate configuration for sftp.log
