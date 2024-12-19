@@ -1,0 +1,42 @@
+---
+
+- name: /usr/local/lib/nagios/plugins/ exists
+  ansible.builtin.file:
+    dest: "{{ nagios_plugins_directory }}"
+    mode: "02755"
+    owner: root
+    group: staff
+    state: directory
+
+- name: "{{ _check }} is installed"
+  ansible.builtin.copy:
+    src: "{{ _check }}"
+    dest: "{{ nagios_plugins_directory }}/{{ _check }}"
+    force: "{{ minifirewall_force_update_nrpe_scripts | bool }}"
+    owner: root
+    group: staff
+    mode: "0755"
+
+- set_fact:
+    minifirewall_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name {{ _check }} -- "
+
+- name: "{{ _check }} is available for NRPE"
+  ansible.builtin.lineinfile:
+    dest: /etc/nagios/nrpe.d/evolix.cfg
+    regexp: 'command\[{{ _check }}\]'
+    line: 'command[{{ _check }}]={{ minifirewall_monitoringctl_wrapper_cmd }}sudo {{ nagios_plugins_directory }}/{{ _check }}'
+  notify: restart nagios-nrpe-server
+
+- name: Is evolinux sudoers installed?
+  ansible.builtin.stat:
+    path: /etc/sudoers.d/evolinux
+  register: sudoers_evolinux
+
+- name: sudo without password for nagios
+  ansible.builtin.lineinfile:
+    dest: /etc/sudoers.d/evolinux
+    regexp: '{{ _check }}'
+    line: 'nagios          ALL = NOPASSWD: {{ nagios_plugins_directory }}/{{ _check }}'
+    insertafter: '^nagios'
+    validate: "visudo -cf %s"
+  when: sudoers_evolinux.stat.exists

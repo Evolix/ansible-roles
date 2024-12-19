@@ -71,39 +71,29 @@ append_details() {
 }
 
 main() {
-  if is_alert5_enabled; then
-    append_details "alert5 is enabled"
+  check_result=$( /etc/init.d/minifirewall check-active-config )
+  check_rc=$?
 
-    if is_minifirewall_enabled; then
-      append_details "minifirewall is enabled"
-
-      if is_minifirewall_started; then
-        append_details "minifirewall is started"
-        summary_ok "minifirewall is started"
-      else
-        append_details "minifirewall is stopped"
-        summary_critical "minifirewall is stopped, but enabled in alert5 or systemd"
-      fi
-    else
-      append_details "minifirewall is disabled"
-
-      if is_minifirewall_started; then
-        append_details "minifirewall is started"
-        summary_warning "minifirewall is started, but disabled in alert5 or systemd"
-      else
-        append_details "minifirewall is stopped"
-        summary_ok "minifirewall is stopped, but disabled in alert5 or systemd"
-      fi
-    fi
+  if [ ${check_rc} -eq 0 ]; then
+    append_details "configuration is up-to-date"
+    summary_ok "minifirewall is started and configuration is up-to-date"
   else
-    append_details "alert5 is disabled"
-
-    if is_minifirewall_started; then
-      append_details "minifirewall is started"
-      summary_warning "minifirewall is started, but alert5 is disabled"
+    if echo "${check_result}" | grep --ignore-case --quiet --regexp 'usage'; then
+      append_details "minifirewall is too old to check active configuration"
     else
-      append_details "minifirewall is stopped"
-      summary_ok "minifirewall is stopped and alert5 is disabled"
+      case "${check_rc}" in
+          1)
+            summary_warning "minifirewall configuration state is unknown"
+          ;;
+          2)
+            summary_critical "minifirewall is started, but configuration is outdated"
+            append_details "configuration is outdated"
+          ;;
+          *)
+            summary_unchk "minifirewall configuration state is unknown"
+          ;;
+      esac
+      append_details "=> run '/etc/init.d/minifirewall check-active-config' for details"
     fi
   fi
 

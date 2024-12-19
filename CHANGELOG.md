@@ -46,6 +46,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * minifirewall: fix syntax in check_minifirewall
 * minifirewall: move upstream files in upstream directory
 * minifirewall: remove RELATED
+* minifirewall: split NRPE check in 2
 * monitoringctl: improve deployment task
 * mysql: store mysql-skip log in a better place
 * nagios-nrpe: increase check php_fpm_multi max children threshold
