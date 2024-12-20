@@ -13,6 +13,18 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [24.12] 2024-12-20
+
+### Added
+
 * packweb-apache: enable php83 and php84
 * evobackup-client: not compatible with Debian <10
 * evolinux-todo: add task activate check pressure
@@ -79,8 +91,6 @@ The **patch** part is incremented if multiple releases happen the same month
 * monitoringctl: alerts_switch removed and merged into monitoringctl
 * monitoringctl: migrate to separate repo
 * monitoringctl: old alerts_wrapper in Bash removed (now in Python)
-
-### Security
 
 ## [24.09] 2024-09-11
 
