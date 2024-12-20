@@ -35,7 +35,7 @@
 - name: sudo without password for nagios
   ansible.builtin.lineinfile:
     dest: /etc/sudoers.d/evolinux
-    regexp: '{{ _check }}'
+    regexp: '{{ _check }}$'
     line: 'nagios          ALL = NOPASSWD: {{ nagios_plugins_directory }}/{{ _check }}'
     insertafter: '^nagios'
     validate: "visudo -cf %s"

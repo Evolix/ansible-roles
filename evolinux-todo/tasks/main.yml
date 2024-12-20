@@ -14,9 +14,3 @@
     mode: "0640"
     force: false
   when: ansible_distribution == "Debian"
-
-- name: Add activate check pressure todo
-  ansible.builtin.lineinfile:
-    path: /etc/evolinux/todo.txt
-    line: Activer les checks pressure : https://intra.evolix.net/HowtoMonitoring/pressure#activer-les-checks-pressure
-  when: ansible_distribution_major_version is version('12', '=')
