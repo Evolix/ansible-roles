@@ -22,6 +22,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* Dockerfile: replace stretch with bookworm
 * all checks: assume alerts_wrapper (ie. monitoringctl) is present, which simplifies NRPE checks definition
 * autosysadmin-agent: remove restart_nrpe (deployed separately) and add examples
 * autosysadmin-agent: split tasks files to include install.yml from a playbook
