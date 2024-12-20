@@ -19,6 +19,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Removed
 
+evolinux-todo: remove task activate check pressure (revert acf382e9d71b41d6f0736565d0e8e5b4177274a9)
+
 ### Security
 
 ## [24.12] 2024-12-20
