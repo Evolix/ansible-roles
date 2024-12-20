@@ -17,9 +17,11 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* minifirewall: more specific regexp when inserting the sudo line
+
 ### Removed
 
-evolinux-todo: remove task activate check pressure (revert acf382e9d71b41d6f0736565d0e8e5b4177274a9)
+* evolinux-todo: remove task activate check pressure (revert acf382e9d71b41d6f0736565d0e8e5b4177274a9)
 
 ### Security
 
