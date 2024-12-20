@@ -1,4 +1,4 @@
-FROM debian:stretch-slim
+FROM debian:bookworm-slim
 
 ENV ROLES_VERSION=${ROLES_VERSION:-unstable}
 
