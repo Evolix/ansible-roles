@@ -6,50 +6,6 @@ final_rc=0
 summary=""
 details=""
 
-is_alert5_enabled() {
-  # It's not very clear how to reliably detect if a SysVinit script
-  # wrapped in a systemd unit is enabled or not.
-  # Even when the script is not started in any run level, systemd says "active".
-  # So we test the SysVinit script path:
-  # if present, we test for an rc2.d symlink
-  # if missing, we ask systemd if a unit is active or not.
-  if test -f /etc/init.d/alert5; then
-    test -f /etc/rc2.d/S*alert5
-  else
-    systemctl is-enabled alert5 | grep -q "^enabled$"
-  fi
-}
-
-is_minifirewall_enabled() {
-  # TODO: instead of nested conditionals, we could loop with many possible paths
-  # and grep the first found, or error if none is found
-  if [ -f /etc/systemd/system/minifirewall.service ]; then
-    systemctl is-enabled minifirewall > /dev/null 2>&1
-  else
-    if test -f /etc/rc2.d/S*alert5; then
-      grep -q "^/etc/init.d/minifirewall" /etc/rc2.d/S*alert5
-    else
-      if test -f /usr/share/scripts/alert5.sh; then
-        grep -q "^/etc/init.d/minifirewall" /usr/share/scripts/alert5.sh
-      else
-        return_critical "No Alert5 scripts has been found."
-      fi
-    fi
-  fi
-}
-
-is_minifirewall_started() {
-  if [ -f /etc/systemd/system/minifirewall.service ]; then
-    systemctl is-active minifirewall > /dev/null 2>&1
-  else
-    if test -x /usr/share/scripts/minifirewall_status; then
-      /usr/share/scripts/minifirewall_status > /dev/null
-    else
-      /sbin/iptables -L -n | grep -q -E "^(DROP\s+(udp|17)|ACCEPT\s+(icmp|1))\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
-    fi
-  fi
-}
-
 summary_critical() {
   summary="CRITICAL: $1"
   [ "${final_rc}" -le 2 ] && final_rc=2
@@ -79,6 +35,7 @@ main() {
     summary_ok "minifirewall is started and configuration is up-to-date"
   else
     if echo "${check_result}" | grep --ignore-case --quiet --regexp 'usage'; then
+      summary_ok "too old to check"
       append_details "minifirewall is too old to check active configuration"
     else
       case "${check_rc}" in
