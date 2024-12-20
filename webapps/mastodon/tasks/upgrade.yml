@@ -8,12 +8,28 @@
     target: "~/{{ mastodon_instance }}_production.sql.gz"
   become_user: postgres
 
+- name: Install main system dependencies
+  ansible.builtin.apt:
+    name: "{{ mastodon_system_dep }}"
+    update_cache: true
+
 - name: Install Ruby for instance user (rbenv)
   ansible.builtin.include_role:
     name: rbenv
   vars:
     - username: "{{ mastodon_instance }}"
     - rbenv_ruby_version: "{{ mastodon_ruby_version }}"
+
+- name: Install NodeJS
+  ansible.builtin.include_role:
+    name: nodejs
+  vars:
+    - nodejs_apt_version: "{{ mastodon_nodejs_version }}"
+    - nodejs_install_yarn: false
+
+- name: Enable yarn (via corepack)
+  ansible.builtin.shell:
+    cmd: corepack enable
 
 - name: Checkout (git)
   ansible.builtin.git:
@@ -27,18 +43,19 @@
 - name: Install et configure app with bundler and yarn
   become_user: "{{ mastodon_instance }}"
   block:
-    - name: Install bundler
-      ansible.builtin.shell: ". ~/.profile && gem install bundler --no-document"
-      args:
-        chdir: "~/mastodon"
-        executable: /bin/bash # fails with /bin/sh
     - name: Install gem dependencies
       ansible.builtin.shell: ". ~/.profile && bundle install --deployment --without development test -j{{ ansible_processor_count }}"
       args:
         chdir: "~/mastodon"
         executable: /bin/bash # fails with /bin/sh
+    - name: Prepare yarn 4 (via corepack)
+      ansible.builtin.shell:
+        cmd: corepack prepare
+      args:
+        chdir: "~/mastodon"
+        executable: /bin/bash # fails with /bin/sh
     - name: Install javascript dependencies
-      ansible.builtin.shell: ". ~/.profile && yarn install --pure-lockfile"
+      ansible.builtin.shell: ". ~/.profile && yarn install --immutable"
       args:
         chdir: "~/mastodon"
         executable: /bin/bash # fails with /bin/sh

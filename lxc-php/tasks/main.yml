@@ -51,3 +51,5 @@
 - ansible.builtin.import_tasks: "umask.yml"
 
 - ansible.builtin.import_tasks: "misc.yml"
+
+- ansible.builtin.import_tasks: "munin.yml"

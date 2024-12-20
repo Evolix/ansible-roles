@@ -1,0 +1,4 @@
+file = /var/log/nginx/error.log
+pattern = "worker_connections are not enough"
+mailto = {{ log2mail_alert_email or general_alert_email | mandatory }}
+template = /etc/log2mail/mail

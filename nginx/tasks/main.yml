@@ -44,7 +44,7 @@
     src: nginx/evolinux-defaults.conf
     dest: /etc/nginx/conf.d/z-evolinux-defaults.conf
     mode: "0640"
-    # force: true
+    force: true
   notify: reload nginx
   tags:
     - nginx
@@ -52,6 +52,12 @@
 # TODO: verify that those permissions are correct :
 # not too strict for ipaddr_whitelist
 # and not too loose for private_htpasswd
+
+- name: Create /etc/nginx/snippets/ if missing
+  ansible.builtin.file:
+    path: /etc/nginx/snippets/
+    mode: "0750"
+    state: directory
 
 - name: Copy ipaddr_whitelist
   ansible.builtin.copy:
@@ -173,3 +179,5 @@
     - munin
 
 - ansible.builtin.include: logrotate.yml
+
+# - ansible.builtin.include: log2mail.yml

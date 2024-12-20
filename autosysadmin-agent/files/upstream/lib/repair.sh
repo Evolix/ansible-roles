@@ -92,9 +92,9 @@ repair_lxc_php() {
             lxc-start --daemon --name "${container_name}"
             rc=$?
             if [ "${rc}" -eq "0" ]; then
-                log_action "Restart LXC container '${container_name}: OK"
+                log_action "Restart LXC container '${container_name}': OK"
             else
-                log_action "Restart LXC container '${container_name}: failed"
+                log_action "Restart LXC container '${container_name}': failed"
             fi
 
             # Save LXC info (after restart)

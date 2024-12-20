@@ -14,6 +14,3 @@ phpmemcachedadmin_clusters:
     ]
   }
 
-
-monitoringctl_wrapper_path: /usr/local/lib/monitoringctl/alerts_wrapper
-memcached_monitoringctl_wrapper_cmd: ""

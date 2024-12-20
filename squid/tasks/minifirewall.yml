@@ -16,7 +16,7 @@
   - name: all HTTPSITES are authorized in minifirewall
     ansible.builtin.lineinfile:
       dest: "/etc/default/minifirewall"
-      line: "HTTPSITES='0.0.0.0/0'"
+      line: "HTTPSITES='0.0.0.0/0 ::/0'"
       regexp: "HTTPSITES='.*'"
       insertafter: "^#HTTPSITES="
     notify: restart minifirewall

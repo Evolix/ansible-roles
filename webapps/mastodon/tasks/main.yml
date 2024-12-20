@@ -6,27 +6,9 @@
     name: "{{ mastodon_system_dep }}"
     update_cache: true
 
-- name: Install npm on Debian 12
-  ansible.builtin.apt:
-    name: npm
-  when: ansible_distribution_major_version is version('12', '>=')
-
-- name: Install corepack via npm on Debian 12
-  ansible.builtin.command:
-    cmd: npm install -g corepack
-  when: ansible_distribution_major_version is version('12', '>=')
-
-- name: Fix permissions for corepack
-  ansible.builtin.file:
-    path: /usr/local/lib/node_modules/
-    state: directory
-    mode: o+rx
-    recurse: true
-  when: ansible_distribution_major_version is version('12', '>=')
-
 - name: Enable yarn (via corepack)
   ansible.builtin.shell:
-    cmd: corepack enable; yarn set version classic
+    cmd: corepack enable
 
 - name: Add PostgreSQL user
   community.postgresql.postgresql_user:
@@ -39,7 +21,7 @@
   ansible.builtin.user:
     name: "{{ mastodon_instance }}"
     shell: /bin/bash
-#    umask: "0022" nécessite ansible-core 2.12
+#    umask: "0022" requires ansible-core 2.12
 
 - name: Install Ruby for instance user (rbenv)
   ansible.builtin.include_role:
@@ -53,26 +35,27 @@
     repo: "{{ mastodon_git_url }}"
     dest: "~/mastodon/"
     version: "{{ mastodon_git_version | default(omit) }}"
-    # force: true
+    force: true
     update: true
     umask: '0022'
   become_user: "{{ mastodon_instance }}"
 
-- name: Install et configure app with bundler and yarn
+- name: Install and configure app with bundler and yarn
   become_user: "{{ mastodon_instance }}"
   block:
-    - name: Install bundler
-      ansible.builtin.shell: ". ~/.profile && gem install bundler --no-document"
-      args:
-        chdir: "~/mastodon"
-        executable: /bin/bash # fails with /bin/sh
     - name: Install gem dependencies
       ansible.builtin.shell: ". ~/.profile && bundle install --deployment --without development test -j{{ ansible_processor_count }}"
       args:
         chdir: "~/mastodon"
         executable: /bin/bash # fails with /bin/sh
+    - name: Prepare yarn 4 (via corepack)
+      ansible.builtin.shell:
+        cmd: corepack prepare
+      args:
+        chdir: "~/mastodon"
+        executable: /bin/bash # fails with /bin/sh
     - name: Install javascript dependencies
-      ansible.builtin.shell: ". ~/.profile && yarn install --pure-lockfile"
+      ansible.builtin.shell: ". ~/.profile && yarn install --immutable"
       args:
         chdir: "~/mastodon"
         executable: /bin/bash # fails with /bin/sh
@@ -98,17 +81,17 @@
   when: "secrets.rc == 1"
   block:
     - name: Generate secret for SECRET_KEY_BASE
-      ansible.builtin.shell: '. ~/.profile && sed -i -r "s/SECRET_KEY_BASE=/SECRET_KEY_BASE=$(RAILS_ENV=production bundle exec rake secret)/" .env.production'
+      ansible.builtin.shell: '. ~/.profile && sed -i -r "s/SECRET_KEY_BASE=/SECRET_KEY_BASE=$(RAILS_ENV=production bundle exec rails secret)/" .env.production'
       args:
         chdir: "~/mastodon"
         executable: /bin/bash # fails with /bin/sh
     - name: Generate secret for OTP_SECRET
-      ansible.builtin.shell: '. ~/.profile && sed -i -r "s/OTP_SECRET=/OTP_SECRET=$(RAILS_ENV=production bundle exec rake secret)/" .env.production'
+      ansible.builtin.shell: '. ~/.profile && sed -i -r "s/OTP_SECRET=/OTP_SECRET=$(RAILS_ENV=production bundle exec rails secret)/" .env.production'
       args:
         chdir: "~/mastodon"
         executable: /bin/bash # fails with /bin/sh
     - name: Generate secret for VAPID_PRIVATE_KEY and VAPID_PUBLIC_KEY
-      ansible.builtin.shell: . ~/.profile && RAILS_ENV=production bundle exec rake mastodon:webpush:generate_vapid_key > vapid.tmp | head -1 | cut -c 19-
+      ansible.builtin.shell: . ~/.profile && RAILS_ENV=production bundle exec rake mastodon:webpush:generate_vapid_key > vapid.tmp
       args:
         chdir: "~/mastodon"
         executable: /bin/bash # fails with /bin/sh
@@ -116,30 +99,68 @@
       ansible.builtin.shell: "cat vapid.tmp | head -1 | cut -c 19-"
       args:
         chdir: "~/mastodon"
-      register: app_vapid_private_key
+      register: mastodon_app_vapid_private_key
     - name: Read VAPID_PUBLIC_KEY secret from temp file
       ansible.builtin.shell: "cat vapid.tmp | tail -1 | cut -c 18-"
       args:
         chdir: "~/mastodon"
-      register: app_vapid_public_key
+      register: mastodon_app_vapid_public_key
     - name: Delete secrets temp file
       ansible.builtin.file:
         path: "~/mastodon/vapid.tmp"
         state: absent
-    - name: Write app_vapid_private_key to production .env file
+    - name: Write mastodon_app_vapid_private_key to production .env file
       ansible.builtin.lineinfile:
         path: "~/mastodon/.env.production"
         regexp: '^VAPID_PRIVATE_KEY='
         line: "VAPID_PRIVATE_KEY={{ mastodon_app_vapid_private_key.stdout }}"
-    - name: Write app_vapid_public_key to production .env file
+    - name: Write mastodon_app_vapid_public_key to production .env file
       ansible.builtin.lineinfile:
         path: "~/mastodon/.env.production"
         regexp: '^VAPID_PUBLIC_KEY='
         line: "VAPID_PUBLIC_KEY={{ mastodon_app_vapid_public_key.stdout }}"
+    - name: Generate secret for Active Record encryption
+      ansible.builtin.shell: . ~/.profile && RAILS_ENV=production bin/rails db:encryption:init | tail -3 > active_record.tmp
+      args:
+        chdir: "~/mastodon"
+        executable: /bin/bash # fails with /bin/sh
+    - name: Read ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY secret from temp file
+      ansible.builtin.shell: "cat active_record.tmp | head -1 | tail -1 | cut -c 44-"
+      args:
+        chdir: "~/mastodon"
+      register: mastodon_app_active_record_deterministic_key
+    - name: Read ACTIVE_RECORD_ENCRYPTION_DERIVATION_SALT secret from temp file
+      ansible.builtin.shell: "cat active_record.tmp | head -2 | tail -1 | cut -c 46-"
+      args:
+        chdir: "~/mastodon"
+      register: mastodon_app_active_record_derivation_salt
+    - name: Read ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY secret from temp file
+      ansible.builtin.shell: "cat active_record.tmp | head -3 | tail -1 | cut -c 38-"
+      args:
+        chdir: "~/mastodon"
+      register: mastodon_app_active_record_primary_key
+    - name: Delete secrets temp file
+      ansible.builtin.file:
+        path: "~/mastodon/active_record.tmp"
+        state: absent
+    - name: Write mastodon_app_active_record_deterministic_key to production .env file
+      ansible.builtin.lineinfile:
+        path: "~/mastodon/.env.production"
+        regexp: '^ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY='
+        line: "ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY={{ mastodon_app_active_record_deterministic_key.stdout }}"
+    - name: Write mastodon_app_active_record_derivation_salt to production .env file
+      ansible.builtin.lineinfile:
+        path: "~/mastodon/.env.production"
+        regexp: '^ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT='
+        line: "ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT={{ mastodon_app_active_record_derivation_salt.stdout }}"
+    - name: Write mastodon_app_active_record_primary_key to production .env file
+      ansible.builtin.lineinfile:
+        path: "~/mastodon/.env.production"
+        regexp: '^ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY='
+        line: "ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY={{ mastodon_app_active_record_primary_key.stdout }}"
 
 - name: Check if mastodon database is already present or not
   ansible.builtin.shell: |
-   set -o pipefail
    psql -lqt | cut -d \| -f 1 | grep -qw {{ mastodon_instance }}_production
   become_user: postgres
   register: db_present

@@ -1,6 +1,43 @@
 #!/bin/bash
+# Must be run in root
 
-sudo /usr/bin/supervisorctl status |while read line
-do
-	echo $line |grep RUNNING || exit 1
+if [ ! -d /etc/supervisor/conf.d/ ]; then
+    echo "UNKNOWN: /etc/supervisor/conf.d/ not found. Is supervisord installed?"
+    exit 3
+fi
+
+for file in $(find /etc/supervisor/conf.d/ -type f -or -type l); do
+    unknown=0
+    if [ ! -r "${file}" ]; then
+        echo "UNKNOWN: $file not readable."
+        unknown=$((unknown + 1))
+    fi
+    if [ "${unknown}" -ne 0 ]; then
+        exit 3
+    fi
 done
+
+numprocs_expected=$(grep --recursive --no-messages --no-filename --only-matching --extended-regexp 'numprocs=([0-9]+)' /etc/supervisor/conf.d/ | awk -F'=' '{ sum+=$2; } END{ print sum }')
+
+if [ -z "${numprocs_expected}" ]; then
+    echo "OK - No process configured."
+    exit 0
+fi
+
+numprocs_running=0
+
+while read line; do
+    if [[ "${line}" =~ "RUNNING" ]]; then
+        numprocs_running=$((numprocs_running + 1))
+    fi
+done <<< $(/usr/bin/supervisorctl status)
+
+if [ "${numprocs_expected}" -ne "${numprocs_running}" ]; then
+    echo "CRITICAL - ${numprocs_running}/${numprocs_expected} running"
+    /usr/bin/supervisorctl status
+    exit 2
+else
+    echo "OK - ${numprocs_running}/${numprocs_expected} running"
+    /usr/bin/supervisorctl status
+fi
+

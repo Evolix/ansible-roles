@@ -16,16 +16,16 @@ import apt_pkg
 # Order matters !
 destinations = {
     "debian-security": "security.sources",
-
+    # Backports
     ".*-backports": "backports.sources",
-
+    # Debian mirrors
     ".debian.org": "system.sources",
     "mirror.evolix.org": "system.sources",
     "ftp.evolix.org": "system.sources",
-
+    # Evolix public source
     "pub.evolix.net": "evolix_public_old.sources.bak",
     "pub.evolix.org": "evolix_public.sources",
-
+    # third-party sources
     "artifacts.elastic.co": "elastic.sources",
     "download.docker.com": "docker.sources",
     "downloads.linux.hpe.com": "hp.sources",

@@ -23,7 +23,7 @@
 
 - name: "Create log file for mysql_skip.sh"
   ansible.builtin.file:
-    path: "/var/log/mysql_skip.log"
+    path: "/var/log/mysql/mysql-skip.log"
     state: touch
     owner: root
     group: adm

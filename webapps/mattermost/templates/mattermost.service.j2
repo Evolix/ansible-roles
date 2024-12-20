@@ -15,6 +15,27 @@ RestartSec=10
 User=%i
 Group=%i
 
+Environment="TMP={{ mattermost_home_base }}/%i/mattermost/temp"
+Environment="TEMP={{ mattermost_home_base }}/%i/mattermost/temp"
+
+# Hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+PrivateUsers=yes
+#ProtectHome=read-only
+ProtectSystem=strict
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+MemoryDenyWriteExecute=yes
+ReadWritePaths={{ mattermost_home_base }}/%i
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+
 [Install]
 WantedBy=multi-user.target
 

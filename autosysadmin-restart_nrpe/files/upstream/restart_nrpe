@@ -4,15 +4,15 @@
 source "${AUTOSYSADMIN_LIB}/common.sh"  || exit 1
 source "${AUTOSYSADMIN_LIB}/restart.sh" || exit 1
 
+# shellcheck disable=SC2034
+RUNNING="nwh-fr"
+
 ## Possible values for RUNNING :
 ##   never    => disabled
 ##   always   => enabled
 ##   nwh-fr   => enabled during non-working-hours in France
 ##   nwh-ca   => enabled during non-working-hours in Canada (not supported yet)
-##   custom   => enabled if `running_custom()` function return 0, otherwise disabled.
-
-# shellcheck disable=SC2034
-RUNNING="nwh-fr"
+##   custom   => enabled if `running_custom()` function returns 0, otherwise disabled.
 
 ## The name of the service, mainly for logging
 service_name="nagios-nrpe-server"
@@ -78,17 +78,7 @@ if is_service_alive; then
 fi
 
 # Yes we do, so check for sysvinit or systemd
-if is_debian_version "8" "<="; then
-    if ! is_sysvinit_enabled "*${sysvinit_script}*"; then
-        # log_global "${service_name} not enabled. Aborting"
-        exit 0
-    fi
-
-    # Let's finally do the action
-    pre_restart
-    sysvinit_action
-    post_restart
-else
+if is_systemd; then
     if ! is_systemd_enabled "${systemd_service}"; then
         # log_global "${service_name} is disabled (or missing), nothing left to do."
         exit 0
@@ -101,5 +91,15 @@ else
     # Let's finally do the action
     pre_restart
     systemd_action
+    post_restart
+else
+    if ! is_sysvinit_enabled "*${sysvinit_script}*"; then
+        # log_global "${service_name} not enabled. Aborting"
+        exit 0
+    fi
+
+    # Let's finally do the action
+    pre_restart
+    sysvinit_action
     post_restart
 fi

@@ -1,8 +1,11 @@
 # evomaintenance
 
-Install a script to notify when operations are performed on a server
+Install evomaintenance.sh script.
+Evomaintenance notify and commit operations performed on a server.
 
-## Tasks
+To enable evomaintenance for a user, add this line to it's `.bash_profile` or `.profile` file:
 
-Installation and configuration are performed via `tasks/main.yml`.
-A shell exit trap is added to users' `.profile` in `tasks/trap.yml`.
+~~~
+trap "sudo /usr/share/scripts/evomaintenance.sh" 0
+~~~
+

@@ -1,14 +1,14 @@
 ---
 # tasks file for mattermost upgrade
 
-- name: Start mattermost systemd unit
+- name: Stop mattermost systemd unit
   ansible.builtin.systemd:
     name: "mattermost@{{ mattermost_instance }}"
     state: stopped
 
 - name: Set current date and time as a fact
   ansible.builtin.set_fact:
-    backup_date: "{{ ansible_date_time.iso8601_basic_short }}"
+    mattermost_backup_date: "{{ ansible_date_time.iso8601_basic_short }}"
 
 - name: Backup current mattermost files
   ansible.builtin.command: "mv  ~/mattermost/ ~/mattermost_{{ mattermost_backup_date }}"
@@ -21,11 +21,19 @@
     target: "~/{{ mattermost_db_name }}.sql.gz"
   become_user: postgres
 
-- name: Unarchive new mattermost archive
+- name: Unarchive new mattermost archive in temp location
   ansible.builtin.unarchive:
     src: "{{ mattermost_download_url }}"
-    dest: ~/
+    dest: ~/temp
     remote_src: true
+  become_user: "{{ mattermost_instance }}"
+
+- name: Copy new mattermost files from temp to final directory only if not exist
+  ansible.builtin.copy:
+    src: "~/temp/mattermost/"
+    dest: ~/mattermost
+    remote_src: true
+    force: no
   become_user: "{{ mattermost_instance }}"
 
 - name: Restore dirs from backup
@@ -35,7 +43,6 @@
     remote_src: true
   loop:
     - "~/mattermost_{{ mattermost_backup_date }}/config"
-    - "~/mattermost_{{ mattermost_backup_date }}/data"
     - "~/mattermost_{{ mattermost_backup_date }}/logs"
     - "~/mattermost_{{ mattermost_backup_date }}/plugins"
     - "~/mattermost_{{ mattermost_backup_date }}/client/plugins"
@@ -50,6 +57,12 @@
   ansible.builtin.systemd:
     name: nginx
     state: reloaded
+
+- name: Remove unarchived mattermost files from temp
+  ansible.builtin.file:
+    path: "~/temp/mattermost/"
+    state: absent
+  become_user: "{{ mattermost_instance }}"
 
 - name: Define variable to skip next task by default
   ansible.builtin.set_fact:

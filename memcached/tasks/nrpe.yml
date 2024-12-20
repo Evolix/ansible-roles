@@ -27,17 +27,9 @@
       dest: /usr/local/lib/nagios/plugins/check_memcached_instances
       force: true
       mode: "0755"
-      owner: root
-      group: root
-
-  - name: Is alerts_wrapper present?
-    ansible.builtin.stat:
-      path: "{{ monitoringctl_wrapper_path }}"
-    register: alerts_wrapper
 
   - set_fact:
-      memcached_monitoringctl_wrapper_cmd: "{{ monitoringctl_wrapper_path }} --name memcached -- "
-    when: alerts_wrapper.stat.exists
+      memcached_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name memcached -- "
 
   - name: Add NRPE check (single instance)
     ansible.builtin.lineinfile:

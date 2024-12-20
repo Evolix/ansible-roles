@@ -37,6 +37,8 @@ lxc_php_services:
   php83: 'php8.3-fpm.service'
   php84: 'php8.4-fpm.service'
 
-apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"
+# Containers are not yet ready to use /etc/apt/keyrings
+# apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"
+apt_keyring_dir: '/etc/apt/trusted.gpg.d'
 apt_basics_components: "{{ (ansible_virtualization_role == 'host') | ternary('main contrib non-free', 'main') }}"
 

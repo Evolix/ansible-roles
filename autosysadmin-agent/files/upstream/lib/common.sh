@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="24.06"
+VERSION="24.11"
 
 # Common functions for "repair" and "restart" scripts
 
@@ -471,6 +471,7 @@ detect_os() {
                 11) DEBIAN_RELEASE="bullseye" ;;
                 12) DEBIAN_RELEASE="bookworm" ;;
                 13) DEBIAN_RELEASE="trixie"   ;;
+                14) DEBIAN_RELEASE="forky"   ;;
             esac
         fi
     #    log_run "Detected OS: Debian version=${DEBIAN_VERSION} release=${DEBIAN_RELEASE}"
@@ -500,6 +501,9 @@ is_debian_bookworm() {
 is_debian_trixie() {
     test "${DEBIAN_RELEASE}" = "trixie"
 }
+is_debian_forky() {
+    test "${DEBIAN_RELEASE}" = "forky"
+}
 is_debian_version() {
     local version=$1
     local relation=${2:-"eq"}
@@ -509,6 +513,10 @@ is_debian_version() {
     fi
 
     dpkg --compare-versions "${DEBIAN_VERSION}" "${relation}" "${version}"
+}
+
+is_systemd() {
+    readlink /proc/1/exe | grep --quiet systemd
 }
 
 # List systemd services (only names), even if stopped
@@ -868,7 +876,7 @@ hook_mail() {
         log_global "ERROR: No \`sendmail' command has been found, can't send mail."
     fi
     if [ -x "${SENDMAIL_BIN}" ]; then
-        echo "${MAIL_CONTENT}" | "${SENDMAIL_BIN}" -oi -t -f "equipe@evolix.fr"
+        echo "${MAIL_CONTENT}" | "${SENDMAIL_BIN}" -oi -t -f "${EMAIL_FROM}"
         log_global "Sent '$1' mail for RUN_ID: ${RUN_ID}"
     fi
 }

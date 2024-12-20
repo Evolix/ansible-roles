@@ -7,15 +7,35 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Changed
 
+### Fixed
+
 ### Deprecated
 
 ### Removed
 
+## [24.09.2] 2024-09-24
+
 ### Fixed
 
-## [24.09] 2024-09-06
+* IS_TMP_1777: check permissions in LXC only if /tmp exists
+
+## [24.09.1] 2024-09-24
 
 ### Added
+
+* IS_TMP_1777: check LXC containers too
+
+### Changed
+
+* Apply pattern of checking the real LXC rootfs
+* minifirewall: RELATED is optional
+* Use long options for grep
+
+### Fixed
+
+* Use correct grep option (`--regexp` instead of `--pattern`)
+
+## [24.09] 2024-09-06
 
 ### Changed
 

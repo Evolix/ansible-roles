@@ -7,7 +7,7 @@
 
 - name: init script is copied
   ansible.builtin.copy:
-    src: minifirewall
+    src: upstream/minifirewall
     dest: /etc/init.d/minifirewall
     force: "{{ minifirewall_force_upgrade_script | default('no') }}"
     mode: "0700"
@@ -17,7 +17,7 @@
 
 - name: configuration is copied
   ansible.builtin.copy:
-    src: minifirewall.conf
+    src: upstream/minifirewall.conf
     dest: "/etc/default/minifirewall"
     force: "{{ minifirewall_force_upgrade_config | default('no') }}"
     mode: "0600"

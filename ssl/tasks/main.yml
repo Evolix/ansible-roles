@@ -28,7 +28,7 @@
   tags:
     - ssl
 
-- name: Check if Haproxy is installed
+- name: Check if HAProxy is installed
   ansible.builtin.shell:
     cmd: "set -o pipefail && dpkg -l haproxy 2>/dev/null | grep -q -E '^(i|h)i'"
     executable: /bin/bash

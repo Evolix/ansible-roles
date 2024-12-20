@@ -39,14 +39,8 @@
     register: postgresql_create_nrpe_user
     when: nrpe_evolix_config.stat.exists
 
-  - name: Is alerts_wrapper present?
-    ansible.builtin.stat:
-      path: "{{ monitoringctl_wrapper_path }}"
-    register: alerts_wrapper
-
   - set_fact:
-      postgresql_monitoringctl_wrapper_cmd: "{{ monitoringctl_wrapper_path }} --name postgresql -- "
-    when: alerts_wrapper.stat.exists
+      postgresql_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name postgresql -- "
 
   - name: Add NRPE check
     ansible.builtin.lineinfile:

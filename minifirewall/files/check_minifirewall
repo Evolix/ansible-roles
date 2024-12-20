@@ -2,7 +2,7 @@
 
 set -u
 
-return=0
+final_rc=0
 summary=""
 details=""
 
@@ -24,7 +24,7 @@ is_minifirewall_enabled() {
   # TODO: instead of nested conditionals, we could loop with many possible paths
   # and grep the first found, or error if none is found
   if [ -f /etc/systemd/system/minifirewall.service ]; then
-    systemctl is-enabled minifirewall 2>&1 > /dev/null
+    systemctl is-enabled minifirewall > /dev/null 2>&1
   else
     if test -f /etc/rc2.d/S*alert5; then
       grep -q "^/etc/init.d/minifirewall" /etc/rc2.d/S*alert5
@@ -40,7 +40,7 @@ is_minifirewall_enabled() {
 
 is_minifirewall_started() {
   if [ -f /etc/systemd/system/minifirewall.service ]; then
-    systemctl is-active minifirewall 2>&1 > /dev/null
+    systemctl is-active minifirewall > /dev/null 2>&1
   else
     if test -x /usr/share/scripts/minifirewall_status; then
       /usr/share/scripts/minifirewall_status > /dev/null
@@ -52,15 +52,15 @@ is_minifirewall_started() {
 
 summary_critical() {
   summary="CRITICAL: $1"
-  [ "${return}" -le 2 ] && return=2
+  [ "${final_rc}" -le 2 ] && final_rc=2
 }
 summary_warning() {
   summary="WARNING: $1"
-  [ "${return}" -le 1 ] && return=1
+  [ "${final_rc}" -le 1 ] && final_rc=1
 }
 summary_ok() {
   summary="OK: $1"
-  [ "${return}" -le 0 ] && return=0
+  [ "${final_rc}" -le 0 ] && final_rc=0
 }
 append_details() {
   if [ -z "${details}" ]; then
@@ -79,32 +79,7 @@ main() {
 
       if is_minifirewall_started; then
         append_details "minifirewall is started"
-
-        check_result=$(/etc/init.d/minifirewall check-active-config)
-        check_rc=$?
-
-        if [ ${check_rc} -eq 0 ]; then
-          append_details "configuration is up-to-date"
-          summary_ok "minifirewall is started and configuration is up-to-date"
-        else
-          if echo "${check_result}" | grep --ignore-case --quiet --regexp 'usage'; then
-            append_details "minifirewall is too old to check active configuration"
-          else
-            case "${check_rc}" in
-                1)
-                  summary_warning "minifirewall is started, but unknown configuration state"
-                ;;
-                2)
-                  summary_critical "minifirewall is started, but configuration is outdated"
-                  append_details "configuration is outdated"
-                ;;
-                *)
-                  summary_unchk "minifirewall is started, but unknown configuration state"
-                ;;
-            esac
-            append_details "=> run '/etc/init.d/minifirewall check-active-config' for details"
-          fi
-        fi
+        summary_ok "minifirewall is started"
       else
         append_details "minifirewall is stopped"
         summary_critical "minifirewall is stopped, but enabled in alert5 or systemd"
@@ -134,7 +109,7 @@ main() {
 
   printf "%s\n\n%s\n" "${summary}" "${details}"
 
-  exit "${return}"
+  exit "${final_rc}"
 }
 
 main

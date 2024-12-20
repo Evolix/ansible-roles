@@ -197,14 +197,8 @@
     group: nagios
   when: nrpe_evolix_config.stat.exists
 
-- name: Is alerts_wrapper present?
-  ansible.builtin.stat:
-    path: "{{ monitoringctl_wrapper_path }}"
-  register: alerts_wrapper
-
 - set_fact:
-    openvpn_monitoringctl_wrapper_cmd: "{{ monitoringctl_wrapper_path }} --name openvpn -- "
-  when: alerts_wrapper.stat.exists
+    openvpn_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name openvpn -- "
 
 - name: Configure NRPE OpenVPN check
   ansible.builtin.lineinfile:
@@ -240,7 +234,7 @@
   when: nrpe_evolix_config.stat.exists
 
 - set_fact:
-    openvpn_monitoringctl_wrapper_cmd: "{{ monitoringctl_wrapper_path }} --name openvpn_certificates -- "
+    openvpn_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name openvpn_certificates -- "
   when: alerts_wrapper.stat.exists
 
 - name: Configure NRPE certificates check

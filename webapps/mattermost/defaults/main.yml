@@ -1,7 +1,7 @@
 ---
 # defaults file for vars
 mattermost_system_dep: "['git', 'python3-psycopg2', 'acl']"
-mattermost_version: '7.8.1'
+mattermost_version: '9.5.9'
 mattermost_download_url: "https://releases.mattermost.com/{{ mattermost_version }}/mattermost-team-{{ mattermost_version }}-linux-amd64.tar.gz"
 mattermost_domains: ['example.domain.org']
 mattermost_instance: my_mattermost

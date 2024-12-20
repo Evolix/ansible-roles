@@ -56,14 +56,8 @@
     - redis
     - nrpe
 
-- name: Is alerts_wrapper present?
-  ansible.builtin.stat:
-    path: "{{ monitoringctl_wrapper_path }}"
-  register: alerts_wrapper
-
 - set_fact:
-    redis_monitoringctl_wrapper_cmd: "{{ monitoringctl_wrapper_path }} --name redis -- "
-  when: alerts_wrapper.stat.exists
+    redis_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name redis -- "
 
 - name: Use check_redis for NRPE
   ansible.builtin.replace:

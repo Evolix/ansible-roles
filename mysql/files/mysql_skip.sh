@@ -13,7 +13,7 @@ exit_when_uptodate="false"
 #mysql_opt="-P 3307"
 
 # File to log skipped queries to (leave empty for no logs).
-log_file="/var/log/mysql_skip.log"
+log_file="/var/log/mysql/mysql-skip.log"
 
 mysql_skip_error() {
     error="$1"

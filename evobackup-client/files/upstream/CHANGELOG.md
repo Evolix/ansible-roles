@@ -23,6 +23,27 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [24.12] - 2022-12-18
+
+### Changed
+
+* client: the template defaults to full Evolix backup
+
+### Fixed
+
+* client: add exclude for 'lxc/*/rootfs/dev'
+
+## [24.11] - 2022-11-29
+
+### Fixed
+
+* dump_postgresql_per_base: look for correct variable to build connect options
+* dump_postgresql_per_base: return if postgresql directory is missing
+* dump_redis: choose all instances if none given
+* dump_redis: clean backup directory only if the Redis instance is valid
+* dump_redis: do not delete entire backup directory
+* dump_redis: use dynamic config for each instance
+
 ## [24.07] - 2022-07-16
 
 ### Changed

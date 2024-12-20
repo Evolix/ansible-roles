@@ -21,6 +21,77 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
+## [24.12] 2024-12-20
+
+### Added
+
+* packweb-apache: enable php83 and php84
+* evobackup-client: not compatible with Debian <10
+* evolinux-todo: add task activate check pressure
+* kvm-host/migrate-vm: undefine with nvram option
+* mysql: Add deploy check_mariabackup on nrpe task
+* proftpd: Logrotate configuration for sftp.log
+
+### Changed
+
+* Dockerfile: replace stretch with bookworm
+* all checks: assume alerts_wrapper (ie. monitoringctl) is present, which simplifies NRPE checks definition
+* autosysadmin-agent: remove restart_nrpe (deployed separately) and add examples
+* autosysadmin-agent: split tasks files to include install.yml from a playbook
+* autosysadmin-agent: upstream release 24.11
+* autosysadmin-restart_nrpe: fix missing directory
+* docker-host: updated README with useful vars
+* evoadmin-mail: use latest version from our repository
+* evobackup-client: upstream release 24.12
+* evocheck: upstream release 24.09.2
+* evocommit: search for other user info when logname(1) fails
+* evolinux-base: comment the default rsyslog rules, to only keep them as examples
+* evolinux-base: deny: $1 must be an IPv4 address
+* evolinux-base: deploy autosysadmin-agent and restart_nrpe by default
+* evolinux-base: install ifenslave on host
+* evolinux-base: setup Nagios/NRPE earlier
+* evolinux-base: use seed for random time in periodic crontab
+* generate-ldif: enforce IPv4 for ssh-keyscan
+* kvm-host/migrate-vm: improve interface speed detection
+* listupgrade: default cron execution time is randomized
+* listupgrade: upstream release 24.12
+* log2mail: add tags
+* lxc-php: install packaged keyrings
+* minifirewall: fix syntax in check_minifirewall
+* minifirewall: move upstream files in upstream directory
+* minifirewall: remove RELATED
+* minifirewall: split NRPE check in 2
+* monitoringctl: improve deployment task
+* mysql: store mysql-skip log in a better place
+* nagios-nrpe: increase check php_fpm_multi max children threshold
+* nginx: improve default VirtualHost to add Let's Encrypt snippet
+* squid: disable netdb journal #75115
+* supervisord: improve NRPE check
+* update evolix repository openPGP key
+
+### Fixed
+
+* bind: Added missing logrotate rules for named.stats file
+* bind: fix logrotate filepath
+* evomaintenance: rm dead task, document manual enable in README
+* fail2ban: apply "dbfile = None"
+* filebeat: fix role that was broken
+* monitoringctl: fix logged user name unknown when it was nagios, fix minor bug in monitoringctl_common.py
+* munin: fix pressure graphs
+* nagios-nrpe/check_nfsclient: check if nfsmount is an NFS mountpoint
+* nagios-nrpe/check_nfsclient: test whether nfsmount is a directory later
+* nginx: fix sometime missing dir /etc/nginx/snippets
+* nginx: fix corner case with server status handling
+* proftpd: remount /usr if it is mounted read-only
+* squid: add IPV6 authorization
+* supervisord: fix wrong sudo permission, improve check (output, return code)
+
+### Removed
+
+* monitoringctl: alerts_switch removed and merged into monitoringctl
+* monitoringctl: migrate to separate repo
+* monitoringctl: old alerts_wrapper in Bash removed (now in Python)
+
 ## [24.09] 2024-09-11
 
 ### Added
@@ -36,6 +107,8 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: install colordiff, jq and tree by default
 * evolinux-base: install evobackup-client (default: true)
 * generate-ldif: add bloc for php-fpm84
+* kvm-host: add options to migrate-vm.sh to migrate several VMs at once
+* kvm-host: migrate-vm.sh version 24.09
 * lxc-php: Allow one to install php84 on Bookworm container
 * lxc: new lxc_template_mirror option (useful to get old Debian from archive.debian.org)
 * minifirewall: remove duplicates in lists of ports, IP addresses…
@@ -204,7 +277,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * add-vm.sh: allow VM name max length > 20
 * amavis: make ldap_suffix mandatory
-* apache : fix goaway pattern for bad bots 
+* apache : fix goaway pattern for bad bots
 * apache : rename MaxRequestsPerChild to MaxConnectionsPerChild (new name)
 * apache: use backward compatible Redirect directive
 * apt: Disable archive repository for Debian 8

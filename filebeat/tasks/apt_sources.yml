@@ -34,7 +34,6 @@
   ansible.builtin.template:
     src: elastic.sources.j2
     dest: /etc/apt/sources.list.d/elastic.sources
-    state: present
   register: elastic_sources
   when: ansible_distribution_major_version is version('12', '>=')
 

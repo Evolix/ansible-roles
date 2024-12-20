@@ -24,6 +24,7 @@
     name:
       - libfcgi-client-perl
       - ruby-crack
+      - libmonitoring-plugin-perl
     state: present
   when:
     - ansible_distribution == "Debian"

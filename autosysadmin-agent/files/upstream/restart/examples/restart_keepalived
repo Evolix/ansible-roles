@@ -82,9 +82,6 @@ vip_peer2="delubac-delupay-pp-lb01"
 wan_ip2="54.37.170.196"
 lan_ip2="172.19.1.21"
 
-/usr/lib/nagios/plugins/check_ping -H "${vip}" -w 2,20% -c 5,50% > /dev/null
-ping_vip_rc=$?
-
 if ! is_ping_ok "${vip}"; then
 
     if is_ping_ok "${wan_ip1}"; then

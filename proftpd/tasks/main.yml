@@ -49,6 +49,26 @@
   tags:
     - proftpd
 
+- name: SFTP jail log file is rotated
+  ansible.builtin.blockinfile:
+    block: |
+      /var/log/proftpd/sftp.log
+      {
+              weekly
+              missingok
+              rotate 7
+              compress
+              delaycompress
+              notifempty
+              create 640 root adm
+              sharedscripts
+              postrotate
+                      # reload could be not sufficient for all logs, a restart is safer
+                      invoke-rc.d proftpd restart 2>/dev/null >/dev/null || true
+              endscript
+      }
+    path: /etc/logrotate.d/proftpd-core
+
 - name: SFTP key folder exists if needed
   ansible.builtin.file:
     path: /etc/proftpd/sftp.authorized_keys/
@@ -96,6 +116,10 @@
 
 - ansible.builtin.include: accounts.yml
   when: proftpd_accounts | length > 0
+
+- name: Remount /usr if needed
+  ansible.builtin.import_role:
+    name: evolix/remount-usr
 
 - name: Local Munin plugins directory exist
   ansible.builtin.file:

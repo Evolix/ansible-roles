@@ -44,10 +44,10 @@
   ansible.builtin.copy:
     src: 'plugins/{{ item }}'
     dest: '/usr/share/munin/plugins/{{ item }}'
-    mode: 755
+    mode: "0755"
   loop:
     - dhcp_pool
-    - linux-psi
+    - linux_psi
     - ipmi_
   tags:
     - munin
@@ -80,7 +80,7 @@
     - postfix_mailqueue
     - postfix_mailstats
     - postfix_mailvolume
-    - linux-psi
+    - linux_psi
   notify: restart munin-node
   tags:
     - munin

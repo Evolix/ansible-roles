@@ -45,9 +45,9 @@ MAIL=__NOTIFICATION_MAIL__
 # shellcheck disable=SC2034
 sync_tasks() {
 
-    ########## System-only backup (to Evolix servers) #################
+    ########## Backup to Evolix servers ###############################
 
-    SYNC_NAME="evolix-system"
+    SYNC_NAME="evolix"
     SERVERS=(
         __SRV0_HOST__:__SRV0_PORT__
         __SRV1_HOST__:__SRV1_PORT__
@@ -57,6 +57,8 @@ sync_tasks() {
         /etc
         /root
         /var
+        /home
+        /srv
     )
     RSYNC_EXCLUDES=(
         "${rsync_default_excludes[@]}"
@@ -64,9 +66,9 @@ sync_tasks() {
     sync "${SYNC_NAME}" "SERVERS[@]" "RSYNC_INCLUDES[@]" "RSYNC_EXCLUDES[@]"
 
 
-    ########## Full backup (to client servers) ########################
+    ########## Backup to client servers ###############################
 
-    ### SYNC_NAME="client-full"
+    ### SYNC_NAME="client"
     ### SERVERS=(
     ###     client-backup00.evolix.net:2221
     ###     client-backup01.evolix.net:2221
@@ -219,7 +221,9 @@ local_tasks() {
 
     # Copy data file for all instances
     #
-    ### dump_redis [--instances=<all|instance1|instance2>]
+    # The instance name is the config directory name
+    # eg. "redis" for "/etc/redis/", "redis-foo" for "/etc/redis-foo"
+    ### dump_redis [--instances=<all|instance1,instance2>]
 
     ########## Elasticsearch ##########
 

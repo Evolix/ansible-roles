@@ -94,7 +94,7 @@
       name: "Daily autocommit for Git repositories"
       cron_file: etc-git
       user: root
-      job: "for rep in /etc /etc/bind /usr/share/scripts; do test -d \"${rep}/.git\" && evocommit --repository \"${rep}\" --message \"daily autocommit\"; done"
+      job: "for rep in /etc /etc/bind /usr/share/scripts; do test -d \"${rep}/.git\" && /usr/local/bin/evocommit --repository \"${rep}\" --message \"daily autocommit\"; done"
       minute: "25"
       hour: "3"
       weekday: "*"

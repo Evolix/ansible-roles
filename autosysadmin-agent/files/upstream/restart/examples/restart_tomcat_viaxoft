@@ -16,57 +16,52 @@ RUNNING="nwh-fr"
 
 ## The name of the service, mainly for logging
 service_name="tomcat"
+## The SysVinit script name
+#sysvinit_script="${service_name}"
+## The systemd service name
+#systemd_service="${service_name}.service"
 
 is_service_alive() {
     ## this must return 0 if the service is alive, otherwise return 1
-    /usr/local/lib/nagios/plugins/check_tomcat_instance.sh
-    rc=$?
-    test $rc -ge 2
-}
-failed_instances() {
-    # Get the multi-instances check result
-    # … skip the first line
-    # … show only failed instances
-    # … and print the instance name only
-
-    /usr/local/lib/nagios/plugins/check_tomcat_instance.sh \
-        | tail --lines +2 \
-        | grep CRITICAL \
-        | awk '{print $3}'
+    critical_instances=$(/usr/local/lib/nagios/plugins/check_tomcat_instance.sh | grep CRITICAL | awk '{print $3}' | grep -v '^[0-9]')
+    if [ -n "${critical_instances}" ]; then
+        return 1
+    else
+        return 0
+    fi
 }
 
 ## Action for tomcat instance
 tomcat_action() {
-    instance_name=${1}
-    timeout=60
-    
+    # $1: tomcat instance name
+    instance="${1:?}"
+    instance_homedir="$(getent passwd "${USER}" | cut -d ':' -f 6)"
+    # Attempt at a sanety check, at least to make sure that this isn't empty.
+    instance_homedir="${instance_homedir:-/srv/tomcat/${instance}}"
+
     # Save service status before restart
-    timeout ${timeout} sudo -i -u "${instance_name}" systemctl status --user tomcat | save_in_log_dir "${service_name}-${instance_name}.before.status"
+    timeout 40 sudo -u "${instance}" -- "${instance_homedir}/bin/status.sh" | save_in_log_dir "${service_name}.before.status"
 
     # Try to stop
-    timeout ${timeout} sudo -i -u "${instance_name}" systemctl stop --user tomcat
+    timeout 40 sudo -u "${instance}" -- /bin/bash "${instance_homedir}/bin/shutdown.sh"
     rc=$?
     if [ "${rc}" -eq "0" ]; then
-        log_action "Stop ${service_name}-${instance_name}: OK"
+        log_action "Stop ${service_name}: OK"
     else
-        log_action "Stop ${service_name}-${instance_name}: failed."
-
-        sudo -i -u "${instance_name}" systemctl kill --user tomcat
-        log_action "Kill ${service_name}-${instance_name}."
-        sleep 5
+        log_action "Stop ${service_name}: failed"
     fi
 
     # Try to start
-    timeout ${timeout} sudo -i -u "${instance_name}" systemctl start --user tomcat
+    timeout 40 sudo -u "${instance}" -- /bin/bash "${instance_homedir}/bin/startup.sh"
     rc=$?
     if [ "${rc}" -eq "0" ]; then
-        log_action "Start ${service_name}-${instance_name}: OK"
+        log_action "Start ${service_name}: OK"
     else
-        log_action "Start ${service_name}-${instance_name}: failed"
+        log_action "Start ${service_name}: failed"
     fi
 
     # Save service status after restart
-    timeout ${timeout} sudo -i -u "${instance_name}" systemctl status --user tomcat | save_in_log_dir "${service_name}-${instance_name}.after.status"
+    timeout 40 sudo -u "${instance}" -- /bin/bash "${instance_homedir}/bin/status.sh" | save_in_log_dir "${service_name}.after.status"
 }
 
 # Should we run?
@@ -80,7 +75,7 @@ if is_service_alive; then
 fi
 
 # Let's finally do the action
-for instance in $(failed_instances);
+for instance in $( /usr/local/lib/nagios/plugins/check_tomcat_instance.sh | grep CRITICAL | awk '{print $3}' | grep -v '^[0-9]' ) ;
 do
     pre_restart
     tomcat_action "${instance}"

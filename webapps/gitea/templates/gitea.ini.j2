@@ -1,15 +1,20 @@
-APP_NAME = Gitea
+APP_NAME = Gitea {{ gitea_instance }}
 RUN_USER = {{ gitea_instance }}
 RUN_MODE = prod
+WORK_PATH = /home/{{ gitea_instance }}/internals
 
 [server]
-PROTOCOL               = unix
+PROTOCOL               = http+unix
 DOMAIN                 = {{ gitea_domains | first }}
-HTTP_ADDR              = /home/{{ gitea_instance }}/gitea.sock
-UNIX_SOCKET_PERMISSION = 660
+HTTP_ADDR              = /run/gitea/{{ gitea_instance }}/gitea.sock
+UNIX_SOCKET_PERMISSION = 666
 OFFLINE_MODE           = true
 SSH_DOMAIN             = {{ gitea_domains | first }}
 ROOT_URL               = https://{{ gitea_domains | first }}/
+ENABLE_GZIP = true
+LANDING_PAGE = home
+DISABLE_SSH = false
+SSH_PORT = 22
 
 [repository]
 ROOT = /home/{{ gitea_instance }}/repositories
@@ -32,8 +37,8 @@ PASSWD   = {{ gitea_db_password }}
 
 [session]
 PROVIDER         = redis
-PROVIDER_CONFIG  = network=unix,addr=/home/{{ gitea_instance }}/redis/redis.sock,db=0,pool_size=100,idle_timeout=180
+PROVIDER_CONFIG  = network=unix,addr=/run/redis-{{ gitea_instance }}/redis.sock,db=0,pool_size=100,idle_timeout=180
 
 [cache]
 ADAPTER = redis
-HOST    = network=unix,addr=/home/{{ gitea_instance }}/redis/redis.sock,db=1,pool_size=100,idle_timeout=180
+HOST    = network=unix,addr=/run/redis-{{ gitea_instance }}/redis.sock,db=1,pool_size=100,idle_timeout=180

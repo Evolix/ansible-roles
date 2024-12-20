@@ -46,6 +46,11 @@
   ansible.builtin.import_tasks: system.yml
   when: evolinux_system_include | bool
 
+- name: Nagios/NRPE
+  ansible.builtin.include_role:
+    name: evolix/nagios-nrpe
+  when: evolinux_nagios_nrpe_include | bool
+
 - name: Minifirewall
   ansible.builtin.include_role:
     name: evolix/minifirewall
@@ -130,11 +135,6 @@
   ansible.builtin.include_role:
     name: evolix/munin
   when: evolinux_munin_include | bool
-
-- name: Nagios/NRPE
-  ansible.builtin.include_role:
-    name: evolix/nagios-nrpe
-  when: evolinux_nagios_nrpe_include | bool
 
 - name: check_free_space
   ansible.builtin.include_role:

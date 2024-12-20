@@ -242,7 +242,7 @@ evolinux_motd_include: True
 evolinux_utils_include: True
 
 # Autosysadmin
-evolinux_autosysadmin_include: false
+evolinux_autosysadmin_include: True
 
 # Evobackup client
 evolinux_evobackup_client_include: True

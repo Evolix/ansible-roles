@@ -13,7 +13,7 @@
 - name: minifirewall section for evomaintenance
   ansible.builtin.lineinfile:
     dest: /etc/default/minifirewall
-    line: "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s {{ item }} -m state --state ESTABLISHED,RELATED -j ACCEPT"
+    line: "/sbin/iptables -A INPUT -p tcp --sport 5432 --dport 1024:65535 -s {{ item }} -m state --state ESTABLISHED -j ACCEPT"
     insertafter: "^# EvoMaintenance"
   loop: "{{ evomaintenance_hosts }}"
   notify: "{{ minifirewall_restart_handler_name }}"
