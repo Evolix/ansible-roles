@@ -4,7 +4,7 @@
 
 - name: "Install dependencies"
   ansible.builtin.apt:
-    name: [ bash-completion, nagios-nrpe-plugin ]
+    name: [ bash-completion, nagios-nrpe-plugin, gawk ]
     state: present
 
 - name: "Remount /usr RW after apt hook put it RO"
