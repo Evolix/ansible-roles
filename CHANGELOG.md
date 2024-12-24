@@ -16,6 +16,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * monitoringctl: follow v0.1 branch by default
+* change NRPE check_https definition
 
 ### Fixed
 
