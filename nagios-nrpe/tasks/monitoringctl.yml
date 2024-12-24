@@ -137,7 +137,7 @@
 - name: "nagios user can run monitoringctl enable with sudo (used by alerts_wrapper)"
   ansible.builtin.lineinfile:
     path: /etc/sudoers.d/monitoringctl
-    regexp: "nagios.*alerts_switch"
+    regexp: "nagios.*monitoringctl enable"
     line: "nagios           ALL = NOPASSWD:/usr/local/bin/monitoringctl enable *"
     create: true
     mode: "0640"
