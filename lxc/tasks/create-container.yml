@@ -9,9 +9,9 @@
 - name: "Set eLTS mirror"
   ansible.builtin.set_fact:
     lxc_template_mirror: 'https://elts.evolix.org/extended-lts'
-  when:
-    - lxc_template_mirror is none or lxc_template_mirror | length == 0
-    - release == 'jessie' or release == 'stretch' or release == 'buster'
+      #  when:
+      #    - lxc_template_mirror is none or lxc_template_mirror | length == 0
+      #    - release == 'jessie' or release == 'stretch' or release == 'buster'
 
 - debug: 
     var: lxc_template_mirror

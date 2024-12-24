@@ -65,4 +65,5 @@
   vars:
     name: "{{ item.name }}"
     release: "{{ item.release }}"
+    lxc_template_mirror_option: "{{ item.mirror }}"
   loop: "{{ lxc_containers }}"

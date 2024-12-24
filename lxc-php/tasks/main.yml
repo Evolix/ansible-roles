@@ -9,7 +9,7 @@
     name: evolix/lxc
   vars:
     lxc_containers:
-      - { name: "{{ lxc_php_container_name }}", release: "{{ lxc_php_container_releases[lxc_php_version] }}" }
+      - { name: "{{ lxc_php_container_name }}", release: "{{ lxc_php_container_releases[lxc_php_version] }}" , mirror: "{{ lxc_template_mirror_option[lxc_php_version] }}" }
   when: lxc_php_version is defined
 
 - name: set LXC rootfs
