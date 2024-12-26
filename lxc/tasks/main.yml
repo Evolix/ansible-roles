@@ -60,10 +60,12 @@
       - "'nosuid' not in check_fs_options.stdout"
     msg: "LXC directory is in a filesystem with incompatible options"
 
+- debug:
+    var: lxc_containers
+
 - name: Create containers
   ansible.builtin.include: create-container.yml
   vars:
     name: "{{ item.name }}"
     release: "{{ item.release }}"
-    lxc_template_mirror_option: "{{ item.mirror }}"
   loop: "{{ lxc_containers }}"

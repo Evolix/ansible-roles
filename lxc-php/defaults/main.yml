@@ -26,10 +26,6 @@ lxc_php_container_releases:
   php83: "bookworm"
   php84: "bookworm"
 
-lxc_template_mirror_option:
-  php56: '--mirror https://elts.evolix.org/extended-lts'
-  php70: '--mirror https://elts.evolix.org/extended-lts'
-
 lxc_php_services:
   php56: 'php5-fpm.service'
   php70: 'php7.0-fpm.service'

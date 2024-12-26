@@ -12,6 +12,11 @@ lxc_mount_part: "/home"
 # For old Debian, use https://archive.debian.org/debian/
 lxc_template_mirror: ''
 
+lxc_template_mirrors:
+  jessie: 'https://elts.evolix.org/extended-lts'
+  stretch: 'https://elts.evolix.org/extended-lts'
+  buster: 'https://elts.evolix.org/extended-lts'
+
 # List of LXC containers to create.
 # Eg.:
 # lxc_containers:
@@ -22,3 +27,4 @@ lxc_template_mirror: ''
 #   - name: php81
 #     release: bullseye
 lxc_containers: []
+

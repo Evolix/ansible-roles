@@ -6,14 +6,17 @@
   check_mode: no
   register: container_exists
 
+- debug:
+    var: lxc_template_mirror
+
 - name: "Set eLTS mirror"
   ansible.builtin.set_fact:
-    lxc_template_mirror: 'https://elts.evolix.org/extended-lts'
-      #  when:
-      #    - lxc_template_mirror is none or lxc_template_mirror | length == 0
-      #    - release == 'jessie' or release == 'stretch' or release == 'buster'
+    lxc_template_mirror: "{{ lxc_template_mirrors[release] }}"
+  when:
+    - lxc_template_mirror is none or lxc_template_mirror | length == 0
+    - release in lxc_template_mirrors
 
-- debug: 
+- debug:
     var: lxc_template_mirror
 
 - ansible.builtin.set_fact:
