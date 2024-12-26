@@ -20,6 +20,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* timesyncd: fix autostart at boot
 * monitoringctl: check and install gawk dependency
 * monitoringctl: fix sudoers lineinfile regex
 
