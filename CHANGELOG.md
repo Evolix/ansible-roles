@@ -20,6 +20,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* minifirewall: fix wrapper name
 * monitoringctl: check and install gawk dependency
 * monitoringctl: fix sudoers lineinfile regex
 * nginx: remove suffix file if present and empty

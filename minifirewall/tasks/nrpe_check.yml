@@ -18,7 +18,7 @@
     mode: "0755"
 
 - set_fact:
-    minifirewall_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name {{ _check }} -- "
+    minifirewall_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name {{ _check | replace('check_','') }} -- "
 
 - name: "{{ _check }} is available for NRPE"
   ansible.builtin.lineinfile:

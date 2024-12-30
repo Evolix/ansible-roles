@@ -26,7 +26,7 @@
   register: nrpe_evolix_cfg
   
 - name: Install checks
-  ansible.builtin.include_tasks: check.yml
+  ansible.builtin.include_tasks: nrpe_check.yml
   loop_control:
     loop_var: _check
   loop:
