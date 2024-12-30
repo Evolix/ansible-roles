@@ -13,18 +13,18 @@
     path: "{{ nginx_serverstatus_suffix_file }}"
   register: nginx_serverstatus_suffix_file_check
 
-- block:
-  - name: remove suffix file if present but empty
-    ansible.builtin.file:
-      path: "{{ nginx_serverstatus_suffix_file }}"
-      state: absent
-    when: nginx_serverstatus_suffix_file_check.stat.size <= 0
+- name: remove suffix file if present but empty
+  ansible.builtin.file:
+    path: "{{ nginx_serverstatus_suffix_file }}"
+    state: absent
+  when:
+    - nginx_serverstatus_suffix_file_check.stat.exists
+    - nginx_serverstatus_suffix_file_check.stat.size <= 0
 
-  - name: "Check again for suffix file presence"
-    ansible.builtin.stat:
-      path: "{{ nginx_serverstatus_suffix_file }}"
-    register: nginx_serverstatus_suffix_file_check
-  when: nginx_serverstatus_suffix_file_check.stat.exists
+- name: "Check again for suffix file presence"
+  ansible.builtin.stat:
+    path: "{{ nginx_serverstatus_suffix_file }}"
+  register: nginx_serverstatus_suffix_file_check
 
 - name: set nginx serverstatus suffix if provided
   ansible.builtin.copy:

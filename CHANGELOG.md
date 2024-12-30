@@ -16,13 +16,14 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * monitoringctl: follow v0.1 branch by default
-* change NRPE check_https definition
+* nagios-nrpe: change NRPE check_https definition
 
 ### Fixed
 
-* timesyncd: fix autostart at boot
 * monitoringctl: check and install gawk dependency
 * monitoringctl: fix sudoers lineinfile regex
+* nginx: remove suffix file if present and empty
+* timesyncd: fix autostart at boot
 
 ### Removed
 
