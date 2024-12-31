@@ -15,6 +15,16 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+### Fixed
+
+### Removed
+
+### Security
+
+## [24.12.2] 2024-12-31
+
+### Changed
+
 * monitoringctl: follow v0.1 branch by default
 * nagios-nrpe: change NRPE check_https definition
 * nagios-nrpe: check_nfsclient takes and needs now paths arguments
@@ -27,10 +37,6 @@ The **patch** part is incremented if multiple releases happen the same month
 * monitoringctl: fix sudoers lineinfile regex
 * nginx: remove suffix file if present and empty
 * timesyncd: fix autostart at boot
-
-### Removed
-
-### Security
 
 ## [24.12.1] 2024-12-20
 
