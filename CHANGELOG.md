@@ -15,6 +15,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* nagios-nrpe: extend check_nfsclient to accept cifs and smb2 stat type
+
 ### Fixed
 
 ### Removed
