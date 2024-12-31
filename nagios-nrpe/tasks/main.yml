@@ -54,6 +54,17 @@
   tags:
     - nagios-nrpe
 
+- name: NRPE check_mem call is updated
+  ansible.builtin.replace:
+    path: /etc/nagios/nrpe.d/evolix.cfg
+    regexp: '^(command\[check_mem\]=.*) /usr.* -w (\d+) -c (\d+)$'
+    replace: '\1 /usr/lib/nagios/plugins/check_memory --available --warning \2%: --critical \3%:'
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version is version('12', '>=')
+  tags:
+    - nagios-nrpe
+
 - name: Nagios config is secured
   ansible.builtin.file:
     dest: /etc/nagios/

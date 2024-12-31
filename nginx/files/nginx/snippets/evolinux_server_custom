@@ -5,3 +5,7 @@ location ~ /\.(inc|git|bak|env) {
   # so we return 404 "Not found" instead of 403 "Forbidden".
   return 404;
 }
+
+if ($http_user_agent ~ (^BadBot$|thesis-research-bot|Bytespider|SeekportBot|PetalBot|DotBot|SEOkicks|serpstatbot|MJ12bot|SemrushBot)) {
+    return 403;
+}

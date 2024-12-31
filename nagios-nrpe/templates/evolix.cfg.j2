@@ -49,7 +49,7 @@ command[check_minifirewall]={{ monitoringctl_wrapper_path }} --name minifirewall
 #command[check_ftp]={{ monitoringctl_wrapper_path }} --name ftp -- /usr/lib/nagios/plugins/check_ftp -H localhost
 #command[check_ftp_users]={{ monitoringctl_wrapper_path }} --name ftp_users -- /usr/local/lib/nagios/plugins/check_ftp_users -w 20 -c 40
 #command[check_http]={{ monitoringctl_wrapper_path }} --name http -- /usr/lib/nagios/plugins/check_http -e 301 -I 127.0.0.1 -H localhost
-#command[check_https]={{ monitoringctl_wrapper_path }} --name https -- /usr/lib/nagios/plugins/check_http -e 401,403 -I 127.0.0.1 -S -p 443 --sni -H ssl.evolix.net
+#command[check_https]={{ monitoringctl_wrapper_path }} --name https -- /usr/lib/nagios/plugins/check_http -H SERVEUR.evolix.net -u /server-status-NNNNN -e 200 -S -p 443 --sni -I 127.0.0.1
 #command[check_bind]={{ monitoringctl_wrapper_path }} --name bind -- /usr/lib/nagios/plugins/check_dig -l evolix.net -H localhost
 #command[check_unbound]={{ monitoringctl_wrapper_path }} --name unbound -- /usr/lib/nagios/plugins/check_dig -l evolix.net -H localhost
 #command[check_smb]={{ monitoringctl_wrapper_path }} --name smb -- /usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 445
@@ -80,7 +80,7 @@ command[check_minifirewall]={{ monitoringctl_wrapper_path }} --name minifirewall
 ## Local checks (not packaged)
 #command[check_amavis]={{ monitoringctl_wrapper_path }} --name amavis -- {{ nagios_plugins_directory }}/check_amavis --server 127.0.0.1 --from {{ nagios_nrpe_amavis_from }} --to postmaster@localhost --port 10024
 #command[check_spamd]={{ monitoringctl_wrapper_path }} --name spamd -- {{ nagios_plugins_directory }}/check_spamd -H 127.0.0.1
-#command[check_nfsclient]={{ monitoringctl_wrapper_path }} --name nfsclient -- sudo -u www-data {{ nagios_plugins_directory }}/check_nfsclient
+#command[check_nfsclient]={{ monitoringctl_wrapper_path }} --name nfsclient -- sudo -u www-data {{ nagios_plugins_directory }}/check_nfsclient PATH1 PATH2
 #command[check_evobackup]={{ monitoringctl_wrapper_path }} --name evobackup -- {{ nagios_plugins_directory }}/check_evobackup
 #command[check_drbd]={{ monitoringctl_wrapper_path }} --name drbd -- {{ nagios_plugins_directory }}/check_drbd -d All -c StandAlone
 #command[check_mongodb_connect]={{ monitoringctl_wrapper_path }} --name mongodb_connect -- {{ nagios_plugins_directory }}/check_mongodb -H localhost -P27017 -A connect
