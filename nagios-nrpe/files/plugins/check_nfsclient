@@ -1,20 +1,5 @@
 #!/bin/sh
 
-HOSTNAME=$(hostname)
-nfsmount=/srv/data
-
-case "$(findmnt -no fstype "${nfsmount}")" in
-nfs*)
-    ;;
-*)
-    echo "CRITICAL - ${nfsmount} is not an NFS mountpoint"
-    exit 2
-    ;;
-esac
-
-
-#!/bin/sh
-
 writetest=yes
 
 if test "$#" -eq 0
