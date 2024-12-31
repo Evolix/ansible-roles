@@ -80,7 +80,7 @@ command[check_minifirewall]={{ monitoringctl_wrapper_path }} --name minifirewall
 ## Local checks (not packaged)
 #command[check_amavis]={{ monitoringctl_wrapper_path }} --name amavis -- {{ nagios_plugins_directory }}/check_amavis --server 127.0.0.1 --from {{ nagios_nrpe_amavis_from }} --to postmaster@localhost --port 10024
 #command[check_spamd]={{ monitoringctl_wrapper_path }} --name spamd -- {{ nagios_plugins_directory }}/check_spamd -H 127.0.0.1
-#command[check_nfsclient]={{ monitoringctl_wrapper_path }} --name nfsclient -- sudo -u www-data {{ nagios_plugins_directory }}/check_nfsclient
+#command[check_nfsclient]={{ monitoringctl_wrapper_path }} --name nfsclient -- sudo -u www-data {{ nagios_plugins_directory }}/check_nfsclient PATH1 PATH2
 #command[check_evobackup]={{ monitoringctl_wrapper_path }} --name evobackup -- {{ nagios_plugins_directory }}/check_evobackup
 #command[check_drbd]={{ monitoringctl_wrapper_path }} --name drbd -- {{ nagios_plugins_directory }}/check_drbd -d All -c StandAlone
 #command[check_mongodb_connect]={{ monitoringctl_wrapper_path }} --name mongodb_connect -- {{ nagios_plugins_directory }}/check_mongodb -H localhost -P27017 -A connect

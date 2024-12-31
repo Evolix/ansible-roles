@@ -12,26 +12,75 @@ nfs*)
     ;;
 esac
 
-if [ ! -d "${nfsmount}" ]; then
-    echo "CRITICAL - ${nfsmount} is not a directory"
-    exit 2
+
+#!/bin/sh
+
+writetest=yes
+
+if test "$#" -eq 0
+then
+    echo 'usage: check_nfsclient [-n|--no-write] PATH…'
+    exit 3
 fi
 
-mkdir $nfsmount/.nrpe
+case "$1" in
+-n|--no-write)
+    writetest=no
+    shift
+esac
 
-touch $nfsmount/.nrpe/.nfstest.$HOSTNAME
-if [ ! "$?" -eq "0" ]; then
-    echo "CRITICAL - error in check"
-    exit 2
-fi
+for path
+do
+    if test "$(stat --file-system --format=%T "${path}" 2>/dev/null)" != 'nfs'
+    then
+        echo "CRITICAL - ${path} is not an NFS mountpoint"
+        exit 2
+    fi
+    if ! test -d "${path}"
+    then
+        echo "CRITICAL - ${path} is not a directory"
+        exit 2
+    fi
+    if test "${writetest}" = 'yes'
+    then
+        if ! test -d "${path}/.nrpe"
+        then
+            if ! mkdir "${path}/.nrpe"
+            then
+                echo "CRITICAL - failed to create directory under ${path}"
+                rc="${rc}2"
+                continue
+            fi
+        fi
+        if ! touch "${path}/.nrpe/.nfstest.$(hostname)"
+        then
+            echo "CRITICAL - failed to create file under ${path}"
+            rc="${rc}2"
+            continue
+        fi
+        if ! rm "${path}/.nrpe/.nfstest.$(hostname)"
+        then
+            echo "CRITICAL - failed to remove file under ${path}"
+            rc="${rc}2"
+            continue
+        fi
+    fi
+done
 
-rm $nfsmount/.nrpe/.nfstest.$HOSTNAME
-if [ ! "$?" -eq "0" ]; then
-    echo "CRITICAL - error in check"
-    exit 2
-fi
+case "${rc}" in
+*2*)
+    rc=2
+    ;;
+*1*)
+    rc=1
+    ;;
+'')
+    echo "OK - All fine"
+    rc=0
+    ;;
+*)
+    rc=3
+esac
 
-rmdir $nfsmount/.nrpe
+exit "${rc}"
 
-echo "OK - All fine"
-exit 0

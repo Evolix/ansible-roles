@@ -17,6 +17,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * monitoringctl: follow v0.1 branch by default
 * nagios-nrpe: change NRPE check_https definition
+* nagios-nrpe: check_nfsclient takes and needs now paths arguments
 * munin: return 444 for our « bad bots » list
 
 ### Fixed
