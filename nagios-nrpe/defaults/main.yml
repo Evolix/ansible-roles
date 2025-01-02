@@ -30,3 +30,7 @@ nagios_plugins_directory: "/usr/local/lib/nagios/plugins"
 
 monitoringctl_wrapper_path: /usr/local/lib/monitoringctl/alerts_wrapper
 monitoringctl_branch: v0.1
+
+monitoringctl_lib_dir: /usr/local/lib/monitoringctl
+monitoringctl_bin_dir: /usr/local/bin
+monitoringctl_var_dir: /var/lib/monitoringctl
