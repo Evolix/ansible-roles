@@ -15,6 +15,16 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+### Fixed
+
+### Removed
+
+### Security
+
+## [25.01] 2025-01-03
+
+### Changed
+
 * check_free_space: don't store outgoing emails (they can be quite big)
 * lxc: replace `lxc_template_mirror` with `lxc_template_options`
 * nagios-nrpe: extend check_nfsclient to accept cifs and smb2 stat type
@@ -23,10 +33,6 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * lxc: install of Jessie and Stretch LXC container
-
-### Removed
-
-### Security
 
 ## [24.12.2] 2024-12-31
 
