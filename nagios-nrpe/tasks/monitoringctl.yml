@@ -11,125 +11,80 @@
   ansible.builtin.include_role:
     name: remount-usr
 
+### Prepare files copy
 
-# Do not execute in check mode, because tmp_path does not exists
-# TODO: package monitoringctl in a debian package
-- name: Install monitoringctl
-  when: not ansible_check_mode
-  block:
+- name: "Library directory is present"
+  ansible.builtin.file:
+    path: "{{ monitoringctl_lib_dir }}"
+    state: directory
+    mode: "0755"
 
-  ### Get upstream
+- name: "Directory /var/lib/monitoringctl/ exists"
+  ansible.builtin.file:
+    path: "{{ monitoringctl_var_dir }}"
+    state: directory
+    mode: "0755"
 
-    - name: "Generate random string for /tmp dir"
-      ansible.builtin.set_fact:
-        tmp_path: /tmp/monitoringctl_{{ lookup('community.general.random_string', length=12, special=false) }}
+- name: Stat /etc/bash_completion
+  ansible.builtin.stat:
+    path: /etc/bash_completion
+  register: _etc_bash_completion
 
-    - name: Create tmp dir
-      delegate_to: localhost
-      become: false
-      ansible.builtin.file:
-        path: "{{ tmp_path }}"
-        state: directory
-      changed_when: false
+- name: "Directory /etc/bash_completion.d exists"
+  ansible.builtin.file:
+    path: /etc/bash_completion.d
+    state: directory
+    mode: "0755"
+  when: _etc_bash_completion.stat.exists
 
-    - name: "Download monitoringctl files from Gitea to localhost in /tmp"
-      delegate_to: localhost
-      become: false
-      ansible.builtin.get_url:
-        url: "https://gitea.evolix.org/evolix/monitoringctl/raw/branch/{{ monitoringctl_branch }}/{{ item }}"
-        dest: "{{ tmp_path }}/{{ item }}"
-      loop:
-        - alerts_wrapper.py
-        - check-local
-        - check-local_completion
-        - monitoringctl
-        - monitoringctl_common
-        - monitoringctl_common.py
-        - monitoringctl_completion
-      changed_when: false
-    
-    
-    ### Prepare files copy
-    
-    - name: "dir /usr/local/lib/monitoringctl/ exists"
-      ansible.builtin.file:
-        path: /usr/local/lib/monitoringctl/
-        state: directory
-        mode: "0755"
-  
-    - name: "Directory /var/lib/monitoringctl/ exists"
-      ansible.builtin.file:
-        path: /var/lib/monitoringctl/
-        state: directory
-        mode: "0755"
-    
-    - name: "Directory /etc/bash_completion.d exists"
-      ansible.builtin.file:
-        path: /etc/bash_completion.d
-        state: directory
-        mode: "0755"
-    
-    
-    ### Push files
-    
-    - name: "Copy monitoringctl_common lib"
-      ansible.builtin.copy:
-        src: "{{ tmp_path }}/monitoringctl_common"
-        dest: /usr/local/lib/monitoringctl/common
-        mode: "0644"
-        force: true
-    
-    - name: "Copy monitoringctl_common.py lib (for alerts_wrapper.py)"
-      ansible.builtin.copy:
-        src: "{{ tmp_path }}/monitoringctl_common.py"
-        dest: /usr/local/lib/monitoringctl/common.py
-        mode: "0644"
-        force: true
-    
-    - name: "Copy alerts_wrapper"
-      ansible.builtin.copy:
-        src: "{{ tmp_path }}/alerts_wrapper.py"
-        dest: "{{ monitoringctl_wrapper_path }}"
-        group: staff
-        mode: "0755"
-        force: true
-    
-    - name: "Copy monitoringctl"
-      ansible.builtin.copy:
-        src: "{{ tmp_path }}/monitoringctl"
-        dest: /usr/local/bin/monitoringctl
-        mode: "0755"
-        force: true
-    
-    - name: "Copy monitoringctl_completion script"
-      ansible.builtin.copy:
-        src: "{{ tmp_path }}/monitoringctl_completion"
-        dest: /etc/bash_completion.d/monitoringctl
-        mode: "0644"
-        force: true
-    
-    - name: "Copy check-local (it's just a wrapper calling 'monitoringctl check' for backward compatibility)"
-      ansible.builtin.copy:
-        src: "{{ tmp_path }}/check-local"
-        dest: /usr/local/bin/check-local
-        owner: root
-        group: root
-        mode: "0755"
-        force: true
-    
-    - name: "Copy completion for check-local"
-      ansible.builtin.copy:
-        src: "{{ tmp_path }}/check-local_completion"
-        dest: /etc/bash_completion.d/check-local
-        mode: "0755"
-    
-    - name: "Remove tmp dir on localhost"
-      delegate_to: localhost
-      become: false
-      ansible.builtin.file:
-        path: "{{ tmp_path }}"
-        state: absent
-      changed_when: false
+
+### Push files
+
+- name: "Copy monitoringctl_common.py lib (for alerts_wrapper.py)"
+  ansible.builtin.copy:
+    src: "monitoringctl/upstream/monitoringctl_common.py"
+    dest: "{{ monitoringctl_lib_dir }}/common.py"
+    mode: "0644"
+    force: true
+
+- name: "Copy alerts_wrapper"
+  ansible.builtin.copy:
+    src: "monitoringctl/upstream/alerts_wrapper.py"
+    dest: "{{ monitoringctl_wrapper_path }}"
+    group: staff
+    mode: "0755"
+    force: true
+
+- name: "Copy monitoringctl"
+  ansible.builtin.copy:
+    src: "monitoringctl/upstream/monitoringctl"
+    dest: "{{ monitoringctl_bin_dir }}/monitoringctl"
+    mode: "0755"
+    force: true
+
+- name: "Copy monitoringctl_completion script"
+  ansible.builtin.copy:
+    src: "monitoringctl/upstream/monitoringctl_completion"
+    dest: /etc/bash_completion.d/monitoringctl
+    mode: "0644"
+    force: true
+  when: _etc_bash_completion.stat.exists
+
+- name: "Copy check-local (it's just a wrapper calling 'monitoringctl check' for backward compatibility)"
+  ansible.builtin.copy:
+    src: "monitoringctl/upstream/check-local"
+    dest: "{{ monitoringctl_bin_dir }}/check-local"
+    owner: root
+    group: root
+    mode: "0755"
+    force: true
+
+- name: "Copy completion for check-local"
+  ansible.builtin.copy:
+    src: "monitoringctl/upstream/check-local_completion"
+    dest: /etc/bash_completion.d/check-local
+    mode: "0755"
+  when: _etc_bash_completion.stat.exists
 
 
 ### Configuration
@@ -138,7 +93,7 @@
   ansible.builtin.lineinfile:
     path: /etc/sudoers.d/monitoringctl
     regexp: "nagios.*monitoringctl enable"
-    line: "nagios           ALL = NOPASSWD:/usr/local/bin/monitoringctl enable *"
+    line: "nagios           ALL = NOPASSWD:{{ monitoringctl_bin_dir }}/monitoringctl enable *"
     create: true
     mode: "0640"
     validate: "visudo -c -f %s"

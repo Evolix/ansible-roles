@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+function _get_checks_names() {
+    grep --extended-regexp --no-filename --no-messages -R "command\[check_.*\]="  /etc/nagios/ | grep --invert-match --extended-regexp "^\s*#" | awk -F"[\\\[\\\]=]" '{sub("check_", "", $2); print $2}' | sort | uniq
+}
+
+# List of available checks
+_check_local_dynamic_completion() {
+    local cur=${COMP_WORDS[COMP_CWORD]};
+
+    COMPREPLY=( $( compgen -W '$(_get_checks_names)' -- "${cur}" ) );
+}
+
+complete -F _check_local_dynamic_completion check-local
+
+
