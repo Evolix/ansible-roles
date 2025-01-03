@@ -16,13 +16,13 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * check_free_space: don't store outgoing emails (they can be quite big)
+* lxc: replace `lxc_template_mirror` with `lxc_template_options`
 * nagios-nrpe: extend check_nfsclient to accept cifs and smb2 stat type
 * nagios-nrpe: use locally stored upstream files for monitoringctl
-* replaced `lxc_template_mirror` with `lxc_template_options`
 
 ### Fixed
 
-* install of jessie and stretch LXC container
+* lxc: install of Jessie and Stretch LXC container
 
 ### Removed
 
