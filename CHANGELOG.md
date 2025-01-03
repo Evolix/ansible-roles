@@ -204,6 +204,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-users: improve SSH configuration
 * evomaintenance: upstream release 24.05
 * evomaintenance: move upstream files into upstream folder
+* webapps/evoadmin-mail: package installed via public.evolix.org/evolix repo starting with Buster
 
 ### Fixed
 
