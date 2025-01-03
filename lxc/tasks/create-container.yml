@@ -7,7 +7,26 @@
   register: container_exists
 
 - ansible.builtin.set_fact:
-    lxc_template_mirror_option: "{{ '--mirror ' + lxc_template_mirror if lxc_template_mirror != '' else '' }}"
+    lxc_template_options: >-
+      --keyring=/etc/apt/trusted.gpg.d/freexian-archive-extended-lts.gpg
+      --mirror=https://elts.evolix.org/extended-lts
+      --security-mirror=http://archive.debian.org/debian-security
+      {{ lxc_template_options }}
+    when: release == "jessie"
+
+- ansible.builtin.set_fact:
+    lxc_template_options: >-
+      --keyring=/usr/share/keyrings/debian-archive-removed-keys.gpg
+      --mirror=http://archive.debian.org/debian
+      --security-mirror=http://archive.debian.org/debian-security
+      {{ lxc_template_options }}
+    when: release == "stretch"
+
+- name: "Install keyring for eLTS"
+  ansible.builtin.apt:
+    name:
+      - freexian-archive-keyring
+  when: release == 'jessie' or release == 'stretch' or release == 'buster'
 
 - name: "Create container {{ name }}"
   community.general.lxc_container:
@@ -15,7 +34,7 @@
     container_log: true
     template: debian
     state: stopped
-    template_options: "--arch amd64 --release {{ release }} {{ lxc_template_mirror_option }}"
+    template_options: "--arch amd64 --release {{ release }} {{ lxc_template_options }}"
   when: container_exists.stdout_lines | length == 0
 
 - name: "Disable network configuration inside container {{ name }}"

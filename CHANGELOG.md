@@ -21,14 +21,27 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
+## [25.01] 2025-01-03
+
+### Changed
+
+* check_free_space: don't store outgoing emails (they can be quite big)
+* lxc: replace `lxc_template_mirror` with `lxc_template_options`
+* nagios-nrpe: extend check_nfsclient to accept cifs and smb2 stat type
+* nagios-nrpe: use locally stored upstream files for monitoringctl
+
+### Fixed
+
+* lxc: install of Jessie and Stretch LXC container
+
 ## [24.12.2] 2024-12-31
 
 ### Changed
 
 * monitoringctl: follow v0.1 branch by default
+* munin: return 444 for our « bad bots » list
 * nagios-nrpe: change NRPE check_https definition
 * nagios-nrpe: check_nfsclient takes and needs now paths arguments
-* munin: return 444 for our « bad bots » list
 
 ### Fixed
 
@@ -198,6 +211,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-users: improve SSH configuration
 * evomaintenance: upstream release 24.05
 * evomaintenance: move upstream files into upstream folder
+* webapps/evoadmin-mail: package installed via public.evolix.org/evolix repo starting with Buster
 
 ### Fixed
 

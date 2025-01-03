@@ -8,9 +8,8 @@ lxc_network_type: "none"
 # Partition to bind mount into containers.
 lxc_mount_part: "/home"
 
-# Mirror URL (optionnal).
-# For old Debian, use https://archive.debian.org/debian/
-lxc_template_mirror: ""
+# It's "template_options" used directly by community.general.lxc_container
+lxc_template_options: ""
 
 # List of LXC containers to create.
 # Eg.:

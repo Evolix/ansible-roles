@@ -8,7 +8,7 @@
   ansible.builtin.apt:
     deb: https://pub.evolix.org/evolix/pool/main/e/evoadmin-mail/evoadmin-mail_1.0.12-1_all.deb
     state: present
-  when: ansible_distribution_major_version is version('11', '<')
+  when: ansible_distribution_major_version is version('10', '<')
   tags:
     - evoadmin-mail
 
@@ -16,7 +16,7 @@
   ansible.builtin.apt:
     name: evoadmin-mail
     state: present
-  when: ansible_distribution_major_version is version('11', '>=')
+  when: ansible_distribution_major_version is version('10', '>=')
   tags:
     - evoadmin-mail
 

@@ -9,18 +9,21 @@ then
 fi
 
 case "$1" in
--n|--no-write)
-    writetest=no
-    shift
+    -n|--no-write)
+        writetest=no
+        shift
 esac
 
 for path
 do
-    if test "$(stat --file-system --format=%T "${path}" 2>/dev/null)" != 'nfs'
-    then
-        echo "CRITICAL - ${path} is not an NFS mountpoint"
-        exit 2
-    fi
+    type="$(stat --file-system --format=%T "${path}" 2>/dev/null)"
+    case "${type}" in
+        'nfs'|'cifs'|'smb2')
+            ;;
+        *)
+            echo "CRITICAL - ${path} is not an NFS, CIFS or Samba mountpoint"
+            exit 2
+    esac
     if ! test -d "${path}"
     then
         echo "CRITICAL - ${path} is not a directory"
@@ -53,18 +56,18 @@ do
 done
 
 case "${rc}" in
-*2*)
-    rc=2
-    ;;
-*1*)
-    rc=1
-    ;;
-'')
-    echo "OK - All fine"
-    rc=0
-    ;;
-*)
-    rc=3
+    *2*)
+        rc=2
+        ;;
+    *1*)
+        rc=1
+        ;;
+    '')
+        echo "OK - All fine"
+        rc=0
+        ;;
+    *)
+        rc=3
 esac
 
 exit "${rc}"
