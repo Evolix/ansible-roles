@@ -146,7 +146,7 @@ then
       -e "s/__URGENCYFROM__/$URGENCYFROM/"                 \
       -e "s/__URGENCYTEL__/$URGENCYTEL/"                   \
        $email_template |                                   \
-  /usr/bin/mutt -H - $graph_list
+  /usr/bin/mutt -e 'unset record' -H - $graph_list
 else
   sed -e "s/__TO__/$EVOMAINTMAIL/"               \
       -e "s/__HOSTNAME__/$HOSTNAME/"             \
@@ -160,7 +160,7 @@ else
       -e "s/__URGENCYFROM__/$URGENCYFROM/"       \
       -e "s/__URGENCYTEL__/$URGENCYTEL/"         \
        $email_template |                         \
-  /usr/bin/mutt -H - $graph_list
+  /usr/bin/mutt -e 'unset record' -H - $graph_list
 fi
 
 rm -f $PID_FILE

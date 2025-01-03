@@ -15,6 +15,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* check_free_space: don't store outgoing emails (they can be quite big)
 * nagios-nrpe: extend check_nfsclient to accept cifs and smb2 stat type
 * replaced `lxc_template_mirror` with `lxc_template_options`
 
