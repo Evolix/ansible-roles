@@ -17,6 +17,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* tomcat: check if user exist before checking its Tomcat instance.
+
 ### Removed
 
 ### Security
