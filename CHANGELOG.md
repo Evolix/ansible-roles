@@ -13,6 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* nagios-nrpe: check_haproxy_stats 1.3.2 (support statuses with a reason)
+
 ### Changed
 
 ### Fixed
