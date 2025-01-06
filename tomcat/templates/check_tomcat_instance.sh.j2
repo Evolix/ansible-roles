@@ -13,7 +13,7 @@ output=""
 
 instances=$(ls "${TOMCAT_ROOT}")
 for instance in ${instances}; do
-    if ! id -u "${instance}" 2> /dev/null; then
+    if ! id -u "${instance}" 1>&2 2>/dev/null; then
         continue
     fi
     port=$(id -u "${instance}")
