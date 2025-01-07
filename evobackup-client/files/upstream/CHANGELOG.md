@@ -23,6 +23,18 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [25.01] - 2025-01-07
+
+### Fixed
+
+* dump_elasticsearch: Add an `\n` before HTTP status code
+* Fix compatibility with OpenBSD
+
+### Added
+
+* Add function for backup Linstor Database
+* Introducing munin-plugins for bkctld
+
 ## [24.12] - 2022-12-18
 
 ### Changed

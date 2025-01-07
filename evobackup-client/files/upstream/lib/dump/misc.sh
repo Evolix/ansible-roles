@@ -577,3 +577,70 @@ dump_facl() {
 
     log "LOCAL_TASKS - ${FUNCNAME[0]}: stop  ${dump_dir}"
 }
+#######################################################################
+# Dump Linstor Database
+# 
+# Arguments: <none>
+#######################################################################
+dump_linstordb() {
+    # Set dump and errors directories and files
+    local dump_dir="${LOCAL_BACKUP_DIR}/linstor"
+    local dump_file="${dump_dir}/dump_linstor_db"
+    local errors_dir=$(errors_dir_from_dump_dir "${dump_dir}") 
+    local error_file="${errors_dir}/dump.err"
+
+    # Reset dump and errors directories
+    rm -rf "${dump_dir}" "${errors_dir}"
+    # shellcheck disable=SC2174
+    mkdir -p -m 700 "${dump_dir}" "${errors_dir}"
+
+    # Log the start of the function
+    log "LOCAL_TASKS - ${FUNCNAME[0]}: start ${dump_file}"
+        
+    # Stop linstor-controller process before backup
+    linstorctrl_stop="/usr/bin/systemctl stop linstor-controller.service"
+    log "LOCAL_TASKS - ${FUNCNAME[0]}: ${linstorctrl_stop}"
+        
+    # Execute stop linstor-controller
+    ${linstorctrl_stop}
+    local last_rc=$?
+    if [ "${last_rc}" -ne "0" ]; then
+        log_error "LOCAL_TASKS - ${FUNCNAME[0]}: linstor stopping service failed"
+        GLOBAL_RC=${E_DUMPFAILED}
+    else
+        # Prepare the dump command (errors go to the error file and the data to the dump file)
+        dump_cmd="/usr/share/linstor-server/bin/linstor-database export-db ${dump_file}"
+        log "LOCAL_TASKS - ${FUNCNAME[0]}: ${dump_cmd}"
+
+        # Execute the dump command
+        ${dump_cmd} 2> ${error_file}
+
+        # Check result and deal with potential errors
+        local last_rc=$?
+        # shellcheck disable=SC2086
+        if [ ${last_rc} -ne 0 ]; then
+            log_error "LOCAL_TASKS - ${FUNCNAME[0]}: linstor database export to ${dump_file} returned an error ${last_rc}" "${error_file}"
+            GLOBAL_RC=${E_DUMPFAILED}
+        else
+            rm -f "${error_file}"
+        fi
+
+        # Start linstor-controller process after backup
+        linstorctrl_start="/usr/bin/systemctl start linstor-controller.service"
+        log "LOCAL_TASKS - ${FUNCNAME[0]}: ${linstorctrl_start}"
+
+        # Execute start linstor-controller
+        ${linstorctrl_start}
+
+        # Check result and deal with potential errors
+        local last_rc=$?
+        # shellcheck disable=SC2086
+        if [ ${last_rc} -ne 0 ]; then
+            log_error "LOCAL_TASKS - ${FUNCNAME[0]}: linstor starting service failed"
+            GLOBAL_RC=${E_DUMPFAILED}
+        fi
+    fi
+
+    # Log the end of the function
+    log "LOCAL_TASKS - ${FUNCNAME[0]}: stop ${dump_file}"
+}
