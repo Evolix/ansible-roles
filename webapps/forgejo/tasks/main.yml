@@ -92,7 +92,7 @@
 
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ forgejo_domains | first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ forgejo_instance }}/fullchain.pem"
   register: ssl
 
 - name: Generate certificate only if required (first time)
@@ -118,11 +118,12 @@
            --non-interactive
            --agree-tos
            --email {{ forgejo_certbot_admin_email }}
+           --cert-name {{ forgejo_instance }}
            -d {{ forgejo_domains | first }}
 
 - name: (Re)check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ forgejo_domains | first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ forgejo_instance }}/fullchain.pem"
   register: ssl
 
 - name: (Re)template conf file for nginx vhost with SSL

@@ -26,8 +26,8 @@ server {
     error_log  /var/log/nginx/{{ forgejo_instance }}.error.log;
 
     include /etc/nginx/snippets/letsencrypt.conf;
-    ssl_certificate     /etc/letsencrypt/live/{{ forgejo_domains | first }}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/{{ forgejo_domains | first }}/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/{{ forgejo_instance }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ forgejo_instance }}/privkey.pem;
 
     # HSTS (ngx_http_headers_module is required) (15768000 seconds = 6 months)
     add_header Strict-Transport-Security max-age=15768000;
@@ -35,7 +35,7 @@ server {
     # OCSP Stapling 
     ssl_stapling on;
     ssl_stapling_verify on;
-    ssl_trusted_certificate /etc/letsencrypt/live/{{ forgejo_domains | first }}/fullchain.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/{{ forgejo_instance }}/fullchain.pem;
     resolver 31.170.11.254;
 
     location / {
