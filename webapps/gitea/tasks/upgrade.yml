@@ -1,6 +1,9 @@
 ---
 # tasks file for gitea upgrade
 
+- ansible.builtin.include_role:
+    name: evolix/remount-usr
+
 - name: Download gitea binary
   ansible.builtin.get_url:
     url: "{{ gitea_url }}"

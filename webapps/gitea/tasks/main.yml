@@ -6,9 +6,8 @@
     name: "{{ gitea_system_dep }}"
     update_cache: true
 
-- name: Remount /usr as RW
-  ansible.builtin.command:
-    cmd: mount -o remount,rw /usr
+- ansible.builtin.include_role:
+    name: evolix/remount-usr
 
 - name: Download gitea binary
   ansible.builtin.get_url:
@@ -22,10 +21,6 @@
     src: "/usr/local/bin/gitea-{{ gitea_git_version }}-linux-amd64"
     dest: "/usr/local/bin/gitea-{{ gitea_instance }}"
     state: link
-
-- name: Remount /usr as RO
-  ansible.builtin.command:
-    cmd: mount -o remount,ro /usr
 
 - name: Add gitea UNIX account
   ansible.builtin.user:
