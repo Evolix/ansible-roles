@@ -12,7 +12,7 @@
       --mirror=https://elts.evolix.org/extended-lts
       --security-mirror=http://archive.debian.org/debian-security
       {{ lxc_template_options }}
-    when: release == "jessie"
+  when: release == "jessie"
 
 - ansible.builtin.set_fact:
     lxc_template_options: >-
@@ -20,7 +20,7 @@
       --mirror=http://archive.debian.org/debian
       --security-mirror=http://archive.debian.org/debian-security
       {{ lxc_template_options }}
-    when: release == "stretch"
+  when: release == "stretch"
 
 - name: "Install keyring for eLTS"
   ansible.builtin.apt:
