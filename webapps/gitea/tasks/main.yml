@@ -59,6 +59,7 @@
     owner: 'root'
     group: "{{ gitea_instance }}"
     mode: '0660'
+    force: no
 
 - name: Template gitea systemd unit
   ansible.builtin.template:
