@@ -11,7 +11,7 @@
 - name: Create symbolic link
   ansible.builtin.file:
     src: "/usr/local/bin/gitea-{{ gitea_git_version }}-linux-amd64"
-    dest: "/usr/local/bin/gitea"
+    dest: "/usr/local/bin/gitea-{{ gitea_instance }}"
     state: link
 
 - name: Start gitea systemd unit
