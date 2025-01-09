@@ -3,7 +3,7 @@
 - name: "{{ lxc_php_container_name }} - Install dependency packages"
   community.general.lxc_container:
     name: "{{ lxc_php_container_name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y wget gnupg"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt-get install -y wget gnupg"
 
 - name: "{{ lxc_php_container_name }} - Copy keyring packages"
   ansible.builtin.copy:
@@ -21,7 +21,7 @@
 - name: "{{ lxc_php_container_name }} - Install keyring packages"
   community.general.lxc_container:
     name: "{{ lxc_php_container_name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y /tmp/{{ item }}"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt-get install -y /tmp/{{ item }}"
   loop:
     - debsuryorg-archive-keyring_2024.02.05+0~20240205.1+debian12~1.gbp343037_all.deb
     - evolix-archive-keyring_0~2024_all.deb
@@ -64,12 +64,12 @@
 - name: "{{ lxc_php_container_name }} - Update APT cache"
   community.general.lxc_container:
     name: "{{ lxc_php_container_name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt update"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt-get update"
 
 - name: "{{ lxc_php_container_name }} - Install PHP packages"
   community.general.lxc_container:
     name: "{{ lxc_php_container_name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer evolix-archive-keyring debsuryorg-archive-keyring"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt-get install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer evolix-archive-keyring debsuryorg-archive-keyring"
 
 - name: "{{ lxc_php_container_name }} - Copy evolinux PHP configuration"
   ansible.builtin.template:

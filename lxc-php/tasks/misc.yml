@@ -21,7 +21,7 @@
 - name: "{{ lxc_php_container_name }} - Install misc packages"
   community.general.lxc_container:
     name: "{{ lxc_php_container_name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y cron logrotate git zip unzip"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt-get install -y cron logrotate git zip unzip"
 
 - name: "{{ lxc_php_container_name }} - Add MySQL socket to container default mounts"
   community.general.lxc_container:
