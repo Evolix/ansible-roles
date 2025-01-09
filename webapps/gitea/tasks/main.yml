@@ -29,12 +29,6 @@
     groups: redis
     append: yes
 
-- name: Add www-data (nginx) to instance group
-  ansible.builtin.user:
-    name: www-data
-    groups: "{{ gitea_instance }}"
-    append: true
-
 - name: Add database
   community.mysql.mysql_db:
     name: "{{ gitea_db_name }}"
