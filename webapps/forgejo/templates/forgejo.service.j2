@@ -1,0 +1,27 @@
+[Unit]
+Description=Forgejo (Git forge) for %i
+After=syslog.target
+After=network.target
+After=mysqld.service
+
+[Service]
+# Create /run/forgejo/INSTANCE folder for socket
+ExecStartPre=/bin/mkdir -m 0755 -p /run/forgejo/%i
+ExecStartPre=/bin/chown %i: /run/forgejo/%i
+PermissionsStartOnly=yes
+
+User=%i
+Group=%i
+
+Type=simple
+RestartSec=2s
+Restart=always
+
+WorkingDirectory=/home/%i
+ExecStart=/usr/local/bin/forgejo-%i web --config /etc/forgejo/%i.ini
+Environment=FORGEJO_WORK_DIR=/home/%i/internals
+
+
+[Install]
+WantedBy=multi-user.target
+

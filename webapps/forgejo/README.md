@@ -1,7 +1,7 @@
-gitea
+forgejo
 =====
 
-This role installs or upgrades the server for gitea. 
+This role installs or upgrades the server for forgejo. 
 
 FRENCH: Voir le fichier LISEZMOI.md pour le français.
 
@@ -26,16 +26,16 @@ Example Playbook
 ----------------
 
 ```
-- name: "Deploy an gitea server"
+- name: "Deploy a forgejo server"
   hosts: 
     - all
   vars:
     # Overwrite the role variable here
     domains: ['your-real-domain.org']
-    gitea_instance: 'my-gitea'
+    forgejo_instance: 'my-forgejo'
 
   roles:
-    - { role: webapps/gitea , tags: "gitea" }
+    - { role: webapps/forgejo , tags: "forgejo" }
 ```
 
 License

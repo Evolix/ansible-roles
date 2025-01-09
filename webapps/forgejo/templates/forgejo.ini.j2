@@ -1,0 +1,44 @@
+APP_NAME = Forgejo {{ forgejo_instance }}
+RUN_USER = {{ forgejo_instance }}
+RUN_MODE = prod
+WORK_PATH = /home/{{ forgejo_instance }}/internals
+
+[server]
+PROTOCOL               = http+unix
+DOMAIN                 = {{ forgejo_domains | first }}
+HTTP_ADDR              = /run/forgejo/{{ forgejo_instance }}/forgejo.sock
+UNIX_SOCKET_PERMISSION = 666
+OFFLINE_MODE           = true
+SSH_DOMAIN             = {{ forgejo_domains | first }}
+ROOT_URL               = https://{{ forgejo_domains | first }}/
+ENABLE_GZIP = true
+LANDING_PAGE = home
+DISABLE_SSH = false
+SSH_PORT = 22
+
+[repository]
+ROOT = /home/{{ forgejo_instance }}/repositories
+
+[log]
+ROOT_PATH = /home/{{ forgejo_instance }}/log/
+MODE      = console
+LEVEL     = info
+
+[i18n]
+LANGS = fr-FR, en-US
+NAMES = Français,English
+
+[database]
+DB_TYPE  = mysql
+HOST     = {{ forgejo_db_host }}
+NAME     = {{ forgejo_db_name }}
+USER     = {{ forgejo_db_user }}
+PASSWD   = {{ forgejo_db_password }}
+
+[session]
+PROVIDER         = redis
+PROVIDER_CONFIG  = network=unix,addr=/run/redis-{{ forgejo_instance }}/redis.sock,db=0,pool_size=100,idle_timeout=180
+
+[cache]
+ADAPTER = redis
+HOST    = network=unix,addr=/run/redis-{{ forgejo_instance }}/redis.sock,db=1,pool_size=100,idle_timeout=180

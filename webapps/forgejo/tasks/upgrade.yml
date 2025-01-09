@@ -1,25 +1,25 @@
 ---
-# tasks file for gitea upgrade
+# tasks file for forgejo upgrade
 
 - ansible.builtin.include_role:
     name: evolix/remount-usr
 
-- name: Download gitea binary
+- name: Download forgejo binary
   ansible.builtin.get_url:
-    url: "{{ gitea_url }}"
+    url: "{{ forgejo_url }}"
     dest: /usr/local/bin
-    checksum: "{{ gitea_checksum }}"
+    checksum: "{{ forgejo_checksum }}"
     mode: '0755'
 
 - name: Create symbolic link
   ansible.builtin.file:
-    src: "/usr/local/bin/gitea-{{ gitea_git_version }}-linux-amd64"
-    dest: "/usr/local/bin/gitea-{{ gitea_instance }}"
+    src: "/usr/local/bin/forgejo-{{ forgejo_git_version }}-linux-amd64"
+    dest: "/usr/local/bin/forgejo-{{ forgejo_instance }}"
     state: link
 
-- name: Start gitea systemd unit
+- name: Start forgejo systemd unit
   ansible.builtin.systemd:
-    name: "gitea@{{ gitea_instance }}"
+    name: "forgejo@{{ forgejo_instance }}"
     state: restarted
 
 - name: Reload nginx conf

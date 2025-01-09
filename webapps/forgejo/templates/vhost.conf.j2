@@ -1,11 +1,11 @@
-upstream gitea_{{ gitea_instance }} {
-    server unix:/run/gitea/{{ gitea_instance }}/gitea.sock;
+upstream forgejo_{{ forgejo_instance }} {
+    server unix:/run/forgejo/{{ forgejo_instance }}/forgejo.sock;
 }
 
 server {
   listen 80;
   listen [::]:80;
-  server_name {{ gitea_domains | first }};
+  server_name {{ forgejo_domains | first }};
   
   # For certbot
   include /etc/nginx/snippets/letsencrypt.conf;
@@ -20,14 +20,14 @@ server {
     listen 0.0.0.0:443 ssl http2;
     listen [::]:443 ssl http2;
 
-    server_name {{ gitea_domains | first }};
+    server_name {{ forgejo_domains | first }};
     
-    access_log /var/log/nginx/{{ gitea_instance }}.access.log;
-    error_log  /var/log/nginx/{{ gitea_instance }}.error.log;
+    access_log /var/log/nginx/{{ forgejo_instance }}.access.log;
+    error_log  /var/log/nginx/{{ forgejo_instance }}.error.log;
 
     include /etc/nginx/snippets/letsencrypt.conf;
-    ssl_certificate     /etc/letsencrypt/live/{{ gitea_domains | first }}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/{{ gitea_domains | first }}/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/{{ forgejo_domains | first }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ forgejo_domains | first }}/privkey.pem;
 
     # HSTS (ngx_http_headers_module is required) (15768000 seconds = 6 months)
     add_header Strict-Transport-Security max-age=15768000;
@@ -35,11 +35,11 @@ server {
     # OCSP Stapling 
     ssl_stapling on;
     ssl_stapling_verify on;
-    ssl_trusted_certificate /etc/letsencrypt/live/{{ gitea_domains | first }}/fullchain.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/{{ forgejo_domains | first }}/fullchain.pem;
     resolver 31.170.11.254;
 
     location / {
-        proxy_pass http://gitea_{{ gitea_instance }};
+        proxy_pass http://forgejo_{{ forgejo_instance }};
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
