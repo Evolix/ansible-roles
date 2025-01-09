@@ -6,39 +6,46 @@
     state: present
   when: ansible_distribution_major_version is version('10', '<')
 
-- name: "Ensure {{ apt_keyring_dir }} directory exists"
-  file:
-    path: "{{ apt_keyring_dir }}"
-    state: directory
-    mode: "755"
-    owner: root
-    group: root
-
-- name: copy pub.evolix.org GPG key
+- name: Copy keyring packages
   ansible.builtin.copy:
-    src: pub_evolix.asc
-    dest: "{{ apt_keyring_dir }}/pub_evolix.asc"
+    src: "{{ item }}"
+    dest: "/tmp/{{ item }}"
     mode: "0644"
     owner: root
     group: root
+  loop:
+    - debsuryorg-archive-keyring_2024.02.05+0~20240205.1+debian12~1.gbp343037_all.deb
+    - evolix-archive-keyring_0~2024_all.deb
 
-- name: Setup pub.evolix.org repository - Add source list
+- name: Install Evolix keyring package
+
+- name: Install keyring packages
+  ansible.builtin.apt:
+    deb: "/tmp/{{ item }}"
+    state: present
+  loop:
+    - debsuryorg-archive-keyring_2024.02.05+0~20240205.1+debian12~1.gbp343037_all.deb
+    - evolix-archive-keyring_0~2024_all.deb
+    # - https://packages.sury.org/php/pool/main/d/debsuryorg-archive-keyring/debsuryorg-archive-keyring_2024.02.05%2B0~20240205.1%2Bdebian12~1.gbp343037_all.deb
+    # - https://pub.evolix.org/evolix/pool/main/e/evolix-archive-keyring/evolix-archive-keyring_0~2024_all.deb
+
+- name: Add Evolix failsafe repository for Sury (Debian <12)
   ansible.builtin.apt_repository:
-    repo: "deb [signed-by={{ apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix {{ ansible_distribution_release }}-php{{ php_version | replace('.', '')}} main"
+    repo: "deb [signed-by=/usr/share/keyrings/pub_evolix.asc] https://pub.evolix.org/evolix {{ ansible_distribution_release }}-php{{ php_version | replace('.', '')}} main"
     filename: evolix-php
     state: present
+  when: ansible_distribution_major_version is version('12', '<')
 
-- name: Setup deb.sury.org repository - Add GPG key
-  ansible.builtin.copy:
-    src: sury.gpg
-    dest: "{{ apt_keyring_dir }}/sury.gpg"
+- name: Add Evolix failsafe repository for Sury (Debian >=12)
+  ansible.builtin.template:
+    src: evolix_sury.sources.j2
+    dest: /etc/apt/sources.list.d/evolix_sury.sources
+    force: true
     mode: "0644"
-    owner: root
-    group: root
 
 - name: Add Sury repository (Debian <12)
   ansible.builtin.apt_repository:
-    repo: "deb [signed-by={{ apt_keyring_dir }}/sury.gpg] https://packages.sury.org/php/ {{ ansible_distribution_release }} main"
+    repo: "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ {{ ansible_distribution_release }} main"
     filename: sury
     state: present
     update_cache: yes
