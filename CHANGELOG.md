@@ -18,10 +18,14 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* apt, lxc-php, php: use keyring packages
 * evobackup-client: upstream release 25.01
+* lxc: upgrade packages after installation
+* lxc-php: use apt-get instead of apt
 
 ### Fixed
 
+* lxc: install of LXC container (other than Jessie and Stretch)
 * tomcat: check if user exist before checking its Tomcat instance.
 
 ### Removed
