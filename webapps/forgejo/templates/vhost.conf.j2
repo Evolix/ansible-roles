@@ -45,11 +45,6 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_read_timeout 10;
-
-        include /etc/nginx/snippets/ipaddr_whitelist;
-        allow 127.0.0.1;
-        allow ::1;
-        deny all;
     }
 }
 {% endif %}

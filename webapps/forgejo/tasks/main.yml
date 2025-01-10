@@ -90,6 +90,38 @@
     name: "redis-server@{{ forgejo_instance }}"
     state: started
 
+- name: Copy fail2ban filter conf file
+  ansible.builtin.copy:
+    src: fail2ban/forgejo.conf
+    dest: /etc/fail2ban/filter.d/forgejo.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Insert conf block in jail.local for fail2ban
+  ansible.builtin.blockinfile:
+    path: /etc/fail2ban/jail.local
+    block: |
+      
+      [forgejo-git]
+      enabled   = true
+      port      = http,https,ssh
+      filter    = forgejo
+      logpath   = /home/git/log/forgejo.log
+      maxretry  = 20
+      findtime  = 300
+      bantime   = 900
+      
+      [forgejo-all]
+      enabled   = true
+      port      = http,https,ssh
+      filter    = forgejo
+      logpath   = /home/*/log/forgejo.log
+      maxretry  = 90
+      findtime  = 3600
+      bantime   = 300
+  notify: reload fail2ban
+
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ forgejo_instance }}/fullchain.pem"
@@ -107,10 +139,9 @@
         src: "/etc/nginx/sites-available/{{ forgejo_instance }}.conf"
         dest: "/etc/nginx/sites-enabled/{{ forgejo_instance }}.conf"
         state: link
-    - name: Reload nginx conf
-      ansible.builtin.systemd:
-        name: nginx
-        state: reloaded
+      notify: reload nginx
+    - name: Flush handlers
+      ansible.builtin.meta: flush_handlers
     - name: Generate certificate with certbot
       ansible.builtin.command:
         cmd: |
@@ -137,8 +168,4 @@
     src: "/etc/nginx/sites-available/{{ forgejo_instance }}.conf"
     dest: "/etc/nginx/sites-enabled/{{ forgejo_instance }}.conf"
     state: link
-
-- name: Reload nginx conf
-  ansible.builtin.systemd:
-    name: nginx
-    state: reloaded
+  notify: reload nginx
