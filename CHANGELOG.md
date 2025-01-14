@@ -26,6 +26,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * lxc: install of LXC container (other than Jessie and Stretch)
+* lxc: use lxc-templates from Backports to install old releases on Bullseye
 * tomcat: check if user exist before checking its Tomcat instance.
 
 ### Removed
