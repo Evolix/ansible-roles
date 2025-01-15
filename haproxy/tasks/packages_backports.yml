@@ -23,21 +23,9 @@
     haproxy_backports_packages: "{{ haproxy_backports_packages_bookworm }}"
   when: ansible_distribution_release == 'bookworm'
 
-- name: Prefer HAProxy package from backports
-  ansible.builtin.template:
-    src: haproxy_apt_preferences.j2
-    dest: /etc/apt/preferences.d/999-haproxy
-    force: true
-    mode: "0640"
-  register: haproxy_apt_preferences
-  tags:
-    - haproxy
-    - packages
-
 - name: update apt
   ansible.builtin.apt:
     update_cache: yes
-  when: haproxy_apt_preferences is changed
   tags:
     - haproxy
     - packages

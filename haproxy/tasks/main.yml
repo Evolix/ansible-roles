@@ -90,6 +90,17 @@
   ansible.builtin.apt:
     name: haproxy
     state: present
+  when: not (haproxy_backports | bool)
+  tags:
+    - haproxy
+    - packages
+
+- name: Install HAProxy package from backports
+  ansible.builtin.apt:
+    name: {{ haproxy_backports_packages }}
+    state: present
+    default_release: "{{ ansible_distribution_release }}-backports"
+  when: haproxy_backports | bool
   tags:
     - haproxy
     - packages
