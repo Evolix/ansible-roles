@@ -13,8 +13,20 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
-* nagios-nrpe: check_haproxy_stats 1.3.2 (support statuses with a reason)
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [25.01.1] 2025-01-15
+
+### Added
+
 * nagios-nrpe: add `check_syslog_age` example
+* nagios-nrpe: check_haproxy_stats 1.3.2 (support statuses with a reason)
 
 ### Changed
 
@@ -29,10 +41,6 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc: install of LXC container (other than Jessie and Stretch)
 * lxc: use lxc-templates from Backports to install old releases on Bullseye
 * tomcat: check if user exist before checking its Tomcat instance.
-
-### Removed
-
-### Security
 
 ## [25.01] 2025-01-03
 
