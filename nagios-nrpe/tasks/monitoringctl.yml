@@ -55,6 +55,13 @@
     mode: "0755"
     force: true
 
+- name: "Copy monitoringctl_common lib (for monitoringctl)"
+  ansible.builtin.copy:
+    src: "monitoringctl/upstream/monitoringctl_common"
+    dest: "{{ monitoringctl_lib_dir }}/common"
+    mode: "0644"
+    force: true
+
 - name: "Copy monitoringctl"
   ansible.builtin.copy:
     src: "monitoringctl/upstream/monitoringctl"
