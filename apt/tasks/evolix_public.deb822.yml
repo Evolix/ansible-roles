@@ -16,28 +16,19 @@
     - apt
   when: _trusted_gpg_keyring.stat.exists
 
-- name: "Ensure {{ apt_keyring_dir }} directory exists"
-  file:
-    path: "{{ apt_keyring_dir }}"
-    state: directory
-    mode: "755"
-    owner: root
-    group: root
-
-- name: Set Evolix GPG key format to ASC
-  set_fact:
-    apt_evolix_public_key: "{{ apt_keyring_dir }}/pub_evolix.asc"
-  tags:
-    - apt
-
-- name: Add Evolix GPG key
+- name: Copy keyring package
   ansible.builtin.copy:
-    src: pub_evolix.asc
-    dest: "{{ apt_evolix_public_key }}"
-    force: true
+    src: evolix-archive-keyring_0~2024_all.deb
+    dest: /tmp/evolix-archive-keyring.deb
     mode: "0644"
     owner: root
     group: root
+
+- name: Install Evolix keyring package
+  ansible.builtin.apt:
+    deb: /tmp/evolix-archive-keyring.deb
+    # deb: https://pub.evolix.org/evolix/pool/main/e/evolix-archive-keyring/evolix-archive-keyring_0~2024_all.deb
+    state: present
   tags:
     - apt
 

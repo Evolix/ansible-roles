@@ -1,0 +1,171 @@
+---
+# tasks file for forgejo install
+
+- name: Install main system dependencies
+  ansible.builtin.apt:
+    name: "{{ forgejo_system_dep }}"
+    update_cache: true
+
+- ansible.builtin.include_role:
+    name: evolix/remount-usr
+
+- name: Download forgejo binary
+  ansible.builtin.get_url:
+    url: "{{ forgejo_url }}"
+    dest: /usr/local/bin
+    checksum: "{{ forgejo_checksum }}"
+    mode: '0755'
+
+- name: Create symbolic link
+  ansible.builtin.file:
+    src: "/usr/local/bin/forgejo-{{ forgejo_git_version }}-linux-amd64"
+    dest: "/usr/local/bin/forgejo-{{ forgejo_instance }}"
+    state: link
+
+- name: Add forgejo UNIX account
+  ansible.builtin.user:
+    name: "{{ forgejo_instance }}"
+    shell: /bin/bash
+    groups: redis
+    append: true
+
+- name: Add database
+  community.mysql.mysql_db:
+    name: "{{ forgejo_db_name }}"
+
+- name: Add database user
+  community.mysql.mysql_user:
+    name: "{{ forgejo_db_user }}"
+    password: "{{ forgejo_db_password }}"
+    priv: "{{ forgejo_db_name }}.*:{{ privileges | default('SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,INDEX,ALTER,CREATE TEMPORARY TABLES') }}"
+    update_password: on_create
+
+- name: Create the forgejo conf dir if needed
+  ansible.builtin.file:
+    path: /etc/forgejo
+    state: directory
+    mode: '0755'
+
+- name: Template forgejo ini file
+  ansible.builtin.template:
+    src: "forgejo.ini.j2"
+    dest: "/etc/forgejo/{{ forgejo_instance }}.ini"
+    owner: 'root'
+    group: "{{ forgejo_instance }}"
+    mode: '0660'
+    force: no
+
+- name: Template forgejo systemd unit
+  ansible.builtin.template:
+    src: "forgejo.service.j2"
+    dest: "/etc/systemd/system/forgejo@.service"
+    mode: '0644'
+
+- name: Start forgejo systemd unit
+  ansible.builtin.systemd:
+    name: "forgejo@{{ forgejo_instance }}"
+    state: restarted
+    enabled: true
+
+- name: Template redis conf
+  ansible.builtin.template:
+    src: "redis.conf.j2"
+    dest: "/etc/redis/redis-{{ forgejo_instance }}.conf"
+    owner: "redis"
+    group: "redis"
+    mode: '0640'
+
+- name: Disable defaut redis systemd unit
+  ansible.builtin.systemd:
+    name: redis
+    enabled: false
+
+- name: Template redis systemd unit
+  ansible.builtin.template:
+    src: "redis-server.service.j2"
+    dest: "/etc/systemd/system/redis-server@.service"
+
+- name: Start redis systemd unit
+  ansible.builtin.systemd:
+    name: "redis-server@{{ forgejo_instance }}"
+    state: started
+
+- name: Copy fail2ban filter conf file
+  ansible.builtin.copy:
+    src: fail2ban/forgejo.conf
+    dest: /etc/fail2ban/filter.d/forgejo.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Insert conf block in jail.local for fail2ban
+  ansible.builtin.blockinfile:
+    path: /etc/fail2ban/jail.local
+    block: |
+      
+      [forgejo-git]
+      enabled   = true
+      port      = http,https,ssh
+      filter    = forgejo
+      logpath   = /home/git/log/forgejo.log
+      maxretry  = 20
+      findtime  = 300
+      bantime   = 900
+      
+      [forgejo-all]
+      enabled   = true
+      port      = http,https,ssh
+      filter    = forgejo
+      logpath   = /home/*/log/forgejo.log
+      maxretry  = 90
+      findtime  = 3600
+      bantime   = 300
+  notify: reload fail2ban
+
+- name: Check if SSL certificate is present and register result
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ forgejo_instance }}/fullchain.pem"
+  register: ssl
+
+- name: Generate certificate only if required (first time)
+  when: not ssl.stat.exists
+  block:
+    - name: Template vhost without SSL for successfull LE challengce
+      ansible.builtin.template:
+        src: "vhost.conf.j2"
+        dest: "/etc/nginx/sites-available/{{ forgejo_instance }}.conf"
+    - name: Enable temporary nginx vhost for forgejo
+      ansible.builtin.file:
+        src: "/etc/nginx/sites-available/{{ forgejo_instance }}.conf"
+        dest: "/etc/nginx/sites-enabled/{{ forgejo_instance }}.conf"
+        state: link
+      notify: reload nginx
+    - name: Flush handlers
+      ansible.builtin.meta: flush_handlers
+    - name: Generate certificate with certbot
+      ansible.builtin.command:
+        cmd: |
+          certbot certonly --webroot --webroot-path /var/lib/letsencrypt
+           --non-interactive
+           --agree-tos
+           --email {{ forgejo_certbot_admin_email }}
+           --cert-name {{ forgejo_instance }}
+           -d {{ forgejo_domains | first }}
+
+- name: (Re)check if SSL certificate is present and register result
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ forgejo_instance }}/fullchain.pem"
+  register: ssl
+
+- name: (Re)template conf file for nginx vhost with SSL
+  ansible.builtin.template:
+    src: "vhost.conf.j2"
+    dest: "/etc/nginx/sites-available/{{ forgejo_instance }}.conf"
+    mode: '0600'
+
+- name: Enable nginx vhost for forgejo
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ forgejo_instance }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ forgejo_instance }}.conf"
+    state: link
+  notify: reload nginx

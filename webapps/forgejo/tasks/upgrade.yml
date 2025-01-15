@@ -1,0 +1,28 @@
+---
+# tasks file for forgejo upgrade
+
+- ansible.builtin.include_role:
+    name: evolix/remount-usr
+
+- name: Download forgejo binary
+  ansible.builtin.get_url:
+    url: "{{ forgejo_url }}"
+    dest: /usr/local/bin
+    checksum: "{{ forgejo_checksum }}"
+    mode: '0755'
+
+- name: Create symbolic link
+  ansible.builtin.file:
+    src: "/usr/local/bin/forgejo-{{ forgejo_git_version }}-linux-amd64"
+    dest: "/usr/local/bin/forgejo-{{ forgejo_instance }}"
+    state: link
+
+- name: Start forgejo systemd unit
+  ansible.builtin.systemd:
+    name: "forgejo@{{ forgejo_instance }}"
+    state: restarted
+
+- name: Reload nginx conf
+  ansible.builtin.systemd:
+    name: nginx
+    state: reloaded

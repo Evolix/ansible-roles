@@ -1,9 +1,9 @@
-gitea
+forgejo
 =====
 
-Ce rôle installe un serveur gitea. 
+Ce rôle installe un serveur forgejo. 
 
-Notez qu'hormis le présent fichier LISEZMOI.md, tous les fichiers du rôle gitea sont rédigés en anglais afin de suivre les conventions de la communauté Ansible, favoriser sa réutilisation et son amélioration, etc. Libre à vous cependant de faire appel à ce role dans un playbook rédigé principalement en français ou toute autre langue.
+Notez qu'hormis le présent fichier LISEZMOI.md, tous les fichiers du rôle forgejo sont rédigés en anglais afin de suivre les conventions de la communauté Ansible, favoriser sa réutilisation et son amélioration, etc. Libre à vous cependant de faire appel à ce role dans un playbook rédigé principalement en français ou toute autre langue.
 
 Requis
 ------
@@ -26,16 +26,16 @@ Exemple de playbook
 -------------------
 
 ```
-- name: "Déployer un serveur gitea"
+- name: "Déployer un serveur forgejo"
   hosts: 
     - all
   vars:
     # Supplanter ici les variables du rôle
     domains: ['votre-vrai-domaine.org']
-    gitea_instance: 'mon-gitea'
+    forgejo_instance: 'mon-forgejo'
 
   roles:
-    - { role: webapps/gitea , tags: "gitea" }
+    - { role: webapps/forgejo , tags: "forgejo" }
 ```
 
 Licence

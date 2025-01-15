@@ -1,13 +1,32 @@
 ---
 
-- name: set APT keyring
-  ansible.builtin.set_fact:
-    lxc_apt_keyring_dir: /etc/apt/trusted.gpg.d
-
 - name: "{{ lxc_php_container_name }} - Install dependency packages"
   community.general.lxc_container:
     name: "{{ lxc_php_container_name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y wget gnupg"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt-get install -y wget gnupg"
+
+- name: "{{ lxc_php_container_name }} - Copy keyring packages"
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ lxc_rootfs }}/tmp/{{ item }}"
+    mode: "0644"
+    owner: root
+    group: root
+  loop:
+    - debsuryorg-archive-keyring_2024.02.05+0~20240205.1+debian12~1.gbp343037_all.deb
+    - evolix-archive-keyring_0~2024_all.deb
+    # - https://packages.sury.org/php/pool/main/d/debsuryorg-archive-keyring/debsuryorg-archive-keyring_2024.02.05%2B0~20240205.1%2Bdebian12~1.gbp343037_all.deb
+    # - https://pub.evolix.org/evolix/pool/main/e/evolix-archive-keyring/evolix-archive-keyring_0~2024_all.deb
+
+- name: "{{ lxc_php_container_name }} - Install keyring packages"
+  community.general.lxc_container:
+    name: "{{ lxc_php_container_name }}"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt-get install -y /tmp/{{ item }}"
+  loop:
+    - debsuryorg-archive-keyring_2024.02.05+0~20240205.1+debian12~1.gbp343037_all.deb
+    - evolix-archive-keyring_0~2024_all.deb
+    # - https://packages.sury.org/php/pool/main/d/debsuryorg-archive-keyring/debsuryorg-archive-keyring_2024.02.05%2B0~20240205.1%2Bdebian12~1.gbp343037_all.deb
+    # - https://pub.evolix.org/evolix/pool/main/e/evolix-archive-keyring/evolix-archive-keyring_0~2024_all.deb
 
 - name: "{{ lxc_php_container_name }} - delete sources.list bookworm repository"
   ansible.builtin.file:
@@ -42,39 +61,15 @@
     force: true
     mode: "0644"
 
-- name: "Ensure {{ lxc_rootfs }}{{ lxc_apt_keyring_dir }} directory exists"
-  file:
-    path: "{{ lxc_rootfs }}{{ lxc_apt_keyring_dir }}"
-    state: directory
-    mode: "755"
-    owner: root
-    group: root
-
-- name: copy pub.evolix.org GPG key
-  ansible.builtin.copy:
-    src: pub_evolix.asc
-    dest: "{{ lxc_rootfs }}{{ lxc_apt_keyring_dir }}/pub_evolix.asc"
-    mode: "0644"
-    owner: root
-    group: root
-
-- name: copy packages.sury.org GPG Key
-  ansible.builtin.copy:
-    src: sury.gpg
-    dest: "{{ lxc_rootfs }}{{ lxc_apt_keyring_dir }}/sury.gpg"
-    mode: "0644"
-    owner: root
-    group: root
-
 - name: "{{ lxc_php_container_name }} - Update APT cache"
   community.general.lxc_container:
     name: "{{ lxc_php_container_name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt update"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt-get update"
 
 - name: "{{ lxc_php_container_name }} - Install PHP packages"
   community.general.lxc_container:
     name: "{{ lxc_php_container_name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer evolix-archive-keyring debsuryorg-archive-keyring"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt-get install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer evolix-archive-keyring debsuryorg-archive-keyring"
 
 - name: "{{ lxc_php_container_name }} - Copy evolinux PHP configuration"
   ansible.builtin.template:

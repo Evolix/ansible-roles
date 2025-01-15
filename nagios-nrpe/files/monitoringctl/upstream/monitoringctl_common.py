@@ -2,13 +2,15 @@
 #
 # Common functions for monitoringctl and alerts_wrapper
 #
-# Source:
-#     https://gitea.evolix.org/evolix/ansible-roles/src/branch/stable/nagios-nrpe/
+# Need: Python >= 3.4
+# Source: https://gitea.evolix.org/evolix/ansible-roles/src/branch/stable/nagios-nrpe/
+# 
 
 import sys, os
 from datetime import datetime, timezone
+from locale import strxfrm
+import fnmatch
 import re
-import subprocess
 
 
 # Location of disable files
@@ -45,13 +47,13 @@ def log(log_msg):
 
 def show_version(prog_name, prog_version):
     msg = '''
-{1} version {2}.
+{0} version {1}.
 
 Copyright 2018-2024 Evolix <info@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>
                     and others.
 
-{1} comes with ABSOLUTELY NO WARRANTY.This is free software,
+{0} comes with ABSOLUTELY NO WARRANTY.This is free software,
 and you are welcome to redistribute it under certain conditions.
 See the GNU General Public License v3.0 for details.
 '''.format(prog_name, prog_version)
@@ -59,13 +61,13 @@ See the GNU General Public License v3.0 for details.
 
 
 # Return Debian major version number : 10, 11, 12…
-def debian_major_version():
+def _debian_major_version():
     if not os.path.exists('/etc/debian_version'):
         error('OS is not Debian (/etc/debian_version missing).')
     version = open('/etc/debian_version', 'r', encoding='utf-8').read().strip()  # -> major.minor
     return int(version.split('.')[0])
 
-debian_major_version = debian_major_version()
+debian_major_version = _debian_major_version()
 
 
 # Return False if duration does not follow format: XwXdXhXmXs, XhX, XmX
@@ -86,15 +88,15 @@ def time_to_seconds(duration):
     )
     pattern = re.compile(regex, re.IGNORECASE)
     m = pattern.match(duration)
-    if not m:
+    if m is None:
         error('Invalid duration: "{}".'.format(duration))
 
     duration_dict = {}
     for s in ['weeks', 'days', 'hours', 'minutes', 'seconds']:
-        if not m[s]:
+        if not m[s]: # type: ignore
             duration_dict[s] = 0
         else:
-            duration_dict[s] = int(m[s])
+            duration_dict[s] = int(m[s]) # type: ignore
     duration_secs = duration_dict['weeks'] * 604800 + duration_dict['days'] * 86400 + duration_dict['hours'] * 3600 + duration_dict['minutes'] * 60 + duration_dict['seconds']
     return duration_secs
 
@@ -208,7 +210,7 @@ def get_nrpe_conf():
 # Private function to recursively get NRPE conf from file
 def _get_conf_from_file(file_path):
     if not os.path.exists(file_path) or not os.path.isfile(file_path):
-        return
+        return []
 
     conf_lines = []
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -233,33 +235,29 @@ def _get_conf_from_file(file_path):
 # Private function to recursively get NRPE conf from directory
 def _get_conf_from_dir(dir_path):
     if not os.path.exists(dir_path) or not os.path.isdir(dir_path):
-        return
+        return []
 
     # Get dir content in the right order (depending on debian_major_version).
-    # From Deb10, NRPE uses scandir() with alphasort() function, so we use 'sort' to reproduce it.
-    # Before Deb10, NRPE used loaddir(), so we keep 'find' output order because it also uses loaddir().
-    command = 'find "{}" -maxdepth 1 -name "*.cfg" 2> /dev/null'.format(dir_path)
+    # From Deb10, NRPE uses scandir() with alphasort() function (which call strcoll), so we use 'sorted' with strxfrm as key (which result in strcoll) to reproduce it.
+    # Before Deb10, NRPE used opendir() and readdir() without any sorting, so we keep python's initial ordering as it use the same functions'.
+    dir_content = os.scandir(dir_path)
     if debian_major_version >= 10:
-        command += ' | sort'
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    stdout, stderr = proc.communicate()
-    dir_content = stdout.decode('utf8').split('\n')
+        dir_content = sorted(dir_content, key=lambda entry: strxfrm(entry.name))
 
-    # Process recursively dir_path content
     conf_lines = []
-    for path in dir_content:
-        if os.path.isfile(path):
-            include = _get_conf_from_file(path)
+    for entry in dir_content:
+        if fnmatch.fnmatch(entry.name, '*.cfg') and entry.is_file():
+            include = _get_conf_from_file(entry.path)
             conf_lines.extend(include)
-        elif os.path.isdir(path):
-            include = _get_conf_from_dir(path)
+        elif entry.is_dir():
+            include = _get_conf_from_file(entry.path)
             conf_lines.extend(include)
     return conf_lines
 
 
 # Return the checks that are configured in NRPE
 def get_checks_names():
-    pattern = re.compile('command\[check_([0-9a-zA-Z_\-]*)\]=')
+    pattern = re.compile(r'command\[check_([0-9a-zA-Z_\-]*)\]=')
     check_names = []
     for line in _nrpe_conf_lines:
         match = re.search(pattern, line)
@@ -270,7 +268,7 @@ def get_checks_names():
 
 # Return all the commands defined for check_name in NRPE configuration
 def get_check_commands(check_name):
-    pattern = re.compile('command\[check_{}\]=(.*)'.format(check_name))
+    pattern = re.compile(r'command\[check_{}\]=(.*)'.format(check_name))
     commands = []
     for line in _nrpe_conf_lines:
         match = re.search(pattern, line)

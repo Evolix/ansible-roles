@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # shellcheck disable=SC2155
-readonly PROGPATH=$(readlink -m "${0}")
+readonly PROGPATH=$(readlink -f "${0}")
 readonly PROGNAME=$(basename "${PROGPATH}")
 # shellcheck disable=SC2124
 readonly ARGS=$@
@@ -35,6 +35,17 @@ Options
 END
 }
 
+get_server_ip_from_external() {
+    curl --connect-timeout 10 --ipv4 https://ifconfig.me 2> /dev/null
+}
+get_server_ip_from_internal() {
+    if [ "$(uname -s)" = "OpenBSD" ]; then
+        ifconfig egress | grep "inet " | head -1 | awk '{ print $2}'
+    else
+        hostname -I | awk '{ print $1}'
+    fi
+}
+
 jail_init_commands() {
     if [ ! -f /root/.ssh/id_ed25519.pub ]; then
         ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N ''
@@ -43,11 +54,7 @@ jail_init_commands() {
 
     SSH_KEY=$(cat /root/.ssh/id_ed25519.pub)
     SERVER_NAME=$(hostname -s)
-    if [ "$(uname -s)" = "OpenBSD" ]; then
-        SERVER_IP=$(ifconfig egress | grep "inet " | head -1 | awk '{ print $2}')
-    else
-        SERVER_IP=$(curl -4 https://ifconfig.me 2> /dev/null || hostname -I | awk '{ print $1}')
-    fi
+    SERVER_IP=$(get_server_ip_from_external || get_server_ip_from_internal)
 
     echo "Copy-paste those lines on backup server(s) :"
     echo "----------"
@@ -79,7 +86,8 @@ copy_template() {
 
             # Insert metadata about the template
             sed -i "s|@COMMAND@|${PROGPATH} ${ARGS}|" "${dest_path}"
-            sed -i "s|@DATE@|$(date --iso-8601=seconds)|" "${dest_path}"
+            # option "--iso-8601=seconds" does not exist on OpenBSD (and "%:z" neither)
+            sed -i "s|@DATE@|$(date +%FT%T%z)|" "${dest_path}"
             sed -i "s|@VERSION@|${VERSION}|" "${dest_path}"
 
             # Make sure that the library directory is correct

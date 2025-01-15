@@ -21,6 +21,27 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
+## [25.01.1] 2025-01-15
+
+### Added
+
+* nagios-nrpe: add `check_syslog_age` example
+* nagios-nrpe: check_haproxy_stats 1.3.2 (support statuses with a reason)
+
+### Changed
+
+* apt, lxc-php, php: use keyring packages
+* evobackup-client: upstream release 25.01
+* lxc-php: use apt-get instead of apt
+* lxc: upgrade packages after installation
+* nagios-nrpe: monitoringctl upstream update
+
+### Fixed
+
+* lxc: install of LXC container (other than Jessie and Stretch)
+* lxc: use lxc-templates from Backports to install old releases on Bullseye
+* tomcat: check if user exist before checking its Tomcat instance.
+
 ## [25.01] 2025-01-03
 
 ### Changed

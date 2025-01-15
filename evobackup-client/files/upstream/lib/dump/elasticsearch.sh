@@ -240,7 +240,7 @@ dump_elasticsearch() {
         connect_options+=(${option_others})
     fi
     # Add the http return code at the end of the output
-    connect_options+=(--write-out '%{http_code}\n')
+    connect_options+=(--write-out '\n%{http_code}\n')
     connect_options+=(--silent)
 
     declare -a dump_options

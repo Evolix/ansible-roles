@@ -1,0 +1,90 @@
+APP_NAME = Forgejo {{ forgejo_instance }}
+RUN_USER = {{ forgejo_instance }}
+RUN_MODE = prod
+WORK_PATH = /home/{{ forgejo_instance }}/internals
+
+[server]
+PROTOCOL               = http+unix
+DOMAIN                 = {{ forgejo_domains | first }}
+HTTP_ADDR              = /run/forgejo/{{ forgejo_instance }}/forgejo.sock
+UNIX_SOCKET_PERMISSION = 666
+OFFLINE_MODE           = true
+SSH_DOMAIN             = {{ forgejo_domains | first }}
+ROOT_URL               = https://{{ forgejo_domains | first }}/
+ENABLE_GZIP = true
+LANDING_PAGE = home
+DISABLE_SSH = false
+SSH_PORT = 22
+LFS_START_SERVER       = true
+
+[database]
+DB_TYPE  = mysql
+HOST     = {{ forgejo_db_host }}
+NAME     = {{ forgejo_db_name }}
+USER     = {{ forgejo_db_user }}
+PASSWD   = {{ forgejo_db_password }}
+SSL_MODE = disable
+LOG_SQL  = false
+
+[security]
+INSTALL_LOCK         = true
+COOKIE_USERNAME      = __Secure-login
+COOKIE_REMEMBER_NAME = __Secure-remember
+
+[repository]
+ROOT = /home/{{ forgejo_instance }}/repositories
+MAX_CREATION_LIMIT = 0
+
+[lfs]
+PATH       = /home/{{ forgejo_instance }}/internals/data/lfs
+
+[openid]
+ENABLE_OPENID_SIGNIN = false
+ENABLE_OPENID_SIGNUP = false
+
+[service]
+REGISTER_EMAIL_CONFIRM                 = true
+DISABLE_REGISTRATION                   = true
+SHOW_REGISTRATION_BUTTON               = true
+ENABLE_CACHE_AVATAR                    = false
+ENABLE_NOTIFY_MAIL                     = true
+ENABLE_REVERSE_PROXY_AUTHENTICATION    = false
+ENABLE_REVERSE_PROXY_AUTO_REGISTRATION = false
+ALLOW_ONLY_EXTERNAL_REGISTRATION       = false
+ENABLE_CAPTCHA                         = true
+REQUIRE_SIGNIN_VIEW                    = false
+DEFAULT_USER_VISIBILITY                = limited
+NO_REPLY_ADDRESS                       = noreply.{{ forgejo_domains | first }}
+
+[mailer]
+ENABLED       = true
+FROM          = Forgejo {{ forgejo_instance }} <forgejo@evolix.net>
+MAILER_TYPE   = sendmail
+SENDMAIL_PATH = /usr/sbin/sendmail
+
+[session]
+PROVIDER         = redis
+PROVIDER_CONFIG  = network=unix,addr=/run/redis-{{ forgejo_instance }}/redis.sock,db=0,pool_size=100,idle_timeout=180
+
+[cache]
+ADAPTER = redis
+HOST    = network=unix,addr=/run/redis-{{ forgejo_instance }}/redis.sock,db=1,pool_size=100,idle_timeout=180
+
+[picture]
+DISABLE_GRAVATAR        = true
+
+[log]
+ROOT_PATH = /home/{{ forgejo_instance }}/log/
+MODE      = file
+LEVEL     = info
+ROUTER.MODE = ,
+
+[other]
+SHOW_FOOTER_BRANDING           = false
+SHOW_FOOTER_VERSION            = true
+SHOW_FOOTER_TEMPLATE_LOAD_TIME = false
+
+[i18n]
+LANGS = en-US, fr-FR
+NAMES = English,Français
+

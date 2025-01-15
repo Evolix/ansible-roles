@@ -12,7 +12,9 @@
       --mirror=https://elts.evolix.org/extended-lts
       --security-mirror=http://archive.debian.org/debian-security
       {{ lxc_template_options }}
-    when: release == "jessie"
+  when:
+    - release == "jessie"
+    - ansible_distribution_major_version is version('11', '>=')
 
 - ansible.builtin.set_fact:
     lxc_template_options: >-
@@ -20,7 +22,28 @@
       --mirror=http://archive.debian.org/debian
       --security-mirror=http://archive.debian.org/debian-security
       {{ lxc_template_options }}
-    when: release == "stretch"
+  when:
+    - release == "stretch"
+    - ansible_distribution_major_version is version('11', '>=')
+
+- name: "Enable Bullseye backports from Evolix"
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/pub_evolix.asc] https://pub.evolix.org/evolix bullseye-backports main"
+    filename: evolix-backports
+    state: present
+  when:
+    - release == 'jessie' or release == 'stretch' or release == 'buster'
+    - ansible_distribution_major_version is version('11', '==')
+
+- name: "Install lxc-templates from Bullseye backports"
+  ansible.builtin.apt:
+    name: lxc-templates
+    default_release: bullseye-backports
+    state: latest
+    update_cache: yes
+  when:
+    - release == 'jessie' or release == 'stretch' or release == 'buster'
+    - ansible_distribution_major_version is version('11', '==')
 
 - name: "Install keyring for eLTS"
   ansible.builtin.apt:
@@ -97,6 +120,16 @@
   community.general.lxc_container:
     name: "{{ name }}"
     container_command: "DEBIAN_FRONTEND=noninteractive apt-get purge -y openssh-server"
+
+- name: "{{ lxc_php_container_name }} - Update APT cache"
+  community.general.lxc_container:
+    name: "{{ lxc_php_container_name }}"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt-get update"
+
+- name: "{{ lxc_php_container_name }} - Upgrade APT packages"
+  community.general.lxc_container:
+    name: "{{ lxc_php_container_name }}"
+    container_command: "DEBIAN_FRONTEND=noninteractive apt-get upgrade"
 
 - name: "Init /etc git repository in container {{ name }}"
   ansible.builtin.include_role:

@@ -1,0 +1,14 @@
+---
+# defaults file for vars
+forgejo_system_dep: "['apt-transport-https', 'git', 'python3-mysqldb']"
+forgejo_git_version: '9.0.3'
+forgejo_url: "https://codeberg.org/forgejo/forgejo/releases/download/v{{ forgejo_git_version }}/forgejo-{{ forgejo_git_version }}-linux-amd64"
+forgejo_checksum: "sha256:51b3a6c0b397c66bd4adfc482b7d582b1b60a53f3205486ada9e6357afb03ebb"
+forgejo_domains: ['example.domain.org']
+forgejo_certbot_admin_email: 'security@example.domain.org'
+forgejo_db_host: '127.0.0.1:3306'
+forgejo_db_name: "{{ forgejo_instance }}"
+forgejo_db_user: "{{ forgejo_instance }}"
+forgejo_db_password: 'UQ6_CHANGE_ME_Gzb'
+forgejo_redis_maxclients: '128'
+forgejo_redis_maxmemory: '300M'

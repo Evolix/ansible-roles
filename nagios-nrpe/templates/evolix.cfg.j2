@@ -76,6 +76,7 @@ command[check_minifirewall]={{ monitoringctl_wrapper_path }} --name minifirewall
 #command[check_ipmi_sensors]={{ monitoringctl_wrapper_path }} --name ipmi_sensors -- sudo /usr/lib/nagios/plugins/check_ipmi_sensor
 #command[check_raid_status]={{ monitoringctl_wrapper_path }} --name raid_status -- /usr/lib/nagios/plugins/check_raid
 #command[check_dockerd]={{ monitoringctl_wrapper_path }} --name dockerd -- /usr/lib/nagios/plugins/check_tcp -H /var/run/docker.sock --escape -s "GET /_ping HTTP/1.1\nHost: http\n\n" -e OK
+#command[check_syslog_age]={{ monitoringctl_wrapper_path }} --name syslog_age -- /usr/lib/nagios/plugins/check_file_age -w $(( 16 * 60 )) -c $(( 60 * 60)) /var/log/auth.log
 
 ## Local checks (not packaged)
 #command[check_amavis]={{ monitoringctl_wrapper_path }} --name amavis -- {{ nagios_plugins_directory }}/check_amavis --server 127.0.0.1 --from {{ nagios_nrpe_amavis_from }} --to postmaster@localhost --port 10024

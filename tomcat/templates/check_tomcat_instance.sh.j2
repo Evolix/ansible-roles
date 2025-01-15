@@ -13,6 +13,9 @@ output=""
 
 instances=$(ls "${TOMCAT_ROOT}")
 for instance in ${instances}; do
+    if ! id -u "${instance}" 1>&2 2>/dev/null; then
+        continue
+    fi
     port=$(id -u "${instance}")
     if [ -h "${TOMCAT_ROOT}/${instance}/.config/systemd/user/default.target.wants/tomcat.service" ]; then
         /usr/lib/nagios/plugins/check_tcp -p "${port}" >/dev/null 2>&1
