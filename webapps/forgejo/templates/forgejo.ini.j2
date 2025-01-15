@@ -26,14 +26,13 @@ PASSWD   = {{ forgejo_db_password }}
 SSL_MODE = disable
 LOG_SQL  = false
 
-[security]
-INSTALL_LOCK         = true
-COOKIE_USERNAME      = __Secure-login
-COOKIE_REMEMBER_NAME = __Secure-remember
-
 [repository]
 ROOT = /home/{{ forgejo_instance }}/repositories
 MAX_CREATION_LIMIT = 0
+
+[security]
+COOKIE_USERNAME      = __Secure-login
+COOKIE_REMEMBER_NAME = __Secure-remember
 
 [lfs]
 PATH       = /home/{{ forgejo_instance }}/internals/data/lfs
@@ -59,7 +58,7 @@ NO_REPLY_ADDRESS                       = noreply.{{ forgejo_domains | first }}
 [mailer]
 ENABLED       = true
 FROM          = Forgejo {{ forgejo_instance }} <forgejo@evolix.net>
-MAILER_TYPE   = sendmail
+PROTOCOL   = sendmail
 SENDMAIL_PATH = /usr/sbin/sendmail
 
 [session]
@@ -87,4 +86,3 @@ SHOW_FOOTER_TEMPLATE_LOAD_TIME = false
 [i18n]
 LANGS = en-US, fr-FR
 NAMES = English,Français
-

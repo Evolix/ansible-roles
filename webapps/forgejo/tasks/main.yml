@@ -107,7 +107,7 @@
       enabled   = true
       port      = http,https,ssh
       filter    = forgejo
-      logpath   = /home/git/log/forgejo.log
+      logpath   = /home/git/log/gitea.log
       maxretry  = 20
       findtime  = 300
       bantime   = 900
@@ -116,7 +116,7 @@
       enabled   = true
       port      = http,https,ssh
       filter    = forgejo
-      logpath   = /home/*/log/forgejo.log
+      logpath   = /home/*/log/gitea.log
       maxretry  = 90
       findtime  = 3600
       bantime   = 300
