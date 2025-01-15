@@ -14,6 +14,20 @@
     enabled: yes
     state: started
 
+- name: Install Mailgraph nocgi wrapper
+  ansible.builtin.copy:
+    src: mailgraph-nocgi.sh
+    dest: /usr/local/sbin/mailgraph-nocgi.sh
+    mode: '0700'
+
+- name: Setup a cron job to run Mailgraph every hour
+  ansible.builtin.cron:
+    name: "mailgraph"
+    cron_file: "/etc/cron.d/mailgraph"
+    job: /usr/local/sbin/mailgraph-nocgi.sh
+    minute: "7"
+    user: root
+
 - name: exim4 is absent
   ansible.builtin.apt:
     name:
