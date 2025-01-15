@@ -26,3 +26,10 @@
     replace: 'location /server-status-{{ nginx_serverstatus_suffix }} {'
   when: not ansible_check_mode
   notify: reload nginx
+
+- name: add mailgraph URL in index.html
+  ansible.builtin.lineinfile:
+    dest: /var/www/index.html
+    state: present
+    line: '            <li><a href="/mailgraph">Stats Mail</a></li>'
+    insertbefore: "</ul>"

@@ -13,6 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* nginx: add mailgraph link in index.html
+
 ### Changed
 
 * postfix: activate mailgraph service by default (not only on packmails)
