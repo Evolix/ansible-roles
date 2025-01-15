@@ -8,6 +8,12 @@
   tags:
     - postfix
 
+- name: make sure a service Mailgraph is running and enabled
+  ansible.builtin.systemd:
+    name: mailgraph.service
+    enabled: yes
+    state: started
+
 - name: exim4 is absent
   ansible.builtin.apt:
     name:

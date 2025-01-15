@@ -16,12 +16,6 @@
     group: www-data
     mode: '0755'
 
-- name: make sure a service Mailgraph is running and enabled
-  ansible.builtin.systemd:
-    name: mailgraph.service
-    enabled: yes
-    state: started
-
 - name: display checksums of known main.cf files
   debug:
     var: main_cf_known_checksums
