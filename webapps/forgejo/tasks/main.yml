@@ -78,15 +78,6 @@
     path: /etc/fail2ban/jail.local
     block: |
       
-      [forgejo-git]
-      enabled   = true
-      port      = http,https,ssh
-      filter    = forgejo
-      logpath   = /home/git/log/gitea.log
-      maxretry  = 20
-      findtime  = 300
-      bantime   = 900
-      
       [forgejo-all]
       enabled   = true
       port      = http,https,ssh
