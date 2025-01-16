@@ -26,8 +26,6 @@
   ansible.builtin.user:
     name: "{{ forgejo_instance }}"
     shell: /bin/bash
-    groups: redis
-    append: true
 
 - name: Add database
   community.mysql.mysql_db:
@@ -66,29 +64,6 @@
     name: "forgejo@{{ forgejo_instance }}"
     state: restarted
     enabled: true
-
-- name: Template redis conf
-  ansible.builtin.template:
-    src: "redis.conf.j2"
-    dest: "/etc/redis/redis-{{ forgejo_instance }}.conf"
-    owner: "redis"
-    group: "redis"
-    mode: '0640'
-
-- name: Disable defaut redis systemd unit
-  ansible.builtin.systemd:
-    name: redis
-    enabled: false
-
-- name: Template redis systemd unit
-  ansible.builtin.template:
-    src: "redis-server.service.j2"
-    dest: "/etc/systemd/system/redis-server@.service"
-
-- name: Start redis systemd unit
-  ansible.builtin.systemd:
-    name: "redis-server@{{ forgejo_instance }}"
-    state: started
 
 - name: Copy fail2ban filter conf file
   ansible.builtin.copy:

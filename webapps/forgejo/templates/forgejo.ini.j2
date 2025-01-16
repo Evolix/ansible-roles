@@ -63,11 +63,13 @@ SENDMAIL_PATH = /usr/sbin/sendmail
 
 [session]
 PROVIDER         = redis
-PROVIDER_CONFIG  = network=unix,addr=/run/redis-{{ forgejo_instance }}/redis.sock,db=0,pool_size=100,idle_timeout=180
+PROVIDER_CONFIG = network=tcp,addr=127.0.0.1:{{ forgejo_redis_port }},password={{ forgejo_redis_password }},db=0,pool_size=100,idle_timeout=180
+COOKIE_NAME     = __Secure-gitea
+COOKIE_SECURE   = true
 
 [cache]
 ADAPTER = redis
-HOST    = network=unix,addr=/run/redis-{{ forgejo_instance }}/redis.sock,db=1,pool_size=100,idle_timeout=180
+HOST    = network=tcp,addr=127.0.0.1:{{ forgejo_redis_port }},password={{ forgejo_redis_password }},db=1,pool_size=100,idle_timeout=180
 
 [picture]
 DISABLE_GRAVATAR        = true
