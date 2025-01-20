@@ -19,6 +19,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Removed
 
+* bookworm-detect: not useful anymore
+
 ### Security
 
 ## [25.01.1] 2025-01-15
