@@ -13,6 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* kvm-host: allow cold migrations with `migrate-vm` (release 25.01)
+
 ### Changed
 
 ### Fixed
