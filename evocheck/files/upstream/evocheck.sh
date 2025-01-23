@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="24.09.2"
+VERSION="25.01"
 readonly VERSION
 
 # base functions
@@ -211,7 +211,7 @@ check_debiansecurity() {
 check_debiansecurity_lxc() {
     if is_installed lxc; then
         lxc_path=$(lxc-config lxc.lxcpath)
-        container_list=$(lxc-ls --active)
+        container_list=$(lxc-ls -1 --active)
         for container_name in ${container_list}; do
             if lxc-info --name "${container_name}" > /dev/null; then
                 rootfs="${lxc_path}/${container_name}/rootfs"
@@ -241,7 +241,7 @@ check_oldpub() {
 check_oldpub_lxc() {
     # Look for enabled pub.evolix.net sources (supersed by pub.evolix.org since Buster as Sury safeguard)
     if is_installed lxc; then
-        container_list=$(lxc-ls --active)
+        container_list=$( lxc-ls -1 --active )
         for container_name in ${container_list}; do
             APT_CACHE_BIN=$(lxc-attach --name "${container_name}" -- bash -c "command -v apt-cache")
             if [ -x "${APT_CACHE_BIN}" ]; then
@@ -266,7 +266,7 @@ check_sury() {
 }
 check_sury_lxc() {
     if is_installed lxc; then
-        container_list=$(lxc-ls --active)
+        container_list=$( lxc-ls -1 --active )
         for container_name in ${container_list}; do
             APT_CACHE_BIN=$(lxc-attach --name "${container_name}" -- bash -c "command -v apt-cache")
             if [ -x "${APT_CACHE_BIN}" ]; then
@@ -782,7 +782,7 @@ check_etcgit() {
 check_etcgit_lxc() {
     if is_installed lxc; then
         lxc_path=$(lxc-config lxc.lxcpath)
-        container_list=$(lxc-ls --active)
+        container_list=$(lxc-ls -1 --active)
         for container_name in ${container_list}; do
             if lxc-info --name "${container_name}" > /dev/null; then
                 rootfs="${lxc_path}/${container_name}/rootfs"
@@ -806,7 +806,7 @@ check_gitperms() {
 check_gitperms_lxc() {
     if is_installed lxc; then
         lxc_path=$(lxc-config lxc.lxcpath)
-        container_list=$(lxc-ls --active)
+        container_list=$(lxc-ls -1 --active)
         for container_name in ${container_list}; do
             if lxc-info --name "${container_name}" > /dev/null; then
                 rootfs="${lxc_path}/${container_name}/rootfs"
@@ -984,7 +984,7 @@ check_mariadbevolinuxconf() {
 check_sql_backup() {
     if (is_installed "mysql-server" || is_installed "mariadb-server"); then
         # You could change the default path in /etc/evocheck.cf
-        SQL_BACKUP_PATH=${SQL_BACKUP_PATH:-"/home/backup/mysql.bak.gz"}
+        SQL_BACKUP_PATH="${SQL_BACKUP_PATH:-$(find /home/backup/ \( -iname "mysql.bak.gz" -o -iname "mysql.sql.gz" -o -iname "mysqldump.sql.gz" \))}"
         for backup_path in ${SQL_BACKUP_PATH}; do
             if [ ! -f "${backup_path}" ]; then
                 failed "IS_SQL_BACKUP" "MySQL dump is missing (${backup_path})"
@@ -997,7 +997,7 @@ check_postgres_backup() {
     if is_installed "postgresql-9*" || is_installed "postgresql-1*"; then
         # If you use something like barman, you should disable this check
         # You could change the default path in /etc/evocheck.cf
-        POSTGRES_BACKUP_PATH=${POSTGRES_BACKUP_PATH:-"/home/backup/pg.dump.bak*"}
+        POSTGRES_BACKUP_PATH="${POSTGRES_BACKUP_PATH:-$(find /home/backup/ -iname "pg.dump.bak*")}"
         for backup_path in ${POSTGRES_BACKUP_PATH}; do
             if [ ! -f "${backup_path}" ]; then
                 failed "IS_POSTGRES_BACKUP" "PostgreSQL dump is missing (${backup_path})"
@@ -1030,7 +1030,7 @@ check_mongo_backup() {
 check_ldap_backup() {
     if is_installed slapd; then
         # You could change the default path in /etc/evocheck.cf
-        LDAP_BACKUP_PATH=${LDAP_BACKUP_PATH:-"/home/backup/ldap.bak"}
+        LDAP_BACKUP_PATH="${LDAP_BACKUP_PATH:-$(find /home/backup/ -iname "ldap.bak")}"
         test -f "$LDAP_BACKUP_PATH" || failed "IS_LDAP_BACKUP" "LDAP dump is missing (${LDAP_BACKUP_PATH})"
     fi
 }
@@ -1240,7 +1240,7 @@ check_tmp_1777() {
 
     if is_installed lxc; then
         lxc_path=$(lxc-config lxc.lxcpath)
-        container_list=$(lxc-ls --active)
+        container_list=$(lxc-ls -1 --active)
 
         for container_name in ${container_list}; do
             if lxc-info --name "${container_name}" > /dev/null; then
@@ -1386,9 +1386,9 @@ check_nginx_letsencrypt_uptodate() {
 }
 check_lxc_container_resolv_conf() {
     if is_installed lxc; then
-        current_resolvers=$(grep nameserver /etc/resolv.conf | sed 's/nameserver//g' )
+        current_resolvers=$(grep ^nameserver /etc/resolv.conf | sed 's/nameserver//g' )
         lxc_path=$(lxc-config lxc.lxcpath)
-        container_list=$(lxc-ls --active)
+        container_list=$(lxc-ls -1 --active)
 
         for container_name in ${container_list}; do
             if lxc-info --name "${container_name}" > /dev/null; then
@@ -1411,7 +1411,7 @@ check_lxc_container_resolv_conf() {
 # Check that there are containers if lxc is installed.
 check_no_lxc_container() {
     if is_installed lxc; then
-        containers_count=$(lxc-ls --active | wc -l)
+        containers_count=$(lxc-ls -1 --active | wc -l)
         if [ "${containers_count}" -eq 0 ]; then
             failed "IS_NO_LXC_CONTAINER" "LXC is installed but have no active container. Consider removing it."
         fi
@@ -1420,7 +1420,7 @@ check_no_lxc_container() {
 # Check that in LXC containers, phpXX-fpm services have UMask set to 0007.
 check_lxc_php_fpm_service_umask_set() {
     if is_installed lxc; then
-        containers_list=$(lxc-ls --active --filter php)
+        containers_list=$(lxc-ls -1 --active --filter php)
         missing_umask=""
         for container_name in ${containers_list}; do
             # Translate container name in service name
@@ -1443,7 +1443,7 @@ check_lxc_php_fpm_service_umask_set() {
 check_lxc_php_bad_debian_version() {
     if is_installed lxc; then
         lxc_path=$(lxc-config lxc.lxcpath)
-        containers_list=$(lxc-ls --active --filter php)
+        containers_list=$(lxc-ls -1 --active --filter php)
         missing_umask=""
         for container_name in ${containers_list}; do
             if lxc-info --name "${container_name}" > /dev/null; then
@@ -1468,7 +1468,7 @@ check_lxc_php_bad_debian_version() {
 check_lxc_openssh() {
     if is_installed lxc; then
         lxc_path=$(lxc-config lxc.lxcpath)
-        container_list=$(lxc-ls --active)
+        container_list=$(lxc-ls -1 --active)
         for container_name in ${containers_list}; do
             if lxc-info --name "${container_name}" > /dev/null; then
                 rootfs="${lxc_path}/${container_name}/rootfs"

@@ -13,6 +13,20 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Removed
 
+## [25.01] 2025-01-23
+
+### Changed
+
+* LDAP_BACKUP_PATH: Improve detection of ldap.bak
+* POSTGRES_BACKUP_PATH: Improve detection of pg.dump.bak
+* SQL_BACKUP_PATH: Improve backup detection for mariadb
+* IS_LXC_*: force lxc-ls to display one container per line
+
+### Fixed
+
+* IS_LXC_CONTAINER_RESOLV_CONF: Fix match in host
+* IS_KERNELUPTODATE: Address false positive in case of kernel removal (jessie and wheezy)
+
 ## [24.09.2] 2024-09-24
 
 ### Fixed
