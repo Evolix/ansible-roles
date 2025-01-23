@@ -13,13 +13,13 @@
 # - 150 : Inside an LXC container: Failure to apt update
 # - 160 : Inside an LXC container: Failure to apt upgrade --download only
 
-VERSION="24.12"
+VERSION="25.01"
 
 show_version() {
     cat <<END
 listupgrade.sh version ${VERSION}
 
-Copyright 2018-2024 Evolix <info@evolix.fr>,
+Copyright 2018-2025 Evolix <info@evolix.fr>,
                Gregory Colpart <reg@evolix.fr>,
                Romain Dessort <rdessort@evolix.fr>,
                Ludovic Poujol <lpoujol@evolix.fr>,
@@ -97,13 +97,8 @@ Bonjour,
 Des mises-à-jour de sécurité ou mineures sont à réaliser sur votre serveur
 ${hostname}.
 Sauf indication contraire de votre part, le prochain créneau prévu pour
-intervenir manuellement pour réaliser ces mises-à-jour est :
+intervenir manuellement pour réaliser ces mises à jour est :
 ${date}
-
-Si nous intervenons, un redémarrage des éventuels services concernés sera
-réalisé, entraînant a priori quelques secondes de coupure.  Si nous ne sommes
-pas intervenus sur ce créneau, vous recevrez une nouvelle notification la
-semaine prochaine.
 
 Voici la listes de packages qui seront mis à jour :
 
@@ -113,17 +108,18 @@ Liste des packages dont la mise-à-jour a été manuellement suspendue :
 
 $(sort -h "${packagesHold}" | uniq)
 
-Liste des services qui seront redémarrés :
+Liste des services qui seront redémarrés (entraînant a priori
+quelques secondes de coupure) :
 
 $(sort -h "${servicesToRestart}" | uniq)
 
-N'hésitez pas à nous faire toute remarque sur ce créneau d'intervention le plus
-tôt possible.
+N'hésitez pas à nous faire toute remarque sur ce créneau d'intervention
+le plus tôt possible.
 
 Cordialement,
 --
 Équipe Evolix - Hébergement et Infogérance Open Source
-http://evolix.com | Twitter: @Evolix @EvolixNOC | http://blog.evolix.com
+https://evolix.com | mastodon.evolix.org/@evolix | blog.evolix.com
 EOT
 }
 # Files found in the directory passed as 1st argument
