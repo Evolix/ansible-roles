@@ -17,6 +17,8 @@ The **patch** part is incremented if multiple releases happen the same month
 * Add rsyslog-centralized role
 * nagios-nrpe: add check_mount in available plugins and NRPE conf (commented)
 * packweb-apache: Install package whois (for mkpasswd)
+* evolinux-base: move our vim config in /etc/vim/vimrc.local
+* evolinux-base: add "set autoread" in vim default config
 
 ### Changed
 
