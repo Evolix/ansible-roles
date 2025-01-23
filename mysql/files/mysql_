@@ -1,0 +1,1628 @@
+#!/usr/bin/perl
+# -*- perl -*-
+
+=encoding utf8
+
+=head1 NAME
+
+mysql_ - Munin plugin to display misc MySQL server status
+
+=head1 APPLICABLE SYSTEMS
+
+Any MySQL platform, tested by the authors on:
+* MySQL 5.0.51
+* MariaDB 5.5.39
+* MariaDB-5.5.39(galera).
+* MySQL 5.6.12
+* MariaDB 10.0.18
+
+Plugins:
+* MariaDB-10 Query Response Time: https://mariadb.com/kb/en/mariadb/query_response_time-plugin/
+
+Information Schema tables:
+* User statistics - MariaDB-5.2+, OurDelta, Percona Server - https://mariadb.com/kb/en/mariadb/user-statistics
+
+=head1 CONFIGURATION
+
+This script is used to generate data for several graphs. To generate
+data for one specific graph, you need to create a symbolic link with a
+name like mysql_<GRAPH> to this script.
+
+If you need to run against multiple MySQL instances on the same host,
+create your symlinks with names like mysql<N>_<GRAPH> where N is any
+non-negative integer. You must also set the env.cachenamespace variable
+to a unique value for each group of symlinks.
+
+To get a list of symlinks that can be created, run:
+
+  ./mysql_ suggest
+
+In addition you might need to specify connection parameters in the
+plugin configuration to override the defaults. These are the defaults:
+
+  [mysql_*]
+    env.mysqlconnection DBI:mysql:information_schema
+    env.mysqluser root
+
+Non-default example:
+
+  [mysql_*]
+    env.mysqlconnection DBI:mysql:information_schema;host=127.0.0.1;port=3306
+    env.mysqluser munin
+    env.mysqlpassword geheim
+    env.cachenamespace munin_mysql_pri
+  [mysql2_*]
+    env.mysqlconnection DBI:mysql:information_schema;host=127.0.0.1;port=13306
+    env.mysqluser munin
+    env.mysqlpassword ryuWyawEv
+    env.cachenamespace munin_mysql_alt
+  [mysql10_*]
+    user munin
+    env.mysqluser munin
+    env.mysqlconnection DBI:mysql:information_schema;mysql_read_default_file=/etc/munin/.my-10.cnf
+    env.cachenamespace munin_mysql_10
+    # here the [client] section of /etc/munin/.my-10.cnf is read. socket= can
+    # be specified here.
+
+Creating a munin user:
+
+  CREATE USER 'munin'@'localhost' IDENTIFIED BY 'ryuWyawEv';
+
+or with a unix_socket plugin (INSTALL PLUGIN unix_socket SONAME 'auth_socket')
+
+  CREATE USER 'munin'@'localhost' IDENTIFIED WITH unix_socket;
+
+Note: requires 'user munin' in the configuration.
+
+The minimum required priviledges of the munin database user is:
+
+  GRANT PROCESS, REPLICATION CLIENT ON *.* TO 'munin'@'localhost';
+
+
+Warning and critical values can be set via the environment in the usual way.
+For example:
+
+  [mysql_replication]
+    env.slave_io_running_warning 0.5
+    env.slave_sql_running_warning 0.5
+    env.seconds_behind_master_warning 300
+    env.seconds_behind_master_critical 600
+
+=head1 DEPENDENCIES
+
+=over
+
+=item Cache::Cache
+
+The plugin uses shared memory to cache the statistics gathered from
+MySQL. This ensures minimal inpact on the MySQL server.
+
+=item DBD::mysql
+
+=back
+
+=head1 INTERPRETATION
+
+=head2 InnoDB
+
+The statistics from innodb are mainly collected from the command
+
+  SHOW ENGINE INNODB STATUS
+
+A nice walk through is found at
+L<http://www.mysqlperformanceblog.com/2006/07/17/show-innodb-status-walk-through/>
+
+=head2 The graphs
+
+FIX point to relevant sections in the MySQL manual and other www
+resources for each graph
+
+=over
+
+=item mysql_replication
+
+slave_io_running and slave_sql_running both translate the "Yes" values to 0 and
+anything else to 1 for their respective fields in the "SHOW SLAVE STATUS" output.
+This can be used to warn on slave failure if the warning and critical values
+are set as seen in a previous section.
+
+=back
+
+=head1 LICENSE
+
+Copyright (C) 2008,2009 Kjell-Magne Øierud
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; version 2 dated June, 1991.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+=head1 VERSION
+
+git-master + a few munin modifications
+
+This plugin was downloaded from L<http://github.com/kjellm/munin-mysql/>
+
+=head1 MAGICK MARKERS
+
+  #%# family=auto
+  #%# capabilities=suggest autoconf
+
+=cut
+
+use warnings;
+use strict;
+use utf8;
+
+use English qw( -no_match_vars );
+use File::Basename;
+use Storable qw(nfreeze thaw);
+
+use Munin::Plugin;
+
+STDOUT->autoflush(1);
+
+my $has_cache;
+my $has_dbi;
+my $has_math_bigint;
+
+
+BEGIN {
+    eval { require Cache::SharedMemoryCache; };
+    $has_cache = $EVAL_ERROR ? 0 : 1;
+    eval { require DBI; DBI->import(); };
+    $has_dbi = $EVAL_ERROR ? 0 : 1;
+    # Used to append "=> lib 'GMP'" here, but GMP caused segfault on some
+    # occasions. Removed as I don't think the tiny performance boost is
+    # worth the debugging effort.
+    eval { require Math::BigInt; Math::BigInt->import(); };
+    $has_math_bigint = $EVAL_ERROR ? 0 : 1;
+}
+
+
+#---------------------------------------------------------------------
+#  C O N F I G
+#---------------------------------------------------------------------
+
+my %config = (
+#    'dsn'        => $ENV{'mysqlconnection'} || 'DBI:mysql:information_schema',
+    'dsn'        => 'DBI:mysql:mysql;host=127.0.0.1;mysql_read_default_file=/root/.my.cnf',
+#    'user'       => $ENV{'mysqluser'}       || 'root',
+    'user'       => 'mysqladmin',
+    'password'   => $ENV{'mysqlpassword'}   || '',
+    'cache_namespace' => $ENV{'cachenamespace'} || 'munin_mysql',
+);
+
+
+#---------------------------------------------------------------------
+#  C A C H E
+#---------------------------------------------------------------------
+
+my %cache_options = (
+    'namespace'          => $config{cache_namespace},
+    'default_expires_in' => 60,
+);
+
+my $shared_memory_cache ;
+if ($has_cache)
+{
+  $shared_memory_cache = Cache::SharedMemoryCache->new(\%cache_options)
+    or die("Couldn't instantiate SharedMemoryCache");
+}
+
+#---------------------------------------------------------------------
+#  G R A P H   D E F I N I T I O N S
+#---------------------------------------------------------------------
+
+# These are defaults to save typing in the graph definitions
+my %defaults = (
+    global_attrs => {
+	args   => '--base 1000',
+    },
+    data_source_attrs => {
+	min   => '0',
+	type  => 'DERIVE',
+	draw  => 'AREASTACK',
+    },
+);
+
+# %graphs contains the graph definitions, it is indexed on the graph
+# name. The information stored for each graph is used for both showing
+# data source values and for printing the graph configuration. Each
+# graph follows the followingformat:
+#
+# $graph{NAME} => {
+#     config => {
+#         # The global attributes for this graph
+#         global_attrs => {}
+#         # Attributes common to all data sources in this graph
+#         data_source_attrs => {}
+#     },
+#     data_sources => [
+#         # NAME - The name of the data source (e.g. variable names
+#         #        from SHOW STATUS)
+#         # DATA_SOURCE_ATTRS - key-value pairs with data source
+#         #                     attributes
+#         {name => 'NAME', (DATA_SOURCE_ATTRS)},
+#         {...},
+#     ],
+my %graphs = ();
+
+#---------------------------------------------------------------------
+
+$graphs{bin_relay_log} = {
+    config => {
+	global_attrs => {
+	    title  => 'Binary/Relay Logs',
+	    vlabel => 'Log activity',
+	},
+	data_source_attrs => {
+	    draw  => 'LINE1',
+	},
+    },
+    data_sources => [
+	{name => 'Binlog_cache_disk_use', label => 'Binlog Cache Disk Use'},
+	{name => 'Binlog_cache_use',      label => 'Binlog Cache Use'},
+	{name => 'ma_binlog_size',        label => 'Binary Log Space'},
+	{name => 'relay_log_space',       label => 'Relay Log Space'},
+    ],
+};
+
+#-------------------------
+$graphs{binlog_groupcommit} = {
+    config => {
+       global_attrs => {
+           title  => 'Binary Log Group Commits',
+           vlabel => 'Commits/Groups',
+       },
+       data_source_attrs => {
+           draw  => 'LINE1',
+       },
+    },
+    data_sources => [
+       {name => 'Binlog_commits', label => 'Binlog commits'},
+       {name => 'Binlog_group_commits',      label => 'Binlog Group Commits'},
+       {name => 'Binlog_group_commit_trigger_count', label => 'Binlog Groups because of binlog_commit_wait_count'},
+       {name => 'Binlog_group_commit_trigger_timeout', label => 'Binlog Groups because of binlog_commit_wait_usec'},
+       {name => 'Binlog_group_commit_trigger_lock_wait', label => 'Binlog Groups because of transactions'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{commands} = {
+    config => {
+	global_attrs => {
+	    title  => 'Command Counters',
+	    vlabel => 'Commands per ${graph_period}',
+	    total  => 'Questions',
+	},
+	data_source_attrs => {},
+    },
+    data_sources => [
+	{name => 'Com_delete',         label => 'Delete'},
+	{name => 'Com_insert',         label => 'Insert'},
+	{name => 'Com_insert_select',  label => 'Insert select'},
+	{name => 'Com_load',           label => 'Load Data'},
+	{name => 'Com_replace',        label => 'Replace'},
+	{name => 'Com_replace_select', label => 'Replace select'},
+	{name => 'Com_select',         label => 'Select'},
+	{name => 'Com_update',         label => 'Update'},
+	{name => 'Com_update_multi',   label => 'Update multi'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{connections} = {
+    config => {
+	global_attrs => {
+	    title  => 'Connections',
+	    vlabel => 'Connections per ${graph_period}',
+	},
+	data_source_attrs => {
+	    draw  => 'LINE1',
+	},
+    },
+    data_sources => [
+	{name => 'max_connections',      label  => 'Max connections',
+					 type   => 'GAUGE',
+					 draw   => 'AREA',
+					 colour => 'cdcfc4'},
+	{name => 'Max_used_connections', label  => 'Max used',
+					 type   => 'GAUGE',
+					 draw   => 'AREA',
+					 colour => 'ffd660'},
+	{name => 'Aborted_clients',      label => 'Aborted clients'},
+	{name => 'Aborted_connects',     label => 'Aborted connects'},
+	{name => 'Threads_connected',    label => 'Threads connected',
+					 type  => 'GAUGE'},
+	{name => 'Threads_running',      label => 'Threads running',
+					 type  => 'GAUGE'},
+	{name => 'Connections',          label => 'New connections'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{files_tables} = {
+    config => {
+	global_attrs => {
+	    title  => 'Files and tables',
+	    vlabel => 'Tables',
+	},
+	data_source_attrs => {
+	    type  => 'GAUGE',
+	    draw  => 'LINE1',
+	},
+    },
+    data_sources => [
+	{name => 'table_open_cache', label  => 'Table cache',
+				     draw   => 'AREA',
+				     colour => 'cdcfc4'},
+	{name => 'Open_files',       label => 'Open files'},
+	{name => 'Open_tables',      label => 'Open tables'},
+	{name => 'Opened_tables',    label => 'Opened tables',
+				     type  => 'DERIVE',
+	                             min   => 0},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{innodb_bpool} = {
+    config => {
+	global_attrs => {
+	    title  => 'InnoDB Buffer Pool',
+	    vlabel => 'Pages',
+	    args   => '--base 1024',
+	},
+	data_source_attrs => {
+	    draw => 'LINE2',
+	    type => 'GAUGE',
+	},
+    },
+    data_sources => [
+	{name => 'ib_bpool_size',     label  => 'Buffer pool size',
+				      draw   => 'AREA',
+				      colour => 'ffd660'},
+	{name => 'ib_bpool_dbpages',  label  => 'Database pages',
+				      draw   => 'AREA',
+				      colour => 'cdcfc4'},
+	{name => 'ib_bpool_free',     label => 'Free pages'},
+	{name => 'ib_bpool_modpages', label => 'Modified pages'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{innodb_bpool_act} = {
+    config => {
+	global_attrs => {
+	    title  => 'InnoDB Buffer Pool Activity',
+	    vlabel => 'Activity per ${graph_period}',
+	    total  => 'Total',
+	},
+	data_source_attrs => {
+	    draw => 'LINE2',
+	},
+    },
+    data_sources => [
+	{name => 'ib_bpool_read',    label => 'Pages read'},
+	{name => 'ib_bpool_created', label => 'Pages created'},
+	{name => 'ib_bpool_written', label => 'Pages written'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{innodb_insert_buf} = {
+    config => {
+	global_attrs => {
+	    title  => 'InnoDB Insert Buffer',
+	    vlabel => 'Activity per ${graph_period}',
+	},
+	data_source_attrs => {
+	    draw => 'LINE1',
+	},
+    },
+    data_sources => [
+	{name => 'ib_ibuf_inserts',    label => 'Inserts'},
+	{name => 'ib_ibuf_merged_rec', label => 'Merged Records'},
+	{name => 'ib_ibuf_merges',     label => 'Merges'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{innodb_io} = {
+    config => {
+	global_attrs => {
+	    title  => 'InnoDB IO',
+	    vlabel => 'IO operations per ${graph_period}',
+	},
+	data_source_attrs => {
+	    draw => 'LINE1',
+	},
+    },
+    data_sources => [
+	{name => 'ib_io_read',  label => 'File reads'},
+	{name => 'ib_io_write', label => 'File writes'},
+	{name => 'ib_io_log',   label => 'Log writes'},
+	{name => 'ib_io_fsync', label => 'File syncs'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{innodb_io_pend} = {
+    config => {
+	global_attrs => {
+	    title  => 'InnoDB IO Pending',
+	    vlabel => 'Pending operations',
+	},
+	data_source_attrs => {
+	    draw => 'LINE1',
+	},
+    },
+    data_sources => [
+	{name => 'ib_iop_log',         label => 'AIO Log'},
+	{name => 'ib_iop_sync',        label => 'AIO Sync'},
+	{name => 'ib_iop_flush_bpool', label => 'Buf Pool Flush'},
+	{name => 'ib_iop_flush_log',   label => 'Log Flushes'},
+	{name => 'ib_iop_ibuf_aio',    label => 'Insert Buf AIO Read'},
+	{name => 'ib_iop_aioread',     label => 'Normal AIO Reads'},
+	{name => 'ib_iop_aiowrite',    label => 'Normal AIO Writes'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{innodb_log} = {
+    config => {
+	global_attrs => {
+	    title  => 'InnoDB Log',
+	    vlabel => 'Log activity per ${graph_period}',
+	},
+	data_source_attrs => {
+	    draw => 'LINE1',
+	},
+    },
+    data_sources => [
+	{name => 'innodb_log_buffer_size', label  => 'Buffer Size',
+					   type   => 'GAUGE',
+					   draw   => 'AREA',
+					   colour => 'fafd9e'},
+	{name => 'ib_log_flush',           label => 'KB Flushed'},
+	{name => 'ib_log_written',         label => 'KB Written'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{innodb_rows} = {
+    config => {
+	global_attrs => {
+	    title  => 'InnoDB Row Operations',
+	    vlabel => 'Operations per ${graph_period}',
+	    total  => 'Total',
+	},
+	data_source_attrs => {},
+    },
+    data_sources => [
+	{name => 'Innodb_rows_deleted',  label => 'Deletes'},
+	{name => 'Innodb_rows_inserted', label => 'Inserts'},
+	{name => 'Innodb_rows_read',     label => 'Reads'},
+	{name => 'Innodb_rows_updated',  label => 'Updates'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{innodb_semaphores} = {
+    config => {
+	global_attrs => {
+	    title  => 'InnoDB Semaphores',
+	    vlabel => 'Semaphores per ${graph_period}',
+	},
+	data_source_attrs => {
+	    draw  => 'LINE1',
+	},
+    },
+    data_sources => [
+	{name => 'ib_spin_rounds', label => 'Spin Rounds'},
+	{name => 'ib_spin_waits',  label => 'Spin Waits'},
+	{name => 'ib_os_waits',    label => 'OS Waits'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{innodb_tnx} = {
+    config => {
+	global_attrs => {
+	    title  => 'InnoDB Transactions',
+	    vlabel => 'Transactions per ${graph_period}',
+	},
+	data_source_attrs => {
+	    draw  => 'LINE1',
+	},
+    },
+    data_sources => [
+	{name => 'ib_tnx', label => 'Transactions created'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{myisam_indexes} = {
+    config => {
+	global_attrs => {
+	    title  => 'MyISAM Indexes',
+	    vlabel => 'Requests per ${graph_period}',
+	},
+	data_source_attrs => {
+	    draw  => 'LINE2',
+	},
+    },
+    data_sources => [
+	{name => 'Key_read_requests',  label => 'Key read requests'},
+	{name => 'Key_reads',          label => 'Key reads'},
+	{name => 'Key_write_requests', label => 'Key write requests'},
+	{name => 'Key_writes',         label => 'Key writes'},
+   ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{network_traffic} = {
+    config => {
+	global_attrs => {
+	    title  => 'Network Traffic',
+	    args   => '--base 1024',
+	    vlabel => 'Bytes received (-) / sent (+) per ${graph_period}',
+	},
+	data_source_attrs => {
+	    draw  => 'LINE2',
+	},
+    },
+    data_sources => [
+	{name => 'Bytes_received', label => 'Bytes transfered',
+				   graph => 'no'},
+	{name => 'Bytes_sent',     label    => 'Bytes transfered',
+				   negative => 'Bytes_received'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{qcache} = {
+    config => {
+	global_attrs => {
+	    title  => 'Query Cache',
+	    vlabel => 'Commands per ${graph_period}',
+	},
+	data_source_attrs => {
+	     draw => 'LINE1',
+	},
+    },
+    data_sources => [
+	{name => 'Qcache_queries_in_cache', label => 'Queries in cache'},
+	{name => 'Qcache_hits',             label => 'Cache hits'},
+	{name => 'Qcache_inserts',          label => 'Inserts'},
+	{name => 'Qcache_not_cached',       label => 'Not cached'},
+	{name => 'Qcache_lowmem_prunes',    label => 'Low-memory prunes'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{qcache_mem} = {
+    config => {
+	global_attrs => {
+	    title  => 'Query Cache Memory',
+	    vlabel => 'Bytes',
+	    args   => '--base 1024 --lower-limit 0',
+	},
+	data_source_attrs => {
+	    draw => 'AREA',
+	    type => 'GAUGE',
+	},
+    },
+    data_sources => [
+	{name => 'query_cache_size',    label => 'Cache size'},
+	{name => 'Qcache_free_memory',  label => 'Free mem'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{replication} = {
+    config => {
+	global_attrs => {
+	    title  => 'Replication',
+	    vlabel => 'Activity',
+	},
+	data_source_attrs => {
+	    draw => 'LINE1',
+	},
+    },
+    data_sources => [
+	{name => 'slave_io_running',           label => 'Slave IO Running',
+					       type  => 'GAUGE',
+					       draw  => 'AREA'},
+	{name => 'slave_sql_running',          label => 'Slave SQL Running',
+					       type  => 'GAUGE',
+					       draw  => 'AREA'},
+	{name => 'Slave_retried_transactions', label => 'Retried Transactions'},
+	{name => 'Slave_open_temp_tables',     label => 'Open Temp Tables'},
+	{name => 'seconds_behind_master',      label => 'Secs Behind Master',
+					       type  => 'GAUGE'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{select_types} = {
+    config => {
+	global_attrs => {
+	    title  => 'Select types',
+	    vlabel => 'Commands per ${graph_period}',
+	    total  => 'Total',
+	},
+	data_source_attrs => {},
+    },
+    data_sources => [
+	{name => 'Select_full_join',       label => 'Full join'},
+	{name => 'Select_full_range_join', label => 'Full range'},
+	{name => 'Select_range',           label => 'Range'},
+	{name => 'Select_range_check',     label => 'Range check'},
+	{name => 'Select_scan',            label => 'Scan'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{slow} = {
+    config => {
+	global_attrs => {
+	    title  => 'Slow Queries',
+	    vlabel => 'Slow queries per ${graph_period}',
+	},
+	data_source_attrs => {
+	    draw  => 'LINE2',
+	},
+    },
+    data_sources => [
+	{name => 'Slow_queries', label => 'Slow queries'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{sorts} = {
+    config => {
+	global_attrs => {
+	    title  => 'Sorts',
+	    vlabel => 'Sorts / ${graph_period}',
+	},
+	data_source_attrs => {
+	    draw  => 'LINE2',
+	},
+    },
+    data_sources => [
+	{name => 'Sort_rows',         label => 'Rows sorted'},
+	{name => 'Sort_range',        label => 'Range'},
+	{name => 'Sort_merge_passes', label => 'Merge passes'},
+	{name => 'Sort_scan',         label => 'Scan'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{table_locks} = {
+    config => {
+	global_attrs => {
+	    title  => 'Table locks',
+	    vlabel => 'locks per ${graph_period}',
+	},
+	data_source_attrs => {
+	    draw  => 'LINE2',
+	},
+    },
+    data_sources => [
+	{name => 'Table_locks_immediate', label => 'Table locks immed'},
+	{name => 'Table_locks_waited',    label => 'Table locks waited'},
+    ],
+};
+
+#---------------------------------------------------------------------
+
+$graphs{tmp_tables} = {
+    config => {
+	global_attrs => {
+	    title  => 'Temporary objects',
+	    vlabel => 'Objects per ${graph_period}',
+	},
+	data_source_attrs => {
+	    draw  => 'LINE2',
+	},
+    },
+    data_sources => [
+	{name => 'Created_tmp_disk_tables', label => 'Temp disk tables'},
+	{name => 'Created_tmp_tables',      label => 'Temp tables'},
+	{name => 'Created_tmp_files',       label => 'Temp files'},
+    ],
+};
+
+#---------------------------------------------------------------------
+#  Plugin Graphs
+#  These are mysql plugins of type INFORMATION SCHEMA
+#
+#  These will be added to $graphs if available
+#---------------------------------------------------------------------
+
+my %graph_plugins = ();
+
+$graph_plugins{query_response_time} = {
+    count => {
+        config => {
+            global_attrs => {
+                title  => 'Query Response Time Count',
+                vlabel  => 'queries per ${graph_period}',
+            },
+            data_source_attrs => {
+                draw  => 'LINE2',
+                type => 'DERIVE',
+            },
+        },
+        # data_sources are populated by sub plugin_query_response_time
+        data_sources => [
+        ],
+   },
+   total => {
+        config => {
+            global_attrs => {
+                title  => 'Query Response Time Total',
+                vlabel  => 'query time (microseconds) per ${graph_period}',
+            },
+            data_source_attrs => {
+                draw  => 'LINE2',
+                type => 'DERIVE',
+            },
+        },
+        # data_sources are populated by sub plugin_query_response_time
+        data_sources => [
+        ],
+   }
+};
+
+$graph_plugins{user_statistics} = {
+    connections => {
+        config => {
+            global_attrs => {
+                title  => 'User Connections',
+                vlabel  => 'connections per ${graph_period}',
+            },
+            data_source_attrs => {
+                draw  => 'LINE2',
+                type => 'DERIVE',
+            },
+        },
+        cols => { 'total_connections' => {}, 'concurrent_connections' => {}, 'denied_connections' => {}, 'lost_connections'  => {}},
+        data_sources => [
+        ],
+   },
+   usertime => {
+        config => {
+            global_attrs => {
+                title  => 'User Time',
+                vlabel  => 'seconds',
+            },
+            data_source_attrs => {
+                draw  => 'LINE2',
+                type => 'DERIVE',
+            },
+        },
+        cols => { 'connected_time' => {}, 'busy_time' => {}, 'cpu_time' => {} },
+        data_sources => [
+        ],
+   },
+   bytes => {
+        config => {
+            global_attrs => {
+                title  => 'User Bytes',
+                vlabel  => 'bytes',
+            },
+            data_source_attrs => {
+                draw  => 'LINE2',
+                type => 'DERIVE',
+            },
+        },
+        cols => { 'bytes_received' => {}, 'bytes_sent' => {}, 'binlog_bytes_written' => {} },
+        data_sources => [
+        ],
+   },
+   rows => {
+        config => {
+            global_attrs => {
+                title  => 'User Rows',
+                vlabel  => 'rows',
+            },
+            data_source_attrs => {
+                draw  => 'LINE2',
+                type => 'DERIVE',
+            },
+        },
+        cols => { 'rows_read' => {}, 'rows_sent' => {}, 'rows_deleted' => {}, 'rows_inserted' => {}, 'rows_updated' => {} },
+        data_sources => [
+        ],
+   },
+   commands => {
+        config => {
+            global_attrs => {
+                title  => 'Command breakdown by user',
+                vlabel  => 'commands',
+            },
+            data_source_attrs => {
+                draw  => 'LINE2',
+                type => 'DERIVE',
+            },
+        },
+        cols => { 'select_commands' => {}, 'update_commands' => {}, 'other_commands' => {}, 'commit_transactions' => {}, 'rollback_transactions' => {} },
+        data_sources => [
+        ],
+   }
+
+};
+#---------------------------------------------------------------------
+#  M A I N
+#---------------------------------------------------------------------
+
+
+#
+# Global hash holding the data collected from mysql.
+#
+our $data; # Was 'my'. Changed to 'our' to facilitate testing.
+
+
+sub main {
+    my $graph = basename($0);
+    $graph =~ s/^mysql[0-9]*_//g; # allow multiple instances
+    my $command = $ARGV[0] || 'show';
+
+    my %command_map = (
+	'autoconf' => \&autoconf,
+	'config'   => \&config,
+	'show'     => \&show,
+	'suggest'  => \&suggest,
+    );
+
+    die "Unknown command: $command"
+	unless exists $command_map{$command};
+
+    die "Missing dependency Cache::Cache"
+	unless $has_cache || $command eq 'autoconf';
+
+    die "Missing dependency DBI"
+        unless $has_dbi || $command eq 'autoconf';
+
+    die "Missing dependency Math::BigInt"
+        unless $has_math_bigint || $command eq 'autoconf';
+
+    return $command_map{$command}->($graph);
+}
+
+
+#---------------------------------------------------------------------
+#  C O M M A N D   H A N D L E R S
+#---------------------------------------------------------------------
+
+# Each command handler should return an appropriate exit code
+
+
+# http://munin-monitoring.org/wiki/ConcisePlugins#autoconf
+sub autoconf {
+    unless ($has_cache) {
+	print "no (Missing dependency Cache::Cache)\n";
+	return 0;
+    }
+    unless ($has_dbi) {
+	print "no (Missing dependency DBI)\n";
+	return 0;
+    }
+    unless ($has_math_bigint) {
+	print "no (Missing dependency Math::BigInt)\n";
+	return 0;
+    }
+
+    eval {
+	db_connect();
+    };
+    if ($@) {
+	my $err = $@;
+	$err =~ s{\s at \s \S+ \s line .*}{}xms;
+	print "no ($err)\n";
+	return 0;
+    }
+    print "yes\n";
+    return 0;
+}
+
+
+# http://munin-monitoring.org/wiki/ConcisePlugins#suggest
+sub suggest {
+
+    # What is the best way to decide which graphs is applicable to a
+    # given system?
+    #
+    # Does the database use InnoDB? A zero count from:
+    #
+    #   SELECT COUNT(*)
+    #     FROM tables
+    #    WHERE table_type = 'base table'
+    #      AND engine     = 'innodb'
+    #
+    # Does the database use binary logs? 'OFF' as the result from:
+    #
+    #   SHOW GLOBAL variables LIKE 'log_bin'
+    #
+    # Is the database setup as a slave? Empty result from:
+    #
+    #   SHOW SLAVE STATUS
+
+    foreach my $graph (sort keys(%graphs)) {
+        next if $graph =~ /innodb_/ && $data->{_innodb_disabled};
+        next if $graph =~ /wsrep_/ && $data->{_galera_disabled};
+        print "$graph\n";
+    }
+
+    return 0;
+}
+
+
+sub config {
+    my $graph_name = shift;
+
+    # In MySQL 5.1 (and probably erlier versions as well) status
+    # variables are unique when looking at the last 19 characters.
+    #
+    #   SELECT RIGHT(variable_name, 19), COUNT(*)
+    #     FROM information_schema.global_status
+    #    GROUP BY RIGHT(variable_name, 19)
+    #   HAVING COUNT(*) > 1;
+    #
+    #   Empty set (0.06 sec)
+    #
+    # There is one duplicate when looking at server variables
+    #
+    #   SELECT RIGHT(variable_name, 19), COUNT(*)
+    #     FROM information_schema.global_variables
+    #    GROUP BY RIGHT(variable_name, 19)
+    #   HAVING COUNT(*) > 1;
+    #
+    #   +--------------------------+----------+
+    #   | RIGHT(variable_name, 19) | COUNT(*) |
+    #   +--------------------------+----------+
+    #   | OW_PRIORITY_UPDATES      |        2 |
+    #   +--------------------------+----------+
+    #   1 row in set (0.05 sec)
+    #
+    #   show global variables like '%OW_PRIORITY_UPDATES';
+    #
+    #   +--------------------------+-------+
+    #   | Variable_name            | Value |
+    #   +--------------------------+-------+
+    #   | low_priority_updates     | OFF   |
+    #   | sql_low_priority_updates | OFF   |
+    #   +--------------------------+-------+
+    #   2 rows in set (0.00 sec)
+    #
+    # Not a problem since we don't graph these
+
+    update_data();
+
+    die 'Unknown graph ' . ($graph_name ? $graph_name : '')
+	unless $graphs{$graph_name};
+
+    my $graph = $graphs{$graph_name};
+
+    my %conf = (%{$defaults{global_attrs}}, %{$graph->{config}{global_attrs}});
+    while (my ($k, $v) = each %conf) {
+	print "graph_$k $v\n";
+    }
+    print "graph_category mysql2\n";
+
+    for my $ds (@{$graph->{data_sources}}) {
+	my %ds_spec = (
+	    %{$defaults{data_source_attrs}},
+	    %{$graph->{config}{data_source_attrs}},
+	    %$ds,
+	);
+	while (my ($k, $v) = each %ds_spec) {
+            # 'name' is only used internally in this script, not understood by munin.
+            printf("%s.%s %s\n", clean_fieldname($ds->{name}), $k, $v) unless ($k eq 'name');
+	}
+	print_thresholds(clean_fieldname($ds->{name}));
+    }
+
+    return 0;
+}
+
+sub show {
+    my $graph_name = shift;
+
+    update_data();
+
+    die 'Unknown graph ' . ($graph_name ? $graph_name : '')
+	unless $graphs{$graph_name};
+
+    my $graph = $graphs{$graph_name};
+
+    die "Can't show data for '$graph_name' because InnoDB is disabled."
+	if $graph_name =~ /innodb_/ && $data->{_innodb_disabled};
+
+    for my $ds (@{$graph->{data_sources}}) {
+        my $value = exists $ds->{value}
+            ? $ds->{value}($data)
+                : $data->{$ds->{name}};
+
+        printf "%s.value %s\n", clean_fieldname($ds->{name}), defined($value) ? $value : 'U';
+    }
+
+    return 0;
+}
+
+
+
+#---------------------------------------------------------------------
+#  U T I L I T Y   S U B S
+#---------------------------------------------------------------------
+
+
+sub db_connect {
+    my $dsn = "$config{dsn};mysql_connect_timeout=5";
+
+    my $conn = DBI->connect($dsn, $config{user}, $config{password}, {
+	RaiseError       => 1,
+	PrintError       => 0,
+	FetchHashKeyName => 'NAME_lc',
+    });
+
+    return $conn;
+}
+
+
+sub update_data {
+    $data = $shared_memory_cache->get('data');
+    my $graphs_stored = $shared_memory_cache->get('graphs');
+    %graphs = %{thaw($graphs_stored)} if $graphs_stored;
+    return if $data;
+
+    #warn "Need to update cache";
+
+    $data = {};
+
+    my $dbh = db_connect();
+
+    # Set up defaults in case the server is not a slave
+    $data->{relay_log_space} = 0;
+    $data->{slave_running}   = 0;
+    $data->{slave_stopped}   = 0;
+
+    # Set up defaults in case binlog is not enabled
+    $data->{ma_binlog_size} = 0;
+
+    update_variables($dbh);
+    update_plugins($dbh);
+    update_innodb($dbh);
+    update_master($dbh);
+    update_slave($dbh);
+
+    $shared_memory_cache->set('data', $data);
+    $shared_memory_cache->set('graphs', nfreeze(\%graphs));
+}
+
+
+sub update_plugins {
+    my ($dbh) = @_;
+
+    my %plugin_map = (
+	'query_response_time'         => \&plugin_query_response_time,
+    );
+
+    sub add_graphs {
+      my ($f, $sec, $dbh, %g) = @_;
+      if ($f->($dbh) == 0) {
+        while (my ($k, $v) = each %g) {
+          $graphs{$sec . '_' . $k} = $v;
+        }
+      }
+    }
+
+    my $sth = $dbh->prepare("SHOW PLUGINS");
+    $sth->execute();
+    while (my $row = $sth->fetchrow_hashref()) {
+        next if $row->{'type'} ne 'INFORMATION SCHEMA';
+        my $sec = lc $row->{'name'};
+        next if not exists $plugin_map{$sec};
+        add_graphs($plugin_map{$sec}, $sec, $dbh, %{$graph_plugins{$sec}});
+    }
+    $sth->finish();
+
+    my %is_map = (
+	'user_statistics'         => \&is_user_statistics,
+    );
+
+    $sth = $dbh->prepare("SHOW TABLES IN INFORMATION_SCHEMA");
+    $sth->execute();
+    while (my $row = $sth->fetchrow_hashref()) {
+        my $sec = lc $row->{'tables_in_information_schema'};
+        next if not exists $is_map{$sec};
+        add_graphs($is_map{$sec}, $sec, $dbh, %{$graph_plugins{$sec}});
+    }
+    $sth->finish();
+}
+
+sub update_variables {
+    my ($dbh) = @_;
+    my @queries = (
+	'SHOW GLOBAL STATUS',
+	'SHOW GLOBAL VARIABLES',
+    );
+
+    my %variable_name_map = (
+	table_cache => 'table_open_cache', # table_open_cache was
+					   # previously known as
+					   # table_cache in MySQL
+					   # 5.1.2 and earlier.
+    );
+
+    for my $query (@queries) {
+	$data->{$query} = {};
+
+	my $sth = $dbh->prepare($query);
+	$sth->execute();
+	while (my $row = $sth->fetch) {
+	    my $var = $variable_name_map{$row->[0]} || $row->[0];
+	    $data->{$var} = $row->[1];
+	}
+	$sth->finish();
+    }
+}
+
+
+sub update_innodb {
+    my ($dbh) = @_;
+
+    my $sth = $dbh->prepare('SHOW /*!50000 ENGINE*/ INNODB STATUS');
+    eval {
+	$sth->execute();
+    };
+    if ($@) {
+	if ($@ =~ /Unknown (storage|table) engine 'INNODB'|Cannot call SHOW INNODB STATUS because skip-innodb is defined/i) {
+	    $data->{_innodb_disabled} = 1;
+	    return;
+	}
+	die $@;
+    }
+    my $row = $sth->fetchrow_hashref();
+    my $status = $row->{'status'};
+    $sth->finish();
+
+    parse_innodb_status($status);
+}
+
+
+sub update_master {
+    my ($dbh) = @_;
+
+    my $sth = $dbh->prepare('SHOW MASTER LOGS');
+    eval {
+	$sth->execute();
+    };
+    if ($@) {
+	# SHOW MASTER LOGS failed becuase binlog is not enabled
+	return if $@ =~ /You are not using binary logging/;
+	die $@;
+    }
+
+    while (my $row = $sth->fetch) {
+	$data->{ma_binlog_size} += $row->[1];
+    }
+
+    $sth->finish();
+}
+
+
+sub update_slave {
+    my ($dbh) = @_;
+
+    my $sth = $dbh->prepare('SHOW SLAVE STATUS');
+    $sth->execute();
+    my $row = $sth->fetchrow_hashref();
+    return unless $row;
+    while (my ($k, $v) = each %$row) {
+	$data->{$k} = $v;
+    }
+    $sth->finish();
+
+    # undef when slave is stopped, or when MySQL fails to calculate
+    # the lag (which happens depresingly often). (mk-heartbeat fixes
+    # this problem.)
+    $data->{seconds_behind_master} ||= 0;
+
+    # Track these two fields so we can trigger warnings if the slave stops
+    # running
+    $data->{slave_sql_running} = ($data->{slave_sql_running} eq 'Yes')
+	    ? 0 : 1;
+    $data->{slave_io_running} = ($data->{slave_io_running} eq 'Yes')
+	    ? 0 : 1;
+
+}
+
+
+#---------------------------------------------------------------------
+#  Information SCHEMA tables represent data to be processed
+#---------------------------------------------------------------------
+
+
+sub plugin_query_response_time {
+    my ($dbh) = @_;
+
+    return 1 if not defined $data->{query_response_time_stats};
+    return 1 if $data->{query_response_time_stats} eq 'OFF';
+
+    my $sth = $dbh->prepare("SELECT * FROM INFORMATION_SCHEMA.QUERY_RESPONSE_TIME");
+    $sth->execute();
+    while (my $row = $sth->fetchrow_hashref()) {
+        my $time = $row->{'time'};
+        $data->{'query_response_time_count_' . $time} = $row->{'count'};
+        push @{$graph_plugins{query_response_time}->{count}->{data_sources}}, {name => 'query_response_time_count_' . $time, label => $time };
+        next if $row->{'total'} eq 'TOO LONG';
+        $data->{'query_response_time_total_' . $time} = $row->{'total'} * 1e6;
+        push @{$graph_plugins{query_response_time}->{total}->{data_sources}}, {name => 'query_response_time_total_' . $time, label => $time };
+    }
+    $sth->finish();
+
+    return 0;
+}
+
+sub is_user_statistics {
+    my ($dbh) = @_;
+
+    return 1 if not defined $data->{userstat};
+    return 1 if $data->{userstat} eq 'OFF';
+
+    my $sth = $dbh->prepare("SELECT * FROM INFORMATION_SCHEMA.USER_STATISTICS");
+    $sth->execute();
+    while (my $row = $sth->fetchrow_hashref()) {
+        my $user = $row->{'user'};
+        my $var;
+        while (my ($g, $v) = each %{$graph_plugins{user_statistics}}) {
+          while (my ($userstat,$conf) = each %{$v->{cols}}) {
+            $var = 'user_stats_' . $user . '_' . $userstat;
+            $data->{$var} = int $row->{$userstat};
+            my $ds = { %$conf };
+            $ds->{name} = $var;
+            $ds->{label} = $user . ' ' . $userstat;
+            push @{$graph_plugins{user_statistics}->{$g}->{data_sources}}, $ds;
+          }
+        }
+    }
+    $sth->finish();
+    return 0;
+}
+
+#
+# In 'SHOW ENGINE INNODB STATUS' 64 bit integers are not formated as
+# plain integers. They are either:
+#
+#   - split in two and needs to be shifted together,
+#   - or hexadecimal
+#
+sub innodb_bigint {
+    my ($x, $y) = @_;
+
+    return defined $y
+	? Math::BigInt->new($x)->blsft(32) + $y
+	: Math::BigInt->new("0x$x");
+}
+
+#---------------------------------------------------------------------
+#  P A R S E   'SHOW ENGINE INNODB STATUS'   O U T P U T
+#---------------------------------------------------------------------
+
+
+# A nice walk through
+# http://www.mysqlperformanceblog.com/2006/07/17/show-innodb-status-walk-through/
+
+# The parsing is split in one subrutine per section. Each subroutine
+# should parse a block with the following structure
+#
+# block body ...
+# more lines ....
+# ----------
+
+sub parse_innodb_status {
+    local $_ = shift;
+
+    # Add a dummy section to the end in case the innodb status output
+    # has been truncated (Happens for status > 64K characters)
+    $_ .= "\n----------\nDUMMY\n----------\n";
+
+    my %section_map = (
+
+	'BUFFER POOL AND MEMORY'      => \&parse_buffer_pool_and_memory,
+	'INDIVIDUAL BUFFER POOL INFO' => \&skip,
+	'FILE I/O'                    => \&parse_file_io,
+	'INSERT BUFFER AND ADAPTIVE HASH INDEX'
+	    => \&parse_insert_buffer_and_adaptive_hash_index,
+	'LATEST DETECTED DEADLOCK'    => \&skip,
+	'LATEST FOREIGN KEY ERROR'    => \&skip,
+	'LOG'                         => \&parse_log,
+	'ROW OPERATIONS'              => \&skip,
+	'SEMAPHORES'                  => \&parse_semaphores,
+	'TRANSACTIONS'                => \&parse_transactions,
+	'BACKGROUND THREAD'           => \&skip,
+    );
+
+    skip_heading(); # OK
+    for (;;) {
+	    m/\G(.*)\n/gc;  # match une ligne complète (après que parse_section() ait skippé la fin de section ------)
+    	my $sec = $1;  # le résultat attendu du match précédent est le nom de la section
+        #print "$sec\n";
+
+    	last if $sec eq 'END OF INNODB MONITOR OUTPUT';
+	    if ($sec eq 'DUMMY') {
+	        handle_incomplete_innodb_status();
+    	    last;
+	    }
+        
+    	die "Unknown section: $1" unless exists $section_map{$sec};
+	    die "Parse error. Expected a section separator" unless m/\G-+\n/gc;
+
+        # Question : comment est skippé la ligne ------ après le nom de la section ?
+
+        # Lance la fonction associée au nom de la section
+    	$section_map{$sec}->();
+    }
+}
+
+
+# This regular expression handles the different formating of 64-bit
+# integers in different versions of the innodb engine. Either two
+# decimal 32-bit integers seperated by a space, or a single
+# hexadecimal 64-bit integer.
+my $innodb_bigint_rx = qr{([[a-fA-F\d]+)(?: (\d+))?};
+
+
+sub match_dashes { 
+    ## Changed by Will
+    #return m/\G-+\n(?!-)/gc;
+    return m/\G-+\n(?!-)/;
+}
+
+# Added by Will
+sub match_section_header {
+    return m/\G-+\n([A-Z0-9 \/])+\n(?![=])-+\n/;
+    #return m/\G[A-Z0-9 ]+\n(?![-=])/;
+}
+
+sub skip_line    { return m/\G.*\n/gc; }
+
+# OK
+sub skip_heading {
+    # Heading is 6 lines
+    for my $foo (1...6) {
+    	skip_line or die('Parse error');
+    }
+}
+
+
+sub parse_section {
+    my ($parser) = @_;  # fonction parser() passée en argument
+
+    #warn substr($_, pos(), 10);
+    for (;;) {
+        # Question : comment est skippé la 1ère ligne ------ après le nom de la section ?
+
+        # Changed by Will
+	    #return if match_dashes();  # si la ligne matche --------- passe à la suivante et sort de la boucle
+        if (match_dashes()) {  # /!\ flags /gc enlevés
+            if (match_section_header()) {  # /!\ flags /gc enlevés
+                #print "match section header :\n";
+                #print m/\G(.*)\n(.*)\n/;
+                #print "\n";
+                skip_line();
+                return;
+            } else {
+                #print "dash but not a section :\n";
+                #print m/\G(.*)\n(.*)\n/;
+                #print "\n";
+                skip_line();
+                next;
+            }
+        }
+
+    	next if $parser->();  # si parse() match la ligne, passe à la ligne suivante
+	    skip_line();  # sinon, saute la ligne
+    }
+}
+
+
+sub skip { parse_section(sub {}); }
+
+
+sub parse_semaphores {
+    parse_section(
+	sub {
+	    m/\GMutex spin waits (\d+), rounds (\d+), OS waits (\d+)\n/gc && do {
+		$data->{ib_spin_waits}  = $1;
+		$data->{ib_spin_rounds} = $2;
+		$data->{ib_os_waits}    = $3;
+		return 1;
+	    };
+	}
+    );
+}
+
+
+sub parse_transactions {
+    parse_section(
+	sub {
+	    m/\GTrx id counter $innodb_bigint_rx\n/gc && do {
+		$data->{ib_tnx} = innodb_bigint($1, $2);
+		return 1;
+	    };
+	    m/\GPurge done for trx's n:o < $innodb_bigint_rx undo n:o < $innodb_bigint_rx\n/gc && do {
+		if (defined $3) {
+		    # old format
+		    $data->{ib_tnx_prg} = innodb_bigint($1, $2);
+		    # FIX add to data? innodb_bigint($3, $4);
+		}
+		else {
+		    # new format
+		    $data->{ib_tnx_prg} = innodb_bigint($1);
+		    # FIX add to data? innodb_bigint($2);
+		}
+		return 1;
+	    };
+	    m/\GHistory list length (\d+)\n/gc && do {
+		$data->{ib_tnx_hist} = $1;
+		return 1;
+	    };
+	}
+    );
+
+}
+
+
+sub parse_file_io {
+    parse_section(
+	sub {
+	    m/\GPending normal aio reads: (\d+), aio writes: (\d+),\n\s*ibuf aio reads: (\d+), log i\/o's: (\d+), sync i\/o's: (\d+)\n/gc && do {
+		$data->{ib_iop_aioread}  = $1;
+		$data->{ib_iop_aiowrite} = $2;
+		$data->{ib_iop_ibuf_aio} = $3;
+		$data->{ib_iop_log}      = $4;
+		$data->{ib_iop_sync}     = $5;
+		return 1;
+	    };
+	    m/\GPending flushes \(fsync\) log: (\d+); buffer pool: (\d+)\n/gc && do {
+		$data->{ib_iop_flush_log}   = $1;
+		$data->{ib_iop_flush_bpool} = $2;
+		return 1;
+	    };
+	    m/\G(\d+) OS file reads, (\d+) OS file writes, (\d+) OS fsyncs\n/gc && do {
+		$data->{ib_io_read}  = $1;
+		$data->{ib_io_write} = $2;
+		$data->{ib_io_fsync} = $3;
+		return 1;
+	    };
+	}
+    );
+}
+
+
+sub parse_insert_buffer_and_adaptive_hash_index {
+    parse_section(
+	sub {
+      # MySQL < 5.5
+      m/\G(\d+) inserts, (\d+) merged recs, (\d+) merges\n/gc && do {
+        $data->{ib_ibuf_inserts}    = $1;
+        $data->{ib_ibuf_merged_rec} = $2;
+        $data->{ib_ibuf_merges}     = $3;
+        return 1;
+      };
+      # MySQL >= 5.5
+      m/\Gmerged operations:\n insert (\d+), delete mark \d+, delete \d+\ndiscarded operations:\n insert (\d+), delete mark \d+, delete \d+\n/gc && do {
+        $data->{ib_ibuf_inserts} = $1;
+        $data->{ib_ibuf_merged_rec} = $1 + $2;
+        return 1;
+      };
+      m/\GIbuf: size (\d+), free list len (\d+), seg size (\d+),(?: (\d+) merges)?\n/gc && do {
+        $data->{ib_ibuf_size}     = $1;
+        $data->{ib_ibuf_free_len} = $2;
+        $data->{ib_ibuf_seg_size} = $3;
+        $data->{ib_ibuf_merges}   = $4 if defined $4; # MySQL >= 5.5
+        return 1;
+      };
+	}
+    );
+}
+
+
+sub parse_log {
+    parse_section(
+	sub {
+	    m/\GLog sequence number $innodb_bigint_rx\n/gc && do {
+		$data->{ib_log_written} = innodb_bigint($1, $2);
+		return 1;
+	    };
+	    m/\GLog flushed up to\s+$innodb_bigint_rx\n/gc && do {
+		$data->{ib_log_flush} = innodb_bigint($1, $2);
+		return 1;
+	    };
+	    m/\G(\d+) log i\/o's done.*\n/gc && do {
+		$data->{ib_io_log} = $1;
+		return 1;
+	    };
+	}
+    );
+}
+
+
+sub parse_buffer_pool_and_memory {
+    parse_section(
+	sub {
+	    m/\GBuffer pool size\s+(\d+)\n/gc && do {
+		$data->{ib_bpool_size} = $1;
+		return 1;
+	    };
+	    m/\GFree buffers\s+(\d+)\n/gc && do {
+		$data->{ib_bpool_free} = $1;
+		return 1;
+	    };
+	    m/\GDatabase pages\s+(\d+)\n/gc && do {
+		$data->{ib_bpool_dbpages} = $1;
+		return 1;
+	    };
+	    m/\GModified db pages\s+(\d+)\n/gc && do {
+		$data->{ib_bpool_modpages} = $1;
+		return 1;
+	    };
+	    m/\GPages read (\d+), created (\d+), written (\d+)\n/gc && do {
+		$data->{ib_bpool_read}    = $1;
+		$data->{ib_bpool_created} = $2;
+		$data->{ib_bpool_written} = $3;
+		return 1;
+	    };
+	}
+    );
+}
+
+
+sub handle_incomplete_innodb_status {
+
+    warn "Output from SHOW ENGINE INNDOB STATUS was truncated. "
+	. "This happens if the output of SEIS exceeds 64KB. "
+	. "Several of the InnoDB graphs might be affected by this.";
+
+    # FIX Is it possible to find some of the missing values from SHOW
+    # STATUS?
+}
+
+
+exit main() unless caller;
+
+
+1;

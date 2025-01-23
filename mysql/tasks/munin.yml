@@ -25,6 +25,14 @@
         - libdbd-mariadb-perl
     when: ansible_distribution_major_version is version('11', '>=')
 
+  - name: "Overwrite old mysql2 plugin with patched version"
+    ansible.builtin.copy:
+      src: mysql_
+      dest: /usr/share/munin/plugins/mysql_
+      mode: "0755"
+      backup: true
+    when: ansible_distribution_major_version is version('11', '>=')
+
   - name: Enable core Munin plugins
     ansible.builtin.file:
       src: '/usr/share/munin/plugins/{{ item }}'
