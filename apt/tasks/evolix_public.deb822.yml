@@ -16,6 +16,10 @@
     - apt
   when: _trusted_gpg_keyring.stat.exists
 
+- name: Fetch packages
+  ansible.builtin.package_facts:
+    manager: auto
+
 - name: Copy keyring package
   ansible.builtin.copy:
     src: evolix-archive-keyring_0~2024_all.deb
@@ -23,12 +27,18 @@
     mode: "0644"
     owner: root
     group: root
+  when: "'evolix-archive-keyring' not in ansible_facts.packages"
+  tags:
+    - apt
 
 - name: Install Evolix keyring package
   ansible.builtin.apt:
     deb: /tmp/evolix-archive-keyring.deb
     # deb: https://pub.evolix.org/evolix/pool/main/e/evolix-archive-keyring/evolix-archive-keyring_0~2024_all.deb
     state: present
+  when:
+    - not ansible_check_mode
+    - "'evolix-archive-keyring' not in ansible_facts.packages"
   tags:
     - apt
 
