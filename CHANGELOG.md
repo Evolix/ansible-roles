@@ -21,6 +21,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* bind: fix apparmor profile when not chrooted
+
 ### Removed
 
 * bookworm-detect: not useful anymore
