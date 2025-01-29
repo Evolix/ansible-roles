@@ -48,6 +48,26 @@
   loop:
     - dhcp_pool
     - linux_psi
+  tags:
+    - munin
+
+- name: Add directories for Munin local plugins if they don't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - /usr/local/share/munin/
+    - /usr/local/share/munin/plugins/
+
+- name: Copy Munin local plugins
+  ansible.builtin.copy:
+    src: 'plugins/{{ item }}'
+    dest: '/usr/local/share/munin/plugins/{{ item }}'
+    mode: "0755"
+  loop:
     - ipmi_
   tags:
     - munin
@@ -100,7 +120,7 @@
 
 - name: Enable ipmi_ plugin on dedicated hardware
   ansible.builtin.file:
-    src: /usr/share/munin/plugins/ipmi_
+    src: /usr/local/share/munin/plugins/ipmi_
     dest: "/etc/munin/plugins/ipmi_{{ item }}"
     state: link
   when: ansible_virtualization_role == "host"
