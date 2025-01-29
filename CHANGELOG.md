@@ -13,6 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* kvm-host: export kvmstats data in CSV too
+
 ### Changed
 
 ### Fixed
