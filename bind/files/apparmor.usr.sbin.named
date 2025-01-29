@@ -5,3 +5,4 @@
 /var/chroot-bind/dev/** rw,
 /var/chroot-bind/run/** rw,
 /var/chroot-bind/usr/** r,
+/var/log/bind.log rw,

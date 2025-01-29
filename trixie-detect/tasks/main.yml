@@ -3,7 +3,7 @@
 - ansible.builtin.debug:
     var: ansible_lsb
 
-# Force facts until Debian 12 is released because Ansible is dumb
+# Force facts until Debian 13 is released because Ansible is dumb
 - ansible.builtin.set_fact:
     ansible_distribution_major_version: 13
     ansible_distribution: "Debian"

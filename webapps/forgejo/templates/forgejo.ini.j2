@@ -26,14 +26,13 @@ PASSWD   = {{ forgejo_db_password }}
 SSL_MODE = disable
 LOG_SQL  = false
 
-[security]
-INSTALL_LOCK         = true
-COOKIE_USERNAME      = __Secure-login
-COOKIE_REMEMBER_NAME = __Secure-remember
-
 [repository]
 ROOT = /home/{{ forgejo_instance }}/repositories
 MAX_CREATION_LIMIT = 0
+
+[security]
+COOKIE_USERNAME      = __Secure-login
+COOKIE_REMEMBER_NAME = __Secure-remember
 
 [lfs]
 PATH       = /home/{{ forgejo_instance }}/internals/data/lfs
@@ -59,16 +58,18 @@ NO_REPLY_ADDRESS                       = noreply.{{ forgejo_domains | first }}
 [mailer]
 ENABLED       = true
 FROM          = Forgejo {{ forgejo_instance }} <forgejo@evolix.net>
-MAILER_TYPE   = sendmail
+PROTOCOL   = sendmail
 SENDMAIL_PATH = /usr/sbin/sendmail
 
 [session]
 PROVIDER         = redis
-PROVIDER_CONFIG  = network=unix,addr=/run/redis-{{ forgejo_instance }}/redis.sock,db=0,pool_size=100,idle_timeout=180
+PROVIDER_CONFIG = network=tcp,addr=127.0.0.1:{{ forgejo_redis_port }},password={{ forgejo_redis_password }},db=0,pool_size=100,idle_timeout=180
+COOKIE_NAME     = __Secure-gitea
+COOKIE_SECURE   = true
 
 [cache]
 ADAPTER = redis
-HOST    = network=unix,addr=/run/redis-{{ forgejo_instance }}/redis.sock,db=1,pool_size=100,idle_timeout=180
+HOST    = network=tcp,addr=127.0.0.1:{{ forgejo_redis_port }},password={{ forgejo_redis_password }},db=1,pool_size=100,idle_timeout=180
 
 [picture]
 DISABLE_GRAVATAR        = true
@@ -87,4 +88,3 @@ SHOW_FOOTER_TEMPLATE_LOAD_TIME = false
 [i18n]
 LANGS = en-US, fr-FR
 NAMES = English,Français
-

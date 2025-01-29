@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian 7 only) server
 # powered by Evolix
 
-VERSION="24.09.2"
+VERSION="25.01"
 readonly VERSION
 
 # base functions
@@ -527,7 +527,7 @@ check_phpmyadminapacheconf() {
 check_kerneluptodate() {
     if is_installed linux-image*; then
         # shellcheck disable=SC2012
-        kernel_installed_at=$(date -d "$(ls --full-time -lcrt /boot | tail -n1 | awk '{print $6}')" +%s)
+        kernel_installed_at=$(date -d "$(ls --full-time -lcrt /boot/*lin* | tail -n1 | awk '{print $6}')" +%s)
         last_reboot_at=$(($(date +%s) - $(cut -f1 -d '.' /proc/uptime)))
         if [ "$kernel_installed_at" -gt "$last_reboot_at" ]; then
             failed "IS_KERNELUPTODATE" "machine is running an outdated kernel, reboot advised"

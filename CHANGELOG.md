@@ -21,6 +21,25 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
+## [25.01.2] 2025-01-29
+
+### Added
+
+* kvm-host: allow cold migrations with `migrate-vm` (release 25.01)
+* minifirewall: add minifirewall.d/zzzzz-fail2ban
+
+### Changed
+
+* listupgrade: upstream release 25.01
+
+### Fixed
+
+* bind: fix apparmor profile when not chrooted
+
+### Removed
+
+* bookworm-detect: not useful anymore
+
 ## [25.01.1] 2025-01-15
 
 ### Added
@@ -32,6 +51,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * apt, lxc-php, php: use keyring packages
 * evobackup-client: upstream release 25.01
+* evocheck: upstream release 25.01
 * lxc-php: use apt-get instead of apt
 * lxc: upgrade packages after installation
 * nagios-nrpe: monitoringctl upstream update
@@ -40,6 +60,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * lxc: install of LXC container (other than Jessie and Stretch)
 * lxc: use lxc-templates from Backports to install old releases on Bullseye
+* mysql: patch mysql_ (mysql2) Munin plugin, upstream discontinued
 * tomcat: check if user exist before checking its Tomcat instance.
 
 ## [25.01] 2025-01-03

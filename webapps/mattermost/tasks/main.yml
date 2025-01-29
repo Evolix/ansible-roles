@@ -71,7 +71,7 @@
 
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ mattermost_domains | first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ mattermost_instance }}/fullchain.pem"
   register: ssl
 
 - name: Generate certificate only if required (first time)
@@ -87,10 +87,9 @@
         src: "/etc/nginx/sites-available/{{ mattermost_instance }}.conf"
         dest: "/etc/nginx/sites-enabled/{{ mattermost_instance }}.conf"
         state: link
-    - name: Reload nginx conf
-      ansible.builtin.systemd:
-        name: nginx
-        state: reloaded
+      notify: reload nginx
+    - name: Flush handlers
+      ansible.builtin.meta: flush_handlers
     - name: Generate certificate with certbot
       ansible.builtin.command:
         cmd: |
@@ -98,6 +97,7 @@
            --non-interactive
            --agree-tos
            --email {{ mattermost_certbot_admin_email }}
+           --cert-name {{ mattermost_instance }}
            -d {{ mattermost_domains | first }}
     - name: Create the ssl dir if needed
       ansible.builtin.file:
@@ -107,12 +107,12 @@
     - name: Template ssl bloc for nginx vhost
       ansible.builtin.template:
         src: "ssl.conf.j2"
-        dest: "/etc/nginx/ssl/{{ mattermost_domains | first }}.conf"
+        dest: "/etc/nginx/ssl/{{ mattermost_instance }}.conf"
         mode: '0600'
 
 - name: (Re)check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ mattermost_domains | first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ mattermost_instance }}/fullchain.pem"
   register: ssl
 
 - name: (Re)template conf file for nginx vhost with SSL
@@ -120,14 +120,10 @@
     src: "vhost.conf.j2"
     dest: "/etc/nginx/sites-available/{{ mattermost_instance }}.conf"
     mode: '0600'
+  notify: reload nginx
 
 - name: Enable nginx vhost for mattermost
   ansible.builtin.file:
     src: "/etc/nginx/sites-available/{{ mattermost_instance }}.conf"
     dest: "/etc/nginx/sites-enabled/{{ mattermost_instance }}.conf"
     state: link
-
-- name: Reload nginx conf
-  ansible.builtin.systemd:
-    name: nginx
-    state: reloaded

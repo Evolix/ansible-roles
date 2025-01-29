@@ -9,7 +9,7 @@
 # * different return codes for different errors
 # * use local and readonly variables
 
-VERSION="24.10.1"
+VERSION="25.01"
 
 # If expansion is attempted on an unset variable or parameter, the shell prints an
 # error message, and, if not interactive, exits with a non-zero status.
@@ -36,7 +36,7 @@ show_version() {
     cat <<END
 ${PROGNAME} version ${VERSION}
 
-Copyright 2018-2024 Evolix <info@evolix.fr>,
+Copyright 2018-2025 Evolix <info@evolix.fr>,
                Jérémy Lecour <jlecour@evolix.fr>,
                Victor Laborie <vlaborie@evolix.fr>
                and others.
@@ -67,6 +67,10 @@ Options
   --all         Migrate all running VMs
   --[no-]report Store remotely (or not) the list of migrated VMs
   --report-path Remote path for the report
+  --[no-]stop-before Stop VMs before migration
+  --[no-]start-after Start VMs after migration
+  --cold        Stop before and start after migration
+  --hot         Migrate VMs as they are (no stop/start)
   --help        Print this message and exit
   --version     Print version and exit
 
@@ -87,6 +91,9 @@ but it can be customized with "--report-path <PATH>"
 For backward compatibility, "--vm" and "--resource" can be passed.
 Their value will be used to make a list with a single VM.
 These options are ignored if "--all" or "--vms" is used.
+
+Hot migrations are the default behavior (equivalent of "--hot").
+Use cold migrations when hot migrations are impossible.
 END
 }
 
@@ -205,6 +212,11 @@ is_vm_running_locally() {
 
     virsh list --state-running --name | grep --fixed-strings --line-regexp --quiet "${vm}"
 }
+is_vm_shutoff_locally() {
+    vm=${1:-}
+
+    virsh list --state-shutoff --name | grep --fixed-strings --line-regexp --quiet "${vm}"
+}
 is_vm_defined_locally() {
     vm=${1:-}
 
@@ -240,7 +252,7 @@ set_drbd_role() {
         retval=$(eval "${set_command}")
         retcode=$?
         if [ ${retcode} != 0 ]; then
-            echo "An error occured while setting ${resource} as ${role} : ${retval}" >&2
+            echo "An error occurred while setting ${resource} as ${role} : ${retval}" >&2
             exit 1
         fi
 
@@ -254,7 +266,7 @@ set_drbd_role() {
         retval=$(execute_remotely "${remote}" "${set_command}")
         retcode=$?
         if [ ${retcode} != 0 ]; then
-            echo "An error occured while remotely setting ${resource} as ${role} : ${retval}" >&2
+            echo "An error occurred while remotely setting ${resource} as ${role} : ${retval}" >&2
             exit 1
         fi
 
@@ -275,7 +287,7 @@ define_vm() {
         # retval=$(virsh define "${vm}")
         # retcode=$?
         # if [ ${retcode} != 0 ]; then
-        #     >&2 echo "An error occured while defining ${vm} : ${retval}"
+        #     >&2 echo "An error occurred while defining ${vm} : ${retval}"
         #     exit 1
         # fi
         echo "Defining a VM locally is not supported yet. Let's skip this step." >&2
@@ -283,7 +295,7 @@ define_vm() {
         retval=$(virsh dumpxml "${vm}" | ssh "${remote}" virsh define /dev/stdin)
         retcode=$?
         if [ ${retcode} != 0 ]; then
-            echo "An error occured while remotely defining ${vm} : ${retval}" >&2
+            echo "An error occurred while remotely defining ${vm} : ${retval}" >&2
             exit 1
         fi
     fi
@@ -299,16 +311,77 @@ undefine_vm() {
         retval=$(eval "${command}")
         retcode=$?
         if [ ${retcode} != 0 ]; then
-            echo "An error occured while undefining ${vm} : ${retval}" >&2
+            echo "An error occurred while undefining ${vm} : ${retval}" >&2
             exit 1
         fi
     else
         retval=$(execute_remotely "${remote}" "${command}")
         retcode=$?
         if [ ${retcode} != 0 ]; then
-            echo "An error occured while remotely undefining ${vm}: ${retval}" >&2
+            echo "An error occurred while remotely undefining ${vm}: ${retval}" >&2
             exit 1
         fi
+    fi
+}
+
+start_vm() {
+    vm=${1:-}
+    remote=${2:-}
+
+    if [ -z "${remote}" ]; then
+        echo "Starting a VM locally is not supported yet. Let's skip this step." >&2
+    else
+        if is_vm_running_locally "${vm}"; then
+            echo "VM ${vm} is already started. Let's skip this step." >&2
+        else
+            retval=$(ssh "${remote}" virsh start "${vm}")
+            retcode=$?
+            if [ ${retcode} != 0 ]; then
+                echo "An error occurred while remotely starting ${vm} : ${retval}" >&2
+                exit 1
+            else
+                echo "VM ${vm} is started" >&2
+            fi
+        fi
+    fi
+}
+
+stop_vm() {
+    vm=${1:-}
+    remote=${2:-}
+
+    if [ -z "${remote}" ]; then
+        retval=$(virsh shutdown "${vm}")
+        retcode=$?
+        if [ ${retcode} != 0 ]; then
+            echo "An error occurred while stopping ${vm} : ${retval}" >&2
+            exit 1
+        fi
+        shutoff=0
+        start=$(date +%s)
+        elapsed=0
+        timeout=60
+
+        if ! is_vm_shutoff_locally "${vm}"; then
+            printf "Waiting for VM %s to shutoff " "${vm}" >&2
+            while [ ${shutoff} -eq 0 ] && [ ${elapsed} -le ${timeout} ]; do
+                sleep 1
+                elapsed=$(( $(date +%s) - ${start} ))
+                printf "."
+                if is_vm_shutoff_locally "${vm}"; then
+                    shutoff=1
+                fi
+            done
+            printf "\n"
+            if ! is_vm_shutoff_locally "${vm}"; then
+                echo "Stopping ${vm} timed-out after ${elapsed} seconds" >&2
+                exit 1
+            # else
+            #     echo "VM ${vm} stopped after ${elapsed} seconds"
+            fi
+        fi
+    else
+        echo "Stopping a VM remotely is not supported yet. Let's skip this step." >&2
     fi
 }
 
@@ -327,29 +400,6 @@ migrate_vm_to() {
     virsh migrate --live --unsafe --verbose "${vm}" "qemu+ssh://${remote_ip}/system" "tcp://${remote_ip}/"
 }
 
-# start_vm() {
-#     vm=${1:-}
-#     remote_ip=${2:-}
-
-#     command="virsh start ${vm}"
-
-#     if [ -z "${remote}" ]; then
-#         retval=$(eval "${command}")
-#         retcode=$?
-#         if [ ${retcode} != 0 ]; then
-#             echo "An error occured while starting ${vm} : ${retval}" >&2
-#             exit 1
-#         fi
-#     else
-#         retval=$(execute_remotely "${remote}" "${command}")
-#         retcode=$?
-#         if [ ${retcode} != 0 ]; then
-#             echo "An error occured while remotely starting ${vm}: ${retval}" >&2
-#             exit 1
-#         fi
-#     fi
-# }
-
 migrate_to() {
     vm=${1:-}
     resource=${2:-}
@@ -363,13 +413,24 @@ migrate_to() {
     set_drbd_role primary "${resource}" "${remote_ip}"
     sleep 1
 
+    if is_vm_running_locally "${vm}" && [ ${option_stop_before} -eq 1 ]; then
+        stop_vm "${vm}"
+    fi
+
     if is_vm_running_locally "${vm}"; then
         migrate_vm_to "${vm}" "${remote_ip}"
     else
-        echo "${vm} is not running locally, so it won't be started on ${remote_host}"
+        if [ ${option_start_after} -eq 0 ]; then
+            echo "${vm} is not running locally, so it won't be started on ${remote_host}"
+        fi
     fi
 
     define_vm "${vm}" "${remote_ip}"
+
+    if [ ${option_start_after} -eq 1 ]; then
+        start_vm "${vm}" "${remote_ip}"
+    fi
+
     undefine_vm "${vm}"
 
     sleep 1
@@ -501,6 +562,8 @@ fi
 option_all=0
 option_report=""
 option_report_path=""
+option_stop_before=0
+option_start_after=0
 option_vms=""
 option_vm=""
 option_resource=""
@@ -545,6 +608,28 @@ while :; do
             printf 'ERROR: "--report-path" requires a non-empty option argument.\n' >&2
             exit 1
             ;;
+
+        --stop-before)
+            option_stop_before=1
+            ;;
+        --no-stop-before)
+            option_stop_before=0
+            ;;
+        --start-after)
+            option_start_after=1
+            ;;
+        --no-start-after)
+            option_start_after=0
+            ;;
+        --cold)
+            option_stop_before=1
+            option_start_after=1
+            ;;
+        --hot)
+            option_stop_before=0
+            option_start_after=0
+            ;;
+
         --vms)
             # with value separated by space
             if [ -n "$2" ]; then
