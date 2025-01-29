@@ -13,6 +13,18 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [25.01.2] 2025-01-29
+
+### Added
+
 * kvm-host: allow cold migrations with `migrate-vm` (release 25.01)
 * minifirewall: add minifirewall.d/zzzzz-fail2ban
 
@@ -27,8 +39,6 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Removed
 
 * bookworm-detect: not useful anymore
-
-### Security
 
 ## [25.01.1] 2025-01-15
 
