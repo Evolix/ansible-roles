@@ -139,6 +139,11 @@ interface_speed() {
     speed_path="/sys/class/net/${interface}/speed"
     bridge_path="/sys/class/net/${interface}/brif"
 
+    bonding_speed_path="/sys/class/net/${interface}/bonding/speed"
+    if [ -e "${bonding_speed_path}" ]; then
+        speed_path="${bonding_speed_path}"
+    fi
+
     if [ -e "${bridge_path}" ]; then
         # echo "${interface} is a bridge" >&2
         case "$(ls "${bridge_path}" | wc -l)" in

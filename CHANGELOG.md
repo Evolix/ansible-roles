@@ -15,6 +15,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * kvm-host: export kvmstats data in CSV too
 * kvm-host: migrate-vm: configurable timeout when stopping VM
+* kvm-host: migrate-vm: use bonding speed when applicable
 
 ### Changed
 
