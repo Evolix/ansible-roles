@@ -19,6 +19,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* lvm: rewrite the filter composition
+
 ### Fixed
 
 ### Removed

@@ -14,8 +14,9 @@
   ansible.builtin.lineinfile:
     path: '/etc/lvm/lvm.conf'
     insertafter: '# Configuration option devices/filter.'
-    regexp: '^\s*(#\s*)?filter\s*=\s*\[.*\]'
-    line: "    filter = [ {{ lvm_filter | list | join(', ') }}, \"r|.*/|\" ]"
+    regexp: '^(\s*)filter\s*=\s*\[.*\]'
+    line: '\1filter = {{ lvm_filter | list | to_json }}'
+    backrefs: yes
     state: present
     firstmatch: true
   notify: 'Update initramfs'
@@ -27,8 +28,9 @@
   ansible.builtin.lineinfile:
     path: '/etc/lvm/lvm.conf'
     insertafter: '# Configuration option devices/global_filter.'
-    regexp: '^\s*(#\s*)?global_filter\s*=\s*\[.*\]'
-    line: "    global_filter = [ {{ lvm_filter | list | join(', ') }}, \"r|.*/|\" ]"
+    regexp: '^(\s*)global_filter\s*=\s*\[.*\]'
+    line: '\1global_filter = {{ lvm_filter | list | to_json }}'
+    backrefs: yes
     state: present
     firstmatch: true
   notify: 'Update initramfs'
