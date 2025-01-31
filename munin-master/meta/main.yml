@@ -1,6 +1,6 @@
 galaxy_info:
   company: Evolix
-  description: Installation of Munin with a selection of plugins
+  description: Installation of Munin-master
 
   issue_tracker_url: https://gitea.evolix.org/evolix/ansible-roles/issues
 

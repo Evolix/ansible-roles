@@ -1,0 +1,46 @@
+---
+
+- name: Ensure that Munin (and useful dependencies) is installed
+  ansible.builtin.apt:
+    name:
+      - munin-node
+      - munin-plugins-core
+      - munin-plugins-extra
+      - gawk
+    state: present
+  tags:
+    - munin
+    - packages
+
+- name: Ensure /usr is still writable
+  ansible.builtin.include_role:
+    name: evolix/remount-usr
+
+- name: Create override directory for munin-node unit
+  ansible.builtin.file:
+    name: /etc/systemd/system/munin-node.service.d/
+    state: directory
+    mode: "0755"
+  tags:
+    - munin
+
+- name: Override is present for protected home
+  community.general.ini_file:
+    dest: "/etc/systemd/system/munin-node.service.d/override.conf"
+    section: "Service"
+    option: "ProtectHome"
+    value: "false"
+    state: present
+    create: yes
+    mode: "0644"
+  notify:
+    - systemd daemon-reload
+    - restart munin-node
+  tags:
+    - munin
+
+- name: Configure plugins
+  ansible.builtin.import_tasks: plugins.yml
+  tags:
+    - munin
+

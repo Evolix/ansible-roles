@@ -40,7 +40,8 @@
   - etc-git
   - evolinux-base
   - admin-users
-  - munin
+  - munin-node
+  - munin-master
   - minifirewall
   - fail2ban
   - nagios-nrpe

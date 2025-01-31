@@ -5,11 +5,6 @@
     name: munin-node
     state: restarted
 
-- name: restart munin_node
-  ansible.builtin.service:
-    name: munin_node
-    state: restarted
-
 - name: systemd daemon-reload
   ansible.builtin.systemd:
     daemon_reload: yes

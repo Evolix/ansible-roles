@@ -131,9 +131,14 @@
 - ansible.builtin.import_tasks: utils.yml
   when: evolinux_utils_include | bool
 
-- name: Munin
+- name: Munin-node
   ansible.builtin.include_role:
-    name: evolix/munin
+    name: evolix/munin-node
+  when: evolinux_munin_include | bool
+
+- name: Munin-master
+  ansible.builtin.include_role:
+    name: evolix/munin-master
   when: evolinux_munin_include | bool
 
 - name: check_free_space

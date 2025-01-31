@@ -20,6 +20,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * lvm: rewrite the filter composition
+* munin: split in 2 roles munin-master and munin-node for flexible infrastructures
 
 ### Fixed
 

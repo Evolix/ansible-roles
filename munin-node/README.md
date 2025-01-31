@@ -1,0 +1,11 @@
+# munin
+
+Install Munin-nodes and enables/disables some default plugins.
+
+## Tasks
+
+Everything is in the `tasks/main.yml` and `tasks/plugins.yml` files.
+
+## Available variables
+
+The only variables are related to the hostname (short and fully qualified) and are derived from gathered facts.

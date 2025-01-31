@@ -1,44 +1,15 @@
 ---
 
-- name: Ensure that Munin (and useful dependencies) is installed
-  ansible.builtin.apt:
-    name:
-      - munin
-      - munin-node
-      - munin-plugins-core
-      - munin-plugins-extra
-      - gawk
-    state: present
+- name: Add directories for Munin local plugins if they don't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /usr/local/share/munin/
+    - /usr/local/share/munin/plugins/
   tags:
     - munin
-    - packages
-
-- name: Ensure /usr is still writable
-  ansible.builtin.include_role:
-    name: evolix/remount-usr
-
-- block:
-  - name: Replace localdomain in Munin config
-    ansible.builtin.replace:
-      dest: /etc/munin/munin.conf
-      regexp: 'localhost.localdomain'
-      replace: '{{ ansible_fqdn }}'
-    notify: restart munin-node
-
-  - name: Rename the localdomain data dir
-    ansible.builtin.shell:
-      cmd: "mv /var/lib/munin/localdomain /var/lib/munin/{{ ansible_domain }} && rename \"s/localhost.localdomain/{{ ansible_fqdn }}/\" /var/lib/munin/{{ ansible_domain }}/*"
-    args:
-      creates: /var/lib/munin/{{ ansible_domain }}
-      removes: /var/lib/munin/localdomain
-    notify: restart munin-node
-
-  when: not ansible_hostname == "localdomain"
-  tags:
-    - munin
-
-- ansible.builtin.include_role:
-    name: evolix/remount-usr
 
 - name: Install some Munin plugins (not enabled yet)
   ansible.builtin.copy:
@@ -50,17 +21,6 @@
     - linux_psi
   tags:
     - munin
-
-- name: Add directories for Munin local plugins if they don't exist
-  file:
-    path: "{{ item }}"
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-  loop:
-    - /usr/local/share/munin/
-    - /usr/local/share/munin/plugins/
 
 - name: Copy Munin local plugins
   ansible.builtin.copy:
@@ -131,6 +91,8 @@
     - power
     - volts
     - amp
+  tags:
+    - munin
 
 - name: Ensure ipmitool is installed on dedicated hardware
   ansible.builtin.apt:
@@ -138,6 +100,8 @@
     state: present
   when: ansible_virtualization_role == "host"
   notify: restart munin-node
+  tags:
+    - munin
 
 - name: adjustments for grsec kernel
   ansible.builtin.blockinfile:
@@ -154,29 +118,6 @@
       [swap]
       user root
   when: ansible_kernel is search("-grs-")
-
-- name: Create override directory for munin-node unit
-  ansible.builtin.file:
-    name: /etc/systemd/system/munin-node.service.d/
-    state: directory
-    mode: "0755"
-
-- name: Override is present for protected home
-  community.general.ini_file:
-    dest: "/etc/systemd/system/munin-node.service.d/override.conf"
-    section: "Service"
-    option: "ProtectHome"
-    value: "false"
-    state: present
-    create: yes
-    mode: "0644"
-  notify:
-    - systemd daemon-reload
-    - restart munin-node
-
-- name: Copy custom index template (4 colons with month and year instead of 2)
-  ansible.builtin.template:
-    src: munin-nodeview.tmpl.j2
-    dest: /etc/munin/templates/munin-nodeview.tmpl
-    mode: '0755'
+  tags:
+    - munin
 
