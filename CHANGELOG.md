@@ -15,6 +15,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* evolinux-base: install/enable fail2ban by default
+
 ### Fixed
 
 * minifirewall: fix fail2ban restart
