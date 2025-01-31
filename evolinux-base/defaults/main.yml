@@ -218,7 +218,7 @@ evolinux_check_free_space_include: True
 
 # fail2ban
 
-evolinux_fail2ban_include: False
+evolinux_fail2ban_include: True
 
 # Evocheck
 

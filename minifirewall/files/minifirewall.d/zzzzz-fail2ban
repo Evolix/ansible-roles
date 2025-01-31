@@ -1,3 +1,7 @@
 ### Fail2Ban restart
 
-systemctl --quiet is-enabled fail2ban 2>/dev/null && systemctl restart fail2ban
+set +e # Don't exit on error
+if systemctl --quiet is-enabled fail2ban.service 2> /dev/null || systemctl --quiet is-active fail2ban.service 2> /dev/null; then
+    systemctl restart fail2ban.service
+fi
+set -e # Back to previous mode

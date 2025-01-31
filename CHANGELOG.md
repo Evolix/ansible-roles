@@ -13,6 +13,28 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [25.01.4] 2025-01-30
+
+### Changed
+
+* evolinux-base: install/enable fail2ban by default
+
+### Fixed
+
+* minifirewall: fix fail2ban restart
+
+## [25.01.3] 2025-01-30
+
+### Added
+
 * kvm-host: export kvmstats data in CSV too
 * kvm-host: migrate-vm: configurable timeout when stopping VM
 * kvm-host: migrate-vm: use bonding speed when applicable
@@ -20,12 +42,6 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * lvm: rewrite the filter composition
-
-### Fixed
-
-### Removed
-
-### Security
 
 ## [25.01.2] 2025-01-29
 
