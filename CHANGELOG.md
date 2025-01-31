@@ -17,6 +17,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* minifirewall: fix fail2ban restart
+
 ### Removed
 
 ### Security
