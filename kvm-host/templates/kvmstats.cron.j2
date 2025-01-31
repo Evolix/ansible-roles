@@ -1,4 +1,6 @@
 #!/bin/sh
 
 {{ kvm_scripts_dir }}/kvmstats -a -o html > /var/www/kvmstats.html
-/bin/chmod go+r /var/www/kvmstats.html
+{{ kvm_scripts_dir }}/kvmstats -a -o csv > /var/www/kvmstats.csv
+/bin/chmod go+r /var/www/kvmstats.html /var/www/kvmstats.csv
+

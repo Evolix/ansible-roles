@@ -13,7 +13,13 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* kvm-host: export kvmstats data in CSV too
+* kvm-host: migrate-vm: configurable timeout when stopping VM
+* kvm-host: migrate-vm: use bonding speed when applicable
+
 ### Changed
+
+* lvm: rewrite the filter composition
 
 ### Fixed
 
@@ -30,10 +36,12 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* evocheck: upstream release 25.01
 * listupgrade: upstream release 25.01
 
 ### Fixed
 
+* apt: Only install evolix-archive-keyring when necessary
 * bind: fix apparmor profile when not chrooted
 
 ### Removed
@@ -51,7 +59,6 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * apt, lxc-php, php: use keyring packages
 * evobackup-client: upstream release 25.01
-* evocheck: upstream release 25.01
 * lxc-php: use apt-get instead of apt
 * lxc: upgrade packages after installation
 * nagios-nrpe: monitoringctl upstream update

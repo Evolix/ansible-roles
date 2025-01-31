@@ -9,7 +9,7 @@
 # * different return codes for different errors
 # * use local and readonly variables
 
-VERSION="25.01"
+VERSION="25.01.2"
 
 # If expansion is attempted on an unset variable or parameter, the shell prints an
 # error message, and, if not interactive, exits with a non-zero status.
@@ -63,16 +63,20 @@ Usage: ${PROGNAME} --vms <vm1-name>[,<vm2-name>]
   or   ${PROGNAME} --all
 
 Options
-  --vms         Migrate this list of VMs
-  --all         Migrate all running VMs
-  --[no-]report Store remotely (or not) the list of migrated VMs
-  --report-path Remote path for the report
+  --vms          Migrate this list of VMs
+  --all          Migrate all running VMs
+  --[no-]report  Store remotely the list of migrated VMs
+  --report-path  Remote path for the report
+  --hot          Migrate VMs as they are (default)
+  --cold         Stop before and start after migration
   --[no-]stop-before Stop VMs before migration
   --[no-]start-after Start VMs after migration
-  --cold        Stop before and start after migration
-  --hot         Migrate VMs as they are (no stop/start)
-  --help        Print this message and exit
-  --version     Print version and exit
+  --stop-timeout Seconds to wait for the VM to stop
+                 default: 300 seconds
+                  >0 integer: abort if VM is still up
+                 <=0 integer: wait infinitely
+  --help         Print this message and exit
+  --version      Print version and exit
 
 For multi-line inputs, a line beginning with # is ignored.
 
@@ -134,6 +138,11 @@ interface_speed() {
     fallback_speed="1000"
     speed_path="/sys/class/net/${interface}/speed"
     bridge_path="/sys/class/net/${interface}/brif"
+
+    bonding_speed_path="/sys/class/net/${interface}/bonding/speed"
+    if [ -e "${bonding_speed_path}" ]; then
+        speed_path="${bonding_speed_path}"
+    fi
 
     if [ -e "${bridge_path}" ]; then
         # echo "${interface} is a bridge" >&2
@@ -357,20 +366,31 @@ stop_vm() {
             echo "An error occurred while stopping ${vm} : ${retval}" >&2
             exit 1
         fi
-        shutoff=0
-        start=$(date +%s)
-        elapsed=0
-        timeout=60
+
+        local timeout
+        timeout=${option_stop_timeout}
+
+        local timeout_word
+        if [ ${option_stop_timeout} -le 0 ]; then
+            timeout_word="infinitely"
+        else
+            timeout_word="${option_stop_timeout}s"
+        fi
 
         if ! is_vm_shutoff_locally "${vm}"; then
-            printf "Waiting for VM %s to shutoff " "${vm}" >&2
-            while [ ${shutoff} -eq 0 ] && [ ${elapsed} -le ${timeout} ]; do
-                sleep 1
-                elapsed=$(( $(date +%s) - ${start} ))
-                printf "."
+            printf "Waiting %s for VM %s to shutoff " "${timeout_word}" "${vm}" >&2
+            shutoff=0
+            start=$(date +%s)
+            elapsed=$(( $(date +%s) - start ))
+            # wait for the shutoff, with a positive timeout or infinitely (timeout <= 0)
+            while [ ${shutoff} -eq 0 ] && { [ ${elapsed} -le ${timeout} ] || [ ${timeout} -le 0 ] ; } ; do
                 if is_vm_shutoff_locally "${vm}"; then
                     shutoff=1
+                else
+                    sleep 1
+                    printf "."
                 fi
+                elapsed=$(( $(date +%s) - start ))
             done
             printf "\n"
             if ! is_vm_shutoff_locally "${vm}"; then
@@ -564,6 +584,7 @@ option_report=""
 option_report_path=""
 option_stop_before=0
 option_start_after=0
+option_stop_timeout=300
 option_vms=""
 option_vm=""
 option_resource=""
@@ -614,6 +635,35 @@ while :; do
             ;;
         --no-stop-before)
             option_stop_before=0
+            ;;
+        --stop-timeout)
+            # with value separated by space
+            value=$2
+            [ -n "${value}" ] && [ "${value}" -eq "${value}" ] 2>/dev/null
+            if [ $? -ne 0 ]; then
+                printf 'ERROR: "--stop-timeout" requires an integer option argument.\n' >&2
+                exit 1
+            else
+                option_stop_timeout="${value}"
+                shift
+            fi
+            ;;
+        --stop-timeout=?*)
+            # with value speparated by =
+            value=${1#*=}
+            [ -n "${value}" ] && [ "${value}" -eq "${value}" ] 2>/dev/null
+            if [ $? -ne 0 ]; then
+                printf 'ERROR: "--stop-timeout" requires an integer option argument.\n' >&2
+                exit 1
+            else
+                option_stop_timeout="${value}"
+                shift
+            fi
+            ;;
+        --stop-timeout=)
+            # without value
+            printf 'ERROR: "--stop-timeout" requires a non-empty option argument.\n' >&2
+            exit 1
             ;;
         --start-after)
             option_start_after=1
