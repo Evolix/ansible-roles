@@ -87,6 +87,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc: use lxc-templates from Backports to install old releases on Bullseye
 * mysql: patch mysql_ (mysql2) Munin plugin, upstream discontinued
 * tomcat: check if user exist before checking its Tomcat instance.
+* mysql: send error log to /var/log/mysql/error.log instead of journald in recent Debian version.
 
 ## [25.01] 2025-01-03
 
