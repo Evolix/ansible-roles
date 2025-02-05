@@ -27,7 +27,7 @@ server {
   error_log  /var/log/nginx/{{ etherpad_instance }}.error.log;
   
   include /etc/nginx/snippets/letsencrypt.conf;
-  include /etc/nginx/ssl/{{ etherpad_domains | first }}.conf;
+  include /etc/nginx/ssl/{{ etherpad_instance }}.conf;
 
   location / {
     proxy_pass         http://127.0.0.1:{{ etherpad_node_port }};

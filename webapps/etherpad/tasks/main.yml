@@ -74,7 +74,7 @@
 
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ etherpad_domains | first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ etherpad_instance }}/fullchain.pem"
   register: ssl
 
 - name: Generate certificate only if required (first time)
@@ -104,6 +104,7 @@
            --non-interactive
            --agree-tos
            --email {{ etherpad_certbot_admin_email }}
+           --cert-name {{ etherpad_instance }}
            -d {{ etherpad_domains | first }}
 
     - name: Create the ssl dir if needed
@@ -115,12 +116,12 @@
     - name: Template ssl bloc for nginx vhost
       ansible.builtin.template:
         src: "ssl.conf.j2"
-        dest: "/etc/nginx/ssl/{{ etherpad_domains | first }}.conf"
+        dest: "/etc/nginx/ssl/{{ etherpad_instance }}.conf"
         mode: '0640'
 
 - name: (Re)check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ etherpad_domains | first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ etherpad_instance }}/fullchain.pem"
   register: ssl
 
 - name: (Re)template conf file for nginx vhost with SSL

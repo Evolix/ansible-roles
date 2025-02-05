@@ -97,7 +97,7 @@
 
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ peertube_domains | first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ peertube_instance }}/fullchain.pem"
   register: ssl
 
 - name: Generate certificate only if required (first time)
@@ -130,11 +130,12 @@
            --non-interactive
            --agree-tos
            --email {{ peertube_certbot_admin_email }}
+           --cert-name {{ peertube_instance }}
            -d {{ peertube_domains | first }}
 
 - name: (Re)check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ peertube_domains | first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ peertube_instance }}/fullchain.pem"
   register: ssl
 
 - name: (Re)template conf file for nginx vhost with SSL
