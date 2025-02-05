@@ -1,0 +1,25 @@
+- name: Configure rsyslog TCP TLS forwarding
+  copy:
+    dest: /etc/rsyslog.d/50-forward-to-server.conf
+    content: |
+      # Configure TCP TLS output forward module
+      action(
+        type="omfwd"
+        protocol="tcp"
+        target="{{ rsyslog_centralized_client_target | mandatory }}"
+        port="{{ rsyslog_centralized_server_port }}"
+        streamdrivermode="1"
+        streamdriver="gtls"
+        streamdriverauthmode="x509/name"
+        streamdriverpermittedpeers="{{ rsyslog_centralized_client_permitted_peers }}"
+        # Allow sending multiline logs
+        tcp_framing="octet-counted"
+      )
+  notify: restart rsyslog
+
+- name: Configure minifirewall for TCP TLS forwarding
+  copy:
+    dest: /etc/minifirewall.d/syslog-centralized
+    content: |
+      /sbin/iptables -A INPUT -p tcp --sport {{ rsyslog_centralized_server_port }} --dport 1024:65535 -s {{ rsyslog_centralized_client_target }} -m state --state ESTABLISHED,RELATED -j ACCEPT
+  notify: restart minifirewall

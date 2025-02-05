@@ -1,0 +1,57 @@
+- name: "Get stat of '{{ pki_dir }}/certs/{{ ansible_fqdn }}.crt'"
+  ansible.builtin.stat:
+    path: "{{ pki_dir }}/certs/{{ ansible_fqdn }}.crt"
+  register: cert
+
+- name: "Fail if the certificate doesn't exists"
+  ansible.builtin.fail:
+    msg: "'{{ pki_dir }}/certs/{{ ansible_fqdn }}.crt' doesn't exists!
+           Execute 'pki' role first."
+  when: not cert.stat.exists
+
+- name: Install rsyslog
+  apt:
+    name: ['rsyslog', 'rsyslog-gnutls']
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Remove previous rsyslog TCP TLS listener
+  file:
+    path: /etc/rsyslog.d/00-tls.conf
+    state: absent
+  notify: restart rsyslog
+
+- name: Configure rsyslog global config
+  copy:
+    dest: /etc/rsyslog.d/00-global.conf
+    content: |
+      # NOTE The "global" directive should be in the central /etc/rsyslog.conf
+      # instead of it's own configuration file, as only one of this directive is
+      # allowed in the whole rsyslog configuration. Unfortunatly until we use a
+      # version of rsyslog allowing to specify these options for each module
+      # instead of globally we nedd this global directive to be located in it's
+      # on configuration file although this could make debugging the
+      # configuration more difficult.
+      global(
+        # Set default CA, certificate and key for TLS
+        DefaultNetstreamDriver="gtls"
+        DefaultNetstreamDriverCAFile="{{ pki_dir }}/certs/ca.crt"
+        DefaultNetstreamDriverCertFile="{{ pki_dir }}/certs/{{ ansible_fqdn }}.crt"
+        DefaultNetstreamDriverKeyFile="{{ pki_dir }}/private/{{ ansible_fqdn }}.key"
+
+        # Keep colors in logs
+        parser.escapeControlCharactersOnReceive="off"
+      )
+  notify: restart rsyslog
+
+- include: "server.yml"
+  when: rsyslog_centralized_client_target == ansible_fqdn or rsyslog_centralized_client_target == ansible_default_ipv4.address
+
+- include: "client.yml"
+
+- name: Restart rsyslog if PKI has changed
+  service:
+    name: rsyslog
+    state: restarted
+  when: _pki_changed

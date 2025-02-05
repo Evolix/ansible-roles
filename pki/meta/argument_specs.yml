@@ -1,0 +1,31 @@
+---
+argument_specs:
+  main:
+    short_description: "Generate a certificate from a PKI."
+    decription:
+      - "Generate a certificate for the target machine, with a Common Name based on its 'ansible_fqdn'."
+      - "If the defined PKI doesn't exit yet it will be created, otherwise it will be reused."
+    options:
+      pki_ca_common_name:
+        type: "str"
+        required: true
+        description:
+          - "The Common Name (CN) for the Certificate Authority (CA)."
+          - "Example: \"Evolix's syslog CA\""
+
+      pki_ca_host:
+        type: "str"
+        required: true
+        description: "Inventory name of the machine hosting the Certificate Authority (CA)."
+
+      pki_ca_password:
+        type: "str"
+        required: true
+        description: "Password of the Certificate Authority (CA)."
+
+      pki_dir:
+        type: "str"
+        required: true
+        description:
+          - "Path to store files related to that PKI; for the CA host and the target machine."
+          - "Example for a syslog PKI: /etc/pki/syslog/"

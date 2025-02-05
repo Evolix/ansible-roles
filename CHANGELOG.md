@@ -13,6 +13,9 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* Add pki role
+* Add rsyslog-centralized role
+
 ### Changed
 
 * mysql: deploy patched mysql2 plugin in /usr/local/share/... instead of original /usr/share/...

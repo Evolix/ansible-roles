@@ -1,0 +1,82 @@
+- name: Configure rsyslog TCP TLS listener
+  copy:
+    dest: /etc/rsyslog.d/20-server-tls.conf
+    content: |
+      # Configure TCP TLS input module
+      module(
+        load="imtcp"
+        streamdriver.mode="1"
+        streamdriver.name="gtls"
+        streamdriver.authmode="x509/name"
+        permittedpeer="{{ rsyslog_centralized_server_permitted_peer | mandatory }}"
+      )
+
+      # Remote logging template
+      # XXX The path is genereated based on the client hostname so it could be
+      # used to impersonate another client.
+      template(name="TmplRemoteLog" type="list") {
+        constant(value="{{ rsyslog_centralized_server_dir }}")
+        property(name="hostname")
+        constant(value="/")
+        property(name="syslogfacility-text")
+        constant(value=".log")
+      }
+
+      # Remote logging rules
+      ruleset(name="remotelog"){
+        *.*   action(type="omfile"
+                     dynaFile="TmplRemoteLog"
+                     dirGroup="adm"
+                     dirCreateMode="0750"
+                    )
+      }
+
+      # Start up TCP listener using the previously defined rules
+      input(
+        type="imtcp"
+        port="{{ rsyslog_centralized_server_port }}"
+        address="{{ rsyslog_centralized_server_address | mandatory }}"
+        ruleset="remotelog"
+      )
+  notify: restart rsyslog
+
+- name: Configure logrotate for forwarded logs from rsyslog
+  copy:
+    dest: /etc/logrotate.d/rsyslog-centralized
+    content: |
+      {{ rsyslog_centralized_server_dir }}/*/*.log {
+          su root adm
+          daily
+          missingok
+          rotate 365
+          notifempty
+          compress
+          delaycompress
+          sharedscripts
+          postrotate
+          /usr/lib/rsyslog/rsyslog-rotate
+          endscript
+      }
+
+- name: Configure log2mail to monitor rejected syslog client connections
+  copy:
+    dest: /etc/log2mail/config/rsyslog
+    mode: "640"
+    owner: "log2mail"
+    group: "adm"
+    content: |
+      # Monitor rejected syslog client connections
+      file = /var/log/syslog
+      pattern = "peer did not provide a certificate"
+      mailto = root@localhost
+      pattern = "not permitted to talk"
+      mailto = root@localhost
+      template = /etc/log2mail/mail
+  notify: restart log2mail
+
+- name: Configure minifirewall for TCP TLS server
+  copy:
+    dest: /etc/minifirewall.d/syslog-server
+    content: |
+      /sbin/iptables -A INPUT -p tcp --sport {{ rsyslog_centralized_server_port }} --dport 1024:65535 -s {{ rsyslog_centralized_client_target }} -m state --state ESTABLISHED,RELATED -j ACCEPT
+  notify: restart minifirewall
