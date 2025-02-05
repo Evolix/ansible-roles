@@ -11,6 +11,8 @@
   ansible.builtin.template:
     src: evomaintenance.j2
     dest: /etc/evomaintenance.cf
+    owner: root
+    group: root
     mode: "0600"
     force: "{{ evomaintenance_force_config | bool }}"
   tags:
@@ -26,6 +28,4 @@
     regex: '%{{ item }}.*NOPASSWD.*/usr/share/scripts/evomaintenance.sh'
     line: '%{{ item }}  ALL = NOPASSWD: /usr/share/scripts/evomaintenance.sh'
     validate: /usr/sbin/visudo -cf %s
-    create: yes
-    mode: "0440"
   loop: "{{ evomaintenance_sudoers }}"

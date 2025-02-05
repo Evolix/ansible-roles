@@ -22,7 +22,6 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * evomaintenance: fix missing default evomaintenance_custom_sudoers
-* evomaintenance: create /etc/sudoers.d/evolinux if not present yet
 
 ### Removed
 
