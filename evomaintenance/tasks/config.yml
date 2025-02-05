@@ -17,15 +17,3 @@
     force: "{{ evomaintenance_force_config | bool }}"
   tags:
     - evomaintenance
-
-- name: Append default users and groups allowed to sudo evomaintenance to custom ones
-  set_fact:
-    evomaintenance_sudoers: "{{ evomaintenance_default_sudoers + evomaintenance_custom_sudoers }}"
-
-- name: Sudoers permission is set
-  ansible.builtin.lineinfile:
-    path: /etc/sudoers.d/evolinux
-    regex: '%{{ item }}.*NOPASSWD.*/usr/share/scripts/evomaintenance.sh'
-    line: '%{{ item }}  ALL = NOPASSWD: /usr/share/scripts/evomaintenance.sh'
-    validate: /usr/sbin/visudo -cf %s
-  loop: "{{ evomaintenance_sudoers }}"

@@ -13,8 +13,6 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
-* evomaintenance: set sudo permission and add variable evomaintenance_custom_sudoers that contain a list of custom users and/or groups that will be allowed to run evomaintenance
-
 ### Changed
 
 * mysql: deploy patched mysql2 plugin in /usr/local/share/... instead of original /usr/share/...

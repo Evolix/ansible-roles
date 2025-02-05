@@ -1,5 +1,6 @@
 Defaults        umask=0077
 
+Cmnd_Alias      MAINT = /usr/share/scripts/evomaintenance.sh, /usr/share/scripts/listupgrade.sh
 
 nagios          ALL = NOPASSWD: /usr/lib/nagios/plugins/check_procs
 nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_minifirewall
@@ -33,4 +34,4 @@ nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_supervisord
 nagios          ALL = (clamav) NOPASSWD: /usr/bin/clamscan /tmp/safe.txt
 
 %{{ evolinux_sudo_group }}  ALL=(ALL:ALL) ALL
-%{{ evolinux_sudo_group }}  ALL = NOPASSWD: /usr/share/scripts/evomaintenance.sh
+%{{ evolinux_sudo_group }}  ALL = NOPASSWD: MAINT
