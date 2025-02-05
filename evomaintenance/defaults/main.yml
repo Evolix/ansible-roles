@@ -2,6 +2,7 @@
 general_alert_email: "root@localhost"
 evomaintenance_alert_email: Null
 evomaintenance_default_sudoers: ["{{ evolinux_sudo_group }}"]
+evomaintenance_custom_sudoers: []
 
 ### copied from evolinux-base ###
 evolinux_hostname: "{{ ansible_hostname }}"
