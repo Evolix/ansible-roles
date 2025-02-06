@@ -20,9 +20,9 @@ server {
   server_name {{ mastodon_domains | first }};
 
   include /etc/nginx/snippets/letsencrypt.conf;
-  ssl_certificate /etc/letsencrypt/live/{{ mastodon_domains | first }}/fullchain.pem;
-  ssl_certificate_key /etc/letsencrypt/live/{{ mastodon_domains | first }}/privkey.pem;
-  ssl_trusted_certificate /etc/letsencrypt/live/{{ mastodon_domains | first }}/chain.pem;
+  ssl_certificate /etc/letsencrypt/live/{{ mastodon_instance }}/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/{{ mastodon_instance }}/privkey.pem;
+  ssl_trusted_certificate /etc/letsencrypt/live/{{ mastodon_instance }}/chain.pem;
 
   # OCSP stapling
   ssl_stapling on;
