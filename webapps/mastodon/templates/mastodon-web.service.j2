@@ -9,6 +9,7 @@ User={{ mastodon_instance }}
 Group={{ mastodon_instance }}
 UMask=0027
 WorkingDirectory=/home/{{ mastodon_instance }}/mastodon/
+Environment="WEB_CONCURRENCY={{ mastodon_puma_web_concurrence }}"
 Environment="RAILS_ENV=production"
 Environment="PORT={{ mastodon_puma_port | default('3000') }}"
 Environment="RAILS_LOG_LEVEL=warn"
