@@ -42,7 +42,8 @@ server {
   gzip_comp_level 6;
   gzip_buffers 16 8k;
   gzip_http_version 1.1;
-  gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+  gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml image/x-icon;
+  gzip_static on;
 
   #add_header Strict-Transport-Security "max-age=31536000";
   #add_header Content-Security-Policy "style-src 'self' 'unsafe-inline'; script-src 'self'; object-src 'self'; img-src data: https:; media-src data: https:; connect-src 'self' wss://{{ mastodon_domains | first }}; upgrade-insecure-requests";
