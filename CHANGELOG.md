@@ -18,8 +18,6 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
-* mysql: deploy patched mysql2 plugin in /usr/local/share/... instead of original /usr/share/...
-
 ### Fixed
 
 ### Removed
