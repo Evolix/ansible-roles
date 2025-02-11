@@ -15,6 +15,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * Add pki role
 * Add rsyslog-centralized role
+* packweb-apache: Install package whois (for mkpasswd)
 
 ### Changed
 
