@@ -20,6 +20,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* mysql: Add missing remount-usr after apt in munin tasks
+
 ### Removed
 
 ### Security

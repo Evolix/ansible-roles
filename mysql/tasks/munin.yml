@@ -25,6 +25,10 @@
         - libdbd-mariadb-perl
     when: ansible_distribution_major_version is version('11', '>=')
 
+  - name: "Remount /usr RW after apt hook put it RO"
+    ansible.builtin.include_role:
+      name: remount-usr
+
   - name: "Overwrite old mysql2 plugin with patched version"
     ansible.builtin.copy:
       src: mysql_
