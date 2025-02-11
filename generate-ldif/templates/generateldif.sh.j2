@@ -582,7 +582,7 @@ EOT
 fi
 
 # PostgreSQL
-if is_pkg_installed postgresql; then
+if is_pkg_installed postgresql-??; then
     postgresql_version=$(get_pkg_version postgresql)
 fi
 if [ -n "${postgresql_version}" ]; then

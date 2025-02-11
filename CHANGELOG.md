@@ -20,6 +20,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * packweb-apache: Install apg at begining (dependency)
+* generate-ldif: fix postgresql packet glob name
 
 ### Fixed
 
