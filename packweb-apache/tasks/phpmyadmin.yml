@@ -1,9 +1,5 @@
 ---
 
-- name: Install apg
-  ansible.builtin.apt:
-    name: apg
-
 # On Debian 10, we need to install the package from buster-backports
 - name: Enable backports (Debian 10)
   ansible.builtin.include_role:
