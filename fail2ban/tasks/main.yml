@@ -63,7 +63,9 @@
 
 - name: package fail2ban is installed
   ansible.builtin.apt:
-    name: fail2ban
+    name: 
+      - fail2ban
+      - python3-systemd
     state: present
   tags:
     - fail2ban

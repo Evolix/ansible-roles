@@ -19,8 +19,11 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* packweb-apache: Install apg at begining (dependency)
+
 ### Fixed
 
+* fail2ban : Add missing python3-systemd dependency
 * mysql: Add missing remount-usr after apt in munin tasks
 
 ### Removed
