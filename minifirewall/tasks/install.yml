@@ -25,7 +25,7 @@
     group: root
   register: minifirewall_upgrade_config
 
-- name: includes directory is present
+- name: Directory for included files is present
   ansible.builtin.file:
     path: /etc/minifirewall.d/
     state: directory
@@ -33,7 +33,7 @@
     group: root
     mode: "0700"
 
-- name: examples for includes are present
+- name: Includes files are present
   ansible.builtin.copy:
     src: "minifirewall.d/"
     dest: "/etc/minifirewall.d/"
