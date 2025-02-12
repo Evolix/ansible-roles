@@ -23,6 +23,17 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [25.02] - 2025-02-12
+
+### Changed
+
+* utilities: replace realpath(1) for OpenBSD (missing options)
+* main: use short option for OpenBSD grep(1)
+
+### Removed
+
+* disable mtree on OpenBSD (missing important feature)
+
 ## [25.01] - 2025-01-07
 
 ### Fixed
