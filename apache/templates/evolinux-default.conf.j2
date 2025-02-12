@@ -39,7 +39,8 @@
     Alias /mailgraph /usr/share/mailgraph
     <Directory /usr/share/mailgraph>
         DirectoryIndex mailgraph.cgi
-        Require all granted
+        Require all denied
+        Include /etc/apache2/ipaddr_whitelist.conf
         Options +FollowSymLinks +ExecCGI
         AddHandler cgi-script .cgi
     </Directory>
@@ -131,7 +132,8 @@
         Alias /mailgraph /usr/share/mailgraph
         <Directory /usr/share/mailgraph>
             DirectoryIndex mailgraph.cgi
-            Require all granted
+            Require all denied
+            Include /etc/apache2/ipaddr_whitelist.conf
             Options +FollowSymLinks +ExecCGI
             AddHandler cgi-script .cgi
         </Directory>

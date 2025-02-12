@@ -51,6 +51,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* apache: Default vhost template > Restrict access to mailgraph to the usual whitelist
 * lvm: rewrite the filter composition
 
 ## [25.01.2] 2025-01-29
