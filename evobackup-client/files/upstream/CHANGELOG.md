@@ -23,6 +23,12 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [25.02.1] - 2025-02-13
+
+### Changed
+
+* improve evobackup template documentation
+
 ## [25.02] - 2025-02-12
 
 ### Changed
