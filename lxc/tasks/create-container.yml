@@ -117,19 +117,16 @@
     mode: '0644'
 
 - name: "Purge OpenSSH in container {{ name }}"
-  community.general.lxc_container:
-    name: "{{ name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt-get purge -y openssh-server"
+  ansible.builtin.shell:
+    cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ name }} --  apt-get purge -y openssh-server"
 
 - name: "{{ name }} - Update APT cache"
-  community.general.lxc_container:
-    name: "{{ name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt-get update"
+  ansible.builtin.shell:
+    cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ name }} --  apt-get update"
 
 - name: "{{ name }} - Upgrade APT packages"
-  community.general.lxc_container:
-    name: "{{ name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt-get upgrade"
+  ansible.builtin.shell:
+    cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ name }} --  apt-get upgrade -y"
 
 - name: "Init /etc git repository in container {{ name }}"
   ansible.builtin.include_role:

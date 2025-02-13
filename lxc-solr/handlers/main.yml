@@ -1,5 +1,4 @@
 - name: "Restart Solr"
-  community.general.lxc_container:
-    name: "{{ item.name }}"
-    container_command: "systemctl restart solr"
+  ansible.builtin.shell:
+    cmd: "lxc-attach --name {{ item.name }} -- systemctl restart solr"
   loop: "{{ lxc_containers }}"

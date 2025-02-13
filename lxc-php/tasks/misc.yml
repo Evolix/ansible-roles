@@ -19,9 +19,8 @@
   notify: "Restart opensmtpd"
 
 - name: "{{ lxc_php_container_name }} - Install misc packages"
-  community.general.lxc_container:
-    name: "{{ lxc_php_container_name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt-get install -y cron logrotate git zip unzip"
+  ansible.builtin.shell:
+    cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ lxc_php_container_name }} -- apt-get install -y cron logrotate git zip unzip"
 
 - name: "{{ lxc_php_container_name }} - Add MySQL socket to container default mounts"
   community.general.lxc_container:

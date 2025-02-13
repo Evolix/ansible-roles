@@ -1,9 +1,8 @@
 ---
 
 - name: "{{ lxc_php_container_name }} - Install ssmtp"
-  community.general.lxc_container:
-    name: "{{ lxc_php_container_name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --yes --force-yes ssmtp "
+  ansible.builtin.shell:
+    cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ lxc_php_container_name }} -- apt-get install --no-install-recommends --yes --force-yes ssmtp "
 
 - name: "{{ lxc_php_container_name }} - Configure ssmtp"
   ansible.builtin.template:

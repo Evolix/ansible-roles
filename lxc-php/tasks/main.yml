@@ -17,9 +17,8 @@
     lxc_rootfs: "/var/lib/lxc/{{ lxc_php_container_name }}/rootfs"
 
 - name: "Update APT cache in container {{ lxc_php_container_name }}"
-  community.general.lxc_container:
-    name: "{{ lxc_php_container_name }}"
-    container_command: "apt-get update"
+  ansible.builtin.shell:
+    cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ lxc_php_container_name }} -- apt-get update"
 
 - ansible.builtin.import_tasks: "php56.yml"
   when: lxc_php_version == "php56"
