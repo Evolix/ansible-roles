@@ -1,37 +1,15 @@
 ---
 
 - name: "{{ lxc_php_container_name }} - Install dependency packages"
-  community.general.lxc_container:
-    name: "{{ lxc_php_container_name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt-get install -y wget gnupg"
+  ansible.builtin.shell:
+    cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ lxc_php_container_name }} -- apt-get install -y wget gnupg"
 
-- name: "{{ lxc_php_container_name }} - Copy keyring packages"
-  ansible.builtin.copy:
-    src: "{{ item }}"
-    dest: "{{ lxc_rootfs }}/tmp/{{ item }}"
-    mode: "0644"
-    owner: root
-    group: root
-  loop:
-    - debsuryorg-archive-keyring_2025.03.13_all.deb
-    - evolix-archive-keyring_0~2024_all.deb
-
-- name: "{{ lxc_php_container_name }} - Install keyring packages"
-  community.general.lxc_container:
-    name: "{{ lxc_php_container_name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt-get install -y /tmp/{{ item }}"
-  loop:
-    - debsuryorg-archive-keyring_2025.03.13_all.deb
-    - evolix-archive-keyring_0~2024_all.deb
-    # - https://packages.sury.org/php/pool/main/d/debsuryorg-archive-keyring/debsuryorg-archive-keyring_2025.03.13_all.deb
-    # - https://pub.evolix.org/evolix/pool/main/e/evolix-archive-keyring/evolix-archive-keyring_0~2024_all.deb
-
-- name: "{{ lxc_php_container_name }} - delete sources.list bookworm repository"
+- name: "{{ lxc_php_container_name }} - delete sources.list trixie repository"
   ansible.builtin.file:
     path: "{{ lxc_rootfs }}/etc/apt/sources.list"
     state: absent
 
-- name: "{{ lxc_php_container_name }} - system bookworm repository"
+- name: "{{ lxc_php_container_name }} - system trixie repository"
   ansible.builtin.template:
     src: bookworm_basics.sources.j2
     dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/system.sources"
@@ -45,29 +23,13 @@
     force: true
     mode: "0644"
 
-- name: "{{ lxc_php_container_name }} - Add sury repo"
-  ansible.builtin.template:
-    src: sury.sources.j2
-    dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/sury.sources"
-    force: true
-    mode: "0644"
-
-- name: "{{ lxc_php_container_name }} - Add sury failsafe repo"
-  ansible.builtin.template:
-    src: evolix_sury.sources.j2
-    dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/evolix_sury.sources"
-    force: true
-    mode: "0644"
-
 - name: "{{ lxc_php_container_name }} - Update APT cache"
-  community.general.lxc_container:
-    name: "{{ lxc_php_container_name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt-get update"
+  ansible.builtin.shell:
+    cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ lxc_php_container_name }} -- apt-get update"
 
 - name: "{{ lxc_php_container_name }} - Install PHP packages"
-  community.general.lxc_container:
-    name: "{{ lxc_php_container_name }}"
-    container_command: "DEBIAN_FRONTEND=noninteractive apt-get install -y php-fpm php-cli php-gd php-intl php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer evolix-archive-keyring debsuryorg-archive-keyring"
+  ansible.builtin.shell:
+    cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ lxc_php_container_name }} -- apt-get install -y php-fpm php-cli php-gd php-intl php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer"
 
 - name: "{{ lxc_php_container_name }} - Copy evolinux PHP configuration"
   ansible.builtin.template:
