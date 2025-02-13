@@ -4,8 +4,8 @@
     that:
       - ansible_distribution == "Debian"
       - ansible_distribution_major_version is version('8', '>=')
-      - ansible_distribution_major_version is version('12', '<=')
-    msg: This is only compatible with Debian 8 → 12
+      - ansible_distribution_major_version is version('13', '<=')
+    msg: This is only compatible with Debian 8 → 13
 
 - ansible.builtin.include_tasks: main_jessie.yml
   when: ansible_distribution_release == "jessie"
@@ -21,3 +21,6 @@
 
 - ansible.builtin.include_tasks: main_bookworm.yml
   when: ansible_distribution_release == "bookworm"
+
+- ansible.builtin.include_tasks: main_trixie.yml
+  when: ansible_distribution_release == "trixie"
