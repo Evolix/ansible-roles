@@ -20,7 +20,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * evobackup-client: upstream release 25.02
-* generate-ldif: fix postgresql packet glob name
+* generate-ldif: fix postgresql package glob name
 * packweb-apache: Install apg at beginning (dependency)
 
 ### Fixed
