@@ -122,7 +122,7 @@
   tags:
     - apache
 
-- ansible.builtin.include: auth.yml
+- ansible.builtin.import_tasks: auth.yml
   tags:
   - apache
 
@@ -147,7 +147,7 @@
   tags:
     - apache
 
-- ansible.builtin.include: server_status.yml
+- ansible.builtin.import_tasks: server_status.yml
   tags:
     - apache
 
@@ -213,12 +213,12 @@
   tags:
     - apache
 
-- ansible.builtin.include: log2mail.yml
+- ansible.builtin.include_tasks: log2mail.yml
   when: apache_log2mail_include
   tags:
     - apache
 
-- ansible.builtin.include: munin.yml
+- ansible.builtin.include_tasks: munin.yml
   when: apache_munin_include | bool
   tags:
     - apache
