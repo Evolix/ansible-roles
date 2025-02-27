@@ -3,8 +3,8 @@
 etherpad_instance: 'example'
 etherpad_system_dep: "['apt-transport-https', 'python3-mysqldb', 'git', 'wget']"
 etherpad_git_url: 'https://github.com/ether/etherpad-lite.git'
-etherpad_git_version: '1.8.18'
-etherpad_node_version: 'node_18.x'
+etherpad_git_version: '2.2.7'
+etherpad_node_version: 'node_22.x'
 etherpad_node_port: '9001'
 etherpad_domains: ['etherpad.example.com']
 etherpad_certbot_admin_email: 'security@etherpad.example.com'
