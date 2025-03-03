@@ -27,6 +27,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * certbot: Move to using `include_tasks` and `import_tasks` instead of `include`
 * evolinux-users: Move to using `include_tasks` and `import_tasks` instead of `include`
 * evomaintenance: Move to using `import_tasks` instead of `include`
+* php: Move to using `import_tasks` instead of `include`
 
 ### Fixed
 

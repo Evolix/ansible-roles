@@ -57,14 +57,14 @@
     dest: /etc/php5
     mode: "0755"
 
-- ansible.builtin.include: config_cli.yml
+- ansible.builtin.import_tasks: config_cli.yml
 
 - name: Enforce permissions on PHP cli directory (Debian 8)
   ansible.builtin.file:
     dest: /etc/php5/cli
     mode: "0755"
 
-- ansible.builtin.include: config_fpm.yml
+- ansible.builtin.import_tasks: config_fpm.yml
   when: php_fpm_enable | bool
 
 - name: Enforce permissions on PHP fpm directory (Debian 8)
@@ -73,7 +73,7 @@
     mode: "0755"
   when: php_fpm_enable | bool
 
-- ansible.builtin.include: config_apache.yml
+- ansible.builtin.import_tasks: config_apache.yml
   when: php_apache_enable | bool
 
 - name: Enforce permissions on PHP apache2 directory (Debian 8)
