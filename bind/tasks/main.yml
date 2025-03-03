@@ -34,10 +34,10 @@
       - dnstop
     state: present
 
-- ansible.builtin.include: authoritative.yml
+- ansible.builtin.include_tasks: authoritative.yml
   when: bind_authoritative_server | bool
 
-- ansible.builtin.include: recursive.yml
+- ansible.builtin.include_tasks: recursive.yml
   when: bind_recursive_server | bool
 
 - name: Create systemd service for Debian 8 (Jessie)
@@ -166,4 +166,4 @@
     force: true
   notify: restart bind
 
-- ansible.builtin.include: munin.yml
+- ansible.builtin.import_tasks: munin.yml

@@ -23,6 +23,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * generate-ldif: fix postgresql package glob name
 * packweb-apache: Install apg at beginning (dependency)
 * apache: Move to using `include_tasks` and `import_tasks` instead of `include`
+* bind: Move to using `include_tasks` and `import_tasks` instead of `include`
 
 ### Fixed
 
