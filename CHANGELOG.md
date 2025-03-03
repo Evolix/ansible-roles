@@ -24,6 +24,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * packweb-apache: Install apg at beginning (dependency)
 * apache: Move to using `include_tasks` and `import_tasks` instead of `include`
 * bind: Move to using `include_tasks` and `import_tasks` instead of `include`
+* certbot: Move to using `include_tasks` and `import_tasks` instead of `include`
 
 ### Fixed
 
