@@ -10,7 +10,7 @@
     mode: '0755'
   loop: "{{ lxc_containers }}"
 
-- ansible.builtin.include: solr.yml
+- ansible.builtin.include_tasks: solr.yml
   args:
     name: "{{ item.name }}"
     solr_version: "{{ item.solr_version }}"
