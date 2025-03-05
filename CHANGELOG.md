@@ -31,6 +31,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc: Move to using `include_tasks` and `import_tasks` instead of `include`
 * lxc-php: Move to using `import_tasks` instead of `include`
 * lxc-solr: Move to using `include_tasks` and `import_tasks` instead of `include`
+* evobackup-client: Move to using `import_tasks` instead of `include`
 
 ### Fixed
 
