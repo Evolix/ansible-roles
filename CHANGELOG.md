@@ -53,6 +53,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * minifirewall: fix fail2ban restart
+* nginx: Allow localhost on the server-status-NNNNN on the default vhost
 
 ## [25.01.3] 2025-01-30
 
