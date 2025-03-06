@@ -31,6 +31,14 @@
   tags:
     - mysql_skip
 
+- name: "Test if /etc/logrotate.d/mariadb contains /var/log/mysql/*.log"
+  lineinfile:
+    dest: /etc/logrotate.d/mariadb
+    search_string: "/var/log/mysql/*.log"
+    state: absent
+  check_mode: yes
+  register: logrotate_mariadb
+
 - name: "Copy logrotate file for mysql_skip.sh"
   ansible.builtin.template:
     src: mysql_skip.logrotate.j2
@@ -38,6 +46,8 @@
     owner: root
     group: root
     mode: "0600"
+  # We don't want /etc/logrotate.d/mysql_skip to be in conflict with /etc/logrotate.d/mariadb
+  when: not logrotate_mariadb.changed
   tags:
     - mysql_skip
 
