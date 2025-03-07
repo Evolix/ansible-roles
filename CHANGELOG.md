@@ -18,6 +18,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * minifirewall: remove deprecated IP addresses
 * spamassassin: remove deprecated IP addresses
 * evolinux-base: disable openssh penalities
+* apache: Transform the default http vhost to a simple redirect to HTTPS
 
 ### Fixed
 
