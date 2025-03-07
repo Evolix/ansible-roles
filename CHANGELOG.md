@@ -15,7 +15,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * Add pki role
 * Add rsyslog-centralized role
-* nagios-nrpe: add check_mount in available plugins
+* nagios-nrpe: add check_mount in available plugins and NRPE conf (commented)
 * packweb-apache: Install package whois (for mkpasswd)
 
 ### Changed
