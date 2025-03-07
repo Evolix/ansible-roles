@@ -20,7 +20,7 @@ for dev in ${not_mounted}; do
     echo "CRITICAL - ${dev} is not mounted!"
 done
 
-[ "${rc}" == 0 ] && echo "OK - LUKS container are unlocked and ext4/BTRFS partitions are mounted."
+[ "${rc}" == 0 ] && echo "OK - LUKS containers are unlocked and ext4/BTRFS partitions are mounted."
 
 exit "${rc}"
 
