@@ -1,0 +1,25 @@
+#!/usr/bin/bash
+
+rc=0
+
+# Check LUKS devices are unlocked
+luks_devices=$(lsblk --noheadings --raw --output FSTYPE,PATH | grep crypto_LUKS | awk '{print$2}')
+
+for dev in ${luks_devices}; do
+    nchildren="$(lsblk -Jp "${dev}" | jq '.blockdevices[].children | length')"
+    if [ "${nchildren}" == 0 ]; then
+        rc=2
+        echo "CRITICAL - LUKS ${dev} is not unlocked!"
+    fi
+done
+
+# Check devices are mounted
+not_mounted=$(lsblk --noheadings --raw --output NAME,FSTYPE,MOUNTPOINT | grep -E '(ext4|btrfs)' | awk '$3 == "" {print$1}')
+for dev in ${not_mounted}; do
+    rc=2
+    echo "CRITICAL - ${dev} is not mounted!"
+done
+
+[ "${rc}" == 0 ] && echo "OK - LUKS container are unlocked and ext4/BTRFS partitions are mounted."
+
+exit "${rc}"
