@@ -43,6 +43,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evoadmin-web: Move to using `import_tasks` instead of `include`
 * proftpd: Move to using `include_tasks` and `import_tasks` instead of `include`
 * postfix: Move to using `import_tasks` instead of `include`
+* nginx: Move to using `import_tasks` instead of `include`
 
 ### Fixed
 
