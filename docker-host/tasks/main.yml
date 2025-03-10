@@ -1,6 +1,6 @@
 # This role installs the docker daemon
 ---
 
-- ansible.builtin.include: install.yml
-- ansible.builtin.include: configure.yml
-- ansible.builtin.include: configure-tls.yml
+- ansible.builtin.import_tasks: install.yml
+- ansible.builtin.import_tasks: configure.yml
+- ansible.builtin.import_tasks: configure-tls.yml
