@@ -12,7 +12,7 @@
     reload: yes
 
 - name: Customize Kernel Transparent Huge Page
-  ansible.builtin.include: thp.yml
+  ansible.builtin.import_tasks: thp.yml
   when: redis_sysctl_transparent_hugepage_enabled is not none
 
 - name: Redis is installed
@@ -77,11 +77,11 @@
     - redis_bind_interface | length > 0
 
 - name: configure Redis for default mode
-  ansible.builtin.include: default-server.yml
+  ansible.builtin.import_tasks: default-server.yml
   when: redis_instance_name is not defined
 
 - name: configure Redis for instance mode
-  ansible.builtin.include: instance-server.yml
+  ansible.builtin.import_tasks: instance-server.yml
   when: redis_instance_name is defined
 
 - name: Is Munin installed
@@ -93,7 +93,7 @@
     - munin
 
 - name: configure Munin for default mode
-  ansible.builtin.include: default-munin.yml
+  ansible.builtin.import_tasks: default-munin.yml
   when:
     - _munin_installed.stat.exists
     - _munin_installed.stat.isdir
@@ -103,7 +103,7 @@
     - munin
 
 - name: configure Munin for instance mode
-  ansible.builtin.include: instance-munin.yml
+  ansible.builtin.import_tasks: instance-munin.yml
   when:
     - _munin_installed.stat.exists
     - _munin_installed.stat.isdir
@@ -121,7 +121,7 @@
     - log2mail
 
 - name: configure log2mail for default mode
-  ansible.builtin.include: default-log2mail.yml
+  ansible.builtin.import_tasks: default-log2mail.yml
   when:
     - _log2mail_installed.stat.exists
     - _log2mail_installed.stat.isdir
@@ -131,7 +131,7 @@
     - log2mail
 
 - name: configure log2mail for instance mode
-  ansible.builtin.include: instance-log2mail.yml
+  ansible.builtin.import_tasks: instance-log2mail.yml
   when:
     - _log2mail_installed.stat.exists
     - _log2mail_installed.stat.isdir
@@ -149,7 +149,7 @@
     - redis
     - nrpe
 
-- ansible.builtin.include: nrpe.yml
+- ansible.builtin.import_tasks: nrpe.yml
   when: nrpe_evolix_config.stat.exists
   tags:
     - redis
