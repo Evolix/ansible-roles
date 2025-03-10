@@ -47,6 +47,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * squid: Move to using `import_tasks` instead of `include`
 * postgresql: Move to using `import_tasks` instead of `include`
 * redis: Move to using `import_tasks` instead of `include`
+* kvm-host: Move to using `import_tasks` instead of `include`
 
 ### Fixed
 

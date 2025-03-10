@@ -6,15 +6,14 @@
 
 - ansible.builtin.import_tasks: lvm.yml
 
-## TODO: check why it's disabled
-- ansible.builtin.include: ssh.yml
+- ansible.builtin.import_tasks: ssh.yml
 
-- ansible.builtin.include: packages.yml
+- ansible.builtin.import_tasks: packages.yml
 
-- ansible.builtin.include: munin.yml
+- ansible.builtin.import_tasks: munin.yml
 
-- ansible.builtin.include: images.yml
+- ansible.builtin.import_tasks: images.yml
 
-- ansible.builtin.include: tools.yml
+- ansible.builtin.import_tasks: tools.yml
 
-- ansible.builtin.include: firewall.yml
+- ansible.builtin.import_tasks: firewall.yml
