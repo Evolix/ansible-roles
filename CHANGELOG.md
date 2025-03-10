@@ -45,6 +45,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * postfix: Move to using `import_tasks` instead of `include`
 * nginx: Move to using `import_tasks` instead of `include`
 * squid: Move to using `import_tasks` instead of `include`
+* postgresql: Move to using `import_tasks` instead of `include`
 
 ### Fixed
 
