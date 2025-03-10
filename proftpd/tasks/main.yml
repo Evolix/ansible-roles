@@ -114,7 +114,7 @@
   tags:
     - proftpd
 
-- ansible.builtin.include: accounts.yml
+- ansible.builtin.import_tasks: accounts.yml
   when: proftpd_accounts | length > 0
 
 - name: Remount /usr if needed

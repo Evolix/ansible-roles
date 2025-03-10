@@ -41,6 +41,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evoacme: Move to using `import_tasks` instead of `include`
 * packweb-apache: Move to using `import_tasks` instead of `include`
 * evoadmin-web: Move to using `import_tasks` instead of `include`
+* proftpd: Move to using `include_tasks` and `import_tasks` instead of `include`
 
 ### Fixed
 
