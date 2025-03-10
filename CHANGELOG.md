@@ -37,6 +37,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evobackup-client: Move to using `import_tasks` instead of `include`
 * evocheck: Move to using `import_tasks` instead of `include`
 * docker-host: Move to using `import_tasks` instead of `include`
+* etc-git: Move to using `import_tasks` instead of `include`
 
 ### Fixed
 
