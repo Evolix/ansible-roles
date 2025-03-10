@@ -39,6 +39,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * docker-host: Move to using `import_tasks` instead of `include`
 * etc-git: Move to using `import_tasks` instead of `include`
 * evoacme: Move to using `import_tasks` instead of `include`
+* packweb-apache: Move to using `import_tasks` instead of `include`
 
 ### Fixed
 
