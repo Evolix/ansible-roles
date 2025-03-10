@@ -40,7 +40,7 @@
       - composer
       - libphp-phpmailer
 
-- ansible.builtin.include: sury_pre.yml
+- ansible.builtin.import_tasks: sury_pre.yml
   when: php_sury_enable
 
 - name: "Install PHP packages (Debian 11)"
@@ -74,13 +74,14 @@
     - /etc/php
     - /etc/php/{{ php_version }}
 
-- ansible.builtin.include: config_cli.yml
+- ansible.builtin.import_tasks: config_cli.yml
+
 - name: "Enforce permissions on PHP cli directory (Debian 11)"
   ansible.builtin.file:
     dest: /etc/php/{{ php_version }}/cli
     mode: "0755"
 
-- ansible.builtin.include: config_fpm.yml
+- ansible.builtin.import_tasks: config_fpm.yml
   when: php_fpm_enable
 
 - name: "Enforce permissions on PHP fpm directory (Debian 11)"
@@ -89,7 +90,7 @@
     mode: "0755"
   when: php_fpm_enable
 
-- ansible.builtin.include: config_apache.yml
+- ansible.builtin.import_tasks: config_apache.yml
   when: php_apache_enable
 
 - name: "Enforce permissions on PHP apache2 directory (Debian 11)"
@@ -98,5 +99,5 @@
     mode: "0755"
   when: php_apache_enable
 
-#- include: sury_post.yml
+#- ansible.builtin.import_tasks: sury_post.yml
 #  when: php_sury_enable
