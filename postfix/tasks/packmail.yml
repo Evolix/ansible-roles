@@ -101,5 +101,5 @@
   tags:
   - postfix
 
-- ansible.builtin.include: packmail-spam.yml
+- ansible.builtin.import_tasks: packmail-spam.yml
 
