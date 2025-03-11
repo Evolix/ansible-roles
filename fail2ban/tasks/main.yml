@@ -41,7 +41,7 @@
     - fail2ban
 
 - name: Include ignoredips update task
-  ansible.builtin.include: ip_whitelist.yml
+  ansible.builtin.import_tasks: ip_whitelist.yml
   when: fail2ban_force_update_ignore_ips | bool
   tags:
     - fail2ban
@@ -117,7 +117,7 @@
     - fail2ban_recidive
 
 - name: Fix dbpurgeage for stretch and buster
-  ansible.builtin.include: fix-dbpurgeage.yml
+  ansible.builtin.import_tasks: fix-dbpurgeage.yml
   when:
     - ansible_distribution_release == "stretch" or ansible_distribution_release == "buster"
   tags:
