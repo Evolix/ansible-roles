@@ -51,6 +51,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * haproxy: Move to using `import_tasks` instead of `include`
 * elasticsearch: Move to using `import_tasks` instead of `include`
 * docker-rootless-instance: Move to using `import_tasks` instead of `include`
+* drbd: Move to using `import_tasks` instead of `include`
 
 ### Fixed
 
