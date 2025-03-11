@@ -49,6 +49,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * redis: Move to using `import_tasks` instead of `include`
 * kvm-host: Move to using `import_tasks` instead of `include`
 * haproxy: Move to using `import_tasks` instead of `include`
+* elasticsearch: Move to using `import_tasks` instead of `include`
 
 ### Fixed
 
