@@ -50,6 +50,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * kvm-host: Move to using `import_tasks` instead of `include`
 * haproxy: Move to using `import_tasks` instead of `include`
 * elasticsearch: Move to using `import_tasks` instead of `include`
+* docker-rootless-instance: Move to using `import_tasks` instead of `include`
 
 ### Fixed
 
