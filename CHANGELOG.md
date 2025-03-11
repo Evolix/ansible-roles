@@ -53,6 +53,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * docker-rootless-instance: Move to using `import_tasks` instead of `include`
 * drbd: Move to using `import_tasks` instead of `include`
 * fail2ban: Move to using `import_tasks` instead of `include`
+* java: Move to using `import_tasks` instead of `include`
 
 ### Fixed
 
