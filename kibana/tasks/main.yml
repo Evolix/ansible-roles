@@ -95,7 +95,7 @@
 #       - optimize
 #       - data
 
-- ansible.builtin.include: proxy_nginx.yml
+- ansible.builtin.import_tasks: proxy_nginx.yml
   when: kibana_proxy_nginx | bool
   tags:
     - kibana
