@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="25.01"
+VERSION="25.03"
 readonly VERSION
 
 # base functions
@@ -66,12 +66,13 @@ detect_os() {
             DEBIAN_RELEASE=$(${LSB_RELEASE_BIN} --codename --short)
         else
             case ${DEBIAN_MAIN_VERSION} in
-                9)  DEBIAN_RELEASE="stretch";;
-                10) DEBIAN_RELEASE="buster";;
-                11) DEBIAN_RELEASE="bullseye";;
-                12) DEBIAN_RELEASE="bookworm";;
-                13) DEBIAN_RELEASE="trixie";;
-                14) DEBIAN_RELEASE="forky";;
+                9)  DEBIAN_RELEASE="stretch"  ;;
+                10) DEBIAN_RELEASE="buster"   ;;
+                11) DEBIAN_RELEASE="bullseye" ;;
+                12) DEBIAN_RELEASE="bookworm" ;;
+                13) DEBIAN_RELEASE="trixie"   ;;
+                14) DEBIAN_RELEASE="forky"    ;;
+                15) DEBIAN_RELEASE="duke"     ;;
             esac
         fi
     fi
@@ -94,6 +95,9 @@ is_debian_trixie() {
 }
 is_debian_forky() {
     test "${DEBIAN_RELEASE}" = "forky"
+}
+is_debian_duke() {
+    test "${DEBIAN_RELEASE}" = "duke"
 }
 
 is_pack_web(){
@@ -295,6 +299,19 @@ check_tmpnoexec() {
         echo "${options}" | grep --quiet --extended-regexp "\bnoexec\b" || failed "IS_TMPNOEXEC" "/tmp is not mounted with 'noexec'"
     else
         mount | grep "on /tmp" | grep --quiet --extended-regexp "\bnoexec\b" || failed "IS_TMPNOEXEC" "/tmp is not mounted with 'noexec' (WARNING: findmnt(8) is not found)"
+    fi
+}
+check_homenoexec() {
+    FINDMNT_BIN=$(command -v findmnt)
+    if [ -x "${FINDMNT_BIN}" ]; then
+        options=$(${FINDMNT_BIN} --noheadings --first-only --output OPTIONS /home)
+        echo "${options}" | grep --quiet --extended-regexp "\bnoexec\b" || \
+           ( grep --quiet --extended-regexp "/home.*noexec" /etc/fstab && \
+	   failed "IS_HOMENOEXEC" "/home is mounted with 'exec' but /etc/fstab document it as 'noexec'" )
+    else
+        mount | grep "on /home" | grep --quiet --extended-regexp "\bnoexec\b" || \
+           ( grep --quiet --extended-regexp "/home.*noexec" /etc/fstab && \
+	   failed "IS_HOMENOEXEC" "/home is mounted with 'exec' but /etc/fstab document it as 'noexec' (WARNING: findmnt(8) is not found)" )
     fi
 }
 check_mountfstab() {
@@ -949,9 +966,11 @@ check_hardwareraidtool() {
     LSPCI_BIN=$(command -v lspci)
     if [ -x "${LSPCI_BIN}" ]; then
         if ${LSPCI_BIN} | grep --quiet 'MegaRAID'; then
-            # shellcheck disable=SC2015
-            is_installed megacli && { is_installed megaclisas-status || is_installed megaraidsas-status; } \
-                || failed "IS_HARDWARERAIDTOOL" "Mega tools not found"
+            if ! { command -v perccli || command -v perccli2; } >/dev/null  ; then
+                # shellcheck disable=SC2015
+                is_installed megacli && { is_installed megaclisas-status || is_installed megaraidsas-status; } \
+                    || failed "IS_HARDWARERAIDTOOL" "Mega tools not found"
+            fi
         fi
         if ${LSPCI_BIN} | grep --quiet 'Hewlett-Packard Company Smart Array'; then
             is_installed cciss-vol-status || failed "IS_HARDWARERAIDTOOL" "cciss-vol-status not installed"
@@ -1477,6 +1496,25 @@ check_lxc_openssh() {
         done
     fi
 }
+check_lxc_opensmtpd() {
+    if is_installed lxc; then
+        lxc_path=$(lxc-config lxc.lxcpath)
+        container_list=$(lxc-ls -1 --active --filter php)
+        for container_name in ${containers_list}; do
+            if lxc-info --name "${container_name}" > /dev/null; then
+                rootfs="${lxc_path}/${container_name}/rootfs"
+                test -e "${rootfs}/usr/sbin/smtpd" || test -e "${rootfs}/usr/sbin/ssmtp" || failed "IS_LXC_OPENSMTPD" "opensmtpd should be installed in container ${container_name}"
+            fi
+        done
+    fi
+}
+
+check_monitoringctl() {
+    if ! monitoringctl list >/dev/null 2>&1; then
+        failed "IS_MONITORINGCTL" "monitoringctl is not installed or has a problem (use 'monitoringctl list' to reproduce)."
+    fi
+}
+
 
 download_versions() {
     local file
@@ -1641,6 +1679,7 @@ main() {
     test "${IS_APTGETBAK:=1}" = 1 && check_aptgetbak
     test "${IS_USRRO:=1}" = 1 && check_usrro
     test "${IS_TMPNOEXEC:=1}" = 1 && check_tmpnoexec
+    test "${IS_HOMENOEXEC:=1}" = 1 && check_homenoexec
     test "${IS_MOUNT_FSTAB:=1}" = 1 && check_mountfstab
     test "${IS_LISTCHANGESCONF:=1}" = 1 && check_listchangesconf
     test "${IS_CUSTOMCRONTAB:=1}" = 1 && check_customcrontab
@@ -1735,7 +1774,9 @@ main() {
     test "${IS_LXC_PHP_FPM_SERVICE_UMASK_SET:=1}" = 1 && check_lxc_php_fpm_service_umask_set
     test "${IS_LXC_PHP_BAD_DEBIAN_VERSION:=1}" = 1 && check_lxc_php_bad_debian_version
     test "${IS_LXC_OPENSSH:=1}" = 1 && check_lxc_openssh
+    test "${IS_LXC_OPENSMTPD:=1}" = 1 && check_lxc_opensmtpd
     test "${IS_CHECK_VERSIONS:=1}" = 1 && check_versions
+    test "${IS_MONITORINGCTL:=1}" = 1 && check_monitoringctl
 
     if [ -f "${main_output_file}" ]; then
         lines_found=$(wc -l < "${main_output_file}")
