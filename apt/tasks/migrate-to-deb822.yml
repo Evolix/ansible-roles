@@ -39,7 +39,8 @@
 - name: Add signed-by when relevant for bookworm
   ansible.builtin.lineinfile:
     dest: /etc/apt/sources.list.d/system.sources
-    line: "Signed-by: /usr/share/keyrings/debian-archive-keyring.gpg"
+    line: "Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg"
+    regexp: "^Signed-By:"
     insertafter: "Suites: bookworm bookworm-updates"
     state: present
   tags:
@@ -54,7 +55,8 @@
 - name: Add signed-by when relevant for bookworm-security
   ansible.builtin.lineinfile:
     dest: /etc/apt/sources.list.d/security.sources
-    line: "Signed-by: /usr/share/keyrings/debian-archive-keyring.gpg"
+    line: "Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg"
+    regexp: "^Signed-By:"
     insertafter: "Suites: bookworm-security"
     state: present
   tags:

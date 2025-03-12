@@ -57,6 +57,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* apt: migrate-to-deb822 : Capitalize properly Signed-By & add a regexp to prevent having multiple Signed-By
 * mysql: Fix broken logrotate.service
 * fail2ban : Add missing python3-systemd dependency
 * mysql: Add missing remount-usr after apt in munin tasks
