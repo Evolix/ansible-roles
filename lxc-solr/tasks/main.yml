@@ -11,7 +11,7 @@
   loop: "{{ lxc_containers }}"
 
 - ansible.builtin.include_tasks: solr.yml
-  args:
+  vars:
     name: "{{ item.name }}"
     solr_version: "{{ item.solr_version }}"
     solr_port: "{{ item.solr_port }}"
