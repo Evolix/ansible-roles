@@ -7,20 +7,20 @@
       - ansible_distribution_major_version is version('13', '<=')
     msg: This is only compatible with Debian 8 → 13
 
-- ansible.builtin.include_tasks: main_jessie.yml
+- ansible.builtin.import_tasks: main_jessie.yml
   when: ansible_distribution_release == "jessie"
 
-- ansible.builtin.include_tasks: main_stretch.yml
+- ansible.builtin.import_tasks: main_stretch.yml
   when: ansible_distribution_release == "stretch"
 
-- ansible.builtin.include_tasks: main_buster.yml
+- ansible.builtin.import_tasks: main_buster.yml
   when: ansible_distribution_release == "buster"
 
-- ansible.builtin.include_tasks: main_bullseye.yml
+- ansible.builtin.import_tasks: main_bullseye.yml
   when: ansible_distribution_release == "bullseye"
 
-- ansible.builtin.include_tasks: main_bookworm.yml
+- ansible.builtin.import_tasks: main_bookworm.yml
   when: ansible_distribution_release == "bookworm"
 
-- ansible.builtin.include_tasks: main_trixie.yml
+- ansible.builtin.import_tasks: main_trixie.yml
   when: ansible_distribution_release == "trixie"

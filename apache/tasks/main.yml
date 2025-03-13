@@ -213,12 +213,12 @@
   tags:
     - apache
 
-- ansible.builtin.include_tasks: log2mail.yml
+- ansible.builtin.import_tasks: log2mail.yml
   when: apache_log2mail_include
   tags:
     - apache
 
-- ansible.builtin.include_tasks: munin.yml
+- ansible.builtin.import_tasks: munin.yml
   when: apache_munin_include | bool
   tags:
     - apache

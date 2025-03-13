@@ -2,7 +2,7 @@
 # tasks file for jitsimeet install
 
 - name: APT sources
-  ansible.builtin.include_tasks: apt_sources.yml
+  ansible.builtin.import_tasks: apt_sources.yml
 
 - name: Install system dependencies
   ansible.builtin.apt:

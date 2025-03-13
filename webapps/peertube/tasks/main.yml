@@ -2,7 +2,7 @@
 # tasks file for peertube install
 
 - name: APT sources
-  ansible.builtin.include_tasks: apt_sources.yml
+  ansible.builtin.import_tasks: apt_sources.yml
 
 - name: Install main system dependencies
   ansible.builtin.apt:

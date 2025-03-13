@@ -1,11 +1,9 @@
 ---
 - name: APT sources
-  ansible.builtin.include_tasks: apt_sources.yml
-  args:
-    apply:
-      tags:
-        - metricbeat
-        - packages
+  ansible.builtin.import_tasks: apt_sources.yml
+  tags:
+    - metricbeat
+    - packages
 
 - name: Metricbeat is installed
   ansible.builtin.apt:

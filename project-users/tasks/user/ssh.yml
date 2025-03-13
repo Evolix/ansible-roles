@@ -84,13 +84,13 @@
     verbosity: 1
 
 - name: Configure SSH in AllowGroups mode
-  ansible.builtin.include_tasks: ssh_allowgroups.yml
+  ansible.builtin.import_tasks: ssh_allowgroups.yml
   when:
     - ssh_allowgroups
     - not ssh_allowusers
 
 - name: Configure SSH in AllowUsers mode
-  ansible.builtin.include_tasks: ssh_allowusers.yml
+  ansible.builtin.import_tasks: ssh_allowusers.yml
   when:
     - ssh_allowusers
     - not ssh_allowgroups

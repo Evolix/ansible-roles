@@ -4,49 +4,49 @@
   ansible.builtin.set_fact:
     mysql_restart_handler_name: "{{ mysql_restart_if_needed | bool | ternary('restart mysql', 'restart mysql (noop)') }}"
 
-- ansible.builtin.include_tasks: packages_stretch.yml
+- ansible.builtin.import_tasks: packages_stretch.yml
   when: ansible_distribution_major_version is version('9', '>=')
 
-- ansible.builtin.include_tasks: packages_jessie.yml
+- ansible.builtin.import_tasks: packages_jessie.yml
   when: ansible_distribution_release == "jessie"
 
 
 ## There is nothing to do with users on Debian 11+ - yet we need a /root/.my.cnf for compatibility
-- ansible.builtin.include_tasks: users_bullseye.yml
+- ansible.builtin.import_tasks: users_bullseye.yml
   when: ansible_distribution_major_version is version('11', '>=')
 
-- ansible.builtin.include_tasks: users_buster.yml
+- ansible.builtin.import_tasks: users_buster.yml
   when: ansible_distribution_release == "buster"
 
-- ansible.builtin.include_tasks: users_stretch.yml
+- ansible.builtin.import_tasks: users_stretch.yml
   when: ansible_distribution_release == "stretch"
 
-- ansible.builtin.include_tasks: users_jessie.yml
+- ansible.builtin.import_tasks: users_jessie.yml
   when: ansible_distribution_release == "jessie"
 
 
-- ansible.builtin.include_tasks: config_stretch.yml
+- ansible.builtin.import_tasks: config_stretch.yml
   when: ansible_distribution_major_version is version('9', '>=')
 
-- ansible.builtin.include_tasks: config_jessie.yml
+- ansible.builtin.import_tasks: config_jessie.yml
   when: ansible_distribution_release == "jessie"
 
 
-- ansible.builtin.include_tasks: replication.yml
+- ansible.builtin.import_tasks: replication.yml
   when: mysql_replication | bool
 
-- ansible.builtin.include_tasks: datadir.yml
+- ansible.builtin.import_tasks: datadir.yml
 
-- ansible.builtin.include_tasks: logdir.yml
+- ansible.builtin.import_tasks: logdir.yml
 
-- ansible.builtin.include_tasks: tmpdir.yml
+- ansible.builtin.import_tasks: tmpdir.yml
 
-- ansible.builtin.include_tasks: nrpe.yml
+- ansible.builtin.import_tasks: nrpe.yml
 
-- ansible.builtin.include_tasks: munin.yml
+- ansible.builtin.import_tasks: munin.yml
 
-- ansible.builtin.include_tasks: log2mail.yml
+- ansible.builtin.import_tasks: log2mail.yml
 
-- ansible.builtin.include_tasks: utils.yml
+- ansible.builtin.import_tasks: utils.yml
 
-- ansible.builtin.include_tasks: mysql_skip.yml
+- ansible.builtin.import_tasks: mysql_skip.yml

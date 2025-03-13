@@ -103,5 +103,5 @@
   tags:
     - nagios-nrpe
 
-- ansible.builtin.include_tasks: monitoringctl.yml
+- ansible.builtin.import_tasks: monitoringctl.yml
 

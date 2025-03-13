@@ -3,7 +3,7 @@
 - ansible.builtin.include_role:
     name: evolix/remount-usr
 
-- ansible.builtin.include_tasks:
+- ansible.builtin.import_tasks:
     file: dump-server-state.yml
 
 - name: "/sbin/deny script is present"
