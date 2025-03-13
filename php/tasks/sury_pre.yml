@@ -17,8 +17,6 @@
     - debsuryorg-archive-keyring_2024.02.05+0~20240205.1+debian12~1.gbp343037_all.deb
     - evolix-archive-keyring_0~2024_all.deb
 
-- name: Install Evolix keyring package
-
 - name: Install keyring packages
   ansible.builtin.apt:
     deb: "/tmp/{{ item }}"
