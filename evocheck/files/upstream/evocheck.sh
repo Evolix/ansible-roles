@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # EvoCheck
-# Script to verify compliance of a Linux (Debian 9+) server
+# Script to verify compliance of a Linux (Debian 10+) server
 # powered by Evolix
 
 #set -x
 
-VERSION="25.03"
+VERSION="25.03.1"
 readonly VERSION
 
 # base functions
@@ -15,7 +15,7 @@ show_version() {
     cat <<END
 evocheck version ${VERSION}
 
-Copyright 2009-2024 Evolix <info@evolix.fr>,
+Copyright 2009-2025 Evolix <info@evolix.fr>,
                     Romain Dessort <rdessort@evolix.fr>,
                     Benoit Série <bserie@evolix.fr>,
                     Gregory Colpart <reg@evolix.fr>,
@@ -56,9 +56,9 @@ detect_os() {
     if [ -e /etc/debian_version ]; then
         DEBIAN_MAIN_VERSION=$(cut -d "." -f 1 < /etc/debian_version)
 
-        if [ "${DEBIAN_MAIN_VERSION}" -lt "9" ]; then
+        if [ "${DEBIAN_MAIN_VERSION}" -lt "10" ]; then
             echo "Debian ${DEBIAN_MAIN_VERSION} is incompatible with this version of evocheck." >&2
-            echo "This version is built for Debian 9 and later." >&2
+            echo "This version is built for Debian 10 and later." >&2
             exit
         fi
 
@@ -66,7 +66,6 @@ detect_os() {
             DEBIAN_RELEASE=$(${LSB_RELEASE_BIN} --codename --short)
         else
             case ${DEBIAN_MAIN_VERSION} in
-                9)  DEBIAN_RELEASE="stretch"  ;;
                 10) DEBIAN_RELEASE="buster"   ;;
                 11) DEBIAN_RELEASE="bullseye" ;;
                 12) DEBIAN_RELEASE="bookworm" ;;
@@ -78,9 +77,6 @@ detect_os() {
     fi
 }
 
-is_debian_stretch() {
-    test "${DEBIAN_RELEASE}" = "stretch"
-}
 is_debian_buster() {
     test "${DEBIAN_RELEASE}" = "buster"
 }
@@ -334,7 +330,7 @@ check_customcrontab() {
     test "$found_lines" = 4 && failed "IS_CUSTOMCRONTAB" "missing custom field in crontab"
 }
 check_sshallowusers() {
-    if { ! is_debian_stretch && ! is_debian_buster && ! is_debian_bullseye ; }; then
+    if { ! is_debian_buster && ! is_debian_bullseye ; }; then
         if [ -d /etc/ssh/sshd_config.d/ ]; then
             # AllowUsers or AllowGroups should be in /etc/ssh/sshd_config.d/
             grep --extended-regexp --quiet --ignore-case --recursive "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config.d/ \
@@ -362,38 +358,16 @@ check_tmoutprofile() {
     grep --no-messages --quiet "TMOUT=" /etc/profile /etc/profile.d/evolinux.sh || failed "IS_TMOUTPROFILE" "TMOUT is not set"
 }
 check_alert5boot() {
-    if is_debian_stretch; then
-        if [ -n "$(find /etc/rc2.d/ -name 'S*alert5')" ]; then
-            grep --quiet "^date" /etc/rc2.d/S*alert5 || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
-        elif [ -n "$(find /etc/init.d/ -name 'alert5')" ]; then
-            grep --quiet "^date" /etc/init.d/alert5 || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 int script"
-        else
-            failed "IS_ALERT5BOOT" "alert5 init script is missing"
-        fi
+    grep --quiet --no-messages "^date" /usr/share/scripts/alert5.sh || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
+    if [ -f /etc/systemd/system/alert5.service ]; then
+        systemctl is-enabled alert5.service -q || failed "IS_ALERT5BOOT" "alert5 unit is not enabled"
     else
-        grep --quiet --no-messages "^date" /usr/share/scripts/alert5.sh || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
-        if [ -f /etc/systemd/system/alert5.service ]; then
-            systemctl is-enabled alert5.service -q || failed "IS_ALERT5BOOT" "alert5 unit is not enabled"
-        else
-            failed "IS_ALERT5BOOT" "alert5 unit file is missing"
-        fi
+        failed "IS_ALERT5BOOT" "alert5 unit file is missing"
     fi
 }
 check_alert5minifw() {
-    if is_debian_stretch; then
-        if [ -n "$(find /etc/rc2.d/ -name 'S*alert5')" ]; then
-            grep --quiet "^/etc/init.d/minifirewall" /etc/rc2.d/S*alert5 \
-                || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 init script"
-        elif [ -n "$(find /etc/init.d/ -name 'alert5')" ]; then
-            grep --quiet "^/etc/init.d/minifirewall" /etc/init.d/alert5 \
-                || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 init script"
-        else
-            failed "IS_ALERT5MINIFW" "alert5 init script is missing"
-        fi
-    else
-        grep --quiet --no-messages "^/etc/init.d/minifirewall" /usr/share/scripts/alert5.sh \
-            || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 script or script is missing"
-    fi
+    grep --quiet --no-messages "^/etc/init.d/minifirewall" /usr/share/scripts/alert5.sh \
+        || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 script or script is missing"
 }
 check_minifw() {
     {
@@ -409,7 +383,7 @@ check_minifw() {
     } || failed "IS_MINIFW" "minifirewall seems not started"
 }
 check_minifw_includes() {
-    if { ! is_debian_stretch && ! is_debian_buster ; }; then
+    if ! is_debian_buster ; then
         if grep --quiet --regexp '/sbin/iptables' --regexp '/sbin/ip6tables' "/etc/default/minifirewall"; then
             failed "IS_MINIFWINCLUDES" "minifirewall has direct iptables invocations in /etc/default/minifirewall that should go in /etc/minifirewall.d/"
         fi
@@ -436,7 +410,7 @@ check_nrpedisks() {
     test "$NRPEDISKS" = "$DFDISKS" || failed "IS_NRPEDISKS" "there must be $DFDISKS check_disk in nrpe.cfg"
 }
 check_nrpepid() {
-    if { is_debian_stretch || is_debian_buster ; }; then
+    if is_debian_buster; then
         { test -e /etc/nagios/nrpe.cfg \
             && grep --quiet "^pid_file=/var/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
         } || failed "IS_NRPEPID" "missing or wrong pid_file directive in nrpe.cfg"
@@ -467,7 +441,7 @@ check_mysqlutils() {
     MYSQL_ADMIN=${MYSQL_ADMIN:-mysqladmin}
     if is_installed mysql-server; then
         # With Debian 11 and later, root can connect to MariaDB with the socket
-        if is_debian_stretch || is_debian_buster; then
+        if is_debian_buster; then
             # You can configure MYSQL_ADMIN in evocheck.cf
             if ! grep --quiet --no-messages "^user *= *${MYSQL_ADMIN}" /root/.my.cnf; then
                 failed "IS_MYSQLUTILS" "${MYSQL_ADMIN} missing in /root/.my.cnf"
@@ -570,7 +544,7 @@ check_bindchroot() {
     if is_installed bind9; then
         if netstat -utpln | grep "/named" | grep :53 | grep --quiet --invert-match --extended-regexp "(127.0.0.1|::1)"; then
             default_conf=/etc/default/named
-            if is_debian_buster || is_debian_stretch; then
+            if is_debian_buster; then
                 default_conf=/etc/default/bind9
             fi
             if grep --quiet '^OPTIONS=".*-t' "${default_conf}" && grep --quiet '^OPTIONS=".*-u' "${default_conf}"; then
@@ -626,7 +600,7 @@ check_evobackup() {
 # Vérification de la mise en place d'un cron de purge de la base SQLite de Fail2ban
 check_fail2ban_purge() {
     # Nécessaire seulement en Debian 9 ou 10
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_buster; then
       if is_installed fail2ban; then
         test -f /etc/cron.daily/fail2ban_dbpurge || failed "IS_FAIL2BAN_PURGE" "missing script fail2ban_dbpurge cron"
       fi
@@ -1088,7 +1062,7 @@ check_elastic_backup() {
 }
 check_mariadbsystemdunit() {
     # TODO: check if it is still needed for bullseye
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_buster; then
         if is_installed mariadb-server; then
             if systemctl -q is-active mariadb.service; then
                 test -f /etc/systemd/system/mariadb.service.d/evolinux.conf \
@@ -1130,12 +1104,11 @@ check_mysqlnrpe() {
     fi
 }
 check_phpevolinuxconf() {
-    is_debian_stretch  && phpVersion="7.0"
     is_debian_buster   && phpVersion="7.3"
     is_debian_bullseye && phpVersion="7.4"
     is_debian_bookworm && phpVersion="8.2"
     is_debian_trixie   && phpVersion="8.4"
-    if is_installed php; then
+    if is_installed php && [ -n "${phpVersion}" ]; then
         { test -f "/etc/php/${phpVersion}/cli/conf.d/z-evolinux-defaults.ini" \
             && test -f "/etc/php/${phpVersion}/cli/conf.d/zzz-evolinux-custom.ini"
         } || failed "IS_PHPEVOLINUXCONF" "missing php evolinux config"

@@ -13,6 +13,12 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Removed
 
+## [25.03.1] 2025-03-13
+
+### Removed
+
+* remove Stretch-specific code in main Linux script
+
 ## [25.03] 2025-03-12
 
 ### Added
