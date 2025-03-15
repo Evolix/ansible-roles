@@ -1,3 +1,18 @@
+---
+
+- name: "Debconf for main_mailer_type"
+  ansible.builtin.debconf:
+    name: postfix
+    question: postfix/main_mailer_type
+    value: "No configuration"
+    vtype: string
+
+- name: "Debconf for mailname"
+  ansible.builtin.debconf:
+    name: postfix
+    question: postfix/mailname
+    value: "{{ evolinux_fqdn | default(ansible_fqdn) }}"
+    vtype: string
 
 - name: Postfix packages are installed
   ansible.builtin.apt:
