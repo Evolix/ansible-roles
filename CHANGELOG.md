@@ -15,54 +15,54 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * Add pki role
 * Add rsyslog-centralized role
+* evolinux-base: add "set autoread" in vim default config
+* evolinux-base: move our vim config in /etc/vim/vimrc.local
 * nagios-nrpe: add check_mount in available plugins and NRPE conf (commented)
 * packweb-apache: Install package whois (for mkpasswd)
-* evolinux-base: move our vim config in /etc/vim/vimrc.local
-* evolinux-base: add "set autoread" in vim default config
 
 ### Changed
 
-* evocheck: upstream release 25.03.1
-* evobackup-client: upstream release 25.02
-* generate-ldif: fix postgresql package glob name
-* packweb-apache: Install apg at beginning (dependency)
 * apache: Move to using `include_tasks` and `import_tasks` instead of `include`
 * bind: Move to using `include_tasks` and `import_tasks` instead of `include`
 * certbot: Move to using `include_tasks` and `import_tasks` instead of `include`
-* evolinux-users: Move to using `include_tasks` and `import_tasks` instead of `include`
-* evomaintenance: Move to using `import_tasks` instead of `include`
-* php: Move to using `import_tasks` instead of `include`
-* lxc: Move to using `include_tasks` and `import_tasks` instead of `include`
-* lxc-php: Move to using `import_tasks` instead of `include`
-* lxc-solr: Move to using `include_tasks` and `import_tasks` instead of `include`
-* evobackup-client: Move to using `import_tasks` instead of `include`
-* evocheck: Move to using `import_tasks` instead of `include`
 * docker-host: Move to using `import_tasks` instead of `include`
-* etc-git: Move to using `import_tasks` instead of `include`
-* evoacme: Move to using `import_tasks` instead of `include`
-* packweb-apache: Move to using `import_tasks` instead of `include`
-* evoadmin-web: Move to using `import_tasks` instead of `include`
-* proftpd: Move to using `include_tasks` and `import_tasks` instead of `include`
-* postfix: Move to using `import_tasks` instead of `include`
-* nginx: Move to using `import_tasks` instead of `include`
-* squid: Move to using `import_tasks` instead of `include`
-* postgresql: Move to using `import_tasks` instead of `include`
-* redis: Move to using `import_tasks` instead of `include`
-* kvm-host: Move to using `import_tasks` instead of `include`
-* haproxy: Move to using `import_tasks` instead of `include`
-* elasticsearch: Move to using `import_tasks` instead of `include`
 * docker-rootless-instance: Move to using `import_tasks` instead of `include`
 * drbd: Move to using `import_tasks` instead of `include`
+* elasticsearch: Move to using `import_tasks` instead of `include`
+* etc-git: Move to using `import_tasks` instead of `include`
+* evoacme: Move to using `import_tasks` instead of `include`
+* evoadmin-web: Move to using `import_tasks` instead of `include`
+* evobackup-client: Move to using `import_tasks` instead of `include`
+* evobackup-client: upstream release 25.02
+* evocheck: Move to using `import_tasks` instead of `include`
+* evocheck: upstream release 25.03.1
+* evolinux-users: Move to using `include_tasks` and `import_tasks` instead of `include`
+* evomaintenance: Move to using `import_tasks` instead of `include`
 * fail2ban: Move to using `import_tasks` instead of `include`
+* generate-ldif: fix postgresql package glob name
+* haproxy: Move to using `import_tasks` instead of `include`
 * java: Move to using `import_tasks` instead of `include`
+* kvm-host: Move to using `import_tasks` instead of `include`
+* lxc-php: Move to using `import_tasks` instead of `include`
+* lxc-solr: Move to using `include_tasks` and `import_tasks` instead of `include`
+* lxc: Move to using `include_tasks` and `import_tasks` instead of `include`
+* nginx: Move to using `import_tasks` instead of `include`
+* packweb-apache: Install apg at beginning (dependency)
+* packweb-apache: Move to using `import_tasks` instead of `include`
+* php: Move to using `import_tasks` instead of `include`
+* postfix: Move to using `import_tasks` instead of `include`
 * postfix: preset debconf values
+* postgresql: Move to using `import_tasks` instead of `include`
+* proftpd: Move to using `include_tasks` and `import_tasks` instead of `include`
+* redis: Move to using `import_tasks` instead of `include`
+* squid: Move to using `import_tasks` instead of `include`
 
 ### Fixed
 
 * apt: migrate-to-deb822 : Capitalize properly Signed-By & add a regexp to prevent having multiple Signed-By
-* mysql: Fix broken logrotate.service
 * fail2ban : Add missing python3-systemd dependency
 * mysql: Add missing remount-usr after apt in munin tasks
+* mysql: Fix broken logrotate.service
 * mysql: Fix munin plugin to correctly use munin config
 
 ### Removed
