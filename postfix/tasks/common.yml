@@ -1,18 +1,14 @@
 ---
 
-
-### Disabled temporaryly
-### With this setting the main.cf is not installed, then we don't overwrite with out own since it doesn't exist.
-###
-# - name: "Debconf settings"
-#   ansible.builtin.debconf:
-#     name: postfix
-#     question: "{{ item.key }}"
-#     value: "{{ item.value }}"
-#     vtype: "{{ item.type }}"
-#   loop:
-#     - { key: 'postfix/main_mailer_type', type: 'string', value: 'No configuration' }
-#     - { key: 'postfix/mailname',         type: 'string', value: "{{ evolinux_fqdn | default(ansible_fqdn) }}" }
+- name: "Debconf settings"
+  ansible.builtin.debconf:
+    name: postfix
+    question: "{{ item.key }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.type }}"
+  loop:
+    - { key: 'postfix/main_mailer_type', type: 'string', value: 'No configuration' }
+    - { key: 'postfix/mailname',         type: 'string', value: "{{ evolinux_fqdn | default(ansible_fqdn) }}" }
 
 - name: Postfix packages are installed
   ansible.builtin.apt:
@@ -36,12 +32,41 @@
     - postfix
   when: postfix_purge_exim | bool
 
+- name: Get stats for /etc/postfix/main.cf
+  ansible.builtin.stat:
+    path: /etc/postfix/main.cf
+    get_checksum: false
+  register: main_cf
+  tags:
+    - postfix
+
 - name: compute main.cf SHA1 checksum
   ansible.builtin.shell:
-    cmd: 'grep -v -E "^(myhostname|mydestination|mailbox_command)" /etc/postfix/main.cf | sha1sum | cut -d " " -f1'
+    cmd: 'grep --invert-match --extended-regexp "^(myhostname|mydestination|mailbox_command)" /etc/postfix/main.cf | sha1sum | cut -d " " -f1'
   changed_when: False
   check_mode: no
   register: main_cf_checksum
+  tags:
+    - postfix
+
+- name: display checksums of known main.cf files
+  debug:
+    var: main_cf_known_checksums
+    verbosity: 1
+  tags:
+    - postfix
+
+- name: display checksum of current main.cf file
+  debug:
+    var: main_cf_checksum
+    verbosity: 1
+  tags:
+    - postfix
+
+- name: display stat of main.cf file
+  debug:
+    var: main_cf.stat
+    verbosity: 1
   tags:
     - postfix
 
