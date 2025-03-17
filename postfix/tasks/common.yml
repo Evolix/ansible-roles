@@ -1,14 +1,18 @@
 ---
 
-- name: "Debconf settings"
-  ansible.builtin.debconf:
-    name: postfix
-    question: "{{ item.key }}"
-    value: "{{ item.value }}"
-    vtype: "{{ item.type }}"
-  loop:
-    - { key: 'postfix/main_mailer_type', type: 'string', value: 'No configuration' }
-    - { key: 'postfix/mailname',         type: 'string', value: "{{ evolinux_fqdn | default(ansible_fqdn) }}" }
+
+### Disabled temporaryly
+### With this setting the main.cf is not installed, then we don't overwrite with out own since it doesn't exist.
+###
+# - name: "Debconf settings"
+#   ansible.builtin.debconf:
+#     name: postfix
+#     question: "{{ item.key }}"
+#     value: "{{ item.value }}"
+#     vtype: "{{ item.type }}"
+#   loop:
+#     - { key: 'postfix/main_mailer_type', type: 'string', value: 'No configuration' }
+#     - { key: 'postfix/mailname',         type: 'string', value: "{{ evolinux_fqdn | default(ansible_fqdn) }}" }
 
 - name: Postfix packages are installed
   ansible.builtin.apt:

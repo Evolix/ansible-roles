@@ -52,7 +52,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * packweb-apache: Move to using `import_tasks` instead of `include`
 * php: Move to using `import_tasks` instead of `include`
 * postfix: Move to using `import_tasks` instead of `include`
-* postfix: preset debconf values
+* postfix: preset debconf values (disabled until a bugfix is found)
 * postgresql: Move to using `import_tasks` instead of `include`
 * proftpd: Move to using `include_tasks` and `import_tasks` instead of `include`
 * redis: Move to using `import_tasks` instead of `include`
