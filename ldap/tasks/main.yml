@@ -16,11 +16,11 @@
   notify: restart slapd
 
 - name: ldapvirc file
-  ansible.builtin.include: ldapvirc.yml
+  ansible.builtin.import_tasks: ldapvirc.yml
 
 - name: nagios config file for LDAP
-  ansible.builtin.include: nagios.yml
+  ansible.builtin.import_tasks: nagios.yml
 
 - name: initialize database
-  ansible.builtin.include: init.yml
+  ansible.builtin.import_tasks: init.yml
   when: not root_ldapvirc_path.stat.exists
