@@ -15,6 +15,17 @@
     mode: "0644"
   when: ansible_distribution_major_version is version('10', '=')
 
+- name: Debconf settings for phpMyAdmin
+  ansible.builtin.debconf:
+    name: phpMyAdmin
+    question: "{{ item.key }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.type }}"
+  loop:
+    - { key: 'phpmyadmin/dbconfig-install', type: 'boolean', value: 'true' }
+    - { key: 'phpmyadmin/dbconfig-upgrade', type: 'boolean', value: 'true' }
+    - { key: 'phpmyadmin/reconfigure-webserver', type: 'string', value: 'apache2' }
+
 - name: Install phpmyadmin
   ansible.builtin.apt:
     name: phpmyadmin

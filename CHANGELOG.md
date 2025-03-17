@@ -47,6 +47,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc-solr: Move to using `include_tasks` and `import_tasks` instead of `include`
 * lxc: Move to using `include_tasks` and `import_tasks` instead of `include`
 * nginx: Move to using `import_tasks` instead of `include`
+* packweb-apache: add debconf presets
 * packweb-apache: Install apg at beginning (dependency)
 * packweb-apache: Move to using `import_tasks` instead of `include`
 * php: Move to using `import_tasks` instead of `include`
