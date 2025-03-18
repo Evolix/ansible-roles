@@ -31,6 +31,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * elasticsearch: Move to using `import_tasks` instead of `include`
 * etc-git: Move to using `import_tasks` instead of `include`
 * evoacme: Move to using `import_tasks` instead of `include`
+* evoadmin-mail: Move to using `import_tasks` instead of `include`
 * evoadmin-web: Move to using `import_tasks` instead of `include`
 * evobackup-client: Move to using `import_tasks` instead of `include`
 * evobackup-client: upstream release 25.02

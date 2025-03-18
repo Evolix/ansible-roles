@@ -29,12 +29,12 @@
   tags:
     - evoadmin-mail
 
-- ansible.builtin.include: ssl.yml
+- ansible.builtin.import_tasks: ssl.yml
 
-- ansible.builtin.include: apache.yml
+- ansible.builtin.import_tasks: apache.yml
   when: evoadminmail_webserver == "apache"
 
-- ansible.builtin.include: nginx.yml
+- ansible.builtin.import_tasks: nginx.yml
   when: evoadminmail_webserver == "nginx"
 
 - name: enable evoadmin-mail link in default site index
