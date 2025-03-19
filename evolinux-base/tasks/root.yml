@@ -90,15 +90,28 @@
     - "set shiftwidth=4"
   when: evolinux_root_vim_conf | bool
 
-- name: disable SSH access for root (Debian < 12)
+- name: Set SSH access for root (Debian < 12)
   ansible.builtin.replace:
     dest: /etc/ssh/sshd_config
-    regexp: '^#?PermitRootLogin (yes|without-password|prohibit-password)'
-    replace: "PermitRootLogin no"
+    regexp: '^(# *)?PermitRootLogin .+'
+    replace: "PermitRootLogin {{ evolinux_ssh_permitrootlogin }}"
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
   when:
-    - evolinux_root_disable_ssh | bool
+    - evolinux_ssh_permitrootlogin is defined
+    - evolinux_ssh_permitrootlogin != None
+    - evolinux_ssh_permitrootlogin | length > 0
+    - ansible_distribution_major_version is version('11', '<=')
+
+- name: Unset SSH access for root (Debian < 12)
+  ansible.builtin.replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin '
+    replace: "# PermitRootLogin "
+    validate: '/usr/sbin/sshd -t -f %s'
+  notify: reload sshd
+  when:
+    - not (evolinux_ssh_permitrootlogin is defined) or evolinux_ssh_permitrootlogin == None or (evolinux_ssh_permitrootlogin | length <= 0)
     - ansible_distribution_major_version is version('11', '<=')
 
 - name: files under /etc/ssh/sshd_config.d are included (Debian >= 12)
@@ -108,20 +121,34 @@
     insertbefore: BOF
   notify: reload ssh
   when:
-    - evolinux_root_disable_ssh | bool
     - ansible_distribution_major_version is version('12', '>=')
 
-- name: disable SSH access for root (Debian >= 12)
+- name: Set SSH access for root (Debian >= 12)
   ansible.builtin.lineinfile:
-    path: /etc/ssh/sshd_config.d/z-evolinux-defaults.conf
-    line: "PermitRootLogin no"
-    regexp: "^#?PermitRootLogin "
+    path: /etc/ssh/sshd_config.d/zzz-evolinux-custom.conf
+    line: "PermitRootLogin {{ evolinux_ssh_permitrootlogin }}"
+    regexp: "^(# ?)?PermitRootLogin "
     create: yes
+    mode: "0644"
+    validate: '/usr/sbin/sshd -t -f %s'
+    insertbefore: BOF
+  notify: reload sshd
+  when:
+    - evolinux_ssh_permitrootlogin is defined
+    - evolinux_ssh_permitrootlogin != None
+    - evolinux_ssh_permitrootlogin | length > 0
+    - ansible_distribution_major_version is version('12', '>=')
+
+- name: Unset SSH access for root (Debian >= 12)
+  ansible.builtin.replace:
+    path: /etc/ssh/sshd_config.d/zzz-evolinux-custom.conf
+    replace: "# PermitRootLogin "
+    regexp: "^PermitRootLogin "
     mode: "0644"
     validate: '/usr/sbin/sshd -t -f %s'
   notify: reload sshd
   when:
-    - evolinux_root_disable_ssh | bool
+    - not (evolinux_ssh_permitrootlogin is defined) or evolinux_ssh_permitrootlogin == None or (evolinux_ssh_permitrootlogin | length <= 0)
     - ansible_distribution_major_version is version('12', '>=')
 
 

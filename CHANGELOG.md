@@ -37,8 +37,10 @@ The **patch** part is incremented if multiple releases happen the same month
 * evobackup-client: Move to using `import_tasks` instead of `include`
 * evobackup-client: upstream release 25.02
 * evocheck: Move to using `import_tasks` instead of `include`
+* evocheck: upstream release 25.03.1
 * evocheck: upstream release 25.03.2
 * evolinux-base: install evobackup-client only on Debian 10+
+* evolinux-base: use variable "evolinux_ssh_permit_root_login" instead of "evolinux_root_disable_ssh"
 * evolinux-users: Move to using `include_tasks` and `import_tasks` instead of `include`
 * evomaintenance: Move to using `import_tasks` instead of `include`
 * evomaintenance: Upstream release 25.03
@@ -92,6 +94,9 @@ The **patch** part is incremented if multiple releases happen the same month
 * userlogrotate: pass user/group in correct order
 
 ### Removed
+
+* evolinux-base: remove "evolinux_root_disable_ssh"
+* evolinux-users: don't bother with root login anymore
 
 ### Security
 
