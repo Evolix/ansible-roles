@@ -69,5 +69,5 @@
     update_cache: yes
   when: percona__apt_config_deb is changed
 
-- ansible.builtin.include: xtrabackup.yml
+- ansible.builtin.import_tasks: xtrabackup.yml
   when: percona__install_xtrabackup | bool
