@@ -71,6 +71,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * squid: Move to using `import_tasks` instead of `include`
 * tomcat-instance: Move to using `import_tasks` instead of `include`
 * tomcat: Move to using `import_tasks` instead of `include`
+* varnish: Move to using `import_tasks` instead of `include`
 
 ### Fixed
 
