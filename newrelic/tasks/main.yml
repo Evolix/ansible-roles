@@ -1,9 +1,9 @@
 ---
 
-- ansible.builtin.include: sources.yml
+- ansible.builtin.import_tasks: sources.yml
 
-- ansible.builtin.include: php.yml
+- ansible.builtin.import_tasks: php.yml
   when: newrelic_php | bool
 
-- ansible.builtin.include: sysmond.yml
+- ansible.builtin.import_tasks: sysmond.yml
   when: newrelic_sysmond | bool
