@@ -45,6 +45,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * java: Move to using `import_tasks` instead of `include`
 * kvm-host: Move to using `import_tasks` instead of `include`
 * ldap: Move to using `import_tasks` instead of `include`
+* logstash: Move to using `import_tasks` instead of `include`
 * lxc-php: Move to using `import_tasks` instead of `include`
 * lxc-solr: Move to using `include_tasks` and `import_tasks` instead of `include`
 * lxc: Move to using `include_tasks` and `import_tasks` instead of `include`

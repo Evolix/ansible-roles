@@ -62,6 +62,6 @@
     var: logstash_template
     verbosity: 1
 
-- ansible.builtin.include: logs.yml
+- ansible.builtin.import_tasks: logs.yml
 
-- ansible.builtin.include: tmpdir.yml
+- ansible.builtin.import_tasks: tmpdir.yml
