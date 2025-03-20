@@ -70,6 +70,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * redmine: Move to using `import_tasks` instead of `include`
 * squid: Move to using `import_tasks` instead of `include`
 * tomcat-instance: Move to using `import_tasks` instead of `include`
+* tomcat: Move to using `import_tasks` instead of `include`
 
 ### Fixed
 
