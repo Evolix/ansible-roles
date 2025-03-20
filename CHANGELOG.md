@@ -54,6 +54,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * newrelic: Move to using `import_tasks` instead of `include`
 * nextcloud: Move to using `import_tasks` instead of `include`
 * nginx: Move to using `import_tasks` instead of `include`
+* openvpn: Move to using `import_tasks` instead of `include`
 * packweb-apache: add debconf presets
 * packweb-apache: Install apg at beginning (dependency)
 * packweb-apache: Move to using `import_tasks` instead of `include`
