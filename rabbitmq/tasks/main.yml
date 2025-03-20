@@ -34,7 +34,7 @@
   tags:
     - nrpe
 
-- ansible.builtin.include: nrpe.yml
+- ansible.builtin.import_tasks: nrpe.yml
   when: nrpe_evolix_config.stat.exists
 
 - name: is Munin present ?
@@ -45,7 +45,7 @@
   tags:
     - nrpe
 
-- ansible.builtin.include: munin.yml
+- ansible.builtin.import_tasks: munin.yml
   when: etc_munin_directory.stat.exists
 
 - name: entry for RabbitMQ in web page is present

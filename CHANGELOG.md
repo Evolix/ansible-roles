@@ -65,6 +65,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * postfix: preset debconf values
 * postgresql: Move to using `import_tasks` instead of `include`
 * proftpd: Move to using `include_tasks` and `import_tasks` instead of `include`
+* rabbitmq: Move to using `import_tasks` instead of `include`
 * redis: Move to using `import_tasks` instead of `include`
 * squid: Move to using `import_tasks` instead of `include`
 
