@@ -13,6 +13,14 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Removed
 
+## [25.03.2] 2025-03-21
+
+### Added
+
+* Add IS_NRPEPRESSURE check
+* New checks for SSH config
+* Verify backup directory existence
+
 ## [25.03.1] 2025-03-13
 
 ### Removed

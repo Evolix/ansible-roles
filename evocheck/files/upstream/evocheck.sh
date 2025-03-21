@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="25.03.1"
+VERSION="25.03.2"
 readonly VERSION
 
 # base functions
@@ -348,6 +348,29 @@ check_sshallowusers() {
             grep --extended-regexp --quiet --ignore-case "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config \
                 || failed "IS_SSHALLOWUSERS" "missing AllowUsers or AllowGroups directive in sshd_config"
         fi
+    fi
+}
+check_sshconfsplit() {
+    if { ! is_debian_buster && ! is_debian_bullseye ; }; then
+        ls /etc/ssh/sshd_config.d/* > /dev/null 2> /dev/null \
+            || failed "IS_SSHCONFSPLIT" "No files under /etc/ssh/sshd_config.d"
+        diff /usr/share/openssh/sshd_config /etc/ssh/sshd_config > /dev/null 2> /dev/null \
+            || failed "IS_SSHCONFSPLIT" "Files /etc/ssh/sshd_config and /usr/share/openssh/sshd_config differ"
+        for f in /etc/ssh/sshd_config.d/z-evolinux-defaults.conf /etc/ssh/sshd_config.d/zzz-evolinux-custom.conf; do
+            test -f "${f}" || failed "IS_SSHCONFSPLIT" "${f} is not a regular file"
+        done
+    fi
+}
+check_sshlastmatch() {
+    if { ! is_debian_buster && ! is_debian_bullseye ; }; then
+        for f in /etc/ssh/sshd_config /etc/ssh/sshd_config.d/zzz-evolinux-custom.conf; do
+            if ! test -f "${f}"; then
+                continue
+            fi
+            if ! awk 'BEGIN { last = "all" } tolower($1) == "match" { last = tolower($2) } END { if (last != "all") exit 1 }' "${f}"; then
+                failed "IS_SSHLASTMATCH" "last Match directive is not \"Match all\" in ${f}"
+            fi
+        done
     fi
 }
 check_diskperf() {
@@ -976,81 +999,106 @@ check_mariadbevolinuxconf() {
 }
 check_sql_backup() {
     if (is_installed "mysql-server" || is_installed "mariadb-server"); then
-        # You could change the default path in /etc/evocheck.cf
-        SQL_BACKUP_PATH="${SQL_BACKUP_PATH:-$(find /home/backup/ \( -iname "mysql.bak.gz" -o -iname "mysql.sql.gz" -o -iname "mysqldump.sql.gz" \))}"
-        for backup_path in ${SQL_BACKUP_PATH}; do
-            if [ ! -f "${backup_path}" ]; then
-                failed "IS_SQL_BACKUP" "MySQL dump is missing (${backup_path})"
-                test "${VERBOSE}" = 1 || break
-            fi
-        done
+        backup_dir="/home/backup"
+        if [ -d "${backup_dir}" ]; then
+            # You could change the default path in /etc/evocheck.cf
+            SQL_BACKUP_PATH="${SQL_BACKUP_PATH:-$(find "${backup_dir}" \( -iname "mysql.bak.gz" -o -iname "mysql.sql.gz" -o -iname "mysqldump.sql.gz" \))}"
+            for backup_path in ${SQL_BACKUP_PATH}; do
+                if [ ! -f "${backup_path}" ]; then
+                    failed "IS_SQL_BACKUP" "MySQL dump is missing (${backup_path})"
+                    test "${VERBOSE}" = 1 || break
+                fi
+            done
+        else
+            failed "IS_SQL_BACKUP" "${backup_dir}/ is missing"
+        fi
     fi
 }
 check_postgres_backup() {
     if is_installed "postgresql-9*" || is_installed "postgresql-1*"; then
-        # If you use something like barman, you should disable this check
-        # You could change the default path in /etc/evocheck.cf
-        POSTGRES_BACKUP_PATH="${POSTGRES_BACKUP_PATH:-$(find /home/backup/ -iname "pg.dump.bak*")}"
-        for backup_path in ${POSTGRES_BACKUP_PATH}; do
-            if [ ! -f "${backup_path}" ]; then
-                failed "IS_POSTGRES_BACKUP" "PostgreSQL dump is missing (${backup_path})"
-                test "${VERBOSE}" = 1 || break
-            fi
-        done
+        backup_dir="/home/backup"
+        if [ -d "${backup_dir}" ]; then
+            # If you use something like barman, you should disable this check
+            # You could change the default path in /etc/evocheck.cf
+            POSTGRES_BACKUP_PATH="${POSTGRES_BACKUP_PATH:-$(find "${backup_dir}" -iname "pg.dump.bak*")}"
+            for backup_path in ${POSTGRES_BACKUP_PATH}; do
+                if [ ! -f "${backup_path}" ]; then
+                    failed "IS_POSTGRES_BACKUP" "PostgreSQL dump is missing (${backup_path})"
+                    test "${VERBOSE}" = 1 || break
+                fi
+            done
+        else
+            failed "IS_POSTGRES_BACKUP" "${backup_dir}/ is missing"
+        fi
     fi
 }
 check_mongo_backup() {
     if is_installed "mongodb-org-server"; then
-        # You could change the default path in /etc/evocheck.cf
-        MONGO_BACKUP_PATH=${MONGO_BACKUP_PATH:-"/home/backup/mongodump"}
-        if [ -d "$MONGO_BACKUP_PATH" ]; then
-            for file in "${MONGO_BACKUP_PATH}"/*/*.{json,bson}*; do
-                # Skip indexes file.
-                if ! [[ "$file" =~ indexes ]]; then
-                    limit=$(date +"%s" -d "now - 2 day")
-                    updated_at=$(stat -c "%Y" "$file")
-                    if [ -f "$file" ] && [ "$limit" -gt "$updated_at"  ]; then
-                        failed "IS_MONGO_BACKUP" "MongoDB hasn't been dumped for more than 2 days"
-                        break
+        backup_dir="/home/backup"
+        if [ -d "${backup_dir}" ]; then
+            # You could change the default path in /etc/evocheck.cf
+            MONGO_BACKUP_PATH=${MONGO_BACKUP_PATH:-"${backup_dir}/mongodump"}
+            if [ -d "$MONGO_BACKUP_PATH" ]; then
+                for file in "${MONGO_BACKUP_PATH}"/*/*.{json,bson}*; do
+                    # Skip indexes file.
+                    if ! [[ "$file" =~ indexes ]]; then
+                        limit=$(date +"%s" -d "now - 2 day")
+                        updated_at=$(stat -c "%Y" "$file")
+                        if [ -f "$file" ] && [ "$limit" -gt "$updated_at"  ]; then
+                            failed "IS_MONGO_BACKUP" "MongoDB hasn't been dumped for more than 2 days"
+                            break
+                        fi
                     fi
-                fi
-            done
+                done
+            else
+                failed "IS_MONGO_BACKUP" "MongoDB dump directory is missing (${MONGO_BACKUP_PATH})"
+            fi
         else
-            failed "IS_MONGO_BACKUP" "MongoDB dump directory is missing (${MONGO_BACKUP_PATH})"
+            failed "IS_MONGO_BACKUP" "${backup_dir}/ is missing"
         fi
     fi
 }
 check_ldap_backup() {
     if is_installed slapd; then
-        # You could change the default path in /etc/evocheck.cf
-        LDAP_BACKUP_PATH="${LDAP_BACKUP_PATH:-$(find /home/backup/ -iname "ldap.bak")}"
-        test -f "$LDAP_BACKUP_PATH" || failed "IS_LDAP_BACKUP" "LDAP dump is missing (${LDAP_BACKUP_PATH})"
+        backup_dir="/home/backup"
+        if [ -d "${backup_dir}" ]; then
+            # You could change the default path in /etc/evocheck.cf
+            LDAP_BACKUP_PATH="${LDAP_BACKUP_PATH:-$(find "${backup_dir}" -iname "ldap.bak")}"
+            test -f "$LDAP_BACKUP_PATH" || failed "IS_LDAP_BACKUP" "LDAP dump is missing (${LDAP_BACKUP_PATH})"
+        else
+            failed "LDAP_BACKUP_PATH" "${backup_dir}/ is missing"
+        fi
     fi
 }
 check_redis_backup() {
     if is_installed redis-server; then
-        # You could change the default path in /etc/evocheck.cf
-        # REDIS_BACKUP_PATH may contain space-separated paths, for example:
-        # REDIS_BACKUP_PATH='/home/backup/redis-instance1/dump.rdb /home/backup/redis-instance2/dump.rdb'
-        # Warning : this script doesn't handle spaces in file paths !
+        backup_dir="/home/backup"
+            if [ -d "${backup_dir}" ]; then
+            # You could change the default path in /etc/evocheck.cf
+            # REDIS_BACKUP_PATH may contain space-separated paths, for example:
+            # REDIS_BACKUP_PATH='/home/backup/redis-instance1/dump.rdb /home/backup/redis-instance2/dump.rdb'
+            # Warning : this script doesn't handle spaces in file paths !
 
-        REDIS_BACKUP_PATH="${REDIS_BACKUP_PATH:-$(find /home/backup/ -iname "*.rdb*")}"
+            REDIS_BACKUP_PATH="${REDIS_BACKUP_PATH:-$(find "${backup_dir}" -iname "*.rdb*")}"
 
-        # Check number of dumps
-        n_instances=$(pgrep 'redis-server' | wc -l)
-        n_dumps=$(echo $REDIS_BACKUP_PATH | wc -w)
-        if [ ${n_dumps} -lt ${n_instances} ]; then
-            failed "IS_REDIS_BACKUP" "Missing Redis dump : ${n_instances} instance(s) found versus ${n_dumps} dump(s) found."
-        fi
-
-        # Check last dump date
-        age_threshold=$(date +"%s" -d "now - 2 days")
-        for dump in ${REDIS_BACKUP_PATH}; do
-            last_update=$(stat -c "%Z" $dump)
-            if [ "${last_update}" -lt "${age_threshold}" ]; then
-                failed "IS_REDIS_BACKUP" "Redis dump ${dump} is older than 2 days."
+            # Check number of dumps
+            n_instances=$(pgrep 'redis-server' | wc -l)
+            n_dumps=$(echo $REDIS_BACKUP_PATH | wc -w)
+            if [ ${n_dumps} -lt ${n_instances} ]; then
+                failed "IS_REDIS_BACKUP" "Missing Redis dump : ${n_instances} instance(s) found versus ${n_dumps} dump(s) found."
             fi
-        done
+
+            # Check last dump date
+            age_threshold=$(date +"%s" -d "now - 2 days")
+            for dump in ${REDIS_BACKUP_PATH}; do
+                last_update=$(stat -c "%Z" $dump)
+                if [ "${last_update}" -lt "${age_threshold}" ]; then
+                    failed "IS_REDIS_BACKUP" "Redis dump ${dump} is older than 2 days."
+                fi
+            done
+        else
+            failed "IS_REDIS_BACKUP" "${backup_dir}/ is missing"
+        fi
     fi
 }
 check_elastic_backup() {
@@ -1612,6 +1660,17 @@ check_versions() {
         fi
     done
 }
+check_nrpepressure() {
+    # Taken from detect_os function
+    DEBIAN_MAIN_VERSION=$(cut -d "." -f 1 < /etc/debian_version)
+    if [ "${DEBIAN_MAIN_VERSION}" -ge 12 ]; then
+        monitoringctl status pressure_cpu > /dev/null 2>&1
+        rc="$?"
+        if [ "${rc}" -ne 0 ]; then
+            failed "IS_NRPEPRESSURE" "pressure_cpu check not defined or monitoringctl not correctly installed"
+        fi
+    fi
+}
 
 main() {
     # Default return code : 0 = no error
@@ -1657,6 +1716,8 @@ main() {
     test "${IS_LISTCHANGESCONF:=1}" = 1 && check_listchangesconf
     test "${IS_CUSTOMCRONTAB:=1}" = 1 && check_customcrontab
     test "${IS_SSHALLOWUSERS:=1}" = 1 && check_sshallowusers
+    test "${IS_SSHCONFSPLIT:=1}" = 1 && check_sshconfsplit
+    test "${IS_SSHLASTMATCH:=0}" = 1 && check_sshlastmatch
     test "${IS_DISKPERF:=0}" = 1 && check_diskperf
     test "${IS_TMOUTPROFILE:=1}" = 1 && check_tmoutprofile
     test "${IS_ALERT5BOOT:=1}" = 1 && check_alert5boot
@@ -1750,6 +1811,7 @@ main() {
     test "${IS_LXC_OPENSMTPD:=1}" = 1 && check_lxc_opensmtpd
     test "${IS_CHECK_VERSIONS:=1}" = 1 && check_versions
     test "${IS_MONITORINGCTL:=1}" = 1 && check_monitoringctl
+    test "${IS_NRPEPRESSURE:=1}" = 1 && check_nrpepressure
 
     if [ -f "${main_output_file}" ]; then
         lines_found=$(wc -l < "${main_output_file}")
