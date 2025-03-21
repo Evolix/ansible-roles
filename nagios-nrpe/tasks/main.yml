@@ -13,11 +13,19 @@
       - monitoring-plugins-basic
       - monitoring-plugins-common
       - monitoring-plugins-standard
-      - nagios-plugins-contrib
     state: present
   tags:
     - nagios-nrpe
 
+- name: Extra plugins are installed
+  ansible.builtin.apt:
+    name:
+      - nagios-plugins-contrib
+    state: present
+  when:
+    nagios_nrpe_apt_contrib_plugins | bool
+  tags:
+    - nagios-nrpe
 
 - name: custom plugin dependencies packages are installed
   ansible.builtin.apt:
@@ -104,4 +112,3 @@
     - nagios-nrpe
 
 - ansible.builtin.import_tasks: monitoringctl.yml
-

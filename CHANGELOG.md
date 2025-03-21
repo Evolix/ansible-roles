@@ -51,6 +51,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc: Move to using `include_tasks` and `import_tasks` instead of `include`
 * memcached: Move to using `import_tasks` instead of `include`
 * mysql-oracle: Move to using `import_tasks` instead of `include`
+* nagios-nrpe: Add variable `nagios_nrpe_apt_contrib_plugins` to disable installing nagios-plugins-contrib
 * newrelic: Move to using `import_tasks` instead of `include`
 * nextcloud: Move to using `import_tasks` instead of `include`
 * nginx: Move to using `import_tasks` instead of `include`
