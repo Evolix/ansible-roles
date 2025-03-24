@@ -39,6 +39,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evocheck: upstream release 25.03.2
 * evolinux-users: Move to using `include_tasks` and `import_tasks` instead of `include`
 * evomaintenance: Move to using `import_tasks` instead of `include`
+* evomaintenance: Upstream release 25.03
 * fail2ban: Move to using `import_tasks` instead of `include`
 * generate-ldif: fix postgresql package glob name
 * haproxy: Move to using `import_tasks` instead of `include`
