@@ -37,6 +37,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evobackup-client: upstream release 25.02
 * evocheck: Move to using `import_tasks` instead of `include`
 * evocheck: upstream release 25.03.2
+* evolinux-base: install evobackup-client only on Debian 10+
 * evolinux-users: Move to using `include_tasks` and `import_tasks` instead of `include`
 * evomaintenance: Move to using `import_tasks` instead of `include`
 * evomaintenance: Upstream release 25.03

@@ -162,7 +162,9 @@
 - name: Evobackup (client)
   ansible.builtin.include_role:
     name: 'evolix/evobackup-client'
-  when: evolinux_evobackup_client_include | bool
+  when:
+    - ansible_distribution_major_version is version('10', '>=')
+    - evolinux_evobackup_client_include | bool
 
 - name: fail2ban
   ansible.builtin.include_role:
