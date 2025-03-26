@@ -53,6 +53,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc-solr: Move to using `include_tasks` and `import_tasks` instead of `include`
 * lxc: Move to using `include_tasks` and `import_tasks` instead of `include`
 * memcached: Move to using `import_tasks` instead of `include`
+* minifirewall: better status detection
 * mysql-oracle: Move to using `import_tasks` instead of `include`
 * nagios-nrpe: Add variable `nagios_nrpe_apt_contrib_plugins` to disable installing nagios-plugins-contrib
 * newrelic: Move to using `import_tasks` instead of `include`
