@@ -54,13 +54,14 @@ The **patch** part is incremented if multiple releases happen the same month
 * packweb-apache: Install apg at beginning (dependency)
 * packweb-apache: Move to using `import_tasks` instead of `include`
 * php: Move to using `import_tasks` instead of `include`
-* postfix: Move to using `import_tasks` instead of `include`
 * postfix: install main.cf if it's missing
+* postfix: Move to using `import_tasks` instead of `include`
 * postfix: preset debconf values
 * postgresql: Move to using `import_tasks` instead of `include`
 * proftpd: Move to using `include_tasks` and `import_tasks` instead of `include`
 * redis: Move to using `import_tasks` instead of `include`
 * squid: Move to using `import_tasks` instead of `include`
+* userlogrotate: explicit local variables
 
 ### Fixed
 
