@@ -2,7 +2,7 @@
   ServerName {{ nextcloud_domains[0] }}
   
   {% for domain_alias in nextcloud_domains[1:] %}
-  ServerAlias {{  domain_alias }}
+  ServerAlias {{ domain_alias }}
   {% endfor %}
 
   # SSL
@@ -48,5 +48,6 @@
   # PHP
   php_admin_value sendmail_path "/usr/sbin/sendmail -t -i -f {{ nextcloud_user }}"
   php_admin_value open_basedir "/usr/share/php:{{ nextcloud_home }}:/tmp"
+  php_admin_value upload_tmp_dir "/home/{{ nextcloud_user }}/tmp/
 
 </VirtualHost>

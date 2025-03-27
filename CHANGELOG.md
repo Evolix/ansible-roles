@@ -77,6 +77,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * tomcat-instance: Move to using `import_tasks` instead of `include`
 * tomcat: Move to using `import_tasks` instead of `include`
 * varnish: Move to using `import_tasks` instead of `include`
+* webapps/nextcloud: Change PHP's upload_tmp_dir in `{{ nextcloud_home }}/tmp/`
 
 ### Fixed
 
