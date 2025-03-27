@@ -43,11 +43,11 @@ rotate () {
 }
 
 user_for() {
-  stat -L -c '%U' $1
+  stat --dereference --format='%U' "$1"
 }
 
 group_for() {
-  stat -L -c '%G' $1
+  stat --dereference --format='%G' "$1"
 }
 
 

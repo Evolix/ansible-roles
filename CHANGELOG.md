@@ -62,6 +62,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * redis: Move to using `import_tasks` instead of `include`
 * squid: Move to using `import_tasks` instead of `include`
 * userlogrotate: explicit local variables
+* userlogrotate: long options for stat
 
 ### Fixed
 
