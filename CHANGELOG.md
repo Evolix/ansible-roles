@@ -13,6 +13,18 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [25.03] 2025-03-27
+
+### Added
+
 * Add pki role
 * Add rsyslog-centralized role
 * evolinux-base: add "set autoread" in vim default config
@@ -95,11 +107,9 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Removed
 
+* evoadmin-web: no need to hardcode the php-log package anymore
 * evolinux-base: remove "evolinux_root_disable_ssh"
 * evolinux-users: don't bother with root login anymore
-* evoadmin-web: no need to hardcode the php-log package anymore
-
-### Security
 
 ## [25.01.4] 2025-01-30
 
