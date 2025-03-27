@@ -49,6 +49,16 @@
   tags:
     - proftpd
 
+- name: Proftpd logrotate file name (Debian <11)
+  ansible.builtin.set_fact:
+    proftpd_logrotate_file: /etc/logrotate.d/proftpd-basic
+  when: ansible_distribution_major_version is version('11', "<")
+
+- name: Proftpd logrotate file name (Debian >=11)
+  ansible.builtin.set_fact:
+    proftpd_logrotate_file: /etc/logrotate.d/proftpd-core
+  when: ansible_distribution_major_version is version('11', '>=')
+
 - name: SFTP jail log file is rotated
   ansible.builtin.blockinfile:
     block: |
@@ -67,7 +77,7 @@
                       invoke-rc.d proftpd restart 2>/dev/null >/dev/null || true
               endscript
       }
-    path: /etc/logrotate.d/proftpd-core
+    path: "{{ proftpd_logrotate_file }}"
 
 - name: SFTP key folder exists if needed
   ansible.builtin.file:

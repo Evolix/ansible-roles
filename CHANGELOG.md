@@ -90,6 +90,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * mysql: Add missing remount-usr after apt in munin tasks
 * mysql: Fix broken logrotate.service
 * mysql: Fix munin plugin to correctly use munin config
+* proftpd: logrotate file name dependent on Debian version
 * userlogrotate: pass user/group in correct order
 
 ### Removed
