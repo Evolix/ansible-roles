@@ -13,6 +13,18 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Removed
 
+## [25.03.3] 2025-03-27
+
+### Added
+
+* IS_POSTFIX_IPV6_DISABLED
+* New checks for SSH config
+* Verify backup directory existence
+
+### Fixed
+
+* IS_MONITORINGCTL: use full path of monitoringctl command (for when local bin is not in cron PATH).
+
 ## [25.03.2] 2025-03-21
 
 ### Added

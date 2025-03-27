@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="25.03.2"
+VERSION="25.03.3"
 readonly VERSION
 
 # base functions
@@ -1531,7 +1531,7 @@ check_lxc_opensmtpd() {
 }
 
 check_monitoringctl() {
-    if ! monitoringctl list >/dev/null 2>&1; then
+    if ! /usr/local/bin/monitoringctl list >/dev/null 2>&1; then
         failed "IS_MONITORINGCTL" "monitoringctl is not installed or has a problem (use 'monitoringctl list' to reproduce)."
     fi
 }
@@ -1669,6 +1669,13 @@ check_nrpepressure() {
         if [ "${rc}" -ne 0 ]; then
             failed "IS_NRPEPRESSURE" "pressure_cpu check not defined or monitoringctl not correctly installed"
         fi
+    fi
+}
+check_postfix_ipv6_disabled() {
+    postconf -n 2>/dev/null | grep --no-messages --extended-regex '^inet_protocols\>' | grep --no-messages --invert-match --fixed-strings ipv6 | grep --no-messages --invert-match --fixed-strings all | grep --no-messages --silent --fixed-strings ipv4
+    rc="$?"
+    if [ "${rc}" -ne 0 ]; then
+        failed "IS_POSTFIX_IPV6_DISABLED" "IPv6 must be disabled in Postfix main.cf (inet_protocols = ipv4)"
     fi
 }
 
@@ -1812,6 +1819,7 @@ main() {
     test "${IS_CHECK_VERSIONS:=1}" = 1 && check_versions
     test "${IS_MONITORINGCTL:=1}" = 1 && check_monitoringctl
     test "${IS_NRPEPRESSURE:=1}" = 1 && check_nrpepressure
+    test "${IS_POSTFIX_IPV6_DISABLED:=1}" = 1 && check_postfix_ipv6_disabled
 
     if [ -f "${main_output_file}" ]; then
         lines_found=$(wc -l < "${main_output_file}")
