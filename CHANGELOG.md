@@ -63,6 +63,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * squid: Move to using `import_tasks` instead of `include`
 * userlogrotate: explicit local variables
 * userlogrotate: long options for stat
+* userlogrotate: variables and functions with names more explicit
 
 ### Fixed
 

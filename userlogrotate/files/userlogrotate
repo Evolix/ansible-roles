@@ -29,25 +29,21 @@ fi
 
 rotate () {
     local file=$1
-    local perm=$2
+    local ownership=$2
 
     if [ ${DRY_RUN} == "false" ]; then
         mv "${file}" "${file}.${DATE}"
         touch "${file}"
-        chown ${perm} "${file}"
+        chown "${ownership}" "${file}"
         chmod g+r "${file}"
     else
         echo "Move ${file} to ${file}.${DATE}"
-        echo "Change ${file} permissions to ${perm}"
+        echo "Change ownership of ${file} to ${ownership}"
     fi
 }
 
-user_for() {
-  stat --dereference --format='%U' "$1"
-}
-
-group_for() {
-  stat --dereference --format='%G' "$1"
+ownership_of() {
+    stat --dereference --format='%U:%G' "$1"
 }
 
 
@@ -74,9 +70,9 @@ for path in ${SYSTEM_LOGS_SEARCH_PATHS[@]}; do
     for log_name in ${SYSTEM_LOG_NAMES[@]}; do
         log_paths=$(ls -1 -d ${path}/${log_name} 2>/dev/null | grep -v \.bak\.)
         for file in ${log_paths}; do
-            user="$(user_for "${file}")"
-            group="$(group_for "${file}")"
-            rotate "${file}" "${user}":"${group}"
+            ownership="$(ownership_of "${file}")"
+
+            rotate "${file}" "${ownership}"
             delete_old "$(dirname "${file}")"
         done
     done
@@ -86,9 +82,9 @@ for path in ${APPLICATIVE_LOGS_SEARCH_PATHS[@]}; do
     for log_name in ${APPLICATIVE_LOG_NAMES[@]}; do
         log_paths=$(ls -1 -d ${path}/${log_name} 2>/dev/null | grep -v \.bak\.)
         for file in ${log_paths}; do
-            user="$(user_for "${file}")"
-            group="$(group_for "${file}")"
-            rotate "${file}" "${user}":"${group}"
+            ownership="$(ownership_of "${file}")"
+
+            rotate "${file}" "${ownership}"
             delete_old "$(dirname "${file}")"
         done
     done
