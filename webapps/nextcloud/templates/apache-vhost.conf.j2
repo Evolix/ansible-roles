@@ -48,6 +48,6 @@
   # PHP
   php_admin_value sendmail_path "/usr/sbin/sendmail -t -i -f {{ nextcloud_user }}"
   php_admin_value open_basedir "/usr/share/php:{{ nextcloud_home }}:/tmp"
-  php_admin_value upload_tmp_dir "/home/{{ nextcloud_user }}/tmp/
+  php_admin_value upload_tmp_dir "{{ nextcloud_home }}/tmp/
 
 </VirtualHost>
