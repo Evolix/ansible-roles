@@ -97,6 +97,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * evolinux-base: remove "evolinux_root_disable_ssh"
 * evolinux-users: don't bother with root login anymore
+* evoadmin-web: no need to hardcode the php-log package anymore
 
 ### Security
 

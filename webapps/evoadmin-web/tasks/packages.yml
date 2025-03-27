@@ -4,27 +4,6 @@
     name: evolix/apt
     tasks_from: evolix_public.yml
 
-# /!\ Warning, this is a temporary hack
-- ansible.builtin.include_role:
-    name: evolix/remount-usr
-
-# /!\ Warning, this is a temporary hack
-- name: Install PHP packages from sid (Debian 10)
-  ansible.builtin.apt:
-    deb: '{{ item }}'
-    state: present
-  loop:
-    - 'http://mirror.evolix.org/debian/pool/main/p/php-log/php-log_1.12.9-2_all.deb'
-  when: ansible_distribution_major_version is version('10', '=')
-
-- name: Install PHP packages from sid (Debian 12)
-  ansible.builtin.apt:
-    deb: '{{ item }}'
-    state: present
-  loop:
-    - 'http://mirror.evolix.org/debian/pool/main/p/php-log/php-log_1.13.2-1_all.deb'
-  when: ansible_distribution_major_version is version('12', '=')
-
 - name: Install PHP packages
   ansible.builtin.apt:
     name:
