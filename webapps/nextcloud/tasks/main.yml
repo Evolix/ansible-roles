@@ -43,16 +43,16 @@
     - nextcloud
   when: ansible_python_version is version('3', '>=')
 
-- ansible.builtin.include: apache-system.yml
+- ansible.builtin.import_tasks: apache-system.yml
 
-- ansible.builtin.include: user.yml
+- ansible.builtin.import_tasks: user.yml
 
-- ansible.builtin.include: archive.yml
+- ansible.builtin.import_tasks: archive.yml
   when: nextcloud_get_archive
 
-- ansible.builtin.include: apache-vhost.yml
+- ansible.builtin.import_tasks: apache-vhost.yml
 
-- ansible.builtin.include: mysql-user.yml
+- ansible.builtin.import_tasks: mysql-user.yml
 
-- ansible.builtin.include: config.yml
+- ansible.builtin.import_tasks: config.yml
   when: nextcloud_do_config

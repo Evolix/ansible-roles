@@ -1,11 +1,9 @@
 ---
 - name: APT sources
-  ansible.builtin.include_tasks: apt_sources.yml
-  args:
-    apply:
-      tags:
-        - logstash
-        - packages
+  ansible.builtin.import_tasks: apt_sources.yml
+  tags:
+    - logstash
+    - packages
 
 - name: Logstash is installed
   ansible.builtin.apt:
@@ -64,6 +62,6 @@
     var: logstash_template
     verbosity: 1
 
-- ansible.builtin.include: logs.yml
+- ansible.builtin.import_tasks: logs.yml
 
-- ansible.builtin.include: tmpdir.yml
+- ansible.builtin.import_tasks: tmpdir.yml

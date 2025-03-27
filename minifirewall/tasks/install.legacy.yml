@@ -1,24 +1,24 @@
 ---
 
-- name: dependencies are satisfied
+- name: dependencies are satisfied (legacy)
   ansible.builtin.apt:
     name: iptables
     state: present
 
-- name: init script is copied
+- name: init script is copied (legacy)
   ansible.builtin.template:
     src: minifirewall.legacy.j2
     dest: /etc/init.d/minifirewall
-    force: "{{ minifirewall_force_upgrade_script | default('no') }}"
+    force: "{{ minifirewall_force_upgrade_script | default(False) }}"
     mode: "0700"
     owner: root
     group: root
 
-- name: configuration is copied
+- name: configuration is copied (legacy)
   ansible.builtin.copy:
     src: minifirewall.legacy.conf
     dest: "{{ minifirewall_main_file }}"
-    force: "{{ minifirewall_force_upgrade_config | default('no') }}"
+    force: "{{ minifirewall_force_upgrade_config | default(False) }}"
     mode: "0600"
     owner: root
     group: root

@@ -23,7 +23,7 @@
 
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ privatebin_domains | first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ privatebin_instance }}/fullchain.pem"
   register: ssl
 
 - name: Generate certificate only if required (first time)
@@ -50,6 +50,7 @@
            --non-interactive
            --agree-tos
            --email {{ privatebin_certbot_admin_email }}
+           --cert-name {{ privatebin_instance }}
            -d {{ privatebin_domains | first }}
     - name: Create the ssl dir if needed
       ansible.builtin.file:
@@ -65,7 +66,7 @@
 
 - name: (Re)check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ privatebin_domains | first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ privatebin_instance }}/fullchain.pem"
   register: ssl
 
 - name: (Re)template conf file for apache vhost with SSL

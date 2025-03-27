@@ -15,6 +15,13 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Security
 
+## [25.03] - 2025-03-24
+
+### Fixed
+
+* Properly detect session start time on Debian 12 when used with sudo
+* Properly quote details sent to the API
+
 ## [24.08] - 2024-08-01
 
 ### Added

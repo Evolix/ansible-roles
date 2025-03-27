@@ -5,17 +5,17 @@
     msg: Please configure var evoadmin_contact_email
   when: evoadmin_contact_email is none or evoadmin_contact_email | length == 0
 
-- ansible.builtin.include: packages.yml
+- ansible.builtin.import_tasks: packages.yml
 
-- ansible.builtin.include: user.yml
+- ansible.builtin.import_tasks: user.yml
 
-- ansible.builtin.include: config.yml
+- ansible.builtin.import_tasks: config.yml
 
-- ansible.builtin.include: ssl.yml
+- ansible.builtin.import_tasks: ssl.yml
 
-- ansible.builtin.include: web.yml
+- ansible.builtin.import_tasks: web.yml
 
-- ansible.builtin.include: ftp.yml
+- ansible.builtin.import_tasks: ftp.yml
 
 - name: enable evoadmin-web link in default site index
   ansible.builtin.blockinfile:

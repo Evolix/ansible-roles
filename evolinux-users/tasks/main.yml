@@ -12,7 +12,7 @@
   when: evolinux_users | length == 0
 
 - name: Create user accounts
-  ansible.builtin.include: user.yml
+  ansible.builtin.include_tasks: user.yml
   vars:
     user: "{{ item.value }}"
   loop: "{{ evolinux_users | dict2items }}"
@@ -21,8 +21,8 @@
     - evolinux_users | length > 0
 
 - name: Configure sudo
-  ansible.builtin.include: sudo.yml
+  ansible.builtin.import_tasks: sudo.yml
 
 - name: Configure SSH
-  ansible.builtin.include: ssh.yml
+  ansible.builtin.import_tasks: ssh.yml
   when: evolinux_users | length > 0

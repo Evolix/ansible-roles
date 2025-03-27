@@ -193,4 +193,4 @@
     group: varnish
     mode: "0750"
 
-- ansible.builtin.include: munin.yml
+- ansible.builtin.import_tasks: munin.yml

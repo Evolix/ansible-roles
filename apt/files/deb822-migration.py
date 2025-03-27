@@ -117,10 +117,10 @@ def prepare_sources(lines):
                         source["Architectures"] = {options["arch"]}
 
                 if "signed-by" in options:
-                    if "Signed-by" in source:
-                        source["Signed-by"].append(options["signed-by"])
+                    if "Signed-By" in source:
+                        source["Signed-By"].append(options["signed-by"])
                     else:
-                        source["Signed-by"] = {options["signed-by"]}
+                        source["Signed-By"] = {options["signed-by"]}
 
                 if "lang" in options:
                     if "Languages" in source:

@@ -1,6 +1,6 @@
-### You can change the root access restrictions with the following line
-{% if evolinux_root_disable_ssh %}
-PermitRootLogin no
+### Override the default value set in the general config or compiled in OpenSSH
+{% if evolinux_ssh_permitrootlogin is defined and evolinux_ssh_permitrootlogin != None and (evolinux_ssh_permitrootlogin | length > 0) %}
+PermitRootLogin {{ evolinux_ssh_permitrootlogin }}
 {% else %}
 # PermitRootLogin no
 {% endif %}

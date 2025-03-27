@@ -8,18 +8,18 @@
     msg: only compatible with Debian 9+
 
 - name: Install legacy script on Debian 8
-  ansible.builtin.include: install-legacy.yml
+  ansible.builtin.import_tasks: install-legacy.yml
   when:
     - ansible_distribution == "Debian"
     - ansible_distribution_major_version is version('9', '<')
 
 - name: Install package on Debian 9+
-  ansible.builtin.include: install-package.yml
+  ansible.builtin.import_tasks: install-package.yml
   when:
     - ansible_distribution == "Debian"
     - ansible_distribution_major_version is version('9', '>=')
 
-- ansible.builtin.include: acme-challenge.yml
+- ansible.builtin.import_tasks: acme-challenge.yml
 
 # This is always going to mark a "change".
 # Couldn't figure out why !

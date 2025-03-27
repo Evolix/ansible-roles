@@ -1,6 +1,6 @@
 ---
 
-- ansible.builtin.include: repository.yml
+- ansible.builtin.import_tasks: repository.yml
   vars:
     repository_path: "/etc"
     gitignore_items:

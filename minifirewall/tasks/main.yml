@@ -99,7 +99,7 @@
     - always
 
 - name: Config tasks (modern mode)
-  ansible.builtin.include_tasks: config.yml
+  ansible.builtin.import_tasks: config.yml
   when:
     - minifirewall_install_mode != 'legacy'
     - minifirewall_update_config | bool
@@ -107,23 +107,21 @@
     - manage
 
 - name: Config tasks (legacy mode)
-  ansible.builtin.include_tasks: config.legacy.yml
-  args:
-    apply:
-      tags:
-        - manage
+  ansible.builtin.import_tasks: config.legacy.yml
+  tags:
+    - manage
   when:
     - minifirewall_install_mode == 'legacy'
     - minifirewall_update_config | bool
 
 - name: Utils tasks
-  ansible.builtin.include_tasks: utils.yml
+  ansible.builtin.import_tasks: utils.yml
 
 - name: NRPE tasks
-  ansible.builtin.include_tasks: nrpe.yml
+  ansible.builtin.import_tasks: nrpe.yml
 
 - name: Activation tasks
-  ansible.builtin.include_tasks: activate.yml
+  ansible.builtin.import_tasks: activate.yml
 
 - name: Debug minifirewall_tail_included
   ansible.builtin.debug:
@@ -133,21 +131,17 @@
     - always
 
 - name: Tail tasks (modern mode)
-  ansible.builtin.include_tasks: tail.yml
-  args:
-    apply:
-      tags:
-        - manage
+  ansible.builtin.import_tasks: tail.yml
+  tags:
+    - manage
   when:
     - minifirewall_install_mode != 'legacy'
     - minifirewall_tail_included | bool
 
 - name: Tail tasks (legacy mode)
-  ansible.builtin.include_tasks: tail.legacy.yml
-  args:
-    apply:
-      tags:
-        - manage
+  ansible.builtin.import_tasks: tail.legacy.yml
+  tags:
+    - manage
   when:
     - minifirewall_install_mode == 'legacy'
     - minifirewall_tail_included | bool

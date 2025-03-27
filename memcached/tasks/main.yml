@@ -5,12 +5,12 @@
   tags:
     - memcached
 
-- ansible.builtin.include: instance-default.yml
+- ansible.builtin.import_tasks: instance-default.yml
   when: memcached_instance_name | length == 0
 
-- ansible.builtin.include: instance-multi.yml
+- ansible.builtin.import_tasks: instance-multi.yml
   when: memcached_instance_name | length > 0
 
-- ansible.builtin.include: munin.yml
+- ansible.builtin.import_tasks: munin.yml
 
-- ansible.builtin.include: nrpe.yml
+- ansible.builtin.import_tasks: nrpe.yml

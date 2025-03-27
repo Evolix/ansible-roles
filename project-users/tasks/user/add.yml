@@ -160,7 +160,7 @@
 
 ## SSH
 
-- ansible.builtin.include: ssh.yml
+- ansible.builtin.import_tasks: ssh.yml
 
 ## Evomaintenance
 

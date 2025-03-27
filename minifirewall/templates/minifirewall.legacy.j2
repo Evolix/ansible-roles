@@ -62,9 +62,9 @@ chain_exists()
 oldconfigfile="/etc/firewall.rc"
 configfile="{{ minifirewall_main_file }}"
 
-IPV6=$(grep "IPV6=" {{ minifirewall_main_file }} | awk -F '=' -F "'" '{print $2}')
-DOCKER=$(grep "DOCKER=" {{ minifirewall_main_file }} | awk -F '='  -F "'" '{print $2}')
-INT=$(grep "INT=" {{ minifirewall_main_file }} | awk -F '='  -F "'" '{print $2}')
+IPV6=$(grep "IPV6=" "${configfile}" | awk -F '=' -F "'" '{print $2}')
+DOCKER=$(grep "DOCKER=" "${configfile}" | awk -F '='  -F "'" '{print $2}')
+INT=$(grep "INT=" "${configfile}" | awk -F '='  -F "'" '{print $2}')
 
 case "$1" in
  start)

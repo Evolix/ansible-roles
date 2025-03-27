@@ -17,4 +17,4 @@
   loop_control:
     loop_var: line_item
 
-- ansible.builtin.include: "mail_ssmtp.yml"
+- ansible.builtin.import_tasks: "mail_ssmtp.yml"

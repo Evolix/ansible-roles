@@ -13,13 +13,53 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Removed
 
+## [25.03.3] 2025-03-27
+
+### Added
+
+* IS_POSTFIX_IPV6_DISABLED
+* New checks for SSH config
+* Verify backup directory existence
+
+### Fixed
+
+* IS_MONITORINGCTL: use full path of monitoringctl command (for when local bin is not in cron PATH).
+
+## [25.03.2] 2025-03-21
+
+### Added
+
+* Add IS_NRPEPRESSURE check
+* New checks for SSH config
+* Verify backup directory existence
+
+## [25.03.1] 2025-03-13
+
+### Removed
+
+* remove Stretch-specific code in main Linux script
+
+## [25.03] 2025-03-12
+
+### Added
+
+* Add IS_HOMENOEXEC check (#172)
+* Add IS_LXC_OPENSMTPD check (#173)
+* Add IS_MONITORINGCTL check
+
+### Changed
+
+* fork evocheck for Debian 9 (Stretch)
+* duke support (Debian 15)
+* HARDWARERAIDTOOL: Add perccli and perccli2 support
+
 ## [25.01] 2025-01-23
 
 ### Changed
 
-* LDAP_BACKUP_PATH: Improve detection of ldap.bak
-* POSTGRES_BACKUP_PATH: Improve detection of pg.dump.bak
-* SQL_BACKUP_PATH: Improve backup detection for mariadb
+* LDAP_BACKUP_PATH: Improve detection of ldap.bak (#168)
+* POSTGRES_BACKUP_PATH: Improve detection of pg.dump.bak (#166)
+* SQL_BACKUP_PATH: Improve backup detection for mariadb (#166)
 * IS_LXC_*: force lxc-ls to display one container per line
 
 ### Fixed
@@ -61,7 +101,7 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Removed
 
-* IS_EVOLIX_GROUP: too many false positive
+* IS_EVOLIX_GROUP: too many false positive (#159)
 
 ### Fixed
 
@@ -92,7 +132,7 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 * Fix errors in some LXC checks: list only active LXC containers, add conditions to filter containers that are not in evo-standards.
 * IS_SSHALLOWUSERS: fix unwanted sterr when /etc/ssh/sshd_condig.d does not exist.
-* IS_PURGE_FAIL2BAN: Fix bad name, rename to IS_FAIL2BAN_PURGE.
+* IS_PURGE_FAIL2BAN: Fix bad name, rename to IS_FAIL2BAN_PURGE. (#156)
 * IS_SYSLOGCONF: better detection
 
 
@@ -121,7 +161,7 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Fixed
 
-* IS_EVOBACKUP_EXCLUDE_MOUNT: fix another regression introduced in previous release
+* IS_EVOBACKUP_EXCLUDE_MOUNT: fix another regression introduced in previous release (#150)
 
 ### Security
 
@@ -146,7 +186,7 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Fixed
 
-* IS_EVOBACKUP_EXCLUDE_MOUNT: fix regression introduced in previous version
+* IS_EVOBACKUP_EXCLUDE_MOUNT: fix regression introduced in previous version (#148)
 
 ## [23.10] 2023-10-26
 
@@ -194,7 +234,7 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Added
 
-* Log output and runtime config to /var/log/evocheck.log.
+* Log output and runtime config to /var/log/evocheck.log. (#147)
 
 ### Changed
 
@@ -288,7 +328,7 @@ New checks :
 
 ### Changed
 
-* IS_NETWORKING_SERVICE: not in cron mode
+* IS_NETWORKING_SERVICE: not in cron mode (#144)
 
 ### Fixed:
 

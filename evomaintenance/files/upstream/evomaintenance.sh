@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION="24.08"
+VERSION="25.03"
 
 show_version() {
     cat <<END
@@ -97,6 +97,15 @@ get_begin_date() {
     # use the same date as the end date.
     if is_autosysadmin; then
 	    get_end_date
+    # sudo on Debian 12 create a new utmp login record, which result in the old
+    # method to break if evomaintenance is called using sudo
+    elif dpkg --compare-versions "$(cat /etc/debian_version)" ge 12.0; then
+	    sessionid="$(cat /proc/self/sessionid)"
+	    begin_timestamp="$(loginctl --property=Timestamp show-session "${sessionid}" | cut -d '=' -f 2)"
+	    # Convert the output of loginctl into the expected format
+	    # (TimestampMonotonic use nanoseconds so we cannot use it
+	    # unfortunately)
+	    date --date="${begin_timestamp}" '+%Y %b %d %H:%M'
     else
 	    printf "%s %s" "$(date "+%Y")" "$(get_who | cut -d" " -f3,4,5)"
     fi
@@ -286,10 +295,13 @@ hook_db() {
 }
 
 hook_api() {
+    # Double quotes to single quotes and then wrap the whole message string in double quotes
+    API_DETAILS=$(echo "${MESSAGE}" | sed -e "s/\"/\'/g" -e 's/^/\"/g' -e 's/$/\"/g')
+
     if [ "${VERBOSE}" = "1" ]; then
         printf "\n********** API call **************\n"
         printf "curl -f -s -S -X POST [REDACTED] -k -F api_key=[REDACTED] -F action=insertEvoMaintenance -F hostname=%s -F userid=%s -F ipaddress=%s -F begin_date=%s -F end_date='now()' -F details=%s" \
-                    "${HOSTNAME}" "${USER}" "${IP}" "${BEGIN_DATE}" "${MESSAGE}"
+                    "${HOSTNAME}" "${USER}" "${IP}" "${BEGIN_DATE}" "${API_DETAILS}"
         printf "\n***********************************\n"
     fi
 
@@ -303,7 +315,7 @@ hook_api() {
         -F ipaddress="${IP}" \
         -F begin_date="${BEGIN_DATE}" \
         -F end_date='now()' \
-        -F details="${MESSAGE}")
+        -F details="${API_DETAILS}")
 
         # either cURL or the API backend can throw an error, otherwise it returns this JSON response
         if [ "$API_RETURN_STATUS" = '{"status":"Ok"}' ]; then

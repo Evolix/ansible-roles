@@ -1,0 +1,18 @@
+---
+- name: restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+
+- name: restart log2mail
+  service:
+    name: log2mail
+    state: restarted
+
+- name: restart minifirewall
+  ansible.builtin.command:
+    cmd: /etc/init.d/minifirewall restart
+  register: minifirewall_init_restart
+  failed_when:
+    - "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
+    - "'minifirewall started' not in minifirewall_init_restart.stdout"

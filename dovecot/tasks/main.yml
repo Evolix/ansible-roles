@@ -81,7 +81,7 @@
   tags:
     - dovecot
 
-- ansible.builtin.include: munin.yml
+- ansible.builtin.import_tasks: munin.yml
   tags:
     - dovecot
 

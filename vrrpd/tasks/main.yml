@@ -69,7 +69,7 @@
     - vrrpd
 
 - name: Create VRRP address
-  ansible.builtin.include: ip.yml
+  ansible.builtin.include_tasks: ip.yml
   loop: "{{ vrrp_addresses }}"
   loop_control:
     loop_var: "vrrp_address"

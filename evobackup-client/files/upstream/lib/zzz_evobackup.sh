@@ -106,7 +106,8 @@ local_tasks() {
 
     # Run dump-server-state to extract system information
     #
-    # Options : any dump-server-state supported option
+    # Options:
+    # any dump-server-state supported option
     # (except --dump-dir that will be overwritten)
     # See 'dump-server-state -h' for details.
     #
@@ -122,7 +123,7 @@ local_tasks() {
  
     # Dump all databases in a single compressed file
     #
-    # Options :
+    # Options:
     #   --masterdata (default: <absent>)
     #   --port=[Integer] (default: <blank>)
     #   --socket=[String] (default: <blank>)
@@ -134,11 +135,13 @@ local_tasks() {
     #   --dump-label=[String] (default: "default")
     #     used as suffix of the dump dir to differenciate multiple instances
     #
+    # Full options list is available here: ${LIBDIR}/dump/mysql.sh
+    #
     ### dump_mysql_global
     
     # Dump each database separately, in a compressed file
     #
-    # Options :
+    # Options:
     #   --port=[Integer] (default: <blank>)
     #   --socket=[String] (default: <blank>)
     #   --user=[String] (default: <blank>)
@@ -149,11 +152,13 @@ local_tasks() {
     #   --dump-label=[String] (default: "default")
     #     used as suffix of the dump dir to differenciate multiple instances
     #
+    # Full options list is available here: ${LIBDIR}/dump/mysql.sh
+    #
     ### dump_mysql_per_base
 
     # Dump permissions of an instance (using pt-show-grants)
     #
-    # Options :
+    # Options:
     #   --port=[Integer] (default: <blank>)
     #   --socket=[String] (default: <blank>)
     #   --user=[String] (default: <blank>)
@@ -162,7 +167,9 @@ local_tasks() {
     #   --dump-label=[String] (default: "default")
     #     used as suffix of the dump dir to differenciate multiple instances
     #
-    # WARNING - unsupported options :
+    # Full options list is available here: ${LIBDIR}/dump/mysql.sh
+    #
+    # WARNING - unsupported options:
     #   --defaults-extra-file
     #   --defaults-group-suffix
     # You have to provide credentials manually
@@ -171,7 +178,7 @@ local_tasks() {
 
     # Dump complete summary of an instance (using pt-mysql-summary)
     #
-    # Options :
+    # Options:
     #   --port=[Integer] (default: <blank>)
     #   --socket=[String] (default: <blank>)
     #   --user=[String] (default: <blank>)
@@ -181,12 +188,14 @@ local_tasks() {
     #   --defaults-group-suffix=[String] (default: <blank>)
     #   --dump-label=[String] (default: "default")
     #     used as suffix of the dump dir to differenciate multiple instances
+    #
+    # Full options list is available here: ${LIBDIR}/dump/mysql.sh
     #
     ### dump_mysql_summary
 
     # Dump each table in separate schema/data files
     #
-    # Options :
+    # Options:
     #   --port=[Integer] (default: <blank>)
     #   --socket=[String] (default: <blank>)
     #   --user=[String] (default: <blank>)
@@ -196,6 +205,8 @@ local_tasks() {
     #   --defaults-group-suffix=[String] (default: <blank>)
     #   --dump-label=[String] (default: "default")
     #     used as suffix of the dump dir to differenciate multiple instances
+    #
+    # Full options list is available here: ${LIBDIR}/dump/mysql.sh
     #
     ### dump_mysql_tabs
 
@@ -203,23 +214,34 @@ local_tasks() {
 
     # Dump all databases in a single file (compressed or not)
     #
+    # Full options list is available here: ${LIBDIR}/dump/postgresql.sh
+    #
     ### dump_postgresql_global
 
-    # Dump a specific databse with only some tables, or all but some tables (must be configured)
+    # Dump a specific database with only some tables, or all but some tables (must be configured)
+    #
+    # Full options list is available here: ${LIBDIR}/dump/postgresql.sh
     #
     ### dump_postgresql_filtered
 
     # Dump each database separately, in a compressed file
     #
+    # Full options list is available here: ${LIBDIR}/dump/postgresql.sh
+    #
     ### dump_postgresql_per_base
 
     ########## MongoDB ################
-    
+
+    #
+    # Full options list is available here: ${LIBDIR}/dump/misc.sh
+    #
     ### dump_mongodb [--user=foo] [--password=123456789]
 
     ########## Redis ##################
 
     # Copy data file for all instances
+    #
+    # Full options list is available here: ${LIBDIR}/dump/misc.sh
     #
     # The instance name is the config directory name
     # eg. "redis" for "/etc/redis/", "redis-foo" for "/etc/redis-foo"
@@ -229,33 +251,49 @@ local_tasks() {
 
     # Snapshot data for a single-node cluster
     #
+    # Full options list is available here: ${LIBDIR}/dump/elasticsearch.sh
+    #
     ### dump_elasticsearch_snapshot_singlenode [--protocol=http] [--host=localhost] [--port=9200] [--user=foo] [--password=123456789] [--repository=snaprepo] [--snapshot=snapshot.daily]
 
     # Snapshot data for a multi-node cluster
+    #
+    # Full options list is available here: ${LIBDIR}/dump/elasticsearch.sh
     #
     ### dump_elasticsearch_snapshot_multinode [--protocol=http] [--host=localhost] [--port=9200] [--user=foo] [--password=123456789] [--repository=snaprepo] [--snapshot=snapshot.daily] [--nfs-server=192.168.2.1]
 
     ########## RabbitMQ ###############
 
+    #
+    # Full options list is available here: ${LIBDIR}/dump/misc.sh
+    #
     ### dump_rabbitmq
 
     ########## MegaCli ################
 
     # Copy RAID config
     #
+    # Full options list is available here: ${LIBDIR}/dump/misc.sh
+    #
     ### dump_megacli_config
 
     # Dump file access control lists
+    #
+    # Full options list is available here: ${LIBDIR}/dump/misc.sh
     #
     ### dump_facl
 
     ########## OpenLDAP ###############
 
+    #
+    # Full options list is available here: ${LIBDIR}/dump/misc.sh
+    #
     ### dump_ldap
 
     ########## Network ################
 
     # Dump network routes with mtr and traceroute (warning: could be long with aggressive firewalls)
+    #
+    # Full options list is available here: ${LIBDIR}/dump/misc.sh
     #
     ### dump_traceroute --targets=host_or_ip[,host_or_ip]
     dump_traceroute --targets=8.8.8.8,www.evolix.fr,travaux.evolix.net

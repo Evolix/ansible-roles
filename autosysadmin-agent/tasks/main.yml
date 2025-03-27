@@ -5,28 +5,28 @@
     autosysadmin_repair_scripts: "{{ lookup('ansible.builtin.fileglob', '../../../autosysadmin/agent/repair/repair_*', wantlist=True) | map('basename') | sort }}"
 
 - name: Install dependencies
-  ansible.builtin.include_tasks: dependencies.yml
+  ansible.builtin.import_tasks: dependencies.yml
 
 - name: Install autosysadmin
-  ansible.builtin.include_tasks: install.yml
+  ansible.builtin.import_tasks: install.yml
 
 - name: Configure autosysadmin
-  ansible.builtin.include_tasks: config.yml
+  ansible.builtin.import_tasks: config.yml
 
 - name: Crontab configuration
-  ansible.builtin.include_tasks: crontab.yml
+  ansible.builtin.import_tasks: crontab.yml
 
 - name: NRPE configuration
-  ansible.builtin.include_tasks: nrpe.yml
+  ansible.builtin.import_tasks: nrpe.yml
 
 - name: sudo configuration
-  ansible.builtin.include_tasks: sudo.yml
+  ansible.builtin.import_tasks: sudo.yml
 
 - name: rsyslog configuration
-  ansible.builtin.include_tasks: rsyslog.yml
+  ansible.builtin.import_tasks: rsyslog.yml
 
 - name: logrotate configuration
-  ansible.builtin.include_tasks: logrotate.yml
+  ansible.builtin.import_tasks: logrotate.yml
 
 - name: Install latest version of dump-server-state
   ansible.builtin.include_role:

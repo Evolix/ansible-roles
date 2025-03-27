@@ -38,12 +38,12 @@
 # Common tasks, run once
 
 - name: Common tasks
-  ansible.builtin.include_tasks: common.yml
+  ansible.builtin.import_tasks: common.yml
 
 # Loop to create users
 
 - name: User add
-  ansible.builtin.include: user/add.yml
+  ansible.builtin.include_tasks: user/add.yml
   vars:
     user: "{{ project_users_db[username] }}"
   loop: "{{ project_users_present | default([]) }}"
@@ -53,7 +53,7 @@
 # Loop to delete users
 
 - name: User del
-  ansible.builtin.include: user/del.yml
+  ansible.builtin.include_tasks: user/del.yml
   loop_control:
     loop_var: username
   loop: "{{ project_users_absent | default([]) }}"

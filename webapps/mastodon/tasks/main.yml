@@ -231,7 +231,7 @@
 
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ mastodon_domains | first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ mastodon_instance }}/fullchain.pem"
   register: ssl
 
 - name: Generate certificate only if required (first time)
@@ -259,11 +259,12 @@
            --non-interactive
            --agree-tos
            --email {{ mastodon_certbot_admin_email }}
+           --cert-name {{mastodon_instance }}
            -d {{ mastodon_domains | first }}
 
 - name: (Re)check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ mastodon_domains | first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ mastodon_instance }}/fullchain.pem"
   register: ssl
 
 - name: (Re)template conf file for nginx vhost with SSL

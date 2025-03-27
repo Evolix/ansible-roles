@@ -1,21 +1,21 @@
 ---
 
-- ansible.builtin.include: packages.yml
+- ansible.builtin.import_tasks: packages.yml
 
-- ansible.builtin.include: configuration.yml
+- ansible.builtin.import_tasks: configuration.yml
 
-- ansible.builtin.include: bootstrap_checks.yml
+- ansible.builtin.import_tasks: bootstrap_checks.yml
 
-- ansible.builtin.include: tmpdir.yml
+- ansible.builtin.import_tasks: tmpdir.yml
 
-- ansible.builtin.include: datadir.yml
+- ansible.builtin.import_tasks: datadir.yml
 
-- ansible.builtin.include: logs.yml
+- ansible.builtin.import_tasks: logs.yml
 
-- ansible.builtin.include: additional_scripts.yml
+- ansible.builtin.import_tasks: additional_scripts.yml
 
-- ansible.builtin.include: plugin_head.yml
+- ansible.builtin.import_tasks: plugin_head.yml
   when: elasticsearch_plugin_head | bool
 
-- ansible.builtin.include: curator.yml
+- ansible.builtin.import_tasks: curator.yml
   when: elasticsearch_curator | bool

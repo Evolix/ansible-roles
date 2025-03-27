@@ -157,7 +157,14 @@ evolinux_root_gitconfig: True
 evolinux_root_bash_history_appendonly: True
 evolinux_root_vim_default: True
 evolinux_root_vim_conf: True
-evolinux_root_disable_ssh: False
+
+### "evolinux_root_disable_ssh" is obsolete and replaced by "evolinux_ssh_permitrootlogin"
+# evolinux_root_disable_ssh: False
+### Fallback value, do not change here!
+evolinux_ssh_permitrootlogin_default: Null
+### Setting this to Null keeps the value set in /etc/ssh/sshd_config
+### or the ultimate default value set in OpenSSH (usually "without-password")
+evolinux_ssh_permitrootlogin: "{{ evolinux_ssh_permitrootlogin_default | default(Null) }}"
 
 # postfix
 

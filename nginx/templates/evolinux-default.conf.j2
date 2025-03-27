@@ -52,6 +52,10 @@ server {
     location /server-status-{{ nginx_serverstatus_suffix | mandatory }} {
         stub_status on;
         access_log off;
+
+        # Also allow localhost for monitoring purposes
+        allow 127.0.0.1;
+        allow ::1;
     }
 
     include /etc/nginx/snippets/evolinux_server_custom;

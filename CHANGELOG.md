@@ -21,6 +21,96 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
+## [25.03] 2025-03-27
+
+### Added
+
+* Add pki role
+* Add rsyslog-centralized role
+* evolinux-base: add "set autoread" in vim default config
+* evolinux-base: move our vim config in /etc/vim/vimrc.local
+* minifirewall: restart if needed after install/update
+* nagios-nrpe: add check_mount in available plugins and NRPE conf (commented)
+* packweb-apache: Install package whois (for mkpasswd)
+
+### Changed
+
+* apache: Move to using `include_tasks` and `import_tasks` instead of `include`
+* bind: Move to using `include_tasks` and `import_tasks` instead of `include`
+* certbot: Move to using `include_tasks` and `import_tasks` instead of `include`
+* docker-host: Move to using `import_tasks` instead of `include`
+* docker-rootless-instance: Move to using `import_tasks` instead of `include`
+* drbd: Move to using `import_tasks` instead of `include`
+* elasticsearch: Move to using `import_tasks` instead of `include`
+* etc-git: Move to using `import_tasks` instead of `include`
+* evoacme: Move to using `import_tasks` instead of `include`
+* evoadmin-mail: Move to using `import_tasks` instead of `include`
+* evoadmin-web: Move to using `import_tasks` instead of `include`
+* evobackup-client: Move to using `import_tasks` instead of `include`
+* evobackup-client: upstream release 25.02
+* evocheck: Move to using `import_tasks` instead of `include`
+* evocheck: upstream release 25.03.3
+* evolinux-base: install evobackup-client only on Debian 10+
+* evolinux-base: use variable "evolinux_ssh_permit_root_login" instead of "evolinux_root_disable_ssh"
+* evolinux-users: Move to using `include_tasks` and `import_tasks` instead of `include`
+* evomaintenance: Move to using `import_tasks` instead of `include`
+* evomaintenance: Upstream release 25.03
+* fail2ban: Move to using `import_tasks` instead of `include`
+* generate-ldif: fix postgresql package glob name
+* haproxy: Move to using `import_tasks` instead of `include`
+* java: Move to using `import_tasks` instead of `include`
+* kvm-host: Move to using `import_tasks` instead of `include`
+* ldap: Move to using `import_tasks` instead of `include`
+* logstash: Move to using `import_tasks` instead of `include`
+* lxc-php: Move to using `import_tasks` instead of `include`
+* lxc-solr: Move to using `include_tasks` and `import_tasks` instead of `include`
+* lxc: Move to using `include_tasks` and `import_tasks` instead of `include`
+* memcached: Move to using `import_tasks` instead of `include`
+* minifirewall: better status detection
+* mysql-oracle: Move to using `import_tasks` instead of `include`
+* nagios-nrpe: Add variable `nagios_nrpe_apt_contrib_plugins` to disable installing nagios-plugins-contrib
+* newrelic: Move to using `import_tasks` instead of `include`
+* nextcloud: Move to using `import_tasks` instead of `include`
+* nginx: Move to using `import_tasks` instead of `include`
+* openvpn: Move to using `import_tasks` instead of `include`
+* packweb-apache: add debconf presets
+* packweb-apache: Install apg at beginning (dependency)
+* packweb-apache: Move to using `import_tasks` instead of `include`
+* percona: Move to using `import_tasks` instead of `include`
+* php: Move to using `import_tasks` instead of `include`
+* postfix: install main.cf if it's missing
+* postfix: Move to using `import_tasks` instead of `include`
+* postfix: preset debconf values
+* postgresql: Move to using `import_tasks` instead of `include`
+* proftpd: Move to using `include_tasks` and `import_tasks` instead of `include`
+* rabbitmq: Move to using `import_tasks` instead of `include`
+* redis: Move to using `import_tasks` instead of `include`
+* redmine: Move to using `import_tasks` instead of `include`
+* squid: Move to using `import_tasks` instead of `include`
+* tomcat-instance: Move to using `import_tasks` instead of `include`
+* tomcat: Move to using `import_tasks` instead of `include`
+* userlogrotate: explicit local variables
+* userlogrotate: long options for stat
+* userlogrotate: variables and functions with names more explicit
+* varnish: Move to using `import_tasks` instead of `include`
+* webapps/nextcloud: Change PHP's upload_tmp_dir in `{{ nextcloud_home }}/tmp/`
+
+### Fixed
+
+* apt: migrate-to-deb822 : Capitalize properly Signed-By & add a regexp to prevent having multiple Signed-By
+* fail2ban : Add missing python3-systemd dependency
+* mysql: Add missing remount-usr after apt in munin tasks
+* mysql: Fix broken logrotate.service
+* mysql: Fix munin plugin to correctly use munin config
+* proftpd: logrotate file name dependent on Debian version
+* userlogrotate: pass user/group in correct order
+
+### Removed
+
+* evoadmin-web: no need to hardcode the php-log package anymore
+* evolinux-base: remove "evolinux_root_disable_ssh"
+* evolinux-users: don't bother with root login anymore
+
 ## [25.01.4] 2025-01-30
 
 ### Changed
@@ -30,6 +120,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * minifirewall: fix fail2ban restart
+* nginx: Allow localhost on the server-status-NNNNN on the default vhost
 
 ## [25.01.3] 2025-01-30
 
@@ -41,6 +132,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* apache: Default vhost template > Restrict access to mailgraph to the usual whitelist
 * lvm: rewrite the filter composition
 
 ## [25.01.2] 2025-01-29
@@ -85,6 +177,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc: use lxc-templates from Backports to install old releases on Bullseye
 * mysql: patch mysql_ (mysql2) Munin plugin, upstream discontinued
 * tomcat: check if user exist before checking its Tomcat instance.
+* mysql: send error log to /var/log/mysql/error.log instead of journald in recent Debian version.
 
 ## [25.01] 2025-01-03
 

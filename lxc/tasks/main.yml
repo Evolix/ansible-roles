@@ -61,7 +61,7 @@
     msg: "LXC directory is in a filesystem with incompatible options"
 
 - name: Create containers
-  ansible.builtin.include: create-container.yml
+  ansible.builtin.include_tasks: create-container.yml
   vars:
     name: "{{ item.name }}"
     release: "{{ item.release }}"

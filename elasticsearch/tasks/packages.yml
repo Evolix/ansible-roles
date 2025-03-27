@@ -1,12 +1,10 @@
 ---
 
 - name: APT sources
-  ansible.builtin.include_tasks: apt_sources.yml
-  args:
-    apply:
-      tags:
-        - elasticsearch
-        - packages
+  ansible.builtin.import_tasks: apt_sources.yml
+  tags:
+    - elasticsearch
+    - packages
 
 - name: Elasticsearch is installed
   ansible.builtin.apt:

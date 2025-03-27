@@ -42,3 +42,13 @@
 - name: "Install Solr {{ solr_version }}"
   ansible.builtin.command:
     cmd: "lxc-attach -n {{ name }} -- /root/solr-{{ solr_version }}/bin/install_solr_service.sh /root/solr-{{ solr_version }}.tgz -d /home/solr/{{ name }} -p {{ solr_port }}"
+
+- name: "Listen on all interfaces"
+  ansible.builtin.blockinfile:
+    dest: "/var/lib/lxc/{{ name }}/rootfs/etc/default/solr.in.sh"
+    marker: "# {mark} ANSIBLE MANAGED"
+    block: |
+      SOLR_JETTY_HOST="0.0.0.0"
+    insertafter: EOF
+  when: "solr_version is version('9.0.0', '>=')"
+  notify: "Restart Solr"

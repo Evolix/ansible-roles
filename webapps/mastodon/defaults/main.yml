@@ -8,6 +8,8 @@ mastodon_ruby_version: '3.2.3'
 mastodon_nodejs_version: 'node_20.x'
 mastodon_instance: 'example'
 mastodon_certbot_admin_email: 'security@somedomain.org'
+mastodon_sidekiq_concurrence: '25'
+mastodon_puma_web_concurrence: '4'
 
 mastodon_db_host: 'localhost'
 mastodon_db_user: "{{ mastodon_instance }}"

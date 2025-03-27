@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # EvoCheck
-# Script to verify compliance of a Linux (Debian 9+) server
+# Script to verify compliance of a Linux (Debian 10+) server
 # powered by Evolix
 
 #set -x
 
-VERSION="25.01"
+VERSION="25.03.3"
 readonly VERSION
 
 # base functions
@@ -15,7 +15,7 @@ show_version() {
     cat <<END
 evocheck version ${VERSION}
 
-Copyright 2009-2024 Evolix <info@evolix.fr>,
+Copyright 2009-2025 Evolix <info@evolix.fr>,
                     Romain Dessort <rdessort@evolix.fr>,
                     Benoit Série <bserie@evolix.fr>,
                     Gregory Colpart <reg@evolix.fr>,
@@ -56,9 +56,9 @@ detect_os() {
     if [ -e /etc/debian_version ]; then
         DEBIAN_MAIN_VERSION=$(cut -d "." -f 1 < /etc/debian_version)
 
-        if [ "${DEBIAN_MAIN_VERSION}" -lt "9" ]; then
+        if [ "${DEBIAN_MAIN_VERSION}" -lt "10" ]; then
             echo "Debian ${DEBIAN_MAIN_VERSION} is incompatible with this version of evocheck." >&2
-            echo "This version is built for Debian 9 and later." >&2
+            echo "This version is built for Debian 10 and later." >&2
             exit
         fi
 
@@ -66,20 +66,17 @@ detect_os() {
             DEBIAN_RELEASE=$(${LSB_RELEASE_BIN} --codename --short)
         else
             case ${DEBIAN_MAIN_VERSION} in
-                9)  DEBIAN_RELEASE="stretch";;
-                10) DEBIAN_RELEASE="buster";;
-                11) DEBIAN_RELEASE="bullseye";;
-                12) DEBIAN_RELEASE="bookworm";;
-                13) DEBIAN_RELEASE="trixie";;
-                14) DEBIAN_RELEASE="forky";;
+                10) DEBIAN_RELEASE="buster"   ;;
+                11) DEBIAN_RELEASE="bullseye" ;;
+                12) DEBIAN_RELEASE="bookworm" ;;
+                13) DEBIAN_RELEASE="trixie"   ;;
+                14) DEBIAN_RELEASE="forky"    ;;
+                15) DEBIAN_RELEASE="duke"     ;;
             esac
         fi
     fi
 }
 
-is_debian_stretch() {
-    test "${DEBIAN_RELEASE}" = "stretch"
-}
 is_debian_buster() {
     test "${DEBIAN_RELEASE}" = "buster"
 }
@@ -94,6 +91,9 @@ is_debian_trixie() {
 }
 is_debian_forky() {
     test "${DEBIAN_RELEASE}" = "forky"
+}
+is_debian_duke() {
+    test "${DEBIAN_RELEASE}" = "duke"
 }
 
 is_pack_web(){
@@ -297,6 +297,19 @@ check_tmpnoexec() {
         mount | grep "on /tmp" | grep --quiet --extended-regexp "\bnoexec\b" || failed "IS_TMPNOEXEC" "/tmp is not mounted with 'noexec' (WARNING: findmnt(8) is not found)"
     fi
 }
+check_homenoexec() {
+    FINDMNT_BIN=$(command -v findmnt)
+    if [ -x "${FINDMNT_BIN}" ]; then
+        options=$(${FINDMNT_BIN} --noheadings --first-only --output OPTIONS /home)
+        echo "${options}" | grep --quiet --extended-regexp "\bnoexec\b" || \
+           ( grep --quiet --extended-regexp "/home.*noexec" /etc/fstab && \
+	   failed "IS_HOMENOEXEC" "/home is mounted with 'exec' but /etc/fstab document it as 'noexec'" )
+    else
+        mount | grep "on /home" | grep --quiet --extended-regexp "\bnoexec\b" || \
+           ( grep --quiet --extended-regexp "/home.*noexec" /etc/fstab && \
+	   failed "IS_HOMENOEXEC" "/home is mounted with 'exec' but /etc/fstab document it as 'noexec' (WARNING: findmnt(8) is not found)" )
+    fi
+}
 check_mountfstab() {
     # Test if lsblk available, if not skip this test...
     LSBLK_BIN=$(command -v lsblk)
@@ -317,7 +330,7 @@ check_customcrontab() {
     test "$found_lines" = 4 && failed "IS_CUSTOMCRONTAB" "missing custom field in crontab"
 }
 check_sshallowusers() {
-    if { ! is_debian_stretch && ! is_debian_buster && ! is_debian_bullseye ; }; then
+    if { ! is_debian_buster && ! is_debian_bullseye ; }; then
         if [ -d /etc/ssh/sshd_config.d/ ]; then
             # AllowUsers or AllowGroups should be in /etc/ssh/sshd_config.d/
             grep --extended-regexp --quiet --ignore-case --recursive "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config.d/ \
@@ -337,6 +350,29 @@ check_sshallowusers() {
         fi
     fi
 }
+check_sshconfsplit() {
+    if { ! is_debian_buster && ! is_debian_bullseye ; }; then
+        ls /etc/ssh/sshd_config.d/* > /dev/null 2> /dev/null \
+            || failed "IS_SSHCONFSPLIT" "No files under /etc/ssh/sshd_config.d"
+        diff /usr/share/openssh/sshd_config /etc/ssh/sshd_config > /dev/null 2> /dev/null \
+            || failed "IS_SSHCONFSPLIT" "Files /etc/ssh/sshd_config and /usr/share/openssh/sshd_config differ"
+        for f in /etc/ssh/sshd_config.d/z-evolinux-defaults.conf /etc/ssh/sshd_config.d/zzz-evolinux-custom.conf; do
+            test -f "${f}" || failed "IS_SSHCONFSPLIT" "${f} is not a regular file"
+        done
+    fi
+}
+check_sshlastmatch() {
+    if { ! is_debian_buster && ! is_debian_bullseye ; }; then
+        for f in /etc/ssh/sshd_config /etc/ssh/sshd_config.d/zzz-evolinux-custom.conf; do
+            if ! test -f "${f}"; then
+                continue
+            fi
+            if ! awk 'BEGIN { last = "all" } tolower($1) == "match" { last = tolower($2) } END { if (last != "all") exit 1 }' "${f}"; then
+                failed "IS_SSHLASTMATCH" "last Match directive is not \"Match all\" in ${f}"
+            fi
+        done
+    fi
+}
 check_diskperf() {
     perfFile="/root/disk-perf.txt"
     test -e $perfFile || failed "IS_DISKPERF" "missing ${perfFile}"
@@ -345,38 +381,16 @@ check_tmoutprofile() {
     grep --no-messages --quiet "TMOUT=" /etc/profile /etc/profile.d/evolinux.sh || failed "IS_TMOUTPROFILE" "TMOUT is not set"
 }
 check_alert5boot() {
-    if is_debian_stretch; then
-        if [ -n "$(find /etc/rc2.d/ -name 'S*alert5')" ]; then
-            grep --quiet "^date" /etc/rc2.d/S*alert5 || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
-        elif [ -n "$(find /etc/init.d/ -name 'alert5')" ]; then
-            grep --quiet "^date" /etc/init.d/alert5 || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 int script"
-        else
-            failed "IS_ALERT5BOOT" "alert5 init script is missing"
-        fi
+    grep --quiet --no-messages "^date" /usr/share/scripts/alert5.sh || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
+    if [ -f /etc/systemd/system/alert5.service ]; then
+        systemctl is-enabled alert5.service -q || failed "IS_ALERT5BOOT" "alert5 unit is not enabled"
     else
-        grep --quiet --no-messages "^date" /usr/share/scripts/alert5.sh || failed "IS_ALERT5BOOT" "boot mail is not sent by alert5 init script"
-        if [ -f /etc/systemd/system/alert5.service ]; then
-            systemctl is-enabled alert5.service -q || failed "IS_ALERT5BOOT" "alert5 unit is not enabled"
-        else
-            failed "IS_ALERT5BOOT" "alert5 unit file is missing"
-        fi
+        failed "IS_ALERT5BOOT" "alert5 unit file is missing"
     fi
 }
 check_alert5minifw() {
-    if is_debian_stretch; then
-        if [ -n "$(find /etc/rc2.d/ -name 'S*alert5')" ]; then
-            grep --quiet "^/etc/init.d/minifirewall" /etc/rc2.d/S*alert5 \
-                || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 init script"
-        elif [ -n "$(find /etc/init.d/ -name 'alert5')" ]; then
-            grep --quiet "^/etc/init.d/minifirewall" /etc/init.d/alert5 \
-                || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 init script"
-        else
-            failed "IS_ALERT5MINIFW" "alert5 init script is missing"
-        fi
-    else
-        grep --quiet --no-messages "^/etc/init.d/minifirewall" /usr/share/scripts/alert5.sh \
-            || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 script or script is missing"
-    fi
+    grep --quiet --no-messages "^/etc/init.d/minifirewall" /usr/share/scripts/alert5.sh \
+        || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 script or script is missing"
 }
 check_minifw() {
     {
@@ -392,7 +406,7 @@ check_minifw() {
     } || failed "IS_MINIFW" "minifirewall seems not started"
 }
 check_minifw_includes() {
-    if { ! is_debian_stretch && ! is_debian_buster ; }; then
+    if ! is_debian_buster ; then
         if grep --quiet --regexp '/sbin/iptables' --regexp '/sbin/ip6tables' "/etc/default/minifirewall"; then
             failed "IS_MINIFWINCLUDES" "minifirewall has direct iptables invocations in /etc/default/minifirewall that should go in /etc/minifirewall.d/"
         fi
@@ -419,7 +433,7 @@ check_nrpedisks() {
     test "$NRPEDISKS" = "$DFDISKS" || failed "IS_NRPEDISKS" "there must be $DFDISKS check_disk in nrpe.cfg"
 }
 check_nrpepid() {
-    if { is_debian_stretch || is_debian_buster ; }; then
+    if is_debian_buster; then
         { test -e /etc/nagios/nrpe.cfg \
             && grep --quiet "^pid_file=/var/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
         } || failed "IS_NRPEPID" "missing or wrong pid_file directive in nrpe.cfg"
@@ -450,7 +464,7 @@ check_mysqlutils() {
     MYSQL_ADMIN=${MYSQL_ADMIN:-mysqladmin}
     if is_installed mysql-server; then
         # With Debian 11 and later, root can connect to MariaDB with the socket
-        if is_debian_stretch || is_debian_buster; then
+        if is_debian_buster; then
             # You can configure MYSQL_ADMIN in evocheck.cf
             if ! grep --quiet --no-messages "^user *= *${MYSQL_ADMIN}" /root/.my.cnf; then
                 failed "IS_MYSQLUTILS" "${MYSQL_ADMIN} missing in /root/.my.cnf"
@@ -553,7 +567,7 @@ check_bindchroot() {
     if is_installed bind9; then
         if netstat -utpln | grep "/named" | grep :53 | grep --quiet --invert-match --extended-regexp "(127.0.0.1|::1)"; then
             default_conf=/etc/default/named
-            if is_debian_buster || is_debian_stretch; then
+            if is_debian_buster; then
                 default_conf=/etc/default/bind9
             fi
             if grep --quiet '^OPTIONS=".*-t' "${default_conf}" && grep --quiet '^OPTIONS=".*-u' "${default_conf}"; then
@@ -609,7 +623,7 @@ check_evobackup() {
 # Vérification de la mise en place d'un cron de purge de la base SQLite de Fail2ban
 check_fail2ban_purge() {
     # Nécessaire seulement en Debian 9 ou 10
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_buster; then
       if is_installed fail2ban; then
         test -f /etc/cron.daily/fail2ban_dbpurge || failed "IS_FAIL2BAN_PURGE" "missing script fail2ban_dbpurge cron"
       fi
@@ -949,9 +963,11 @@ check_hardwareraidtool() {
     LSPCI_BIN=$(command -v lspci)
     if [ -x "${LSPCI_BIN}" ]; then
         if ${LSPCI_BIN} | grep --quiet 'MegaRAID'; then
-            # shellcheck disable=SC2015
-            is_installed megacli && { is_installed megaclisas-status || is_installed megaraidsas-status; } \
-                || failed "IS_HARDWARERAIDTOOL" "Mega tools not found"
+            if ! { command -v perccli || command -v perccli2; } >/dev/null  ; then
+                # shellcheck disable=SC2015
+                is_installed megacli && { is_installed megaclisas-status || is_installed megaraidsas-status; } \
+                    || failed "IS_HARDWARERAIDTOOL" "Mega tools not found"
+            fi
         fi
         if ${LSPCI_BIN} | grep --quiet 'Hewlett-Packard Company Smart Array'; then
             is_installed cciss-vol-status || failed "IS_HARDWARERAIDTOOL" "cciss-vol-status not installed"
@@ -983,81 +999,106 @@ check_mariadbevolinuxconf() {
 }
 check_sql_backup() {
     if (is_installed "mysql-server" || is_installed "mariadb-server"); then
-        # You could change the default path in /etc/evocheck.cf
-        SQL_BACKUP_PATH="${SQL_BACKUP_PATH:-$(find /home/backup/ \( -iname "mysql.bak.gz" -o -iname "mysql.sql.gz" -o -iname "mysqldump.sql.gz" \))}"
-        for backup_path in ${SQL_BACKUP_PATH}; do
-            if [ ! -f "${backup_path}" ]; then
-                failed "IS_SQL_BACKUP" "MySQL dump is missing (${backup_path})"
-                test "${VERBOSE}" = 1 || break
-            fi
-        done
+        backup_dir="/home/backup"
+        if [ -d "${backup_dir}" ]; then
+            # You could change the default path in /etc/evocheck.cf
+            SQL_BACKUP_PATH="${SQL_BACKUP_PATH:-$(find "${backup_dir}" \( -iname "mysql.bak.gz" -o -iname "mysql.sql.gz" -o -iname "mysqldump.sql.gz" \))}"
+            for backup_path in ${SQL_BACKUP_PATH}; do
+                if [ ! -f "${backup_path}" ]; then
+                    failed "IS_SQL_BACKUP" "MySQL dump is missing (${backup_path})"
+                    test "${VERBOSE}" = 1 || break
+                fi
+            done
+        else
+            failed "IS_SQL_BACKUP" "${backup_dir}/ is missing"
+        fi
     fi
 }
 check_postgres_backup() {
     if is_installed "postgresql-9*" || is_installed "postgresql-1*"; then
-        # If you use something like barman, you should disable this check
-        # You could change the default path in /etc/evocheck.cf
-        POSTGRES_BACKUP_PATH="${POSTGRES_BACKUP_PATH:-$(find /home/backup/ -iname "pg.dump.bak*")}"
-        for backup_path in ${POSTGRES_BACKUP_PATH}; do
-            if [ ! -f "${backup_path}" ]; then
-                failed "IS_POSTGRES_BACKUP" "PostgreSQL dump is missing (${backup_path})"
-                test "${VERBOSE}" = 1 || break
-            fi
-        done
+        backup_dir="/home/backup"
+        if [ -d "${backup_dir}" ]; then
+            # If you use something like barman, you should disable this check
+            # You could change the default path in /etc/evocheck.cf
+            POSTGRES_BACKUP_PATH="${POSTGRES_BACKUP_PATH:-$(find "${backup_dir}" -iname "pg.dump.bak*")}"
+            for backup_path in ${POSTGRES_BACKUP_PATH}; do
+                if [ ! -f "${backup_path}" ]; then
+                    failed "IS_POSTGRES_BACKUP" "PostgreSQL dump is missing (${backup_path})"
+                    test "${VERBOSE}" = 1 || break
+                fi
+            done
+        else
+            failed "IS_POSTGRES_BACKUP" "${backup_dir}/ is missing"
+        fi
     fi
 }
 check_mongo_backup() {
     if is_installed "mongodb-org-server"; then
-        # You could change the default path in /etc/evocheck.cf
-        MONGO_BACKUP_PATH=${MONGO_BACKUP_PATH:-"/home/backup/mongodump"}
-        if [ -d "$MONGO_BACKUP_PATH" ]; then
-            for file in "${MONGO_BACKUP_PATH}"/*/*.{json,bson}*; do
-                # Skip indexes file.
-                if ! [[ "$file" =~ indexes ]]; then
-                    limit=$(date +"%s" -d "now - 2 day")
-                    updated_at=$(stat -c "%Y" "$file")
-                    if [ -f "$file" ] && [ "$limit" -gt "$updated_at"  ]; then
-                        failed "IS_MONGO_BACKUP" "MongoDB hasn't been dumped for more than 2 days"
-                        break
+        backup_dir="/home/backup"
+        if [ -d "${backup_dir}" ]; then
+            # You could change the default path in /etc/evocheck.cf
+            MONGO_BACKUP_PATH=${MONGO_BACKUP_PATH:-"${backup_dir}/mongodump"}
+            if [ -d "$MONGO_BACKUP_PATH" ]; then
+                for file in "${MONGO_BACKUP_PATH}"/*/*.{json,bson}*; do
+                    # Skip indexes file.
+                    if ! [[ "$file" =~ indexes ]]; then
+                        limit=$(date +"%s" -d "now - 2 day")
+                        updated_at=$(stat -c "%Y" "$file")
+                        if [ -f "$file" ] && [ "$limit" -gt "$updated_at"  ]; then
+                            failed "IS_MONGO_BACKUP" "MongoDB hasn't been dumped for more than 2 days"
+                            break
+                        fi
                     fi
-                fi
-            done
+                done
+            else
+                failed "IS_MONGO_BACKUP" "MongoDB dump directory is missing (${MONGO_BACKUP_PATH})"
+            fi
         else
-            failed "IS_MONGO_BACKUP" "MongoDB dump directory is missing (${MONGO_BACKUP_PATH})"
+            failed "IS_MONGO_BACKUP" "${backup_dir}/ is missing"
         fi
     fi
 }
 check_ldap_backup() {
     if is_installed slapd; then
-        # You could change the default path in /etc/evocheck.cf
-        LDAP_BACKUP_PATH="${LDAP_BACKUP_PATH:-$(find /home/backup/ -iname "ldap.bak")}"
-        test -f "$LDAP_BACKUP_PATH" || failed "IS_LDAP_BACKUP" "LDAP dump is missing (${LDAP_BACKUP_PATH})"
+        backup_dir="/home/backup"
+        if [ -d "${backup_dir}" ]; then
+            # You could change the default path in /etc/evocheck.cf
+            LDAP_BACKUP_PATH="${LDAP_BACKUP_PATH:-$(find "${backup_dir}" -iname "ldap.bak")}"
+            test -f "$LDAP_BACKUP_PATH" || failed "IS_LDAP_BACKUP" "LDAP dump is missing (${LDAP_BACKUP_PATH})"
+        else
+            failed "LDAP_BACKUP_PATH" "${backup_dir}/ is missing"
+        fi
     fi
 }
 check_redis_backup() {
     if is_installed redis-server; then
-        # You could change the default path in /etc/evocheck.cf
-        # REDIS_BACKUP_PATH may contain space-separated paths, for example:
-        # REDIS_BACKUP_PATH='/home/backup/redis-instance1/dump.rdb /home/backup/redis-instance2/dump.rdb'
-        # Warning : this script doesn't handle spaces in file paths !
+        backup_dir="/home/backup"
+            if [ -d "${backup_dir}" ]; then
+            # You could change the default path in /etc/evocheck.cf
+            # REDIS_BACKUP_PATH may contain space-separated paths, for example:
+            # REDIS_BACKUP_PATH='/home/backup/redis-instance1/dump.rdb /home/backup/redis-instance2/dump.rdb'
+            # Warning : this script doesn't handle spaces in file paths !
 
-        REDIS_BACKUP_PATH="${REDIS_BACKUP_PATH:-$(find /home/backup/ -iname "*.rdb*")}"
+            REDIS_BACKUP_PATH="${REDIS_BACKUP_PATH:-$(find "${backup_dir}" -iname "*.rdb*")}"
 
-        # Check number of dumps
-        n_instances=$(pgrep 'redis-server' | wc -l)
-        n_dumps=$(echo $REDIS_BACKUP_PATH | wc -w)
-        if [ ${n_dumps} -lt ${n_instances} ]; then
-            failed "IS_REDIS_BACKUP" "Missing Redis dump : ${n_instances} instance(s) found versus ${n_dumps} dump(s) found."
-        fi
-
-        # Check last dump date
-        age_threshold=$(date +"%s" -d "now - 2 days")
-        for dump in ${REDIS_BACKUP_PATH}; do
-            last_update=$(stat -c "%Z" $dump)
-            if [ "${last_update}" -lt "${age_threshold}" ]; then
-                failed "IS_REDIS_BACKUP" "Redis dump ${dump} is older than 2 days."
+            # Check number of dumps
+            n_instances=$(pgrep 'redis-server' | wc -l)
+            n_dumps=$(echo $REDIS_BACKUP_PATH | wc -w)
+            if [ ${n_dumps} -lt ${n_instances} ]; then
+                failed "IS_REDIS_BACKUP" "Missing Redis dump : ${n_instances} instance(s) found versus ${n_dumps} dump(s) found."
             fi
-        done
+
+            # Check last dump date
+            age_threshold=$(date +"%s" -d "now - 2 days")
+            for dump in ${REDIS_BACKUP_PATH}; do
+                last_update=$(stat -c "%Z" $dump)
+                if [ "${last_update}" -lt "${age_threshold}" ]; then
+                    failed "IS_REDIS_BACKUP" "Redis dump ${dump} is older than 2 days."
+                fi
+            done
+        else
+            failed "IS_REDIS_BACKUP" "${backup_dir}/ is missing"
+        fi
     fi
 }
 check_elastic_backup() {
@@ -1069,7 +1110,7 @@ check_elastic_backup() {
 }
 check_mariadbsystemdunit() {
     # TODO: check if it is still needed for bullseye
-    if is_debian_stretch || is_debian_buster; then
+    if is_debian_buster; then
         if is_installed mariadb-server; then
             if systemctl -q is-active mariadb.service; then
                 test -f /etc/systemd/system/mariadb.service.d/evolinux.conf \
@@ -1111,12 +1152,11 @@ check_mysqlnrpe() {
     fi
 }
 check_phpevolinuxconf() {
-    is_debian_stretch  && phpVersion="7.0"
     is_debian_buster   && phpVersion="7.3"
     is_debian_bullseye && phpVersion="7.4"
     is_debian_bookworm && phpVersion="8.2"
     is_debian_trixie   && phpVersion="8.4"
-    if is_installed php; then
+    if is_installed php && [ -n "${phpVersion}" ]; then
         { test -f "/etc/php/${phpVersion}/cli/conf.d/z-evolinux-defaults.ini" \
             && test -f "/etc/php/${phpVersion}/cli/conf.d/zzz-evolinux-custom.ini"
         } || failed "IS_PHPEVOLINUXCONF" "missing php evolinux config"
@@ -1477,6 +1517,25 @@ check_lxc_openssh() {
         done
     fi
 }
+check_lxc_opensmtpd() {
+    if is_installed lxc; then
+        lxc_path=$(lxc-config lxc.lxcpath)
+        container_list=$(lxc-ls -1 --active --filter php)
+        for container_name in ${containers_list}; do
+            if lxc-info --name "${container_name}" > /dev/null; then
+                rootfs="${lxc_path}/${container_name}/rootfs"
+                test -e "${rootfs}/usr/sbin/smtpd" || test -e "${rootfs}/usr/sbin/ssmtp" || failed "IS_LXC_OPENSMTPD" "opensmtpd should be installed in container ${container_name}"
+            fi
+        done
+    fi
+}
+
+check_monitoringctl() {
+    if ! /usr/local/bin/monitoringctl list >/dev/null 2>&1; then
+        failed "IS_MONITORINGCTL" "monitoringctl is not installed or has a problem (use 'monitoringctl list' to reproduce)."
+    fi
+}
+
 
 download_versions() {
     local file
@@ -1601,6 +1660,24 @@ check_versions() {
         fi
     done
 }
+check_nrpepressure() {
+    # Taken from detect_os function
+    DEBIAN_MAIN_VERSION=$(cut -d "." -f 1 < /etc/debian_version)
+    if [ "${DEBIAN_MAIN_VERSION}" -ge 12 ]; then
+        monitoringctl status pressure_cpu > /dev/null 2>&1
+        rc="$?"
+        if [ "${rc}" -ne 0 ]; then
+            failed "IS_NRPEPRESSURE" "pressure_cpu check not defined or monitoringctl not correctly installed"
+        fi
+    fi
+}
+check_postfix_ipv6_disabled() {
+    postconf -n 2>/dev/null | grep --no-messages --extended-regex '^inet_protocols\>' | grep --no-messages --invert-match --fixed-strings ipv6 | grep --no-messages --invert-match --fixed-strings all | grep --no-messages --silent --fixed-strings ipv4
+    rc="$?"
+    if [ "${rc}" -ne 0 ]; then
+        failed "IS_POSTFIX_IPV6_DISABLED" "IPv6 must be disabled in Postfix main.cf (inet_protocols = ipv4)"
+    fi
+}
 
 main() {
     # Default return code : 0 = no error
@@ -1641,10 +1718,13 @@ main() {
     test "${IS_APTGETBAK:=1}" = 1 && check_aptgetbak
     test "${IS_USRRO:=1}" = 1 && check_usrro
     test "${IS_TMPNOEXEC:=1}" = 1 && check_tmpnoexec
+    test "${IS_HOMENOEXEC:=1}" = 1 && check_homenoexec
     test "${IS_MOUNT_FSTAB:=1}" = 1 && check_mountfstab
     test "${IS_LISTCHANGESCONF:=1}" = 1 && check_listchangesconf
     test "${IS_CUSTOMCRONTAB:=1}" = 1 && check_customcrontab
     test "${IS_SSHALLOWUSERS:=1}" = 1 && check_sshallowusers
+    test "${IS_SSHCONFSPLIT:=1}" = 1 && check_sshconfsplit
+    test "${IS_SSHLASTMATCH:=0}" = 1 && check_sshlastmatch
     test "${IS_DISKPERF:=0}" = 1 && check_diskperf
     test "${IS_TMOUTPROFILE:=1}" = 1 && check_tmoutprofile
     test "${IS_ALERT5BOOT:=1}" = 1 && check_alert5boot
@@ -1735,7 +1815,11 @@ main() {
     test "${IS_LXC_PHP_FPM_SERVICE_UMASK_SET:=1}" = 1 && check_lxc_php_fpm_service_umask_set
     test "${IS_LXC_PHP_BAD_DEBIAN_VERSION:=1}" = 1 && check_lxc_php_bad_debian_version
     test "${IS_LXC_OPENSSH:=1}" = 1 && check_lxc_openssh
+    test "${IS_LXC_OPENSMTPD:=1}" = 1 && check_lxc_opensmtpd
     test "${IS_CHECK_VERSIONS:=1}" = 1 && check_versions
+    test "${IS_MONITORINGCTL:=1}" = 1 && check_monitoringctl
+    test "${IS_NRPEPRESSURE:=1}" = 1 && check_nrpepressure
+    test "${IS_POSTFIX_IPV6_DISABLED:=1}" = 1 && check_postfix_ipv6_disabled
 
     if [ -f "${main_output_file}" ]; then
         lines_found=$(wc -l < "${main_output_file}")

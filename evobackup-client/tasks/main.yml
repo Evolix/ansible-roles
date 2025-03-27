@@ -1,31 +1,31 @@
 ---
 
 - name: Install evobackup client components
-  ansible.builtin.include: "install.yml"
+  ansible.builtin.import_tasks: "install.yml"
 
 ### This is commented because supposedly non-functionnal
 
-# - ansible.builtin.include: "ssh_key.yml"
+# - ansible.builtin.import_tasks: "ssh_key.yml"
 #   tags:
 #     - evobackup_client
 #     - evobackup_client_backup_ssh_key
 
-# - ansible.builtin.include: "jail.yml"
+# - ansible.builtin.import_tasks: "jail.yml"
 #   tags:
 #     - evobackup_client
 #     - evobackup_client_jail
 
-# - ansible.builtin.include: "upload_scripts.yml"
+# - ansible.builtin.import_tasks: "upload_scripts.yml"
 #   tags:
 #     - evobackup_client
 #     - evobackup_client_backup_scripts
 
-# - ansible.builtin.include: "open_ssh_ports.yml"
+# - ansible.builtin.import_tasks: "open_ssh_ports.yml"
 #   tags:
 #     - evobackup_client
 #     - evobackup_client_backup_firewall
 
-# - ansible.builtin.include: "verify_ssh.yml"
+# - ansible.builtin.import_tasks: "verify_ssh.yml"
 #   tags:
 #     - evobackup_client
 #     - evobackup_client_backup_hosts

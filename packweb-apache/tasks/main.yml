@@ -1,7 +1,7 @@
 ---
 
 - name: Dependencies are satisfied
-  ansible.builtin.include_tasks: dependencies.yml
+  ansible.builtin.import_tasks: dependencies.yml
 
 - ansible.builtin.fail:
     msg: only compatible with Debian >= 8
@@ -13,6 +13,8 @@
     name:
       - zip
       - unzip
+      - whois
+      - apg
     state: present
 
 - name: install info.php
@@ -75,13 +77,13 @@
     regexp: '^DIR_MODE='
     line: 'DIR_MODE=0750'
 
-- ansible.builtin.include: apache.yml
+- ansible.builtin.import_tasks: apache.yml
 
-- ansible.builtin.include: phpmyadmin.yml
+- ansible.builtin.import_tasks: phpmyadmin.yml
 
-- ansible.builtin.include: awstats.yml
+- ansible.builtin.import_tasks: awstats.yml
 
-- ansible.builtin.include: fhs_retrictions.yml
+- ansible.builtin.import_tasks: fhs_retrictions.yml
   when: packweb_fhs_retrictions | bool
 
 - name: Periodically cache ftp directory sizes for ftpadmin.sh
@@ -90,6 +92,6 @@
     special_time: daily
     job: "/usr/share/scripts/evoadmin/stats.sh"
 
-- ansible.builtin.include: multiphp.yml
+- ansible.builtin.import_tasks: multiphp.yml
   when: packweb_multiphp_versions | length > 0
 

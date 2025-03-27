@@ -1,0 +1,19 @@
+---
+# IP addresse on which the server will listen
+rsyslog_centralized_server_address: Null
+# Port on which the syslog server listen
+rsyslog_centralized_server_port: "6514"
+# Directory where the syslog server stores the received logs
+rsyslog_centralized_server_dir: "/home/rsyslog/"
+# Domain or wildcard allowed to connect to the server based on the client certificat subject name
+# Used in https://www.rsyslog.com/doc/configuration/modules/imtcp.html#permittedpeer
+rsyslog_centralized_server_permitted_peer: Null
+
+# Domain or IP the client will connect to
+rsyslog_centralized_client_target: Null
+# The server certificate subject name the client is allowed to connect to
+# Used for https://www.rsyslog.com/doc/configuration/modules/omfwd.html#streamdriverpermittedpeers
+rsyslog_centralized_client_permitted_peers: "{{ rsyslog_centralized_client_target }}"
+
+# Internal variable DO NOT customize!
+_pki_changed: False
