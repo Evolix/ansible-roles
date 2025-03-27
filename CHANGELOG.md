@@ -65,8 +65,8 @@ The **patch** part is incremented if multiple releases happen the same month
 * packweb-apache: Move to using `import_tasks` instead of `include`
 * percona: Move to using `import_tasks` instead of `include`
 * php: Move to using `import_tasks` instead of `include`
-* postfix: Move to using `import_tasks` instead of `include`
 * postfix: install main.cf if it's missing
+* postfix: Move to using `import_tasks` instead of `include`
 * postfix: preset debconf values
 * postgresql: Move to using `import_tasks` instead of `include`
 * proftpd: Move to using `include_tasks` and `import_tasks` instead of `include`
@@ -76,6 +76,9 @@ The **patch** part is incremented if multiple releases happen the same month
 * squid: Move to using `import_tasks` instead of `include`
 * tomcat-instance: Move to using `import_tasks` instead of `include`
 * tomcat: Move to using `import_tasks` instead of `include`
+* userlogrotate: explicit local variables
+* userlogrotate: long options for stat
+* userlogrotate: variables and functions with names more explicit
 * varnish: Move to using `import_tasks` instead of `include`
 * webapps/nextcloud: Change PHP's upload_tmp_dir in `{{ nextcloud_home }}/tmp/`
 
@@ -86,6 +89,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * mysql: Add missing remount-usr after apt in munin tasks
 * mysql: Fix broken logrotate.service
 * mysql: Fix munin plugin to correctly use munin config
+* userlogrotate: pass user/group in correct order
 
 ### Removed
 
