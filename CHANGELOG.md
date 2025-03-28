@@ -55,6 +55,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-users: Move to using `include_tasks` and `import_tasks` instead of `include`
 * evomaintenance: Move to using `import_tasks` instead of `include`
 * evomaintenance: Upstream release 25.03
+* evomaintenance: fix install_vendor_other.yml to install referencing the correct files like for debian vendor
 * fail2ban: Move to using `import_tasks` instead of `include`
 * generate-ldif: fix postgresql package glob name
 * haproxy: Move to using `import_tasks` instead of `include`
