@@ -19,6 +19,9 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Removed
 
+* apache: no more mod_evasive
+* packweb-apache: no more mod_evasive
+
 ### Security
 
 ## [25.03] 2025-03-27

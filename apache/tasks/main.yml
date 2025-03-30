@@ -4,7 +4,6 @@
   ansible.builtin.apt:
     name:
       - apache2
-      - libapache2-mod-evasive
       - apachetop
       - libwww-perl
     state: present
@@ -29,7 +28,6 @@
   ansible.builtin.apt:
     name:
       - apache2-mpm-itk
-      - libapache2-mod-evasive
       - apachetop
       - libwww-perl
     state: present
