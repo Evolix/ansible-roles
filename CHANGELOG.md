@@ -15,6 +15,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* evolinux-base: dump-server-state upstream release 25.03
+
 ### Fixed
 
 ### Removed
