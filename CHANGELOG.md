@@ -13,6 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* elasticsearch: new script to check the nodes' versions
+
 ### Changed
 
 * evobackup-client: upstream release 25.03

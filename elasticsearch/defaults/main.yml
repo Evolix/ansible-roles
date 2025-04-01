@@ -40,4 +40,7 @@ elasticsearch_plugin_head_tmp_dir: "{{ elasticsearch_plugin_head_home }}/tmp"
 
 elasticsearch_additional_scripts_dir: /usr/share/scripts
 
+elasticsearch_check_versions_enabled: True
+elasticsearch_check_versions_special_time: "weekly"
+
 apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"

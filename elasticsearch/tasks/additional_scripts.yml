@@ -20,3 +20,20 @@
     owner: "root"
     group: "root"
     force: true
+
+- name: Versions check script is installed
+  ansible.builtin.copy:
+    src: check_elasticsearch_versions.sh
+    dest: "{{ elasticsearch_additional_scripts_dir }}/check_elasticsearch_versions.sh"
+    mode: "0755"
+    owner: "root"
+    group: "root"
+    force: true
+
+- name: Versions check script is scheduled
+  ansible.builtin.cron:
+    name: check_elasticsearch_versions
+    job: "{{ elasticsearch_additional_scripts_dir }}/check_elasticsearch_versions.sh"
+    user: root
+    special_time: "{{ elasticsearch_check_versions_special_time }}"
+    state: "{{ elasticsearch_check_versions_enabled | bool | ternary('present', 'absent') }}"
