@@ -100,7 +100,7 @@ main() {
         curl_scheme="http:"
     fi
     if [ -n "${auth}" ]; then
-        curl_options+=(-u ${auth})
+        curl_options+=(-u "${auth}")
     fi
 
     curl --silent "${curl_scheme}//${host}:${port}/_cat/nodes?h=name,v" ${curl_options[*]} -o "${versions_file}"
