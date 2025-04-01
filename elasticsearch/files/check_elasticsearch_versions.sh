@@ -78,11 +78,32 @@ main() {
     # shellcheck disable=SC2064
     trap "rm -f ${versions_file}" 0
 
-    host=$(grep check_elastic /etc/nagios/nrpe.d/evolix.cfg | grep --extended-regexp --only-matching -- "-I\s+\S+" | sed -e "s/-I\s\+//" | tr -d "'\"")
-    port=$(grep check_elastic /etc/nagios/nrpe.d/evolix.cfg | grep --extended-regexp --only-matching -- "-p\s+\S+" | sed -e "s/-p\s\+//" | tr -d "'\"")
-    auth=$(grep check_elastic /etc/nagios/nrpe.d/evolix.cfg | grep --extended-regexp --only-matching -- "-a\s+\S+" | sed -e "s/-a\s\+//" | tr -d "'\"")
+    check_command=$(grep --extended-regexp "^\s*command\[check_elasticsearch\]" /etc/nagios/nrpe.d/evolix.cfg | grep --extended-regexp --only-matching "check_http .+")
+   
+    if [ -z "${check_command}" ]; then
+        >&2 echo "ERROR: Can't find an Elasticsearch check"
+        exit 1
+    fi
 
-    curl --silent -k https://${host}:${port}/_cat/nodes?h=name,v -u "${auth}" -o "${versions_file}"
+    host=$(echo "${check_command}" | grep --extended-regexp --only-matching -- "-I\s+\S+" | sed -e "s/-I\s\+//" | tr -d "'\"")
+    port=$(echo "${check_command}" | grep --extended-regexp --only-matching -- "-p\s+\S+" | sed -e "s/-p\s\+//" | tr -d "'\"")
+    auth=$(echo "${check_command}" | grep --extended-regexp --only-matching -- "-a\s+\S+" | sed -e "s/-a\s\+//" | tr -d "'\"")
+    ssl=$(echo "${check_command}" | grep --extended-regexp --only-matching -- "--ssl")
+
+    declare -a curl_options
+    curl_options=()
+
+    if [ -n "${ssl}" ]; then
+        curl_scheme="https:"
+        curl_options+=(--insecure)
+    else
+        curl_scheme="http:"
+    fi
+    if [ -n "${auth}" ]; then
+        curl_options+=(-u ${auth})
+    fi
+
+    curl --silent "${curl_scheme}//${host}:${port}/_cat/nodes?h=name,v" ${curl_options[*]} -o "${versions_file}"
     rc=$?
 
     if [ ${rc} -ne 0 ]; then
