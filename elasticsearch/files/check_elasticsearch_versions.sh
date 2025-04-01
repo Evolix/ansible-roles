@@ -71,7 +71,19 @@ Cordialement
 Evolix
 EOTEMPLATE
 }
+parse_check_http_option() {
+    local check_command=$1
+    local option_pattern=$2
 
+    result=$(echo "${check_command}" | grep --extended-regexp --only-matching -- "${option_pattern}(\s+|=)([^-]*)" | sed -e "s/^\s\+//; s/\s\+$//")
+    
+    # Return option value if present, or option name
+    if echo "${result}" | grep --quiet --extended-regexp "(\s+|=)"; then
+        echo "${result}" | sed -e 's/-\+\S\+\(\s\+\|\s*=\s*\)//' | tr -d "'\""
+    else
+        echo "${result}"
+    fi
+}
 main() {
     versions_file=$(mktemp --tmpdir=/tmp elasticsearch_versions.XXXXXX)
 
@@ -85,10 +97,10 @@ main() {
         exit 1
     fi
 
-    host=$(echo "${check_command}" | grep --extended-regexp --only-matching -- "-I\s+\S+" | sed -e "s/-I\s\+//" | tr -d "'\"")
-    port=$(echo "${check_command}" | grep --extended-regexp --only-matching -- "-p\s+\S+" | sed -e "s/-p\s\+//" | tr -d "'\"")
-    auth=$(echo "${check_command}" | grep --extended-regexp --only-matching -- "-a\s+\S+" | sed -e "s/-a\s\+//" | tr -d "'\"")
-    ssl=$(echo "${check_command}" | grep --extended-regexp --only-matching -- "--ssl")
+    host=$(parse_check_http_option "${check_command}" "(-I|--IP-address|-H|--hostname)")
+    port=$(parse_check_http_option "${check_command}" "(-p|--port)")
+    auth=$(parse_check_http_option "${check_command}" "(-a|--authorization)")
+    ssl=$(parse_check_http_option "${check_command}" "(--ssl|-S)")
 
     declare -a curl_options
     curl_options=()
