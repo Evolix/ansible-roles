@@ -51,6 +51,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* evolinux-users: templates/sudoers.j2 template updated to work with any php version
 * apache: Move to using `include_tasks` and `import_tasks` instead of `include`
 * bind: Move to using `include_tasks` and `import_tasks` instead of `include`
 * certbot: Move to using `include_tasks` and `import_tasks` instead of `include`
