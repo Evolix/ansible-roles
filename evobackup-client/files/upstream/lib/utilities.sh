@@ -16,7 +16,7 @@ log_error() {
     if [ -n "${error_file}" ] && [ -f "${error_file}" ]; then
         printf "\n### %s\n" "${error_msg}" >&2
         # shellcheck disable=SC2046
-        if [ $(wc -l "${error_file}" | cut -d " " -f 1) -gt 30 ]; then
+        if [ $(wc -l "${error_file}" | awk '{print $1}') -gt 30 ]; then
             printf "~~~{%s (tail -30)}\n" "${error_file}" >&2
             tail -n 30 "${error_file}" >&2
         else

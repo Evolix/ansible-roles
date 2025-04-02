@@ -45,20 +45,10 @@
     mode: "0644"
     force: false
 
-- name: Copy Apache settings for modules
-  ansible.builtin.template:
-    src: "evolinux-evasive.conf.j2"
-    dest: "/etc/apache2/conf-available/evolinux-evasive.conf"
-    owner: root
-    group: root
-    mode: "0644"
-    force: false
-
 - name: Ensure Apache modules configs are enabled
   ansible.builtin.command:
     cmd: "a2enconf {{ item }}"
   register: command_result
   changed_when: "'Enabling' in command_result.stderr"
   loop:
-    - evolinux-evasive
     - evolinux-modsec

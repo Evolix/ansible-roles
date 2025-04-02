@@ -23,6 +23,12 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [25.03] - 2025-03-31
+
+### Changed
+
+* after wc(1), use awk(1) instead of cut(1)
+
 ## [25.02.1] - 2025-02-13
 
 ### Changed

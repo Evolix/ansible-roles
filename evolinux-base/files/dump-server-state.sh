@@ -3,7 +3,7 @@
 PROGNAME="dump-server-state"
 REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
 
-VERSION="23.11"
+VERSION="25.03"
 readonly VERSION
 
 dump_dir=
@@ -15,10 +15,11 @@ show_version() {
     cat <<END
 ${PROGNAME} version ${VERSION}
 
-Copyright 2018-2023 Evolix <info@evolix.fr>,
+Copyright 2018-2025 Evolix <info@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>,
                     Éric Morino <emorino@evolix.fr>,
-                    Brice Waegeneire <bwaegeneire@evolix.fr>
+                    Brice Waegeneire <bwaegeneire@evolix.fr>,
+                    Alexis Ben Miloud--Josselin <abenmiloud@evolix.fr>
                     and others.
 
 ${REPOSITORY}
@@ -60,6 +61,7 @@ Tasks options
  --[no-]sysctl          copy of sysctl values (default: yes)
  --[no-]virsh           copy of virsh list (default: yes)
  --[no-]lxc             copy of lxc list (default: yes)
+ --[no-]docker          copy of docker containers and networks (default: yes)
  --[no-]disks           copy of MBR and partitions (default: yes)
  --[no-]mount           copy of mount points (default: yes)
  --[no-]df              copy of disk usage (default: yes)
@@ -77,8 +79,7 @@ END
 }
 debug() {
     if [ "${VERBOSE}" = "1" ]; then
-        msg="${1:-$(cat /dev/stdin)}"
-        echo "${msg}"
+        echo "${1:-''}"
     fi
 }
 
@@ -103,7 +104,7 @@ task_etc() {
     rsync_bin=$(command -v rsync)
 
     if [ -n "${rsync_bin}" ]; then
-        last_result=$(${rsync_bin} -ah --itemize-changes --exclude=.git /etc "${dump_dir}/")
+        last_result=$(${rsync_bin} -ah --itemize-changes --exclude=.git --delete /etc "${dump_dir}/")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -164,7 +165,7 @@ task_apt_config() {
     apt_config_bin=$(command -v apt-config)
 
     if [ -n "${apt_config_bin}" ]; then
-        last_result=$(${apt_config_bin} dump > "${dump_dir}/apt-config.txt")
+        last_result=$(${apt_config_bin} dump 2>&1 >"${dump_dir}/apt-config.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -187,48 +188,53 @@ task_dpkg_full() {
     apt_config_bin=$(command -v apt-config)
 
     if [ -n "${apt_config_bin}" ]; then
+        # will do something like `dir_state_status='/var/lib/dpkg/status'`
         eval "$(${apt_config_bin} shell dir_state_status Dir::State::status)"
     fi
 
     dpkg_dir=$(dirname "${dir_state_status}")
 
-    last_result=$(mkdir -p "${dump_dir}${dpkg_dir}" && chmod -R 755 "${dump_dir}${dpkg_dir}")
-    last_rc=$?
-
-    if [ ${last_rc} -eq 0 ]; then
-        debug "* mkdir/chmod OK"
-    else
-        debug "* mkdir/chmod ERROR"
-        debug "${last_result}"
-        rc=10
-    fi
-
-    rsync_bin=$(command -v rsync)
-
-    if [ -n "${rsync_bin}" ]; then
-        last_result=$(${rsync_bin} -ah --itemize-changes --exclude='*-old' "${dpkg_dir}/" "${dump_dir}${dpkg_dir}/")
+    if [ -d "${dpkg_dir}" ]; then
+        last_result=$(mkdir -p "${dump_dir}${dpkg_dir}" && chmod -R 755 "${dump_dir}${dpkg_dir}")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
-            debug "* rsync OK"
+            debug "* mkdir/chmod OK"
         else
-            debug "* rsync ERROR :"
+            debug "* mkdir/chmod ERROR"
             debug "${last_result}"
             rc=10
+        fi
+
+        rsync_bin=$(command -v rsync)
+
+        if [ -n "${rsync_bin}" ]; then
+            last_result=$(${rsync_bin} -ah --itemize-changes --exclude='*-old' "${dpkg_dir}/" "${dump_dir}${dpkg_dir}/")
+            last_rc=$?
+
+            if [ ${last_rc} -eq 0 ]; then
+                debug "* rsync OK"
+            else
+                debug "* rsync ERROR :"
+                debug "${last_result}"
+                rc=10
+            fi
+        else
+            debug "* rsync not found"
+
+            last_result=$(cp -r "${dpkg_dir}/*" "${dump_dir}${dpkg_dir}/" && rm -rf "${dump_dir}${dpkg_dir}/*-old")
+            last_rc=$?
+
+            if [ ${last_rc} -eq 0 ]; then
+                debug "* cp OK"
+            else
+                debug "* cp ERROR :"
+                debug "${last_result}"
+                rc=10
+            fi
         fi
     else
-        debug "* rsync not found"
-
-        last_result=$(cp -r "${dpkg_dir}/*" "${dump_dir}${dpkg_dir}/" && rm -rf "${dump_dir}${dpkg_dir}/*-old")
-        last_rc=$?
-
-        if [ ${last_rc} -eq 0 ]; then
-            debug "* cp OK"
-        else
-            debug "* cp ERROR :"
-            debug "${last_result}"
-            rc=10
-        fi
+        debug "* ${dpkg_dir} not found"
     fi
 }
 
@@ -240,18 +246,23 @@ task_dpkg_status() {
     apt_config_bin=$(command -v apt-config)
 
     if [ -n "${apt_config_bin}" ]; then
+        # will do something like `dir_state_status='/var/lib/dpkg/status'`
         eval "$(${apt_config_bin} shell dir_state_status Dir::State::status)"
     fi
 
-    last_result=$(cp "${dir_state_status}" "${dump_dir}/dpkg-status.txt")
-    last_rc=$?
+    if [ -f "${dir_state_status}" ]; then
+        last_result=$(cp "${dir_state_status}" "${dump_dir}/dpkg-status.txt")
+        last_rc=$?
 
-    if [ ${last_rc} -eq 0 ]; then
-        debug "* cp OK"
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* cp OK"
+        else
+            debug "* cp ERROR :"
+            debug "${last_result}"
+            rc=10
+        fi
     else
-        debug "* cp ERROR :"
-        debug "${last_result}"
-        rc=10
+        debug "* ${dir_state_status} not found"
     fi
 }
 
@@ -580,6 +591,64 @@ task_lxc() {
     fi
 }
 
+task_docker() {
+    debug "Task: Docker containers and networks"
+
+    docker_bin=$(command -v docker)
+
+    if [ -n "${docker_bin}" ]; then
+        last_result=$("${docker_bin}" ps --no-trunc 2>&1 > "${dump_dir}/docker-ps.txt")
+        last_rc="$?"
+
+        if [ "${last_rc}" -eq 0 ]; then
+            debug "* docker ps OK"
+
+            for id in $(docker ps --quiet); do
+                last_result=$(docker inspect "${id}" 2>&1 >> "${dump_dir}/docker-inspect.json")
+                last_rc="$?"
+
+                if [ "${last_rc}" -eq 0 ]; then
+                    debug "* docker inspect ${id} OK"
+                else
+                    debug "* docker inspect ${id} ERROR"
+                    debug "${last_result}"
+                    rc=10
+                fi
+            done
+        else
+            debug "* docker ps ERROR"
+            debug "${last_result}"
+            rc=10
+        fi
+
+        last_result=$("${docker_bin}" network ls --no-trunc 2>&1 > "${dump_dir}/docker-network-ls.txt")
+        last_rc="$?"
+
+        if [ "${last_rc}" -eq 0 ]; then
+            debug "* docker network ls OK"
+
+            for id in $(docker network ls --quiet); do
+                last_result=$("${docker_bin}" network inspect "${id}" 2>&1 >> "${dump_dir}/docker-network-inspect.json")
+                last_rc="$?"
+
+                if [ "${last_rc}" -eq 0 ]; then
+                    debug "* docker network inspect ${id} OK"
+                else
+                    debug "* docker network inspect ${id} ERROR"
+                    debug "${last_result}"
+                    rc=10
+                fi
+            done
+        else
+            debug "* docker ps ERROR"
+            debug "${last_result}"
+            rc=10
+        fi
+    else
+        debug "* docker not found"
+    fi
+}
+
 task_disks() {
     debug "Task: Disks"
 
@@ -675,7 +744,7 @@ task_df() {
     df_bin=$(command -v df)
 
     if [ -n "${df_bin}" ]; then
-        last_result=$(${df_bin} --portability > "${dump_dir}/df.txt" 2>&1)
+        last_result=$(${df_bin} --portability  2>&1 >"${dump_dir}/df.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
@@ -720,15 +789,14 @@ task_mysql_processes() {
         # Look for local MySQL or MariaDB process
         if pgrep mysqld > /dev/null || pgrep mariadbd > /dev/null; then
             if ${mysqladmin_bin} ping > /dev/null 2>&1; then
-                ${mysqladmin_bin} --verbose processlist > "${dump_dir}/mysql-processlist.txt" 2> "${dump_dir}/mysql-processlist.err"
+                last_result=$(${mysqladmin_bin} --verbose processlist 2>&1 >"${dump_dir}/mysql-processlist.txt")
                 last_rc=$?
 
                 if [ ${last_rc} -eq 0 ]; then
                     debug "* mysqladmin OK"
                 else
                     debug "* mysqladmin ERROR"
-                    debug < "${dump_dir}/mysql-processlist.err"
-                    rm "${dump_dir}/mysql-processlist.err"
+                    debug "${last_result}"
                     rc=10
                 fi
             else
@@ -755,15 +823,14 @@ task_mysql_summary() {
                 # important to set sleep to 0
                 # because we don't want to block
                 # even if we lose some insight.
-                ${pt_mysql_summary_bin} --sleep 0 > "${dump_dir}/mysql-summary.txt" 2> "${dump_dir}/mysql-summary.err"
+                last_result=$(${pt_mysql_summary_bin} --sleep 0 2>&1 >"${dump_dir}/mysql-summary.txt")
                 last_rc=$?
 
                 if [ ${last_rc} -eq 0 ]; then
                     debug "* pt-mysql-summary OK"
                 else
                     debug "* pt-mysql-summary ERROR"
-                    debug < "${dump_dir}/mysql-summary.err"
-                    rm "${dump_dir}/mysql-summary.err"
+                    debug "${last_result}"
                     rc=10
                 fi
             else
@@ -861,6 +928,9 @@ main() {
     fi
     if [ "${TASK_LXC}" -eq 1 ]; then
         task_lxc
+    fi
+    if [ "${TASK_DOCKER}" -eq 1 ]; then
+        task_docker
     fi
     if [ "${TASK_DISKS}" -eq 1 ]; then
         task_disks
@@ -984,6 +1054,7 @@ while :; do
                 TASK_SYSCTL \
                 TASK_VIRSH \
                 TASK_LXC \
+                TASK_DOCKER \
                 TASK_DISKS \
                 TASK_MOUNT \
                 TASK_DF \
@@ -1013,6 +1084,7 @@ while :; do
                 TASK_SYSCTL \
                 TASK_VIRSH \
                 TASK_LXC \
+                TASK_DOCKER \
                 TASK_DISKS \
                 TASK_MOUNT \
                 TASK_DF \
@@ -1130,6 +1202,13 @@ while :; do
             TASK_LXC=0
             ;;
 
+        --docker)
+            TASK_DOCKER=1
+            ;;
+        --no-docker)
+            TASK_DOCKER=0
+            ;;
+
         --disks)
             TASK_DISKS=1
             ;;
@@ -1216,6 +1295,7 @@ done
 : "${TASK_SYSCTL:=1}"
 : "${TASK_VIRSH:=1}"
 : "${TASK_LXC:=1}"
+: "${TASK_DOCKER:=1}"
 : "${TASK_DISKS:=1}"
 : "${TASK_MOUNT:=1}"
 : "${TASK_DF:=1}"
