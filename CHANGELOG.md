@@ -13,6 +13,18 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [25.04] 2025-04-02
+
+### Added
+
 * elasticsearch: new script to check the nodes' versions
 
 ### Changed
@@ -20,14 +32,10 @@ The **patch** part is incremented if multiple releases happen the same month
 * evobackup-client: upstream release 25.03
 * evolinux-base: dump-server-state upstream release 25.03
 
-### Fixed
-
 ### Removed
 
 * apache: no more mod_evasive
 * packweb-apache: no more mod_evasive
-
-### Security
 
 ## [25.03] 2025-03-27
 
