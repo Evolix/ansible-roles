@@ -19,7 +19,7 @@ Copyright 2018-2025 Evolix <info@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>,
                     Éric Morino <emorino@evolix.fr>,
                     Brice Waegeneire <bwaegeneire@evolix.fr>,
-                    Alexis Ben-Miloud -- Josselin <abenmiloud@evolix.fr>
+                    Alexis Ben Miloud--Josselin <abenmiloud@evolix.fr>
                     and others.
 
 ${REPOSITORY}
