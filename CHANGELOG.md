@@ -15,6 +15,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* phpmyadmin: Remove also /etc/apache2/conf-available/phpmyadmin.conf
+
 ### Fixed
 
 ### Removed
