@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034,SC2317
 
-readonly VERSION="25.03"
+readonly VERSION="25.04"
 
 # set all programs to C language (english)
 export LC_ALL=C
@@ -78,7 +78,14 @@ sync_tasks_wrapper() {
             ;;
     esac
     if [ -f "${CANARY_FILE}" ]; then
-        rsync_default_includes+=("${CANARY_FILE}")
+        canary_parent_dir="$(dirname "${CANARY_FILE}")"
+        # Warning: we don't want to add / to the list of sources to backup
+        # but we want the canary file wherever it is
+        if [ -d "${canary_parent_dir}" ] && [ "${canary_parent_dir}" != "/" ]; then
+            rsync_default_includes+=("${canary_parent_dir}")
+        elif [ -f "${CANARY_FILE}" ]; then
+            rsync_default_includes+=("${CANARY_FILE}")
+        fi
     fi
     readonly rsync_default_includes
 
@@ -373,7 +380,7 @@ setup() {
     : "${LOGFILE:="/var/log/evobackup.log"}"
 
     # Canary file to update before executing tasks
-    : "${CANARY_FILE:="/zzz_evobackup_canary"}"
+    : "${CANARY_FILE:="/zzz_evobackup/canary"}"
 
     # Date format for log messages
     : "${DATE_FORMAT:="%Y-%m-%d %H:%M:%S"}"

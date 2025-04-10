@@ -134,6 +134,7 @@ local_tasks() {
     #   --defaults-group-suffix=[String] (default: <blank>)
     #   --dump-label=[String] (default: "default")
     #     used as suffix of the dump dir to differenciate multiple instances
+    #   Other options after -- are passed as-is to mysqldump
     #
     # Full options list is available here: ${LIBDIR}/dump/mysql.sh
     #
@@ -151,6 +152,7 @@ local_tasks() {
     #   --defaults-group-suffix=[String] (default: <blank>)
     #   --dump-label=[String] (default: "default")
     #     used as suffix of the dump dir to differenciate multiple instances
+    #   Other options after -- are passed as-is to mysqldump
     #
     # Full options list is available here: ${LIBDIR}/dump/mysql.sh
     #
@@ -205,6 +207,7 @@ local_tasks() {
     #   --defaults-group-suffix=[String] (default: <blank>)
     #   --dump-label=[String] (default: "default")
     #     used as suffix of the dump dir to differenciate multiple instances
+    #   Other options after -- are passed as-is to mysqldump
     #
     # Full options list is available here: ${LIBDIR}/dump/mysql.sh
     #

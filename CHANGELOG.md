@@ -33,7 +33,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
-* evobackup-client: upstream release 25.03
+* evobackup-client: upstream release 25.04
 * evolinux-base: dump-server-state upstream release 25.03
 
 ### Removed

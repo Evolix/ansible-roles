@@ -23,6 +23,16 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [25.04] - 2025-04-10
+
+### Added
+
+* more comments in backup script template
+
+### Changed
+
+* default canary file is in a top-level directory, for sorting purposes
+
 ## [25.03] - 2025-03-31
 
 ### Changed
