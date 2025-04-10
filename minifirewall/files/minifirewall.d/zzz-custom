@@ -8,4 +8,13 @@
 # Within included files, you can use those helper functions :
 # * is_ipv6_enabled: returns true if IPv6 is enabled, or false
 # * is_docker_enabled: returns true if Docker mode is enabled, or false
-# * is_proxy_enabled: returns true if Proxy mode is enabled , or false
+# * is_proxy_enabled: returns true if Proxy mode is enabled, or false
+#
+# Allow TCP input from 192.0.2.1 to port 1234 :
+# /sbin/iptables -A INPUT -p tcp --sport 1024:65535 --dport 1234 -s 192.0.2.1 -j ACCEPT
+#
+# Allow TCP output to 192.0.2.1 to port 1234 :
+# /sbin/iptables -A INPUT -p tcp --dport 1024:65535 --sport 1234 -s 192.0.2.1 -m state --state ESTABLISHED -j ACCEPT
+#
+# Block 192.0.2.1 completely :
+# /sbin/iptables -I INPUT -s 192.0.2.1 -j DROP

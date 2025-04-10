@@ -29,6 +29,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Added
 
 * elasticsearch: new script to check the nodes' versions
+* minifirewall: add examples in zzz-custom
 
 ### Changed
 
