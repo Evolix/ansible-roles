@@ -16,6 +16,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * phpmyadmin: Remove also /etc/apache2/conf-available/phpmyadmin.conf
+* fail2ban: we don't want deny port 22 by default
 
 ### Fixed
 
