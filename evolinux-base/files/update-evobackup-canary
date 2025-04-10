@@ -3,7 +3,7 @@
 PROGNAME="update-evobackup-canary"
 REPOSITORY="https://gitea.evolix.org/evolix/evobackup"
 
-VERSION="22.06"
+VERSION="25.04"
 readonly VERSION
 
 # base functions
@@ -12,9 +12,9 @@ show_version() {
     cat <<END
 ${PROGNAME} version ${VERSION}
 
-Copyright 2022 Evolix <info@evolix.fr>,
-               Jérémy Lecour <jlecour@evolix.fr>,
-               and others.
+Copyright 2022-2025 Evolix <info@evolix.fr>,
+                    Jérémy Lecour <jlecour@evolix.fr>,
+                    and others.
 
 ${REPOSITORY} 
 
@@ -31,7 +31,7 @@ Usage: ${PROGNAME} [OPTIONS]
 
 Main options
  -w, --who      who has updated the file (default: logname())
- -f, --file     path of the canary file (default: /zzz_evobackup_canary)
+ -f, --file     path of the canary file (default: /zzz_evobackup/canary)
  -V, --version  print version and exit
  -h, --help     print this message and exit
 END
@@ -42,10 +42,14 @@ main() {
         who=$(logname)
     fi
     if [ -z "${canary_file:-}" ]; then
-        canary_file="/zzz_evobackup_canary"
+        canary_file="/zzz_evobackup/canary"
     fi
     # This option is supported both on OpenBSD which does not use GNU date and on Debian
     date=$(date "+%FT%T%z")
+
+    canary_dir=$(dirname "${canary_file}")
+    # Create parent directory if missing
+    test -d "${canary_dir}" || mkdir --parents "${canary_dir}"
 
     printf "%s %s\n" "${date}" "${who}" >> "${canary_file}"
 }

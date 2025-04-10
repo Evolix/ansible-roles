@@ -35,6 +35,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * evobackup-client: upstream release 25.04
 * evolinux-base: dump-server-state upstream release 25.03
+* evolinux-base: update-evobackup-canary: change canary file location
 
 ### Removed
 
