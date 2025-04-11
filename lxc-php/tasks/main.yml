@@ -4,7 +4,6 @@
     msg: Please configure var lxc_php_version
   when: lxc_php_version is none
 
-
 - ansible.builtin.include_role:
     name: evolix/lxc
   vars:
@@ -15,10 +14,6 @@
 - name: set LXC rootfs
   ansible.builtin.set_fact:
     lxc_rootfs: "/var/lib/lxc/{{ lxc_php_container_name }}/rootfs"
-
-- name: "Update APT cache in container {{ lxc_php_container_name }}"
-  ansible.builtin.shell:
-    cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ lxc_php_container_name }} -- apt-get update"
 
 - ansible.builtin.import_tasks: "php56.yml"
   when: lxc_php_version == "php56"
