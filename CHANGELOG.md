@@ -20,7 +20,12 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* lxc,lxc-php: Drop container_command usage
+* lxc-php: Drop redundant call to apt-get update (#212)
+
 ### Removed
+
+* bullseye-detect: not useful anymore
 
 ### Security
 
