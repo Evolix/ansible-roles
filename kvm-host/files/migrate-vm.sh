@@ -217,19 +217,31 @@ drbd_peers() {
 }
 
 is_vm_running_locally() {
-    vm=${1:-}
+    local vm
+    local vm_list
 
-    virsh list --state-running --name | grep --fixed-strings --line-regexp --quiet "${vm}"
+    vm=${1:-}
+    vm_list=$(virsh list --state-running --name)
+
+    echo "${vm_list}" | grep --fixed-strings --line-regexp --quiet "${vm}"
 }
 is_vm_shutoff_locally() {
-    vm=${1:-}
+    local vm
+    local vm_list
 
-    virsh list --state-shutoff --name | grep --fixed-strings --line-regexp --quiet "${vm}"
+    vm=${1:-}
+    vm_list=$(virsh list --state-shutoff --name)
+
+    echo "${vm_list}" | grep --fixed-strings --line-regexp --quiet "${vm}"
 }
 is_vm_defined_locally() {
-    vm=${1:-}
+    local vm
+    local vm_list
 
-    virsh list --all --name | grep --fixed-strings --line-regexp --quiet "${vm}"
+    vm=${1:-}
+    vm_list=$(virsh list --all --name)
+
+    echo "${vm_list}" | grep --fixed-strings --line-regexp --quiet "${vm}"
 }
 
 execute_remotely() {
