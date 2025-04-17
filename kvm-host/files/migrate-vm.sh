@@ -528,7 +528,8 @@ main() {
 
     # If "--all" option is passed, ignore other options
     if [ "${option_all}" -eq 1 ]; then
-        virsh list --name --state-running | grep -vE "^$" > "${vm_list_tmp}"
+        running_vm_list=$(virsh list --name --state-running)
+        echo "${running_vm_list}" | grep -vE "^$" > "${vm_list_tmp}"
     else
         # Look for an existing path or stdin or a comma-separated list.
         # Lines starting with # (comments) are ignored
