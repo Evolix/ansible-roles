@@ -10,6 +10,7 @@ SetEnv LC_ALL=en_US.UTF-8
 Match Address {{ evolinux_ssh_password_auth_addresses | join(',') }}
     PasswordAuthentication yes
 {% endif %}
+
 {% if evolinux_internal_group %}
 Match Group {{ evolinux_internal_group }}
     PasswordAuthentication no

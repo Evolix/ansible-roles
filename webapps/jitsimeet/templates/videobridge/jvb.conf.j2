@@ -16,5 +16,27 @@ videobridge {
         rest {
             enabled = true
         }
+        xmpp-client {
+            configs {
+                HOSTNAME=localhost
+                DOMAIN="auth.{{ jitsimeet_domains | first }}"
+                USERNAME=jvb
+                PASSWORD="{{ jitsimeet_jvb_secret }}"
+                MUC_JIDS="JvbBrewery@internal.auth.{{ jitsimeet_domains | first }}"
+                MUC_NICKNAME={{ jitsimeet_jvb_muc_nick }}
+            }
+        }
+    }
+    ice4j {
+        harvest {
+            mapping {
+                aws {
+                    enabled = false
+                }
+                stun {
+                    addresses = ["{{ jitsimeet_turn_domains | first }}:3478"]
+                }
+            }
+        }
     }
 }

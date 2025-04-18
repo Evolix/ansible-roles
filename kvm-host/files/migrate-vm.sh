@@ -9,7 +9,7 @@
 # * different return codes for different errors
 # * use local and readonly variables
 
-VERSION="25.01.2"
+VERSION="25.04"
 
 # If expansion is attempted on an unset variable or parameter, the shell prints an
 # error message, and, if not interactive, exits with a non-zero status.
@@ -217,19 +217,31 @@ drbd_peers() {
 }
 
 is_vm_running_locally() {
-    vm=${1:-}
+    local vm
+    local vm_list
 
-    virsh list --state-running --name | grep --fixed-strings --line-regexp --quiet "${vm}"
+    vm=${1:-}
+    vm_list=$(virsh list --state-running --name)
+
+    echo "${vm_list}" | grep --fixed-strings --line-regexp --quiet "${vm}"
 }
 is_vm_shutoff_locally() {
-    vm=${1:-}
+    local vm
+    local vm_list
 
-    virsh list --state-shutoff --name | grep --fixed-strings --line-regexp --quiet "${vm}"
+    vm=${1:-}
+    vm_list=$(virsh list --state-shutoff --name)
+
+    echo "${vm_list}" | grep --fixed-strings --line-regexp --quiet "${vm}"
 }
 is_vm_defined_locally() {
-    vm=${1:-}
+    local vm
+    local vm_list
 
-    virsh list --all --name | grep --fixed-strings --line-regexp --quiet "${vm}"
+    vm=${1:-}
+    vm_list=$(virsh list --all --name)
+
+    echo "${vm_list}" | grep --fixed-strings --line-regexp --quiet "${vm}"
 }
 
 execute_remotely() {
@@ -516,7 +528,8 @@ main() {
 
     # If "--all" option is passed, ignore other options
     if [ "${option_all}" -eq 1 ]; then
-        virsh list --name --state-running | grep -vE "^$" > "${vm_list_tmp}"
+        running_vm_list=$(virsh list --name --state-running)
+        echo "${running_vm_list}" | grep -vE "^$" > "${vm_list_tmp}"
     else
         # Look for an existing path or stdin or a comma-separated list.
         # Lines starting with # (comments) are ignored

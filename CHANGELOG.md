@@ -21,16 +21,38 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
+## [25.04.1] 2025-04-18
+
+### Changed
+
+* evolinux-base: better comments in ssh modular configuration
+* evolinux-base: update-evobackup-canary 25.04
+* fail2ban: we don't want to deny port 22 by default
+* kvm-host: migrate-vm: fix buffer bug with virsh+grep
+* minifirewall: better comments in minifirewall configuration
+* phpmyadmin: Remove also /etc/apache2/conf-available/phpmyadmin.conf
+
+### Fixed
+
+* lxc,lxc-php: container_command is unreliable, use shell module and "lxc-attach" instead
+* lxc-php: Drop redundant call to apt-get update (#212)
+
+### Removed
+
+* bullseye-detect: not useful anymore
+
 ## [25.04] 2025-04-02
 
 ### Added
 
 * elasticsearch: new script to check the nodes' versions
+* minifirewall: add examples in zzz-custom
 
 ### Changed
 
-* evobackup-client: upstream release 25.03
+* evobackup-client: upstream release 25.04
 * evolinux-base: dump-server-state upstream release 25.03
+* evolinux-base: update-evobackup-canary: change canary file location
 
 ### Removed
 
@@ -51,6 +73,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* evolinux-users: templates/sudoers.j2 template updated to work with any php version
 * apache: Move to using `include_tasks` and `import_tasks` instead of `include`
 * bind: Move to using `include_tasks` and `import_tasks` instead of `include`
 * certbot: Move to using `include_tasks` and `import_tasks` instead of `include`

@@ -33,7 +33,7 @@
 
 - name: Check if phpmyadmin default configuration is present
   ansible.builtin.stat:
-    path: /etc/apache2/conf-enabled/phpmyadmin.conf
+    path: /etc/apache2/conf-available/phpmyadmin.conf
   register: pma_default_config
 
 - ansible.builtin.debug:
@@ -45,6 +45,12 @@
     cmd: "a2disconf phpmyadmin"
   register: command_result
   changed_when: "'Disabling' in command_result.stderr"
+  when: pma_default_config.stat.exists
+
+- name: Remove phpmyadmin default configuration
+  ansible.builtin.file:
+    path: /etc/apache2/conf-available/phpmyadmin.conf
+    state: absent
   when: pma_default_config.stat.exists
 
 - name: "phpmyadmin suffix dirname '{{ packweb_phpmyadmin_suffix_file | dirname }}' exists"
