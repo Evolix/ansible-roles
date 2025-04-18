@@ -15,13 +15,16 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
-* fail2ban: we don't want deny port 22 by default
+* evolinux-base: better comments in ssh modular configuration
+* evolinux-base: update-evobackup-canary 25.04
+* fail2ban: we don't want to deny port 22 by default
 * kvm-host: migrate-vm: fix buffer bug with virsh+grep
+* minifirewall: better comments in minifirewall configuration
 * phpmyadmin: Remove also /etc/apache2/conf-available/phpmyadmin.conf
 
 ### Fixed
 
-* lxc,lxc-php: Drop container_command usage
+* lxc,lxc-php: container_command is unreliable, use shell module and "lxc-attach" instead
 * lxc-php: Drop redundant call to apt-get update (#212)
 
 ### Removed
