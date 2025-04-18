@@ -5,6 +5,9 @@ PermitRootLogin {{ evolinux_ssh_permitrootlogin }}
 # PermitRootLogin no
 {% endif %}
 
+### To open **additional** ports (on top of 22), add lines like this, one for each port
+# Port 22222
+
 ### To restrict SSH access to one or more groups, uncomment the following line
 # AllowGroups {{ evolinux_ssh_group }}
 
@@ -14,4 +17,3 @@ PermitRootLogin {{ evolinux_ssh_permitrootlogin }}
 #     PubkeyAuthentication yes
 #     PasswordAuthentication no
 #     PermitRootLogin without-password
-# Match all
