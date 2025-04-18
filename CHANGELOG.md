@@ -15,6 +15,16 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+### Fixed
+
+### Removed
+
+### Security
+
+## [25.04.1] 2025-04-18
+
+### Changed
+
 * evolinux-base: better comments in ssh modular configuration
 * evolinux-base: update-evobackup-canary 25.04
 * fail2ban: we don't want to deny port 22 by default
@@ -30,8 +40,6 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Removed
 
 * bullseye-detect: not useful anymore
-
-### Security
 
 ## [25.04] 2025-04-02
 
