@@ -13,31 +13,38 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Removed
 
+## [25.04] 2025-04-22
+
+### Added
+
+* Add IS_NOT_DEB822
+* Add IS_NO_SIGNED_BY
+
 ## [25.03.3] 2025-03-27
 
 ### Added
 
-* IS_POSTFIX_IPV6_DISABLED
-* New checks for SSH config
+* Add IS_POSTFIX_IPV6_DISABLED (#176)
+* New checks for SSH config (#170)
 * Verify backup directory existence
 
 ### Fixed
 
-* IS_MONITORINGCTL: use full path of monitoringctl command (for when local bin is not in cron PATH).
+* IS_MONITORINGCTL: use full path of monitoringctl command (for when local bin is not in cron PATH) (#177)
 
 ## [25.03.2] 2025-03-21
 
 ### Added
 
-* Add IS_NRPEPRESSURE check
-* New checks for SSH config
+* Add IS_NRPEPRESSURE check (#170)
+* New checks for SSH config (#165)
 * Verify backup directory existence
 
 ## [25.03.1] 2025-03-13
 
 ### Removed
 
-* remove Stretch-specific code in main Linux script
+* remove Stretch-specific code in main Linux script (#174)
 
 ## [25.03] 2025-03-12
 
