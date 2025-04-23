@@ -13,6 +13,12 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Removed
 
+## [25.04.2] 2025-04-23
+
+### Changed
+
+* IS_NOT_DEB822 + IS_NO_SIGNED_BY: disable check until most servers are fixed
+
 ## [25.04.1] 2025-04-23
 
 ### Changed
