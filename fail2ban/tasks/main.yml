@@ -66,6 +66,7 @@
     name: 
       - fail2ban
       - python3-systemd
+      - python3-setuptools
     state: present
   tags:
     - fail2ban
