@@ -16,7 +16,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * rsyslog-centralized: Drop RELATED
-* evocheck: upstream release 25.04
+* evocheck: upstream release 25.04.1
 
 ### Fixed
 

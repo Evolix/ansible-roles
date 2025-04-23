@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="25.04"
+VERSION="25.04.1"
 readonly VERSION
 
 # base functions
@@ -1841,7 +1841,7 @@ main() {
     test "${IS_CHECK_VERSIONS:=1}" = 1 && check_versions
     test "${IS_MONITORINGCTL:=1}" = 1 && check_monitoringctl
     test "${IS_NRPEPRESSURE:=1}" = 1 && check_nrpepressure
-    test "${IS_POSTFIX_IPV6_DISABLED:=1}" = 1 && check_postfix_ipv6_disabled
+    #test "${IS_POSTFIX_IPV6_DISABLED:=1}" = 1 && check_postfix_ipv6_disabled
 
     if [ -f "${main_output_file}" ]; then
         lines_found=$(wc -l < "${main_output_file}")
