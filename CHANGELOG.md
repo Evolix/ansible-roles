@@ -24,7 +24,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
-* nrpe: install monitoring-plugins-contrib for check_memory
+* nagios-nrpe: install monitoring-plugins-contrib for check_memory instead of nagios-plugins-contrib since Debian 11
 
 ### Removed
 
