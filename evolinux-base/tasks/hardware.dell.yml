@@ -14,7 +14,11 @@
   failed_when: False
   changed_when: False
   tags:
+    - hardware
     - packages
+
+- ansible.builtin.debug:
+    var: perc_hba11_search
 
 - name: MegaCLI SAS package must not be installed if PERC HBA11 is present
   block:
@@ -40,6 +44,8 @@
           - megaclisas-status
         state: absent
   when: perc_hba11_search.rc == 0
+  tags:
+    - hardware
 
 - name: "Ensure {{ apt_keyring_dir }} directory exists"
   file:
@@ -48,6 +54,8 @@
     mode: "755"
     owner: root
     group: root
+  tags:
+    - hardware
 
 - name: MegaCLI SAS package is present
   block:
@@ -114,4 +122,6 @@
         - config
   when:
     - "'MegaRAID' in raidmodel.stdout"
+  tags:
+    - hardware
 

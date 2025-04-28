@@ -4,6 +4,7 @@
     name: pciutils
     state: present
   tags:
+    - hardware
     - packages
 
 - name: non-free-firmware components are installed (Debian 12+)
@@ -13,6 +14,8 @@
     replace: '\1 non-free-firmware'
   when:
     - ansible_distribution_major_version is version('12', '>=')
+  tags:
+    - hardware
 
 ## Broadcom NetXtreme II
 
@@ -24,6 +27,7 @@
   failed_when: False
   changed_when: False
   tags:
+    - hardware
     - packages
 
 - name: Add non-free repo for Broadcom NetXtreme II (Debian <12)
@@ -32,6 +36,7 @@
     regexp: '^(main ((?!\bnon-free\b).)*)$'
     replace: '\1 non-free'
   tags:
+    - hardware
     - packages
   when:
     - broadcom_netextreme_search.rc == 0
@@ -50,6 +55,7 @@
     state: present
     update_cache: True
   tags:
+    - hardware
     - packages
 
 ## RAID
@@ -65,6 +71,7 @@
   changed_when: "'FAILED' in raidmodel.stdout"
   failed_when: "'FAILED' in raidmodel.stdout"
   tags:
+    - hardware
     - packages
 
 - name: "HP"
@@ -72,11 +79,17 @@
   when:
     - "'Hewlett-Packard Company Smart Array' in raidmodel.stdout or  'Adaptec Smart Storage PQI' in raidmodel.stdout"
     - evolinux_packages_hardware_raid | bool
+  tags:
+    - hardware
 
 - name: "Dell"
   ansible.builtin.import_tasks: hardware.dell.yml
   when:
     - "'MegaRAID' in raidmodel.stdout"
     - evolinux_packages_hardware_raid | bool
+  tags:
+    - hardware
 
 - ansible.builtin.meta: flush_handlers
+  tags:
+    - hardware

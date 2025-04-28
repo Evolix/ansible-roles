@@ -7,6 +7,8 @@
     mode: "755"
     owner: root
     group: root
+  tags:
+    - hardware
 
 - name: HPE GPG key is installed
   ansible.builtin.copy:
@@ -17,6 +19,7 @@
     owner: root
     group: root
   tags:
+    - hardware
     - packages
 
 - name: Add HPE repository (Debian <12)
@@ -24,6 +27,7 @@
     repo: 'deb [signed-by={{ apt_keyring_dir }}/hpePublicKey2048_key1.asc] https://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_distribution_release }}/current non-free'
     state: present
   tags:
+    - hardware
     - packages
   when:
     - ansible_distribution_major_version is version('12', '<')
@@ -33,6 +37,7 @@
     src: hardware/hp.sources.j2
     dest: /etc/apt/sources.list.d/hp.sources
   tags:
+    - hardware
     - packages
   when:
     - ansible_distribution_major_version is version('12', '>=')
@@ -41,12 +46,14 @@
   ansible.builtin.apt:
     name: ssacli
   tags:
+    - hardware
     - packages
 
 - name: Install HPE Agentless Management Service (amsd)
   ansible.builtin.apt:
     name: amsd
   tags:
+    - hardware
     - packages
 
 # NOTE: check_hpraid cron use check_hpraid from nagios-nrpe role
@@ -62,6 +69,8 @@
         - config
   when:
     - "'Adaptec Smart Storage PQI' in raidmodel.stdout"
+  tags:
+    - hardware
 
 - name: Install and configure cciss-vol-status (HP gen <10)
   block:
@@ -99,3 +108,5 @@
         - config
   when:
     - "'Hewlett-Packard Company Smart Array' in raidmodel.stdout"
+  tags:
+    - hardware
