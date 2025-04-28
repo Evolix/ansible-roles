@@ -13,12 +13,14 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* packweb-apache: nginx compatibility to phpContainer
+
 ### Changed
 
 * evocheck: upstream release 25.04.2
-* fail2ban: add python3-setuptools package
-* rsyslog-centralized: Drop RELATED
 * evomaintenance: upstream release 25.04
+* fail2ban: install python3-setuptools package
+* rsyslog-centralized: Drop RELATED
 
 ### Fixed
 
