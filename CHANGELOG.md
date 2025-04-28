@@ -24,6 +24,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* nrpe: install monitoring-plugins-contrib for check_memory
+
 ### Removed
 
 ### Security
