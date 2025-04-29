@@ -14,6 +14,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Added
 
 * packweb-apache: nginx compatibility to phpContainer
+* minifirewall: add version in check_minifirewall output
 
 ### Changed
 

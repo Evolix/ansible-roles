@@ -49,6 +49,9 @@ is_minifirewall_started() {
     fi
   fi
 }
+minifirewall_version() {
+  /etc/init.d/minifirewall version | cut -d ' ' -f 3 | grep --extended-regexp "^[0-9]+\.[0-9]+\S*$" 2>/dev/null
+}
 
 summary_critical() {
   summary="CRITICAL: $1"
@@ -106,6 +109,9 @@ main() {
       summary_ok "minifirewall is stopped and alert5 is disabled"
     fi
   fi
+
+  minifirewall_version=$(minifirewall_version)
+  append_details "minifirewall version is ${minifirewall_version:-unknown}"
 
   printf "%s\n\n%s\n" "${summary}" "${details}"
 
