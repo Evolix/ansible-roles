@@ -21,6 +21,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evocheck: upstream release 25.04.2
 * evomaintenance: upstream release 25.04
 * fail2ban: install python3-setuptools package
+* listupgrade: upstream release 25.04.1
 * rsyslog-centralized: Drop RELATED
 
 ### Fixed
