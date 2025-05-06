@@ -78,5 +78,5 @@
   copy:
     dest: /etc/minifirewall.d/syslog-server
     content: |
-      /sbin/iptables -A INPUT -p tcp --sport {{ rsyslog_centralized_server_port }} --dport 1024:65535 -s {{ rsyslog_centralized_client_target }} -m state --state ESTABLISHED,RELATED -j ACCEPT
+      /sbin/iptables -A INPUT -p tcp --sport {{ rsyslog_centralized_server_port }} --dport 1024:65535 -s {{ rsyslog_centralized_client_target }} -m state --state ESTABLISHED -j ACCEPT
   notify: restart minifirewall

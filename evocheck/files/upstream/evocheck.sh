@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="25.03.3"
+VERSION="25.04.1"
 readonly VERSION
 
 # base functions
@@ -275,6 +275,26 @@ check_sury_lxc() {
                     lxc-attach --name "${container_name}" apt-cache policy | grep "\bl=Evolix\b" | grep --quiet php
                     test $? -eq 0 || failed "IS_SURY_LXC" "packages.sury.org is present but our safeguard pub.evolix.org repository is missing in container ${container_name}"
                 fi
+            fi
+        done
+    fi
+}
+check_not_deb822() {
+    if { ! is_debian_buster && ! is_debian_bullseye ; }; then
+        for source in /etc/apt/sources.list /etc/apt/sources.list.d/*.list; do
+            test -f "${source}" && grep --quiet '^deb' "${source}" && \
+                failed "IS_NOT_DEB822" "${source} contains a one-line style sources.list entry, and should be converted to deb822 format"
+	    done
+    fi
+}
+check_no_signed_by() {
+    if { ! is_debian_buster && ! is_debian_bullseye ; }; then
+        for source in /etc/apt/sources.list.d/*.sources; do
+            if [ -f "${source}" ]; then
+                ( grep --quiet '^Signed-by' "${source}" && \
+                    failed "IS_NO_SIGNED_BY" "${source} contains a Source-by entry that should be capitalized as Signed-By" ) || \
+                ( grep --quiet '^Signed-By' "${source}" || \
+                    failed "IS_NO_SIGNED_BY" "${source} has no Signed-By entry" )
             fi
         done
     fi
@@ -1714,6 +1734,8 @@ main() {
     test "${IS_NEWPUB:=1}" = 1 && check_newpub
     test "${IS_SURY:=1}" = 1 && check_sury
     test "${IS_SURY_LXC:=1}" = 1 && check_sury_lxc
+    test "${IS_NOT_DEB822:=0}" = 1 && check_not_deb822
+    test "${IS_NO_SIGNED_BY:=0}" = 1 && check_no_signed_by
     test "${IS_APTITUDE:=1}" = 1 && check_aptitude
     test "${IS_APTGETBAK:=1}" = 1 && check_aptgetbak
     test "${IS_USRRO:=1}" = 1 && check_usrro
@@ -1819,7 +1841,7 @@ main() {
     test "${IS_CHECK_VERSIONS:=1}" = 1 && check_versions
     test "${IS_MONITORINGCTL:=1}" = 1 && check_monitoringctl
     test "${IS_NRPEPRESSURE:=1}" = 1 && check_nrpepressure
-    test "${IS_POSTFIX_IPV6_DISABLED:=1}" = 1 && check_postfix_ipv6_disabled
+    test "${IS_POSTFIX_IPV6_DISABLED:=0}" = 1 && check_postfix_ipv6_disabled
 
     if [ -f "${main_output_file}" ]; then
         lines_found=$(wc -l < "${main_output_file}")

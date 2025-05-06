@@ -29,20 +29,17 @@ if($is_apache_enable == "enabled" && $is_apache_active == "active" ) {
 $list_utilisateur = array();
 $list_version = array();
 
-if($is_apache_enable == "enabled" && $is_apache_active == "active" ) {
+foreach ($list_socks as $line) {
 
-    foreach ($list_socks as $line) {
-    
+    if(preg_split('/\//', $line)[1] == "home") {
         $utilisateur = preg_split('/\//', $line)[2];
-        array_push($list_utilisateur, $utilisateur); 
+        array_push($list_utilisateur, $utilisateur);
         preg_match('/php-fpm(\d+)\.sock/', $line, $php_version);
-    
+
         if (!in_array($php_version[1], $list_version)) {
-            $list_version[] = $php_version[1]; 
+            $list_version[] = $php_version[1];
         }
     }
-} else {
-  $list_version = array(0 => NULL);
 }
 
 # Récupérer les métriques des pools PHP

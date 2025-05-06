@@ -13,7 +13,7 @@
 # - 150 : Inside an LXC container: Failure to apt update
 # - 160 : Inside an LXC container: Failure to apt upgrade --download only
 
-VERSION="25.01"
+VERSION="25.04.1"
 
 show_version() {
     cat <<END
@@ -156,33 +156,7 @@ force_mode() {
 }
 
 main() {
-    if ! cron_mode; then
-        echo "Updating lists..."
-    fi
-    # Update APT cache and get packages to upgrade and packages on hold.
-    aptUpdateOutput=$(apt-get -o Dir::State::Lists="${listupgrade_state_dir}" update 2>&1 | (grep --extended-regexp --invert-match --regexp '^(Listing|WARNING|$)' --regexp upgraded --regexp 'up to date' || true))
-
-    if echo "${aptUpdateOutput}" | grep --extended-regexp "^Err(:[0-9]+)? http"; then
-        echo "FATAL - Not able to fetch all sources (probably a pesky (mini)firewall). Please, fix me" >&2
-        post_hooks_and_exit 100
-    fi
-
-    apt-mark showhold | sed -e 's/\(.\+\)/^\1\//' >"${packagesHold}"
-    apt -o Dir::State::Lists="${listupgrade_state_dir}" list --upgradable 2>&1 | grep --invert-match --file "${packagesHold}" | grep --invert-match --extended-regexp '^(Listing|WARNING|$)' >"${packages}"
-    packagesParsable=$(cut -f 1 -d / <"${packages}" | tr '\n' ' ' | cut -c 900-)
-
-    # No updates? Exit!
-    if [ ! -s "${packages}" ]; then
-        if ! cron_mode; then
-            echo "There is nothing to upgrade. Bye." >&2
-        fi
-        post_hooks_and_exit 0
-    fi
-
-    if [ ! -s "${packagesHold}" ]; then
-        echo 'Aucun' >"${packagesHold}"
-    fi
-
+    # TODO: Use evolibs ?
     local_release=$(cut -f 1 -d . </etc/debian_version)
     # In case the version is a release name and not a number
     case "${local_release}" in
@@ -203,6 +177,12 @@ main() {
             ;;
         *trixie*) 
             local_release=13
+            ;;
+        *forky*) 
+            local_release=14
+            ;;
+        *duke*) 
+            local_release=15
             ;;
     esac
 
@@ -252,6 +232,36 @@ main() {
             done
         fi
     fi
+
+    ### Update cache and build lists
+
+    if ! cron_mode; then
+        echo "Updating lists..."
+    fi
+    # Update APT cache and get packages to upgrade and packages on hold.
+    aptUpdateOutput=$(apt-get -o Dir::State::Lists="${listupgrade_state_dir}" update 2>&1 | (grep --extended-regexp --invert-match --regexp '^(Listing|WARNING|$)' --regexp upgraded --regexp 'up to date' || true))
+
+    if echo "${aptUpdateOutput}" | grep --extended-regexp "^Err(:[0-9]+)? http"; then
+        echo "FATAL - Not able to fetch all sources (probably a pesky (mini)firewall). Please, fix me" >&2
+        post_hooks_and_exit 100
+    fi
+
+    apt-mark showhold | sed -e 's/\(.\+\)/^\1\//' >"${packagesHold}"
+    apt -o Dir::State::Lists="${listupgrade_state_dir}" list --upgradable 2>&1 | grep --invert-match --file "${packagesHold}" | grep --invert-match --extended-regexp '^(Listing|WARNING|$)' >"${packages}"
+    packagesParsable=$(cut -f 1 -d / <"${packages}" | tr '\n' ' ' | cut -c 900-)
+
+    # No updates? Exit!
+    if [ ! -s "${packages}" ]; then
+        if ! cron_mode; then
+            echo "There is nothing to upgrade. Bye." >&2
+        fi
+        post_hooks_and_exit 0
+    fi
+
+    if [ ! -s "${packagesHold}" ]; then
+        echo 'Aucun' >"${packagesHold}"
+    fi
+
 
     # Guess which services will be restarted.
     for pkg in ${packagesParsable}; do
@@ -313,15 +323,19 @@ main() {
     render_mail_template "${template}"
     /usr/sbin/sendmail "${mailto}" <"${template}"
 
+    ### Download packages
+
     if ! cron_mode; then
         echo "Dowloading packages..."
     fi
     # Now we try to fetch all the packages for the next update session
-    downloadstatus=$(apt-get -o Dir::State::Lists="${listupgrade_state_dir}" dist-upgrade --assume-yes --download-only -q2 2>&1)
+    downloadstatus=$(apt-get -o Dir::State::Lists="${listupgrade_state_dir}" dist-upgrade --assume-yes --download-only -q 2>&1)
+    apt_rc=$?
     echo "${downloadstatus}" | grep --quiet 'Download complete and in download only mode'
+    download_rc=$?
 
     # shellcheck disable=SC2181
-    if [ $? -ne 0 ]; then
+    if [ ${apt_rc} -ne 0 ] || [ ${download_rc} -ne 0 ]; then
         echo "${downloadstatus}"
         post_hooks_and_exit 110
     fi
@@ -338,12 +352,13 @@ main() {
             fi
 
             # Now we try to fetch all the packages for the next update session
-            downloadstatus=$(lxc-attach -n "${container}" -- apt-get -o Dir::State::Lists="${listupgrade_state_dir}" dist-upgrade --assume-yes --download-only -q2 2>&1)
-
+            downloadstatus=$(lxc-attach -n "${container}" -- apt-get -o Dir::State::Lists="${listupgrade_state_dir}" dist-upgrade --assume-yes --download-only -q 2>&1)
+            apt_rc=$?
             echo "${downloadstatus}" | grep --quiet 'Download complete and in download only mode'
+            download_rc=$?
 
             # shellcheck disable=SC2181
-            if [ $? -ne 0 ]; then
+            if [ ${apt_rc} -ne 0 ] || [ ${download_rc} -ne 0 ]; then
                 echo "${downloadstatus}"
                 post_hooks_and_exit 160
             fi

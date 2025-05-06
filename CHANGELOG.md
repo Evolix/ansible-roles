@@ -21,6 +21,26 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
+## [25.05] 2025-05-06
+
+### Added
+
+* minifirewall: add version in check_minifirewall output
+* packweb-apache: nginx compatibility to phpContainer
+
+### Changed
+
+* evocheck: upstream release 25.04.2
+* evomaintenance: upstream release 25.04
+* fail2ban: install python3-setuptools package
+* listupgrade: upstream release 25.04.1
+* phpx-fpm: Read only socks from home directory
+* rsyslog-centralized: Drop RELATED
+
+### Fixed
+
+* nagios-nrpe: install monitoring-plugins-contrib for check_memory instead of nagios-plugins-contrib since Debian 11
+
 ## [25.04.1] 2025-04-18
 
 ### Changed

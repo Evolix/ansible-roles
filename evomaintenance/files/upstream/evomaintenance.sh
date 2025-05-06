@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION="25.03"
+VERSION="25.04"
 
 show_version() {
     cat <<END
@@ -597,7 +597,7 @@ fi
 
 EVOCHECK_BIN="/usr/share/scripts/evocheck.sh"
 
-GIT_REPOSITORIES="/etc /etc/bind /usr/share/scripts"
+GIT_REPOSITORIES="/etc /etc/bind /usr/share/scripts /var/unbound/etc"
 
 # Add /etc directories from lxc containers if they are git directories
 if [ -d /var/lib/lxc ]; then

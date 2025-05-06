@@ -15,6 +15,12 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Security
 
+## [25.04] - 2025-04-24
+
+### Added
+
+* Add /var/unbound/etc as a GIT repository for OpenBSD
+
 ## [25.03] - 2025-03-24
 
 ### Fixed

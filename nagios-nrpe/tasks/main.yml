@@ -17,13 +17,27 @@
   tags:
     - nagios-nrpe
 
-- name: Extra plugins are installed
+- name: Extra plugins are installed (since Debian 11)
+  ansible.builtin.apt:
+    name:
+      - monitoring-plugins-contrib
+    state: present
+  when:
+    - nagios_nrpe_apt_contrib_plugins | bool
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version is version('11', '>=')
+  tags:
+    - nagios-nrpe
+
+- name: Extra plugins are installed (until Debian 10)
   ansible.builtin.apt:
     name:
       - nagios-plugins-contrib
     state: present
   when:
-    nagios_nrpe_apt_contrib_plugins | bool
+    - nagios_nrpe_apt_contrib_plugins | bool
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version is version('10', '<=')
   tags:
     - nagios-nrpe
 
