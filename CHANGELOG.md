@@ -19,6 +19,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* nodejs : fix README.md
+
 ### Removed
 
 ### Security
