@@ -13,8 +13,20 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
-* packweb-apache: nginx compatibility to phpContainer
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [25.05] 2025-05-06
+
+### Added
+
 * minifirewall: add version in check_minifirewall output
+* packweb-apache: nginx compatibility to phpContainer
 
 ### Changed
 
@@ -28,10 +40,6 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * nagios-nrpe: install monitoring-plugins-contrib for check_memory instead of nagios-plugins-contrib since Debian 11
-
-### Removed
-
-### Security
 
 ## [25.04.1] 2025-04-18
 
