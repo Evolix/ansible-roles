@@ -37,7 +37,7 @@
   when:
     - nagios_nrpe_apt_contrib_plugins | bool
     - ansible_distribution == "Debian"
-    - ansible_distribution_major_version is version('10', '=<')
+    - ansible_distribution_major_version is version('10', '<=')
   tags:
     - nagios-nrpe
 
