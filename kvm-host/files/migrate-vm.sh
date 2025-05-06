@@ -9,7 +9,7 @@
 # * different return codes for different errors
 # * use local and readonly variables
 
-VERSION="25.04"
+VERSION="25.05"
 
 # If expansion is attempted on an unset variable or parameter, the shell prints an
 # error message, and, if not interactive, exits with a non-zero status.
@@ -216,6 +216,13 @@ drbd_peers() {
     awk '$1 ~ /^on$/ { host = $2 } $1 ~ /^address/ { sub(";$", "", $NF); split($NF, a, ":"); ip = a[1]; printf "%s:%s\n", host, ip }' "${drbd_config_file}"
 }
 
+is_old_virsh() {
+    if [ -z "${is_old_virsh:-}" ]; then
+        dpkg --compare-versions "$(virsh --version)" lt '3.0.0'
+        is_old_virsh=$?
+    fi
+    return ${is_old_virsh}
+}
 is_vm_running_locally() {
     local vm
     local vm_list
@@ -230,7 +237,13 @@ is_vm_shutoff_locally() {
     local vm_list
 
     vm=${1:-}
-    vm_list=$(virsh list --state-shutoff --name)
+    # There is a bug in virsh on Debian 8
+    # We need to use --all on top of --state-XXXX
+    if is_old_virsh; then
+        vm_list=$(virsh list --all --state-shutoff --name)
+    else
+        vm_list=$(virsh list --state-shutoff --name)
+    fi
 
     echo "${vm_list}" | grep --fixed-strings --line-regexp --quiet "${vm}"
 }

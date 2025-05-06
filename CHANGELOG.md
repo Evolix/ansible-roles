@@ -15,6 +15,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* kvm-host: migrate-vm: workaround for virsh bug on Debian 8
+
 ### Fixed
 
 ### Removed
