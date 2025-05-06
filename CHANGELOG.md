@@ -34,8 +34,8 @@ The **patch** part is incremented if multiple releases happen the same month
 * evomaintenance: upstream release 25.04
 * fail2ban: install python3-setuptools package
 * listupgrade: upstream release 25.04.1
-* rsyslog-centralized: Drop RELATED
 * phpx-fpm: Read only socks from home directory
+* rsyslog-centralized: Drop RELATED
 
 ### Fixed
 
