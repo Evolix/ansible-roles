@@ -19,6 +19,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* lxc: Fix bullseye-security (and bookworm-security) repository earlier
 * nodejs : fix README.md
 
 ### Removed
