@@ -26,12 +26,6 @@
     # - https://packages.sury.org/php/pool/main/d/debsuryorg-archive-keyring/debsuryorg-archive-keyring_2024.02.05%2B0~20240205.1%2Bdebian12~1.gbp343037_all.deb
     # - https://pub.evolix.org/evolix/pool/main/e/evolix-archive-keyring/evolix-archive-keyring_0~2024_all.deb
 
-- name: "{{ lxc_php_container_name }} - fix bullseye repository"
-  ansible.builtin.replace:
-    dest: "{{ lxc_rootfs }}/etc/apt/sources.list"
-    regexp: 'bullseye/updates'
-    replace: 'bullseye-security'
-
 - name: "{{ lxc_php_container_name }} - Add sury repo"
   ansible.builtin.lineinfile:
     dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/sury.list"

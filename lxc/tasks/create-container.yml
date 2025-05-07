@@ -120,6 +120,20 @@
   ansible.builtin.shell:
     cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ name }} --  apt-get purge -y openssh-server"
 
+- name: "Fix bullseye repository in container {{ name }}"
+  ansible.builtin.replace:
+    dest: "/var/lib/lxc/{{ name }}/rootfs/etc/apt/sources.list"
+    regexp: 'bullseye/updates'
+    replace: 'bullseye-security'
+  when: release == 'bullseye'
+
+- name: "Fix bookworm repository in container {{ name }}"
+  ansible.builtin.replace:
+    dest: "/var/lib/lxc/{{ name }}/rootfs/etc/apt/sources.list"
+    regexp: 'bookworm/updates'
+    replace: 'bookworm-security'
+  when: release == 'bookworm'
+
 - name: "{{ name }} - Update APT cache"
   ansible.builtin.shell:
     cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ name }} --  apt-get update"
