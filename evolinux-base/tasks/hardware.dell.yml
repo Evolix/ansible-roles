@@ -6,15 +6,19 @@
 ## H750: Broadcom / LSI MegaRAID 12GSAS/PCIe Secure SAS39xx
 # This is still incompatible with Debian
 
-- name: Check if PERC HBA11 device is present
+- name: Check if PERC HBA11/12 device is present
   ansible.builtin.shell:
-    cmd: "lspci | grep -qE 'MegaRAID.*SAS39xx'"
+    cmd: "lspci | grep --extended-regexp 'MegaRAID.*SAS39xx'"
   check_mode: no
   register: perc_hba11_search
   failed_when: False
   changed_when: False
   tags:
     - packages
+
+- name: Debug MegaRAID search
+  debug:
+    var: perc_hba11_search
 
 - name: MegaCLI SAS package must not be installed if PERC HBA11 is present
   block:
