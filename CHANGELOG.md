@@ -21,6 +21,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * lxc: Fix bullseye-security (and bookworm-security) repository earlier
 * nodejs : fix README.md
+* opendkim : small fix on opendkim-add.sh
 
 ### Removed
 
