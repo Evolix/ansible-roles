@@ -15,7 +15,7 @@ maxretry = {{ fail2ban_default_maxretry }}
 destemail = {{ fail2ban_alert_email or general_alert_email | mandatory }}
 
 # ACTIONS
-banaction = iptables-multiport
+banaction = %(banaction_allports)s
 action = %({{ fail2ban_default_action }})s
 
 
