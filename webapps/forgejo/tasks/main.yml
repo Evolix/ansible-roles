@@ -128,6 +128,7 @@
     src: "vhost.conf.j2"
     dest: "/etc/nginx/sites-available/{{ forgejo_instance }}.conf"
     mode: '0600'
+  notify: reload nginx
 
 - name: Enable nginx vhost for forgejo
   ansible.builtin.file:
