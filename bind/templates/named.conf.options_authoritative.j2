@@ -34,6 +34,9 @@ logging {
     channel default_file {
         file "{{ bind_log_file }}";
         severity info;
+        print-category yes;
+        print-severity yes;
+        print-time yes;
     };
 {% if bind_query_file_enabled | bool %}
     channel query_logging {
