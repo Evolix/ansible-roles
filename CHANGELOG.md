@@ -46,6 +46,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * listupgrade: upstream release 25.04.1
 * phpx-fpm: Read only socks from home directory
 * rsyslog-centralized: Drop RELATED
+* varnish: Add missing update_cache
 
 ### Fixed
 
