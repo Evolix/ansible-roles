@@ -18,6 +18,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: no more /var/tmp in tmpfs starting with Debian 13
 * kvm-host: migrate-vm: workaround for virsh bug on Debian 8
 * redis: add password to single instance NRPE check, if present
+* bind: add update_cache for tasks
 
 ### Fixed
 

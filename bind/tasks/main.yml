@@ -29,6 +29,7 @@
 
 - name: package are installed
   ansible.builtin.apt:
+    update_cache: true
     name:
       - bind9
       - dnstop
