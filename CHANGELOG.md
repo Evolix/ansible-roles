@@ -24,6 +24,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * evolinux-base: rework the hardware tasks
 * evolinux-base: install ntpsec-ntpdate instead of ntpdate
+* generate-ldif: generateldif.sh updated for Trixie (#213)
 * lxc: fix bullseye-security (and bookworm-security) repository earlier
 * nodejs : fix README.md
 * opendkim : small fix on opendkim-add.sh
