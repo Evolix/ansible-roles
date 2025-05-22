@@ -21,7 +21,8 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * evolinux-base: rework the hardware tasks
-* lxc: Fix bullseye-security (and bookworm-security) repository earlier
+* evolinux-base: install ntpsec-ntpdate instead of ntpdate
+* lxc: fix bullseye-security (and bookworm-security) repository earlier
 * nodejs : fix README.md
 * opendkim : small fix on opendkim-add.sh
 * fail2ban : use banaction_allports by default because iptables-multiport is broken
