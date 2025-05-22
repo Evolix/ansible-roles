@@ -19,6 +19,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * kvm-host: migrate-vm: workaround for virsh bug on Debian 8
 * redis: add password to single instance NRPE check, if present
 * bind: add update_cache for tasks
+* apache: remove SemrushBot from our default BadBots list
 
 ### Fixed
 
