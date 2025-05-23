@@ -1,0 +1,17 @@
+---
+
+- name: "Remount /usr if needed"
+  include_role:
+    name: remount-usr
+  when:
+    - not ansible_check_mode
+    - evolibs_shell__lib_dir is search("/usr")
+
+- name: copy libs
+  ansible.builtin.copy:
+    src: upstream/lib/
+    dest: "{{ evolibs_shell__lib_dir }}/"
+    force: True
+    mode: "0644"
+    owner: root
+    group: root

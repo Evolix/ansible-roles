@@ -13,6 +13,9 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* evolibs-shell: upstream release 1.0.0
+* evolinux-base: install evolibs-shell
+
 ### Changed
 
 * evolinux-base: no more /var/tmp in tmpfs starting with Debian 13
