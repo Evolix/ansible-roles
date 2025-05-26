@@ -7,6 +7,14 @@
     - not ansible_check_mode
     - evolibs_shell__lib_dir is search("/usr")
 
+- name: Lib directory is present
+  ansible.builtin.file: 
+    path: "{{ evolibs_shell__lib_dir }}/"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
 - name: copy libs
   ansible.builtin.copy:
     src: upstream/lib/
