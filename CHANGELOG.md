@@ -33,6 +33,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * nodejs : fix README.md
 * opendkim : small fix on opendkim-add.sh
 * fail2ban : use banaction_allports by default because iptables-multiport is broken
+* nextcloud : fix checksum verification during archive download
 
 ### Removed
 
