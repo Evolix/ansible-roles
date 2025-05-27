@@ -13,7 +13,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
-* evolibs-shell: upstream release 1.0.0
+* evolibs-shell: upstream release 1.0.1
 * evolinux-base: install evolibs-shell
 
 ### Changed

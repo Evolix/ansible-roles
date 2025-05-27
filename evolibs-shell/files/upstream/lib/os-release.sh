@@ -24,9 +24,10 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 #######################################################################
 
-VERSION="1.0.0"
 
 evo::os-release::version() {
+    local VERSION="1.0.0"
+    
     echo "${VERSION}"
 }
 
