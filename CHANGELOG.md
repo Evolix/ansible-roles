@@ -36,6 +36,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * opendkim : small fix on opendkim-add.sh
 * fail2ban : use banaction_allports by default because iptables-multiport is broken
 * nextcloud : fix checksum verification during archive download
+* nextcloud : Use mode 0711 for instances' homedir instead of 0701
 
 ### Removed
 
