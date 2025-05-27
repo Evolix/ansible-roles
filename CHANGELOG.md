@@ -20,6 +20,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * apache: remove SemrushBot from our default BadBots list
+* nginx: remove SemrushBot from our default BadBots list
 * bind: add update_cache for tasks
 * evobackup-client: upstream release 25.05
 * evolinux-base: no more /var/tmp in tmpfs starting with Debian 13
