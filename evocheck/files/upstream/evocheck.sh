@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="25.04.1"
+VERSION="25.05"
 readonly VERSION
 
 # base functions
@@ -46,54 +46,6 @@ Options
  -h, --help                  print this message and exit
      --version               print version and exit
 END
-}
-
-detect_os() {
-    # OS detection
-    DEBIAN_RELEASE=""
-    LSB_RELEASE_BIN=$(command -v lsb_release)
-
-    if [ -e /etc/debian_version ]; then
-        DEBIAN_MAIN_VERSION=$(cut -d "." -f 1 < /etc/debian_version)
-
-        if [ "${DEBIAN_MAIN_VERSION}" -lt "10" ]; then
-            echo "Debian ${DEBIAN_MAIN_VERSION} is incompatible with this version of evocheck." >&2
-            echo "This version is built for Debian 10 and later." >&2
-            exit
-        fi
-
-        if [ -x "${LSB_RELEASE_BIN}" ]; then
-            DEBIAN_RELEASE=$(${LSB_RELEASE_BIN} --codename --short)
-        else
-            case ${DEBIAN_MAIN_VERSION} in
-                10) DEBIAN_RELEASE="buster"   ;;
-                11) DEBIAN_RELEASE="bullseye" ;;
-                12) DEBIAN_RELEASE="bookworm" ;;
-                13) DEBIAN_RELEASE="trixie"   ;;
-                14) DEBIAN_RELEASE="forky"    ;;
-                15) DEBIAN_RELEASE="duke"     ;;
-            esac
-        fi
-    fi
-}
-
-is_debian_buster() {
-    test "${DEBIAN_RELEASE}" = "buster"
-}
-is_debian_bullseye() {
-    test "${DEBIAN_RELEASE}" = "bullseye"
-}
-is_debian_bookworm() {
-    test "${DEBIAN_RELEASE}" = "bookworm"
-}
-is_debian_trixie() {
-    test "${DEBIAN_RELEASE}" = "trixie"
-}
-is_debian_forky() {
-    test "${DEBIAN_RELEASE}" = "forky"
-}
-is_debian_duke() {
-    test "${DEBIAN_RELEASE}" = "duke"
 }
 
 is_pack_web(){
@@ -142,13 +94,16 @@ failed() {
 # check functions
 
 check_lsbrelease(){
-    if [ -x "${LSB_RELEASE_BIN}" ]; then
-        ## only the major version matters
-        lhs=$(${LSB_RELEASE_BIN} --release --short | cut -d "." -f 1)
-        rhs=$(cut -d "." -f 1 < /etc/debian_version)
-        test "$lhs" = "$rhs" || failed "IS_LSBRELEASE" "release is not consistent between lsb_release (${lhs}) and /etc/debian_version (${rhs})"
-    else
-        failed "IS_LSBRELEASE" "lsb_release is missing or not executable"
+    if evo::os-release::is_debian 13 lt; then
+        LSB_RELEASE_BIN=$(command -v lsb_release)
+        if [ -x "${LSB_RELEASE_BIN}" ]; then
+            ## only the major version matters
+            lhs=$(${LSB_RELEASE_BIN} --release --short | cut -d "." -f 1)
+            rhs=$(cut -d "." -f 1 < /etc/debian_version)
+            test "$lhs" = "$rhs" || failed "IS_LSBRELEASE" "release is not consistent between lsb_release (${lhs}) and /etc/debian_version (${rhs})"
+        else
+            failed "IS_LSBRELEASE" "lsb_release is missing or not executable"
+        fi
     fi
 }
 check_dpkgwarning() {
@@ -181,11 +136,13 @@ check_customsudoers() {
     grep --extended-regexp --quiet --recursive "umask=0077" /etc/sudoers* || failed "IS_CUSTOMSUDOERS" "missing umask=0077 in sudoers file"
 }
 check_vartmpfs() {
-    FINDMNT_BIN=$(command -v findmnt)
-    if [ -x "${FINDMNT_BIN}" ]; then
-        ${FINDMNT_BIN} /var/tmp --type tmpfs --noheadings > /dev/null || failed "IS_VARTMPFS" "/var/tmp is not a tmpfs"
-    else
-        df /var/tmp | grep --quiet tmpfs || failed "IS_VARTMPFS" "/var/tmp is not a tmpfs"
+    if evo::os-release::is_debian 13 lt; then
+        FINDMNT_BIN=$(command -v findmnt)
+        if [ -x "${FINDMNT_BIN}" ]; then
+            ${FINDMNT_BIN} /var/tmp --type tmpfs --noheadings > /dev/null || failed "IS_VARTMPFS" "/var/tmp is not a tmpfs"
+        else
+            df /var/tmp | grep --quiet tmpfs || failed "IS_VARTMPFS" "/var/tmp is not a tmpfs"
+        fi
     fi
 }
 check_serveurbase() {
@@ -227,11 +184,14 @@ check_debiansecurity_lxc() {
     fi
 }
 check_backports_version() {
+    local os_codename
+    os_codename=$( evo::os-release::get_version_codename )
+
     # Look for enabled "Debian Backports" sources from the "Debian" origin
     apt-cache policy | grep "\bl=Debian Backports\b" | grep "\bo=Debian\b" | grep --quiet "\bc=main\b"
     test $? -eq 1 || ( \
-        apt-cache policy | grep "\bl=Debian Backports\b" | grep --quiet "\bn=${DEBIAN_RELEASE}-backports\b" && \
-        test $? -eq 0 || failed "IS_BACKPORTS_VERSION" "Debian Backports enabled for another release than ${DEBIAN_RELEASE}" )
+        apt-cache policy | grep "\bl=Debian Backports\b" | grep --quiet "\bn=${os_codename}-backports\b" && \
+        test $? -eq 0 || failed "IS_BACKPORTS_VERSION" "Debian Backports enabled for another release than ${os_codename}" )
 }
 check_oldpub() {
     # Look for enabled pub.evolix.net sources (supersed by pub.evolix.org since Stretch)
@@ -280,7 +240,7 @@ check_sury_lxc() {
     fi
 }
 check_not_deb822() {
-    if { ! is_debian_buster && ! is_debian_bullseye ; }; then
+    if evo::os-release::is_debian 12 ge; then
         for source in /etc/apt/sources.list /etc/apt/sources.list.d/*.list; do
             test -f "${source}" && grep --quiet '^deb' "${source}" && \
                 failed "IS_NOT_DEB822" "${source} contains a one-line style sources.list entry, and should be converted to deb822 format"
@@ -288,7 +248,7 @@ check_not_deb822() {
     fi
 }
 check_no_signed_by() {
-    if { ! is_debian_buster && ! is_debian_bullseye ; }; then
+    if evo::os-release::is_debian 12 ge; then
         for source in /etc/apt/sources.list.d/*.sources; do
             if [ -f "${source}" ]; then
                 ( grep --quiet '^Signed-by' "${source}" && \
@@ -350,7 +310,7 @@ check_customcrontab() {
     test "$found_lines" = 4 && failed "IS_CUSTOMCRONTAB" "missing custom field in crontab"
 }
 check_sshallowusers() {
-    if { ! is_debian_buster && ! is_debian_bullseye ; }; then
+    if evo::os-release::is_debian 12 ge; then
         if [ -d /etc/ssh/sshd_config.d/ ]; then
             # AllowUsers or AllowGroups should be in /etc/ssh/sshd_config.d/
             grep --extended-regexp --quiet --ignore-case --recursive "(AllowUsers|AllowGroups)" /etc/ssh/sshd_config.d/ \
@@ -371,7 +331,7 @@ check_sshallowusers() {
     fi
 }
 check_sshconfsplit() {
-    if { ! is_debian_buster && ! is_debian_bullseye ; }; then
+    if evo::os-release::is_debian 12 ge; then
         ls /etc/ssh/sshd_config.d/* > /dev/null 2> /dev/null \
             || failed "IS_SSHCONFSPLIT" "No files under /etc/ssh/sshd_config.d"
         diff /usr/share/openssh/sshd_config /etc/ssh/sshd_config > /dev/null 2> /dev/null \
@@ -382,7 +342,7 @@ check_sshconfsplit() {
     fi
 }
 check_sshlastmatch() {
-    if { ! is_debian_buster && ! is_debian_bullseye ; }; then
+    if evo::os-release::is_debian 12 ge; then
         for f in /etc/ssh/sshd_config /etc/ssh/sshd_config.d/zzz-evolinux-custom.conf; do
             if ! test -f "${f}"; then
                 continue
@@ -426,7 +386,7 @@ check_minifw() {
     } || failed "IS_MINIFW" "minifirewall seems not started"
 }
 check_minifw_includes() {
-    if ! is_debian_buster ; then
+    if evo::os-release::is_debian 11 ge; then
         if grep --quiet --regexp '/sbin/iptables' --regexp '/sbin/ip6tables' "/etc/default/minifirewall"; then
             failed "IS_MINIFWINCLUDES" "minifirewall has direct iptables invocations in /etc/default/minifirewall that should go in /etc/minifirewall.d/"
         fi
@@ -453,7 +413,7 @@ check_nrpedisks() {
     test "$NRPEDISKS" = "$DFDISKS" || failed "IS_NRPEDISKS" "there must be $DFDISKS check_disk in nrpe.cfg"
 }
 check_nrpepid() {
-    if is_debian_buster; then
+    if evo::os-release::is_debian 11 lt; then
         { test -e /etc/nagios/nrpe.cfg \
             && grep --quiet "^pid_file=/var/run/nagios/nrpe.pid" /etc/nagios/nrpe.cfg;
         } || failed "IS_NRPEPID" "missing or wrong pid_file directive in nrpe.cfg"
@@ -484,7 +444,7 @@ check_mysqlutils() {
     MYSQL_ADMIN=${MYSQL_ADMIN:-mysqladmin}
     if is_installed mysql-server; then
         # With Debian 11 and later, root can connect to MariaDB with the socket
-        if is_debian_buster; then
+        if evo::os-release::is_debian 11 lt; then
             # You can configure MYSQL_ADMIN in evocheck.cf
             if ! grep --quiet --no-messages "^user *= *${MYSQL_ADMIN}" /root/.my.cnf; then
                 failed "IS_MYSQLUTILS" "${MYSQL_ADMIN} missing in /root/.my.cnf"
@@ -587,7 +547,7 @@ check_bindchroot() {
     if is_installed bind9; then
         if netstat -utpln | grep "/named" | grep :53 | grep --quiet --invert-match --extended-regexp "(127.0.0.1|::1)"; then
             default_conf=/etc/default/named
-            if is_debian_buster; then
+            if evo::os-release::is_debian 10; then
                 default_conf=/etc/default/bind9
             fi
             if grep --quiet '^OPTIONS=".*-t' "${default_conf}" && grep --quiet '^OPTIONS=".*-u' "${default_conf}"; then
@@ -643,7 +603,7 @@ check_evobackup() {
 # Vérification de la mise en place d'un cron de purge de la base SQLite de Fail2ban
 check_fail2ban_purge() {
     # Nécessaire seulement en Debian 9 ou 10
-    if is_debian_buster; then
+    if evo::os-release::is_debian 11 lt; then
       if is_installed fail2ban; then
         test -f /etc/cron.daily/fail2ban_dbpurge || failed "IS_FAIL2BAN_PURGE" "missing script fail2ban_dbpurge cron"
       fi
@@ -1130,7 +1090,7 @@ check_elastic_backup() {
 }
 check_mariadbsystemdunit() {
     # TODO: check if it is still needed for bullseye
-    if is_debian_buster; then
+    if evo::os-release::is_debian 11 lt; then
         if is_installed mariadb-server; then
             if systemctl -q is-active mariadb.service; then
                 test -f /etc/systemd/system/mariadb.service.d/evolinux.conf \
@@ -1172,11 +1132,12 @@ check_mysqlnrpe() {
     fi
 }
 check_phpevolinuxconf() {
-    is_debian_buster   && phpVersion="7.3"
-    is_debian_bullseye && phpVersion="7.4"
-    is_debian_bookworm && phpVersion="8.2"
-    is_debian_trixie   && phpVersion="8.4"
-    if is_installed php && [ -n "${phpVersion}" ]; then
+    evo::os-release::is_debian 10 && phpVersion="7.3"
+    evo::os-release::is_debian 11 && phpVersion="7.4"
+    evo::os-release::is_debian 12 && phpVersion="8.2"
+    evo::os-release::is_debian 13 && phpVersion="8.4"
+
+    if is_installed php; then
         { test -f "/etc/php/${phpVersion}/cli/conf.d/z-evolinux-defaults.ini" \
             && test -f "/etc/php/${phpVersion}/cli/conf.d/zzz-evolinux-custom.ini"
         } || failed "IS_PHPEVOLINUXCONF" "missing php evolinux config"
@@ -1327,7 +1288,7 @@ check_usrsharescripts() {
 check_sshpermitrootno() {
     # You could change the SSH port in /etc/evocheck.cf
     sshd_args="-C addr=,user=,host=,laddr=,lport=${SSH_PORT:-22}"
-    if is_debian_buster; then
+    if evo::os-release::is_debian 10; then
         sshd_args="${sshd_args},rdomain="
     fi
     # shellcheck disable=SC2086
@@ -1561,12 +1522,15 @@ download_versions() {
     local file
     file=${1:-}
 
+    local os_codename
+    os_codename=$( evo::os-release::get_version_codename )
+
     ## The file is supposed to list programs : each on a line, then its latest version number
     ## Examples:
     # evoacme 21.06
     # evomaintenance 0.6.4
 
-    versions_url="https://upgrades.evolix.org/versions-${DEBIAN_RELEASE}"
+    versions_url="https://upgrades.evolix.org/versions-${os_codename}"
 
     # fetch timeout, in seconds
     timeout=10
@@ -1684,7 +1648,7 @@ check_nrpepressure() {
     # Taken from detect_os function
     DEBIAN_MAIN_VERSION=$(cut -d "." -f 1 < /etc/debian_version)
     if [ "${DEBIAN_MAIN_VERSION}" -ge 12 ]; then
-        monitoringctl status pressure_cpu > /dev/null 2>&1
+        /usr/local/bin/monitoringctl status pressure_cpu > /dev/null 2>&1
         rc="$?"
         if [ "${rc}" -ne 0 ]; then
             failed "IS_NRPEPRESSURE" "pressure_cpu check not defined or monitoringctl not correctly installed"
@@ -1702,8 +1666,6 @@ check_postfix_ipv6_disabled() {
 main() {
     # Default return code : 0 = no error
     RC=0
-    # Detect operating system name, version and release
-    detect_os
 
     main_output_file=$(mktemp --tmpdir "evocheck.main.XXXXX")
     files_to_cleanup+=("${main_output_file}")
@@ -1934,6 +1896,12 @@ while :; do
     shift
 done
 
+: "${EVOLIBS_SHELL_LIB:=/usr/local/lib/evolibs-shell}"
+. "${EVOLIBS_SHELL_LIB}/os-release.sh" || {
+    >&2 echo "Unable to load ${EVOLIBS_SHELL_LIB}/os-release.sh"
+    exit 1
+}
+
 # Keep this after "show_version(); exit 0" which is called by check_versions
 # to avoid logging exit twice.
 declare -a files_to_cleanup
@@ -1942,7 +1910,7 @@ files_to_cleanup=""
 trap cleanup EXIT INT TERM
 
 log '-----------------------------------------------'
-log "Running $PROGNAME $VERSION..."
+log "Running ${PROGNAME} ${VERSION}..."
 
 # Log config file content
 if [ -f "${CONFIGFILE}" ]; then
@@ -1950,8 +1918,14 @@ if [ -f "${CONFIGFILE}" ]; then
     sed -e '/^[[:blank:]]*#/d; s/#.*//; /^[[:blank:]]*$/d' "${CONFIGFILE}" | log
 fi
 
+if evo::os-release::is_debian 10 lt; then
+    echo "This version of ${PROGNAME} is built for Debian 10 and later." >&2
+    exit 1
+fi
+
+
 # shellcheck disable=SC2086
 main ${ARGS}
 
-log "End of $PROGNAME execution."
+log "End of ${PROGNAME} execution."
 
