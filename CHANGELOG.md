@@ -13,6 +13,18 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [25.05.1] 2025-05-28
+
+### Added
+
 * evocheck : upstream release 25.05
 * evolibs-shell: upstream release 1.0.1
 * evolinux-base: install evolibs-shell
@@ -38,10 +50,6 @@ The **patch** part is incremented if multiple releases happen the same month
 * nextcloud : Use mode 0711 for instances' homedir instead of 0701
 * nodejs : fix README.md
 * opendkim : rework opendkim-add.sh (extract variables…)
-
-### Removed
-
-### Security
 
 ## [25.05] 2025-05-06
 
