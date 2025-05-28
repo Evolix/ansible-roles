@@ -85,7 +85,7 @@ if is_service_alive; then
 fi
 
 # Yes we do, so check for sysvinit or systemd
-if is_debian_version "8" "<="; then
+if evo::os-release::is_debian "8" "<="; then
     if ! is_sysvinit_enabled "*${sysvinit_script}*"; then
         # log_global "${service_name} not enabled. Aborting"
         exit 0

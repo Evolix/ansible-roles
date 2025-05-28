@@ -15,6 +15,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* autosysadmin-agent: upstream release 25.05
+
 ### Fixed
 
 ### Removed
