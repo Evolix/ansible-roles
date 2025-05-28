@@ -4,12 +4,6 @@
   ansible.builtin.shell:
     cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ lxc_php_container_name }} --  apt-get install -y php-fpm php-cli php-gd php-intl php-imap php-ldap php-mysql php-pgsql php-sqlite3 php-curl php-zip php-mbstring php-xml php-zip composer libphp-phpmailer"
 
-- name: "{{ lxc_php_container_name }} - fix bullseye repository"
-  ansible.builtin.replace:
-    dest: "{{ lxc_rootfs }}/etc/apt/sources.list"
-    regexp: 'bullseye/updates'
-    replace: 'bullseye-security'
-
 - name: "{{ lxc_php_container_name }} - Copy evolinux PHP configuration"
   ansible.builtin.template:
     src: z-evolinux-defaults.ini.j2

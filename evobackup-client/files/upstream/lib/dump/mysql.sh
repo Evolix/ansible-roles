@@ -493,7 +493,7 @@ dump_mysql_grants() {
 # and a file containing only the schema.
 #
 # Arguments:
-# --masterdata (default: <absent>)
+# --master-data (default: <absent>)
 # --port=[Integer] (default: <blank>)
 # --socket=[String] (default: <blank>)
 # --user=[String] (default: <blank>)
@@ -524,8 +524,8 @@ dump_mysql_global() {
     # Parse options, based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
     while :; do
         case ${1:-''} in
-            --masterdata)
-                option_masterdata="--masterdata"
+            --master-data|--masterdata)
+                option_masterdata="--master-data"
                 ;;
             --defaults-file)
                 # defaults-file options, with value separated by space

@@ -21,6 +21,36 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
+## [25.05.1] 2025-05-28
+
+### Added
+
+* evocheck : upstream release 25.05
+* evolibs-shell: upstream release 1.0.1
+* evolinux-base: install evolibs-shell
+
+### Changed
+
+* apache: remove SemrushBot from our default BadBots list
+* bind: update apt cache before installing package
+* evobackup-client: upstream release 25.05
+* evolinux-base: no more /var/tmp in tmpfs starting with Debian 13
+* kvm-host: migrate-vm: workaround for virsh bug on Debian 8
+* nginx: remove SemrushBot from our default BadBots list
+* redis: add password to single instance NRPE check, if present
+
+### Fixed
+
+* evolinux-base: install ntpsec-ntpdate instead of ntpdate
+* evolinux-base: rework the hardware tasks
+* fail2ban : use banaction_allports by default because iptables-multiport is broken
+* generate-ldif: generateldif.sh updated for Trixie (#213)
+* lxc: fix bullseye-security (and bookworm-security) repository earlier
+* nextcloud : fix checksum verification during archive download
+* nextcloud : Use mode 0711 for instances' homedir instead of 0701
+* nodejs : fix README.md
+* opendkim : rework opendkim-add.sh (extract variables…)
+
 ## [25.05] 2025-05-06
 
 ### Added
@@ -30,12 +60,14 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* bind: Add time, severity and category in bind logging
 * evocheck: upstream release 25.04.2
 * evomaintenance: upstream release 25.04
 * fail2ban: install python3-setuptools package
 * listupgrade: upstream release 25.04.1
 * phpx-fpm: Read only socks from home directory
 * rsyslog-centralized: Drop RELATED
+* varnish: Add missing update_cache
 
 ### Fixed
 

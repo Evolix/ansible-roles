@@ -6,9 +6,9 @@
 ## H750: Broadcom / LSI MegaRAID 12GSAS/PCIe Secure SAS39xx
 # This is still incompatible with Debian
 
-- name: Check if PERC HBA11 device is present
+- name: Check if PERC HBA11/12 device is present
   ansible.builtin.shell:
-    cmd: "lspci | grep -qE 'MegaRAID.*SAS39xx'"
+    cmd: "lspci | grep --extended-regexp 'MegaRAID.*SAS39xx'"
   check_mode: no
   register: perc_hba11_search
   failed_when: False
@@ -17,17 +17,15 @@
     - packages
 
 - name: MegaCLI SAS package must not be installed if PERC HBA11 is present
+  when: perc_hba11_search.rc == 0
   block:
-    - name: Disable harware RAID tasks
-      ansible.builtin.set_fact:
-        evolinux_packages_hardware_raid: False
 
     - name: blacklist mageclisas-status package
       ansible.builtin.blockinfile:
         dest: /etc/apt/preferences.d/0-blacklist
         create: yes
         marker: "## {mark} MEGACLISAS-STATUS BLACKLIST"
-        block: |
+        content: |
           # DO NOT INSTALL THESE PACKAGES ON THIS SERVER
           Package: megacli megaclisas-status
           Pin: version *
@@ -39,18 +37,26 @@
           - megacli
           - megaclisas-status
         state: absent
-  when: perc_hba11_search.rc == 0
 
-- name: "Ensure {{ apt_keyring_dir }} directory exists"
-  file:
-    path: "{{ apt_keyring_dir }}"
-    state: directory
-    mode: "755"
-    owner: root
-    group: root
+    ### DO NOT CHANGE THIS VARIABLE VALUE
+    ### Ansible reevaluates the tasks with the "when" condition
+    ### from the parent tasks file, and interrupts the rest of the tasks
+    # - name: Disable harware RAID tasks
+    #   ansible.builtin.set_fact:
+    #     evolinux_packages_hardware_raid: False
 
 - name: MegaCLI SAS package is present
+  when:
+    - "'MegaRAID' in raidmodel.stdout"
+    - perc_hba11_search.rc != 0
   block:
+    - name: "Ensure {{ apt_keyring_dir }} directory exists"
+      file:
+        path: "{{ apt_keyring_dir }}"
+        state: directory
+        mode: "755"
+        owner: root
+        group: root
     - name: HWRaid GPG key is installed
       ansible.builtin.copy:
         src: hwraid.le-vert.net.asc
@@ -112,6 +118,4 @@
       tags:
         - packages
         - config
-  when:
-    - "'MegaRAID' in raidmodel.stdout"
 

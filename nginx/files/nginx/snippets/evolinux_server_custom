@@ -6,6 +6,6 @@ location ~ /\.(inc|git|bak|env) {
   return 404;
 }
 
-if ($http_user_agent ~ (^BadBot$|thesis-research-bot|Bytespider|SeekportBot|PetalBot|DotBot|SEOkicks|serpstatbot|MJ12bot|SemrushBot)) {
+if ($http_user_agent ~ (^BadBot$|thesis-research-bot|Bytespider|SeekportBot|PetalBot|DotBot|SEOkicks|serpstatbot|MJ12bot)) {
     return 403;
 }

@@ -70,7 +70,7 @@ evolinux_fstab_var: True
 evolinux_fstab_var_options: defaults,nosuid
 evolinux_fstab_home: True
 evolinux_fstab_home_options: defaults,noexec,nosuid,nodev
-evolinux_fstab_var_tmp: True
+evolinux_fstab_var_tmp: "{{ ansible_distribution_major_version is version('13', '<') | ternary(True, False) }}"
 evolinux_fstab_var_tmp_options: defaults,noexec,nosuid,nodev,size=1024m
 evolinux_fstab_dev_shm: True
 evolinux_fstab_dev_shm_options: defaults,nodev,nosuid,noexec

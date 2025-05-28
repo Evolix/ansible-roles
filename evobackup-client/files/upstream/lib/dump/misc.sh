@@ -15,15 +15,11 @@ dump_ldap() {
 
     log "LOCAL_TASKS - ${FUNCNAME[0]}: start ${FUNCNAME[0]} to ${dump_dir}"
 
-    dump_cmd="slapcat -n 0 -l ${dump_dir}/config.bak"
+    dump_cmd="slapcat -n 0 -l ${dump_dir}/ldap-config.bak"
     log "LOCAL_TASKS - ${FUNCNAME[0]}: ${dump_cmd}"
     ${dump_cmd}
 
-    dump_cmd="slapcat -n 1 -l ${dump_dir}/data.bak"
-    log "LOCAL_TASKS - ${FUNCNAME[0]}: ${dump_cmd}"
-    ${dump_cmd}
-
-    dump_cmd="slapcat -l ${dump_dir}/all.bak"
+    dump_cmd="slapcat -n 1 -l ${dump_dir}/ldap-data.bak"
     log "LOCAL_TASKS - ${FUNCNAME[0]}: ${dump_cmd}"
     ${dump_cmd}
 

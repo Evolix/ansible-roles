@@ -23,6 +23,16 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [25.05] - 2025-05-27
+
+### Changed
+
+* better names for LDAP dumps
+
+### Removed
+
+* remove useless LDAP backup
+
 ## [25.04] - 2025-04-10
 
 ### Added

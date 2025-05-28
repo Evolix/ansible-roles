@@ -13,6 +13,19 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Removed
 
+## [25.05] 2025-05-27
+
+### Changed
+
+* switch to evolibs-shell of Debian version checks
+* IS_VARTMPFS does not check Trixie or later
+* IS_LSBRELEASE only for Debian < 13
+
+### Fixed
+
+* IS_MONITORINGCTL: absolute path for monitoringctl (/usr/local/bin not in PATH inside cron)
+* IS_NRPEPRESSURE: absolute path for monitoringctl (/usr/local/bin not in PATH inside cron)
+
 ## [25.04.2] 2025-04-23
 
 ### Changed

@@ -6,34 +6,41 @@ if [ "$#" -ne 1 ]; then
 fi
 
 servername="$(cat /etc/hostname)"
-domain="$(echo "$1"|xargs)"
+domain="$(echo "$1" | xargs)"
+selector="dkim-${servername}"
+dns_entry="${selector}._domainkey.${domain}"
 
-if [ ! -f "/etc/ssl/private/dkim-${servername}.private" ]; then
+genkey_output_dir="/etc/ssl/private"
+private_key_file="${genkey_output_dir}/${selector}.private"
+txt_file="${genkey_output_dir}/${selector}.txt"
+
+key_table="/etc/opendkim/KeyTable"
+signing_table="/etc/opendkim/SigningTable"
+
+if [ ! -f "${private_key_file}" ]; then
     echo "Generate DKIM keys ..."
-    opendkim-genkey -h sha256 -b 4096 -D /etc/ssl/private/ -r -d "${domain}" -s "dkim-${servername}"
-    chown opendkim:opendkim "/etc/ssl/private/dkim-${servername}.private"
-    chmod 640 "/etc/ssl/private/dkim-${servername}.private"
-    mv "/etc/ssl/private/dkim-${servername}.txt" "/etc/ssl/certs/"
+    opendkim-genkey -h sha256 -b 4096 -D "${genkey_output_dir}" -r -d "${domain}" -s "${selector}"
+
+    chown opendkim:opendkim "${private_key_file}"
+    chmod 640 "${private_key_file}"
 fi
 
-grep -q "${domain}" /etc/opendkim/KeyTable
-if [ "$?" -ne 0 ]; then
+if ! grep --quiet "${domain}" "${key_table}"; then
     echo "Add ${domain} to KeyTable ..."
-    echo "dkim-${servername}._domainkey.${domain} ${domain}:dkim-${servername}:/etc/ssl/private/dkim-${servername}.private" >> /etc/opendkim/KeyTable
+    echo "${dns_entry} ${domain}:${selector}:${private_key_file}" >> "${key_table}"
 fi
 
-grep -q "${domain}" /etc/opendkim/SigningTable
-if [ "$?" -ne 0 ]; then
+if ! grep --quiet "${domain}" "${signing_table}"; then
     echo "Add ${domain} to SigningTable ..."
-    echo "*@${domain} dkim-${servername}._domainkey.${domain}" >> /etc/opendkim/SigningTable
+    echo "*@${domain} ${dns_entry}" >> "${signing_table}"
 fi
 
 systemctl reload opendkim
 if [ "$?" -eq 0 ]; then
     echo "OpenDKIM successfully reloaded"
-    echo "Public key is in : /etc/ssl/certs/dkim-${servername}.txt"
+    echo "Public key is in: ${txt_file}"
     exit 0
 else
-    echo "An error has occurred while opendkim reload, please FIX configuration !" >&2
+    echo "An error has occurred while opendkim reload, please FIX configuration!" >&2
     exit 1
 fi

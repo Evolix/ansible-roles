@@ -9,7 +9,6 @@
     system: yes
 
 - name: Create www-evoadmin group
-
   ansible.builtin.group:
     name: www-evoadmin
     state: present

@@ -59,11 +59,22 @@
 - set_fact:
     redis_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name redis -- "
 
+- set_fact:
+    redis_check_params: "-H {{ redis_check_interface }} -p {{ redis_port }}"
+  when: redis_password is undefined or redis_password is none or redis_password | length == 0
+
+- set_fact:
+    redis_check_params: "-H {{ redis_check_interface }} -p {{ redis_port }} -x '{{ redis_password }}'"
+  when: 
+    - redis_password is defined
+    - not redis_password is none
+    - redis_password | length > 0
+
 - name: Use check_redis for NRPE
   ansible.builtin.replace:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: '^command\[check_redis\]=.+'
-    replace: 'command[check_redis]={{ redis_monitoringctl_wrapper_cmd }}sudo {{ redis_check_redis_path }} -H {{ redis_check_interface }} -p {{ redis_port }}'
+    replace: 'command[check_redis]={{ redis_monitoringctl_wrapper_cmd }}sudo {{ redis_check_redis_path }} {{ redis_check_params }}'
   when:
     - redis_instance_name is undefined
   notify: restart nagios-nrpe-server

@@ -124,7 +124,7 @@ local_tasks() {
     # Dump all databases in a single compressed file
     #
     # Options:
-    #   --masterdata (default: <absent>)
+    #   --master-data (default: <absent>)
     #   --port=[Integer] (default: <blank>)
     #   --socket=[String] (default: <blank>)
     #   --user=[String] (default: <blank>)
