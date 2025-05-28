@@ -20,24 +20,24 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * apache: remove SemrushBot from our default BadBots list
-* nginx: remove SemrushBot from our default BadBots list
-* bind: add update_cache for tasks
+* bind: update apt cache before installing package
 * evobackup-client: upstream release 25.05
 * evolinux-base: no more /var/tmp in tmpfs starting with Debian 13
 * kvm-host: migrate-vm: workaround for virsh bug on Debian 8
+* nginx: remove SemrushBot from our default BadBots list
 * redis: add password to single instance NRPE check, if present
 
 ### Fixed
 
-* evolinux-base: rework the hardware tasks
 * evolinux-base: install ntpsec-ntpdate instead of ntpdate
+* evolinux-base: rework the hardware tasks
+* fail2ban : use banaction_allports by default because iptables-multiport is broken
 * generate-ldif: generateldif.sh updated for Trixie (#213)
 * lxc: fix bullseye-security (and bookworm-security) repository earlier
-* nodejs : fix README.md
-* opendkim : small fix on opendkim-add.sh
-* fail2ban : use banaction_allports by default because iptables-multiport is broken
 * nextcloud : fix checksum verification during archive download
 * nextcloud : Use mode 0711 for instances' homedir instead of 0701
+* nodejs : fix README.md
+* opendkim : rework opendkim-add.sh (extract variables…)
 
 ### Removed
 
