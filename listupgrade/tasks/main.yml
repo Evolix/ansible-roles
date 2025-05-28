@@ -13,7 +13,7 @@
 
 - name: Copy listupgrade script
   ansible.builtin.copy:
-    src: listupgrade.sh
+    src: upstream/listupgrade.sh
     dest: "/usr/share/scripts/listupgrade.sh"
     mode: "0700"
     owner: root
