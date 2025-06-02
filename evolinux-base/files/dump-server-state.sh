@@ -3,7 +3,7 @@
 PROGNAME="dump-server-state"
 REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
 
-VERSION="25.03"
+VERSION="25.06"
 readonly VERSION
 
 dump_dir=
@@ -685,11 +685,11 @@ task_disks() {
                     debug "${last_result}"
                     rc=10
                 fi
+                cat "${dump_dir}"/partitions-* > "${dump_dir}/partitions"
             else
                 debug "* fdisk not found"
             fi
         done
-        cat "${dump_dir}"/partitions-* > "${dump_dir}/partitions"
     else
         if [ -n "${lsblk_bin}" ]; then
             debug "* lsblk not found"
