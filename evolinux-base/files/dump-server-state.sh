@@ -3,7 +3,7 @@
 PROGNAME="dump-server-state"
 REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
 
-VERSION="25.06"
+VERSION="25.06.1"
 readonly VERSION
 
 dump_dir=
@@ -654,11 +654,12 @@ task_disks() {
 
     lsblk_bin=$(command -v lsblk)
     awk_bin=$(command -v awk)
+    dd_bin=$(command -v dd)
+    fdisk_bin=$(command -v fdisk)
 
     if [ -n "${lsblk_bin}" ] && [ -n "${awk_bin}" ]; then
         disks=$(${lsblk_bin} -l | grep disk | grep -v -E '(drbd|fd[0-9]+)' | ${awk_bin} '{print $1}')
         for disk in ${disks}; do
-            dd_bin=$(command -v dd)
             if [ -n "${dd_bin}" ]; then
                 last_result=$(${dd_bin} if="/dev/${disk}" of="${dump_dir}/MBR-${disk}" bs=512 count=1 2>&1)
                 last_rc=$?
@@ -668,12 +669,13 @@ task_disks() {
                 else
                     debug "* dd ${disk} ERROR"
                     debug "${last_result}"
-                    rc=10
+                    ### ignore dd failures
+                    # rc=10
                 fi
             else
                 debug "* dd not found"
             fi
-            fdisk_bin=$(command -v fdisk)
+            
             if [ -n "${fdisk_bin}" ]; then
                 last_result=$(${fdisk_bin} -l "/dev/${disk}" > "${dump_dir}/partitions-${disk}" 2>&1)
                 last_rc=$?
@@ -683,13 +685,16 @@ task_disks() {
                 else
                     debug "* fdisk ${disk} ERROR"
                     debug "${last_result}"
-                    rc=10
+                    ### ignore fdisk failures
+                    # rc=10
                 fi
-                cat "${dump_dir}"/partitions-* > "${dump_dir}/partitions"
             else
                 debug "* fdisk not found"
             fi
         done
+        if ls "${dump_dir}"/partitions-* >/dev/null 2>&1; then
+            cat "${dump_dir}"/partitions-* > "${dump_dir}/partitions"
+        fi
     else
         if [ -n "${lsblk_bin}" ]; then
             debug "* lsblk not found"
