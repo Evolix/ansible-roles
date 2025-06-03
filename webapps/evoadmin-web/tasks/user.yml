@@ -8,6 +8,12 @@
     password: "!"
     system: yes
 
+- name: Home directory permissions are set
+  ansible.builtin.file:
+    path: "{{ evoadmin_home_dir }}"
+    mode: "0750"
+    state: directory
+
 - name: Create www-evoadmin group
   ansible.builtin.group:
     name: www-evoadmin
