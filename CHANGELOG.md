@@ -20,6 +20,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* apt: fix hold_packages
 * evolinux-base: remount /usr read-write before updating dump-server-state
 
 ### Removed
