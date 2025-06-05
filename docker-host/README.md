@@ -10,7 +10,7 @@ This playbook will install a docker-engine on the target host.
 
 Useful variables :
 
-- **docker_home** path to where docker will store its internals **and** docker volumes, default is `/var/lib/docker`. It's **recommended to use a specific partition** ( `/home/docker` or `/srv/docker` ) to avoid filling 100% `/var`
+- **docker_home** path to where docker will store its internals **and** docker volumes, default is `/var/lib/docker` and we recommend to keep it and use symlink to `/home/docker` or `/srv/docker` to avoid filling 100% `/var`
 - **docker_conf_live_restore** allow containers to not be restarted upon update of docker, it **needs** to be turned **off** to use docker **swarm**. Default is `true`
 - **docker_conf_user_namespace**, enable by default the use of "user namespacing" when creating containers. brings it's on [set of challenges](https://wiki.evolix.org/HowtoDocker#activer-le-userns-remap), but allow for safer containers. Default is `true`
 

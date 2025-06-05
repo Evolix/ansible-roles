@@ -17,6 +17,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * autosysadmin-agent: upstream release 25.05
 * dump-server-state: upstream release 25.06.1
+* docker-host: apply default config from HowtoDocker
 
 ### Fixed
 
