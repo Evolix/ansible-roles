@@ -1,0 +1,118 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
+
+This project does not follow semantic versioning.
+The **major** part of the version is the year
+The **minor** part changes is the month
+The **patch** part changes is incremented if multiple releases happen the same month
+
+## [Unreleased]
+
+### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [25.06.2] 2025-06-06
+
+### Changed
+
+* improve apt-config usage (more terse)
+* task_packages: use dpkg-query and apt
+* option to replace rc=10 by rc=0 on dump error
+
+## [25.06.1] 2025-06-02
+
+### Changed
+
+* fdisk/dd errors must not report a global error
+
+## [25.06] 2025-06-02
+
+### Fixed
+
+* cat partitions only if fdisk is present
+
+## [25.03] 2025-03-31
+
+### Added
+
+* Add guard clauses if dpkg status is missing
+* Add docker tasks to save containers list and containers/networks info
+
+### Removed
+
+* debug() doesn't accept stdin anymore
+
+### Changed
+
+* rsync `/etc` with `--delete`
+* explicit stdin/stdout order
+
+## [23.11] 2023-11-20
+
+### Added
+
+* add `--[no-]mysql-summary` to execute `pt-mysql-summary(1)` if present
+
+## [23.08] 2023-08-01
+
+### Added
+
+* Store iptables/nft stderr output in special files
+* … and delete the empty ones at the end
+
+## [22.04.3] 2022-04-26
+
+### Added
+
+* debug() accepts stdin
+
+### Changed
+
+* task_mysql_processes: try mysqladmin ping before dumping the processlist
+
+## [22.04.2] 2022-04-26
+
+### Changed
+
+* Ignore errors with mysqladmin, until we find a way to deal with multiple instances.
+
+## [22.04.1] 2022-04-20
+
+### Changed
+
+redirect df errors to stdout
+
+## [22.04] 2022-04-03
+
+### Changed
+
+Better iptables/ip6tables dump
+
+## [22.03.10] 2022-03-29
+
+### Changed
+
+use nft is available and ignore iptables errors
+
+## [22.03.9] 2022-03-27
+
+### Added
+
+* `--all` and `--none` options to execute all of no task.
+
+### Changed
+
+* rename internal variables to use "task" as concept of unit of work
+
+## [22.03.8] 2022-03-27
+
+dump-server-state has its own repository and changelog
