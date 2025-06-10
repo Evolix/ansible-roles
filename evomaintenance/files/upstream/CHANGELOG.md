@@ -15,6 +15,12 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Security
 
+## [25.06] - 2025-06-10
+
+### Fixed
+
+* Avoid erroring on OpenBSD
+
 ## [25.04] - 2025-04-24
 
 ### Added
