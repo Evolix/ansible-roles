@@ -21,8 +21,11 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* apache/nginx: handle server-status suffix in nagios conf
+* apache/nginx: uncomment check_https? in nagios conf
 * apt: fix hold_packages
 * evolinux-base: remount /usr read-write before updating dump-server-state
+* nagios-nrpe: use servername instead of “SERVEUR”
 
 ### Removed
 
