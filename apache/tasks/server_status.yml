@@ -83,20 +83,6 @@
   tags:
     - apache
 
-- name: uncomment check_http in nagios conf
-  ansible.builtin.replace:
-    dest: /etc/nagios/nrpe.d/evolix.cfg
-    regexp: '^#command\[check_http\]={{ monitoringctl_wrapper_path }} --name http -- /usr/lib/nagios/plugins/check_http '
-    replace: 'command[check_http]={{ monitoringctl_wrapper_path }} --name http -- /usr/lib/nagios/plugins/check_http '
-  when: not ansible_check_mode
-
-- name: uncomment check_https in nagios conf
-  ansible.builtin.replace:
-    dest: /etc/nagios/nrpe.d/evolix.cfg
-    regexp: '^#command\[check_https\]={{ monitoringctl_wrapper_path }} --name http -- /usr/lib/nagios/plugins/check_http '
-    replace: 'command[check_https]={{ monitoringctl_wrapper_path }} --name http -- /usr/lib/nagios/plugins/check_http '
-  when: not ansible_check_mode
-
 - name: Munin configuration has a section for apache
   ansible.builtin.lineinfile:
     dest: /etc/munin/plugin-conf.d/munin-node
