@@ -44,7 +44,7 @@ warn() {
 masterKVMIP="${masterKVMIP:-127.0.0.1}"
 slaveKVMIP="${slaveKVMIP:-}"
 disks="${disks:-}"
-[ -n "${disks}" ] || disks=("ssd" "hdd")
+[ -n "${disks}" ] || disks=("SAS1" "SATA" "SATA")
 bridgeName="${bridgeName:-br0}"
 doDryRun=${doDryRun:-false}
 isoImagePath="${isoImagePath:-}"
@@ -54,6 +54,7 @@ defaultVCPU="${defaultVCPU:-"2"}"
 defaultRAM="${defaultRAM:-"4G"}"
 defaultRootSize="${defaultRootSize:-"20G"}"
 defaultHomeSize="${defaultHomeSize:-"40G"}"
+defaultSrvSize="${defaultSrvSize:-"5G"}"
 defaultVmName="${defaultVmName:-}"
 
 DIALOGOUT=$(mktemp --tmpdir=/tmp addvm.XXX)
@@ -88,7 +89,8 @@ ${DIALOG} \
     "memory" 2 1 "${defaultRAM}" 2 10 20 0 \
     "volRoot" 3 1 "${disks[0]}-${defaultRootSize}" 3 10 20 0 \
     "volHome" 4 1 "${disks[1]}-${defaultHomeSize}" 4 10 20 0 \
-    "vmName" 5 1 "${defaultVmName}" 5 10 20 1024 \
+    "volSrv" 5 1 "${disks[2]}-${defaultSrvSize}" 5 10 20 0 \
+    "vmName" 6 1 "${defaultVmName}" 6 10 42 0 \
     2> "${DIALOGOUT}"
 
 vCPU=$(sed 1'q;d' "${DIALOGOUT}")
@@ -96,7 +98,8 @@ memory=$(sed 2'q;d' "${DIALOGOUT}" | tr -d 'G')
 memory=$((memory * 1024 ))
 volRoot=$(sed 3'q;d' "${DIALOGOUT}")
 volHome=$(sed 4'q;d' "${DIALOGOUT}")
-vmName=$(sed 5'q;d' "${DIALOGOUT}")
+volSrv=$(sed 5'q;d' "${DIALOGOUT}")
+vmName=$(sed 6'q;d' "${DIALOGOUT}")
 
 if [ -z "${vmName}" ]; then
     critical "You need a VM Name!!"
@@ -105,7 +108,7 @@ fi
 ${DIALOG} \
     --title "Continue?" \
     --clear "$@" \
-    --yesno "Will create a VM named ${vmName} on ${masterKVM} with ${vCPU} vCPU, ${memory} memory, ${volRoot} for / (and /usr, ...) and ${volHome} for /home." 10 80
+    --yesno "Will create a VM named ${vmName} on ${masterKVM} with ${vCPU} vCPU, ${memory} memory, ${volRoot} for / (and /usr, ...), ${volHome} for /home and ${volSrv} for /srv." 10 80
 dialog_rc=$?
 
 if [[ ${dialog_rc} -ne 0 ]]; then
@@ -141,6 +144,21 @@ else
     fi
 fi
 
+if ! [[ "${volSrv}" =~ ([^-]+)-([0-9]+G) ]]; then
+    warn "No volume for srv device (/dev/vdc)... Okay, not doing it!"
+    volSrvDisk="none"
+else
+    volSrvDisk="${BASH_REMATCH[1]}"
+    volSrvSize="${BASH_REMATCH[2]}"
+    if [[ " ${disks[*]} " != *"${volSrvDisk}"* ]]; then
+        critical "Unknow disk ${volSrvDisk} !"
+    fi
+    dryRun lvcreate -L"${volSrvSize}" -n"${vmName}_srv" "${volSrvDisk}"
+    if ! isSolo; then
+        dryRun ssh "${slaveKVMIP}" "lvcreate -L$volSrvSize -n${vmName}_srv ${volSrvDisk}"
+    fi
+fi
+
 if ! isSolo && [ -f "/etc/drbd.d/${vmName}.res" ]; then
     warn "The DRBD resource file ${vmName}.res is already present! Continue? [y/N]"
     read -r
@@ -159,10 +177,12 @@ if ! isSolo; then
         lastMinor=$(grep -hEo 'minor [0-9]{1,}' /etc/drbd.d/*.res | sed 's/minor //' | sort -n | tail -1)
         minorvol0=$((lastMinor+1))
         minorvol1=$((lastMinor+2))
+        minorvol2=$((lastMinor+3))
     else
         drbdPort=7900
         minorvol0=0
         minorvol1=1
+        minorvol2=2
     fi
 
     cat << EOT > "${tmpResFile}"
@@ -195,6 +215,15 @@ EOT
     volume 1 {
         device minor ${minorvol1};
         disk /dev/${volHomeDisk}/${vmName}_home;
+        meta-disk internal;
+    }
+EOT
+    fi
+    if [[ "${volSrvDisk}" != "none" ]]; then
+        cat << EOT >> "${tmpResFile}"
+    volume 2 {
+        device minor ${minorvol2};
+        disk /dev/${volSrvDisk}/${vmName}_srv;
         meta-disk internal;
     }
 EOT
@@ -247,11 +276,16 @@ fi
 if isSolo; then
     virtRootDisk="--disk path=/dev/${volRootDisk}/${vmName}_root,bus=virtio,io=threads,cache=none,format=raw"
     virtHomeDisk="--disk path=/dev/${volHomeDisk}/${vmName}_home,bus=virtio,io=threads,cache=none,format=raw"
+    virtHomeDisk="--disk path=/dev/${volSrvDisk}/${vmName}_srv,bus=virtio,io=threads,cache=none,format=raw"
 else
     virtRootDisk="--disk path=/dev/drbd/by-disk/${volRootDisk}/${vmName}_root,bus=virtio,io=threads,cache=none,format=raw"
     virtHomeDisk=""
     if [ "${volHomeDisk}" != "none" ]; then
         virtHomeDisk="--disk path=/dev/drbd/by-disk/${volHomeDisk}/${vmName}_home,bus=virtio,io=threads,cache=none,format=raw"
+    fi
+    virtSrvDisk=""
+    if [ "${volSrvDisk}" != "none" ]; then
+        virtSrvDisk="--disk path=/dev/drbd/by-disk/${volSrvDisk}/${vmName}_srv,bus=virtio,io=threads,cache=none,format=raw"
     fi
 fi
 
@@ -271,6 +305,7 @@ dryRun virt-install \
     --memory="${memory}" \
     "${virtRootDisk}" \
     "${virtHomeDisk}" \
+    "${virtSrvDisk}" \
     "${bootMode}" \
     --network="bridge:${bridgeName},model=virtio" \
     --noautoconsole \
