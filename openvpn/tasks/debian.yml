@@ -167,6 +167,7 @@
     mode: "0600"
     owner: root
     group: root
+  diff: no
 
 - name: Enable openvpn service
   ansible.builtin.systemd:
@@ -269,6 +270,15 @@
   check_mode: no
   changed_when: no
 
+- name: Save the CA password in the user's /tmp directory
+  ansible.builtin.copy:
+    dest: "/tmp/ansible_openvpn_ca_{{ ansible_hostname }}_{{ ansible_date_time.iso8601 }}"
+    content: "{{ ca_pwd }}\n"
+    mode: "0600"
+  delegate_to: localhost
+  become: no
+  diff: no
+
 - name: Initialization of the CA
   ansible.builtin.shell:
     cmd: 'CA_PASSWORD="{{ ca_pwd }}" shellpki init --non-interactive {{ ansible_fqdn }}'
@@ -302,7 +312,7 @@
       You must check and adjust if necessary the configuration file "/etc/openvpn/server.conf", and then restart the OpenVPN service with "systemctl restart openvpn@server.service".
       The "push" parameter may be needed to push a route to the client, so that the client can access that route through OpenVPN.
 
-      Take note of the generated CA password and store it in your password manager : {{ ca_pwd }}
+      Take note of the generated CA password and store it in your password manager. It is stored in your computer in "/tmp/ansible_openvpn_ca_{{ ansible_hostname }}_{{ ansible_date_time.iso8601 }}"
 
       Press enter to exit when it's done.
 
