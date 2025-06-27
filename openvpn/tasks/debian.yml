@@ -207,6 +207,7 @@
     regexp: '^command\[check_openvpn\]='
     line: "command[check_openvpn]={{ openvpn_monitoringctl_wrapper_cmd }}/usr/local/lib/nagios/plugins/check_openvpn -H 127.0.0.1 -p 1195 -P {{ management_pwd }}"
   notify: restart nagios-nrpe-server
+  diff: no
   when:
     - nrpe_evolix_config.stat.exists
 
