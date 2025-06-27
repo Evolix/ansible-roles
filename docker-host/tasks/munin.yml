@@ -1,0 +1,64 @@
+- name: is Munin present ?
+  ansible.builtin.stat:
+    path: /etc/munin/plugins
+  check_mode: no
+  register: etc_munin_plugins
+  tags:
+    - docker-host
+    - munin
+
+- ansible.builtin.include_role:
+    name: evolix/remount-usr
+
+- name: Local Munin plugins directory exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: "0755"
+    owner: root
+    group: root
+    state: directory
+  loop:
+    - /usr/local/share/munin
+    - /usr/local/share/munin/plugins
+  tags:
+    - docker-host
+    - munin
+
+- name: Copie docker_ plugin
+  ansible.builtin.copy:
+    src: munin_docker_
+    dest: "/usr/local/share/munin/plugins/docker_"
+    force: true
+    mode: "0700"
+    owner: root
+    group: root
+  tags:
+    - docker-host
+    - munin
+
+- name: is docker_ Munin plugin available ?
+  ansible.builtin.stat:
+    path: /usr/local/share/munin/plugins/docker_
+  check_mode: no
+  register: docker_munin_plugin
+  tags:
+    - docker-host
+    - munin
+
+- name: Enable Munin plugin
+  ansible.builtin.file:
+    src: "/usr/local/share/munin/plugins/docker_"
+    dest: "/etc/munin/plugins/docker_multi"
+    state: link
+  notify: restart munin-node
+  when:
+    - etc_munin_plugins.stat.exists
+    - docker_munin_plugin.stat.exists
+
+- name: Copy munin plugin config
+  ansible.builtin.copy:
+    src: munin-plugin.conf
+    dest: /etc/munin/plugin-conf.d/docker
+    owner: root
+    group: root
+    mode: "0644"

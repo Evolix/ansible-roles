@@ -13,6 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* docker-host: add munin graphs
+
 ### Changed
 
 * autosysadmin-agent: upstream release 25.05
