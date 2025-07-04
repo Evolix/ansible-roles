@@ -18,10 +18,11 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * autosysadmin-agent: upstream release 25.05
-* dump-server-state: upstream release 25.06.2
 * docker-host: apply default config from HowtoDocker
-* openvpn: do not display management or CA password
+* dump-server-state: upstream release 25.06.2
 * evolinux-base: update-evobackup-canary: release 25.07 - OpenBSD doesn't have --parents option of mkdir
+* listupgrade: deploy minor-upgrade.sh script and rearrange files
+* openvpn: do not display management or CA password
 
 ### Fixed
 

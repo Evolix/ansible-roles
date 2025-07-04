@@ -13,11 +13,15 @@
 # - 150 : Inside an LXC container: Failure to apt update
 # - 160 : Inside an LXC container: Failure to apt upgrade --download only
 
-VERSION="25.04.1"
+VERSION="25.07"
+readonly VERSION
+
+PROGNAME=$(basename "$0")
+readonly PROGNAME
 
 show_version() {
     cat <<END
-listupgrade.sh version ${VERSION}
+${PROGNAME} version ${VERSION}
 
 Copyright 2018-2025 Evolix <info@evolix.fr>,
                Gregory Colpart <reg@evolix.fr>,
@@ -27,9 +31,9 @@ Copyright 2018-2025 Evolix <info@evolix.fr>,
                David Prevot <dprevot@evolix.fr>
                and others.
 
-listupgrade.sh comes with ABSOLUTELY NO WARRANTY.  This is free software,
-and you are welcome to redistribute it under certain conditions.
-See the GNU General Public Licence for details.
+${PROGNAME} comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it under
+certain conditions. See the GNU General Public Licence for details.
 END
 }
 
@@ -126,7 +130,7 @@ EOT
 # are executed if they are executable
 # and if their name doesn't contain a dot
 exec_hooks_in_dir() {
-    hooks=$(find "${1}" -type f -executable -not -name '*.* -print0 | sort --zero-terminated --dictionary-order | xargs --no-run-if-empty --null --max-args=1')
+    hooks=$(find "${1}" -follow -type f -executable -not -name '*.*' -print0 | sort --zero-terminated --dictionary-order | xargs --no-run-if-empty --null --max-args=1)
     for hook in ${hooks}; do
         if ! cron_mode; then
             printf "Running '%s\`\n" "${hook}"
@@ -135,14 +139,14 @@ exec_hooks_in_dir() {
     done
 }
 pre_hooks() {
-    if [ -d "${hooksDir}/pre" ]; then
-        exec_hooks_in_dir "${hooksDir}/pre"
+    if [ -d "${hooks_dir}/pre" ]; then
+        exec_hooks_in_dir "${hooks_dir}/pre"
     fi
 }
 post_hooks_and_exit() {
     status=${1:-0}
-    if [ -d "${hooksDir}/post" ]; then
-        exec_hooks_in_dir "${hooksDir}/post"
+    if [ -d "${hooks_dir}/post" ]; then
+        exec_hooks_in_dir "${hooks_dir}/post"
     fi
     exit ${status}
 }
@@ -402,7 +406,7 @@ set -u
 
 export LC_ALL=C
 
-configFile="/etc/evolinux/listupgrade.cnf"
+config_file="/etc/evolinux/listupgrade.cnf"
 
 cron_mode=${cron_mode:-0}
 force_mode=${force_mode:-0}
@@ -412,15 +416,15 @@ date="Ce jeudi entre 18h00 et 23h00."
 hostname=$(grep HOSTNAME /etc/evomaintenance.cf | cut -d'=' -f2)
 hostname=${hostname%%.evolix.net}
 listupgrade_state_dir="${listupgrade_state_dir:-/var/lib/listupgrade}"
-hooksDir="/etc/evolinux/listupgrade-hooks"
+hooks_dir="/etc/evolinux/listupgrade-hooks"
 
 # If hostname is composed with -, remove the first part.
 if [[ "${hostname}" =~ "-" ]]; then
     hostname=$(echo "${hostname}" | cut -d'-' -f2-)
 fi
-# Edit $configFile to override some variables.
+# Edit $config_file to override some variables.
 # shellcheck disable=SC1090,SC1091
-[ -r "${configFile}" ] && . "${configFile}"
+[ -r "${config_file}" ] && . "${config_file}"
 
 # Create temporary files
 packages=$(mktemp --tmpdir=/tmp listupgrade.XXX)

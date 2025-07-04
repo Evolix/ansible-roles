@@ -1,1 +1,0 @@
-42 9 * * 2 root /usr/share/scripts/listupgrade.sh --cron
