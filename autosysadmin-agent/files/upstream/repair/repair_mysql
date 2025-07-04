@@ -6,7 +6,7 @@ source "${AUTOSYSADMIN_LIB}/repair.sh" || exit 1
 
 pre_repair
 
-if is_debian_version "8" "<="; then
+if evo::os-release::is_debian "8" "<="; then
 
     if is_sysvinit_enabled '*mysql*'; then
         if ! pgrep -u mysql mysqld > /dev/null; then
@@ -33,7 +33,7 @@ if is_debian_version "8" "<="; then
 
 else
 
-    if is_debian_version "12" ">="; then
+    if evo::os-release::is_debian "12" ">="; then
         service="mariadb.service"
         service_name="mariadb"
     else

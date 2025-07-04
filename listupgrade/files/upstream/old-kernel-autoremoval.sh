@@ -4,7 +4,7 @@
 
 # fork by reg from /etc/kernel/postinst.d/apt-auto-removal script
 
-VERSION="24.01"
+VERSION="25.07"
 readonly VERSION
 
 PROGNAME=$(basename "$0")
@@ -13,16 +13,16 @@ show_version() {
     cat <<END
 ${PROGNAME} version ${VERSION}
 
-Copyright 2018-2024 Evolix <info@evolix.fr>,
+Copyright 2018-2025 Evolix <info@evolix.fr>,
                Gregory Colpart <reg@evolix.fr>,
                Romain Dessort <rdessort@evolix.fr>,
                Ludovic Poujol <lpoujol@evolix.fr>,
                Jérémy Lecour <jlecour@evolix.fr>
                and others.
 
-${PROGNAME} comes with ABSOLUTELY NO WARRANTY.  This is free software,
-and you are welcome to redistribute it under certain conditions.
-See the GNU General Public Licence for details.
+${PROGNAME} comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it under
+certain conditions. See the GNU General Public Licence for details.
 END
 }
 show_help() {
@@ -53,9 +53,9 @@ get_apt_binary() {
 main() {
     specifc_kernel="$1"
 
+    DPKG="/usr/bin/dpkg"
     # shellcheck disable=SC2046
     eval $(apt-config shell DPKG Dir::bin::dpkg/f)
-    DPKG="${DPKG:-/usr/bin/dpkg}"
 
     listupgrade_state_dir="${listupgrade_state_dir:-/var/lib/listupgrade}"
 

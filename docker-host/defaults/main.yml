@@ -1,5 +1,5 @@
 ---
-# If docher_home sets to /home/, the partition should be mounted with exec option.
+# the partition should be mounted with exec option.
 docker_home: /var/lib/docker
 docker_tmpdir: "{{ docker_home }}/tmp"
 

@@ -3,7 +3,7 @@
 PROGNAME="dump-server-state"
 REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
 
-VERSION="25.03"
+VERSION="25.06.2"
 readonly VERSION
 
 dump_dir=
@@ -94,7 +94,9 @@ create_dump_dir() {
     else
         debug "* mkdir/chmod ERROR :"
         debug "${last_result}"
-        rc=10
+        if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+            rc=10
+        fi
     fi
 }
 
@@ -112,7 +114,9 @@ task_etc() {
         else
             debug "* rsync ERROR :"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     else
         debug "* rsync not found"
@@ -124,24 +128,21 @@ task_etc() {
         else
             debug "* cp ERROR :"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     fi
 }
 
 task_apt_states() {
-    apt_dir="/"
-    apt_dir_state="var/lib/apt"
-    apt_dir_state_extended_states="extended_states"
+    extended_states="/var/lib/apt/extended_states"
 
     apt_config_bin=$(command -v apt-config)
 
     if [ -n "${apt_config_bin}" ]; then
-        eval "$(${apt_config_bin} shell apt_dir Dir)"
-        eval "$(${apt_config_bin} shell apt_dir_state Dir::State)"
-        eval "$(${apt_config_bin} shell apt_dir_state_extended_states Dir::State::extended_states)"
+        eval "$(${apt_config_bin} shell extended_states Dir::State::extended_states/f)"
     fi
-    extended_states="${apt_dir}/${apt_dir_state}/${apt_dir_state_extended_states}"
 
     if [ -f "${extended_states}" ]; then
         debug "Task: APT states"
@@ -154,7 +155,9 @@ task_apt_states() {
         else
             debug "* cp ERROR :"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     fi
 }
@@ -173,7 +176,9 @@ task_apt_config() {
         else
             debug "* apt-config ERROR"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     else
         debug "* apt-config is not found"
@@ -189,7 +194,7 @@ task_dpkg_full() {
 
     if [ -n "${apt_config_bin}" ]; then
         # will do something like `dir_state_status='/var/lib/dpkg/status'`
-        eval "$(${apt_config_bin} shell dir_state_status Dir::State::status)"
+        eval "$(${apt_config_bin} shell dir_state_status Dir::State::status/f)"
     fi
 
     dpkg_dir=$(dirname "${dir_state_status}")
@@ -203,7 +208,9 @@ task_dpkg_full() {
         else
             debug "* mkdir/chmod ERROR"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
 
         rsync_bin=$(command -v rsync)
@@ -217,7 +224,9 @@ task_dpkg_full() {
             else
                 debug "* rsync ERROR :"
                 debug "${last_result}"
-                rc=10
+                if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                    rc=10
+                fi
             fi
         else
             debug "* rsync not found"
@@ -230,7 +239,9 @@ task_dpkg_full() {
             else
                 debug "* cp ERROR :"
                 debug "${last_result}"
-                rc=10
+                if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                    rc=10
+                fi
             fi
         fi
     else
@@ -247,7 +258,7 @@ task_dpkg_status() {
 
     if [ -n "${apt_config_bin}" ]; then
         # will do something like `dir_state_status='/var/lib/dpkg/status'`
-        eval "$(${apt_config_bin} shell dir_state_status Dir::State::status)"
+        eval "$(${apt_config_bin} shell dir_state_status Dir::State::status/f)"
     fi
 
     if [ -f "${dir_state_status}" ]; then
@@ -259,7 +270,9 @@ task_dpkg_status() {
         else
             debug "* cp ERROR :"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     else
         debug "* ${dir_state_status} not found"
@@ -269,21 +282,42 @@ task_dpkg_status() {
 task_packages() {
     debug "Task: List of installed package"
 
-    dpkg_bin=$(command -v dpkg)
+    dpkg_query_bin=$(command -v dpkg-query)
 
-    if [ -n "${dpkg_bin}" ]; then
-        last_result=$(${dpkg_bin} --get-selections "*" > "${dump_dir}/current_packages.txt")
+    if [ -n "${dpkg_query_bin}" ]; then
+        last_result=$(${dpkg_query_bin} --list > "${dump_dir}/dpkg_query_list.txt")
         last_rc=$?
 
         if [ ${last_rc} -eq 0 ]; then
-            debug "* dpkg OK"
+            debug "* dpkg-query OK"
         else
-            debug "* dpkg ERROR :"
+            debug "* dpkg-query ERROR :"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     else
-        debug "* dpkg not found"
+        debug "* dpkg-query not found"
+    fi
+
+    apt_bin=$(command -v apt)
+
+    if [ -n "${apt_bin}" ]; then
+        last_result=$(${apt_bin} list --installed 2>/dev/null > "${dump_dir}/apt_list.txt")
+        last_rc=$?
+
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* apt OK"
+        else
+            debug "* apt ERROR :"
+            debug "${last_result}"
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
+        fi
+    else
+        debug "* apt not found"
     fi
 }
 
@@ -298,7 +332,9 @@ task_uname() {
     else
         debug "* uname ERROR"
         debug "${last_result}"
-        rc=10
+        if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+            rc=10
+        fi
     fi
 }
 
@@ -313,7 +349,9 @@ task_uptime() {
     else
         debug "* uptime ERROR"
         debug "${last_result}"
-        rc=10
+        if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+            rc=10
+        fi
     fi
 }
 
@@ -328,7 +366,9 @@ task_processes() {
     else
         debug "* ps ERROR"
         debug "${last_result}"
-        rc=10
+        if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+            rc=10
+        fi
     fi
 
     pstree_bin=$(command -v pstree)
@@ -342,7 +382,9 @@ task_processes() {
         else
             debug "* pstree ERROR"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     fi
 }
@@ -361,7 +403,9 @@ task_netstat() {
         else
             debug "* ss ERROR"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     else
         debug "* ss not found"
@@ -378,7 +422,9 @@ task_netstat() {
         else
             debug "* netstat ERROR"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     else
         debug "* netstat not found"
@@ -399,7 +445,9 @@ task_netcfg() {
         else
             debug "* ip address ERROR"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
 
         last_result=$(${ip_bin} route show > "${dump_dir}/ip-route.txt")
@@ -410,7 +458,9 @@ task_netcfg() {
         else
             debug "* ip route ERROR"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     else
         debug "* ip not found"
@@ -426,7 +476,9 @@ task_netcfg() {
             else
                 debug "* ifconfig ERROR"
                 debug "${last_result}"
-                rc=10
+                if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                    rc=10
+                fi
             fi
         else
             debug "* ifconfig not found"
@@ -463,7 +515,9 @@ task_iptables() {
             debug "* iptables -v ERROR"
             debug "$(cat ${dump_dir}/iptables-v.err)"
             # Ignore errors because we don't know if this is nft related or a real error
-            # rc=10
+            # if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+            #     rc=10
+            # fi
         fi
 
         last_result=$({
@@ -488,7 +542,9 @@ task_iptables() {
             debug "* iptables ERROR"
             debug "$(cat ${dump_dir}/iptables.err)"
             # Ignore errors because we don't know if this is nft related or a real error
-            # rc=10
+            # if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+            #     rc=10
+            # fi
         fi
     else
         debug "* iptables not found"
@@ -506,7 +562,9 @@ task_iptables() {
             debug "* iptables-save ERROR"
             debug "$(cat ${dump_dir}/iptables-save.err)"
             # Ignore errors because we don't know if this is nft related or a real error
-            # rc=10
+            # if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+            #     rc=10
+            # fi
         fi
     else
         debug "* iptables-save not found"
@@ -523,7 +581,9 @@ task_iptables() {
         else
             debug "* nft ruleset ERROR"
             debug "$(cat ${dump_dir}/nft-ruleset.err)"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     fi
 }
@@ -542,7 +602,9 @@ task_sysctl() {
         else
             debug "* sysctl ERROR"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     else
         debug "* sysctl not found"
@@ -563,7 +625,9 @@ task_virsh() {
         else
             debug "* virsh list ERROR"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     else
         debug "* virsh not found"
@@ -584,7 +648,9 @@ task_lxc() {
         else
             debug "* lxc list ERROR"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     else
         debug "* lxc-ls not found"
@@ -612,13 +678,17 @@ task_docker() {
                 else
                     debug "* docker inspect ${id} ERROR"
                     debug "${last_result}"
-                    rc=10
+                    if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                        rc=10
+                    fi
                 fi
             done
         else
             debug "* docker ps ERROR"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
 
         last_result=$("${docker_bin}" network ls --no-trunc 2>&1 > "${dump_dir}/docker-network-ls.txt")
@@ -636,13 +706,17 @@ task_docker() {
                 else
                     debug "* docker network inspect ${id} ERROR"
                     debug "${last_result}"
-                    rc=10
+                    if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                        rc=10
+                    fi
                 fi
             done
         else
             debug "* docker ps ERROR"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     else
         debug "* docker not found"
@@ -654,11 +728,12 @@ task_disks() {
 
     lsblk_bin=$(command -v lsblk)
     awk_bin=$(command -v awk)
+    dd_bin=$(command -v dd)
+    fdisk_bin=$(command -v fdisk)
 
     if [ -n "${lsblk_bin}" ] && [ -n "${awk_bin}" ]; then
         disks=$(${lsblk_bin} -l | grep disk | grep -v -E '(drbd|fd[0-9]+)' | ${awk_bin} '{print $1}')
         for disk in ${disks}; do
-            dd_bin=$(command -v dd)
             if [ -n "${dd_bin}" ]; then
                 last_result=$(${dd_bin} if="/dev/${disk}" of="${dump_dir}/MBR-${disk}" bs=512 count=1 2>&1)
                 last_rc=$?
@@ -668,12 +743,14 @@ task_disks() {
                 else
                     debug "* dd ${disk} ERROR"
                     debug "${last_result}"
-                    rc=10
+                    if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                        rc=10
+                    fi
                 fi
             else
                 debug "* dd not found"
             fi
-            fdisk_bin=$(command -v fdisk)
+            
             if [ -n "${fdisk_bin}" ]; then
                 last_result=$(${fdisk_bin} -l "/dev/${disk}" > "${dump_dir}/partitions-${disk}" 2>&1)
                 last_rc=$?
@@ -683,13 +760,17 @@ task_disks() {
                 else
                     debug "* fdisk ${disk} ERROR"
                     debug "${last_result}"
-                    rc=10
+                    if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                        rc=10
+                    fi
                 fi
             else
                 debug "* fdisk not found"
             fi
         done
-        cat "${dump_dir}"/partitions-* > "${dump_dir}/partitions"
+        if ls "${dump_dir}"/partitions-* >/dev/null 2>&1; then
+            cat "${dump_dir}"/partitions-* > "${dump_dir}/partitions"
+        fi
     else
         if [ -n "${lsblk_bin}" ]; then
             debug "* lsblk not found"
@@ -714,7 +795,9 @@ task_mount() {
         else
             debug "* mount points ERROR"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     else
         debug "* findmnt not found"
@@ -730,7 +813,9 @@ task_mount() {
             else
                 debug "* mount points ERROR"
                 debug "${last_result}"
-                rc=10
+                if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                    rc=10
+                fi
             fi
         else
             debug "* mount not found"
@@ -752,7 +837,9 @@ task_df() {
         else
             debug "* df ERROR"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     else
         debug "* df not found"
@@ -773,7 +860,9 @@ task_dmesg() {
         else
             debug "* dmesg ERROR"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     else
         debug "* dmesg not found"
@@ -797,7 +886,9 @@ task_mysql_processes() {
                 else
                     debug "* mysqladmin ERROR"
                     debug "${last_result}"
-                    rc=10
+                    if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                        rc=10
+                    fi
                 fi
             else
                 debug "* unable to ping with mysqladmin"
@@ -831,7 +922,9 @@ task_mysql_summary() {
                 else
                     debug "* pt-mysql-summary ERROR"
                     debug "${last_result}"
-                    rc=10
+                    if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                        rc=10
+                    fi
                 fi
             else
                 debug "* unable to ping with mysqladmin"
@@ -858,7 +951,9 @@ task_systemctl() {
         else
             debug "* failed services ERROR"
             debug "${last_result}"
-            rc=10
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
         fi
     else
         debug "* systemctl not found"
@@ -978,6 +1073,13 @@ while :; do
 
         -f|--force)
             FORCE=1
+            ;;
+
+        --fail-on-dump-error)
+            FAIL_ON_DUMP_ERROR=1
+            ;;
+        --no-fail-on-dump-error)
+            FAIL_ON_DUMP_ERROR=0
             ;;
 
         -d|--dump-dir)
@@ -1280,6 +1382,7 @@ done
 # Default values
 : "${VERBOSE:=0}"
 : "${FORCE:=0}"
+: "${FAIL_ON_DUMP_ERROR:=1}"
 : "${TASK_ETC:=0}"
 : "${TASK_DPKG_FULL:=0}"
 : "${TASK_DPKG_STATUS:=1}"

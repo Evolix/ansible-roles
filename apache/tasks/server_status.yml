@@ -74,6 +74,15 @@
   tags:
     - apache
 
+- name: add server-status suffix in nagios conf
+  ansible.builtin.replace:
+    dest: /etc/nagios/nrpe.d/evolix.cfg
+    regexp: '/server-status-NNNNN '
+    replace: '/server-status-{{ apache_serverstatus_suffix }} '
+  when: not ansible_check_mode
+  tags:
+    - apache
+
 - name: Munin configuration has a section for apache
   ansible.builtin.lineinfile:
     dest: /etc/munin/plugin-conf.d/munin-node

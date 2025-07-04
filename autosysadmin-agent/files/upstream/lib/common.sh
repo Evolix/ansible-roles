@@ -1,10 +1,20 @@
 #!/bin/bash
 
-VERSION="24.11"
+VERSION="25.05"
 
 # Common functions for "repair" and "restart" scripts
 
 set -u
+
+: "${EVOLIBS_SHELL_LIB:=/usr/local/lib/evolibs-shell}"
+. "${EVOLIBS_SHELL_LIB}/calendar.sh" || {
+    >&2 echo "Unable to load ${EVOLIBS_SHELL_LIB}/calendar.sh"
+    exit 1
+}
+. "${EVOLIBS_SHELL_LIB}/os-release.sh" || {
+    >&2 echo "Unable to load ${EVOLIBS_SHELL_LIB}/os-release.sh"
+    exit 1
+}
 
 # Initializes the program, context, configuration…
 initialize() {
@@ -353,7 +363,7 @@ check_nrpe() {
     nrpe_commands=$(grep --no-filename --exclude=*~ --fixed-strings "[${check}]" ${nrpe_files} | grep --invert-match --extended-regexp '^\s*#\s*command' | cut -d = -f 2)
     nrpe_commands_count=$(echo "${nrpe_commands}" | wc -l)
 
-    if is_debian_version "9" "<=" && [ "${nrpe_commands_count}" -gt "1" ]; then
+    if evo::os-release::is_debian "9" "<=" && [ "${nrpe_commands_count}" -gt "1" ]; then
         # On Debian <= 9, NRPE loading was not sorted
         # we need to raise an error if we have multiple defined commands
         msg="Unable to determine which NRPE command to run"
@@ -449,70 +459,6 @@ ensure_not_too_soon_or_exit() {
         fi
     fi
     touch "${lastrun_file}"
-}
-
-# Populate DEBIAN_VERSION and DEBIAN_RELEASE variables
-# based on gathered information about the operating system
-detect_os() {
-    DEBIAN_RELEASE="unknown"
-    DEBIAN_VERSION="unknown"
-    LSB_RELEASE_BIN="$(command -v lsb_release)"
-
-    if [ -e /etc/debian_version ]; then
-        DEBIAN_VERSION="$(cut -d "." -f 1 < /etc/debian_version)"
-        if [ -x "${LSB_RELEASE_BIN}" ]; then
-            DEBIAN_RELEASE="$("${LSB_RELEASE_BIN}" --codename --short)"
-        else
-            case "${DEBIAN_VERSION}" in
-                 7) DEBIAN_RELEASE="wheezy"   ;;
-                 8) DEBIAN_RELEASE="jessie"   ;;
-                 9) DEBIAN_RELEASE="stretch"  ;;
-                10) DEBIAN_RELEASE="buster"   ;;
-                11) DEBIAN_RELEASE="bullseye" ;;
-                12) DEBIAN_RELEASE="bookworm" ;;
-                13) DEBIAN_RELEASE="trixie"   ;;
-                14) DEBIAN_RELEASE="forky"   ;;
-            esac
-        fi
-    #    log_run "Detected OS: Debian version=${DEBIAN_VERSION} release=${DEBIAN_RELEASE}"
-    # else
-    #    log_run "Detected OS: unknown (missing /etc/debian_version)"
-    fi
-}
-
-is_debian_wheezy() {
-    test "${DEBIAN_RELEASE}" = "wheezy"
-}
-is_debian_jessie() {
-    test "${DEBIAN_RELEASE}" = "jessie"
-}
-is_debian_stretch() {
-    test "${DEBIAN_RELEASE}" = "stretch"
-}
-is_debian_buster() {
-    test "${DEBIAN_RELEASE}" = "buster"
-}
-is_debian_bullseye() {
-    test "${DEBIAN_RELEASE}" = "bullseye"
-}
-is_debian_bookworm() {
-    test "${DEBIAN_RELEASE}" = "bookworm"
-}
-is_debian_trixie() {
-    test "${DEBIAN_RELEASE}" = "trixie"
-}
-is_debian_forky() {
-    test "${DEBIAN_RELEASE}" = "forky"
-}
-is_debian_version() {
-    local version=$1
-    local relation=${2:-"eq"}
-
-    if [ -z "${DEBIAN_VERSION:-""}" ]; then
-        detect_os
-    fi
-
-    dpkg --compare-versions "${DEBIAN_VERSION}" "${relation}" "${version}"
 }
 
 is_systemd() {
@@ -882,34 +828,17 @@ hook_mail() {
 }
 
 is_holiday() {
-    # gcal mark today as a holiday by surrounding with < and > the day
-    # of the month of that holiday line.  For example if today is 2022-05-01 we'll
-    # get among other lines:
-    # Fête du Travail (FR)                    + Di, < 1>Mai 2022
-    # Jour de la Victoire (FR)                + Di, : 8:Mai 2022 =   +7 jours
-    LANGUAGE=fr_FR.UTF-8 TZ=Europe/Paris gcal --cc-holidays=fr --holiday-list=short | grep -E '<[0-9 ]{2}>' --quiet
+    evo::calendar::is_holiday
 }
 
 is_weekend() {
-    day_of_week=$(date +%u)
-    if [ "${day_of_week}" != 6 ] && [ "${day_of_week}" != 7 ]; then
-        return 1
-    fi
+    evo::calendar::is_weekend
 }
 
 is_workday() {
-    if is_holiday || is_weekend; then
-        return 1
-    fi
+    evo::calendar::is_workday
 }
 
 is_worktime() {
-    if ! is_workday; then
-        return 1
-    fi
-
-    hour=$(date +%H)
-    if [ "${hour}" -lt 9 ] || { [ "${hour}" -ge 12 ] && [ "${hour}" -lt 14 ] ; } || [ "${hour}" -ge 18 ]; then
-        return 1
-    fi
+    evo::calendar::is_worktime
 }

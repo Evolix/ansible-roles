@@ -21,11 +21,21 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [25.05] 2025-05-28
+
+### Added
+
+* common.sh: Reference Debian 15 "Duke"
+
+### Changed
+
+* common.sh: use evolibs-shell (os-release and calendar) instead of locally implemented functions
+
 ## [24.11] 2024-11-08
 
 ### Changed
 
-* common.sh : fix Evolix email address for sending email with sendmail
+* common.sh: fix Evolix email address for sending email with sendmail
 
 ## [24.09.1] 2024-09-17
 

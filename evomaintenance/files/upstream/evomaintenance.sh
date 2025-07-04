@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION="25.04"
+VERSION="25.06"
 
 show_version() {
     cat <<END
@@ -99,7 +99,7 @@ get_begin_date() {
 	    get_end_date
     # sudo on Debian 12 create a new utmp login record, which result in the old
     # method to break if evomaintenance is called using sudo
-    elif dpkg --compare-versions "$(cat /etc/debian_version)" ge 12.0; then
+    elif test -f /etc/debian_version && dpkg --compare-versions "$(cat /etc/debian_version)" ge 12.0; then
 	    sessionid="$(cat /proc/self/sessionid)"
 	    begin_timestamp="$(loginctl --property=Timestamp show-session "${sessionid}" | cut -d '=' -f 2)"
 	    # Convert the output of loginctl into the expected format

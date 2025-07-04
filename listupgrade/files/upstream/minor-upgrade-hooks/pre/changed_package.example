@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# This is an example hook to show how to execute commands
+# if a (pattern of) packages has been upgraded
+
+# Use grep extended syntax
+package_pattern="^bash"
+
+if [ -n "${UPGRADABLE_PACKAGES_FILE}" ]; then
+    if [ -f "${UPGRADABLE_PACKAGES_FILE}" ]; then
+        upgradable_packages_filtered=$(grep --extended-regexp "${package_pattern}/" "${UPGRADABLE_PACKAGES_FILE}")
+        
+        printf "Match for '%s' in upgradable packages:" ${package_pattern}
+        if [ -n "${upgradable_packages_filtered}" ]; then
+            echo ""
+            echo "${upgradable_packages_filtered}" | cut -d / -f 1 
+        else
+            echo "none"
+        fi
+    else
+        >&2 echo "Error: File not found: ${UPGRADABLE_PACKAGES_FILE}"
+        exit 1
+    fi
+else
+    >&2 echo "Error: missing UPGRADABLE_PACKAGES_FILE environment variable"
+    exit 1
+fi

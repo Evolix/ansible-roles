@@ -2,5 +2,6 @@
 ---
 
 - ansible.builtin.import_tasks: install.yml
+- ansible.builtin.import_tasks: munin.yml
 - ansible.builtin.import_tasks: configure.yml
 - ansible.builtin.import_tasks: configure-tls.yml

@@ -85,3 +85,11 @@
     name: python3-docker
     state: present
   when: ansible_python_version is version('3', '>=')
+
+- name: Copy munin plugin config
+  ansible.builtin.copy:
+    src: munin-plugin.conf
+    dest: /etc/munin/plugin-conf.d/docker
+    owner: root
+    group: root
+    mode: "0644"

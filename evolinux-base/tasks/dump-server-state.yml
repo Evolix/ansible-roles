@@ -1,6 +1,11 @@
+---
+
+- ansible.builtin.include_role:
+    name: evolix/remount-usr
+
 - name: dump-server-state script is present
   ansible.builtin.copy:
-    src: "dump-server-state.sh"
+    src: "dump-server-state/upstream/dump-server-state.sh"
     dest: /usr/local/sbin/dump-server-state
     force: True
     owner: root

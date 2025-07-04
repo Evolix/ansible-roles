@@ -13,7 +13,7 @@
   failed_when:
     - apt_mark.rc != 0
     - apt_mark.stdout | length > 0
-  loop: "{{ apt_hold_packages }}"
+  loop: "{{ apt_hold_packages | difference(apt_unhold_packages) }}"
   tags:
     - apt
 
@@ -31,7 +31,7 @@
     line: "{{ item }}"
     create: True
     state: present
-  loop: "{{ apt_hold_packages }}"
+  loop: "{{ apt_hold_packages | difference(apt_unhold_packages) }}"
   tags:
     - apt
 
@@ -42,7 +42,9 @@
   check_mode: no
   register: apt_mark
   changed_when: "'Canceled hold on' + item in apt_mark.stdout"
-  failed_when: apt_mark.rc != 0 and not apt_mark.stdout = ''
+  failed_when:
+    - apt_mark.rc != 0 
+    - apt_mark.stdout != ''
   loop: "{{ apt_unhold_packages }}"
   tags:
     - apt

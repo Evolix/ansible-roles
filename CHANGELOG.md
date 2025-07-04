@@ -21,6 +21,29 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
+## [25.07] 2025-07-04
+
+### Added
+
+* docker-host: add munin graphs
+
+### Changed
+
+* autosysadmin-agent: upstream release 25.05
+* docker-host: apply default config from HowtoDocker
+* dump-server-state: upstream release 25.06.2
+* evolinux-base: update-evobackup-canary: release 25.07 - OpenBSD doesn't have `--parents` option of mkdir
+* kvm-host: add option to create dedicated /srv partition
+* listupgrade: deploy minor-upgrade.sh script and rearrange files
+* openvpn: do not display management or CA password
+
+### Fixed
+
+* apache/nginx: handle server-status suffix in nagios conf
+* apt: fix hold_packages
+* evolinux-base: remount /usr read-write before updating dump-server-state
+* nagios-nrpe: use servername instead of "SERVEUR"
+
 ## [25.05.1] 2025-05-28
 
 ### Added
