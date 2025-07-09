@@ -17,6 +17,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* dovecot: add dependency to gawk for Munin plugin.
+
 ### Removed
 
 ### Security
