@@ -1,0 +1,33 @@
+---
+
+- name: restart alloy
+  ansible.builtin.systemd:
+    name: alloy
+    state: restarted
+
+- name: reload alloy
+  ansible.builtin.systemd:
+    name: alloy
+    state: reloaded
+
+- name: daemon-reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: restart minifirewall
+  ansible.builtin.command:
+    cmd: /etc/init.d/minifirewall restart
+  register: minifirewall_init_restart
+  failed_when:
+    - "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
+    - "'minifirewall started' not in minifirewall_init_restart.stdout"
+
+- name: restart minifirewall on loki endpoints
+  ansible.builtin.command:
+    cmd: /etc/init.d/minifirewall restart
+  register: minifirewall_init_restart
+  failed_when:
+    - "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
+    - "'minifirewall started' not in minifirewall_init_restart.stdout"
+  delegate_to: "{{ lookup('community.general.dig',  item | urlsplit('hostname')) }}"
+  loop: "{{ alloy_loki_default_endpoints_url }}"

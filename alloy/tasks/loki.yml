@@ -1,0 +1,33 @@
+---
+
+- name: "/etc/alloy/config.d/10-default-loki.alloy file"
+  ansible.builtin.template:
+    src: 10-default-loki.alloy.j2
+    dest: /etc/alloy/config.d/10-default-loki.alloy
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload alloy
+
+- name: "Configure local minifirewall to allow connection to loki endpoints"
+  ansible.builtin.copy:
+    dest: /etc/minifirewall.d/loki
+    content: |
+      /sbin/iptables -A INPUT -p tcp --sport {{ item | urlsplit("port") }} --dport 1024:65535 -s {{ lookup('community.general.dig',  item | urlsplit("hostname"))  }} -m state --state ESTABLISHED -j ACCEPT
+  loop: "{{ alloy_loki_default_endpoints_url }}"
+  notify: restart minifirewall
+
+- name: "Configure server minifirewall to allow connection to loki endpoints"
+  ansible.builtin.lineinfile:
+    path: /etc/minifirewall.d/loki
+    line: "/sbin/iptables -A INPUT -p tcp --sport 1024:65535 --dport {{ item | urlsplit('port') }} -s {{ ansible_default_ipv4.address }} -j ACCEPT # {{ ansible_hostname }}"
+  notify: restart minifirewall on loki endpoints
+  delegate_to: "{{ lookup('community.general.dig',  item | urlsplit('hostname')) }}"
+  loop: "{{ alloy_loki_default_endpoints_url }}"
+
+# - name: "alloy user is a member of the adm group"
+#   user:
+#     name: "alloy"
+#     groups: "adm"
+#     append: yes
+#   notify: restart alloy

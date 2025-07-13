@@ -1,0 +1,9 @@
+---
+
+- include_tasks: install.yml
+
+# - include_tasks: prometheus.yml
+
+- include_tasks: loki.yml
+
+# TODO Configure firewall

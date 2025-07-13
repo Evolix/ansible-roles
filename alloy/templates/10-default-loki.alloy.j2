@@ -1,0 +1,48 @@
+// Loki
+
+//// Log files in /var/log
+
+local.file_match "varlogs" {
+    path_targets = [{
+//        __path__    = "/var/log/{*.log,syslog}",
+        __path__    = "/var/log/auth.log",
+        "service_name" = "varlogs",
+    }]
+}
+
+loki.source.file "varlogs" {
+    targets    = local.file_match.varlogs.targets
+    forward_to = [loki.write.default.receiver]
+}
+
+
+//// Journald
+
+loki.relabel "journald" {
+  forward_to = []
+
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "unit"
+  }
+}
+
+loki.source.journal "journald" {
+  forward_to    = [ loki.write.default.receiver ]
+  relabel_rules = loki.relabel.journald.rules
+  labels        = {component = "journald"}
+  format_as_json = true
+}
+
+//// Send logs to loki
+
+loki.write "default" {
+    external_labels = {
+        hostname = constants.hostname,
+    }
+{% for url in alloy_loki_default_endpoints_url %}
+    endpoint {
+        url = "{{ url }}"
+    }
+{% endfor %}
+}

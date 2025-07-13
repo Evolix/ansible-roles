@@ -1,0 +1,74 @@
+# Grafana repository
+
+# File from command: curl -L https://apt.grafana.com/gpg.key -o grafana-keyring.asc
+- name: "Grafana's APT keyring"
+  ansible.builtin.copy:
+    src: grafana-keyring.asc
+    dest: /etc/apt/trusted.gpg.d/grafana.asc
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: "Grafana's APT source list"
+  ansible.builtin.copy:
+    src: grafana.list
+    dest: /etc/apt/sources.list.d/grafana.list
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: "APT cache refreshed"
+  ansible.builtin.apt:
+    update_cache: yes
+
+# Install Grafana Alloy
+
+- name: "alloy installed"
+  apt:
+    name: alloy
+    state: present
+
+
+# Grafana Alloy config
+
+- name: "/etc/alloy/config.d/ directory"
+  file:
+    path: /etc/alloy/config.d/
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: "/etc/alloy/config.d/10-default.alloy file"
+  template:
+    src: 10-default.alloy 
+    dest: /etc/alloy/config.d/10-default.alloy
+    owner: root
+    group: root
+    mode: "0644"
+
+
+# alloy.service
+
+- name: "/etc/systemd/system/alloy.service.d/ directory"
+  file:
+    path: /etc/systemd/system/alloy.service.d/
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: "alloy.service overrided"
+  ansible.builtin.copy:
+    src: alloy.override.service
+    dest: /etc/systemd/system/alloy.service.d/override.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: daemon-reload
+
+- name: "alloy.service enabled and started"
+  ansible.builtin.systemd:
+    name: alloy.service
+    state: "started"
+    enabled: true

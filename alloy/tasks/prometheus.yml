@@ -1,0 +1,8 @@
+- name: "/etc/alloy/config.d/10-default-prometheus.alloy file"
+  template:
+    src: 10-default-prometheus.alloy
+    dest: /etc/alloy/config.d/10-default-prometheus.alloy
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload alloy
