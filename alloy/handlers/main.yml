@@ -10,6 +10,11 @@
     name: alloy
     state: reloaded
 
+# - name: reload nginx
+#   ansible.builtin.systemd:
+#     name: nginx
+#     state: reloaded
+
 - name: daemon-reload
   ansible.builtin.systemd:
     daemon_reload: true
@@ -27,12 +32,19 @@
     - "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
     - "'minifirewall started' not in minifirewall_init_restart.stdout"
 
-- name: restart minifirewall on loki endpoints
-  ansible.builtin.command:
-    cmd: /etc/init.d/minifirewall restart
-  register: minifirewall_init_restart
-  failed_when:
-    - "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
-    - "'minifirewall started' not in minifirewall_init_restart.stdout"
+# - name: restart minifirewall on loki endpoints
+#   ansible.builtin.command:
+#     cmd: /etc/init.d/minifirewall restart
+#   register: minifirewall_init_restart
+#   failed_when:
+#     - "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
+#     - "'minifirewall started' not in minifirewall_init_restart.stdout"
+#   delegate_to: "{{ lookup('community.general.dig',  item | urlsplit('hostname')) }}"
+#   loop: "{{ alloy_loki_default_endpoints_url }}"
+
+- name: reload nginx on loki endpoints
+  ansible.builtin.systemd:
+    name: nginx
+    state: reloaded
   delegate_to: "{{ lookup('community.general.dig',  item | urlsplit('hostname')) }}"
   loop: "{{ alloy_loki_default_endpoints_url }}"

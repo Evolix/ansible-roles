@@ -72,12 +72,3 @@
     name: alloy.service
     state: "started"
     enabled: true
-
-
-# Check NRPE for alloy
-
-- name: "NRPE check for alloy"
-  ansible.builtin.lineinfile:
-    path: /etc/nagios/nrpe.d/evolix.cfg
-    line: "command[check_alloy]=/usr/local/lib/monitoringctl/alerts_wrapper --name alloy -- /usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /-/healthy -p 12345 -r 'All Alloy components are healthy.'"
-  notify: restart nagios-nrpe-server

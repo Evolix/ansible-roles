@@ -6,4 +6,4 @@
 
 - include_tasks: loki.yml
 
-# TODO Configure firewall
+- include_tasks: nrpe.yml
