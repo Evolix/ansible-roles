@@ -1,9 +1,12 @@
 ---
 
-- include_tasks: install.yml
+- ansible.builtin.import_tasks: install.yml
+  when: ansible_distribution_major_version is version('13', '>=')
 
 # - include_tasks: prometheus.yml
 
-- include_tasks: loki.yml
+- ansible.builtin.import_tasks: loki.yml
+  when: ansible_distribution_major_version is version('13', '>=')
 
-- include_tasks: nrpe.yml
+- ansible.builtin.import_tasks: nrpe.yml
+  when: ansible_distribution_major_version is version('13', '>=')
