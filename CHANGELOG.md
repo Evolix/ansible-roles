@@ -18,6 +18,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * dovecot: add dependency to gawk for Munin plugin.
+* certbot: fix wording in z-commit-etc.sh hook
 
 ### Removed
 
