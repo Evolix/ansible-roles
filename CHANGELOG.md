@@ -17,6 +17,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * evocheck: upstream release 25.07
 * evolinux-base: create the /tmp fstab entry with our usual options
+* ssl: Move to using `import_tasks` instead of `include`
 
 ### Fixed
 

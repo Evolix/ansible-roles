@@ -42,7 +42,7 @@
 - name: Collect facts about system services
   service_facts:
 
-- ansible.builtin.include: haproxy.yml
+- ansible.builtin.import_tasks: haproxy.yml
   when:
     - haproxy_check.rc == 0
     - ansible_facts.services['haproxy.service']['state'] == "running"
