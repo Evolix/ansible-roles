@@ -25,7 +25,7 @@
 
 # Create Certificat Authority (CA)
 
-- include: ca.yml
+- import_tasks: ca.yml
   when: inventory_hostname == pki_ca_host and not ansible_check_mode
 
 # Create new signed certificate
