@@ -31,17 +31,38 @@
 - name: use epoll
   ansible.builtin.lineinfile:
     dest: /etc/nginx/nginx.conf
-    regexp: '^(\s*)use\s+.+;'
-    line: '\1use epoll;'
+    regexp: '^(\s*)use(\s+).+;'
+    line: '\1use\2epoll;'
     insertafter: 'events \{'
     backrefs: yes
   when: not ansible_check_mode
   tags:
     - nginx
 
+- name: search for server_tokens
+  ansible.builtin.command:
+    cmd: "grep server_tokens /etc/nginx/nginx.conf"
+  failed_when: False
+  changed_when: False
+  register: grep_server_tokens_global
+
+# Set server_tokens off if any value is already in the file
+- name: server tokens are off
+  ansible.builtin.lineinfile:
+    dest: /etc/nginx/nginx.conf
+    regexp: '^(\s*)server_tokens(\s+).+;'
+    line: '\1server_tokens\2off;'
+    insertafter: 'http \{'
+    backrefs: yes
+  when:
+    - not ansible_check_mode
+    - grep_server_tokens_global.rc == 0
+  tags:
+    - nginx
+
 - name: Install Nginx http configuration
-  ansible.builtin.copy:
-    src: nginx/evolinux-defaults.conf
+  ansible.builtin.template:
+    src: nginx/conf.d/evolinux-defaults.conf.j2
     dest: /etc/nginx/conf.d/z-evolinux-defaults.conf
     mode: "0640"
     force: true
@@ -125,7 +146,7 @@
 
 - name: nginx vhost is installed
   ansible.builtin.template:
-    src: "{{ nginx_default_template_regular }}"
+    src: "nginx/vhost/{{ nginx_default_template_regular }}"
     dest: /etc/nginx/sites-available/evolinux-default.conf
     mode: "0640"
     force: "{{ nginx_force_default_template | default(False) }}"
