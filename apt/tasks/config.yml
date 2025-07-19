@@ -5,13 +5,13 @@
     dest: /etc/apt/apt.conf.d/z-evolinux.conf
     line: "{{ item.line }}"
     regexp: "{{ item.regexp }}"
-    create: yes
+    create: true
     state: present
-    mode: "0640"
+    mode: "0644"
   loop:
     - { line: "APT::Install-Recommends \"false\";", regexp: 'APT::Install-Recommends' }
     - { line: "APT::Install-Suggests \"false\";",   regexp: 'APT::Install-Suggests' }
-    - { line: "APT::Periodic::Enable \"0\";",   regexp: 'APT::Periodic::Enable' }
+    - { line: "APT::Periodic::Enable \"0\";",       regexp: 'APT::Periodic::Enable' }
   tags:
     - apt
   when: apt_evolinux_config | bool
@@ -20,9 +20,9 @@
   ansible.builtin.lineinfile:
     dest: /etc/apt/apt.conf.d/z-evolinux.conf
     line: "{{ item }}"
-    create: yes
+    create: true
     state: present
-    mode: "0640"
+    mode: "0644"
   loop:
     - "DPkg::Pre-Invoke { \"df /tmp | grep -q /tmp && mount -oremount,exec /tmp || true\"; };"
     - "DPkg::Pre-Invoke { \"df /usr | grep -q /usr && mount -oremount,rw /usr || true\"; };"

@@ -29,7 +29,7 @@
   ansible.builtin.lineinfile:
     dest: /etc/evolinux/apt_hold_packages.cf
     line: "{{ item }}"
-    create: True
+    create: true
     state: present
   loop: "{{ apt_hold_packages | difference(apt_unhold_packages) }}"
   tags:
@@ -53,7 +53,7 @@
   ansible.builtin.lineinfile:
     dest: /etc/evolinux/apt_hold_packages.cf
     line: "{{ item }}"
-    create: True
+    create: true
     state: absent
   loop: "{{ apt_unhold_packages }}"
   tags:
@@ -91,8 +91,8 @@
   ansible.builtin.shell:
     cmd: "dpkg --list 'cron' 2>/dev/null | grep -q -E '^(i|h)i'"
   register: is_cron
-  changed_when: False
-  failed_when: False
+  changed_when: false
+  failed_when: false
   check_mode: no
   tags:
     - apt

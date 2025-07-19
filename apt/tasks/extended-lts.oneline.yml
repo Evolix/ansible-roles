@@ -24,14 +24,14 @@
     src: "{{ ansible_distribution_release }}_extended-lts.list.j2"
     dest: /etc/apt/sources.list.d/extended-lts.list
     force: true
-    mode: "0640"
+    mode: "0644"
   register: apt_extended_lts
   tags:
     - apt
 
 - name: Apt update
   ansible.builtin.apt:
-    update_cache: yes
+    update_cache: true
   tags:
     - apt
   when: apt_extended_lts is changed
