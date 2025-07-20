@@ -21,7 +21,7 @@
     - fstab_content.stdout | regex_search('\s/home\s')
     - evolinux_fstab_home | bool
 
-- name: /tmp partition is customized
+- name: /tmp partition is customized (Before Debian 13)
   ansible.builtin.replace:
     dest: /etc/fstab
     regexp: '([^#]\s+/tmp\s+\S+\s+)([a-z,]+)(\s+)'
@@ -29,6 +29,18 @@
   when:
     - fstab_content.stdout | regex_search('\s/tmp\s')
     - evolinux_fstab_tmp | bool
+    - ansible_distribution_major_version is version('13', '<')
+
+- name: /tmp is created (Debian 13 and later)
+  ansible.posix.mount:
+    src: tmpfs
+    name: /tmp
+    fstype: tmpfs
+    opts: "{{ evolinux_fstab_tmp_options | mandatory }}"
+    state: mounted
+  when:
+    - evolinux_fstab_tmp | bool
+    - ansible_distribution_major_version is version('13', '>=')
 
 - name: /usr partition is customized
   ansible.builtin.replace:
@@ -69,5 +81,7 @@
   when:
     - evolinux_fstab_dev_shm | bool
     - ansible_distribution_major_version is version('10', '>=')
+
+
 
 - ansible.builtin.meta: flush_handlers

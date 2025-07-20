@@ -15,6 +15,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* evolinux-base: create the /tmp fstab entry with our usual options
+
 ### Fixed
 
 * apt: Create configuration files readable by everyone
