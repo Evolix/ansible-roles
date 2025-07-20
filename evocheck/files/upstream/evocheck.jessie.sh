@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian 8 only) server
 # powered by Evolix
 
-VERSION="25.05"
+VERSION="25.07"
 readonly VERSION
 
 # base functions
@@ -655,7 +655,7 @@ check_hardwareraidtool() {
 check_listupgrade() {
     test -f /etc/cron.d/listupgrade \
         || failed "IS_LISTUPGRADE" "missing listupgrade cron"
-    test -x /usr/share/scripts/listupgrade.sh \
+    test -x /usr/local/sbin/listupgrade.sh || test -x /usr/share/scripts/listupgrade.sh \
         || failed "IS_LISTUPGRADE" "missing listupgrade script or not executable"
 }
 check_sql_backup() {
