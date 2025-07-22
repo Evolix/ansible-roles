@@ -9,13 +9,13 @@
     mode: "0644"
   notify: restart alloy
 
-# - name: "Configure local minifirewall to allow connection to loki endpoints"
-#   ansible.builtin.copy:
-#     dest: /etc/minifirewall.d/loki
-#     content: |
-#       /sbin/iptables -A INPUT -p tcp --sport {{ item | urlsplit("port") }} --dport 1024:65535 -s {{ lookup('community.general.dig',  item | urlsplit("hostname"))  }} -m state --state ESTABLISHED -j ACCEPT
-#   loop: "{{ alloy_loki_default_endpoints_url }}"
-#   notify: restart minifirewall
+- name: "Configure minifirewall on loki endpoints to allow connectionns from {{ ansible_hostname }}"
+  ansible.builtin.lineinfile:
+    path: /etc/minifirewall.d/loki
+    line: "/sbin/iptables -A INPUT -p tcp --dport {{ item | urlsplit('port') or '443' }} --sport 1024:65535 -s {{ ansible_default_ipv4.address }} -j ACCEPT # {{ ansible_hostname }}"
+  loop: "{{ alloy_loki_default_endpoints_url }}"
+  delegate_to: "{{ lookup('community.general.dig',  item | urlsplit('hostname')) }}"
+  notify: restart minifirewall on loki endpoints
 
 - name: "Configure loki endpoints to authorize connections from {{ ansible_hostname }}"
   ansible.builtin.lineinfile:
