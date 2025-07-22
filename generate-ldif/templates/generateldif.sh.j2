@@ -809,6 +809,24 @@ ServiceVersion: Undefined
 EOT
 fi
 
+# Alloy
+if is_pkg_installed alloy; then
+    alloy_version=$(get_pkg_version alloy)
+fi
+if [ -n "${alloy_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=alloy,${computer_dn}
+NagiosEnabled: TRUE
+ipServiceProtocol: tcp
+objectClass: EvoService
+ServiceName: alloy
+ipServicePort: 12345
+ServiceVersion: ${alloy_version}
+ServiceType: collector
+EOT
+fi
+
 # test if we have a stdout
 if [ -t 1 ]; then
   echo "Output is in ${ldif_file}"
