@@ -19,6 +19,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: create the /tmp fstab entry with our usual options
 * pki: Move to using `import_tasks` instead of `include`
 * ssl: Move to using `import_tasks` instead of `include`
+* docker-host: fail if rootfs (/) is not world readable when user_namespace is activated
 
 ### Fixed
 
