@@ -2,71 +2,21 @@
 
 <?php
 
-/**
-* @author Devlopnet
-* @author MorbZ
-* @licence CC
-*/
+/** @auteur btatu - Evolix **/
 
 define('SKIP_POOL_WWW', getenv('skip_pool_www') === false ? true : strtolower(getenv('skip_pool_www')) === "true");
 
-$is_apache_enable = exec('systemctl is-enabled apache2.service 2>/dev/null');
-$is_apache_active = exec('systemctl is-active apache2.service 2>/dev/null');
-$is_nginx_enable = exec('systemctl is-enabled nginx.service 2>/dev/null');
-$is_nginx_active = exec('systemctl is-active nginx.service 2>/dev/null');
+exec('/usr/bin/test -f /usr/bin/lxc-ls && lxc-ls -1 --running --filter="php"', $list_lxc);
 
-# Récupérer la liste des sockets
-if($is_apache_enable == "enabled" && $is_apache_active == "active" ) {
-     exec('sed -n \'s/.*unix:\(.*\)|fcgi.*/\1/p\' /etc/apache2/sites-enabled/* |sort|uniq', $list_socks);
-} elseif($is_nginx_enable == "enabled" && $is_nginx_active == "active" ) {
-     exec('sed -n \'s/.*unix:\(.*\);.*/\1/p\' /etc/nginx/sites-enabled/* |sort|uniq', $list_socks);
-} else {
-     print_r("Il n'y a pas de service apache ou nginx fonctionnel\n");
-     exit(1);
-}
-
-# Récupérer la liste des utilisateurs et des versions de PHP utilisées
-$list_utilisateur = array();
-$list_version = array();
-
-foreach ($list_socks as $line) {
-
-    if(preg_split('/\//', $line)[1] == "home") {
-        $utilisateur = preg_split('/\//', $line)[2];
-        array_push($list_utilisateur, $utilisateur);
-        preg_match('/php-fpm(\d+)\.sock/', $line, $php_version);
-
-        if (!in_array($php_version[1], $list_version)) {
-            $list_version[] = $php_version[1];
-        }
+if (!empty($list_lxc)) {
+    foreach ($list_lxc as $php_container) {
+       exec('lxc-attach -n '.$php_container.' -- bash -c "ps -eo %cpu,etime,rss,command | grep php-fpm"', $result);
     }
 }
-
-# Récupérer les métriques des pools PHP
-foreach ($list_version as $php_container) {
-
-    $php_version_select="php".$php_container;
-
-    $is_lxc = exec('command -v lxc-ls && lxc-ls -1 |grep -e "^'.$php_version_select.'$"');
-    $is_sury = exec('grep sury /etc/apt/sources.list.d/sury.list 2>/dev/null |grep -v "#"');
-
-    if (!empty($is_sury)) {
-        $patterns = array('/^.*([0-9])([0-9])$/');
-        $replacements = array('\1.\2');
-        $php_dotted_version = preg_replace($patterns, $replacements, $php_version_select);
-        exec('ps -eo pid,command | grep "php-fpm: master process" | grep '.$php_dotted_version.'| grep -v grep | awk \'{print $1}\'', $php_master_process_pid);
-        exec("ps --ppid ".$php_master_process_pid[0]." -o %cpu,etime,rss,command", $result);
-    }
-    elseif (!empty($is_lxc)) {
-        $php_container = $php_version_select;
-        exec('lxc-attach -n '.$php_container.' -- bash -c "ps -eo %cpu,etime,rss,command | grep php-fpm"', $result);
-    }
-    else {
-        exec("ps -eo %cpu,etime,rss,command | grep php-fpm", $result); 
-    }
+else {
+    exec("ps -eo %cpu,etime,rss,command | grep php-fpm", $result); 
+}
     
-}
-
 $groups = array();
 foreach ($result as $line) {
 
@@ -111,7 +61,16 @@ foreach($groups as $nom_key=>$value){
    array_push($list_utilisateurs_courrant,$nom_key);
 }
 
-$php_inactive_utilisateurs=array_diff($list_utilisateur,$list_utilisateurs_courrant);
+// On conserve le nom des comptes inactifs pour les pools PHP en mode "ondemand"
+exec('/usr/bin/test -f /var/lib/munin/pools_php_actif.cache || /usr/bin/touch /var/lib/munin/pools_php_actif.cache && /bin/cat /var/lib/munin/pools_php_actif.cache', $utilisateur_connu);
+
+$utilisateur_nouveau=array_diff($list_utilisateurs_courrant, $utilisateur_connu);
+
+foreach ($utilisateur_nouveau as $u) {
+  exec('echo '.$u.' >> /var/lib/munin/pools_php_actif.cache');
+}
+
+$php_inactive_utilisateurs=array_diff($utilisateur_connu,$list_utilisateurs_courrant);
 
 foreach ($php_inactive_utilisateurs as $line) {
     $line = trim($line);

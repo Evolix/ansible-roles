@@ -20,6 +20,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * pki: Move to using `import_tasks` instead of `include`
 * ssl: Move to using `import_tasks` instead of `include`
 * docker-host: fail if rootfs (/) is not world readable when user_namespace is activated
+* lxc-php: Read all process php
 
 ### Fixed
 
