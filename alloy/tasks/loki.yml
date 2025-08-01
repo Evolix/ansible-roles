@@ -15,7 +15,7 @@
     line: "/sbin/iptables -A INPUT -p tcp --dport {{ item | urlsplit('port') or '443' }} --sport 1024:65535 -s {{ ansible_default_ipv4.address }} -j ACCEPT # {{ ansible_hostname }}"
   loop: "{{ alloy_loki_default_endpoints_url }}"
   become: yes
-  become_user: "{{ lookup('env', 'USER') }}"
+  remote_user: "{{ lookup('env', 'USER') }}"
   delegate_to: "{{ lookup('community.general.dig',  item | urlsplit('hostname')) }}"
   notify: restart minifirewall on loki endpoints
 
@@ -25,7 +25,7 @@
     line: "allow {{ ansible_default_ipv4.address }}; # {{ ansible_hostname }}"
   notify: reload nginx on loki endpoints
   become: yes
-  become_user: "{{ lookup('env', 'USER') }}"
+  remote_user: "{{ lookup('env', 'USER') }}"
   delegate_to: "{{ lookup('community.general.dig',  item | urlsplit('hostname')) }}"
   loop: "{{ alloy_loki_default_endpoints_url }}"
 
