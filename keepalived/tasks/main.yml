@@ -30,7 +30,7 @@
     - keepalived
     - nrpe
 
-- set_fact:
+- ansible.builtin.set_fact:
     keepalived_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name keepalived -- "
 
 - name: Use check_keepalived for NRPE

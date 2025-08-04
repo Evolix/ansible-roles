@@ -56,14 +56,14 @@
     - redis
     - nrpe
 
-- set_fact:
+- ansible.builtin.set_fact:
     redis_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name redis -- "
 
-- set_fact:
+- ansible.builtin.set_fact:
     redis_check_params: "-H {{ redis_check_interface }} -p {{ redis_port }}"
   when: redis_password is undefined or redis_password is none or redis_password | length == 0
 
-- set_fact:
+- ansible.builtin.set_fact:
     redis_check_params: "-H {{ redis_check_interface }} -p {{ redis_port }} -x '{{ redis_password }}'"
   when: 
     - redis_password is defined

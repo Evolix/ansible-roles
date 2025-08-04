@@ -1,7 +1,7 @@
 ---
 
 - name: "Remount /usr if needed"
-  include_role:
+  ansible.builtin.include_role:
     name: remount-usr
   when:
     - not ansible_check_mode

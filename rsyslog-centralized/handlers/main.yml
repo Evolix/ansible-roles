@@ -1,11 +1,11 @@
 ---
 - name: restart rsyslog
-  service:
+  ansible.builtin.service:
     name: rsyslog
     state: restarted
 
 - name: restart log2mail
-  service:
+  ansible.builtin.service:
     name: log2mail
     state: restarted
 

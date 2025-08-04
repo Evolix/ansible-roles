@@ -50,21 +50,21 @@
     - postfix
 
 - name: display checksums of known main.cf files
-  debug:
+  ansible.builtin.debug:
     var: main_cf_known_checksums
     verbosity: 1
   tags:
     - postfix
 
 - name: display checksum of current main.cf file
-  debug:
+  ansible.builtin.debug:
     var: main_cf_checksum
     verbosity: 1
   tags:
     - postfix
 
 - name: display stat of main.cf file
-  debug:
+  ansible.builtin.debug:
     var: main_cf.stat
     verbosity: 1
   tags:

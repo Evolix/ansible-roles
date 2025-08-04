@@ -1,7 +1,7 @@
 ---
 
 - name: "Ensure {{ apt_keyring_dir }} directory exists"
-  file:
+  ansible.builtin.file:
     path: "{{ apt_keyring_dir }}"
     state: directory
     mode: "755"
@@ -72,7 +72,7 @@
   tags:
     - fluentd
 
-- set_fact:
+- ansible.builtin.set_fact:
     fluentd_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name fluentd -- "
 
 - name: NRPE check is configured

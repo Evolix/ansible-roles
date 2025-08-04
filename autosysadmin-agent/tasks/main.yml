@@ -1,7 +1,7 @@
 ---
 
 - name: The list of all repair scripts is composed.
-  set_fact:
+  ansible.builtin.set_fact:
     autosysadmin_repair_scripts: "{{ lookup('ansible.builtin.fileglob', '../../../autosysadmin/agent/repair/repair_*', wantlist=True) | map('basename') | sort }}"
 
 - name: Install dependencies

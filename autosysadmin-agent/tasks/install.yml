@@ -8,7 +8,7 @@
     name: remount-usr
 
 - name: Previous autosysadmin restart directory is renamed
-  command:
+  ansible.builtin.command:
     cmd: mv "/usr/share/scripts/autosysadmin/auto" "{{ autosysadmin_agent_auto_dir }}"
     removes: "/usr/share/scripts/autosysadmin/auto"
     creates: "{{ autosysadmin_agent_auto_dir }}" 

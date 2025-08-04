@@ -15,6 +15,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* Use FQCN for all ansible modules
+
 ### Fixed
 
 ### Removed

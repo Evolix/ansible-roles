@@ -100,7 +100,7 @@
     check_mode: no
     register: grep_evolinux_group_ssh
 
-  - debug:
+  - ansible.builtin.debug:
       var: grep_evolinux_group_ssh
 
   - name: "Get current user's login"
@@ -110,10 +110,10 @@
     register: _logname
     check_mode: no
 
-  - debug:
+  - ansible.builtin.debug:
       var: evolinux_ssh_group
 
-  - debug:
+  - ansible.builtin.debug:
       var: evolinux_ssh_allow_current_user
 
   - name: "Add current user ({{ _logname.stdout }}) to {{ evolinux_ssh_group }} group"

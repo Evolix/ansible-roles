@@ -1,5 +1,5 @@
 - name: Configure rsyslog TCP TLS forwarding
-  copy:
+  ansible.builtin.copy:
     dest: /etc/rsyslog.d/50-forward-to-server.conf
     content: |
       # Configure TCP TLS output forward module
@@ -18,7 +18,7 @@
   notify: restart rsyslog
 
 - name: Configure minifirewall for TCP TLS forwarding
-  copy:
+  ansible.builtin.copy:
     dest: /etc/minifirewall.d/syslog-centralized
     content: |
       /sbin/iptables -A INPUT -p tcp --sport {{ rsyslog_centralized_server_port }} --dport 1024:65535 -s {{ rsyslog_centralized_client_target }} -m state --state ESTABLISHED -j ACCEPT
