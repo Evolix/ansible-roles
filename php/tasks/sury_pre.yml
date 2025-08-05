@@ -14,7 +14,7 @@
     owner: root
     group: root
   loop:
-    - debsuryorg-archive-keyring_2024.02.05+0~20240205.1+debian12~1.gbp343037_all.deb
+    - debsuryorg-archive-keyring_2025.03.13_all.deb
     - evolix-archive-keyring_0~2024_all.deb
 
 - name: Install keyring packages
@@ -22,9 +22,9 @@
     deb: "/tmp/{{ item }}"
     state: present
   loop:
-    - debsuryorg-archive-keyring_2024.02.05+0~20240205.1+debian12~1.gbp343037_all.deb
+    - debsuryorg-archive-keyring_2025.03.13_all.deb
     - evolix-archive-keyring_0~2024_all.deb
-    # - https://packages.sury.org/php/pool/main/d/debsuryorg-archive-keyring/debsuryorg-archive-keyring_2024.02.05%2B0~20240205.1%2Bdebian12~1.gbp343037_all.deb
+    # - https://packages.sury.org/php/pool/main/d/debsuryorg-archive-keyring/debsuryorg-archive-keyring_2025.03.13_all.deb
     # - https://pub.evolix.org/evolix/pool/main/e/evolix-archive-keyring/evolix-archive-keyring_0~2024_all.deb
 
 - name: Add Evolix failsafe repository for Sury (Debian <12)
