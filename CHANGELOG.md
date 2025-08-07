@@ -21,6 +21,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evocheck: upstream release 25.07
 * evolinux-base: create the /tmp fstab entry with our usual options
 * docker-host: fail if rootfs (/) is not world readable when user_namespace is activated
+* lxc: Buster is now archived
 * lxc-php: Read all process php
 * networkd-to-ifconfig: Move to using `import_tasks` instead of `include`
 * pki: Move to using `import_tasks` instead of `include`
