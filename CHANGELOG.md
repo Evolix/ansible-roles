@@ -14,7 +14,6 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Added
 
 * minifirewall: added Warning in README about host_group that should only be define whithin exclusive host groups
-* packweb-apache: all composerContainer and sudo permissions
 
 ### Changed
 

@@ -15,12 +15,6 @@
     dest: /usr/local/bin/phpContainer
     mode: "0755"
 
-- name: Copy composerContainer script
-  ansible.builtin.copy:
-    src: composerContainer
-    dest: /usr/local/bin/composerContainer
-    mode: "0755"
-
 # - name: Copy php shim to call phpContainer when the user is a web user
 #   copy:
 #     src: multiphp-shim
