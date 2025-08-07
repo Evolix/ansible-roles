@@ -33,6 +33,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * apt: Create configuration files readable by everyone
 * certbot: fix wording in z-commit-etc.sh hook
 * dovecot: add dependency to gawk for Munin plugin.
+* listupgrade: fix global profile permissions
 * lxc: fix container options buildup
 * nginx: server_tokens are inserted or updated depending on the actual state
 
