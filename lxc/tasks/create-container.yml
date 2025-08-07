@@ -7,7 +7,7 @@
   register: container_exists
 
 - ansible.builtin.set_fact:
-    lxc_template_options: >-
+    lxc_template_final_options: >-
       --keyring=/etc/apt/trusted.gpg.d/freexian-archive-extended-lts.gpg
       --mirror=https://elts.evolix.org/extended-lts
       --security-mirror=http://archive.debian.org/debian-security
@@ -17,7 +17,7 @@
     - ansible_distribution_major_version is version('11', '>=')
 
 - ansible.builtin.set_fact:
-    lxc_template_options: >-
+    lxc_template_final_options: >-
       --keyring=/usr/share/keyrings/debian-archive-removed-keys.gpg
       --mirror=http://archive.debian.org/debian
       --security-mirror=http://archive.debian.org/debian-security
@@ -27,7 +27,7 @@
     - ansible_distribution_major_version is version('11', '>=')
 
 - ansible.builtin.set_fact:
-    lxc_template_options: >-
+    lxc_template_final_options: >-
       --mirror=http://archive.debian.org/debian
       --security-mirror=http://archive.debian.org/debian-security
       {{ lxc_template_options }}
@@ -66,7 +66,7 @@
     container_log: true
     template: debian
     state: stopped
-    template_options: "--arch amd64 --release {{ release }} {{ lxc_template_options }}"
+    template_options: "--arch amd64 --release {{ release }} {{ lxc_template_final_options }}"
   when: container_exists.stdout_lines | length == 0
 
 - name: "Disable network configuration inside container {{ name }}"
