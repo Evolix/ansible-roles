@@ -1,3 +1,4 @@
 
 Defaults        env_keep += "LOGNAME PWD"
 ALL ALL = NOPASSWD: /usr/local/bin/phpContainer
+ALL ALL = NOPASSWD: /usr/local/bin/composerContainer
