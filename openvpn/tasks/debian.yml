@@ -237,7 +237,6 @@
 
 - set_fact:
     openvpn_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name openvpn_certificates -- "
-  when: alerts_wrapper.stat.exists
 
 - name: Configure NRPE certificates check
   ansible.builtin.lineinfile:

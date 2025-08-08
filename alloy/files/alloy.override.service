@@ -1,0 +1,6 @@
+[Service]
+ExecStart=
+ExecStart=/usr/bin/alloy run \
+            --disable-reporting \
+            --storage.path=/var/lib/alloy/data /etc/alloy/config.d/ \
+            --server.http.ui-path-prefix=/alloy/

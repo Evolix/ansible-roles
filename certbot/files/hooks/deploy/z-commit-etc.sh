@@ -29,7 +29,7 @@ main() {
           fi
           debug "Committing for ${RENEWED_DOMAINS}"
           ${git_bin} add letsencrypt
-          message="[letsencrypt] certificates renewal (${RENEWED_DOMAINS})"
+          message="[letsencrypt] certificates creation/renewal (${RENEWED_DOMAINS})"
           ${git_bin} commit --message "${message}" --quiet --only letsencrypt
       else
           debug "Weird, nothing has changed in /etc/letsencrypt but the hook has been executed for '${RENEWED_DOMAINS}'"

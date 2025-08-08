@@ -10,6 +10,7 @@ lxc_mount_part: "/home"
 
 # It's "template_options" used directly by community.general.lxc_container
 lxc_template_options: ""
+lxc_template_final_options: ""
 
 # List of LXC containers to create.
 # Eg.:

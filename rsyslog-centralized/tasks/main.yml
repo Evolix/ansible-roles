@@ -45,10 +45,10 @@
       )
   notify: restart rsyslog
 
-- include: "server.yml"
+- ansible.builtin.import_tasks: "server.yml"
   when: rsyslog_centralized_client_target == ansible_fqdn or rsyslog_centralized_client_target == ansible_default_ipv4.address
 
-- include: "client.yml"
+- ansible.builtin.import_tasks: "client.yml"
 
 - name: Restart rsyslog if PKI has changed
   service:

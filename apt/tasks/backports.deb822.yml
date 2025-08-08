@@ -5,14 +5,14 @@
     src: '{{ ansible_distribution_release }}_backports.sources.j2'
     dest: /etc/apt/sources.list.d/backports.sources
     force: true
-    mode: "0640"
+    mode: "0644"
   register: apt_backports_sources
   tags:
     - apt
 
 - name: Apt update
   ansible.builtin.apt:
-    update_cache: yes
+    update_cache: true
   when: apt_backports_sources is changed
   tags:
     - apt

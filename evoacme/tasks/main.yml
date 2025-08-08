@@ -13,7 +13,7 @@
 - ansible.builtin.import_tasks: permissions.yml
 
 # Enable this task if you want to deploy hooks
-# - include: evoacme_hook.yml
+# - ansible.builtin.include_tasks: evoacme_hook.yml
 #   vars:
 #     hook_name: "{{ item }}"
 #   loop: []

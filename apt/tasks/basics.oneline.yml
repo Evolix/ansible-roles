@@ -12,7 +12,7 @@
 
 - name: Apt update
   ansible.builtin.apt:
-    update_cache: yes
+    update_cache: true
   tags:
     - apt
   when: apt_basic_list is changed

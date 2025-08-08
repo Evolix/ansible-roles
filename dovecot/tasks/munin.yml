@@ -1,5 +1,13 @@
 ---
 
+- name: Install gawk dependency
+  ansible.builtin.apt:
+    name: gawk
+    state: present
+
+- ansible.builtin.include_role:
+    name: evolix/remount-usr
+
 - name: is Munin present ?
   ansible.builtin.stat:
     path: /etc/munin/plugin-conf.d/munin-node

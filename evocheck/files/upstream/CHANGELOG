@@ -9,9 +9,36 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Fixed
 
+### Added
+
 ### Deprecated
 
 ### Removed
+
+## [25.08] 2025-08-08
+
+* Add IS_INTERFACESNETMASK check
+* Add IS_WKHTMLTOPDF and IS_LXC_WKHTMLTOPDF (#180)
+* Add IS_MINIFW_RELATED (#167)
+
+### Changed
+
+* Enable IS_MINIFWINCLUDES
+
+### Fixed
+
+* IS_LOG2MAILSYSTEMDUNIT: Drop useless /etc/init.d/log2mail check (#178)
+* Uniform use of containers_list instead of container_list
+
+## [25.05] 2025-07-20
+
+### Changed
+
+* listupgrade.sh can be in /usr/local/sbin as well as /usr/share/scripts
+
+### Fixed
+
+* [Stretch] IS_MONITORINGCTL: absolute path for monitoringctl (/usr/local/bin not in PATH inside cron)
 
 ## [25.05] 2025-05-27
 

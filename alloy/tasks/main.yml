@@ -1,0 +1,12 @@
+---
+
+- ansible.builtin.import_tasks: install.yml
+  when: (alloy_force_install | bool) or ansible_distribution_major_version is version('13', '>=')
+
+# - include_tasks: prometheus.yml
+
+- ansible.builtin.import_tasks: loki.yml
+  when: (alloy_force_install | bool) or ansible_distribution_major_version is version('13', '>=')
+
+- ansible.builtin.import_tasks: nrpe.yml
+  when: (alloy_force_install | bool) or ansible_distribution_major_version is version('13', '>=')

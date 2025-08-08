@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="25.05"
+VERSION="25.08"
 readonly VERSION
 
 # base functions
@@ -499,6 +499,7 @@ check_network_interfaces() {
     if ! test -f /etc/network/interfaces; then
         IS_AUTOIF=0
         IS_INTERFACESGW=0
+        IS_INTERFACESNETMASK=0
         failed "IS_NETWORK_INTERFACES" "systemd network configuration is not supported yet"
     fi
 }
@@ -518,6 +519,14 @@ check_interfacesgw() {
     test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv4 gateway"
     number=$(grep --extended-regexp --count "^[^#]*gateway [0-9a-fA-F]+:" /etc/network/interfaces)
     test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv6 gateway"
+}
+check_interfacesnetmask() {
+    addresses_number=$(grep "address" /etc/network/interfaces | grep -cv -e "hwaddress" -e "#")
+    symbol_netmask_number=$(grep address /etc/network/interfaces | grep -v "#" | grep -c "/")
+    text_netmask_number=$(grep "netmask" /etc/network/interfaces | grep -cv -e "#" -e "route add" -e "route del")
+    if [ "$((symbol_netmask_number + text_netmask_number))" -ne "$addresses_number" ]; then
+        failed "IS_INTERFACESNETMASK" "the number of addresses configured is not equal to the number of netmask configured : one netmask is missing or duplicated"
+    fi
 }
 # Verification de l’état du service networking
 check_networking_service() {
@@ -1394,7 +1403,7 @@ check_lxc_openssh() {
 }
 
 check_monitoringctl() {
-    if ! monitoringctl list >/dev/null 2>&1; then
+    if ! /usr/local/bin/monitoringctl list >/dev/null 2>&1; then
         failed "IS_MONITORINGCTL" "monitoringctl is not installed or has a problem (use 'monitoringctl list' to reproduce)."
     fi
 }
@@ -1593,6 +1602,7 @@ main() {
     test "${IS_NETWORK_INTERFACES:=1}" = 1 && check_network_interfaces
     test "${IS_AUTOIF:=1}" = 1 && check_autoif
     test "${IS_INTERFACESGW:=1}" = 1 && check_interfacesgw
+    test "${IS_INTERFACESNETMASK:=1}" = 1 && check_interfacesnetmask
     test "${IS_NETWORKING_SERVICE:=1}" = 1 && check_networking_service
     test "${IS_EVOBACKUP:=1}" = 1 && check_evobackup
     test "${IS_FAIL2BAN_PURGE:=1}" = 1 && check_fail2ban_purge

@@ -1,6 +1,9 @@
 # Evolix default customizations
 
+{# Add server_tokens here if not already present in main config file #}
+{% if grep_server_tokens_global.rc != 0 %}
 server_tokens off;
+{% endif %}
 server_names_hash_max_size 512;
 server_names_hash_bucket_size 128;
 server_name_in_redirect off;

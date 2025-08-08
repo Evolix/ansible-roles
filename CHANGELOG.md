@@ -21,11 +21,44 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
+## [25.08] 2025-08-08
+
+### Added
+
+* minifirewall: added Warning in README about host_group that should only be define whithin exclusive host groups
+
+### Changed
+
+* apt: move security sources list to archive for buster
+* docker-host: fail if rootfs (/) is not world readable when user_namespace is activated
+* evocheck: upstream release 25.07
+* evocheck: upstream release 25.08
+* evolinux-base: create the /tmp fstab entry with our usual options
+* lxc-php: Read all process php
+* lxc: Buster is now archived
+* networkd-to-ifconfig: Move to using `import_tasks` instead of `include`
+* php, lxc-php: Update debsuryorg-archive-keyring to 2025.03.13
+* pki: Move to using `import_tasks` instead of `include`
+* rsyslog-centralized: Move to using `import_tasks` instead of `include`
+* ssl: Move to using `import_tasks` instead of `include`
+
+### Fixed
+
+* apt: Create configuration files readable by everyone
+* certbot: fix wording in z-commit-etc.sh hook
+* dovecot: add dependency to gawk for Munin plugin.
+
+* evolinux-users: default for `evolinux_ssh_allow_current_user` (`False`)
+* listupgrade: fix global profile permissions
+* lxc: fix container options buildup
+* nginx: server_tokens are inserted or updated depending on the actual state
+
 ## [25.07] 2025-07-04
 
 ### Added
 
 * docker-host: add munin graphs
+* alloy: new role
 
 ### Changed
 

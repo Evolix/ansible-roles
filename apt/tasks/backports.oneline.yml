@@ -12,7 +12,7 @@
     src: '{{ ansible_distribution_release }}_backports.list.j2'
     dest: /etc/apt/sources.list.d/backports.list
     force: true
-    mode: "0640"
+    mode: "0644"
   register: apt_backports_list
   tags:
     - apt
@@ -21,15 +21,16 @@
   ansible.builtin.lineinfile:
     dest: '/etc/apt/apt.conf.d/99no-check-valid-until'
     line: 'Acquire::Check-Valid-Until no;'
-    create: yes
+    create: true
     state: present
+    mode: "0644"
   tags:
     - apt
   when: ansible_distribution_release == "jessie"
 
 - name: Apt update
   ansible.builtin.apt:
-    update_cache: yes
+    update_cache: true
   tags:
     - apt
   when: apt_backports_list is changed

@@ -1,5 +1,15 @@
 ---
 
+- name: Get stats of /
+  ansible.builtin.stat:
+    path: /
+  register: root_stat
+
+- name: Fail if / is not readabe by other
+  ansible.builtin.fail:
+    msg: / (rootfs) should be world readable for docker with user_namespace activated
+  when: docker_conf_user_namespace and not root_stat.stat.roth
+
 - name: Fail if docker_conf_use_iptables is defined
   ansible.builtin.fail:
     msg: "Variable docker_conf_use_iptables is deprecated and not configurable anymore. Please remove it from your variables. Also double-check the daemon.json config for docker"

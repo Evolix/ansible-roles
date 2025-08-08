@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="25.05"
+VERSION="25.08"
 readonly VERSION
 
 # base functions
@@ -168,8 +168,8 @@ check_debiansecurity() {
 check_debiansecurity_lxc() {
     if is_installed lxc; then
         lxc_path=$(lxc-config lxc.lxcpath)
-        container_list=$(lxc-ls -1 --active)
-        for container_name in ${container_list}; do
+        containers_list=$(lxc-ls -1 --active)
+        for container_name in ${containers_list}; do
             if lxc-info --name "${container_name}" > /dev/null; then
                 rootfs="${lxc_path}/${container_name}/rootfs"
                 if [ -f "${rootfs}/etc/debian_version" ]; then
@@ -201,8 +201,8 @@ check_oldpub() {
 check_oldpub_lxc() {
     # Look for enabled pub.evolix.net sources (supersed by pub.evolix.org since Buster as Sury safeguard)
     if is_installed lxc; then
-        container_list=$( lxc-ls -1 --active )
-        for container_name in ${container_list}; do
+        containers_list=$( lxc-ls -1 --active )
+        for container_name in ${containers_list}; do
             APT_CACHE_BIN=$(lxc-attach --name "${container_name}" -- bash -c "command -v apt-cache")
             if [ -x "${APT_CACHE_BIN}" ]; then
                 lxc-attach --name "${container_name}" apt-cache policy | grep --quiet pub.evolix.net
@@ -226,8 +226,8 @@ check_sury() {
 }
 check_sury_lxc() {
     if is_installed lxc; then
-        container_list=$( lxc-ls -1 --active )
-        for container_name in ${container_list}; do
+        containers_list=$( lxc-ls -1 --active )
+        for container_name in ${containers_list}; do
             APT_CACHE_BIN=$(lxc-attach --name "${container_name}" -- bash -c "command -v apt-cache")
             if [ -x "${APT_CACHE_BIN}" ]; then
                 lxc-attach --name "${container_name}" apt-cache policy | grep --quiet packages.sury.org
@@ -390,6 +390,11 @@ check_minifw_includes() {
         if grep --quiet --regexp '/sbin/iptables' --regexp '/sbin/ip6tables' "/etc/default/minifirewall"; then
             failed "IS_MINIFWINCLUDES" "minifirewall has direct iptables invocations in /etc/default/minifirewall that should go in /etc/minifirewall.d/"
         fi
+    fi
+}
+check_minifw_related() {
+    if grep --quiet 'RELATED' "/etc/default/minifirewall" "/etc/minifirewall.d/*"; then
+        failed "IS_MINIFW_RELATED" "RELATED should not be used in minifirewall configuration"
     fi
 }
 check_nrpeperms() {
@@ -567,6 +572,7 @@ check_network_interfaces() {
     if ! test -f /etc/network/interfaces; then
         IS_AUTOIF=0
         IS_INTERFACESGW=0
+        IS_INTERFACESNETMASK=0
         failed "IS_NETWORK_INTERFACES" "systemd network configuration is not supported yet"
     fi
 }
@@ -586,6 +592,14 @@ check_interfacesgw() {
     test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv4 gateway"
     number=$(grep --extended-regexp --count "^[^#]*gateway [0-9a-fA-F]+:" /etc/network/interfaces)
     test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv6 gateway"
+}
+check_interfacesnetmask() {
+    addresses_number=$(grep "address" /etc/network/interfaces | grep -cv -e "hwaddress" -e "#")
+    symbol_netmask_number=$(grep address /etc/network/interfaces | grep -v "#" | grep -c "/")
+    text_netmask_number=$(grep "netmask" /etc/network/interfaces | grep -cv -e "#" -e "route add" -e "route del")
+    if [ "$((symbol_netmask_number + text_netmask_number))" -ne "$addresses_number" ]; then
+        failed "IS_INTERFACESNETMASK" "the number of addresses configured is not equal to the number of netmask configured : one netmask is missing or duplicated"
+    fi
 }
 # Verification de l’état du service networking
 check_networking_service() {
@@ -776,8 +790,8 @@ check_etcgit() {
 check_etcgit_lxc() {
     if is_installed lxc; then
         lxc_path=$(lxc-config lxc.lxcpath)
-        container_list=$(lxc-ls -1 --active)
-        for container_name in ${container_list}; do
+        containers_list=$(lxc-ls -1 --active)
+        for container_name in ${containers_list}; do
             if lxc-info --name "${container_name}" > /dev/null; then
                 rootfs="${lxc_path}/${container_name}/rootfs"
                 export GIT_DIR="${rootfs}/etc/.git"
@@ -800,8 +814,8 @@ check_gitperms() {
 check_gitperms_lxc() {
     if is_installed lxc; then
         lxc_path=$(lxc-config lxc.lxcpath)
-        container_list=$(lxc-ls -1 --active)
-        for container_name in ${container_list}; do
+        containers_list=$(lxc-ls -1 --active)
+        for container_name in ${containers_list}; do
             if lxc-info --name "${container_name}" > /dev/null; then
                 rootfs="${lxc_path}/${container_name}/rootfs"
                 GIT_DIR="${rootfs}/etc/.git"
@@ -961,13 +975,11 @@ check_log2mailsystemdunit() {
         || failed "IS_LOG2MAILSYSTEMDUNIT" "log2mail unit not running"
     test -f /etc/systemd/system/log2mail.service \
         || failed "IS_LOG2MAILSYSTEMDUNIT" "missing log2mail unit file"
-    test -f /etc/init.d/log2mail \
-        && failed "IS_LOG2MAILSYSTEMDUNIT" "/etc/init.d/log2mail may be deleted (use systemd unit)"
 }
 check_listupgrade() {
     test -f /etc/cron.d/listupgrade \
         || failed "IS_LISTUPGRADE" "missing listupgrade cron"
-    test -x /usr/share/scripts/listupgrade.sh \
+    test -x /usr/local/sbin/listupgrade.sh || test -x /usr/share/scripts/listupgrade.sh \
         || failed "IS_LISTUPGRADE" "missing listupgrade script or not executable"
 }
 check_mariadbevolinuxconf() {
@@ -1261,9 +1273,8 @@ check_tmp_1777() {
 
     if is_installed lxc; then
         lxc_path=$(lxc-config lxc.lxcpath)
-        container_list=$(lxc-ls -1 --active)
-
-        for container_name in ${container_list}; do
+        containers_list=$(lxc-ls -1 --active)
+        for container_name in ${containers_list}; do
             if lxc-info --name "${container_name}" > /dev/null; then
                 rootfs="${lxc_path}/${container_name}/rootfs"
                 if [ -d "${rootfs}/tmp" ]; then
@@ -1405,13 +1416,27 @@ check_nginx_letsencrypt_uptodate() {
         fi
     fi
 }
+check_wkhtmltopdf() {
+    is_installed wkhtmltopdf && failed "IS_WKHTMLTOPDF" "wkhtmltopdf package should not be installed (cf. https://wiki.evolix.org/HowtoWkhtmltopdf)"
+}
+check_lxc_wkhtmltopdf() {
+    if is_installed lxc; then
+        lxc_path=$(lxc-config lxc.lxcpath)
+        containers_list=$(lxc-ls -1 --active)
+        for container_name in ${containers_list}; do
+            if lxc-info --name "${container_name}" > /dev/null; then
+                rootfs="${lxc_path}/${container_name}/rootfs"
+                test -e "${rootfs}/usr/bin/wkhtmltopdf" && failed "IS_LXC_WKHTMLTOPDF" "wkhtmltopdf should not be installed in container ${container_name}"
+            fi
+        done
+    fi
+}
 check_lxc_container_resolv_conf() {
     if is_installed lxc; then
         current_resolvers=$(grep ^nameserver /etc/resolv.conf | sed 's/nameserver//g' )
         lxc_path=$(lxc-config lxc.lxcpath)
-        container_list=$(lxc-ls -1 --active)
-
-        for container_name in ${container_list}; do
+        containers_list=$(lxc-ls -1 --active)
+        for container_name in ${containers_list}; do
             if lxc-info --name "${container_name}" > /dev/null; then
                 rootfs="${lxc_path}/${container_name}/rootfs"
                 if [ -f "${rootfs}/etc/resolv.conf" ]; then
@@ -1489,7 +1514,7 @@ check_lxc_php_bad_debian_version() {
 check_lxc_openssh() {
     if is_installed lxc; then
         lxc_path=$(lxc-config lxc.lxcpath)
-        container_list=$(lxc-ls -1 --active)
+        containers_list=$(lxc-ls -1 --active)
         for container_name in ${containers_list}; do
             if lxc-info --name "${container_name}" > /dev/null; then
                 rootfs="${lxc_path}/${container_name}/rootfs"
@@ -1501,7 +1526,7 @@ check_lxc_openssh() {
 check_lxc_opensmtpd() {
     if is_installed lxc; then
         lxc_path=$(lxc-config lxc.lxcpath)
-        container_list=$(lxc-ls -1 --active --filter php)
+        containers_list=$(lxc-ls -1 --active --filter php)
         for container_name in ${containers_list}; do
             if lxc-info --name "${container_name}" > /dev/null; then
                 rootfs="${lxc_path}/${container_name}/rootfs"
@@ -1716,8 +1741,8 @@ main() {
     test "${IS_ALERT5MINIFW:=1}" = 1 && test "${IS_MINIFW:=1}" = 1 && check_minifw
     test "${IS_NRPEPERMS:=1}" = 1 && check_nrpeperms
     test "${IS_MINIFWPERMS:=1}" = 1 && check_minifwperms
-    # Enable when minifirewall is released
-    test "${IS_MINIFWINCLUDES:=0}" = 1 && check_minifw_includes
+    test "${IS_MINIFW_RELATED:=1}" = 1 && check_minifw_related
+    test "${IS_MINIFWINCLUDES:=1}" = 1 && check_minifw_includes
     test "${IS_NRPEDISKS:=0}" = 1 && check_nrpedisks
     test "${IS_NRPEPID:=1}" = 1 && check_nrpepid
     test "${IS_GRSECPROCS:=1}" = 1 && check_grsecprocs
@@ -1737,6 +1762,7 @@ main() {
     test "${IS_NETWORK_INTERFACES:=1}" = 1 && check_network_interfaces
     test "${IS_AUTOIF:=1}" = 1 && check_autoif
     test "${IS_INTERFACESGW:=1}" = 1 && check_interfacesgw
+    test "${IS_INTERFACESNETMASK:=1}" = 1 && check_interfacesnetmask
     test "${IS_NETWORKING_SERVICE:=1}" = 1 && check_networking_service
     test "${IS_EVOBACKUP:=1}" = 1 && check_evobackup
     test "${IS_FAIL2BAN_PURGE:=1}" = 1 && check_fail2ban_purge
@@ -1794,6 +1820,8 @@ main() {
     test "${IS_APT_VALID_UNTIL:=1}" = 1 && check_apt_valid_until
     test "${IS_CHROOTED_BINARY_UPTODATE:=1}" = 1 && check_chrooted_binary_uptodate
     test "${IS_NGINX_LETSENCRYPT_UPTODATE:=1}" = 1 && check_nginx_letsencrypt_uptodate
+    test "${IS_WKHTMLTOPDF:=1}" = 1 && check_wkhtmltopdf
+    test "${IS_LXC_WKHTMLTOPDF:=1}" = 1 && check_lxc_wkhtmltopdf
     test "${IS_LXC_CONTAINER_RESOLV_CONF:=1}" = 1 && check_lxc_container_resolv_conf
     test "${IS_NO_LXC_CONTAINER:=1}" = 1 && check_no_lxc_container
     test "${IS_LXC_PHP_FPM_SERVICE_UMASK_SET:=1}" = 1 && check_lxc_php_fpm_service_umask_set

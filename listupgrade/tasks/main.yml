@@ -89,3 +89,6 @@
     line: 'alias maj="TMOUT=0; sudo -k /usr/local/sbin/minor-upgrade"'
     regexp: "^alias maj="
     create: True
+    mode: "0644"
+    owner: root
+    group: root
