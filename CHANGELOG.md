@@ -15,9 +15,6 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
-* apt: move security sources list to archive for buster
-* evocheck: upstream release 25.08
-
 ### Fixed
 
 ### Removed
@@ -32,8 +29,10 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* apt: move security sources list to archive for buster
 * docker-host: fail if rootfs (/) is not world readable when user_namespace is activated
 * evocheck: upstream release 25.07
+* evocheck: upstream release 25.08
 * evolinux-base: create the /tmp fstab entry with our usual options
 * lxc-php: Read all process php
 * lxc: Buster is now archived
