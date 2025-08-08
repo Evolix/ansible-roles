@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian 8 only) server
 # powered by Evolix
 
-VERSION="25.07"
+VERSION="25.08"
 readonly VERSION
 
 # base functions
@@ -381,6 +381,7 @@ check_network_interfaces() {
     if ! test -f /etc/network/interfaces; then
         IS_AUTOIF=0
         IS_INTERFACESGW=0
+        IS_INTERFACESNETMASK=0
         failed "IS_NETWORK_INTERFACES" "systemd network configuration is not supported yet"
     fi
 }
@@ -400,6 +401,14 @@ check_interfacesgw() {
     test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv4 gateway"
     number=$(grep -Ec "^[^#]*gateway [0-9a-fA-F]+:" /etc/network/interfaces)
     test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv6 gateway"
+}
+check_interfacesnetmask() {
+    addresses_number=$(grep "address" /etc/network/interfaces | grep -cv -e "hwaddress" -e "#")
+    symbol_netmask_number=$(grep address /etc/network/interfaces | grep -v "#" | grep -c "/")
+    text_netmask_number=$(grep "netmask" /etc/network/interfaces | grep -cv -e "#" -e "route add" -e "route del")
+    if [ "$((symbol_netmask_number + text_netmask_number))" -ne "$addresses_number" ]; then
+        failed "IS_INTERFACESNETMASK" "the number of addresses configured is not equal to the number of netmask configured : one netmask is missing or duplicated"
+    fi
 }
 # Verification de la mise en place d'evobackup
 check_evobackup() {
@@ -1180,6 +1189,7 @@ main() {
     test "${IS_NETWORK_INTERFACES:=1}" = 1 && check_network_interfaces
     test "${IS_AUTOIF:=1}" = 1 && check_autoif
     test "${IS_INTERFACESGW:=1}" = 1 && check_interfacesgw
+    test "${IS_INTERFACESNETMASK:=1}" = 1 && check_interfacesnetmask
     test "${IS_EVOBACKUP:=1}" = 1 && check_evobackup
     test "${IS_EVOBACKUP_EXCLUDE_MOUNT:=1}" = 1 && check_evobackup_exclude_mount
     test "${IS_USERLOGROTATE:=1}" = 1 && check_userlogrotate

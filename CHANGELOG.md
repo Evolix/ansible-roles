@@ -16,6 +16,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * apt: move security sources list to archive for buster
+* evocheck: upstream release 25.08
 
 ### Fixed
 
