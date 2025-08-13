@@ -17,6 +17,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * evocheck: upstream release 25.08.1
 * minifirewall: upstream release 25.07
+* nextcloud: Replace `with_indexed_items` with `loop` and `loop_control.index_var`
 * Replace `with_items:` with `loop:`
 * Use FQCN for all ansible modules
 * lxc: Fix the creation of several container in a single playbook

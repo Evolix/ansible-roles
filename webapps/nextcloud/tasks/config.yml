@@ -68,11 +68,12 @@
 
 - name: Configure trusted domains
   ansible.builtin.command:
-    cmd: "php ./occ config:system:set trusted_domains {{ item.0 }} --value {{ item.1 }}"
+    cmd: "php ./occ config:system:set trusted_domains {{ index }} --value {{ item }}"
   args:
     chdir: "{{ nextcloud_webroot }}"
-  with_indexed_items:
-    - "{{ nextcloud_domains }}"
+  loop: "{{ nextcloud_domains }}"
+  loop_control:
+    index_var: index
   become_user: "{{ nextcloud_user }}"
   tags:
     - nextcloud
