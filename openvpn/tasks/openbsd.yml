@@ -49,7 +49,7 @@
     mode: "{{ item.mode }}"
     owner: "{{ item.owner }}"
     group: "{{ item.group }}"
-  with_items:
+  loop:
      - { source: "openssl.cnf", destination: "/etc/shellpki/openssl.cnf", mode: "0640", owner: "_shellpki", group: "_shellpki" }
      - { source: "shellpki", destination: "/usr/local/sbin/shellpki", mode: "0750", owner: "root", group: "wheel" }
 
@@ -87,7 +87,7 @@
     line: "{{ item }}"
     validate: 'pfctl -nf %s'
   notify: reload packetfilter
-  with_items:
+  loop:
      - "# OpenVPN"
      - "pass in quick on $ext_if proto udp from any to self port 1194"
 

@@ -53,7 +53,7 @@
     dest: /etc/security/pwquality.conf
     regexp: "^#? ?{{ item.name }} = .*"
     replace: "{{ item.name }} = {{ item.value }}"
-  with_items:
+  loop:
     - { name: minlen, value: "{{ policy_pam_pwquality_minlen }}" }
     - { name: dcredit, value: "{{ policy_pam_pwquality_dcredit }}" }
     - { name: ucredit, value: "{{ policy_pam_pwquality_ucredit }}" }
