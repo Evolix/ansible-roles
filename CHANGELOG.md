@@ -16,6 +16,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * Use FQCN for all ansible modules
+* minifirewall: upstream release 25.07
 
 ### Fixed
 
@@ -33,7 +34,6 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * apt: move security sources list to archive for buster
 * docker-host: fail if rootfs (/) is not world readable when user_namespace is activated
-* evocheck: upstream release 25.07
 * evocheck: upstream release 25.08
 * evolinux-base: create the /tmp fstab entry with our usual options
 * lxc-php: Read all process php

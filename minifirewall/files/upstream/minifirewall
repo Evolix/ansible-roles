@@ -5,7 +5,7 @@
 # It uses netfilter/iptables http://netfilter.org/ designed for recent Linux kernel
 # See https://gitea.evolix.org/evolix/minifirewall
 
-# Copyright (c) 2007-2023 Evolix
+# Copyright (c) 2007-2025 Evolix
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 3
@@ -29,7 +29,7 @@
 # Description:       Firewall designed for standalone server
 ### END INIT INFO
 
-VERSION="24.07"
+VERSION="25.07"
 
 PROGNAME="minifirewall"
 # shellcheck disable=SC2034
@@ -128,15 +128,24 @@ WHITE=''
 BOLD=''
 RESET=''
 
+is_color_enabled() {
+    # Support NO_COLOR / https://no-color.org/
+    if [ -n "${NO_COLOR:-}" ] && [ "${NO_COLOR:-}" != "0" ]; then
+        return 1
+    else
+        # see if it supports colors...
+        ncolors=$(tput colors)
+
+        # shellcheck disable=SC2086
+        test -n "${ncolors}" && test ${ncolors} -ge 8
+    fi
+}
+
 # check if stdout is a terminal...
 if [ -t 1 ]; then
     INTERACTIVE=1
 
-    # see if it supports colors...
-    ncolors=$(tput colors)
-
-    # shellcheck disable=SC2086
-    if [ -n "${ncolors}" ] && [ ${ncolors} -ge 8 ]; then
+    if is_color_enabled; then
         RED=$(tput setaf 1)
         GREEN=$(tput setaf 2)
         YELLOW=$(tput setaf 3)
@@ -187,7 +196,10 @@ is_ipv6_enabled() {
     test "${IPV6}" != "off"
 }
 is_docker_enabled() {
-    test "${DOCKER}" = "on"
+    test "${DOCKER}" = "on" || test "${DOCKER}" = "manual"
+}
+is_docker_manual() {
+    test "${DOCKER}" = "manual"
 }
 is_proxy_enabled() {
     test "${PROXY}" = "on"
@@ -211,16 +223,21 @@ chain_exists() {
 source_file_or_error() {
     file=$1
     syslog_info "sourcing \`${file}'"
-    printf "${BLUE}sourcing \`%s'${RESET}\n" "${file}"
+    printf "${BLUE}sourcing \`%s': ${RESET}" "${file}"
 
     tmpfile=$(mktemp --tmpdir=/tmp minifirewall.XXX)
     . "${file}" 2>"${tmpfile}" >&2
 
     if [ -s "${tmpfile}" ]; then
-            syslog_error "Error while sourcing ${file}"
-            printf "${RED}%s returns standard or error output (see below). Stopping.${RESET}\n" ${file} >&2
-            cat "${tmpfile}"
-            exit 1
+        syslog_error "Error while sourcing ${file}"
+    
+        printf "${RED}Error${RESET}\n"
+        
+        printf "${RED}%s returns standard or error output (see below). Stopping.${RESET}\n" "${file}" >&2
+        cat "${tmpfile}" >&2
+        exit 1
+    else
+        printf "${GREEN}Ok${RESET}\n"
     fi
     rm -f "${tmpfile}"
 }
@@ -462,11 +479,15 @@ start() {
     # Set 1 to log packets with inconsistent address (default)
     : "${SYSCTL_LOG_MARTIANS:=1}"
 
+    syslog_info "configuring sysctl"
+    printf "${BLUE}configuring sysctl: ${RESET}"
+
     if [ "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" = "1" ] || [ "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" = "0" ]; then
         echo "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
         # Apparently not applicable to IPv6
     else
-        printf "${RED}ERROR: invalid %s value '%s', must be '0' or '1'.\n" "SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS" "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" >&2
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS" "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" >&2
         exit 1
     fi
 
@@ -474,7 +495,8 @@ start() {
         echo "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
         # Apparently not applicable to IPv6
     else
-        printf "${RED}ERROR: invalid %s value '%s', must be '0' or '1'.\n" "SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES" "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" >&2
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES" "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" >&2
         exit 1
     fi
 
@@ -488,7 +510,8 @@ start() {
             done
         fi
     else
-        printf "${RED}ERROR: invalid %s value '%s', must be '0' or '1'.\n" "SYSCTL_ACCEPT_SOURCE_ROUTE" "${SYSCTL_ACCEPT_SOURCE_ROUTE}" >&2
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_ACCEPT_SOURCE_ROUTE" "${SYSCTL_ACCEPT_SOURCE_ROUTE}" >&2
         exit 1
     fi
 
@@ -496,7 +519,8 @@ start() {
         echo "${SYSCTL_TCP_SYNCOOKIES}" > /proc/sys/net/ipv4/tcp_syncookies
         # Apparently not applicable to IPv6
     else
-        printf "${RED}ERROR: invalid %s value '%s', must be '0' or '1'.\n" "SYSCTL_TCP_SYNCOOKIES" "${SYSCTL_TCP_SYNCOOKIES}" >&2
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_TCP_SYNCOOKIES" "${SYSCTL_TCP_SYNCOOKIES}" >&2
         exit 1
     fi
 
@@ -513,7 +537,8 @@ start() {
             done
         fi
     else
-        printf "${RED}ERROR: invalid %s value '%s', must be '0' or '1'.\n" "SYSCTL_ICMP_REDIRECTS" "${SYSCTL_ICMP_REDIRECTS}" >&2
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_ICMP_REDIRECTS" "${SYSCTL_ICMP_REDIRECTS}" >&2
         exit 1
     fi
 
@@ -523,7 +548,8 @@ start() {
         done
         # Apparently not applicable to IPv6
     else
-        printf "${RED}ERROR: invalid %s value '%s', must be '0' or '1'.\n" "SYSCTL_RP_FILTER" "${SYSCTL_RP_FILTER}" >&2
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_RP_FILTER" "${SYSCTL_RP_FILTER}" >&2
         exit 1
     fi
 
@@ -533,9 +559,12 @@ start() {
         done
         # Apparently not applicable to IPv6
     else
-        printf "${RED}ERROR: invalid %s value '%s', must be '0' or '1'.\n" "SYSCTL_LOG_MARTIANS" "${SYSCTL_LOG_MARTIANS}" >&2
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_LOG_MARTIANS" "${SYSCTL_LOG_MARTIANS}" >&2
         exit 1
     fi
+
+    printf "${GREEN}Ok${RESET}\n"
 
     # IPTables configuration
     ########################
@@ -546,6 +575,8 @@ start() {
     ${IPT} -N LOG_ACCEPT
     ${IPT} -A LOG_ACCEPT -j LOG  --log-prefix '[IPTABLES ACCEPT] : '
     ${IPT} -A LOG_ACCEPT -j ACCEPT
+    # Chain for restrictions (blacklist IPs/ranges)
+    ${IPT} -N NEEDRESTRICT
     if is_ipv6_enabled; then
         ${IPT6} -N LOG_DROP
         ${IPT6} -A LOG_DROP -j LOG  --log-prefix '[IPTABLES DROP] : '
@@ -553,8 +584,8 @@ start() {
         ${IPT6} -N LOG_ACCEPT
         ${IPT6} -A LOG_ACCEPT -j LOG  --log-prefix '[IPTABLES ACCEPT] : '
         ${IPT6} -A LOG_ACCEPT -j ACCEPT
+        ${IPT6} -N NEEDRESTRICT
     fi
-
     if is_docker_enabled; then
         ${IPT} -N MINIFW-DOCKER-INPUT-MANUAL
     fi
@@ -563,6 +594,9 @@ start() {
     # * from legacy configuration file (/etc/default/minifirewall)
     # * from configuration directory (/etc/minifirewall.d/*)
     source_includes
+
+    syslog_info "executing macros"
+    printf "${BLUE}executing macros: ${RESET}"
 
     # IP/ports lists are sorted to have consistent ordering
     # You can disable this feature by simply commenting the following lines
@@ -624,12 +658,6 @@ start() {
         fi
     done
 
-    # Chain for restrictions (blacklist IPs/ranges)
-    ${IPT} -N NEEDRESTRICT
-    if is_ipv6_enabled; then
-        ${IPT6} -N NEEDRESTRICT
-    fi
-
     # We allow all on loopback interface
     ${IPT} -A INPUT -i lo -j ACCEPT
     if is_ipv6_enabled; then
@@ -655,21 +683,8 @@ start() {
     done
 
     if is_docker_enabled; then
-        # WARN: IPv6 not yet supported for Docker rules
-        ${IPT} -N MINIFW-DOCKER-TRUSTED
-        ${IPT} -A MINIFW-DOCKER-TRUSTED -j DROP
-
-        ${IPT} -N MINIFW-DOCKER-PRIVILEGED
-        ${IPT} -A MINIFW-DOCKER-PRIVILEGED -j MINIFW-DOCKER-TRUSTED
-        ${IPT} -A MINIFW-DOCKER-PRIVILEGED -j RETURN
-
-        ${IPT} -N MINIFW-DOCKER-PUB
-        ${IPT} -A MINIFW-DOCKER-PUB -j MINIFW-DOCKER-PRIVILEGED
-        ${IPT} -A MINIFW-DOCKER-PUB -j RETURN
-
         # Chain MINIFW-DOCKER-INPUT-MANUAL is created earlier, to allow usage in additionnal config/command files
-        ${IPT} -A MINIFW-DOCKER-INPUT-MANUAL -j MINIFW-DOCKER-PUB
-        ${IPT} -A MINIFW-DOCKER-INPUT-MANUAL -j RETURN
+        ${IPT} -A MINIFW-DOCKER-INPUT-MANUAL -j DROP
 
         # Flush DOCKER-USER if exist, create it if absent
         if chain_exists 'DOCKER-USER'; then
@@ -681,6 +696,12 @@ start() {
         # Pipe new connection through MINIFW-DOCKER-INPUT-MANUAL
         ${IPT} -A DOCKER-USER -i ${INT} -m state  --state NEW -j MINIFW-DOCKER-INPUT-MANUAL
         ${IPT} -A DOCKER-USER -j RETURN
+
+        # Create basic rules to allow container to talk to the host (unless manual mode)
+        # via the default docker bridge
+        if ! is_docker_manual; then
+            /sbin/iptables -I INPUT -i docker0 -p tcp --sport 1024:65535 -s 172.16.0.0/12 -d 172.17.0.1 -j ACCEPT
+        fi
     fi
 
 
@@ -757,66 +778,6 @@ start() {
             ${IPT6} -A INPUT -p udp --dport ${port} -j ONLYTRUSTED
         fi
     done
-
-
-    if is_docker_enabled; then
-        # WARN: IPv6 not yet supported
-
-        # Public services defined in SERVICESTCP1 & SERVICESUDP1
-        for dstport in ${SERVICESTCP1}; do
-            ${IPT} -I MINIFW-DOCKER-PUB -p tcp --dport "${dstport}" -j RETURN
-        done
-
-        for dstport in ${SERVICESUDP1}; do
-            ${IPT} -I MINIFW-DOCKER-PUB -p udp --dport "${dstport}" -j RETURN
-        done
-
-        # Privileged services (accessible from privileged & trusted IPs)
-        for dstport in ${SERVICESTCP2}; do
-            for srcip in ${PRIVILEGIEDIPS}; do
-                if ! is_ipv6 ${srcip}; then
-                    ${IPT} -I MINIFW-DOCKER-PRIVILEGED -p tcp -s "${srcip}" --dport "${dstport}" -j RETURN
-                fi
-            done
-
-            for srcip in ${TRUSTEDIPS}; do
-                if ! is_ipv6 ${srcip}; then
-                    ${IPT} -I MINIFW-DOCKER-PRIVILEGED -p tcp -s "${srcip}" --dport "${dstport}" -j RETURN
-                fi
-            done
-        done
-
-        for dstport in ${SERVICESUDP2}; do
-            for srcip in ${PRIVILEGIEDIPS}; do
-                if ! is_ipv6 ${srcip}; then
-                    ${IPT} -I MINIFW-DOCKER-PRIVILEGED -p udp -s "${srcip}" --dport "${dstport}" -j RETURN
-                fi
-            done
-
-            for srcip in ${TRUSTEDIPS}; do
-                if ! is_ipv6 ${srcip}; then
-                    ${IPT} -I MINIFW-DOCKER-PRIVILEGED -p udp -s "${srcip}" --dport "${dstport}" -j RETURN
-                fi
-            done
-        done
-
-        # Trusted services (accessible from trusted IPs)
-        for dstport in ${SERVICESTCP3}; do
-            for srcip in ${TRUSTEDIPS}; do
-                if ! is_ipv6 ${srcip}; then
-                    ${IPT} -I MINIFW-DOCKER-TRUSTED -p tcp -s "${srcip}" --dport "${dstport}" -j RETURN
-                fi
-            done
-        done
-
-        for dstport in ${SERVICESUDP3}; do
-            for srcip in ${TRUSTEDIPS}; do
-                if ! is_ipv6 ${srcip}; then
-                    ${IPT} -I MINIFW-DOCKER-TRUSTED -p udp -s "${srcip}" --dport "${dstport}" -j RETURN
-                fi
-            done
-        done
-    fi
 
     # External services
     ###################
@@ -1011,6 +972,8 @@ start() {
     # Finish
     ########################
 
+    printf "${GREEN}Ok${RESET}\n"
+
     trap - INT TERM EXIT
 
     syslog_info "started"
@@ -1072,12 +1035,6 @@ stop() {
 
         ${IPT} -F MINIFW-DOCKER-INPUT-MANUAL
         ${IPT} -X MINIFW-DOCKER-INPUT-MANUAL
-        ${IPT} -F MINIFW-DOCKER-PUB
-        ${IPT} -X MINIFW-DOCKER-PUB
-        ${IPT} -F MINIFW-DOCKER-PRIVILEGED
-        ${IPT} -X MINIFW-DOCKER-PRIVILEGED
-        ${IPT} -F MINIFW-DOCKER-TRUSTED
-        ${IPT} -X MINIFW-DOCKER-TRUSTED
     else
         ${IPT} -t nat -F
     fi
@@ -1230,7 +1187,7 @@ show_version() {
     cat <<END
 ${PROGNAME} version ${VERSION}
 
-Copyright 2007-2023 Evolix <info@evolix.fr>.
+Copyright 2007-2024 Evolix <info@evolix.fr>.
 
 ${PROGNAME} comes with ABSOLUTELY NO WARRANTY.
 This program is free software; you can redistribute it and/or

@@ -11,9 +11,36 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Removed
 
+* removed the version in configuration file
+
 ### Fixed
 
 ### Security
+
+## [25.07] - 2025-07-16
+
+### Removed
+
+* Remove secondary Evolix office IPs from TRUSTEDIPS
+
+## [25.05] - 2025-05-22
+
+### Added
+
+* support NO_COLOR env variable (cf. https://no-color.org/)
+* Allow Docker containers on the default bridge (docker0) to talk to host services
+
+### Changed
+
+* blacklist-*.sh scripts: use "ipset restore" instead of multiple "ipset add"
+* declare NEEDRESTRICT chain sooner
+* display Ok/Error on each line
+* extract is_color_enabled() function
+* review blacklist-*.sh scripts: use ipset, MD5 verification, etc.
+
+### Removed
+
+* Don't expose Docker services via Public/Semi-public/Private macros
 
 ## [24.07] - 2024-07-11
 

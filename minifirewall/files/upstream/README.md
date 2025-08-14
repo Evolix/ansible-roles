@@ -29,11 +29,48 @@ Edit /etc/default/minifirewall file:
 
 ### Docker
 
-To use minifirewall with Docker you need to change the variable `DOCKER='on'`
-Then, authorisation for public/semi-public/private ports will also work for dockerized services
+To use minifirewall with Docker you must to change the variable `DOCKER='on'`
+By default, exposed services won't be reachable outside the host.
 
-**WARNING** : When the port mapping on the host is different than in the container (ie: listen on :8090 on the host, but the service in the container listen on :8080)
-you need to use the port used by the container (ie: 8080) in the public/semi-public/private port list
+If you need to allow/deny access to outside hosts, you can rely on the chain `MINIFW-DOCKER-INPUT-MANUAL`
+*Note* : this chain is only crossed by incoming 'tcp syn' packets.
+
+Examples : 
+
+~~~
+# Open publicly the docker service exposed on port 80
+/sbin/iptables -I MINIFW-DOCKER-INPUT-MANUAL -p tcp -m conntrack --ctorigdstport 80 -j RETURN
+
+# Open to 192.0.2.0/24 the docker service exposed on port 22
+/sbin/iptables -I MINIFW-DOCKER-INPUT-MANUAL -p tcp -s 192.0.2.0/24 -m conntrack --ctorigdstport 22 -j RETURN
+
+# Block 192.0.2.42 access the docker service exposed on port 22
+/sbin/iptables -I MINIFW-DOCKER-INPUT-MANUAL -p tcp -s 192.0.2.42 -m conntrack --ctorigdstport 80 -j DROP
+~~~
+
+Also, in `DOCKER='on'`, host services will be reachable to the containers that are connected on the default bridge (docker0).
+From the container, you can reach them at *172.17.0.1* (unless docker0 has a different IP).
+
+Ensure that your services listen on either 0.0.0.0 or *172.17.0.1*/*docker0*. 
+Keep in mind that some services may require you to allow the containers IP ranges (Postfix, PostgreSQL,...)
+For this case, you can allow *172.16.0.0/12*
+
+If you use different docker network bridge, you'll need to add rules for your network. You can use this one
+
+~~~
+# Accept all trafic from 172.16.0.0/12 (RFC1918) to reach 172.17.0.1
+/sbin/iptables -I INPUT -p tcp --sport 1024:65535 -s 172.16.0.0/12 -d 172.17.0.1 -j ACCEPT
+~~~
+
+If you want to have fine-grained rules for controling the communication from containers to the host services, you can set `DOCKER='manual'`. 
+This way, no rules allowing communication from containers host services are created.
+
+You can then create your own set of rules.
+
+~~~
+# Allow the containers to reach PostgreSQL (5432/tcp) on 172.17.0.1
+/sbin/iptables -I INPUT -p tcp --sport 1024:65535 --dport 5432 -s 172.16.0.0/12 -d 172.17.0.1 -j ACCEPT
+~~~
 
 ## Usage
 
