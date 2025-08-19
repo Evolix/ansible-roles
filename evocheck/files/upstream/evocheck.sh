@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="25.08"
+VERSION="25.08.1"
 readonly VERSION
 
 # base functions
@@ -393,7 +393,7 @@ check_minifw_includes() {
     fi
 }
 check_minifw_related() {
-    if grep --quiet 'RELATED' "/etc/default/minifirewall" "/etc/minifirewall.d/*"; then
+    if grep --quiet --fixed-strings "RELATED" "/etc/default/minifirewall" "/etc/minifirewall.d/"*; then
         failed "IS_MINIFW_RELATED" "RELATED should not be used in minifirewall configuration"
     fi
 }
@@ -710,10 +710,10 @@ check_phpmyadminapacheconf() {
     phpmyadminconf0="/etc/apache2/conf-available/phpmyadmin.conf"
     phpmyadminconf1="/etc/apache2/conf-enabled/phpmyadmin.conf"
     if is_installed apache2; then
-        test -e $phpmyadminconf0 && grep --quiet --invert-match --extended-regexp "^( |\t)*#" "$phpmyadminconf0" \
-            && failed "IS_PHPMYADMINAPACHECONF" "default phpmyadmin configuration ($phpmyadminconf0) should be commented or disabled"
-        test -e $phpmyadminconf1 && grep --quiet --invert-match --extended-regexp "^( |\t)*#" "$phpmyadminconf1" \
-            && failed "IS_PHPMYADMINAPACHECONF" "default phpmyadmin configuration ($phpmyadminconf1) should be commented or disabled"
+        test -e "${phpmyadminconf0}" && grep --quiet --invert-match --extended-regexp "^( |\t)*#" "${phpmyadminconf0}" \
+            && failed "IS_PHPMYADMINAPACHECONF" "default phpmyadmin configuration (${phpmyadminconf0}) should be commented or disabled"
+        test -e "${phpmyadminconf1}" && grep --quiet --invert-match --extended-regexp "^( |\t)*#" "${phpmyadminconf1}" \
+            && failed "IS_PHPMYADMINAPACHECONF" "default phpmyadmin configuration (${phpmyadminconf1}) should be commented or disabled"
     fi
 }
 # Verification si le système doit redémarrer suite màj kernel.
@@ -1741,7 +1741,7 @@ main() {
     test "${IS_ALERT5MINIFW:=1}" = 1 && test "${IS_MINIFW:=1}" = 1 && check_minifw
     test "${IS_NRPEPERMS:=1}" = 1 && check_nrpeperms
     test "${IS_MINIFWPERMS:=1}" = 1 && check_minifwperms
-    test "${IS_MINIFW_RELATED:=1}" = 1 && check_minifw_related
+    test "${IS_MINIFW_RELATED:=0}" = 1 && check_minifw_related
     test "${IS_MINIFWINCLUDES:=1}" = 1 && check_minifw_includes
     test "${IS_NRPEDISKS:=0}" = 1 && check_nrpedisks
     test "${IS_NRPEPID:=1}" = 1 && check_nrpepid

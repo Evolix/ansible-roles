@@ -15,8 +15,9 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
-* Use FQCN for all ansible modules
+* evocheck: upstream release 25.08.1
 * minifirewall: upstream release 25.07
+* Use FQCN for all ansible modules
 
 ### Fixed
 
