@@ -190,11 +190,8 @@
 - name: "SSH public keys for '{{ user.name }}' are present"
   ansible.posix.authorized_key:
     user: "{{ user.name }}"
-    key: "{{ ssk_key }}"
+    key: "{{ user.ssh_keys | join('\n') }}"
     state: present
-  loop: "{{ user.ssh_keys }}"
-  loop_control:
-    loop_var: ssk_key
   when:
     - user.ssh_keys is defined
     - user.ssh_keys | length > 0
