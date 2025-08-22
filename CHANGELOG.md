@@ -26,7 +26,6 @@ The **patch** part is incremented if multiple releases happen the same month
 * kvm-host: migrate-vm: fix "vm file" detection
 * kvm-host: migrate-vm: show usage when executed with 0 arguments
 * kvm-host: migrate-vm: version 25.09
-* lxc: Fix the creation of several container in a single playbook
 * minifirewall: upstream release 25.07
 * minifirewall: prepare checks for upcoming version with real systemd unit
 * nextcloud: Replace `with_indexed_items` with `loop` and `loop_control.index_var`
@@ -38,6 +37,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * packweb-apache: Fix nginx vhost path in phpContainer
 * lxc: Do not fix sources.list in Bookworm container if file is not present
+* lxc: Fix the creation of several container in a single playbook
 
 ### Removed
 
