@@ -6,6 +6,11 @@
   check_mode: no
   register: container_exists
 
+# XXX: Necessary when using several call to this role in a single playbook
+- name: "Ensure lxc_template_final_options fact is empty string"
+  ansible.builtin.set_fact:
+    lxc_template_final_options: ""
+
 - ansible.builtin.set_fact:
     lxc_template_final_options: >-
       --keyring=/etc/apt/trusted.gpg.d/freexian-archive-extended-lts.gpg
