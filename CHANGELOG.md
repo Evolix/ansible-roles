@@ -21,6 +21,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* postgresql: datestyle is now dmy by default
+
 ### Removed
 
 ### Security
