@@ -1157,6 +1157,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * evolinux-base: many improvements for backup-server-state script
 * remount-usr: use findmnt to find if usr is a readonly partition
+* Use community.general.apache2_module instead of cmd: a2enmod
 
 ## [22.01] 2022-01-25
 
