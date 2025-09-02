@@ -36,10 +36,9 @@
     - munin
 
 - name: "Enable libapache2-mod-fcgid"
-  ansible.builtin.command:
-    cmd: a2enmod fcgid
-  register: cmd_enable_fcgid
-  changed_when: "'Module fcgid already enabled' not in cmd_enable_fcgid.stdout"
+  community.general.apache2_module:
+    name: fcgid
+    state: present
   notify: restart apache
   tags:
     - apache
