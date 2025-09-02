@@ -15,13 +15,14 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* *: Replace `with_items:` with `loop:`
+* *: Use FQCN for all ansible modules
 * evocheck: upstream release 25.08.1
 * evolinux-users: Do not loop over ssh keys for `ansible.posix.authorized_key`
+* lxc: Fix the creation of several container in a single playbook
 * minifirewall: upstream release 25.07
 * nextcloud: Replace `with_indexed_items` with `loop` and `loop_control.index_var`
-* Replace `with_items:` with `loop:`
-* Use FQCN for all ansible modules
-* lxc: Fix the creation of several container in a single playbook
+* openvpn: Add MASQUERADE rule in /etc/minifirewall.d/zzz-custom instead of /etc/default/minifirewall
 
 ### Fixed
 

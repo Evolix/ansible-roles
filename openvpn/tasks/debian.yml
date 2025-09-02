@@ -102,7 +102,7 @@
 
 - name: Add minifirewall rule in config file
   ansible.builtin.lineinfile:
-    dest: "/etc/default/minifirewall"
+    dest: "/etc/minifirewall.d/zzz-custom"
     line: "{{ item }}"
   loop:
      - "# OpenVPN"
