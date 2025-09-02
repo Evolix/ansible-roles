@@ -23,6 +23,8 @@ fail2ban_default_findtime: 10m
 fail2ban_default_action: "action_"
 
 fail2ban_sshd: true
+# This port list is useless when using "banaction_allports"
+# It will probably be removed in a future release
 fail2ban_sshd_port: "2222,22222"
 fail2ban_sshd_maxretry: 10
 fail2ban_sshd_bantime: "{{ fail2ban_default_bantime }}"
