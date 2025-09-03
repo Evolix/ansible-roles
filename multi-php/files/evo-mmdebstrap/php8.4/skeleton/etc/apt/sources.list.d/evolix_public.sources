@@ -1,0 +1,5 @@
+Types: deb
+URIs: http://pub.evolix.org/evolix
+Suites: trixie
+Components: main
+Signed-By: /usr/share/keyrings/pub_evolix.asc

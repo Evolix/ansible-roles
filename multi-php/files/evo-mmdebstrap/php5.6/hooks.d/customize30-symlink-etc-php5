@@ -1,0 +1,9 @@
+#!/bin/sh
+#
+# This mmdebstrap hook is run before the cleaning up of the image creation process.
+# It creates a symlink in /etc/php/ for the 5.6 version to be consitent with the 
+# other versions which put their config there.
+
+if ! [ -L /etc/php/5.6 ]; then 
+    ln -s /etc/php5 /etc/php/5.6
+fi

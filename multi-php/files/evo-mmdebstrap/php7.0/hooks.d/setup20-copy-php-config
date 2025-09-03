@@ -1,0 +1,16 @@
+#!/bin/sh
+# 
+# This mmdebstrap hook is run before any package is extracted in the chroot and
+# populate it with the host's PHP config.  When updating this image, it allows to
+# keep the configuration from the previous version of the image.
+
+set -u
+
+# EVO_IMAGE_IMAGE format is: phpX.Y (where X and Y are numbers)
+php_config_dir="/etc/php/${EVO_IMAGE_NAME#php}/"
+
+if [ -d "$php_config_dir" ]; then
+    rsync -aASq --relative \
+            "$php_config_dir" \
+            "$1/"
+fi

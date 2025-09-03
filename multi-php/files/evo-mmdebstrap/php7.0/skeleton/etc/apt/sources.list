@@ -1,0 +1,3 @@
+deb http://archive.debian.org/debian stretch main
+deb http://archive.debian.org/debian-security stretch/updates main
+deb http://elts.evolix.org/extended-lts stretch-lts main
