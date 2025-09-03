@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+# This mmdebstrap hook is run before the cleaning up of the image creation process.
+# It copies, to the host, non existant PHP config files from the image.
+
+set -u
+
+# EVO_IMAGE_IMAGE format is: phpX.Y (where X and Y are numbers)
+php_config_dir="/etc/php/${EVO_IMAGE_NAME#php}/"
+
+# TODO Do we want to fail if the image doens't contain php configs
+if [ -d "$1/${php_config_dir}" ]; then
+    rsync -aASq --ignore-existing --relative \
+            "$1/./${php_config_dir}" \
+            /
+fi
+
+

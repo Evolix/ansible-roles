@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# This mmdebstrap hook is run before the cleaning up of the image creation process.
+# It customize bash's PS1 prompt, to indicate which version of php this image was been built for.
+
+set -u
+
+chroot_dir="$1"
+# EVO_IMAGE_IMAGE format is: phpX.Y (where X and Y are numbers)
+php_version=${EVO_IMAGE_NAME#php}
+
+sed --in-place  "s/\ '$/ [php${php_version}]'/" "$chroot_dir/etc/bash.bashrc"

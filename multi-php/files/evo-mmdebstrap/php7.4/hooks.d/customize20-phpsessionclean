@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+# This mmdebstrap hook is run before the cleaning up of the image creation process.
+# It renames the PHP session clean service and timer to be prefixed with the name 
+# of the image. Because otherwise, when used as a portable serivces, they won't be
+# imported by the host.
+
+set -u
+set -e
+
+cp "$1/lib/systemd/system/phpsessionclean.service" \
+    "$1/etc/systemd/system/${EVO_IMAGE_NAME}-sessionclean.service"
+cp "$1/lib/systemd/system/phpsessionclean.timer" \
+    "$1/etc/systemd/system/${EVO_IMAGE_NAME}-sessionclean.timer"

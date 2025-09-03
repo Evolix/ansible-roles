@@ -1,0 +1,5 @@
+Types: deb
+URIs: http://mirror.evolix.org/debian
+Suites: trixie trixie-updates
+Components: main
+Signed-By: /usr/share/keyrings/debian-archive-trixie-automatic.gpg

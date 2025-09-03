@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# This mmdebstrap hook is run before the cleaning up of the image creation process.
+# It customize the 'Portable Service' field from 'portablectl inspect.
+
+set -u
+
+# EVO_IMAGE_IMAGE format is: phpX.Y (where X and Y are numbers)
+php_version=${EVO_IMAGE_NAME#php}
+
+echo "PORTABLE_PRETTY_NAME=Evolix PHP ${php_version}" >> /etc/os-release

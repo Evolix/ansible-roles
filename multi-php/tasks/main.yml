@@ -1,0 +1,41 @@
+- name: Install packages for multi-php
+  ansible.builtin.apt:
+    name:
+      - mmdebstrap
+      - systemd-container
+    state: present
+
+- name: Create /etc/systemd/portable/profile/php/service.conf
+  ansible.builtin.copy:
+    src: php.profile.portable.conf
+    dest: "/etc/systemd/portable/profile/php/service.conf"
+    force: true
+    directory_mode: "0755"
+    mode: "0644"
+    owner: root
+    group: root
+
+#
+# evo-mmdebstrap
+#
+- ansible.builtin.include_role:
+    name: evolix/remount-usr
+
+- name: Install evo-mmdebstrap
+  ansible.builtin.copy:
+    src: evo-mmdebstrap.sh
+    dest: "/usr/local/sbin/evo-mmdebstrap"
+    force: true
+    mode: "0750"
+    owner: root
+    group: root
+
+- name: Create /etc/evo-mmdebstrap
+  ansible.builtin.copy:
+    src: evo-mmdebstrap
+    dest: "/etc/"
+    force: true
+    directory_mode: "0755"
+    mode: "0644"
+    owner: root
+    group: root

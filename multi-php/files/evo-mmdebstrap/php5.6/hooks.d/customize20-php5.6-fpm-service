@@ -1,0 +1,7 @@
+#!/bin/sh
+#
+# This mmdebstrap hook is run before the cleaning up of the image creation process.
+# It renames the PHP FPM service to be prefixed by the name of the image. Because,
+# when used as a portable serivces, it won't be imported by the host.
+
+cp "$1/lib/systemd/system/php5-fpm.service" "$1/etc/systemd/system/php5.6-fpm.service"

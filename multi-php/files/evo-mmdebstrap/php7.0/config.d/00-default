@@ -1,0 +1,22 @@
+suite=stretch
+packages="php
+php-fpm
+php-cli
+php-gd
+php-intl
+php-imap
+php-ldap
+php-mcrypt
+php-mysql
+php-pgsql
+php-sqlite3
+php-gettext
+php-curl
+php-ssh2
+php-zip
+php-mbstring
+composer
+libphp-phpmailer
+postfix"
+
+#customize_special_hook="upload /etc/"
