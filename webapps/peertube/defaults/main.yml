@@ -14,3 +14,4 @@ peertube_db_user: "{{ peertube_instance }}"
 peertube_db_password: 'UQ6_CHANGE_ME_Gzb'
 peertube_app_secret: 'd98a73_CHANGE_ME_c00c7c'
 peertube_app_host: '127.0.0.1:9000'
+peertube_email_from: "{{ peertube_instance }}@{{ ansible_fqdn }}"

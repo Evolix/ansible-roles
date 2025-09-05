@@ -24,6 +24,18 @@
     target: "~/{{ peertube_db_name }}.sql.gz"
   become_user: postgres
 
+- name: Install NodeJS
+  ansible.builtin.include_role:
+    name: nodejs
+  vars:
+    - nodejs_apt_version: "{{ peertube_nodejs_version }}"
+    - nodejs_install_yarn: true
+
+- name: NodeJS is latest
+  ansible.builtin.apt:
+    name: nodejs
+    state: latest
+
 - name: Unarchive new peertube archive
   ansible.builtin.unarchive:
     src: "{{ peertube_download_url }}"
@@ -76,7 +88,7 @@
 
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ peertube_domains | first }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ peertube_instance }}/fullchain.pem"
   register: ssl
 
 - name: Retemplate conf file for nginx vhost
