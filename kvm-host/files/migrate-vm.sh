@@ -547,7 +547,7 @@ main() {
         # Look for an existing path or stdin or a comma-separated list.
         # Lines starting with # (comments) are ignored
         vm_list_file=$(realpath "${option_vms}" 2> /dev/null)
-        if [ -n "${vm_list_file}" ] && [ -r "${vm_list_file}" ]; then
+        if [ -n "${vm_list_file}" ] && [ -f "${vm_list_file}" ]; then
             # echo "Using ${vm_list_file} as input."
             grep --invert-match --extended-regexp "^#" < "${vm_list_file}" > "${vm_list_tmp}"
         elif [ "${option_vms}" = "-" ]; then
