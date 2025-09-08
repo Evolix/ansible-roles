@@ -604,6 +604,12 @@ if [ "$(id -u)" -ne "0" ] ; then
     exit 1
 fi
 
+# Show usage when executed with 0 arguments
+if [ $# -eq 0 ] ; then
+    show_usage
+    exit 1
+fi
+
 # Default values for options
 option_all=0
 option_report=""
