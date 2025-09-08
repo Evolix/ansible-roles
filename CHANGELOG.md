@@ -19,6 +19,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * *: Use FQCN for all ansible modules
 * evocheck: upstream release 25.08.1
 * evolinux-users: Do not loop over ssh keys for `ansible.posix.authorized_key`
+* kvm-host: migrate-vm: fix "vm file" detection
 * lxc: Fix the creation of several container in a single playbook
 * minifirewall: upstream release 25.07
 * nextcloud: Replace `with_indexed_items` with `loop` and `loop_control.index_var`
