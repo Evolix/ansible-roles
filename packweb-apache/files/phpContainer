@@ -9,17 +9,17 @@ fi;
 # Try Apache (the usual case)
 if [ -e "/etc/apache2/sites-enabled/$LOGNAME.conf" ]; then
     pattern=SetHandler
-    webpath=/etc/apache2/sites-enabled/
+    vhostfile=/etc/apache2/sites-enabled/"${LOGNAME}".conf
 elif [ -e "/etc/nginx/sites-enabled/$LOGNAME.conf" ]; then
     pattern=fastcgi_pass
-    webpath=/etc/nginx/sites-enabled/
+    vhostfile=/etc/apache2/sites-enabled/"${LOGNAME}"
 fi;
 
-PHPVersion=$(grep $pattern $webpath$LOGNAME.conf 2>/dev/null | grep -m 1 -o 'fpm[0-9][0-9]' | head -n 1 | sed 's/php//g' | sed 's/fpm//g')
+PHPVersion=$(grep $pattern "${vhostfile}" 2>/dev/null | grep -m 1 -o 'fpm[0-9][0-9]' | head -n 1 | sed 's/php//g' | sed 's/fpm//g')
 
 # If $PHPVersion is empty, look for "SetHandler" in the includes.
 if [ "$PHPVersion" == "" ]; then
-    includes=$(grep -w "Include" $webpath$LOGNAME.conf | uniq | awk '{print $2}')
+    includes=$(grep -w "Include" "${vhostfile}" | uniq | awk '{print $2}')
     for f in "$includes"; do
         # Relative path -> absolute
         if [ ${f:0:1} != "/" ]; then

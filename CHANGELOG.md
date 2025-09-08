@@ -26,6 +26,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* packweb-apache: Fix nginx vhost path in phpContainer
+
 ### Removed
 
 ### Security
