@@ -17,6 +17,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * *: Replace `with_items:` with `loop:`
 * *: Use FQCN for all ansible modules
+* evobackup-client: upstream release 25.09
 * evocheck: upstream release 25.08.1
 * evolinux-users: Do not loop over ssh keys for `ansible.posix.authorized_key`
 * kvm-host: migrate-vm: fix "vm file" detection

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034,SC2317
 
-readonly VERSION="25.05"
+readonly VERSION="25.09"
 
 # set all programs to C language (english)
 export LC_ALL=C
@@ -392,11 +392,16 @@ setup() {
 
     : "${LOCAL_BACKUP_DIR:="/home/backup"}"
     # shellcheck disable=SC2174
-    mkdir -p -m 711 "${LOCAL_BACKUP_DIR}"
+    mkdir -p "${LOCAL_BACKUP_DIR}"
+    # Make sure that the permissions are correct, even if the directory exist.
+    # They MUST stay "0700"! (cf. Issue #90)
+    chmod 700 "${LOCAL_BACKUP_DIR}"
 
     : "${ERRORS_DIR:="${LOCAL_BACKUP_DIR}/${PROGNAME}.errors-${START_TIME}"}"
     # shellcheck disable=SC2174
-    mkdir -p -m 700 "${ERRORS_DIR}"
+    mkdir -p "${ERRORS_DIR}"
+    # Make sure that the permissions are correct, even if the directory exist.
+    chmod 700 "${ERRORS_DIR}"
 
     # Backup directory on remote server
     : "${REMOTE_BACKUP_DIR:="/var/backup"}"

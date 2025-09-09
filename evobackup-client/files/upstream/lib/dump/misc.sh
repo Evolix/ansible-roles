@@ -525,7 +525,7 @@ dump_rabbitmq() {
 
     log "LOCAL_TASKS - ${FUNCNAME[0]}: start ${dump_file}"
 
-    dump_cmd="rabbitmqadmin export ${dump_file}"
+    dump_cmd="rabbitmqadmin -q export ${dump_file}"
     log "LOCAL_TASKS - ${FUNCNAME[0]}: ${dump_cmd}"
     ${dump_cmd} 2> "${error_file}"
 

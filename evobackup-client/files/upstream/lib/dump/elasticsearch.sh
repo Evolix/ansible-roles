@@ -206,7 +206,7 @@ dump_elasticsearch() {
         option_cacert="${default_cacert}"
     fi
 
-    local errors_dir="${ERRORS_DIR}/elasticsearch-${option_repository}-${option_snapshot}"
+    local errors_dir=$(errors_dir_from_dump_dir "${LOCAL_BACKUP_DIR}/elasticsearch-${option_repository}-${option_snapshot}") 
     rm -rf "${errors_dir}"
     mkdir -p "${errors_dir}"
     # No need to change recursively, the top directory is enough
