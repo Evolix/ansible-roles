@@ -16,15 +16,16 @@
         "urlAddPort": true
     },
     "production": {
-        "domain": "{{ hedgedoc_domains }}",
+        "domain": "{{ hedgedoc_domains | first }}",
+        "port": "{{ hedgedoc_node_port }}",
+        "sessionSecret": "{{ hedgedoc_session_secret }}",
         "loglevel": "info",
         "protocolUseSSL": "true",
-        "urlAddPort": false,
         "hsts": {
             "enable": true,
             "maxAgeSeconds": 31536000,
             "includeSubdomains": true,
-            "preload": true
+            "preload": false
         },
         "csp": {
             "enable": true,
