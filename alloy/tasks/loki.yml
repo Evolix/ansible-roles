@@ -9,7 +9,7 @@
     mode: "0644"
   notify: restart alloy
 
-- name: "Configure minifirewall on loki endpoints to allow connectionns from {{ ansible_hostname }}"
+- name: "Configure minifirewall on loki endpoints to allow connections from {{ ansible_hostname }}"
   ansible.builtin.lineinfile:
     path: /etc/minifirewall.d/loki
     line: "/sbin/iptables -A INPUT -p tcp --dport {{ item | urlsplit('port') or '443' }} --sport 1024:65535 -s {{ ansible_default_ipv4.address }} -j ACCEPT # {{ ansible_hostname }}"
