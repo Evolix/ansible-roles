@@ -13,6 +13,9 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* Elasticsearch: add warning comment to elasticsearch_custom_datadir variable.
+
+
 ### Changed
 
 * Replace `with_items:` with `loop:`
