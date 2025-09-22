@@ -12,32 +12,31 @@
 # Description:       Firewall designed for standalone server
 ### END INIT INFO
 
+set -u
+
 minifirewall_bin=/usr/local/sbin/minifirewall
 
-if [ -z "${minifirewall_bin}" ]; then
-    echo "${minifirewall_bin}: not found"
-elif [ ! -x "${minifirewall_bin}" ]; then
-    echo "${minifirewall_bin}: not executable"
-fi
-
-case "$1" in
-  start)
+case "${1:-}" in
+    start)
         systemctl start minifirewall
         ;;
-  stop)
+    stop)
         systemctl stop minifirewall
         ;;
-  status)
+    status)
         systemctl status minifirewall
         ;;
-  restart|reload|condrestart)
+    restart|reload|condrestart)
         systemctl restart minifirewall
         ;;
-  reset)
-        ${minifirewall_bin} reset
+    reset)
+        "${minifirewall_bin}" reset
         ;;
-  *)
-        echo "Usage: $0 {start|stop|restart|status|reset}"
+    version)
+        "${minifirewall_bin}" version
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status|reset|version}"
         exit 1
 esac
 

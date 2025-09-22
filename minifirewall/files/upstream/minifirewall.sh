@@ -5,7 +5,7 @@ PROGNAME="minifirewall"
 # shellcheck disable=SC2034
 REPOSITORY="https://gitea.evolix.org/evolix/minifirewall"
 
-VERSION="25.07"
+VERSION="25.08"
 readonly VERSION
 
 set -u
@@ -150,7 +150,7 @@ is_interactive() {
     test "${INTERACTIVE}" = "1"
 }
 remove_colors() {
-    sed -r 's/\x1B\[(;?[0-9]{1,3})*[mGK]//g'
+    sed -r 's/\x1B\[(;?[0-9]{1,3})+[mGK]//g'
 }
 syslog_info() {
     if [ -x "${LOGGER_BIN}" ]; then
@@ -561,6 +561,7 @@ start() {
     fi
     if is_docker_enabled; then
         ${IPT} -N MINIFW-DOCKER-INPUT-MANUAL
+        ${IPT} -N MINIFW-DOCKER-USER
     fi
 
     # Source additional rules and commands
@@ -656,8 +657,9 @@ start() {
     done
 
     if is_docker_enabled; then
-        # Chain MINIFW-DOCKER-INPUT-MANUAL is created earlier, to allow usage in additionnal config/command files
+        # Chains MINIFW-DOCKER-* are created earlier, to allow usage in additionnal config/command files
         ${IPT} -A MINIFW-DOCKER-INPUT-MANUAL -j DROP
+        ${IPT} -A MINIFW-DOCKER-USER -j RETURN
 
         # Flush DOCKER-USER if exist, create it if absent
         if chain_exists 'DOCKER-USER'; then
@@ -668,6 +670,8 @@ start() {
 
         # Pipe new connection through MINIFW-DOCKER-INPUT-MANUAL
         ${IPT} -A DOCKER-USER -i ${INT} -m state  --state NEW -j MINIFW-DOCKER-INPUT-MANUAL
+        # Pipe others connexions through MINIFW-DOCKER-USER
+        ${IPT} -A DOCKER-USER -j MINIFW-DOCKER-USER
         ${IPT} -A DOCKER-USER -j RETURN
 
         # Create basic rules to allow container to talk to the host (unless manual mode)
@@ -1008,6 +1012,8 @@ stop() {
 
         ${IPT} -F MINIFW-DOCKER-INPUT-MANUAL
         ${IPT} -X MINIFW-DOCKER-INPUT-MANUAL
+        ${IPT} -F MINIFW-DOCKER-USER
+        ${IPT} -X MINIFW-DOCKER-USER
     else
         ${IPT} -t nat -F
     fi
