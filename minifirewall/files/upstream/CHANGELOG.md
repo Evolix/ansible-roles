@@ -11,11 +11,17 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Removed
 
-* removed the version in configuration file
-
 ### Fixed
 
-### Security
+## [25.08] - 2025-08-31
+
+### Added
+
+* new chain MINIFW-DOCKER-USER to manipulate DOCKER-USER with minifirewall
+
+### Removed
+
+* removed the version in configuration file
 
 ## [25.07] - 2025-07-16
 

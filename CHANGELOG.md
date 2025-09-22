@@ -29,6 +29,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * nextcloud: Replace `with_indexed_items` with `loop` and `loop_control.index_var`
 * openvpn: Add MASQUERADE rule in /etc/minifirewall.d/zzz-custom instead of /etc/default/minifirewall
 * packweb-apache: Don’t set pinning for backports (for phpmyadmin on Debian 10.)
+* minifirewall: upstream release 25.08
 
 ### Fixed
 
