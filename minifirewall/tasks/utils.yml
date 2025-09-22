@@ -14,9 +14,15 @@
 
 - name: blacklist-countries.sh is copied
   ansible.builtin.copy:
-    src: upstream/blacklist-countries.sh
-    dest: /usr/share/scripts/blacklist-countries.sh
+    src: "upstream/{{ item }}"
+    dest: /usr/share/scripts/
     force: "no"
     mode: "0700"
     owner: root
     group: root
+  loop:
+    - "utils/blacklist-as.sh"
+    - "utils/blacklist-asiapacific.sh"
+    - "utils/blacklist-countries.sh"
+    - "utils/ripe.sh"
+    - "utils/rpki.sh"

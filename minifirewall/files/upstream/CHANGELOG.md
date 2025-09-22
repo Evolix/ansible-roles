@@ -7,11 +7,17 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Changed
 
+* group additional scripts in utils directory
+* split main logic from SysVinit script, and add systemd unit
+* systemd unit optimization
+
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+### Security
 
 ## [25.08] - 2025-08-31
 
@@ -22,6 +28,10 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 ### Removed
 
 * removed the version in configuration file
+
+### Fixed
+
+* fix remove_colors for RESET sequence
 
 ## [25.07] - 2025-07-16
 

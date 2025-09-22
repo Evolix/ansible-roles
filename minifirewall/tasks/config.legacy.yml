@@ -208,7 +208,6 @@
     - minifirewall_is_running.rc == 0
     - minifirewall_before.stat.checksum != minifirewall_after.stat.checksum or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed
 
-
 - ansible.builtin.debug:
     var: minifirewall_init_restart
     verbosity: 2

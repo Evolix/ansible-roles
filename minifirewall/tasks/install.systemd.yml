@@ -2,16 +2,17 @@
 
 - name: dependencies are satisfied
   ansible.builtin.apt:
-    name: "{{ item }}"
+    name: iptables
     state: present
-  loop:
-    - iptables
-    - ipset
 
-- name: Stat minifirewall init file (before)
+- name: Remount /usr if needed
+  ansible.builtin.include_role:
+    name: evolix/remount-usr
+
+- name: Stat minifirewall main file (before)
   ansible.builtin.stat:
-    path: "/etc/init.d/minifirewall"
-  register: minifirewall_init_before
+    path: "/usr/local/sbin/minifirewall"
+  register: minifirewall_script_before
 
 - name: Check if minifirewall is running
   ansible.builtin.shell:
@@ -23,8 +24,17 @@
 
 - name: init script is copied
   ansible.builtin.copy:
-    src: upstream/minifirewall
+    src: upstream/minifirewall.init.sh
     dest: /etc/init.d/minifirewall
+    force: "{{ minifirewall_force_upgrade_script | default('no') }}"
+    mode: "0700"
+    owner: root
+    group: root
+
+- name: main script is copied
+  ansible.builtin.copy:
+    src: upstream/minifirewall.sh
+    dest: /usr/local/sbin/minifirewall
     force: "{{ minifirewall_force_upgrade_script | default('no') }}"
     mode: "0700"
     owner: root
@@ -40,6 +50,16 @@
     owner: root
     group: root
   register: minifirewall_upgrade_config
+
+- name: systemd unit is copied
+  ansible.builtin.copy:
+    src: upstream/minifirewall.service
+    dest: /etc/systemd/system/minifirewall.service
+    force: "yes"
+    mode: "0644"
+    owner: root
+    group: root
+  notify: enable minifirewall.service
 
 - name: Directory for included files is present
   ansible.builtin.file:
@@ -58,20 +78,20 @@
     owner: root
     group: root
 
-- name: Stat minifirewall init file (after)
+- name: Stat minifirewall main file (after)
   ansible.builtin.stat:
-    path: "/etc/init.d/minifirewall"
-  register: minifirewall_init_after
+    path: "/usr/local/sbin/minifirewall"
+  register: minifirewall_script_after
 
-- name: Schedule minifirewall restart (modern)
+- name: Schedule minifirewall restart (modern/systemd)
   ansible.builtin.command:
     cmd: /bin/true
-  notify: "restart minifirewall (modern)"
+  notify: "restart minifirewall (modern/systemd)"
   when:
     - minifirewall_install_mode != 'legacy'
     - minifirewall_restart_if_needed | bool
     - minifirewall_is_running.rc == 0
-    - minifirewall_init_before.stat.checksum != minifirewall_init_after.stat.checksum or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed
+    - minifirewall_script_before.stat.checksum != minifirewall_script_after.stat.checksum or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed
 
 - ansible.builtin.debug:
     var: minifirewall_init_restart
