@@ -20,27 +20,30 @@ is_alert5_enabled() {
   fi
 }
 
-is_minifirewall_enabled() {
+is_minifirewall_enabled_alert5() {
   # TODO: instead of nested conditionals, we could loop with many possible paths
   # and grep the first found, or error if none is found
-  if [ -f /etc/systemd/system/minifirewall.service ]; then
-    systemctl is-enabled minifirewall > /dev/null 2>&1
+  if test -f /etc/rc2.d/S*alert5; then
+    grep -q "^/etc/init.d/minifirewall" /etc/rc2.d/S*alert5
   else
-    if test -f /etc/rc2.d/S*alert5; then
-      grep -q "^/etc/init.d/minifirewall" /etc/rc2.d/S*alert5
+    if test -f /usr/share/scripts/alert5.sh; then
+      grep -q "^/etc/init.d/minifirewall" /usr/share/scripts/alert5.sh
     else
-      if test -f /usr/share/scripts/alert5.sh; then
-        grep -q "^/etc/init.d/minifirewall" /usr/share/scripts/alert5.sh
-      else
-        return_critical "No Alert5 scripts has been found."
-      fi
+      return_critical "No Alert5 scripts has been found."
     fi
   fi
 }
 
+is_minifirewall_enabled_systemd() {
+  systemctl is-enabled minifirewall.service >/dev/null 2>&1
+}
+is_minifirewall_native_systemd() {
+  systemctl list-unit-files minifirewall.service | grep minifirewall.service | grep --quiet -invert--match generated
+}
+
 is_minifirewall_started() {
-  if [ -f /etc/systemd/system/minifirewall.service ]; then
-    systemctl is-active minifirewall > /dev/null 2>&1
+  if is_minifirewall_systemd; then
+    systemctl is-active minifirewall.service >/dev/null 2>&1
   else
     if test -x /usr/share/scripts/minifirewall_status; then
       /usr/share/scripts/minifirewall_status > /dev/null
@@ -50,7 +53,11 @@ is_minifirewall_started() {
   fi
 }
 minifirewall_version() {
-  /etc/init.d/minifirewall version | cut -d ' ' -f 3 | grep --extended-regexp "^[0-9]+\.[0-9]+\S*$" 2>/dev/null
+  if [ -x /usr/local/sbin/minifirewall ]; then
+    /usr/local/sbin/minifirewall version | cut -d ' ' -f 3 | grep --extended-regexp "^[0-9]+\.[0-9]+\S*$" 2>/dev/null
+  else
+    /etc/init.d/minifirewall version | cut -d ' ' -f 3 | grep --extended-regexp "^[0-9]+\.[0-9]+\S*$" 2>/dev/null
+  fi
 }
 
 summary_critical() {
@@ -74,39 +81,61 @@ append_details() {
 }
 
 main() {
-  if is_alert5_enabled; then
-    append_details "alert5 is enabled"
-
-    if is_minifirewall_enabled; then
+  if is_minifirewall_native_systemd; then
+    if is_minifirewall_enabled_systemd; then
       append_details "minifirewall is enabled"
-
       if is_minifirewall_started; then
         append_details "minifirewall is started"
         summary_ok "minifirewall is started"
       else
         append_details "minifirewall is stopped"
-        summary_critical "minifirewall is stopped, but enabled in alert5 or systemd"
+        summary_critical "minifirewall is stopped, but enabled in systemd"
       fi
     else
-      append_details "minifirewall is disabled"
-
+      append_details "minifirewall is not enabled (systemd)"
       if is_minifirewall_started; then
         append_details "minifirewall is started"
-        summary_warning "minifirewall is started, but disabled in alert5 or systemd"
+        summary_warning "minifirewall is started, but disabled in systemd"
       else
         append_details "minifirewall is stopped"
-        summary_ok "minifirewall is stopped, but disabled in alert5 or systemd"
+        summary_ok "minifirewall is stopped and disabled in systemd"
       fi
     fi
   else
-    append_details "alert5 is disabled"
+    if is_alert5_enabled; then
+      append_details "alert5 is enabled"
 
-    if is_minifirewall_started; then
-      append_details "minifirewall is started"
-      summary_warning "minifirewall is started, but alert5 is disabled"
+      if is_minifirewall_enabled_alert5; then
+        append_details "minifirewall is enabled (alert5)"
+
+        if is_minifirewall_started; then
+          append_details "minifirewall is started"
+          summary_ok "minifirewall is started"
+        else
+          append_details "minifirewall is stopped"
+          summary_critical "minifirewall is stopped, but enabled in alert5"
+        fi
+      else
+        append_details "minifirewall is disabled"
+
+        if is_minifirewall_started; then
+          append_details "minifirewall is started"
+          summary_warning "minifirewall is started, but disabled in alert5"
+        else
+          append_details "minifirewall is stopped"
+          summary_ok "minifirewall is stopped, but disabled in alert5"
+        fi
+      fi
     else
-      append_details "minifirewall is stopped"
-      summary_ok "minifirewall is stopped and alert5 is disabled"
+      append_details "alert5 is disabled"
+
+      if is_minifirewall_started; then
+        append_details "minifirewall is started"
+        summary_warning "minifirewall is started, but alert5 is disabled"
+      else
+        append_details "minifirewall is stopped"
+        summary_ok "minifirewall is stopped and alert5 is disabled"
+      fi
     fi
   fi
 
