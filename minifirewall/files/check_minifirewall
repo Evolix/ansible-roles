@@ -38,11 +38,11 @@ is_minifirewall_enabled_systemd() {
   systemctl is-enabled minifirewall.service >/dev/null 2>&1
 }
 is_minifirewall_native_systemd() {
-  systemctl list-unit-files minifirewall.service | grep minifirewall.service | grep --quiet -invert--match generated
+  systemctl list-unit-files minifirewall.service | grep minifirewall.service | grep --quiet --invert-match generated
 }
 
 is_minifirewall_started() {
-  if is_minifirewall_systemd; then
+  if is_minifirewall_native_systemd; then
     systemctl is-active minifirewall.service >/dev/null 2>&1
   else
     if test -x /usr/share/scripts/minifirewall_status; then

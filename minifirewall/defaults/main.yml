@@ -2,6 +2,8 @@
 
 # possible values: Null (default), modern or legacy
 minifirewall_install_mode: Null
+# possible values: Null (default), sysvinit or systemd
+minifirewall_init_mode: Null
 
 # BEGIN legacy variables
 minifirewall_legacy_main_file: /etc/default/minifirewall

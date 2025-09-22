@@ -8,8 +8,11 @@ See https://gitea.evolix.org/evolix/minifirewall
 ## Install
 
 ~~~
-install --mode 0700 minifirewall /etc/init.d/minifirewall
+install --mode 0700 minifirewall.sh /usr/local/sbin/minifirewall
+install --mode 0700 minifirewall.init.sh /etc/init.d/minifirewall
 install --mode 0600 minifirewall.conf /etc/default/minifirewall
+install --mode 0644 minifirewall.service /etc/systemd/system/minifirewall.service
+systemctl daemon-reload
 mkdir --mode 0700 /etc/minifirewall.d
 ~~~
 
@@ -75,7 +78,13 @@ You can then create your own set of rules.
 ## Usage
 
 ~~~
-/etc/init.d/minifirewall start/stop/restart
+systemctl [start,stop,restart] minifirewall
+minifirewall safe-restart
+~~~
+
+Formerly :
+~~~
+/etc/init.d/minifirewall [start,stop,restart]
 ~~~
 
 If you want to add minifirewall in boot sequence, add the start command to `/usr/share/scripts/alert5`.

@@ -1,0 +1,16 @@
+# /etc/systemd/system/minifirewall.service
+
+[Unit]
+Description=Control the firewall
+
+[Service]
+Type=oneshot
+Restart=no
+TimeoutSec=5min
+IgnoreSIGPIPE=no
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/minifirewall start
+ExecStop=/usr/local/sbin/minifirewall stop
+
+[Install]
+WantedBy=network-pre.target

@@ -1,0 +1,78 @@
+---
+
+- name: dependencies are satisfied
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - iptables
+    - ipset
+
+- name: Stat minifirewall init file (before)
+  ansible.builtin.stat:
+    path: "/etc/init.d/minifirewall"
+  register: minifirewall_init_before
+
+- name: Check if minifirewall is running
+  ansible.builtin.shell:
+    cmd: /sbin/iptables -L -n | grep --extended-regexp "^(DROP\s+(udp|17)|ACCEPT\s+(icmp|1))\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: minifirewall_is_running
+
+- name: init script is copied
+  ansible.builtin.copy:
+    src: sysvinit/minifirewall.init.sh
+    dest: /etc/init.d/minifirewall
+    force: "{{ minifirewall_force_upgrade_script | default('no') }}"
+    mode: "0700"
+    owner: root
+    group: root
+  register: minifirewall_upgrade_script
+
+- name: configuration is copied
+  ansible.builtin.copy:
+    src: sysvinit/minifirewall.conf
+    dest: "/etc/default/minifirewall"
+    force: "{{ minifirewall_force_upgrade_config | default('no') }}"
+    mode: "0600"
+    owner: root
+    group: root
+  register: minifirewall_upgrade_config
+
+- name: Directory for included files is present
+  ansible.builtin.file:
+    path: /etc/minifirewall.d/
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Includes files are present
+  ansible.builtin.copy:
+    src: "minifirewall.d/"
+    dest: "/etc/minifirewall.d/"
+    force: "no"
+    mode: "0600"
+    owner: root
+    group: root
+
+- name: Stat minifirewall init file (after)
+  ansible.builtin.stat:
+    path: "/etc/init.d/minifirewall"
+  register: minifirewall_init_after
+
+- name: Schedule minifirewall restart (modern/sysvinit)
+  ansible.builtin.command:
+    cmd: /bin/true
+  notify: "restart minifirewall (modern/sysvinit)"
+  when:
+    - minifirewall_install_mode != 'legacy'
+    - minifirewall_restart_if_needed | bool
+    - minifirewall_is_running.rc == 0
+    - minifirewall_init_before.stat.checksum != minifirewall_init_after.stat.checksum or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed
+
+- ansible.builtin.debug:
+    var: minifirewall_init_restart
+    verbosity: 2
