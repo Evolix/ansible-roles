@@ -37,6 +37,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * packweb-apache: Fix nginx vhost path in phpContainer
+* lxc: Do not fix sources.list in Bookworm container if file is not present
 
 ### Removed
 

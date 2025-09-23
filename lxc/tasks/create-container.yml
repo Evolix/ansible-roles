@@ -141,12 +141,20 @@
     replace: 'bullseye-security'
   when: release == 'bullseye'
 
+- name: "Is sources.list present in container?"
+  ansible.builtin.stat:
+    path: "/var/lib/lxc/{{ name }}/rootfs/etc/apt/sources.list"
+  check_mode: no
+  register: lxc_is_apt_sources_list
+
 - name: "Fix bookworm repository in container {{ name }}"
   ansible.builtin.replace:
     dest: "/var/lib/lxc/{{ name }}/rootfs/etc/apt/sources.list"
     regexp: 'bookworm/updates'
     replace: 'bookworm-security'
-  when: release == 'bookworm'
+  when:
+    - release == 'bookworm'
+    - lxc_is_apt_sources_list.stat.exists
 
 - name: "{{ name }} - Update APT cache"
   ansible.builtin.shell:
