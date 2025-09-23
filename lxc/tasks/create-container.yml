@@ -40,27 +40,29 @@
     template_options: "--arch amd64 --release {{ release }} {{ lxc_template_final_options__internal }}"
   when: container_exists.stdout_lines | length == 0
   vars:
-    lxc_template_final_options_jessie: >-
+    lxc_template_final_options_elts: >-
       --keyring=/etc/apt/trusted.gpg.d/freexian-archive-extended-lts.gpg
       --mirror=https://elts.evolix.org/extended-lts
       --security-mirror=http://archive.debian.org/debian-security
       {{ lxc_template_options }}
-    lxc_template_final_options_stretch: >-
+    lxc_template_final_options_archive_removed: >-
       --keyring=/usr/share/keyrings/debian-archive-removed-keys.gpg
       --mirror=http://archive.debian.org/debian
       --security-mirror=http://archive.debian.org/debian-security
       {{ lxc_template_options }}
-    lxc_template_final_options_buster: >-
+    lxc_template_final_options_archive: >-
       --mirror=http://archive.debian.org/debian
       --security-mirror=http://archive.debian.org/debian-security
       {{ lxc_template_options }}
     lxc_template_final_options__internal: >-
       {%- if release == 'jessie' and ansible_distribution_major_version is version('11', '>=') -%}
-        {{ lxc_template_final_options_jessie }}
+        {{ lxc_template_final_options_elts }}
       {%- elif release == 'stretch' and ansible_distribution_major_version is version('11', '>=') -%}
-        {{ lxc_template_final_options_stretch }}
-      {%- elif release == 'buster' and ansible_distribution_major_version is version('11', '>=') -%}
-        {{ lxc_template_final_options_buster }}
+        {{ lxc_template_final_options_archive_removed }}
+      {%- elif release == 'buster' and ansible_distribution_major_version is version('11', '=') -%}
+        {{ lxc_template_final_options_archive }}
+      {%- elif release == 'buster' and ansible_distribution_major_version is version('12', '>=') -%}
+        {{ lxc_template_final_options_archive_removed }}
       {%- else -%}
         {{ lxc_template_final_options }}
       {%- endif -%}
