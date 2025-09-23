@@ -1,8 +1,5 @@
 ---
 
-- ansible.builtin.set_fact:
-    redis_restart_handler_name: "{{ redis_restart_if_needed | bool | ternary('restart redis', 'restart redis (noop)') }}"
-
 - name: Linux kernel overcommit memory setting is enabled
   ansible.posix.sysctl:
     name: "vm.overcommit_memory"
@@ -49,24 +46,10 @@
   tags:
     - redis
 
-- name: set variables for default mode
-  ansible.builtin.set_fact:
-    redis_conf_dir: "{{ redis_conf_dir_prefix }}"
-    redis_socket_dir: "{{ redis_socket_dir_prefix }}"
-    redis_pid_dir: "{{ redis_pid_dir_prefix }}"
-    redis_log_dir: "{{ redis_log_dir_prefix }}"
-    redis_data_dir: "{{ redis_data_dir_prefix }}"
-  when: redis_instance_name is not defined
-
-- name: set variables for instance mode
-  ansible.builtin.set_fact:
-    redis_systemd_name: "redis-server@{{ redis_instance_name }}"
-    redis_conf_dir: "{{ redis_conf_dir_prefix }}-{{ redis_instance_name }}"
-    redis_socket_dir: "{{ redis_socket_dir_prefix }}-{{ redis_instance_name }}"
-    redis_pid_dir: "{{ redis_pid_dir_prefix }}-{{ redis_instance_name }}"
-    redis_log_dir: "{{ redis_log_dir_prefix }}-{{ redis_instance_name }}"
-    redis_data_dir: "{{ redis_data_dir_prefix }}-{{ redis_instance_name }}"
-  when: redis_instance_name is defined
+- name: Set variables for default or instance mode
+  ansible.builtin.include_vars:
+    file: "{% if redis_instance_name is defined %}instance{% else %}default{% endif %}-server.yml"
+    hash_behaviour: replace
 
 - name: Fail if redis_bind_interface is set
   ansible.builtin.fail:
