@@ -1,0 +1,11 @@
+---
+varnish_systemd_override_template: >-
+  {%- if varnish_package_facts['version'] is version('4', '>=') and varnish_package_facts['version'] is version('6', '<') -%}
+    override.conf.varnish4.j2
+  {%- elif varnish_package_facts['version'] is version('6', '>=') and varnish_package_facts['version'] is version('7', '<') -%}
+    override.conf.varnish6.j2
+  {%- elif varnish_package_facts['version'] is version('7', '>=') -%}
+    override.conf.varnish7.j2
+  {%- else -%}
+    {{ undef() }}
+  {%- endif -%}
