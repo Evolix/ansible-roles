@@ -2,8 +2,11 @@
 
 - name: dependencies are satisfied
   ansible.builtin.apt:
-    name: iptables
+    name: "{{ item }}"
     state: present
+  loop:
+    - iptables
+    - ipset
 
 - name: Stat minifirewall init file (before)
   ansible.builtin.stat:

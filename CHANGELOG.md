@@ -14,7 +14,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Added
 
 * Elasticsearch: add warning comment to elasticsearch_custom_datadir variable.
-
+* minifirewall: Add `ipset` as a dependency
 
 ### Changed
 
