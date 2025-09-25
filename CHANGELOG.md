@@ -44,6 +44,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc: Fix the creation of several container in a single playbook
 * lxc: Fix creation of buster containers on bookworm and up
 * nagios-nrpe: Fix false positive in check_ssl_local
+* proftpd: Fix usage with tag proftpd
 * kvm-host: Allocate PTY when running ssh drbdadm commands
 
 ### Removed
