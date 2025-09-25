@@ -25,27 +25,10 @@
   tags:
     - proftpd
 
-- name: Hash generated FTP password
-  ansible.builtin.set_fact:
-    proftpd_password: "{{ ftp_password.stdout | password_hash('sha512') }}"
-  check_mode: no
-  when: check_ftp_account.rc != 0
-  tags:
-    - proftpd
-
 - name: Get current FTP password
   ansible.builtin.shell:
     cmd: grep "^{{ proftpd_name }}:" /etc/proftpd/vpasswd | cut -d':' -f2
   register: hashed_ftp_password
-  check_mode: no
-  when: check_ftp_account.rc == 0
-  changed_when: False
-  tags:
-    - proftpd
-
-- name: Get current FTP password
-  ansible.builtin.set_fact:
-    proftpd_password: "{{ hashed_ftp_password.stdout }}"
   check_mode: no
   when: check_ftp_account.rc == 0
   changed_when: False
@@ -59,6 +42,8 @@
     create: yes
     mode: "0440"
     line: "{{ proftpd_name }}:{{ proftpd_password }}:{{ proftpd_uid }}:{{ proftpd_gid }}::{{ proftpd_home }}:/bin/false"
+  vars:
+    proftpd_password: "{% if check_ftp_account.rc == 0 %}{{ hashed_ftp_password.stdout }}{% else %}{{ ftp_password.stdout | password_hash('sha512') }}{% endif %}"
   notify: restart proftpd
   tags:
     - proftpd
