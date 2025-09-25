@@ -243,7 +243,7 @@ main() {
         echo "Updating lists..."
     fi
     # Update APT cache and get packages to upgrade and packages on hold.
-    aptUpdateOutput=$(apt-get -o Dir::State::Lists="${listupgrade_state_dir}" update 2>&1 | (grep --extended-regexp --invert-match --regexp '^(Listing|WARNING|$)' --regexp upgraded --regexp 'up to date' || true))
+    aptUpdateOutput=$(apt-get -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" update 2>&1 | (grep --extended-regexp --invert-match --regexp '^(Listing|WARNING|$)' --regexp upgraded --regexp 'up to date' || true))
 
     if echo "${aptUpdateOutput}" | grep --extended-regexp "^Err(:[0-9]+)? http"; then
         echo "FATAL - Not able to fetch all sources (probably a pesky (mini)firewall). Please, fix me" >&2
@@ -251,7 +251,7 @@ main() {
     fi
 
     apt-mark showhold | sed -e 's/\(.\+\)/^\1\//' >"${packagesHold}"
-    apt -o Dir::State::Lists="${listupgrade_state_dir}" list --upgradable 2>&1 | grep --invert-match --file "${packagesHold}" | grep --invert-match --extended-regexp '^(Listing|WARNING|$)' >"${packages}"
+    apt -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" list --upgradable 2>&1 | grep --invert-match --file "${packagesHold}" | grep --invert-match --extended-regexp '^(Listing|WARNING|$)' >"${packages}"
     packagesParsable=$(cut -f 1 -d / <"${packages}" | tr '\n' ' ' | cut -c 900-)
 
     # No updates? Exit!
@@ -333,7 +333,7 @@ main() {
         echo "Dowloading packages..."
     fi
     # Now we try to fetch all the packages for the next update session
-    downloadstatus=$(apt-get -o Dir::State::Lists="${listupgrade_state_dir}" dist-upgrade --assume-yes --download-only -q 2>&1)
+    downloadstatus=$(apt-get -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" dist-upgrade --assume-yes --download-only -q 2>&1)
     apt_rc=$?
     echo "${downloadstatus}" | grep --quiet 'Download complete and in download only mode'
     download_rc=$?
@@ -417,6 +417,7 @@ hostname=$(grep HOSTNAME /etc/evomaintenance.cf | cut -d'=' -f2)
 hostname=${hostname%%.evolix.net}
 listupgrade_state_dir="${listupgrade_state_dir:-/var/lib/listupgrade}"
 hooks_dir="/etc/evolinux/listupgrade-hooks"
+listupgrade_sources_dir="${listupgrade_sources_dir:-/etc/apt/listupgrade-sources.list.d}"
 
 # If hostname is composed with -, remove the first part.
 if [[ "${hostname}" =~ "-" ]]; then
