@@ -34,6 +34,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * openvpn: Add MASQUERADE rule in /etc/minifirewall.d/zzz-custom instead of /etc/default/minifirewall
 * packweb-apache: Don’t set pinning for backports (for phpmyadmin on Debian 10.)
 * proftpd: Avoid using `set_fact` when possible
+* proftpd: Replace loop + `when` on loop_var with `selectattr` or `rejectattr` filters
 * redis: Avoid using `set_fact` when possible
 * varnish: Avoid using `set_fact` when possible
 * minifirewall: upstream release 25.08

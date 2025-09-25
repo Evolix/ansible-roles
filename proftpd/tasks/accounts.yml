@@ -1,14 +1,12 @@
 ---
-- ansible.builtin.include_tasks: accounts_password.yml
-  when: item.password is undefined
-  loop: "{{ proftpd_accounts }}"
+- name: Get passwords for accounts without one
+  ansible.builtin.include_tasks: accounts_password.yml
+  loop: "{{ proftpd_accounts | default([]) | rejectattr('password', 'defined') }}"
   tags:
     - proftpd
 
 - ansible.builtin.set_fact:
-    proftpd_accounts_final: "{{ proftpd_accounts_final + [ item ] }}"
-  when: item.password is defined
-  loop: "{{ proftpd_accounts }}"
+    proftpd_accounts_final: "{{ proftpd_accounts_final + ( proftpd_accounts | default([]) | selectattr('password', 'defined') ) }}"
   tags:
     - proftpd
 
@@ -99,13 +97,12 @@
     dest: "/etc/proftpd/sftp.authorized_keys/{{ _proftpd_account.name }}"
     src: authorized_keys.j2
     mode: 0644
-  loop: "{{ proftpd_accounts_final }}"
+  loop: "{{ proftpd_accounts_final | default([]) | selectattr('sshkeys', 'defined') }}"
   loop_control:
     loop_var: _proftpd_account
   notify: restart proftpd
   when:
     - proftpd_sftp_enable | bool
     - proftpd_sftp_use_publickeys | bool
-    - _proftpd_account.sshkeys is defined
   tags:
     - proftpd
