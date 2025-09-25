@@ -26,6 +26,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * kvm-host: migrate-vm: fix "vm file" detection
 * kvm-host: migrate-vm: show usage when executed with 0 arguments
 * kvm-host: migrate-vm: version 25.09
+* lxc-php: Avoid using `set_fact` when possible
 * lxc-solr: Avoid using `set_fact` when possible
 * minifirewall: upstream release 25.07
 * minifirewall: prepare checks for upcoming version with real systemd unit
