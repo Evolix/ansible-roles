@@ -1,21 +1,5 @@
 ---
 
-- name: "Set values for Solr < 9.0.0"
-  ansible.builtin.set_fact:
-    tarball_url: https://archive.apache.org/dist/lucene/solr/{{ solr_version }}/solr-{{ solr_version }}.tgz
-    tarball_path: /var/lib/lxc/{{ name }}/rootfs/root/solr-{{ solr_version }}.tgz
-    start_command: "/etc/init.d/solr start"
-    stop_command: "/etc/init.d/solr stop"
-  when: "solr_version is version('9.0.0', '<')"
-
-- name: "Set values for Solr >= 9.0.0"
-  ansible.builtin.set_fact:
-    tarball_url: https://archive.apache.org/dist/solr/solr/{{ solr_version }}/solr-{{ solr_version }}.tgz
-    tarball_path: /var/lib/lxc/{{ name }}/rootfs/root/solr-{{ solr_version }}.tgz
-    start_command: "systemctl start solr"
-    stop_command: "systemctl stop solr"
-  when: "solr_version is version('9.0.0', '>=')"
-
 - name: Install java and lsof packages
   ansible.builtin.command:
     cmd: "lxc-attach -n {{ name }} -- apt-get install -y default-jre-headless lsof"
@@ -25,6 +9,13 @@
     url: "{{ tarball_url }}"
     dest: "{{ tarball_path }}"
     mode: '0644'
+  vars:
+    tarball_url: >-
+      {%- if solr_version is version('9.0.0', '<') -%}
+        https://archive.apache.org/dist/lucene/solr/{{ solr_version }}/solr-{{ solr_version }}.tgz
+      {%- else -%}
+        https://archive.apache.org/dist/solr/solr/{{ solr_version }}/solr-{{ solr_version }}.tgz
+      {%- endif -%}
 
 - name: "Extract solr-{{ solr_version }}.tgz"
   ansible.builtin.unarchive:
