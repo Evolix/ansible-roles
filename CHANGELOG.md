@@ -15,6 +15,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * Elasticsearch: add warning comment to elasticsearch_custom_datadir variable.
 * minifirewall: Add `ipset` as a dependency
+* evolinux-base: disable "users" group when adduser (UNTESTED)
 
 ### Changed
 

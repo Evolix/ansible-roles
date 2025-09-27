@@ -67,6 +67,13 @@
     replace: "DIR_MODE=0700"
   when: evolinux_system_dirmode_adduser | bool
 
+- name: Set /etc/adduser.conf USERS_GID to -1
+  ansible.builtin.lineinfile:
+    dest: /etc/adduser.conf
+    line: "USERS_GID=-1"
+    regexp: "^USERS_GID="
+  when: evolinux_system_usersgroup_adduser | bool
+
 # TODO: trouver comment ne pas faire ça sur Xen Dom-U
 
 - name: Deactivating login on all tty except tty2
