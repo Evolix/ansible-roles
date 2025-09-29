@@ -37,6 +37,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * proftpd: Avoid using `set_fact` when possible
 * proftpd: Replace loop + `when` on loop_var with `selectattr` or `rejectattr` filters
 * redis: Avoid using `set_fact` when possible
+* redmine: Replace loop + `when` on loop_var with `selectattr` filter
 * varnish: Avoid using `set_fact` when possible
 * minifirewall: upstream release 25.08
 
