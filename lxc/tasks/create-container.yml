@@ -127,6 +127,13 @@
   ansible.builtin.shell:
     cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ name }} --  apt-get purge -y openssh-server"
 
+- name: "Fix jessie repository in container {{ name }}"
+  ansible.builtin.replace:
+    dest: "/var/lib/lxc/{{ name }}/rootfs/etc/apt/sources.list"
+    regexp: 'deb http://archive\.debian\.org/debian-security jessie/updates main'
+    replace: 'deb http://elts.evolix.org/extended-lts jessie-lts main'
+  when: release == 'bullseye'
+
 - name: "Fix bullseye repository in container {{ name }}"
   ansible.builtin.replace:
     dest: "/var/lib/lxc/{{ name }}/rootfs/etc/apt/sources.list"
