@@ -46,6 +46,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc: Do not fix sources.list in Bookworm container if file is not present
 * lxc: Fix the creation of several container in a single playbook
 * lxc: Fix creation of buster containers on bookworm and up
+* lxc: Fix jessie sources.list in php56
 * nagios-nrpe: Fix false positive in check_ssl_local
 * nextcloud: Fix /home/$user rights (700 is good enough)
 * packweb-apache: Fix nginx vhost path in phpContainer
