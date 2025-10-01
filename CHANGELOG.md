@@ -29,8 +29,8 @@ The **patch** part is incremented if multiple releases happen the same month
 * kvm-host: migrate-vm: version 25.09
 * lxc-php: Avoid using `set_fact` when possible
 * lxc-solr: Avoid using `set_fact` when possible
-* minifirewall: upstream release 25.07
 * minifirewall: prepare checks for upcoming version with real systemd unit
+* minifirewall: upstream release 25.08
 * nextcloud: Replace `with_indexed_items` with `loop` and `loop_control.index_var`
 * openvpn: Add MASQUERADE rule in /etc/minifirewall.d/zzz-custom instead of /etc/default/minifirewall
 * packweb-apache: Don’t set pinning for backports (for phpmyadmin on Debian 10.)
@@ -39,18 +39,18 @@ The **patch** part is incremented if multiple releases happen the same month
 * redis: Avoid using `set_fact` when possible
 * redmine: Replace loop + `when` on loop_var with `selectattr` filter
 * varnish: Avoid using `set_fact` when possible
-* minifirewall: upstream release 25.08
 
 ### Fixed
 
-* packweb-apache: Fix nginx vhost path in phpContainer
+* kvm-host: Allocate PTY when running ssh drbdadm commands
 * lxc: Do not fix sources.list in Bookworm container if file is not present
 * lxc: Fix the creation of several container in a single playbook
 * lxc: Fix creation of buster containers on bookworm and up
 * nagios-nrpe: Fix false positive in check_ssl_local
+* nextcloud: Fix /home/$user rights (700 is good enough)
+* packweb-apache: Fix nginx vhost path in phpContainer
 * proftpd: Do not break when `proftpd_sftp_enable` is `false`
 * proftpd: Fix usage with tag proftpd
-* kvm-host: Allocate PTY when running ssh drbdadm commands
 
 ### Removed
 
