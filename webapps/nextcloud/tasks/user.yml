@@ -29,7 +29,7 @@
 - name: Set mode for home directory
   ansible.builtin.file:
     path: "{{ nextcloud_home }}"
-    mode: "0711"
+    mode: "0700"
 
 - name: Create top-level directories
   ansible.builtin.file:
