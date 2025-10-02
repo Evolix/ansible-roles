@@ -205,3 +205,6 @@
   loop: "{{ jitsimeet_domains[1:] }}"
   loop_control:
     loop_var: domain
+
+- name: Setup fail2ban
+  ansible.builtin.include_tasks: fail2ban.yml

@@ -1,5 +1,5 @@
-##  Par exemple pour bloquer une salle nommée «patate» :
-#  location ~* /patate$
-#  {
-#      return 404;
-#  }
+##  Par exemple pour bloquer une salle commençant par « patate » :
+##  location ~* /patate { return 404; }
+##  if ($query_string ~* room=patate) { return 404; }
+##  if ($http_referer ~* /patate) {  return 404; }
+
