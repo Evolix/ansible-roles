@@ -89,6 +89,7 @@ Component "conference.{{ jitsimeet_domains | first }}" "muc"
         --"token_verification";
         "muc_rate_limit";
         "muc_password_whitelist";
+        "time_restricted";
     }
     admins = { "focus@auth.{{ jitsimeet_domains | first }}" }
     muc_password_whitelist = {
@@ -96,6 +97,7 @@ Component "conference.{{ jitsimeet_domains | first }}" "muc"
     }
     muc_room_locking = false
     muc_room_default_public_jids = true
+    conference_max_minutes = {{ jitsimeet_conference_max_minutes }}
 
 Component "breakout.{{ jitsimeet_domains | first }}" "muc"
     restrict_room_creation = true
