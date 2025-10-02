@@ -24,6 +24,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evobackup-client: upstream release 25.09
 * evocheck: upstream release 25.08.1
 * evolinux-users: Do not loop over ssh keys for `ansible.posix.authorized_key`
+* evomaintenance: upstream release 25.10
 * kvm-host: migrate-vm: fix "vm file" detection
 * kvm-host: migrate-vm: show usage when executed with 0 arguments
 * kvm-host: migrate-vm: version 25.09

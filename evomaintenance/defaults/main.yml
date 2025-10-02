@@ -17,11 +17,6 @@ evomaintenance_force_config: True
 
 evomaintenance_hostname: "{{ evolinux_internal_fqdn }}"
 
-evomaintenance_pg_host: Null
-evomaintenance_pg_passwd: Null
-evomaintenance_pg_db: Null
-evomaintenance_pg_table: Null
-
 evomaintenance_from_domain: "{{ evolinux_internal_fqdn }}"
 evomaintenance_from: "evomaintenance@{{ evomaintenance_from_domain }}"
 evomaintenance_full_from: "Evomaintenance <{{ evomaintenance_from }}>"
@@ -35,7 +30,6 @@ evomaintenance_api_endpoint: Null
 evomaintenance_api_key: Null
 
 evomaintenance_hook_api: True
-evomaintenance_hook_db: False
 evomaintenance_hook_commit: True
 evomaintenance_hook_mail: True
 

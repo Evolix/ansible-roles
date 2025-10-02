@@ -15,6 +15,17 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Security
 
+## [25.10] - 2025-10-02
+
+### Changed
+
+* Extract PROGNAME variable
+* Use `loginctl` (systemd) to get source IP on Debian 12+
+
+### Removed
+
+* The database hook is not available anymore
+
 ## [25.06] - 2025-06-10
 
 ### Fixed
