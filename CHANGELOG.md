@@ -34,7 +34,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc: Fix the creation of several container in a single playbook
 * minifirewall: modern/sysvinit + modern/systemd
 * minifirewall: prepare checks for upcoming version with real systemd unit
-* minifirewall: upstream release 25.08
+* minifirewall: upstream release 25.10
 * nextcloud: Replace `with_indexed_items` with `loop` and `loop_control.index_var`
 * openvpn: Add MASQUERADE rule in /etc/minifirewall.d/zzz-custom instead of /etc/default/minifirewall
 * packweb-apache: Don’t set pinning for backports (for phpmyadmin on Debian 10.)

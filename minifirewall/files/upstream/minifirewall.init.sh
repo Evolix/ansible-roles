@@ -15,19 +15,25 @@
 set -u
 
 minifirewall_bin=/usr/local/sbin/minifirewall
+show_systemctl_status() {
+    systemctl --no-pager --output=cat --lines=30 status minifirewall.service
+}
 
 case "${1:-}" in
     start)
-        systemctl start minifirewall
+        systemctl start minifirewall.service
+        show_systemctl_status
         ;;
     stop)
-        systemctl stop minifirewall
+        systemctl stop minifirewall.service
+        show_systemctl_status
         ;;
     status)
-        systemctl status minifirewall
+        show_systemctl_status
         ;;
     restart|reload|condrestart)
-        systemctl restart minifirewall
+        systemctl restart minifirewall.service
+        show_systemctl_status
         ;;
     reset)
         "${minifirewall_bin}" reset

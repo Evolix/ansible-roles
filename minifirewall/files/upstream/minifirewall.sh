@@ -5,7 +5,7 @@ PROGNAME="minifirewall"
 # shellcheck disable=SC2034
 REPOSITORY="https://gitea.evolix.org/evolix/minifirewall"
 
-VERSION="25.08"
+VERSION="25.10"
 readonly VERSION
 
 set -u
