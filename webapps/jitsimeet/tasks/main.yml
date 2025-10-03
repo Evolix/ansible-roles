@@ -207,8 +207,8 @@
     loop_var: domain
 
 - name: Setup coturn on secondary ip address
-  ansible.builtin.include_tasks: turn_secondary_ip_address.yml
+  ansible.builtin.import_tasks: turn_secondary_ip_address.yml
   when: jitsimeet_turn_secondary_ip_address is defined
 
 - name: Setup fail2ban
-  ansible.builtin.include_tasks: fail2ban.yml
+  ansible.builtin.import_tasks: fail2ban.yml
