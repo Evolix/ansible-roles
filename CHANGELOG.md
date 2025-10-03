@@ -26,7 +26,6 @@ The **patch** part is incremented if multiple releases happen the same month
 * evocheck: upstream release 25.08.1
 * evolinux-base: continue to install ntpdate before Debian 10
 * evolinux-users: Do not loop over ssh keys for `ansible.posix.authorized_key`
-* evomaintenance: remove DB hook
 * evomaintenance: upstream release 25.10
 * kvm-host: migrate-vm: fix "vm file" detection
 * kvm-host: migrate-vm: show usage when executed with 0 arguments
@@ -58,6 +57,8 @@ The **patch** part is incremented if multiple releases happen the same month
 * proftpd: Fix usage with tag proftpd
 
 ### Removed
+
+* evomaintenance: remove DB hook
 
 ### Security
 
