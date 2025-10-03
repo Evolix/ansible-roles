@@ -25,6 +25,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evobackup-client: upstream release 25.09
 * evocheck: upstream release 25.08.1
 * evolinux-users: Do not loop over ssh keys for `ansible.posix.authorized_key`
+* evomaintenance: remove DB hook
 * evomaintenance: upstream release 25.10
 * kvm-host: migrate-vm: fix "vm file" detection
 * kvm-host: migrate-vm: show usage when executed with 0 arguments
@@ -32,8 +33,6 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc-php: Avoid using `set_fact` when possible
 * lxc-solr: Avoid using `set_fact` when possible
 * lxc: Fix the creation of several container in a single playbook
-* minifirewall: modern/sysvinit + modern/systemd
-* minifirewall: prepare checks for upcoming version with real systemd unit
 * minifirewall: upstream release 25.10
 * nextcloud: Replace `with_indexed_items` with `loop` and `loop_control.index_var`
 * openvpn: Add MASQUERADE rule in /etc/minifirewall.d/zzz-custom instead of /etc/default/minifirewall
