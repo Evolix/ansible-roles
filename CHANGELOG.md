@@ -24,6 +24,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * Use FQCN for all ansible modules
 * evobackup-client: upstream release 25.09
 * evocheck: upstream release 25.08.1
+* evolinux-base: continue to install ntpdate before Debian 10
 * evolinux-users: Do not loop over ssh keys for `ansible.posix.authorized_key`
 * evomaintenance: remove DB hook
 * evomaintenance: upstream release 25.10
