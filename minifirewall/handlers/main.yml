@@ -27,9 +27,3 @@
   register: minifirewall_init_restart
   failed_when: False
   changed_when: False
-
-- name: enable minifirewall.service
-  ansible.builtin.systemd:
-    name: minifirewall.service
-    enabled: True
-    daemon-reload: yes

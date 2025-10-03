@@ -59,7 +59,14 @@
     mode: "0644"
     owner: root
     group: root
-  notify: enable minifirewall.service
+  register: minifirewall_service
+
+- name: enable minifirewall.service
+  ansible.builtin.systemd:
+    name: minifirewall.service
+    enabled: true
+    daemon-reload: yes
+  when: minifirewall_service is changed
 
 - name: Directory for included files is present
   ansible.builtin.file:
