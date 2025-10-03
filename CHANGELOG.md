@@ -13,15 +13,13 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
-* Elasticsearch: add warning comment to elasticsearch_custom_datadir variable.
-* minifirewall: Add `ipset` as a dependency
+* elasticsearch: add warning comment to elasticsearch_custom_datadir variable.
 * evolinux-base: disable "users" group when adduser (UNTESTED)
+* minifirewall: Add `ipset` as a dependency
 * prometheus: New role
 
 ### Changed
 
-* Replace `with_items:` with `loop:`
-* Use FQCN for all ansible modules
 * evobackup-client: upstream release 25.09
 * evocheck: upstream release 25.08.1
 * evolinux-base: continue to install ntpdate before Debian 10
@@ -41,15 +39,17 @@ The **patch** part is incremented if multiple releases happen the same month
 * proftpd: Replace loop + `when` on loop_var with `selectattr` or `rejectattr` filters
 * redis: Avoid using `set_fact` when possible
 * redmine: Replace loop + `when` on loop_var with `selectattr` filter
+* Replace `with_items:` with `loop:`
+* Use FQCN for all ansible modules
 * varnish: Avoid using `set_fact` when possible
 
 ### Fixed
 
 * kvm-host: Allocate PTY when running ssh drbdadm commands
 * lxc: Do not fix sources.list in Bookworm container if file is not present
-* lxc: Fix the creation of several container in a single playbook
 * lxc: Fix creation of buster containers on bookworm and up
 * lxc: Fix jessie sources.list in php56
+* lxc: Fix the creation of several container in a single playbook
 * nagios-nrpe: Fix false positive in check_ssl_local
 * nextcloud: Fix /home/$user rights (700 is good enough)
 * packweb-apache: Fix nginx vhost path in phpContainer
