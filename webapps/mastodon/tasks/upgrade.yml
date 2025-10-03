@@ -40,20 +40,28 @@
     update: true
   become_user: "{{ mastodon_instance }}"
 
+- name: Template .env.production configuration file
+  ansible.builtin.template:
+    src: "env.j2"
+    dest: "~{{ mastodon_instance }}/mastodon/.env.production"
+    owner: "{{ mastodon_instance }}"
+    group: "{{ mastodon_instance }}"
+    mode: "0640"
+
 - name: Install et configure app with bundler and yarn
   become_user: "{{ mastodon_instance }}"
   block:
     - name: Install gem dependencies
-      ansible.builtin.shell: ". ~/.profile && bundle install --deployment --without development test -j{{ ansible_processor_count }}"
+      ansible.builtin.shell: ". ~/.profile && bundle install"
       args:
         chdir: "~/mastodon"
         executable: /bin/bash # fails with /bin/sh
-    - name: Prepare yarn 4 (via corepack)
-      ansible.builtin.shell:
-        cmd: corepack prepare
-      args:
-        chdir: "~/mastodon"
-        executable: /bin/bash # fails with /bin/sh
+#    - name: Prepare yarn 4 (via corepack)
+#      ansible.builtin.shell:
+#        cmd: corepack prepare
+#      args:
+#        chdir: "~/mastodon"
+#        executable: /bin/bash # fails with /bin/sh
     - name: Install javascript dependencies
       ansible.builtin.shell: ". ~/.profile && yarn install --immutable"
       args:

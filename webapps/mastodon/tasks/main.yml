@@ -44,7 +44,7 @@
   become_user: "{{ mastodon_instance }}"
   block:
     - name: Install gem dependencies
-      ansible.builtin.shell: ". ~/.profile && bundle install --deployment --without development test -j{{ ansible_processor_count }}"
+      ansible.builtin.shell: ". ~/.profile && bundle install"
       args:
         chdir: "~/mastodon"
         executable: /bin/bash # fails with /bin/sh
