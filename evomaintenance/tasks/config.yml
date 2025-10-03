@@ -9,7 +9,7 @@
 
 - name: Configuration is installed
   ansible.builtin.template:
-    src: evomaintenance.j2
+    src: evomaintenance.cf.j2
     dest: /etc/evomaintenance.cf
     owner: root
     group: root
