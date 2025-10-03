@@ -52,7 +52,7 @@
   when:
     - minifirewall_init_mode != 'systemd'
     - not (minifirewall_force_upgrade_script | bool)
-    - _minifirewall_version_check.rc == 1 # grep didn't find but the file exists
+    - _minifirewall_version_check.rc != 1
   tags:
     - always
 
