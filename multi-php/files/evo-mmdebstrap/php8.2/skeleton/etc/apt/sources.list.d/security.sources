@@ -1,5 +1,0 @@
-Types: deb
-URIs: http://security.debian.org/debian-security
-Suites: bookworm-security
-Components: main
-Signed-By: /usr/share/keyrings/debian-archive-bookworm-security-automatic.gpg

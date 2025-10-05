@@ -1,4 +1,0 @@
-# deb http://archive.debian.org/debian jessie main
-# deb http://archive.debian.org/debian-security jessie/updates main
-deb http://elts.evolix.org/extended-lts jessie main
-deb http://elts.evolix.org/extended-lts jessie-lts main
