@@ -58,7 +58,7 @@
     group: root
     mode: 0755
 
-- name: "alloy.service overrided"
+- name: "alloy.service has an override"
   ansible.builtin.copy:
     src: alloy.override.service
     dest: /etc/systemd/system/alloy.service.d/override.conf
