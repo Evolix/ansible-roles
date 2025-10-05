@@ -1,5 +1,0 @@
----
-
-- ansible.builtin.import_tasks: vmagent.yml
-
-- ansible.builtin.import_tasks: node-exporter.yml
