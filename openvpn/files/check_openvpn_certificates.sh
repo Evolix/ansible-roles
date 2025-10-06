@@ -11,12 +11,21 @@ STATE_UNKNOWN=3
 STATE=$STATE_OK
 CERT_STATE=$STATE
 CA_STATE=$STATE
+CRL_STATE=$STATE
 CERT_ECHO=""
 CA_ECHO=""
+CRL_ECHO=""
+
+# 0 si pas de CRL sur le serveur ; 1 si CRL présente
+IS_CRL=1
+
+if [ "$IS_CRL" = 0 ]; then
+    CRL_ECHO="OK - No CRL on this server"
+fi
 
 error() {
-    if [ $? -eq 2 ] && [ "X$CERT_ECHO" = "X" ] && [ "X$CA_ECHO" = "X" ] ; then
-        echo "CRITICAL - The check exited with an error. Is the conf_file var containing the real conf file location ? On Debian, is the check executed with sudo ? On OpenBSD, is the check executed with doas ? Is OpenVPN running ?"
+    if [ $? -gt 0 ] && [ "X$CERT_ECHO" = "X" ] && [ "X$CA_ECHO" = "X" ] && [ "X$CRL_ECHO" = "X" ] ; then
+        echo "CRITICAL - The check exited with an error. Is the conf_file var containing the real conf file location ? On Debian, is the check executed with sudo ? On OpenBSD, is the check executed with doas ? Is OpenVPN running ? Is there a CRL to check ?"
     fi
 }
 
@@ -49,12 +58,19 @@ cert_file=$(grep -s "^cert " $conf_file)
 cert_file=$(echo $cert_file | sed -e "s/^cert *\//\//")
 ca_file=$(grep -s "^ca " $conf_file)
 ca_file=$(echo $ca_file | sed -e "s/^ca *\//\//")
+if [ "$IS_CRL" = 1 ]; then
+    crl_file=$(grep -s "^crl-verify " $conf_file)
+    crl_file=$(echo $crl_file | sed -e "s/^crl-verify *\//\//")
+fi
 
-# Get expiration date of cert and ca certificates
+# Get expiration date of certificates
 cert_expiration_date=$(grep "Not After" $cert_file | sed -e "s/.*Not After : //")
 ca_expiration_date=$(openssl x509 -enddate -noout -in $ca_file | cut -d '=' -f 2)
+if [ "$IS_CRL" = 1 ]; then
+    crl_expiration_date=$(openssl crl -inform PEM -nextupdate -noout -in $crl_file | cut -d '=' -f 2)
+fi
 
-# Get the date of last modification of cert and ca certificates
+# Get the date of last modification of certificates
 if [ "$SYSTEM" = "openbsd" ]; then
     seconds_last_cert_modification_date=$(stat -f %m "$cert_file")
     seconds_last_ca_modification_date=$(stat -f %m "$ca_file")
@@ -106,6 +122,26 @@ test_ca_expiration() {
     fi
 }
 
+test_crl_expiration() {
+    # Already expired - CRL file
+    if [ $current_date -ge $1 ]; then
+        CRL_ECHO="CRITICAL - The CRL certificate has expired on $formated_crl_expiration_date. Renew it with 'openssl ca -config /etc/shellpki/openssl.cnf -gencrl -out $crl_file'. No restart needed"
+        CRL_STATE=$STATE_CRITICAL
+    # Expiration in 15 days or less - CRL file
+    elif [ $((current_date+_15_days)) -ge $1 ]; then
+        CRL_ECHO="CRITICAL - The CRL certificate expires in 15 days or less : $formated_crl_expiration_date. Renew it with 'openssl ca -config /etc/shellpki/openssl.cnf -gencrl -out $crl_file'. No restart needed"
+        CRL_STATE=$STATE_CRITICAL
+    # Expiration in 30 days or less - CRL file
+    elif [ $((current_date+_30_days)) -ge $1 ]; then
+        CRL_ECHO="WARNING - The CRL certificate expires in 30 days or less : $formated_crl_expiration_date. Renew it with 'openssl ca -config /etc/shellpki/openssl.cnf -gencrl -out $crl_file'. No restart needed"
+        CRL_STATE=$STATE_WARNING
+    # Expiration in more than 30 days - CRL file
+    else
+        CRL_ECHO="OK - The CRL certificate expires on $formated_crl_expiration_date"
+        CRL_STATE=$STATE_OK
+    fi
+}
+
 test_openvpn_restarted_since_last_ca_cert_modification() {
     if [ $is_backup_not_running_openvpn -eq "0" ]; then
         RESTART_ECHO="OK - OpenVPN is not running because server is backup"
@@ -133,11 +169,20 @@ main() {
         formated_ca_expiration_date=$(TZ="Europe/Paris" $date_cmd -d "$ca_expiration_date" +"%F %T %Z")
         seconds_ca_expiration_date=$(TZ="Europe/Paris" $date_cmd -d "$ca_expiration_date" +"%s")
 
+        # CRL expiration date human formated then in seconds
+        if [ "$IS_CRL" = 1 ]; then
+            formated_crl_expiration_date=$(TZ="Europe/Paris" $date_cmd -d "$crl_expiration_date" +"%F %T %Z")
+            seconds_crl_expiration_date=$(TZ="Europe/Paris" $date_cmd -d "$crl_expiration_date" +"%s")
+        fi
+
         # Last OpenVPN restart in seconds
         seconds_last_openvpn_restart_date=$(TZ="Europe/Paris" $date_cmd -d "$last_openvpn_restart_date" +%s)
     
         test_cert_expiration $seconds_cert_expiration_date
         test_ca_expiration $seconds_ca_expiration_date
+        if [ "$IS_CRL" = 1 ]; then
+            test_crl_expiration $seconds_crl_expiration_date
+        fi
         test_openvpn_restarted_since_last_ca_cert_modification $seconds_last_openvpn_restart_date
     
     elif [ "$SYSTEM" = "openbsd" ]; then
@@ -154,8 +199,19 @@ main() {
         formated_ca_expiration_date=$(TZ=$ca_zone $date_cmd -j -z "Europe/Paris" "$posix_ca_expiration_date" +"%F %T %Z")
         seconds_ca_expiration_date=$(TZ=$ca_zone $date_cmd -j -z "Europe/Paris" "$posix_ca_expiration_date" +"%s")
 
+        # CRL expiration date for POSIX date, human formated then in seconds
+        if [ "$IS_CRL" = 1 ]; then
+            posix_crl_expiration_date=$(echo "$crl_expiration_date" | awk '{ printf $4" "(index("JanFebMarAprMayJunJulAugSepOctNovDec",$1)+2)/3" "$2" ",split($3,time,":"); print time[1],time[2],time[3]}' | awk '{printf "%04d%02d%02d%02d%02d.%02d\n", $1, $2, $3, $4, $5, $6}')
+            crl_zone=$(echo "$crl_expiration_date" | awk '{print $5}')
+            formated_crl_expiration_date=$(TZ=$crl_zone $date_cmd -j -z "Europe/Paris" "$posix_crl_expiration_date" +"%F %T %Z")
+            seconds_crl_expiration_date=$(TZ=$crl_zone $date_cmd -j -z "Europe/Paris" "$posix_crl_expiration_date" +"%s")
+        fi
+
         test_cert_expiration $seconds_cert_expiration_date
         test_ca_expiration $seconds_ca_expiration_date
+        if [ "$IS_CRL" = 1 ]; then
+            test_crl_expiration $seconds_crl_expiration_date
+        fi
 
         if [ $is_backup_not_running_openvpn -eq "0" ]; then
             test_openvpn_restarted_since_last_ca_cert_modification 0
@@ -183,19 +239,28 @@ main() {
         exit $RESTART_STATE
     else
         # Display the first one that expires first
-        if [ $CA_STATE -gt $CERT_STATE  ]; then
+        if [ $CA_STATE -gt $CERT_STATE ] || [ $CA_STATE -gt $CRL_STATE ]; then
             echo $CA_ECHO
             echo $CERT_ECHO
+            echo $CRL_ECHO
             echo $RESTART_ECHO
             exit $CA_STATE
-        elif [ $CERT_STATE -gt $CA_STATE ]; then
+        elif [ $CERT_STATE -gt $CA_STATE ] || [ $CERT_STATE -gt $CRL_STATE ]; then
+            echo $CERT_ECHO
+            echo $CA_ECHO
+            echo $CRL_ECHO
+            echo $RESTART_ECHO
+            exit $CERT_STATE
+        elif [ $CRL_STATE -gt $CERT_STATE ] || [ $CRL_STATE -gt $CA_STATE ]; then
+            echo $CRL_ECHO
             echo $CERT_ECHO
             echo $CA_ECHO
             echo $RESTART_ECHO
-            exit $CERT_STATE
+            exit $CRL_STATE
         else
             echo $CA_ECHO
             echo $CERT_ECHO
+            echo $CRL_ECHO
             echo $RESTART_ECHO
             exit $CERT_STATE
         fi
