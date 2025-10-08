@@ -17,6 +17,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: disable "users" group when adduser (UNTESTED)
 * minifirewall: Add `ipset` as a dependency
 * openvpn: also check CRL expiration
+* PKI: add new variable `pki_cert_common_name`
 
 ### Changed
 
