@@ -21,6 +21,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* apt: Remove /etc/apt/trusted.gpg on Debian 13 and newer
 * evobackup-client: upstream release 25.09
 * evocheck: upstream release 25.08.1
 * evolinux-base: continue to install ntpdate before Debian 10
