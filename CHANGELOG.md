@@ -57,6 +57,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * packweb-apache: Fix nginx vhost path in phpContainer
 * proftpd: Do not break when `proftpd_sftp_enable` is `false`
 * proftpd: Fix usage with tag proftpd
+* evoadmin-mail: Fail if /etc/evoadmin-mail/config.ini does not exist after evoadmin-mail.deb. This can happen when the postinst has been partly executed because slapd dependency is not met (no /root/.ldapvirc file).
 
 ### Removed
 
