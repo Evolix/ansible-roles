@@ -15,6 +15,12 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Security
 
+## [25.10.1] - 2025-10-09
+
+### Added
+
+* add "force-stop" command to stop the firewall, whatever state the systemd service might be in
+
 ## [25.10] - 2025-10-03
 
 ### Added

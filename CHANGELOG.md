@@ -33,7 +33,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc-php: Avoid using `set_fact` when possible
 * lxc-solr: Avoid using `set_fact` when possible
 * lxc: Fix the creation of several container in a single playbook
-* minifirewall: upstream release 25.10
+* minifirewall: upstream release 25.10.1
 * nextcloud: Replace `with_indexed_items` with `loop` and `loop_control.index_var`
 * openvpn: Add MASQUERADE rule in /etc/minifirewall.d/zzz-custom instead of /etc/default/minifirewall
 * packweb-apache: Don’t set pinning for backports (for phpmyadmin on Debian 10.)
