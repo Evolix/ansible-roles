@@ -99,7 +99,8 @@
     - minifirewall_install_mode != 'legacy'
     - minifirewall_restart_if_needed | bool
     - minifirewall_is_running.rc == 0
-    - (not minifirewall_script_before.stat.checksum is defined and minifirewall_script_after.stat.checksum is defined) or minifirewall_script_before.stat.checksum != minifirewall_script_after.stat.checksum or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed
+    - (not minifirewall_script_before.stat.checksum is defined and minifirewall_script_after.stat.checksum is defined) or (minifirewall_script_before.stat.checksum | default('')) != (minifirewall_script_after.stat.checksum | default('')) or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed
+    - not ansible_check_mode
 
 - name: Schedule minifirewall restart (modern/systemd)
   ansible.builtin.command:
@@ -109,7 +110,8 @@
     - minifirewall_install_mode != 'legacy'
     - minifirewall_restart_if_needed | bool
     - minifirewall_is_running.rc == 0
-    - (not minifirewall_script_before.stat.checksum is defined and minifirewall_script_after.stat.checksum is defined) or minifirewall_script_before.stat.checksum != minifirewall_script_after.stat.checksum or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed
+    - (not minifirewall_script_before.stat.checksum is defined and minifirewall_script_after.stat.checksum is defined) or (minifirewall_script_before.stat.checksum | default('')) != (minifirewall_script_after.stat.checksum | default('')) or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed
+    - not ansible_check_mode
 
 - ansible.builtin.debug:
     var: minifirewall_init_restart

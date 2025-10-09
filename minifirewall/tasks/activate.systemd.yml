@@ -3,7 +3,8 @@
 - name: Enable minifirewall.service
   ansible.builtin.systemd:
     name: minifirewall.service
-    enabled: "{{ (minifirewall_current_autostart | default(False)) or (minifirewall_autostart | default(False)) }}"
+    # It's weird to have to compare explicitely with True, but when the value is None/null it doesn't work well
+    enabled: "{{ minifirewall_current_autostart == True or minifirewall_autostart == True }}"
 
 # Legacy alert5
 
