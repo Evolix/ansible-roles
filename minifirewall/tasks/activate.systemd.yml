@@ -1,9 +1,9 @@
 ---
 
-- name: Enable minifirewall start line
+- name: Enable minifirewall.service
   ansible.builtin.systemd:
     name: minifirewall.service
-    enabled: "{{ minifirewall_autostart | bool }}"
+    enabled: "{{ (minifirewall_current_autostart | default(False)) or (minifirewall_autostart | default(False)) }}"
 
 # Legacy alert5
 

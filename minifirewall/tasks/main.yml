@@ -1,24 +1,11 @@
 ---
 
+- name: Detect current configuration
+  ansible.builtin.import_tasks: detect_current.yml
+  tags:
+    - always
+
 # Legacy or modern mode? ##############################################
-
-- name: Check minifirewall
-  ansible.builtin.stat:
-    path: /etc/init.d/minifirewall
-  register: _minifirewall_check
-  tags:
-    - always
-
-# Legacy versions of minifirewall don't define the VERSION variable
-- name: Look for minifirewall version
-  ansible.builtin.shell:
-    cmd: "grep --no-messages --extended-regexp '^\\s*VERSION=' /etc/init.d/minifirewall /usr/local/sbin/minifirewall"
-  failed_when: False
-  changed_when: False
-  check_mode: False
-  register: _minifirewall_version_check
-  tags:
-    - always
 
 - name: Set install mode to legacy if needed
   ansible.builtin.set_fact:
@@ -26,9 +13,8 @@
     minifirewall_main_file: "{{ minifirewall_legacy_main_file }}"
     minifirewall_tail_file: "{{ minifirewall_legacy_tail_file }}"
   when:
-    - minifirewall_install_mode != 'modern'
-    - not (minifirewall_force_upgrade_script | bool)
-    - _minifirewall_version_check.rc == 1 # grep didn't find but the file exists
+    - minifirewall_install_mode == 'legacy'
+    - minifirewall_current_install_mode == 'legacy' and not (minifirewall_force_upgrade_script | bool)
   tags:
     - always
 
@@ -51,8 +37,8 @@
     minifirewall_init_mode: sysvinit
   when:
     - minifirewall_init_mode != 'systemd'
+    - minifirewall_current_init_mode != "systemd"
     - not (minifirewall_force_upgrade_script | bool)
-    - _minifirewall_version_check.rc != 1
   tags:
     - always
 

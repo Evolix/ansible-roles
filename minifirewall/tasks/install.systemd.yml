@@ -90,6 +90,17 @@
     path: "/usr/local/sbin/minifirewall"
   register: minifirewall_script_after
 
+- name: Force stop minifirewall
+  ansible.builtin.command:
+    cmd: /bin/true
+  notify: "force-stop minifirewall (modern/systemd)"
+  when:
+    - minifirewall_current_init_mode != 'systemd'
+    - minifirewall_install_mode != 'legacy'
+    - minifirewall_restart_if_needed | bool
+    - minifirewall_is_running.rc == 0
+    - (not minifirewall_script_before.stat.checksum is defined and minifirewall_script_after.stat.checksum is defined) or minifirewall_script_before.stat.checksum != minifirewall_script_after.stat.checksum or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed
+
 - name: Schedule minifirewall restart (modern/systemd)
   ansible.builtin.command:
     cmd: /bin/true
@@ -98,7 +109,7 @@
     - minifirewall_install_mode != 'legacy'
     - minifirewall_restart_if_needed | bool
     - minifirewall_is_running.rc == 0
-    - minifirewall_script_before.stat.checksum != minifirewall_script_after.stat.checksum or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed
+    - (not minifirewall_script_before.stat.checksum is defined and minifirewall_script_after.stat.checksum is defined) or minifirewall_script_before.stat.checksum != minifirewall_script_after.stat.checksum or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed
 
 - ansible.builtin.debug:
     var: minifirewall_init_restart

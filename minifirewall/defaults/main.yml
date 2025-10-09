@@ -70,7 +70,12 @@ minifirewall_sysctl_icmp_redirects: Null
 minifirewall_sysctl_rp_filter: Null
 minifirewall_sysctl_log_martians: Null
 
-minifirewall_autostart: False
+minifirewall_current_version: Null
+minifirewall_current_install_mode: Null
+minifirewall_current_init_mode: Null
+minifirewall_current_autostart: Null
+
+minifirewall_autostart: Null
 minifirewall_restart_if_needed: True
 minifirewall_restart_force: False
 

@@ -11,6 +11,10 @@
   register: minifirewall_init_restart
   failed_when: "'minifirewall failed' in minifirewall_init_restart.stdout"
 
+- name: force-stop minifirewall (modern/systemd)
+  ansible.builtin.command:
+    cmd: /usr/local/sbin/minifirewall force-stop
+
 - name: restart minifirewall (modern/systemd)
   ansible.builtin.systemd:
     name: minifirewall.service
