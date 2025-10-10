@@ -13,6 +13,18 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [25.10] 2025-10-10
+
+### Added
+
 * elasticsearch: add warning comment to elasticsearch_custom_datadir variable.
 * evolinux-base: disable "users" group when adduser (UNTESTED)
 * minifirewall: Add `ipset` as a dependency
@@ -47,6 +59,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* evoadmin-mail: Fail if /etc/evoadmin-mail/config.ini does not exist after evoadmin-mail.deb. This can happen when the postinst has been partly executed because slapd dependency is not met (no /root/.ldapvirc file).
 * kvm-host: Allocate PTY when running ssh drbdadm commands
 * lxc: Do not fix sources.list in Bookworm container if file is not present
 * lxc: Fix creation of buster containers on bookworm and up
@@ -57,13 +70,10 @@ The **patch** part is incremented if multiple releases happen the same month
 * packweb-apache: Fix nginx vhost path in phpContainer
 * proftpd: Do not break when `proftpd_sftp_enable` is `false`
 * proftpd: Fix usage with tag proftpd
-* evoadmin-mail: Fail if /etc/evoadmin-mail/config.ini does not exist after evoadmin-mail.deb. This can happen when the postinst has been partly executed because slapd dependency is not met (no /root/.ldapvirc file).
 
 ### Removed
 
 * evomaintenance: remove DB hook
-
-### Security
 
 ## [25.08] 2025-08-08
 
