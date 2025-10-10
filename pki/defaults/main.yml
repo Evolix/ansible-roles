@@ -3,3 +3,4 @@
 # pki_ca_host: Null
 # pki_ca_pass: Null
 # pki_dir: Null
+pki_cert_common_name: "{{ ansible_fqdn }}"
