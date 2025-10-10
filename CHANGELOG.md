@@ -17,8 +17,6 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
-* lxc-php: fallback on systemd-timedated when /etc/timezone is absent
-
 ### Removed
 
 ### Security
@@ -44,7 +42,8 @@ The **patch** part is incremented if multiple releases happen the same month
 * kvm-host: migrate-vm: fix "vm file" detection
 * kvm-host: migrate-vm: show usage when executed with 0 arguments
 * kvm-host: migrate-vm: version 25.09
-* lxc-php: Avoid using `set_fact` when possible
+* lxc-php: avoid using `set_fact` when possible
+* lxc-php: fallback on systemd-timedated when /etc/timezone is absent
 * lxc-solr: Avoid using `set_fact` when possible
 * lxc: Fix the creation of several container in a single playbook
 * minifirewall: upstream release 25.10.1
