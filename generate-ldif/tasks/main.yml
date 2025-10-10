@@ -3,6 +3,14 @@
     name: evolix/remount-usr
   when: general_scripts_dir is search("/usr")
 
+- name: '{{ general_scripts_dir }} exists'
+  ansible.builtin.file:
+    dest: '{{ general_scripts_dir }}'
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+
 - name: "copy generateldif.sh"
   ansible.builtin.template:
     src: templates/generateldif.sh.j2
