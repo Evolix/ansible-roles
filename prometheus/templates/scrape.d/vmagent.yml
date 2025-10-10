@@ -1,0 +1,4 @@
+- job_name: vmagent
+  static_configs:
+  - targets:
+    - localhost:8429

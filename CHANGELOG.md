@@ -30,6 +30,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * minifirewall: Add `ipset` as a dependency
 * openvpn: also check CRL expiration
 * PKI: add new variable `pki_cert_common_name`
+* prometheus: New role
 
 ### Changed
 
