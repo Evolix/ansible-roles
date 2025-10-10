@@ -27,7 +27,12 @@ append_details() {
 }
 
 main() {
-  check_result=$( /etc/init.d/minifirewall check-active-config )
+  if [ -x /usr/local/sbin/minifirewall ]; then
+    minifirewall_path="/usr/local/sbin/minifirewall"
+  else
+    minifirewall_path="/etc/init.d/minifirewall"
+  fi
+  check_result=$( ${minifirewall_path} check-active-config )
   check_rc=$?
 
   if [ ${check_rc} -eq 0 ]; then
@@ -50,7 +55,7 @@ main() {
             summary_unchk "minifirewall configuration state is unknown"
           ;;
       esac
-      append_details "=> run '/etc/init.d/minifirewall check-active-config' for details"
+      append_details "=> run '${minifirewall_path} check-active-config' for details"
     fi
   fi
 

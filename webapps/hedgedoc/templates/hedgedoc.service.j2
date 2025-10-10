@@ -12,7 +12,7 @@ Type=exec
 Environment=NODE_ENV=production
 Restart=always
 RestartSec=2s
-ExecStart=/usr/bin/yarn start --production
+ExecStart=/usr/bin/yarn start
 CapabilityBoundingSet=
 NoNewPrivileges=true
 PrivateDevices=true
@@ -35,9 +35,9 @@ SystemCallArchitectures=native
 SystemCallFilter=@system-service
 
 # You may have to adjust these settings
-User={{ hedgedoc_service }}
-Group={{ hedgedoc_service }}
-WorkingDirectory=/home/{{ hedgedoc_service }}/hedgedoc
+User={{ hedgedoc_instance }}
+Group={{ hedgedoc_instance }}
+WorkingDirectory={{ hedgedoc_home_base }}/{{ hedgedoc_instance }}/hedgedoc
 
 # Example: local storage for uploads and SQLite
 # ReadWritePaths=/opt/hedgedoc/public/uploads /opt/hedgedoc/db

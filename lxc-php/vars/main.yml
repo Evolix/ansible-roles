@@ -1,0 +1,3 @@
+---
+
+lxc_rootfs: "/var/lib/lxc/{{ lxc_php_container_name }}/rootfs"

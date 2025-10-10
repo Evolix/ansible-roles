@@ -9,7 +9,7 @@
 # * different return codes for different errors
 # * use local and readonly variables
 
-VERSION="25.05"
+VERSION="25.09"
 
 # If expansion is attempted on an unset variable or parameter, the shell prints an
 # error message, and, if not interactive, exits with a non-zero status.
@@ -547,7 +547,7 @@ main() {
         # Look for an existing path or stdin or a comma-separated list.
         # Lines starting with # (comments) are ignored
         vm_list_file=$(realpath "${option_vms}" 2> /dev/null)
-        if [ -n "${vm_list_file}" ] && [ -r "${vm_list_file}" ]; then
+        if [ -n "${vm_list_file}" ] && [ -f "${vm_list_file}" ]; then
             # echo "Using ${vm_list_file} as input."
             grep --invert-match --extended-regexp "^#" < "${vm_list_file}" > "${vm_list_tmp}"
         elif [ "${option_vms}" = "-" ]; then
@@ -601,6 +601,12 @@ main() {
 
 if [ "$(id -u)" -ne "0" ] ; then
     echo "This script must be run as root." >&2
+    exit 1
+fi
+
+# Show usage when executed with 0 arguments
+if [ $# -eq 0 ] ; then
+    show_usage
     exit 1
 fi
 

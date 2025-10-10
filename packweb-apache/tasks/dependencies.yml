@@ -20,7 +20,7 @@
   vars:
     squid_localproxy_enable: True
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/mysql
   when: packweb_mysql_variant == "debian"
 
@@ -97,5 +97,5 @@
     evoadmin_enable_vhost: "{{ packweb_enable_evoadmin_vhost }}"
     evoadmin_multiphp_versions: "{{ packweb_multiphp_versions }}"
 
-- include_role:
+- ansible.builtin.include_role:
     name: evolix/evoacme

@@ -32,7 +32,7 @@
     - mysql_skip
 
 - name: "Test if /etc/logrotate.d/mariadb contains /var/log/mysql/*.log"
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/logrotate.d/mariadb
     search_string: "/var/log/mysql/*.log"
     state: absent

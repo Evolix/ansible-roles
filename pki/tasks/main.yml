@@ -2,19 +2,19 @@
 # Misc
 
 - name: Install python 2 cryptography
-  apt:
+  ansible.builtin.apt:
     name: python-cryptography
     state: present
   when: ansible_python['executable'] == "/usr/bin/python"
 
 - name: Install python 3 cryptography
-  apt:
+  ansible.builtin.apt:
     name: python3-cryptography
     state: present
   when: ansible_python['executable'] == "/usr/bin/python3"
 
 - name: Creates PKI tree directories
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     mode: 0700
     state: directory
@@ -25,47 +25,47 @@
 
 # Create Certificat Authority (CA)
 
-- import_tasks: ca.yml
+- ansible.builtin.import_tasks: ca.yml
   when: inventory_hostname == pki_ca_host and not ansible_check_mode
 
 # Create new signed certificate
 
 - name: Create private key for new certificate
   community.crypto.openssl_privatekey:
-    path: "{{ pki_dir }}/private/{{ ansible_fqdn }}.key"
+    path: "{{ pki_dir }}/private/{{ pki_cert_common_name }}.key"
 
 - name: Check whether Certificate Signing Request (CSR) exists
-  stat:
-    path: "{{ pki_dir }}/csr/{{ ansible_fqdn }}.csr"
+  ansible.builtin.stat:
+    path: "{{ pki_dir }}/csr/{{ pki_cert_common_name }}.csr"
   register: csr_exists
 
 - name: Read existing CSR if it exists
-  slurp:
-    src: "{{ pki_dir }}/csr/{{ ansible_fqdn }}.csr"
+  ansible.builtin.slurp:
+    src: "{{ pki_dir }}/csr/{{ pki_cert_common_name }}.csr"
   when: csr_exists.stat.exists
   register: csr
 
 - name: Create Certificate Signing Request (CSR) for new certificate
   community.crypto.openssl_csr_pipe:
     content: "{{ (csr.content | b64decode) if csr_exists.stat.exists else omit }}"
-    privatekey_path: "{{ pki_dir }}/private/{{ ansible_fqdn }}.key"
-    common_name: "{{ ansible_fqdn }}"
+    privatekey_path: "{{ pki_dir }}/private/{{ pki_cert_common_name }}.key"
+    common_name: "{{ pki_cert_common_name }}"
   register: csr
 
 - name: Write CSR file
-  copy:
-    dest: "{{ pki_dir }}/csr/{{ ansible_fqdn }}.csr"
+  ansible.builtin.copy:
+    dest: "{{ pki_dir }}/csr/{{ pki_cert_common_name }}.csr"
     content: "{{ csr.csr }}"
   when: csr is changed and not ansible_check_mode
 
 - name: Check whether certificate exists
-  stat:
-    path: "{{ pki_dir }}/certs/{{ ansible_fqdn }}.crt"
+  ansible.builtin.stat:
+    path: "{{ pki_dir }}/certs/{{ pki_cert_common_name }}.crt"
   register: certificate_exists
 
 - name: Read existing certificate if exists
-  slurp:
-    src: "{{ pki_dir }}/certs/{{ ansible_fqdn }}.crt"
+  ansible.builtin.slurp:
+    src: "{{ pki_dir }}/certs/{{ pki_cert_common_name }}.crt"
   when: certificate_exists.stat.exists
   register: certificate
 
@@ -82,14 +82,14 @@
   when: not ansible_check_mode
 
 - name: Write certificate file
-  copy:
-    dest: "{{ pki_dir }}/certs/{{ ansible_fqdn }}.crt"
+  ansible.builtin.copy:
+    dest: "{{ pki_dir }}/certs/{{ pki_cert_common_name }}.crt"
     content: "{{ certificate.certificate }}"
   when: certificate is changed and not ansible_check_mode
 
 - name: Write certificate file on the CA host
-  copy:
-    dest: "{{ pki_dir }}/certs/{{ ansible_fqdn }}.crt"
+  ansible.builtin.copy:
+    dest: "{{ pki_dir }}/certs/{{ pki_cert_common_name }}.crt"
     content: "{{ certificate.certificate }}"
   delegate_to: "{{ pki_ca_host | mandatory }}"
   when: certificate is changed and not ansible_check_mode
@@ -98,25 +98,25 @@
 # CA certificate
 
 - name: Check whether CA certificate exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ pki_dir }}/certs/ca.crt"
   delegate_to: "{{ pki_ca_host | mandatory }}"
   register: ca_certificate_exists
 
 - name: Read existing CA certificate if exists
-  slurp:
+  ansible.builtin.slurp:
     src: "{{ pki_dir }}/certs/ca.crt"
   when: ca_certificate_exists.stat.exists
   delegate_to: "{{ pki_ca_host | mandatory }}"
   register: ca_certificate
 
 - name: Write CA certificate file
-  copy:
+  ansible.builtin.copy:
     dest: "{{ pki_dir }}/certs/ca.crt"
     content: "{{ ca_certificate.content | b64decode }}"
   register: ca_certificate
 
 - name: Set fact, _pki_changed
   when: certificate is changed or ca_certificate is changed
-  set_fact:
+  ansible.builtin.set_fact:
     _pki_changed: True

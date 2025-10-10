@@ -17,11 +17,11 @@
     option: "{{ item.option }}"
     value: "{{ item.value }}"
   notify: reload apache
-  with_items:
-  - {option: 'allow_url_fopen',   value: 'On'}
-  - {option: 'disable_functions', value: ''}
-  - {option: 'max_execution_time', value: '300'}
-  - {option: 'memory_limit', value: '512M'}
+  loop:
+    - {option: 'allow_url_fopen',   value: 'On'}
+    - {option: 'disable_functions', value: ''}
+    - {option: 'max_execution_time', value: '300'}
+    - {option: 'memory_limit', value: '512M'}
 
 - name: Apply specific PHP settings (cli)
   community.general.ini_file:
@@ -29,6 +29,6 @@
     section: ''
     option: "{{ item.option }}"
     value: "{{ item.value }}"
-  with_items:
-  - {option: 'allow_url_fopen',   value: 'On'}
-  - {option: 'apc.enable_cli', value: 'On'}
+  loop:
+    - {option: 'allow_url_fopen',   value: 'On'}
+    - {option: 'apc.enable_cli', value: 'On'}

@@ -21,7 +21,10 @@ elasticsearch_transport_port: Null
 
 elasticsearch_discovery_seed_hosts: Null
 elasticsearch_cluster_initial_master_nodes: Null
+
+# Do not use /home/elasticsearch as datadir, it is already created by the package and won't be used by the role.
 elasticsearch_custom_datadir: Null
+
 elasticsearch_custom_tmpdir: Null
 elasticsearch_default_tmpdir: /var/lib/elasticsearch/tmp
 elasticsearch_jvm_xms: 2g

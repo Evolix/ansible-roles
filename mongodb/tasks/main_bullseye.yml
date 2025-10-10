@@ -7,7 +7,7 @@
   - mongodb_version is version('5.2', '<')
 
 - name: "Ensure {{ apt_keyring_dir }} directory exists"
-  file:
+  ansible.builtin.file:
     path: "{{ apt_keyring_dir }}"
     state: directory
     mode: "755"

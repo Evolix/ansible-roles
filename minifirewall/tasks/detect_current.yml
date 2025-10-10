@@ -1,0 +1,144 @@
+---
+
+- name: Check for minifirewall_presence
+  ansible.builtin.shell:
+    cmd: "test -f /etc/init.d/minifirewall || test -f /etc/systemd/system/minifirewall || test -f /usr/local/sbin/minifirewall"
+  failed_when: False
+  changed_when: False
+  register: _minifirewall_presence_check
+  tags:
+    - always
+
+- debug:
+    var: _minifirewall_presence_check
+    verbosity: 1
+
+- ansible.builtin.set_fact:
+    minifirewal_current_version: ""
+  when: 
+    - _minifirewall_presence_check.rc != 0
+  tags:
+    - always
+
+- name: Look for minifirewall version
+  ansible.builtin.shell:
+    cmd: "test -x /usr/local/sbin/minifirewall && { /usr/local/sbin/minifirewall version | head -n 1 | awk '{print $3}'; } || { grep --extended-regexp '^\\s*VERSION=' /etc/init.d/minifirewall | cut -d '=' -f2 | tr -d '\"'; }"
+  failed_when: False
+  changed_when: False
+  when: 
+    - _minifirewall_presence_check.rc == 0
+  register: _minifirewall_version_check
+  tags:
+    - always
+
+- ansible.builtin.set_fact:
+    minifirewal_current_version: "{{ _minifirewall_version_check.stdout_lines[0] | default('0') }}"
+  when: 
+    - _minifirewall_presence_check.rc == 0
+  tags:
+    - always
+
+- ansible.builtin.set_fact:
+    minifirewal_current_version: ""
+  when: 
+    - _minifirewall_presence_check.rc != 0
+  tags:
+    - always
+
+- debug:
+    var: minifirewal_current_version
+    verbosity: 1
+
+- name: Check alert5 status
+  ansible.builtin.command:
+    cmd: "grep --extended-regexp --no-messages '^\\s*/etc/init.d/minifirewall start' /etc/init.d/alert5 /usr/share/scripts/alert5.sh"
+  changed_when: False
+  failed_when: False
+  register: _minifirewall_alert5_start
+  tags:
+    - always
+
+- debug:
+    var: _minifirewall_alert5_start
+    verbosity: 1
+
+- name: Check systemd service status
+  ansible.builtin.systemd_service:
+    name: minifirewall.service
+  register: _minifirewall_systemd_service
+  tags:
+    - always
+
+- debug:
+    var: _minifirewall_systemd_service.status.UnitFileState
+    verbosity: 1
+
+- name: Disable autostart
+  ansible.builtin.set_fact:
+    minifirewall_current_autostart: False
+  when:
+    - _minifirewall_alert5_start.stdout_lines | length <= 0
+    - _minifirewall_systemd_service.status.UnitFileState is defined and _minifirewall_systemd_service.status.UnitFileState != "enabled"
+  tags:
+    - always
+
+- name: Enable autostart
+  ansible.builtin.set_fact:
+    minifirewall_current_autostart: True
+  when: (_minifirewall_alert5_start.stdout_lines | length > 0) or (_minifirewall_systemd_service.status.UnitFileState is defined and _minifirewall_systemd_service.status.UnitFileState == "enabled")
+  tags:
+    - always
+
+- debug:
+    var: minifirewall_current_autostart
+    verbosity: 1
+
+- name: Set current mode to legacy if needed
+  ansible.builtin.set_fact:
+    minifirewall_current_install_mode: legacy
+  when:
+    - _minifirewall_presence_check.rc == 0
+    - minifirewal_current_version is version('23.02','<')
+  tags:
+    - always
+
+- name: Set install mode to modern if not legacy
+  ansible.builtin.set_fact:
+    minifirewall_current_install_mode: modern
+  when:
+    - _minifirewall_presence_check.rc == 0
+    - minifirewall_current_install_mode != 'legacy'
+  tags:
+    - always
+
+- name: Debug install mode
+  ansible.builtin.debug:
+    var: minifirewall_current_install_mode
+    verbosity: 1
+  tags:
+    - always
+
+- name: Set current init to sysvinit if needed
+  ansible.builtin.set_fact:
+    minifirewall_current_init_mode: sysvinit
+  when:
+    - _minifirewall_presence_check.rc == 0
+    - minifirewal_current_version is version('25.10','<')
+  tags:
+    - always
+
+- name: Set init mode to systemd if not sysvinit
+  ansible.builtin.set_fact:
+    minifirewall_current_init_mode: systemd
+  when:
+    - _minifirewall_presence_check.rc == 0
+    - minifirewall_current_init_mode != 'sysvinit'
+  tags:
+    - always
+
+- name: Debug init mode
+  ansible.builtin.debug:
+    var: minifirewall_current_init_mode
+    verbosity: 1
+  tags:
+    - always

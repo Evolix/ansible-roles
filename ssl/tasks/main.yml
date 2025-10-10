@@ -40,7 +40,7 @@
     - ssl
 
 - name: Collect facts about system services
-  service_facts:
+  ansible.builtin.service_facts:
 
 - ansible.builtin.import_tasks: haproxy.yml
   when:

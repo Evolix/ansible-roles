@@ -1,7 +1,7 @@
 ---
 
 - name: For Debian < 12
-  set_fact:
+  ansible.builtin.set_fact:
     spamassassin_restart_handler: restart spamassassin
     spamassassin_package_name: spamassassin
   tags:
@@ -10,7 +10,7 @@
 
 # the package is called "spamd" after Debian 12
 - name: For Debian >= 12
-  set_fact:
+  ansible.builtin.set_fact:
     spamassassin_restart_handler: restart spamd
     spamassassin_package_name: spamd
   tags:

@@ -10,20 +10,20 @@
   when: not cert.stat.exists
 
 - name: Install rsyslog
-  apt:
+  ansible.builtin.apt:
     name: ['rsyslog', 'rsyslog-gnutls']
     state: latest
     update_cache: yes
     cache_valid_time: 3600
 
 - name: Remove previous rsyslog TCP TLS listener
-  file:
+  ansible.builtin.file:
     path: /etc/rsyslog.d/00-tls.conf
     state: absent
   notify: restart rsyslog
 
 - name: Configure rsyslog global config
-  copy:
+  ansible.builtin.copy:
     dest: /etc/rsyslog.d/00-global.conf
     content: |
       # NOTE The "global" directive should be in the central /etc/rsyslog.conf
@@ -51,7 +51,7 @@
 - ansible.builtin.import_tasks: "client.yml"
 
 - name: Restart rsyslog if PKI has changed
-  service:
+  ansible.builtin.service:
     name: rsyslog
     state: restarted
   when: _pki_changed

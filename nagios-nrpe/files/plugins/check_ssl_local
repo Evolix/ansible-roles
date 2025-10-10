@@ -21,6 +21,10 @@ if [[ ! -f "${certs_list_path}" ]]; then
 fi
 
 certs_list=$(sed -E 's/(.*)#.*/\1/g' "${certs_list_path}" | grep -v -E '^$')
+if [[ -z "${certs_list}" ]]; then
+    echo "Error: no certificate found"
+    exit 2
+fi
 
 for cert_path in ${certs_list}; do
 
@@ -65,5 +69,3 @@ elif [ "${warning}" -eq 1 ]; then
 else
     exit 0
 fi
-
-

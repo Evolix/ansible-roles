@@ -3,26 +3,34 @@
 mastodon_system_dep: "['imagemagick', 'ffmpeg', 'libvips-tools', 'libpq-dev', 'libxml2-dev', 'libxslt1-dev', 'file', 'git-core', 'g++', 'libprotobuf-dev', 'protobuf-compiler', 'pkg-config', 'gcc', 'autoconf', 'bison', 'build-essential', 'libssl-dev', 'libyaml-dev', 'libreadline6-dev', 'zlib1g-dev', 'libncurses5-dev', 'libffi-dev', 'libgdbm-dev', 'python3-psycopg2', 'libidn11-dev', 'libicu-dev', 'libjemalloc-dev']"
 mastodon_domains: ['example.somedomain.org']
 mastodon_git_url: 'https://github.com/mastodon/mastodon.git'
-mastodon_git_version: 'v4.2.13'
-mastodon_ruby_version: '3.2.3'
+mastodon_git_version: 'v4.4.5'
+mastodon_ruby_version: '3.4.4'
 mastodon_nodejs_version: 'node_20.x'
 mastodon_instance: 'example'
 mastodon_certbot_admin_email: 'security@somedomain.org'
 mastodon_sidekiq_concurrence: '25'
 mastodon_puma_web_concurrence: '4'
+mastodon_redis_port: '6379'
 
-mastodon_db_host: 'localhost'
+mastodon_db_host: '127.0.0.1'
 mastodon_db_user: "{{ mastodon_instance }}"
 mastodon_db_name: "{{ mastodon_instance }}_production"
 mastodon_db_password: 'CHANGE_ME'
 
+# Generated automatically on first run
 mastodon_app_secret_key_base: ""
 mastodon_app_otp_secret: ""
 mastodon_app_vapid_private_key: ""
 mastodon_app_vapid_public_key: ""
+mastodon_app_active_record_deterministic_key: ""
+mastodon_app_active_record_derivation_salt: ""
+mastodon_app_active_record_primary_key: ""
+
 mastodon_app_smtp_server: "127.0.0.1"
 mastodon_app_smtp_port: "25"
 mastodon_app_smtp_from_address: "example@somedomain.org"
 mastodon_app_smtp_auth_method: "none"
 mastodon_app_smtp_openssl_verify_mode: "none"
-mastodon_app_es_enabled: "false"
+mastodon_app_es_enabled: 'false'
+mastodon_app_es_pass: 'CHANGE_ME'
+mastodon_install_elasticsearch: false

@@ -7,14 +7,6 @@
     tasks_from: backports.yml
   when: ansible_distribution_major_version is version('10', '=')
 
-- name: Prefer phpMyAdmin package from backports (Debian 10)
-  ansible.builtin.template:
-    src: phpmyadmin_apt_preferences.j2
-    dest: /etc/apt/preferences.d/999-phpmyadmin
-    force: true
-    mode: "0644"
-  when: ansible_distribution_major_version is version('10', '=')
-
 - name: Debconf settings for phpMyAdmin
   ansible.builtin.debconf:
     name: phpMyAdmin
@@ -30,6 +22,16 @@
   ansible.builtin.apt:
     name: phpmyadmin
     update_cache: yes
+  when: ansible_distribution_major_version is not version('10', '=')
+
+- name: Prefer phpMyAdmin package from backports (Debian 10)
+  ansible.builtin.apt:
+    name:
+      - phpmyadmin
+      - php-twig
+    default_release: buster-backports
+    update_cache: yes
+  when: ansible_distribution_major_version is version('10', '=')
 
 - name: Check if phpmyadmin default configuration is present
   ansible.builtin.stat:

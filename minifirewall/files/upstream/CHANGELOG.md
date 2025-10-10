@@ -15,6 +15,67 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Security
 
+## [25.10.1] - 2025-10-09
+
+### Added
+
+* add "force-stop" command to stop the firewall, whatever state the systemd service might be in
+
+## [25.10] - 2025-10-03
+
+### Added
+
+* show status after start/stop/restart from SysV init script
+
+### Changed
+
+* group additional scripts in utils directory
+* split main logic from SysVinit script, and add systemd unit
+* systemd unit optimization
+
+### Removed
+
+* the cron job is never used, let's remove it
+
+### Fixed
+
+* fix remove_colors for RESET sequence
+
+## [25.08] - 2025-08-31
+
+### Added
+
+* new chain MINIFW-DOCKER-USER to manipulate DOCKER-USER with minifirewall
+
+### Removed
+
+* removed the version in configuration file
+
+## [25.07] - 2025-07-16
+
+### Removed
+
+* Remove secondary Evolix office IPs from TRUSTEDIPS
+
+## [25.05] - 2025-05-22
+
+### Added
+
+* support NO_COLOR env variable (cf. https://no-color.org/)
+* Allow Docker containers on the default bridge (docker0) to talk to host services
+
+### Changed
+
+* blacklist-*.sh scripts: use "ipset restore" instead of multiple "ipset add"
+* declare NEEDRESTRICT chain sooner
+* display Ok/Error on each line
+* extract is_color_enabled() function
+* review blacklist-*.sh scripts: use ipset, MD5 verification, etc.
+
+### Removed
+
+* Don't expose Docker services via Public/Semi-public/Private macros
+
 ## [24.07] - 2024-07-11
 
 ### Added

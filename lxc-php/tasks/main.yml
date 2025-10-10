@@ -11,10 +11,6 @@
       - { name: "{{ lxc_php_container_name }}", release: "{{ lxc_php_container_releases[lxc_php_version] }}" }
   when: lxc_php_version is defined
 
-- name: set LXC rootfs
-  ansible.builtin.set_fact:
-    lxc_rootfs: "/var/lib/lxc/{{ lxc_php_container_name }}/rootfs"
-
 - ansible.builtin.import_tasks: "php56.yml"
   when: lxc_php_version == "php56"
 

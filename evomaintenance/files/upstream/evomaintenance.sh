@@ -1,19 +1,20 @@
 #!/bin/sh
 
-VERSION="25.06"
+PROGNAME="evomaintenance"
+VERSION="25.10"
 
 show_version() {
     cat <<END
-evomaintenance version ${VERSION}
+${PROGNAME} version ${VERSION}
 
-Copyright 2007-2024 Evolix <info@evolix.fr>,
+Copyright 2007-2025 Evolix <info@evolix.fr>,
                     Gregory Colpart <reg@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>,
                     Brice Waegeneire <bwaegeneire@evolix.fr>,
                     Mathieu Trossevin <mtrossevin@evolix.fr>
                     and others.
 
-evomaintenance comes with ABSOLUTELY NO WARRANTY.  This is free software,
+${PROGNAME} comes with ABSOLUTELY NO WARRANTY.  This is free software,
 and you are welcome to redistribute it under certain conditions.
 See the GNU General Public Licence for details.
 END
@@ -21,19 +22,17 @@ END
 
 show_help() {
     cat <<END
-evomaintenance is a program that helps reporting what you've done on a server
+${PROGNAME} is a program that helps reporting what you've done on a server
 
-Usage: evomaintenance
-  or   evomaintenance --message="add new host"
-  or   evomaintenance --no-api --no-mail --no-commit
-  or   echo "add new vhost" | evomaintenance
+Usage: ${PROGNAME}
+  or   ${PROGNAME} --message="add new host"
+  or   ${PROGNAME} --no-api --no-mail --no-commit
+  or   echo "add new vhost" | ${PROGNAME}
 
 Options
  -m, --message=MESSAGE       set the message from the command line
      --mail                  enable the mail hook (default)
      --no-mail               disable the mail hook
-     --db                    enable the database hook
-     --no-db                 disable the database hook (default)
      --api                   enable the API hook (default)
      --no-api                disable the API hook
      --commit                enable the commit hook (default)
@@ -52,7 +51,7 @@ END
 
 syslog() {
     if [ -x "${LOGGER_BIN}" ]; then
-        ${LOGGER_BIN} -t "evomaintenance" "$1"
+        ${LOGGER_BIN} -t "${PROGNAME}" "$1"
     fi
 }
 
@@ -92,6 +91,12 @@ get_who() {
     fi
 }
 
+get_loginctl_property() {
+	property="${1}"
+
+	LC_ALL=C loginctl --property="${property}" show-session self | cut -d '=' -f 2
+}
+
 get_begin_date() {
     # XXX A begin date isn't applicable when used in autosysadmin, so we
     # use the same date as the end date.
@@ -99,9 +104,8 @@ get_begin_date() {
 	    get_end_date
     # sudo on Debian 12 create a new utmp login record, which result in the old
     # method to break if evomaintenance is called using sudo
-    elif test -f /etc/debian_version && dpkg --compare-versions "$(cat /etc/debian_version)" ge 12.0; then
-	    sessionid="$(cat /proc/self/sessionid)"
-	    begin_timestamp="$(loginctl --property=Timestamp show-session "${sessionid}" | cut -d '=' -f 2)"
+    elif test -f /etc/debian_version && dpkg --compare-versions "$(cat /etc/debian_version)" ge 12.0 2>/dev/null; then
+	    begin_timestamp="$(get_loginctl_property Timestamp)"
 	    # Convert the output of loginctl into the expected format
 	    # (TimestampMonotonic use nanoseconds so we cannot use it
 	    # unfortunately)
@@ -112,7 +116,16 @@ get_begin_date() {
 }
 
 get_ip() {
-    ip=$(get_who | cut -d" " -f6 | sed -e "s/^(// ; s/)$//")
+    if test -f /etc/debian_version && dpkg --compare-versions "$(cat /etc/debian_version)" ge 12.0 2>/dev/null; then
+	    if [ "$(get_loginctl_property Remote)" = "no" ]; then
+		    ip="localhost"
+	    else
+		    ip="$(get_loginctl_property RemoteHost)"
+	    fi
+    else
+	    ip=$(get_who | cut -d" " -f6 | sed -e "s/^(// ; s/)$//")
+    fi
+
     if is_autosysadmin || [ "${ip}" = ":0" ]; then
 	    ip="localhost"
     elif [ -z "${ip}" ]; then
@@ -180,8 +193,8 @@ get_evocheck() {
 print_log() {
     printf "*********** %s ***************\n" "$(get_now)"
     print_session_data
-    printf "Hooks     : commit=%s db=%s api=%s mail=%s\n"\
-           "${HOOK_COMMIT}" "${HOOK_DB}" "${HOOK_API}" "${HOOK_MAIL}"
+    printf "Hooks     : commit=%s api=%s mail=%s\n"\
+           "${HOOK_COMMIT}" "${HOOK_API}" "${HOOK_MAIL}"
     if [ "${HOOK_MAIL}" = "1" ]; then
         printf "Mailto    : %s\n" "${EVOMAINTMAIL}"
     fi
@@ -282,18 +295,6 @@ hook_commit() {
     fi
 }
 
-hook_db() {
-    SQL_DETAILS=$(echo "${MESSAGE}" | sed "s/'/''/g")
-    PG_QUERY="INSERT INTO evomaint(hostname,userid,ipaddress,begin_date,end_date,details) VALUES ('${HOSTNAME}','${USER}','${IP}','${BEGIN_DATE}',now(),'${SQL_DETAILS}')"
-
-    if [ "${VERBOSE}" = "1" ]; then
-        printf "\n********** DB query **************\n%s\n***********************************\n" "${PG_QUERY}"
-    fi
-    if [ "${DRY_RUN}" != "1" ] && [ -x "${PSQL_BIN}" ]; then
-        echo "${PG_QUERY}" | ${PSQL_BIN} "${PGDB}" "${PGTABLE}" -h "${PGHOST}"
-    fi
-}
-
 hook_api() {
     # Double quotes to single quotes and then wrap the whole message string in double quotes
     API_DETAILS=$(echo "${MESSAGE}" | sed -e "s/\"/\'/g" -e 's/^/\"/g' -e 's/$/\"/g')
@@ -336,7 +337,7 @@ X-Evomaintenance-Version: ${VERSION}
 X-Evomaintenance-Host: ${HOSTNAME_TEXT}
 X-Evomaintenance-User: ${USER}
 To: ${EVOMAINTMAIL}
-Subject: [evomaintenance] Intervention sur ${HOSTNAME_TEXT} (${USER})
+Subject: [${PROGNAME}] Intervention sur ${HOSTNAME_TEXT} (${USER})
 
 Bonjour,
 
@@ -400,9 +401,8 @@ test -f /etc/evomaintenance.cf && . /etc/evomaintenance.cf
 
 HOSTNAME=${HOSTNAME:-$(get_fqdn)}
 EVOMAINTMAIL=${EVOMAINTMAIL:-"evomaintenance-$(echo "${HOSTNAME}" | cut -d- -f1)@${REALM}"}
-LOGFILE=${LOGFILE:-"/var/log/evomaintenance.log"}
+LOGFILE=${LOGFILE:-"/var/log/${PROGNAME}.log"}
 HOOK_COMMIT=${HOOK_COMMIT:-"1"}
-HOOK_DB=${HOOK_DB:-"0"}
 HOOK_API=${HOOK_API:-"1"}
 HOOK_MAIL=${HOOK_MAIL:-"1"}
 DRY_RUN=${DRY_RUN:-"0"}
@@ -464,14 +464,6 @@ while :; do
         --commit)
             # enable commit hook
             HOOK_COMMIT=1
-            ;;
-        --no-db)
-            # disable DB hook
-            HOOK_DB=0
-            ;;
-        --db)
-            # enable DB hook
-            HOOK_DB=1
             ;;
         --no-api)
             # disable API hook
@@ -576,12 +568,6 @@ if [ "${HOOK_COMMIT}" = "1" ] && [ -z "${GIT_BIN}" ]; then
     echo "No \`git' command has been found, can't commit changes" 2>&1
 fi
 
-PSQL_BIN=$(command -v psql)
-readonly PSQL_BIN
-if [ "${HOOK_DB}" = "1" ] && [ -z "${PSQL_BIN}" ]; then
-    echo "No \`psql' command has been found, can't save to the database." 2>&1
-fi
-
 CURL_BIN=$(command -v curl)
 readonly CURL_BIN
 if [ "${HOOK_API}" = "1" ] && [ -z "${CURL_BIN}" ]; then
@@ -649,16 +635,13 @@ fi
 print_session_data
 
 if [ "${INTERACTIVE}" = "1" ] && [ "${AUTO}" = "0" ]; then
-    if  [ "${HOOK_COMMIT}" = "1" ] || [ "${HOOK_MAIL}" = "1" ] || [ "${HOOK_DB}" = "1" ]; then
+    if  [ "${HOOK_COMMIT}" = "1" ] || [ "${HOOK_MAIL}" = "1" ] ]; then
         printf "\nActions to execute:\n"
         if [ "${HOOK_COMMIT}" = "1" ]; then
             printf "* commit changes in repositories\n"
         fi
         if [ "${HOOK_MAIL}" = "1" ]; then
             printf "* send mail to %s\n" "${EVOMAINTMAIL}"
-        fi
-        if [ "${HOOK_DB}" = "1" ]; then
-            printf "* save metadata to the database\n"
         fi
         if [ "${HOOK_API}" = "1" ]; then
             printf "* send metadata to the API\n"
@@ -679,7 +662,6 @@ if [ "${INTERACTIVE}" = "1" ] && [ "${AUTO}" = "0" ]; then
                     # force "auto" mode, and disable all hooks
                     HOOK_COMMIT=0
                     HOOK_MAIL=0
-                    HOOK_DB=0
                     HOOK_API=0
                     AUTO=1
                     break
@@ -768,36 +750,6 @@ if [ "${INTERACTIVE}" = "1" ] && [ "${AUTO}" = "0" ]; then
         esac
     done
 
-    # Database hook
-    if [ "${HOOK_DB}" = "1" ]; then
-        y="Y"; n="n"
-    else
-        y="y"; n="N"
-    fi
-    answer=""
-    while :; do
-        printf "> Do you want to insert your message into the database? [%s] " "${y},${n}"
-        read -r answer
-        case $answer in
-            [Yy] )
-                hook_db;
-                break
-                ;;
-            [Nn] )
-                break
-                ;;
-            "" )
-                if [ "${HOOK_DB}" = "1" ]; then
-                  hook_db
-                fi
-                break
-                ;;
-            * )
-                echo "answer with a valid choice"
-                ;;
-        esac
-    done
-
     # API hook
     if [ "${HOOK_API}" = "1" ]; then
         y="Y"; n="n"
@@ -838,9 +790,6 @@ if [ "${INTERACTIVE}" = "0" ] || [ "${AUTO}" = "1" ]; then
     fi
     if [ "${HOOK_MAIL}" = "1" ]; then
         hook_mail
-    fi
-    if [ "${HOOK_DB}" = "1" ]; then
-        hook_db
     fi
     if [ "${HOOK_API}" = "1" ]; then
         hook_api

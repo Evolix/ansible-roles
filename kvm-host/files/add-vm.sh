@@ -252,10 +252,10 @@ EOT
     scp "/etc/drbd.d/${vmName}.res" "${slaveKVMIP}:/etc/drbd.d/"
     ${drbdadm} create-md "${vmName}"
     # shellcheck disable=SC2029
-    ssh "${slaveKVMIP}" "${drbdadm} create-md ${vmName}"
+    ssh -t "${slaveKVMIP}" "${drbdadm} create-md ${vmName}"
     ${drbdadm} adjust "${vmName}"
     # shellcheck disable=SC2029
-    ssh "${slaveKVMIP}" "${drbdadm} adjust ${vmName}"
+    ssh -t "${slaveKVMIP}" "${drbdadm} adjust ${vmName}"
     ${drbdadm} -- --overwrite-data-of-peer primary "${vmName}"
 
     if ! isDryRun; then

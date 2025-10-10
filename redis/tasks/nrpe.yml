@@ -23,26 +23,6 @@
     - redis
     - nrpe
 
-- name: set the path of check_redis on Jessie
-  ansible.builtin.set_fact:
-    redis_check_redis_path: /usr/local/lib/nagios/plugins/check_redis
-  when:
-    - ansible_distribution == "Debian"
-    - ansible_distribution_major_version is version('9', '<')
-  tags:
-    - redis
-    - nrpe
-
-- name: set the path of check_redis on Stretch and later
-  ansible.builtin.set_fact:
-    redis_check_redis_path: /usr/lib/nagios/plugins/check_redis
-  when:
-    - ansible_distribution == "Debian"
-    - ansible_distribution_major_version is version('9', '>=')
-  tags:
-    - redis
-    - nrpe
-
 - name: sudo without password for nagios
   ansible.builtin.lineinfile:
     dest: /etc/sudoers.d/evolinux
@@ -56,25 +36,18 @@
     - redis
     - nrpe
 
-- set_fact:
-    redis_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name redis -- "
-
-- set_fact:
-    redis_check_params: "-H {{ redis_check_interface }} -p {{ redis_port }}"
-  when: redis_password is undefined or redis_password is none or redis_password | length == 0
-
-- set_fact:
-    redis_check_params: "-H {{ redis_check_interface }} -p {{ redis_port }} -x '{{ redis_password }}'"
-  when: 
-    - redis_password is defined
-    - not redis_password is none
-    - redis_password | length > 0
-
 - name: Use check_redis for NRPE
   ansible.builtin.replace:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: '^command\[check_redis\]=.+'
     replace: 'command[check_redis]={{ redis_monitoringctl_wrapper_cmd }}sudo {{ redis_check_redis_path }} {{ redis_check_params }}'
+  vars:
+    redis_check_params: >-
+      {%- if redis_password is undefined or redis_password is none or redis_password | length == 0 -%}
+        -H {{ redis_check_interface }} -p {{ redis_port }}
+      {%- else -%}
+        -H {{ redis_check_interface }} -p {{ redis_port }} -x '{{ redis_password }}'
+      {%- endif -%}
   when:
     - redis_instance_name is undefined
   notify: restart nagios-nrpe-server

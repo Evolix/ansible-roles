@@ -110,7 +110,7 @@
     src: /usr/share/munin/plugins/sensors_
     dest: "/etc/munin/plugins/sensors_{{ item }}"
     state: link
-  with_items:
+  loop:
     - fan
     - temp
   when: ansible_virtualization_role == "host"
@@ -125,7 +125,7 @@
     state: link
   when: ansible_virtualization_role == "host"
   notify: restart munin-node
-  with_items:
+  loop:
     - fans
     - temp
     - power

@@ -9,13 +9,28 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Fixed
 
-### Added
-
 ### Deprecated
 
 ### Removed
 
+## [25.08.1] 2025-08-19
+
+### Added
+
+* IS_PHPMYADMINAPACHECONF: add quotes and curly-braces to some variables
+
+### Changed
+
+* IS_MINIFW_RELATED: disable regex when not needed
+* IS_MINIFW_RELATED: disable check until most servers are fixed
+
+### Fixed
+
+* IS_MINIFW_RELATED: globbing doesn't work inside double-quotes
+
 ## [25.08] 2025-08-08
+
+### Added
 
 * Add IS_INTERFACESNETMASK check
 * Add IS_WKHTMLTOPDF and IS_LXC_WKHTMLTOPDF (#180)

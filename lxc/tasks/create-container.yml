@@ -6,35 +6,6 @@
   check_mode: no
   register: container_exists
 
-- ansible.builtin.set_fact:
-    lxc_template_final_options: >-
-      --keyring=/etc/apt/trusted.gpg.d/freexian-archive-extended-lts.gpg
-      --mirror=https://elts.evolix.org/extended-lts
-      --security-mirror=http://archive.debian.org/debian-security
-      {{ lxc_template_options }}
-  when:
-    - release == "jessie"
-    - ansible_distribution_major_version is version('11', '>=')
-
-- ansible.builtin.set_fact:
-    lxc_template_final_options: >-
-      --keyring=/usr/share/keyrings/debian-archive-removed-keys.gpg
-      --mirror=http://archive.debian.org/debian
-      --security-mirror=http://archive.debian.org/debian-security
-      {{ lxc_template_options }}
-  when:
-    - release == "stretch"
-    - ansible_distribution_major_version is version('11', '>=')
-
-- ansible.builtin.set_fact:
-    lxc_template_final_options: >-
-      --mirror=http://archive.debian.org/debian
-      --security-mirror=http://archive.debian.org/debian-security
-      {{ lxc_template_options }}
-  when:
-    - release == "buster"
-    - ansible_distribution_major_version is version('11', '>=')
-
 - name: "Enable Bullseye backports from Evolix"
   ansible.builtin.apt_repository:
     repo: "deb [signed-by=/usr/share/keyrings/pub_evolix.asc] https://pub.evolix.org/evolix bullseye-backports main"
@@ -66,8 +37,35 @@
     container_log: true
     template: debian
     state: stopped
-    template_options: "--arch amd64 --release {{ release }} {{ lxc_template_final_options }}"
+    template_options: "--arch amd64 --release {{ release }} {{ lxc_template_final_options__internal }}"
   when: container_exists.stdout_lines | length == 0
+  vars:
+    lxc_template_final_options_elts: >-
+      --keyring=/etc/apt/trusted.gpg.d/freexian-archive-extended-lts.gpg
+      --mirror=https://elts.evolix.org/extended-lts
+      --security-mirror=http://archive.debian.org/debian-security
+      {{ lxc_template_options }}
+    lxc_template_final_options_archive_removed: >-
+      --keyring=/usr/share/keyrings/debian-archive-removed-keys.gpg
+      --mirror=http://archive.debian.org/debian
+      --security-mirror=http://archive.debian.org/debian-security
+      {{ lxc_template_options }}
+    lxc_template_final_options_archive: >-
+      --mirror=http://archive.debian.org/debian
+      --security-mirror=http://archive.debian.org/debian-security
+      {{ lxc_template_options }}
+    lxc_template_final_options__internal: >-
+      {%- if release == 'jessie' and ansible_distribution_major_version is version('11', '>=') -%}
+        {{ lxc_template_final_options_elts }}
+      {%- elif release == 'stretch' and ansible_distribution_major_version is version('11', '>=') -%}
+        {{ lxc_template_final_options_archive_removed }}
+      {%- elif release == 'buster' and ansible_distribution_major_version is version('11', '=') -%}
+        {{ lxc_template_final_options_archive }}
+      {%- elif release == 'buster' and ansible_distribution_major_version is version('12', '>=') -%}
+        {{ lxc_template_final_options_archive_removed }}
+      {%- else -%}
+        {{ lxc_template_final_options }}
+      {%- endif -%}
 
 - name: "Disable network configuration inside container {{ name }}"
   ansible.builtin.replace:
@@ -129,6 +127,13 @@
   ansible.builtin.shell:
     cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ name }} --  apt-get purge -y openssh-server"
 
+- name: "Fix jessie repository in container {{ name }}"
+  ansible.builtin.replace:
+    dest: "/var/lib/lxc/{{ name }}/rootfs/etc/apt/sources.list"
+    regexp: 'deb http://archive\.debian\.org/debian-security jessie/updates main'
+    replace: 'deb http://elts.evolix.org/extended-lts jessie-lts main'
+  when: release == 'bullseye'
+
 - name: "Fix bullseye repository in container {{ name }}"
   ansible.builtin.replace:
     dest: "/var/lib/lxc/{{ name }}/rootfs/etc/apt/sources.list"
@@ -136,12 +141,20 @@
     replace: 'bullseye-security'
   when: release == 'bullseye'
 
+- name: "Is sources.list present in container?"
+  ansible.builtin.stat:
+    path: "/var/lib/lxc/{{ name }}/rootfs/etc/apt/sources.list"
+  check_mode: no
+  register: lxc_is_apt_sources_list
+
 - name: "Fix bookworm repository in container {{ name }}"
   ansible.builtin.replace:
     dest: "/var/lib/lxc/{{ name }}/rootfs/etc/apt/sources.list"
     regexp: 'bookworm/updates'
     replace: 'bookworm-security'
-  when: release == 'bookworm'
+  when:
+    - release == 'bookworm'
+    - lxc_is_apt_sources_list.stat.exists
 
 - name: "{{ name }} - Update APT cache"
   ansible.builtin.shell:

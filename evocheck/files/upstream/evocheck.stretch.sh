@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="25.08"
+VERSION="25.08.1"
 readonly VERSION
 
 # base functions

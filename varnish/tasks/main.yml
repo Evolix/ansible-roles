@@ -76,35 +76,10 @@
     - varnish
     - config
 
-- name: Varnish systemd override template (Varnish 4 and 5)
-  ansible.builtin.set_fact:
-    varnish_systemd_override_template: override.conf.varnish4.j2
+- name: Varnish systemd override template
+  ansible.builtin.include_vars:
+    file: override_fallback.yml
   when:
-    - varnish_package_facts['version'] is version('4', '>=')
-    - varnish_package_facts['version'] is version('6', '<')
-    - varnish_systemd_override_template is none or varnish_systemd_override_template | length == 0
-  tags:
-    - varnish
-    - config
-    - update-config
-
-- name: Varnish systemd override template (Varnish 6)
-  ansible.builtin.set_fact:
-    varnish_systemd_override_template: override.conf.varnish6.j2
-  when:
-    - varnish_package_facts['version'] is version('6', '>=')
-    - varnish_package_facts['version'] is version('7', '<')
-    - varnish_systemd_override_template is none or varnish_systemd_override_template | length == 0
-  tags:
-    - varnish
-    - config
-    - update-config
-
-- name: Varnish systemd override template (Varnish 7 and later)
-  ansible.builtin.set_fact:
-    varnish_systemd_override_template: override.conf.varnish7.j2
-  when:
-    - varnish_package_facts['version'] is version('7', '>=')
     - varnish_systemd_override_template is none or varnish_systemd_override_template | length == 0
   tags:
     - varnish

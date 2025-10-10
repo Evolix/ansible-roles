@@ -2,8 +2,11 @@
 
 - name: dependencies are satisfied
   ansible.builtin.apt:
-    name: iptables
+    name: "{{ item }}"
     state: present
+  loop:
+    - iptables
+    - ipset
 
 - name: Stat minifirewall init file (before)
   ansible.builtin.stat:
@@ -20,7 +23,7 @@
 
 - name: init script is copied
   ansible.builtin.copy:
-    src: upstream/minifirewall
+    src: sysvinit/minifirewall.init.sh
     dest: /etc/init.d/minifirewall
     force: "{{ minifirewall_force_upgrade_script | default('no') }}"
     mode: "0700"
@@ -30,7 +33,7 @@
 
 - name: configuration is copied
   ansible.builtin.copy:
-    src: upstream/minifirewall.conf
+    src: sysvinit/minifirewall.conf
     dest: "/etc/default/minifirewall"
     force: "{{ minifirewall_force_upgrade_config | default('no') }}"
     mode: "0600"
@@ -60,10 +63,10 @@
     path: "/etc/init.d/minifirewall"
   register: minifirewall_init_after
 
-- name: Schedule minifirewall restart (modern)
+- name: Schedule minifirewall restart (modern/sysvinit)
   ansible.builtin.command:
     cmd: /bin/true
-  notify: "restart minifirewall (modern)"
+  notify: "restart minifirewall (modern/sysvinit)"
   when:
     - minifirewall_install_mode != 'legacy'
     - minifirewall_restart_if_needed | bool

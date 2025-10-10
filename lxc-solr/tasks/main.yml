@@ -15,4 +15,5 @@
     name: "{{ item.name }}"
     solr_version: "{{ item.solr_version }}"
     solr_port: "{{ item.solr_port }}"
+    tarball_path: "/var/lib/lxc/{{ name }}/rootfs/root/solr-{{ solr_version }}.tgz"
   loop: "{{ lxc_containers }}"

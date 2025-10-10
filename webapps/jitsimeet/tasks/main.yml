@@ -76,6 +76,7 @@
     - { name: nginx, src: 'meet/interface_config.js.j2', dest: "/etc/jitsi/meet/{{ jitsimeet_domains | first }}-interface_config.js", owner: "root", group: "root", mode: "0644" }
     - { name: nginx, src: 'meet/welcomePageAdditionalContent.html.j2', dest: "/etc/jitsi/meet/welcomePageAdditionalContent.html", owner: "root", group: "root", mode: "0644" }
     - { name: prosody, src: 'prosody/virtualhost.cfg.lua.j2', dest: "/etc/prosody/conf.avail/{{ jitsimeet_domains | first }}.cfg.lua", owner: "root", group: "root", mode: "0644" }
+    - { name: prosody, src: 'prosody/mod_time_restricted.lua.j2', dest: "/usr/share/jitsi-meet/prosody-plugins/mod_time_restricted.lua", owner: "root", group: "root", mode: "0644" }
     - { name: coturn, src: 'coturn/turnserver.conf.j2', dest: "/etc/turnserver.conf", owner: "root", group: "turnserver", mode: "0640" }
     - { name: nginx, src: 'certbot/coturn-certbot-deploy.sh.j2', dest: "/etc/letsencrypt/renewal-hooks/deploy/coturn-certbot-deploy.sh", owner: "root", group: "root", mode: "0700" }
   register: jitsimeet_all
@@ -204,3 +205,10 @@
   loop: "{{ jitsimeet_domains[1:] }}"
   loop_control:
     loop_var: domain
+
+- name: Setup coturn on secondary ip address
+  ansible.builtin.import_tasks: turn_secondary_ip_address.yml
+  when: jitsimeet_turn_secondary_ip_address is defined
+
+- name: Setup fail2ban
+  ansible.builtin.import_tasks: fail2ban.yml

@@ -20,7 +20,7 @@
   ansible.builtin.user:
     name: "{{ peertube_instance }}"
     home: "{{ peertube_instance_home }}"
-    shell: /bin/bash
+    shell: /usr/sbin/nologin
 
 - name: Add PostgreSQL user
   community.postgresql.postgresql_user:

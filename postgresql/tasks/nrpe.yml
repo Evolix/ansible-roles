@@ -39,7 +39,7 @@
     register: postgresql_create_nrpe_user
     when: nrpe_evolix_config.stat.exists
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       postgresql_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name postgresql -- "
 
   - name: Add NRPE check

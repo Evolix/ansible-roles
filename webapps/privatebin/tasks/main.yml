@@ -77,8 +77,12 @@
   notify: reload apache
 
 - name: Enable apache mode_rewrite
-  ansible.builtin.command:
-    cmd: "/usr/sbin/a2enmod ssl rewrite"
+  community.general.apache2_module:
+    name: '{{ item }}'
+    state: present
+  loop:
+    - ssl
+    - rewrite
   notify: restart apache
 
 - name: Enable .htaccess configuration

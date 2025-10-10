@@ -8,7 +8,7 @@
   ansible.builtin.file:
     state: absent
     dest: "/etc/openvpn/{{ item }}"
-  with_items:
+  loop:
     - client
     - server
 
@@ -46,7 +46,7 @@
     mode: "{{ item.mode }}"
     owner: "{{ item.owner }}"
     group: "{{ item.group }}"
-  with_items:
+  loop:
      - { source: "openssl.cnf", destination: "/etc/shellpki/openssl.cnf", mode: "0640", owner: "shellpki", group: "shellpki" }
      - { source: "shellpki", destination: "/usr/local/sbin/shellpki", mode: "0750", owner: "root", group: "root" }
 
@@ -102,9 +102,9 @@
 
 - name: Add minifirewall rule in config file
   ansible.builtin.lineinfile:
-    dest: "/etc/default/minifirewall"
+    dest: "/etc/minifirewall.d/zzz-custom"
     line: "{{ item }}"
-  with_items:
+  loop:
      - "# OpenVPN"
      - "/sbin/iptables -t nat -A POSTROUTING -s {{ openvpn_lan }}/{{ openvpn_netmask_cidr }} -o $INT -j MASQUERADE"
   when: minifirewall_config.stat.exists
@@ -198,7 +198,7 @@
     group: nagios
   when: nrpe_evolix_config.stat.exists
 
-- set_fact:
+- ansible.builtin.set_fact:
     openvpn_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name openvpn -- "
 
 - name: Configure NRPE OpenVPN check

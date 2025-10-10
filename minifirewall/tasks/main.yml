@@ -1,24 +1,11 @@
 ---
 
+- name: Detect current configuration
+  ansible.builtin.import_tasks: detect_current.yml
+  tags:
+    - always
+
 # Legacy or modern mode? ##############################################
-
-- name: Check minifirewall
-  ansible.builtin.stat:
-    path: /etc/init.d/minifirewall
-  register: _minifirewall_check
-  tags:
-    - always
-
-# Legacy versions of minifirewall don't define the VERSION variable
-- name: Look for minifirewall version
-  ansible.builtin.shell:
-    cmd: "grep -E '^\\s*VERSION=' /etc/init.d/minifirewall"
-  failed_when: False
-  changed_when: False
-  check_mode: False
-  register: _minifirewall_version_check
-  tags:
-    - always
 
 - name: Set install mode to legacy if needed
   ansible.builtin.set_fact:
@@ -26,9 +13,8 @@
     minifirewall_main_file: "{{ minifirewall_legacy_main_file }}"
     minifirewall_tail_file: "{{ minifirewall_legacy_tail_file }}"
   when:
-    - minifirewall_install_mode != 'modern'
-    - not (minifirewall_force_upgrade_script | bool)
-    - _minifirewall_version_check.rc == 1 # grep didn't find but the file exists
+    - minifirewall_install_mode == 'legacy'
+    - minifirewall_current_install_mode == 'legacy' and not (minifirewall_force_upgrade_script | bool)
   tags:
     - always
 
@@ -42,6 +28,30 @@
 - name: Debug install mode
   ansible.builtin.debug:
     var: minifirewall_install_mode
+    verbosity: 1
+  tags:
+    - always
+
+- name: Set init mode to sysvinit if needed
+  ansible.builtin.set_fact:
+    minifirewall_init_mode: sysvinit
+  when:
+    - minifirewall_init_mode != 'systemd'
+    - minifirewall_current_init_mode != "systemd"
+    - not (minifirewall_force_upgrade_script | bool)
+  tags:
+    - always
+
+- name: Set init mode to systemd if not sysvinit
+  ansible.builtin.set_fact:
+    minifirewall_init_mode: systemd
+  when: minifirewall_init_mode != 'sysvinit'
+  tags:
+    - always
+
+- name: Debug init mode
+  ansible.builtin.debug:
+    var: minifirewall_init_mode
     verbosity: 1
   tags:
     - always
@@ -63,12 +73,23 @@
   tags:
     - always
 
-- name: 'Set minifirewall_restart_handler_name to "modern"'
+- name: 'Set minifirewall_restart_handler_name to "modern/sysvinit"'
   ansible.builtin.set_fact:
-    minifirewall_restart_handler_name: "restart minifirewall (modern)"
+    minifirewall_restart_handler_name: "restart minifirewall (modern/sysvinit)"
   when:
     - minifirewall_restart_if_needed | bool
     - minifirewall_install_mode != 'legacy'
+    - minifirewall_init_mode == 'sysvinit'
+  tags:
+    - always
+
+- name: 'Set minifirewall_restart_handler_name to "modern/systemd"'
+  ansible.builtin.set_fact:
+    minifirewall_restart_handler_name: "restart minifirewall (modern/systemd)"
+  when:
+    - minifirewall_restart_if_needed | bool
+    - minifirewall_install_mode != 'legacy'
+    - minifirewall_init_mode == 'systemd'
   tags:
     - always
 
@@ -83,9 +104,17 @@
   tags:
     - always
 
-- name: Install tasks (modern mode)
-  ansible.builtin.import_tasks: install.yml
-  when: minifirewall_install_mode != 'legacy'
+- name: Install tasks (modern/sysvinit mode)
+  ansible.builtin.import_tasks: install.sysvinit.yml
+  when:
+    - minifirewall_install_mode != 'legacy'
+    - minifirewall_init_mode == 'sysvinit'
+
+- name: Install tasks (modern/systemd mode)
+  ansible.builtin.import_tasks: install.systemd.yml
+  when:
+    - minifirewall_install_mode != 'legacy'
+    - minifirewall_init_mode != 'sysvinit'
 
 - name: Install tasks (legacy mode)
   ansible.builtin.import_tasks: install.legacy.yml
@@ -120,8 +149,13 @@
 - name: NRPE tasks
   ansible.builtin.import_tasks: nrpe.yml
 
-- name: Activation tasks
-  ansible.builtin.import_tasks: activate.yml
+- name: Activation tasks (sysvinit)
+  ansible.builtin.import_tasks: activate.sysvinit.yml
+  when: minifirewall_init_mode == 'sysvinit'
+
+- name: Activation tasks (systemd)
+  ansible.builtin.import_tasks: activate.systemd.yml
+  when: minifirewall_init_mode != 'sysvinit'
 
 - name: Debug minifirewall_tail_included
   ansible.builtin.debug:
@@ -165,12 +199,24 @@
     - minifirewall_install_mode == 'legacy'
     - minifirewall_restart_force | bool
 
-- name: Force restart minifirewall (modern)
+- name: Force restart minifirewall (modern/sysvinit)
   ansible.builtin.command:
     cmd: /bin/true
-  notify: "restart minifirewall (modern)"
+  notify: "restart minifirewall (modern/sysvinit)"
   tags:
     - always
   when:
     - minifirewall_install_mode != 'legacy'
+    - minifirewall_init_mode == 'sysvinit'
+    - minifirewall_restart_force | bool
+
+- name: Force restart minifirewall (modern/systemd)
+  ansible.builtin.command:
+    cmd: /bin/true
+  notify: "restart minifirewall (modern/systemd)"
+  tags:
+    - always
+  when:
+    - minifirewall_install_mode != 'legacy'
+    - minifirewall_init_mode != 'sysvinit'
     - minifirewall_restart_force | bool

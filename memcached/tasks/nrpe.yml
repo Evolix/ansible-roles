@@ -28,7 +28,7 @@
       force: true
       mode: "0755"
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       memcached_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name memcached -- "
 
   - name: Add NRPE check (single instance)

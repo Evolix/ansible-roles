@@ -52,6 +52,7 @@
     regexp: '^logging.dest:'
     insertafter: '^#logging.dest:'
   notify: restart kibana
+  when: elastic_stack_version is version('8', '<')
   tags:
     - kibana
 

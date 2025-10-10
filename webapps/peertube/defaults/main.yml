@@ -1,7 +1,7 @@
 ---
 # defaults file for vars
 peertube_system_dep: "['curl', 'python3-dev', 'python-is-python3', 'python3-psycopg2','ffmpeg', 'postgresql-contrib', 'openssl', 'g++', 'make', 'git', 'unzip', 'acl']"
-peertube_version: 'v6.1.0'
+peertube_version: 'v7.3.0'
 peertube_download_url: "https://github.com/Chocobozzz/PeerTube/releases/download/{{ peertube_version }}/peertube-{{ peertube_version }}.zip"
 peertube_domains: ['example.domain.org']
 peertube_instance: 'my-peertube'
@@ -14,3 +14,5 @@ peertube_db_user: "{{ peertube_instance }}"
 peertube_db_password: 'UQ6_CHANGE_ME_Gzb'
 peertube_app_secret: 'd98a73_CHANGE_ME_c00c7c'
 peertube_app_host: '127.0.0.1:9000'
+peertube_nodejs_version: 'node_22.x'
+peertube_email_from: "{{ peertube_instance }}@{{ ansible_fqdn }}"

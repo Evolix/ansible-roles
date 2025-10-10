@@ -65,7 +65,7 @@
 
 # Logcheck
 - name: Check if journald.logfiles exists
-  stat:
+  ansible.builtin.stat:
     path: /etc/logcheck/logcheck.logfiles.d/journal.logfiles
   register: _logcheck_journald_logfiles
 

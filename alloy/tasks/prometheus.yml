@@ -1,5 +1,5 @@
 - name: "/etc/alloy/config.d/10-default-prometheus.alloy file"
-  template:
+  ansible.builtin.template:
     src: 10-default-prometheus.alloy
     dest: /etc/alloy/config.d/10-default-prometheus.alloy
     owner: root

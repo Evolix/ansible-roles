@@ -282,12 +282,24 @@
     path: "/etc/default/minifirewall"
   register: minifirewall_after
 
-- name: Schedule minifirewall restart (modern)
+- name: Schedule minifirewall restart (modern/sysvinit)
   ansible.builtin.command:
     cmd: /bin/true
-  notify: "restart minifirewall (modern)"
+  notify: "restart minifirewall (modern/sysvinit)"
   when:
     - minifirewall_install_mode != 'legacy'
+    - minifirewall_init_mode == 'sysvinit'
+    - minifirewall_restart_if_needed | bool
+    - minifirewall_is_running.rc == 0
+    - minifirewall_before.stat.checksum != minifirewall_after.stat.checksum or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed
+
+- name: Schedule minifirewall restart (modern/systemd)
+  ansible.builtin.command:
+    cmd: /bin/true
+  notify: "restart minifirewall (modern/systemd)"
+  when:
+    - minifirewall_install_mode != 'legacy'
+    - minifirewall_init_mode != 'sysvinit'
     - minifirewall_restart_if_needed | bool
     - minifirewall_is_running.rc == 0
     - minifirewall_before.stat.checksum != minifirewall_after.stat.checksum or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed

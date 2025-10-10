@@ -9,7 +9,7 @@
 - ansible.builtin.meta: flush_handlers
 
 - name: "Ensure {{ apt_keyring_dir }} directory exists"
-  file:
+  ansible.builtin.file:
     path: "{{ apt_keyring_dir }}"
     state: directory
     mode: "755"

@@ -39,3 +39,11 @@
   tags:
     - apt
   when: apt_remove_aptitude | bool
+
+- name: Remove /etc/apt/trusted.gpg on Debian Trixie and later
+  ansible.builtin.file:
+    path: /etc/apt/trusted.gpg
+    state: absent
+  tags:
+    - apt
+  when: ansible_distribution_major_version is version('13', '>=')

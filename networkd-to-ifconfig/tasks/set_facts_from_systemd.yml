@@ -14,7 +14,7 @@
 
 - name: Prepare variables
   ansible.builtin.set_fact:
-    eni_ipv4_address: "{{ network_address_grep.stdout_lines | ipv4 | first }}"
-    eni_ipv4_gateway: "{{ network_gateway_grep.stdout_lines | ipv4 | first }}"
-    eni_ipv6_address: "{{ network_address_grep.stdout_lines | ipv6 | first }}"
-    eni_ipv6_gateway: "{{ network_gateway_grep.stdout_lines | ipv6 | first }}"
+    eni_ipv4_address: "{{ network_address_grep.stdout_lines | ansible.utils.ipv4 | first }}"
+    eni_ipv4_gateway: "{{ network_gateway_grep.stdout_lines | ansible.utils.ipv4 | first }}"
+    eni_ipv6_address: "{{ network_address_grep.stdout_lines | ansible.utils.ipv6 | first }}"
+    eni_ipv6_gateway: "{{ network_gateway_grep.stdout_lines | ansible.utils.ipv6 | first }}"

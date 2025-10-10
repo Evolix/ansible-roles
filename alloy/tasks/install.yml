@@ -24,7 +24,7 @@
 # Install Grafana Alloy
 
 - name: "alloy installed"
-  apt:
+  ansible.builtin.apt:
     name: alloy
     state: present
 
@@ -32,7 +32,7 @@
 # Grafana Alloy config
 
 - name: "/etc/alloy/config.d/ directory"
-  file:
+  ansible.builtin.file:
     path: /etc/alloy/config.d/
     state: directory
     owner: root
@@ -40,7 +40,7 @@
     mode: 0755
 
 - name: "/etc/alloy/config.d/10-default.alloy file"
-  template:
+  ansible.builtin.template:
     src: 10-default.alloy 
     dest: /etc/alloy/config.d/10-default.alloy
     owner: root
@@ -51,14 +51,14 @@
 # alloy.service
 
 - name: "/etc/systemd/system/alloy.service.d/ directory"
-  file:
+  ansible.builtin.file:
     path: /etc/systemd/system/alloy.service.d/
     state: directory
     owner: root
     group: root
     mode: 0755
 
-- name: "alloy.service overrided"
+- name: "alloy.service has an override"
   ansible.builtin.copy:
     src: alloy.override.service
     dest: /etc/systemd/system/alloy.service.d/override.conf
