@@ -17,6 +17,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* lxc-php: fallback on systemd-timedated when /etc/timezone is absent
+
 ### Removed
 
 ### Security
