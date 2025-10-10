@@ -80,7 +80,7 @@
   notify: restart proftpd
   when:
     - proftpd_sftp_enable | bool
-    - proftpd_sftp_enable_user_whitelist | bool  
+    - proftpd_sftp_enable_user_whitelist | bool
 
 - name: IP Whitelists for SFTP users are absent
   ansible.builtin.blockinfile:
