@@ -72,6 +72,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * packweb-apache: Fix nginx vhost path in phpContainer
 * proftpd: Do not break when `proftpd_sftp_enable` is `false`
 * proftpd: Fix usage with tag proftpd
+* alloy: fix creation of files
 
 ### Removed
 
