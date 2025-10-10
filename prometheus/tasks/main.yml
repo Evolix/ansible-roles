@@ -1,5 +1,19 @@
 ---
 
+- name: "Gather the package facts"
+  ansible.builtin.package_facts:
+    manager: auto
+
 - ansible.builtin.import_tasks: vmagent.yml
 
 - ansible.builtin.import_tasks: node-exporter.yml
+
+- name: "/etc/victoria-metrics/scrape.d/crowdsec.yml file"
+  ansible.builtin.template:
+    src: "scrape.d/crowdsec.yml"
+    dest: "/etc/victoria-metrics/scrape.d/crowdsec.yml"
+    owner: "_victoria-metrics"
+    group: "_victoria-metrics"
+    mode: "0640"
+  notify: "reload vmagent"
+  when: "'crowdsec' in ansible_facts.packages"
