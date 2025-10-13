@@ -15,6 +15,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* evocheck: upstream release 25.10
+
 ### Fixed
 
 ### Removed
