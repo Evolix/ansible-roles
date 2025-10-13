@@ -1,0 +1,29 @@
+---
+
+- name: check if /etc/init.d/alert5 exists
+  ansible.builtin.stat:
+    path: /etc/init.d/alert5
+  register: initd_alert5
+
+- name: Uncomment minifirewall start line
+  ansible.builtin.replace:
+    dest: /etc/init.d/alert5
+    regexp: '^#/etc/init.d/minifirewall start'
+    replace: '/etc/init.d/minifirewall start'
+  when:
+    - initd_alert5.stat.exists
+    - "{{ (minifirewall_current_autostart | default(False)) or (minifirewall_autostart | default(False)) }}"
+
+- name: check if /usr/share/scripts/alert5 exists
+  ansible.builtin.stat:
+    path: /usr/share/scripts/alert5.sh
+  register: usr_share_scripts_alert5
+
+- name: Uncomment minifirewall start line
+  ansible.builtin.replace:
+    dest: /usr/share/scripts/alert5.sh
+    regexp: '^#/etc/init.d/minifirewall start'
+    replace: '/etc/init.d/minifirewall start'
+  when:
+    - usr_share_scripts_alert5.stat.exists
+    - "{{ (minifirewall_current_autostart | default(False)) or (minifirewall_autostart | default(False)) }}"

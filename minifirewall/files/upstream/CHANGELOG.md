@@ -11,11 +11,45 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Removed
 
-* removed the version in configuration file
-
 ### Fixed
 
 ### Security
+
+## [25.10.1] - 2025-10-09
+
+### Added
+
+* add "force-stop" command to stop the firewall, whatever state the systemd service might be in
+
+## [25.10] - 2025-10-03
+
+### Added
+
+* show status after start/stop/restart from SysV init script
+
+### Changed
+
+* group additional scripts in utils directory
+* split main logic from SysVinit script, and add systemd unit
+* systemd unit optimization
+
+### Removed
+
+* the cron job is never used, let's remove it
+
+### Fixed
+
+* fix remove_colors for RESET sequence
+
+## [25.08] - 2025-08-31
+
+### Added
+
+* new chain MINIFW-DOCKER-USER to manipulate DOCKER-USER with minifirewall
+
+### Removed
+
+* removed the version in configuration file
 
 ## [25.07] - 2025-07-16
 

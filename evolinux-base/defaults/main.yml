@@ -111,6 +111,7 @@ evolinux_system_vim_skip_defaults: True
 evolinux_system_vim_default_editor: True
 evolinux_system_profile: True
 evolinux_system_dirmode_adduser: True
+evolinux_system_usersgroup_adduser: True
 evolinux_system_restrict_securetty: False
 evolinux_system_set_timeout: True
 evolinux_system_timeout: 36000

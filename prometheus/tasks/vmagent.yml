@@ -1,0 +1,137 @@
+# Install VMAgent
+
+- name: "victoria-metrics installed"
+  ansible.builtin.apt:
+    name: "victoria-metrics"
+    state: "present"
+  register: "victoriametrics_installed"
+
+- name: "victoria-metrics.service stopped and disabled"
+  ansible.builtin.service:
+    name: "victoria-metrics.service" 
+    state: "stopped"
+    enabled: false
+  # We don't want to touch that service if we didn't installed the package
+  # just now. Otherwise we could stop actual victoria-metrics.service instance.
+  when: "victoriametrics_installed is changed"
+
+# Configure VMAgent
+
+- name: "/etc/victoria-metrics/ directory"
+  ansible.builtin.file:
+    path: "/etc/victoria-metrics/"
+    state: "directory"
+    owner: "_victoria-metrics"
+    group: "_victoria-metrics"
+    mode: "0750"
+
+## Configure vmagent.service
+
+- name: "/etc/victoria-metrics/vmagent.d/ directory"
+  ansible.builtin.file:
+    path: "/etc/victoria-metrics/vmagent.d/"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0750"
+
+- name: "/etc/victoria-metrics/vmagent.d/z-evolinux-default.env file"
+  ansible.builtin.template:
+    src: "vmagent.d/z-evolinux-default.env"
+    dest: "/etc/victoria-metrics/vmagent.d/z-evolinux-default.env"
+    owner: "root"
+    group: "root"
+    mode: "0640"
+  notify: "restart vmagent"
+
+- name: "/etc/victoria-metrics/vmagent.d/zzz-evolinux-custom.env file"
+  ansible.builtin.template:
+    src: "vmagent.d/zzz-evolinux-custom.env"
+    dest: "/etc/victoria-metrics/vmagent.d/zzz-evolinux-custom.env"
+    owner: "root"
+    group: "root"
+    mode: "0640"
+    force: false
+  notify: "restart vmagent"
+
+## Configure victoria-metrics scraping
+
+- name: "/etc/victoria-metrics/scrape.d/ directory"
+  ansible.builtin.file:
+    path: "/etc/victoria-metrics/scrape.d/"
+    state: "directory"
+    owner: "_victoria-metrics"
+    group: "_victoria-metrics"
+    mode: "0750"
+
+- name: "/etc/victoria-metrics/scrape.yml file"
+  ansible.builtin.template:
+    src: "scrape.yml"
+    dest: "/etc/victoria-metrics/scrape.yml"
+    owner: "_victoria-metrics"
+    group: "_victoria-metrics"
+    mode: "0640"
+  notify: "reload vmagent"
+
+- name: "/etc/victoria-metrics/scrape.d/vmagent.yml file"
+  ansible.builtin.template:
+    src: "scrape.d/vmagent.yml"
+    dest: "/etc/victoria-metrics/scrape.d/vmagent.yml"
+    owner: "_victoria-metrics"
+    group: "_victoria-metrics"
+    mode: "0640"
+  notify: "reload vmagent"
+
+## Configure victoria-metrics SSL
+
+- name: "/etc/victoria-metrics/ssl/ directory"
+  ansible.builtin.file:
+    path: "/etc/victoria-metrics/ssl/"
+    state: "directory"
+    owner: "_victoria-metrics"
+    group: "_victoria-metrics"
+    mode: "0700"
+
+- name: "Copy PKI SSL files to /etc/victoria-metrics/ssl/"
+  ansible.builtin.copy:
+    remote_src: "true"
+    src: "{{ item }}"
+    dest: "/etc/victoria-metrics/ssl/"
+    owner: "_victoria-metrics"
+    group: "_victoria-metrics"
+    mode: "0600"
+  loop:
+    - "/etc/pki/metrics/certs/ca.crt"
+    - "/etc/pki/metrics/certs/{{ ansible_fqdn }}.crt"
+    - "/etc/pki/metrics/private/{{ ansible_fqdn }}.key"
+  notify: "restart vmagent"
+
+## Configure vmagent remote_write
+
+- name: "Configure vmagent remotewrite"
+  ansible.builtin.blockinfile:
+    dest: "/etc/victoria-metrics/vmagent.d/zzz-evolinux-custom.env"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - remotewrite defaults"
+    block: |
+      remoteWrite_url={{ prometheus_vmagent_remotewrite_url | mandatory }}
+      remoteWrite_tlsCAFile=/etc/victoria-metrics/ssl/ca.crt
+      remoteWrite_tlsCertFile=/etc/victoria-metrics/ssl/{{ ansible_fqdn }}.crt
+      remoteWrite_tlsKeyFile=/etc/victoria-metrics/ssl/{{ ansible_fqdn }}.key
+  notify: "restart vmagent"
+  
+# Create and start vmagent.service
+
+- name: "vmagent.service exists"
+  ansible.builtin.template:
+    src: "vmagent.service"
+    dest: "/etc/systemd/system/vmagent.service"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  notify: "daemon-reload"
+
+- name: "vmagent.service enabled and started"
+  ansible.builtin.systemd:
+    name: "vmagent.service"
+    state: "started"
+    enabled: true

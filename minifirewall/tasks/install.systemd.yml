@@ -1,0 +1,118 @@
+---
+
+- name: dependencies are satisfied
+  ansible.builtin.apt:
+    name: iptables
+    state: present
+
+- name: Remount /usr if needed
+  ansible.builtin.include_role:
+    name: evolix/remount-usr
+
+- name: Stat minifirewall main file (before)
+  ansible.builtin.stat:
+    path: "/usr/local/sbin/minifirewall"
+  register: minifirewall_script_before
+
+- name: Check if minifirewall is running
+  ansible.builtin.shell:
+    cmd: /sbin/iptables -L -n | grep --extended-regexp "^(DROP\s+(udp|17)|ACCEPT\s+(icmp|1))\s+--\s+0\.0\.0\.0\/0\s+0\.0\.0\.0\/0\s*$"
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  register: minifirewall_is_running
+
+- name: init script is copied
+  ansible.builtin.copy:
+    src: upstream/minifirewall.init.sh
+    dest: /etc/init.d/minifirewall
+    force: "{{ minifirewall_force_upgrade_script | default('no') }}"
+    mode: "0700"
+    owner: root
+    group: root
+
+- name: main script is copied
+  ansible.builtin.copy:
+    src: upstream/minifirewall.sh
+    dest: /usr/local/sbin/minifirewall
+    force: "{{ minifirewall_force_upgrade_script | default('no') }}"
+    mode: "0700"
+    owner: root
+    group: root
+  register: minifirewall_upgrade_script
+
+- name: configuration is copied
+  ansible.builtin.copy:
+    src: upstream/minifirewall.conf
+    dest: "/etc/default/minifirewall"
+    force: "{{ minifirewall_force_upgrade_config | default('no') }}"
+    mode: "0600"
+    owner: root
+    group: root
+  register: minifirewall_upgrade_config
+
+- name: systemd unit is copied
+  ansible.builtin.copy:
+    src: upstream/minifirewall.service
+    dest: /etc/systemd/system/minifirewall.service
+    force: "yes"
+    mode: "0644"
+    owner: root
+    group: root
+  register: minifirewall_service
+
+- name: enable minifirewall.service
+  ansible.builtin.systemd:
+    name: minifirewall.service
+    enabled: true
+    daemon-reload: yes
+  when: minifirewall_service is changed
+
+- name: Directory for included files is present
+  ansible.builtin.file:
+    path: /etc/minifirewall.d/
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Includes files are present
+  ansible.builtin.copy:
+    src: "minifirewall.d/"
+    dest: "/etc/minifirewall.d/"
+    force: "no"
+    mode: "0600"
+    owner: root
+    group: root
+
+- name: Stat minifirewall main file (after)
+  ansible.builtin.stat:
+    path: "/usr/local/sbin/minifirewall"
+  register: minifirewall_script_after
+
+- name: Force stop minifirewall
+  ansible.builtin.command:
+    cmd: /bin/true
+  notify: "force-stop minifirewall (modern/systemd)"
+  when:
+    - minifirewall_current_init_mode != 'systemd'
+    - minifirewall_install_mode != 'legacy'
+    - minifirewall_restart_if_needed | bool
+    - minifirewall_is_running.rc == 0
+    - (not minifirewall_script_before.stat.checksum is defined and minifirewall_script_after.stat.checksum is defined) or (minifirewall_script_before.stat.checksum | default('')) != (minifirewall_script_after.stat.checksum | default('')) or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed
+    - not ansible_check_mode
+
+- name: Schedule minifirewall restart (modern/systemd)
+  ansible.builtin.command:
+    cmd: /bin/true
+  notify: "restart minifirewall (modern/systemd)"
+  when:
+    - minifirewall_install_mode != 'legacy'
+    - minifirewall_restart_if_needed | bool
+    - minifirewall_is_running.rc == 0
+    - (not minifirewall_script_before.stat.checksum is defined and minifirewall_script_after.stat.checksum is defined) or (minifirewall_script_before.stat.checksum | default('')) != (minifirewall_script_after.stat.checksum | default('')) or minifirewall_upgrade_script is changed or minifirewall_upgrade_config is changed
+    - not ansible_check_mode
+
+- ansible.builtin.debug:
+    var: minifirewall_init_restart
+    verbosity: 2

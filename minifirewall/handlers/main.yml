@@ -5,11 +5,20 @@
     name: nagios-nrpe-server
     state: restarted
 
-- name: restart minifirewall (modern)
+- name: restart minifirewall (modern/sysvinit)
   ansible.builtin.command:
     cmd: /etc/init.d/minifirewall restart
   register: minifirewall_init_restart
   failed_when: "'minifirewall failed' in minifirewall_init_restart.stdout"
+
+- name: force-stop minifirewall (modern/systemd)
+  ansible.builtin.command:
+    cmd: /usr/local/sbin/minifirewall force-stop
+
+- name: restart minifirewall (modern/systemd)
+  ansible.builtin.systemd:
+    name: minifirewall.service
+    state: restarted
 
 - name: restart minifirewall (legacy)
   ansible.builtin.command:

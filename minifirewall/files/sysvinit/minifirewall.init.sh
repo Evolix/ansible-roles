@@ -1,0 +1,1307 @@
+#!/bin/sh
+# shellcheck disable=SC2059
+
+# minifirewall is a shell script for easy firewalling on a standalone server
+# It uses netfilter/iptables http://netfilter.org/ designed for recent Linux kernel
+# See https://gitea.evolix.org/evolix/minifirewall
+
+# Copyright (c) 2007-2025 Evolix
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 3
+# of the License.
+
+# Description
+# script for standalone server
+
+# Start or stop minifirewall
+#
+
+### BEGIN INIT INFO
+# Provides:          minifirewall
+# Required-Start:
+# Required-Stop:
+# Should-Start:      $network $syslog $named
+# Should-Stop:       $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: start and stop the firewall
+# Description:       Firewall designed for standalone server
+### END INIT INFO
+
+VERSION="25.08"
+
+PROGNAME="minifirewall"
+# shellcheck disable=SC2034
+DESC="Firewall designed for standalone server"
+
+set -u
+
+if [ "$(id -u)" -ne "0" ] ; then
+    echo "${PROGNAME} must be run as root." >&2
+    exit 1
+fi
+
+# Variables configuration
+#########################
+
+config_file="/etc/default/minifirewall"
+includes_dir="/etc/minifirewall.d"
+
+# iptables paths
+IPT=$(command -v iptables)
+if [ -z "${IPT}" ]; then
+    echo "Unable to find 'iptables\` command in PATH." >&2
+    exit 1
+fi
+IPT6=$(command -v ip6tables)
+if [ -z "${IPT6}" ]; then
+    echo "Unable to find 'ip6tables\` command in PATH." >&2
+    exit 1
+fi
+
+# TCP/IP variables
+LOOPBACK='127.0.0.0/8'
+CLASSA='10.0.0.0/8'
+CLASSB='172.16.0.0/12'
+CLASSC='192.168.0.0/16'
+CLASSD='224.0.0.0/4'
+CLASSE='240.0.0.0/5'
+ALL='0.0.0.0'
+BROAD='255.255.255.255'
+PORTSROOT='0:1023'
+PORTSUSER='1024:65535'
+
+# Configuration
+
+INT=''
+IPV6=''
+DOCKER=''
+INTLAN=''
+TRUSTEDIPS=''
+PRIVILEGIEDIPS=''
+SERVICESTCP1p=''
+SERVICESUDP1p=''
+SERVICESTCP1=''
+SERVICESUDP1=''
+SERVICESTCP2=''
+SERVICESUDP2=''
+SERVICESTCP3=''
+SERVICESUDP3=''
+DNSSERVEURS=''
+HTTPSITES=''
+HTTPSSITES=''
+FTPSITES=''
+SSHOK=''
+SMTPOK=''
+SMTPSECUREOK=''
+NTPOK=''
+PROXY=''
+PROXYBYPASS=''
+PROXYPORT=''
+BACKUPSERVERS=''
+
+LEGACY_CONFIG='off'
+
+STATE_FILE_LATEST='/var/run/minifirewall_state_latest'
+STATE_FILE_CURRENT='/var/run/minifirewall_state_current'
+STATE_FILE_PREVIOUS='/var/run/minifirewall_state_previous'
+STATE_FILE_DIFF='/var/run/minifirewall_state_diff'
+
+ACTIVE_CONFIG='/var/run/minifirewall_active_config'
+ACTIVE_CONFIG_DIFF="${ACTIVE_CONFIG}.diff"
+
+SAFETY_LOCK='/var/run/minifirewall_safety.lock'
+SAFETY_OUTPUT='/var/run/minifirewall_safety.out'
+SAFETY_TIMER=30
+
+LOGGER_BIN=$(command -v logger)
+
+# No colors by default
+RED=''
+GREEN=''
+YELLOW=''
+BLUE=''
+MAGENTA=''
+CYAN=''
+WHITE=''
+BOLD=''
+RESET=''
+
+is_color_enabled() {
+    # Support NO_COLOR / https://no-color.org/
+    if [ -n "${NO_COLOR:-}" ] && [ "${NO_COLOR:-}" != "0" ]; then
+        return 1
+    else
+        # see if it supports colors...
+        ncolors=$(tput colors)
+
+        # shellcheck disable=SC2086
+        test -n "${ncolors}" && test ${ncolors} -ge 8
+    fi
+}
+
+# check if stdout is a terminal...
+if [ -t 1 ]; then
+    INTERACTIVE=1
+
+    if is_color_enabled; then
+        RED=$(tput setaf 1)
+        GREEN=$(tput setaf 2)
+        YELLOW=$(tput setaf 3)
+        BLUE=$(tput setaf 4)
+        MAGENTA=$(tput setaf 5)
+        CYAN=$(tput setaf 6)
+        WHITE=$(tput setaf 7)
+        BOLD=$(tput bold)
+        RESET='\e[m'
+    fi
+else
+    INTERACTIVE=0
+fi
+readonly INTERACTIVE
+
+## pseudo dry-run :
+## Uncomment and call these functions instead of the real iptables and ip6tables commands
+# IPT="fake_iptables"
+# IPT6="fake_ip6tables"
+# fake_iptables() {
+#     printf "DRY-RUN iptables %s\n" "$*"
+# }
+# fake_ip6tables() {
+#     printf "DRY-RUN ip6tables %s\n" "$*"
+# }
+## Beware that commands executed from included files are not modified by this trick.
+
+is_interactive() {
+    test "${INTERACTIVE}" = "1"
+}
+remove_colors() {
+    sed -r 's/\x1B\[(;?[0-9]{1,3})+[mGK]//g'
+}
+syslog_info() {
+    if [ -x "${LOGGER_BIN}" ]; then
+        ${LOGGER_BIN} -t "${PROGNAME}" -p daemon.info "$1"
+    fi
+}
+syslog_error() {
+    if [ -x "${LOGGER_BIN}" ]; then
+        ${LOGGER_BIN} -t "${PROGNAME}" -p daemon.error "$1"
+    fi
+}
+sort_values() {
+    echo "$*" | tr ' ' '\n' | sort -h
+}
+is_ipv6_enabled() {
+    test "${IPV6}" != "off"
+}
+is_docker_enabled() {
+    test "${DOCKER}" = "on" || test "${DOCKER}" = "manual"
+}
+is_docker_manual() {
+    test "${DOCKER}" = "manual"
+}
+is_proxy_enabled() {
+    test "${PROXY}" = "on"
+}
+is_ipv6() {
+    echo "$1" | grep -q ':' 
+}
+is_legacy_config() {
+    test "${LEGACY_CONFIG}" != "off"
+}
+chain_exists() {
+    chain_name="$1"
+    if [ $# -ge 2 ]; then
+        intable="--table $2"
+    else
+        intable=""
+    fi
+    # shellcheck disable=SC2086
+    iptables ${intable} -nL "${chain_name}" >/dev/null 2>&1
+}
+source_file_or_error() {
+    file=$1
+    syslog_info "sourcing \`${file}'"
+    printf "${BLUE}sourcing \`%s': ${RESET}" "${file}"
+
+    tmpfile=$(mktemp --tmpdir=/tmp minifirewall.XXX)
+    . "${file}" 2>"${tmpfile}" >&2
+
+    if [ -s "${tmpfile}" ]; then
+        syslog_error "Error while sourcing ${file}"
+    
+        printf "${RED}Error${RESET}\n"
+        
+        printf "${RED}%s returns standard or error output (see below). Stopping.${RESET}\n" "${file}" >&2
+        cat "${tmpfile}" >&2
+        exit 1
+    else
+        printf "${GREEN}Ok${RESET}\n"
+    fi
+    rm -f "${tmpfile}"
+}
+source_configuration() {
+    if ! test -f ${config_file}; then
+        printf "${RED}%s does not exist${RESET}\n" "${config_file}" >&2
+
+        ## We still want to deal with this really old configuration file
+        ## even if it has been deprecated since Debian 8
+        old_config_file="/etc/firewall.rc"
+        if test -f ${old_config_file}; then
+            printf "${YELLOW}%s is deprecated and ignored. Rename it to %s${RESET}\n" "${old_config_file}" "${config_file}" >&2
+        fi
+
+        exit 1
+    fi
+
+    # If we find something other than a blank line, a comment or a variable assignment
+    if grep --quiet --extended-regexp --invert-match "^\s*(#|$|\w+=)" "${config_file}"; then
+        # Backward compatible mode
+        ###########################
+
+        printf "${YELLOW}legacy config detected${RESET}\n"
+        LEGACY_CONFIG='on'
+
+        # Non-backward compatible mode
+        ###############################
+
+        # If we ever want to remove the backward compatible mode
+        # we can remove the two lines above and uncomment the lines below.
+        # They break if any iptables/ip6tables command is found in the configuration file
+
+        # echo "iptables/ip6tables commands found in ${config_file}." >&2
+        # echo "Move them in included files (in ${includes_dir})." >&2
+        # exit 1
+    fi
+
+    if is_legacy_config; then
+        # In this mode, we extract all variable definitions
+        # to a temporary file that we can source.
+        # It allow iptables/ip6tables commands to remain in the configuration file
+        # and not interfere with the configuration step.
+
+        tmp_config_file=$(mktemp --tmpdir=/tmp minifirewall.XXX)
+        # get only variable assignments
+        grep -E "^\s*\w+=" "${config_file}" > "${tmp_config_file}"
+
+        source_file_or_error "${tmp_config_file}"
+        rm -f "${tmp_config_file}"
+    else
+        source_file_or_error "${config_file}"
+    fi
+}
+include_files() {
+    if [ -d "${includes_dir}" ]; then
+        find ${includes_dir} -type f -readable -not -name '*.*' | sort -h
+    else
+        echo ""
+    fi
+}
+source_includes() {
+    if [ -d "${includes_dir}" ]; then
+        for include_file in $(include_files); do
+            source_file_or_error "${include_file}"
+        done
+    fi
+}
+filter_config_file() {
+    # Remove lines with:
+    # * empty or only whitespaces
+    # * comments
+    grep --extended-regexp --invert-match -e "^(\s*#)" -e "^\s*$" "${1}"
+}
+save_active_configuration() {
+    dest_file=${1}
+    rm -f "${dest_file}"
+
+    echo "# ${config_file}" >> "${dest_file}"
+    filter_config_file "${config_file}" >> "${dest_file}"
+
+    found_include_files=$(include_files)
+    if [ -n "${found_include_files}" ]; then
+        for include_file in ${found_include_files}; do
+            echo "# ${include_file}" >> "${dest_file}"
+            filter_config_file "${include_file}" >> "${dest_file}"
+        done
+    fi
+}
+check_active_configuration() {
+    # NRPE-compatible return codes
+    # 0: OK
+    # 1: WARNING
+    # 2: CRITICAL
+    # 3: UNKNOWN 
+    rc=0
+
+    if [ -f "${ACTIVE_CONFIG}" ]; then
+        cmp_bin=$(command -v cmp)
+        diff_bin=$(command -v diff)
+
+        if [ -z "${cmp_bin}" ]; then
+            printf "${YELLOW}WARNING: Skipped active configuration check (Can't find cmp(1) command)${RESET}\n"
+            rc=1
+        elif [ -z "${diff_bin}" ]; then
+            printf "${YELLOW}WARNING: Skipped active configuration check (Can't find diff(1) command)${RESET}\n"
+            rc=1
+        else
+            rm -f "${ACTIVE_CONFIG_DIFF}"
+
+            tmp_config_file=$(mktemp --tmpdir=/tmp minifirewall.XXX)
+            save_active_configuration "${tmp_config_file}"
+
+            cmp_result=$(cmp "${ACTIVE_CONFIG}" "${tmp_config_file}" 2>&1)
+            cmp_rc=$?
+
+            if [ ${cmp_rc} -eq 0 ]; then
+                # echo "   config has not changed since latest start"
+                printf "${GREEN}OK: Active configuration is up-to-date.${RESET}\n"
+                rc=0
+            elif [ ${cmp_rc} -eq 1 ]; then
+                diff -u "${ACTIVE_CONFIG}" "${tmp_config_file}" > "${ACTIVE_CONFIG_DIFF}"
+
+                printf "${RED}CRITICAL: Active configuration is not up-to-date (minifirewall not restarted after config change?), check %s${RESET}\n" "${ACTIVE_CONFIG_DIFF}"
+                rc=2
+            else
+                printf "${RED}CRITICAL: Error while comparing rules:${RESET}\n"
+                printf "${cmp_result}\n"
+                rc=2
+            fi
+
+            rm -f "${tmp_config_file}"
+        fi
+    else
+        printf "${YELLOW}WARNING: Skipped active configuration check (missing file ${ACTIVE_CONFIG})${RESET}\n"
+        rc=1
+    fi
+    exit ${rc}
+}
+check_unpersisted_state() {
+    cmp_bin=$(command -v cmp)
+    diff_bin=$(command -v diff)
+
+    if [ -z "${cmp_bin}" ]; then
+        printf "${YELLOW}skip state comparison (Can't find cmp command)${RESET}\n" >&2
+    elif [ -z "${diff_bin}" ]; then
+        printf "${YELLOW}skip state comparison (Can't find diff command)${RESET}\n" >&2
+    else
+        # store current state (without colors)
+        mkdir -p "$(dirname "${STATE_FILE_CURRENT}")"
+        status_without_numbers | remove_colors > "${STATE_FILE_CURRENT}"
+
+        # clean previous diff file
+        rm -f "${STATE_FILE_DIFF}"
+
+        if [ -f "${STATE_FILE_LATEST}" ]; then
+            cmp_result=$(cmp "${STATE_FILE_LATEST}" "${STATE_FILE_CURRENT}" 2>&1)
+            cmp_rc=$?
+
+            if [ ${cmp_rc} -eq 0 ]; then
+                # echo "   rules have not changed since latest start"
+                :
+            elif [ ${cmp_rc} -eq 1 ]; then
+                diff -u "${STATE_FILE_LATEST}" "${STATE_FILE_CURRENT}" > "${STATE_FILE_DIFF}"
+                printf "${YELLOW}WARNING: current state is different than persisted state, check %s${RESET}\n" "${STATE_FILE_DIFF}" >&2
+            else
+                printf "${RED}ERROR comparing rules:${RESET}\n" >&2
+                echo "${cmp_result}" >&2
+            fi
+        fi
+        # cleanup
+        rm -f "${STATE_FILE_CURRENT}"
+    fi
+}
+report_state_changes() {
+    cmp_bin=$(command -v cmp)
+    diff_bin=$(command -v diff)
+
+    if [ -z "${cmp_bin}" ]; then
+        printf "${YELLOW}skip state comparison (Can't find cmp command)${RESET}\n" >&2
+        return
+    elif [ -z "${diff_bin}" ]; then
+        printf "${YELLOW}skip state comparison (Can't find diff command)${RESET}\n" >&2
+    else
+        # If there is a known state
+        # let's compare it with the current state
+        if [ -f "${STATE_FILE_LATEST}" ]; then
+            check_unpersisted_state
+        fi
+
+        # Then reset the known state (without colors)
+        mkdir -p "$(dirname "${STATE_FILE_LATEST}")"
+        status_without_numbers | remove_colors > "${STATE_FILE_LATEST}"
+
+        # But if there is a previous known state
+        # let's compare with the new known state
+        if [ -f "${STATE_FILE_PREVIOUS}" ]; then
+            cmp_result=$(cmp "${STATE_FILE_PREVIOUS}" "${STATE_FILE_LATEST}" 2>&1)
+            cmp_rc=$?
+
+            if [ ${cmp_rc} -eq 0 ]; then
+                # echo "Rules have not changed since previous start"
+                :
+            elif [ ${cmp_rc} -eq 1 ]; then
+                diff -u "${STATE_FILE_PREVIOUS}" "${STATE_FILE_LATEST}" > "${STATE_FILE_DIFF}"
+                printf "${YELLOW}INFO: rules have changed since latest start, check %s${RESET}\n" "${STATE_FILE_DIFF}" >&2
+            else
+                printf "${RED}ERROR comparing rules:${RESET}\n" >&2
+                echo "${cmp_result}" >&2
+            fi
+        fi
+    fi
+}
+
+start() {
+    syslog_info "starting"
+    printf "${BOLD}${PROGNAME} starting${RESET}\n"
+
+    # Stop and warn if error!
+    set -e
+    trap 'printf "${RED}${PROGNAME} failed : an error occured during startup.${RESET}\n"; syslog_error "failed" ' INT TERM EXIT
+
+    # sysctl network security settings
+    ##################################
+
+    # Set 1 to ignore broadcast pings (default)
+    : "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS:=1}"
+    # Set 1 to ignore bogus ICMP responses (default)
+    : "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES:=1}"
+    # Set 0 to disable source routing (default)
+    : "${SYSCTL_ACCEPT_SOURCE_ROUTE:=0}"
+    # Set 1 to enable TCP SYN cookies (default)
+    # cf http://cr.yp.to/syncookies.html
+    : "${SYSCTL_TCP_SYNCOOKIES:=1}"
+    # Set 0 to disable ICMP redirects (default)
+    : "${SYSCTL_ICMP_REDIRECTS:=0}"
+    # Set 1 to enable Reverse Path filtering (default)
+    # Set 0 if VRRP is used
+    : "${SYSCTL_RP_FILTER:=1}"
+    # Set 1 to log packets with inconsistent address (default)
+    : "${SYSCTL_LOG_MARTIANS:=1}"
+
+    syslog_info "configuring sysctl"
+    printf "${BLUE}configuring sysctl: ${RESET}"
+
+    if [ "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" = "1" ] || [ "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" = "0" ]; then
+        echo "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
+        # Apparently not applicable to IPv6
+    else
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS" "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" >&2
+        exit 1
+    fi
+
+    if [ "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" = "1" ] || [ "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" = "0" ]; then
+        echo "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
+        # Apparently not applicable to IPv6
+    else
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES" "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" >&2
+        exit 1
+    fi
+
+    if [ "${SYSCTL_ACCEPT_SOURCE_ROUTE}" = "1" ] || [ "${SYSCTL_ACCEPT_SOURCE_ROUTE}" = "0" ]; then
+        for proc_sys_file in /proc/sys/net/ipv4/conf/*/accept_source_route; do
+            echo "${SYSCTL_ACCEPT_SOURCE_ROUTE}" > "${proc_sys_file}"
+        done
+        if is_ipv6_enabled; then
+            for proc_sys_file in /proc/sys/net/ipv6/conf/*/accept_source_route; do
+                echo "${SYSCTL_ACCEPT_SOURCE_ROUTE}" > "${proc_sys_file}"
+            done
+        fi
+    else
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_ACCEPT_SOURCE_ROUTE" "${SYSCTL_ACCEPT_SOURCE_ROUTE}" >&2
+        exit 1
+    fi
+
+    if [ "${SYSCTL_TCP_SYNCOOKIES}" = "1" ] || [ "${SYSCTL_TCP_SYNCOOKIES}" = "0" ]; then
+        echo "${SYSCTL_TCP_SYNCOOKIES}" > /proc/sys/net/ipv4/tcp_syncookies
+        # Apparently not applicable to IPv6
+    else
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_TCP_SYNCOOKIES" "${SYSCTL_TCP_SYNCOOKIES}" >&2
+        exit 1
+    fi
+
+    if [ "${SYSCTL_ICMP_REDIRECTS}" = "1" ] || [ "${SYSCTL_ICMP_REDIRECTS}" = "0" ]; then
+        for proc_sys_file in /proc/sys/net/ipv4/conf/*/accept_redirects; do
+            echo "${SYSCTL_ICMP_REDIRECTS}" > "${proc_sys_file}"
+        done
+        for proc_sys_file in /proc/sys/net/ipv4/conf/*/send_redirects; do
+            echo "${SYSCTL_ICMP_REDIRECTS}" > "${proc_sys_file}"
+        done
+        if is_ipv6_enabled; then
+            for proc_sys_file in /proc/sys/net/ipv6/conf/*/accept_redirects; do
+                echo "${SYSCTL_ICMP_REDIRECTS}" > "${proc_sys_file}"
+            done
+        fi
+    else
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_ICMP_REDIRECTS" "${SYSCTL_ICMP_REDIRECTS}" >&2
+        exit 1
+    fi
+
+    if [ "${SYSCTL_RP_FILTER}" = "1" ] || [ "${SYSCTL_RP_FILTER}" = "0" ]; then
+        for proc_sys_file in /proc/sys/net/ipv4/conf/*/rp_filter; do
+            echo "${SYSCTL_RP_FILTER}" > "${proc_sys_file}"
+        done
+        # Apparently not applicable to IPv6
+    else
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_RP_FILTER" "${SYSCTL_RP_FILTER}" >&2
+        exit 1
+    fi
+
+    if [ "${SYSCTL_LOG_MARTIANS}" = "1" ] || [ "${SYSCTL_LOG_MARTIANS}" = "0" ]; then
+        for proc_sys_file in /proc/sys/net/ipv4/conf/*/log_martians; do
+            echo "${SYSCTL_LOG_MARTIANS}" > "${proc_sys_file}"
+        done
+        # Apparently not applicable to IPv6
+    else
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_LOG_MARTIANS" "${SYSCTL_LOG_MARTIANS}" >&2
+        exit 1
+    fi
+
+    printf "${GREEN}Ok${RESET}\n"
+
+    # IPTables configuration
+    ########################
+
+    ${IPT} -N LOG_DROP
+    ${IPT} -A LOG_DROP -j LOG  --log-prefix '[IPTABLES DROP] : '
+    ${IPT} -A LOG_DROP -j DROP
+    ${IPT} -N LOG_ACCEPT
+    ${IPT} -A LOG_ACCEPT -j LOG  --log-prefix '[IPTABLES ACCEPT] : '
+    ${IPT} -A LOG_ACCEPT -j ACCEPT
+    # Chain for restrictions (blacklist IPs/ranges)
+    ${IPT} -N NEEDRESTRICT
+    if is_ipv6_enabled; then
+        ${IPT6} -N LOG_DROP
+        ${IPT6} -A LOG_DROP -j LOG  --log-prefix '[IPTABLES DROP] : '
+        ${IPT6} -A LOG_DROP -j DROP
+        ${IPT6} -N LOG_ACCEPT
+        ${IPT6} -A LOG_ACCEPT -j LOG  --log-prefix '[IPTABLES ACCEPT] : '
+        ${IPT6} -A LOG_ACCEPT -j ACCEPT
+        ${IPT6} -N NEEDRESTRICT
+    fi
+    if is_docker_enabled; then
+        ${IPT} -N MINIFW-DOCKER-INPUT-MANUAL
+        ${IPT} -N MINIFW-DOCKER-USER
+    fi
+
+    # Source additional rules and commands
+    # * from legacy configuration file (/etc/default/minifirewall)
+    # * from configuration directory (/etc/minifirewall.d/*)
+    source_includes
+
+    syslog_info "executing macros"
+    printf "${BLUE}executing macros: ${RESET}"
+
+    # IP/ports lists are sorted to have consistent ordering
+    # You can disable this feature by simply commenting the following lines
+    LOOPBACK=$(sort_values ${LOOPBACK})
+    INTLAN=$(sort_values ${INTLAN})
+    TRUSTEDIPS=$(sort_values ${TRUSTEDIPS})
+    PRIVILEGIEDIPS=$(sort_values ${PRIVILEGIEDIPS})
+    SERVICESTCP1p=$(sort_values ${SERVICESTCP1p})
+    SERVICESUDP1p=$(sort_values ${SERVICESUDP1p})
+    SERVICESTCP1=$(sort_values ${SERVICESTCP1})
+    SERVICESUDP1=$(sort_values ${SERVICESUDP1})
+    SERVICESTCP2=$(sort_values ${SERVICESTCP2})
+    SERVICESUDP2=$(sort_values ${SERVICESUDP2})
+    SERVICESTCP3=$(sort_values ${SERVICESTCP3})
+    SERVICESUDP3=$(sort_values ${SERVICESUDP3})
+    DNSSERVEURS=$(sort_values ${DNSSERVEURS})
+    HTTPSITES=$(sort_values ${HTTPSITES})
+    HTTPSSITES=$(sort_values ${HTTPSSITES})
+    FTPSITES=$(sort_values ${FTPSITES})
+    SSHOK=$(sort_values ${SSHOK})
+    SMTPOK=$(sort_values ${SMTPOK})
+    SMTPSECUREOK=$(sort_values ${SMTPSECUREOK})
+    NTPOK=$(sort_values ${NTPOK})
+    PROXYBYPASS=$(sort_values ${PROXYBYPASS})
+    BACKUPSERVERS=$(sort_values ${BACKUPSERVERS})
+
+    # Trusted ip addresses
+    ${IPT} -N ONLYTRUSTED
+    ${IPT} -A ONLYTRUSTED -j LOG_DROP
+    if is_ipv6_enabled; then
+        ${IPT6} -N ONLYTRUSTED
+        ${IPT6} -A ONLYTRUSTED -j LOG_DROP
+    fi
+    for ip in ${TRUSTEDIPS}; do
+        if is_ipv6 ${ip}; then
+            if is_ipv6_enabled; then
+                ${IPT6} -I ONLYTRUSTED -s ${ip} -j ACCEPT
+            fi
+        else
+            ${IPT} -I ONLYTRUSTED -s ${ip} -j ACCEPT
+        fi
+    done
+
+    # Privilegied ip addresses
+    # (trusted ip addresses *are* privilegied)
+    ${IPT} -N ONLYPRIVILEGIED
+    ${IPT} -A ONLYPRIVILEGIED -j ONLYTRUSTED
+    if is_ipv6_enabled; then
+        ${IPT6} -N ONLYPRIVILEGIED
+        ${IPT6} -A ONLYPRIVILEGIED -j ONLYTRUSTED
+    fi
+    for ip in ${PRIVILEGIEDIPS}; do
+        if is_ipv6 ${ip}; then
+            if is_ipv6_enabled; then
+                ${IPT6} -I ONLYPRIVILEGIED -s ${ip} -j ACCEPT
+            fi
+        else
+            ${IPT} -I ONLYPRIVILEGIED -s ${ip} -j ACCEPT
+        fi
+    done
+
+    # We allow all on loopback interface
+    ${IPT} -A INPUT -i lo -j ACCEPT
+    if is_ipv6_enabled; then
+        ${IPT6} -A INPUT -i lo -j ACCEPT
+    fi
+    # if OUTPUTDROP
+    ${IPT} -A OUTPUT -o lo -j ACCEPT
+    if is_ipv6_enabled; then
+        ${IPT6} -A OUTPUT -o lo -j ACCEPT
+    fi
+
+    # We avoid "martians" packets, typical when W32/Blaster virus
+    # attacked windowsupdate.com and DNS was changed to 127.0.0.1
+    # ${IPT} -t NAT -I PREROUTING -s ${LOOPBACK} -i ! lo -j DROP
+    for IP in ${LOOPBACK}; do
+        if is_ipv6 ${IP}; then
+            if is_ipv6_enabled; then
+                ${IPT6} -A INPUT -s ${IP} ! -i lo -j DROP
+            fi
+        else
+            ${IPT} -A INPUT -s ${IP} ! -i lo -j DROP
+        fi
+    done
+
+    if is_docker_enabled; then
+        # Chains MINIFW-DOCKER-* are created earlier, to allow usage in additionnal config/command files
+        ${IPT} -A MINIFW-DOCKER-INPUT-MANUAL -j DROP
+        ${IPT} -A MINIFW-DOCKER-USER -j RETURN
+
+        # Flush DOCKER-USER if exist, create it if absent
+        if chain_exists 'DOCKER-USER'; then
+            ${IPT} -F DOCKER-USER
+        else
+            ${IPT} -N DOCKER-USER
+        fi;
+
+        # Pipe new connection through MINIFW-DOCKER-INPUT-MANUAL
+        ${IPT} -A DOCKER-USER -i ${INT} -m state  --state NEW -j MINIFW-DOCKER-INPUT-MANUAL
+        # Pipe others connexions through MINIFW-DOCKER-USER
+        ${IPT} -A DOCKER-USER -j MINIFW-DOCKER-USER
+        ${IPT} -A DOCKER-USER -j RETURN
+
+        # Create basic rules to allow container to talk to the host (unless manual mode)
+        # via the default docker bridge
+        if ! is_docker_manual; then
+            /sbin/iptables -I INPUT -i docker0 -p tcp --sport 1024:65535 -s 172.16.0.0/12 -d 172.17.0.1 -j ACCEPT
+        fi
+    fi
+
+
+    # Local services restrictions
+    #############################
+
+    # Allow services for ${INTLAN} (local server or local network)
+    for IP in ${INTLAN}; do
+        if is_ipv6 ${IP}; then
+            if is_ipv6_enabled; then
+                ${IPT6} -A INPUT -s ${IP} -j ACCEPT
+            fi
+        else
+            ${IPT} -A INPUT -s ${IP} -j ACCEPT
+        fi
+    done
+
+    # Enable protection chain for sensible services
+    for port in ${SERVICESTCP1p}; do
+        ${IPT} -A INPUT -p tcp --dport ${port} -j NEEDRESTRICT
+        if is_ipv6_enabled; then
+            ${IPT6} -A INPUT -p tcp --dport ${port} -j NEEDRESTRICT
+        fi
+    done
+
+    for port in ${SERVICESUDP1p}; do
+        ${IPT} -A INPUT -p udp --dport ${port} -j NEEDRESTRICT
+        if is_ipv6_enabled; then
+            ${IPT6} -A INPUT -p udp --dport ${port} -j NEEDRESTRICT
+        fi
+    done
+
+    # Public service
+    for port in ${SERVICESTCP1}; do
+        ${IPT} -A INPUT -p tcp --dport ${port} -j ACCEPT
+        if is_ipv6_enabled; then
+            ${IPT6} -A INPUT -p tcp --dport ${port} -j ACCEPT
+        fi
+    done
+
+    for port in ${SERVICESUDP1}; do
+        ${IPT} -A INPUT -p udp --dport ${port} -j ACCEPT
+        if is_ipv6_enabled; then
+            ${IPT6} -A INPUT -p udp --dport ${port} -j ACCEPT
+        fi
+    done
+
+    # Privilegied services
+    for port in ${SERVICESTCP2}; do
+        ${IPT} -A INPUT -p tcp --dport ${port} -j ONLYPRIVILEGIED
+        if is_ipv6_enabled; then
+            ${IPT6} -A INPUT -p tcp --dport ${port} -j ONLYPRIVILEGIED
+        fi
+    done
+
+    for port in ${SERVICESUDP2}; do
+        ${IPT} -A INPUT -p udp --dport ${port} -j ONLYPRIVILEGIED
+        if is_ipv6_enabled; then
+            ${IPT6} -A INPUT -p udp --dport ${port} -j ONLYPRIVILEGIED
+        fi
+    done
+
+    # Private services
+    for port in ${SERVICESTCP3}; do
+        ${IPT} -A INPUT -p tcp --dport ${port} -j ONLYTRUSTED
+        if is_ipv6_enabled; then
+            ${IPT6} -A INPUT -p tcp --dport ${port} -j ONLYTRUSTED
+        fi
+    done
+
+    for port in ${SERVICESUDP3}; do
+        ${IPT} -A INPUT -p udp --dport ${port} -j ONLYTRUSTED
+        if is_ipv6_enabled; then
+            ${IPT6} -A INPUT -p udp --dport ${port} -j ONLYTRUSTED
+        fi
+    done
+
+    # External services
+    ###################
+
+    # DNS authorizations
+    for IP in ${DNSSERVEURS}; do
+        if is_ipv6 ${IP}; then
+            if is_ipv6_enabled; then
+                ${IPT6} -A INPUT -p tcp ! --syn --sport 53 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+                ${IPT6} -A INPUT -p udp --sport 53 --dport ${PORTSUSER} -s ${IP} -m state --state ESTABLISHED -j ACCEPT
+                ${IPT6} -A OUTPUT -o ${INT} -p udp -d ${IP} --dport 53 --match state --state NEW -j ACCEPT
+            fi
+        else 
+            ${IPT} -A INPUT -p tcp ! --syn --sport 53 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+            ${IPT} -A INPUT -p udp --sport 53 --dport ${PORTSUSER} -s ${IP} -m state --state ESTABLISHED -j ACCEPT
+            ${IPT} -A OUTPUT -o ${INT} -p udp -d ${IP} --dport 53 --match state --state NEW -j ACCEPT
+        fi
+    done
+
+    # HTTP (TCP/80) authorizations
+    for IP in ${HTTPSITES}; do
+        if is_ipv6 ${IP}; then
+            if is_ipv6_enabled; then
+                ${IPT6} -A INPUT -p tcp ! --syn --sport 80 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+            fi
+        else 
+            ${IPT} -A INPUT -p tcp ! --syn --sport 80 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+        fi
+    done
+
+    # HTTPS (TCP/443) authorizations
+    for IP in ${HTTPSSITES}; do
+        if is_ipv6 ${IP}; then
+            if is_ipv6_enabled; then
+                ${IPT6} -A INPUT -p tcp ! --syn --sport 443 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+            fi
+        else 
+            ${IPT} -A INPUT -p tcp ! --syn --sport 443 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+        fi
+    done
+
+    # FTP (so complex protocol...) authorizations
+    for IP in ${FTPSITES}; do
+        if is_ipv6 ${IP}; then
+            if is_ipv6_enabled; then
+                # requests on Control connection
+                ${IPT6} -A INPUT -p tcp ! --syn --sport 21 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+                # FTP port-mode on Data Connection
+                ${IPT6} -A INPUT -p tcp --sport 20 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+                # FTP passive-mode on Data Connection
+                # WARNING, this allow all connections on TCP ports > 1024
+                ${IPT6} -A INPUT -p tcp ! --syn --sport ${PORTSUSER} --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+            fi
+        else 
+            # requests on Control connection
+            ${IPT} -A INPUT -p tcp ! --syn --sport 21 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+            # FTP port-mode on Data Connection
+            ${IPT} -A INPUT -p tcp --sport 20 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+            # FTP passive-mode on Data Connection
+            # WARNING, this allow all connections on TCP ports > 1024
+            ${IPT} -A INPUT -p tcp ! --syn --sport ${PORTSUSER} --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+        fi
+    done
+
+    # SSH authorizations
+    for IP in ${SSHOK}; do
+        if is_ipv6 ${IP}; then
+            if is_ipv6_enabled; then
+                ${IPT6} -A INPUT -p tcp ! --syn --sport 22 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+            fi
+        else 
+            ${IPT} -A INPUT -p tcp ! --syn --sport 22 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+        fi
+    done
+
+    # SMTP authorizations
+    for IP in ${SMTPOK}; do
+        if is_ipv6 ${IP}; then
+            if is_ipv6_enabled; then
+                ${IPT6} -A INPUT -p tcp ! --syn --sport 25 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+            fi
+        else 
+            ${IPT} -A INPUT -p tcp ! --syn --sport 25 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+        fi
+    done
+
+    # secure SMTP (TCP/465 et TCP/587) authorizations
+    for IP in ${SMTPSECUREOK}; do
+        if is_ipv6 ${IP}; then
+            if is_ipv6_enabled; then
+                ${IPT6} -A INPUT -p tcp ! --syn --sport 465 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+                ${IPT6} -A INPUT -p tcp ! --syn --sport 587 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+            fi
+        else 
+            ${IPT} -A INPUT -p tcp ! --syn --sport 465 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+            ${IPT} -A INPUT -p tcp ! --syn --sport 587 --dport ${PORTSUSER} -s ${IP} -j ACCEPT
+        fi
+    done
+
+    # NTP authorizations
+    for IP in ${NTPOK}; do
+        if is_ipv6 ${IP}; then
+            if is_ipv6_enabled; then
+                ${IPT6} -A INPUT -p udp --sport 123 -s ${IP} -j ACCEPT
+                ${IPT6} -A OUTPUT -o ${INT} -p udp -d ${IP} --dport 123 --match state --state NEW -j ACCEPT
+            fi
+        else 
+            ${IPT} -A INPUT -p udp --sport 123 -s ${IP} -j ACCEPT
+            ${IPT} -A OUTPUT -o ${INT} -p udp -d ${IP} --dport 123 --match state --state NEW -j ACCEPT
+        fi
+    done
+
+    # Proxy (Squid)
+    if is_proxy_enabled; then
+        # WARN: Squid only listen on IPv4 yet
+        # TODO: verify that the pattern used for IPv4 is relevant with IPv6
+
+        ${IPT} -t nat -A OUTPUT -p tcp --dport 80 -m owner --uid-owner proxy -j ACCEPT
+        for dstip in ${PROXYBYPASS}; do
+            if ! is_ipv6 ${dstip}; then
+                ${IPT} -t nat -A OUTPUT -p tcp --dport 80 -d "${dstip}" -j ACCEPT
+            fi
+        done
+        ${IPT} -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-port "${PROXYPORT:-'8888'}"
+    fi
+
+    # Output for backup servers
+    for server in ${BACKUPSERVERS}; do
+        server_port=$(echo "${server}" | awk -F : '{print $(NF)}')
+        server_ip=$(echo "${server}" | sed -e "s/:${server_port}$//")
+
+        if [ -n "${server_ip}" ] && [ -n "${server_port}" ]; then
+            if is_ipv6 ${server_ip}; then
+                if is_ipv6_enabled; then
+                    ${IPT6} -A INPUT -p tcp --sport "${server_port}" --dport 1024:65535 -s "${server_ip}" -m state --state ESTABLISHED -j ACCEPT
+                fi
+            else 
+                ${IPT} -A INPUT -p tcp --sport "${server_port}" --dport 1024:65535 -s "${server_ip}" -m state --state ESTABLISHED -j ACCEPT
+            fi
+        else
+            printf "${RED}ERROR: unrecognized syntax for BACKUPSERVERS '%s\`. Use space-separated IP:PORT tuples.${RESET}\n" "${server}" >&2
+            exit 1
+        fi
+    done
+
+    # Always allow ICMP
+    ${IPT} -A INPUT -p icmp -j ACCEPT
+    if is_ipv6_enabled; then
+        ${IPT6} -A INPUT -p icmpv6 -j ACCEPT
+    fi
+
+    # source config file for remaining commands
+    if is_legacy_config; then
+        source_file_or_error "${config_file}"
+    fi
+
+    # IPTables policy
+    #################
+
+    # by default DROP INPUT packets
+    ${IPT} -P INPUT DROP
+    if is_ipv6_enabled; then
+        ${IPT6} -P INPUT DROP
+    fi
+
+    # by default, no FORWARDING (deprecated for Virtual Machines)
+    #echo 0 > /proc/sys/net/ipv4/ip_forward
+    #${IPT} -P FORWARD DROP
+    #${IPT6} -P FORWARD DROP
+
+    # by default allow OUTPUT packets... but drop UDP packets (see OUTPUTDROP to drop OUTPUT packets)
+    ${IPT} -P OUTPUT ACCEPT
+    if is_ipv6_enabled; then
+        ${IPT6} -P OUTPUT ACCEPT
+    fi
+
+    ${IPT} -A OUTPUT -o ${INT} -p udp --dport 33434:33523 --match state --state NEW -j ACCEPT
+    if is_ipv6_enabled; then
+        ${IPT6} -A OUTPUT -o ${INT} -p udp --dport 33434:33523 --match state --state NEW -j ACCEPT
+    fi
+
+    ${IPT} -A OUTPUT -p udp --match state --state ESTABLISHED -j ACCEPT
+    if is_ipv6_enabled; then
+        ${IPT6} -A OUTPUT -p udp --match state --state ESTABLISHED -j ACCEPT
+    fi
+
+    ${IPT} -A OUTPUT -p udp -j DROP
+    if is_ipv6_enabled; then
+        ${IPT6} -A OUTPUT -p udp -j DROP
+    fi
+
+    # Finish
+    ########################
+
+    printf "${GREEN}Ok${RESET}\n"
+
+    trap - INT TERM EXIT
+
+    syslog_info "started"
+    printf "${GREEN}${BOLD}${PROGNAME} started${RESET}\n"
+
+    # No need to exit on error anymore
+    set +e
+
+    # save active configuration
+    save_active_configuration "${ACTIVE_CONFIG}"
+
+    report_state_changes
+}
+
+stop() {
+    syslog_info "stopping"
+    printf "${BOLD}${PROGNAME} stopping${RESET}\n"
+
+    printf "${BLUE}flushing all rules and accepting everything${RESET}\n"
+
+    # Save previous state (without colors)
+    mkdir -p "$(dirname "${STATE_FILE_PREVIOUS}")"
+    status_without_numbers | remove_colors > "${STATE_FILE_PREVIOUS}"
+
+    # Delete all rules
+    ${IPT} -F INPUT
+    if is_ipv6_enabled; then
+        ${IPT6} -F INPUT
+    fi
+
+    ${IPT} -F OUTPUT
+    if is_ipv6_enabled; then
+        ${IPT6} -F OUTPUT
+    fi
+
+    ${IPT} -F LOG_DROP
+    ${IPT} -F LOG_ACCEPT
+    ${IPT} -F ONLYTRUSTED
+    ${IPT} -F ONLYPRIVILEGIED
+    ${IPT} -F NEEDRESTRICT
+    if is_ipv6_enabled; then
+        ${IPT6} -F LOG_DROP
+        ${IPT6} -F LOG_ACCEPT
+        ${IPT6} -F ONLYTRUSTED
+        ${IPT6} -F ONLYPRIVILEGIED
+        ${IPT6} -F NEEDRESTRICT
+    fi
+
+    ${IPT} -t mangle -F
+    if is_ipv6_enabled; then
+        ${IPT6} -t mangle -F
+    fi
+
+    if is_docker_enabled; then
+        # WARN: IPv6 not yet supported
+
+        ${IPT} -F DOCKER-USER
+        ${IPT} -A DOCKER-USER -j RETURN
+
+        ${IPT} -F MINIFW-DOCKER-INPUT-MANUAL
+        ${IPT} -X MINIFW-DOCKER-INPUT-MANUAL
+        ${IPT} -F MINIFW-DOCKER-USER
+        ${IPT} -X MINIFW-DOCKER-USER
+    else
+        ${IPT} -t nat -F
+    fi
+
+    # Accept all
+    ${IPT} -P INPUT ACCEPT
+    if is_ipv6_enabled; then
+        ${IPT6} -P INPUT ACCEPT
+    fi
+
+    ${IPT} -P OUTPUT ACCEPT
+    if is_ipv6_enabled; then
+        ${IPT6} -P OUTPUT ACCEPT
+    fi
+    #${IPT} -P FORWARD ACCEPT
+    #${IPT} -t nat -P PREROUTING ACCEPT
+    #${IPT} -t nat -P POSTROUTING ACCEPT
+
+    # Delete non-standard chains
+    ${IPT} -X LOG_DROP
+    ${IPT} -X LOG_ACCEPT
+    ${IPT} -X ONLYPRIVILEGIED
+    ${IPT} -X ONLYTRUSTED
+    ${IPT} -X NEEDRESTRICT
+    if is_ipv6_enabled; then
+        ${IPT6} -X LOG_DROP
+        ${IPT6} -X LOG_ACCEPT
+        ${IPT6} -X ONLYPRIVILEGIED
+        ${IPT6} -X ONLYTRUSTED
+        ${IPT6} -X NEEDRESTRICT
+    fi
+
+    rm -f "${STATE_FILE_LATEST}" "${STATE_FILE_CURRENT}" "${ACTIVE_CONFIG}"
+
+    syslog_info "stopped"
+    printf "${GREEN}${BOLD}${PROGNAME} stopped${RESET}\n"
+}
+
+status() {
+    printf "${BLUE}#### iptables --list ###############################${RESET}\n"
+    ${IPT} --list --numeric --verbose --line-numbers
+    printf "\n${BLUE}#### iptables --table nat --list ###################${RESET}\n"
+    ${IPT} --table nat --list --numeric --verbose --line-numbers
+    printf "\n${BLUE}#### iptables --table mangle --list ################${RESET}\n"
+    ${IPT} --table mangle --list --numeric --verbose --line-numbers
+    if is_ipv6_enabled; then
+        printf "\n${BLUE}#### ip6tables --list ##############################${RESET}\n"
+        ${IPT6} --list --numeric --verbose --line-numbers
+        printf "\n${BLUE}#### ip6tables --table mangle --list ###############${RESET}\n"
+        ${IPT6} --table mangle --list --numeric --verbose --line-numbers
+    fi
+}
+
+status_without_numbers() {
+    printf "${BLUE}#### iptables --list ###############################${RESET}\n"
+    ${IPT} --list --numeric
+    printf "\n${BLUE}#### iptables --table nat --list ###################${RESET}\n"
+    ${IPT} --table nat --list --numeric
+    printf "\n${BLUE}#### iptables --table mangle --list ################${RESET}\n"
+    ${IPT} --table mangle --list --numeric
+    if is_ipv6_enabled; then
+        printf "\n${BLUE}#### ip6tables --list ##############################${RESET}\n"
+        ${IPT6} --list --numeric
+        printf "\n${BLUE}#### ip6tables --table mangle --list ###############${RESET}\n"
+        ${IPT6} --table mangle --list --numeric
+    fi
+}
+
+reset() {
+    syslog_info "resetting"
+    printf "${BOLD}${PROGNAME} resetting${RESET}\n"
+
+    ${IPT} -Z
+    if is_ipv6_enabled; then
+        ${IPT6} -Z
+    fi
+
+    ${IPT} -t nat -Z
+
+    ${IPT} -t mangle -Z
+    if is_ipv6_enabled; then
+        ${IPT6} -t mangle -Z
+    fi
+
+    syslog_info "reset"
+    printf "${GREEN}${BOLD}${PROGNAME} reset${RESET}\n"
+}
+
+safety_timer() {
+    if [ "${SAFETY_TIMER}" -le "0" ] || [ "${SAFETY_TIMER}" -gt "3600" ]; then
+        syslog_info "safety timer value '${SAFETY_TIMER}' is out of range (1 < 3600), reverted to default value of '30'."
+        SAFETY_TIMER=30
+        readonly SAFETY_TIMER
+    fi
+    echo "${SAFETY_TIMER}"
+}
+
+stop_if_locked() {
+    count=0
+
+    while [ "${count}" -lt "$(safety_timer)" ] && [ -f "${SAFETY_LOCK}" ]; do
+        count=$(( count + 1 ))
+        sleep 1
+    done
+
+    if [ -f "${SAFETY_LOCK}" ]; then
+        syslog_error "safety lock is still here after $(safety_timer) seconds, we need to stop"
+
+        stop
+
+        syslog_info "remove safety lock"
+        rm -f "${SAFETY_LOCK}"
+    else
+        syslog_info "safety lock is not there anymore, life goes on"
+    fi
+}
+
+safe_start() {
+    # start the firewall
+    start
+
+    # create the lock file
+    syslog_info "add safety lock"
+    touch "${SAFETY_LOCK}"
+
+    # run the special background command
+    nohup "${0}" stop-if-locked > "${SAFETY_OUTPUT}" 2>&1 &
+
+    if is_interactive; then
+        syslog_info "safe-restart in interactive mode ; if safety lock (${SAFETY_LOCK}) is not removed in the next $(safety_timer) seconds, minifirewall will be stopped."
+        # Ask for input
+        confirm_default="I'm locked out, please stop the firewall"
+        # printf "If the restart has locked you out you might see this but you shouldn't be able to type anything.\n"
+        printf "Minifirewall will be stopped in $(safety_timer) seconds if you do nothing.\n"
+        printf "Remove \`${SAFETY_LOCK}' or type anything to keep minifirewall started: "
+
+        read -r confirm
+
+        if [ ! -f "${SAFETY_LOCK}" ]; then
+            printf "${YELLOW}Safety lock is not there anymore.\nYou've probably been rescued by the safety checks.\n${BOLD}Minifirewall is probably stopped.${RESET}\n"
+        elif [ "${confirm}" != "${confirm_default}" ]; then
+            rm -f "${SAFETY_LOCK}" && printf "${GREEN}OK. Safety lock is removed.${RESET}\n"
+        fi
+    else
+        syslog_info "safe-restart in non-interactive mode ; if safety lock (${SAFETY_LOCK}) is not removed in the next $(safety_timer) seconds, minifirewall will be stopped."
+    fi
+}
+
+show_version() {
+    cat <<END
+${PROGNAME} version ${VERSION}
+
+Copyright 2007-2024 Evolix <info@evolix.fr>.
+
+${PROGNAME} comes with ABSOLUTELY NO WARRANTY.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 3
+of the License.
+END
+}
+show_help() {
+    cat <<END
+${PROGNAME} ${DESC}
+
+END
+    show_usage
+}
+show_usage() {
+    cat <<END
+Usage: ${PROGNAME} [COMMAND]
+
+Commands
+ start                  Start minifirewall
+ safe-start             Start minifirewall, with baground safety checks
+ stop                   Stop minifirewall
+ restart                Stop then start minifirewall
+ safe-restart           Restart minifirewall, with background safety checks
+ status                 Print minifirewall status
+ reset                  Reset iptables tables
+ check-active-config    Check if active config is up-to-date with stored config
+ version                Print version and exit
+ help                   Print this message and exit
+END
+}
+
+case "${1:-''}" in
+    start)
+        source_configuration
+        check_unpersisted_state
+
+        start
+    ;;
+
+    safe-start)
+        source_configuration
+        check_unpersisted_state
+
+        safe_start
+    ;;
+
+    stop)
+        source_configuration
+        check_unpersisted_state
+
+        stop
+    ;;
+
+    status)
+        source_configuration
+        check_unpersisted_state
+
+        status
+    ;;
+
+    reset)
+        source_configuration
+        check_unpersisted_state
+
+        reset
+    ;;
+
+    restart)
+        source_configuration
+        check_unpersisted_state
+
+        stop
+        start
+    ;;
+
+    safe-restart)
+        source_configuration
+        check_unpersisted_state
+
+        stop
+        safe_start
+    ;;
+
+    stop-if-locked)
+        source_configuration
+
+        stop_if_locked
+    ;;
+
+    check-active-config)
+        check_active_configuration
+    ;;
+
+    version)
+        show_version
+    ;;
+
+    help)
+        show_help
+    ;;
+
+    *)
+        printf "%s: %s: unknown option\n" "${PROGNAME}" "${1}"
+        show_usage
+        exit 128
+    ;;
+esac
+
+exit 0

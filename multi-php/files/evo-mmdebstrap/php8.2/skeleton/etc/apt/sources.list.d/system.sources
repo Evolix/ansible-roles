@@ -1,5 +1,0 @@
-Types: deb
-URIs: http://mirror.evolix.org/debian
-Suites: bookworm bookworm-updates
-Components: main
-Signed-By: /usr/share/keyrings/debian-archive-bookworm-automatic.gpg

@@ -1,5 +1,0 @@
-Types: deb
-URIs: http://mirror.evolix.org/debian-security
-Suites: trixie-security
-Components: main
-Signed-By: /usr/share/keyrings/debian-archive-trixie-security-automatic.gpg

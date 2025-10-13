@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="25.08.1"
+VERSION="25.10"
 readonly VERSION
 
 # base functions
@@ -36,11 +36,13 @@ evocheck is a script that verifies Evolix conventions on Linux (Debian) servers.
 
 Usage: evocheck
   or   evocheck --cron
+  or   evocheck --future
   or   evocheck --quiet
   or   evocheck --verbose
 
 Options
      --cron                  disable a few checks
+     --future                enable checks that will be enabled later
  -v, --verbose               increase verbosity of checks
  -q, --quiet                 nothing is printed on stdout nor stderr
  -h, --help                  print this message and exit
@@ -244,7 +246,7 @@ check_not_deb822() {
         for source in /etc/apt/sources.list /etc/apt/sources.list.d/*.list; do
             test -f "${source}" && grep --quiet '^deb' "${source}" && \
                 failed "IS_NOT_DEB822" "${source} contains a one-line style sources.list entry, and should be converted to deb822 format"
-	    done
+            done
     fi
 }
 check_no_signed_by() {
@@ -283,11 +285,11 @@ check_homenoexec() {
         options=$(${FINDMNT_BIN} --noheadings --first-only --output OPTIONS /home)
         echo "${options}" | grep --quiet --extended-regexp "\bnoexec\b" || \
            ( grep --quiet --extended-regexp "/home.*noexec" /etc/fstab && \
-	   failed "IS_HOMENOEXEC" "/home is mounted with 'exec' but /etc/fstab document it as 'noexec'" )
+           failed "IS_HOMENOEXEC" "/home is mounted with 'exec' but /etc/fstab document it as 'noexec'" )
     else
         mount | grep "on /home" | grep --quiet --extended-regexp "\bnoexec\b" || \
            ( grep --quiet --extended-regexp "/home.*noexec" /etc/fstab && \
-	   failed "IS_HOMENOEXEC" "/home is mounted with 'exec' but /etc/fstab document it as 'noexec' (WARNING: findmnt(8) is not found)" )
+           failed "IS_HOMENOEXEC" "/home is mounted with 'exec' but /etc/fstab document it as 'noexec' (WARNING: findmnt(8) is not found)" )
     fi
 }
 check_mountfstab() {
@@ -368,14 +370,19 @@ check_alert5boot() {
         failed "IS_ALERT5BOOT" "alert5 unit file is missing"
     fi
 }
+is_minifirewall_native_systemd() {
+  systemctl list-unit-files minifirewall.service | grep minifirewall.service | grep --quiet --invert-match generated
+}
 check_alert5minifw() {
-    grep --quiet --no-messages "^/etc/init.d/minifirewall" /usr/share/scripts/alert5.sh \
-        || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 script or script is missing"
+    if ! is_minifirewall_native_systemd; then
+        grep --quiet --no-messages "^/etc/init.d/minifirewall" /usr/share/scripts/alert5.sh \
+            || failed "IS_ALERT5MINIFW" "Minifirewall is not started by alert5 script or script is missing"
+    fi
 }
 check_minifw() {
     {
-        if [ -f /etc/systemd/system/minifirewall.service ]; then
-            systemctl is-active minifirewall > /dev/null 2>&1
+        if is_minifirewall_native_systemd; then
+            systemctl is-active minifirewall.service >/dev/null 2>&1
         else
             if test -x /usr/share/scripts/minifirewall_status; then
                 /usr/share/scripts/minifirewall_status > /dev/null 2>&1
@@ -995,6 +1002,10 @@ check_sql_backup() {
         if [ -d "${backup_dir}" ]; then
             # You could change the default path in /etc/evocheck.cf
             SQL_BACKUP_PATH="${SQL_BACKUP_PATH:-$(find "${backup_dir}" \( -iname "mysql.bak.gz" -o -iname "mysql.sql.gz" -o -iname "mysqldump.sql.gz" \))}"
+            if [ -z "${SQL_BACKUP_PATH}" ]; then
+                failed "IS_SQL_BACKUP" "No MySQL dump found"
+                return 1
+            fi
             for backup_path in ${SQL_BACKUP_PATH}; do
                 if [ ! -f "${backup_path}" ]; then
                     failed "IS_SQL_BACKUP" "MySQL dump is missing (${backup_path})"
@@ -1896,6 +1907,12 @@ while :; do
             IS_MELTDOWN_SPECTRE=0
             IS_CHECK_VERSIONS=0
             IS_NETWORKING_SERVICE=0
+            ;;
+        --future)
+            IS_MINIFW_RELATED=1
+            IS_NO_SIGNED_BY=1
+            IS_NOT_DEB822=1
+            IS_POSTFIX_IPV6_DISABLED=1
             ;;
         -v|--verbose)
             VERBOSE=1

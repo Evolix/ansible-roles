@@ -13,8 +13,6 @@ Options
  -m, --message=MESSAGE       set the message from the command line
      --mail                  enable the mail hook (default)
      --no-mail               disable the mail hook
-     --db                    enable the database hook
-     --no-db                 disable the database hook (default)
      --api                   enable the API hook (default)
      --no-api                disable the API hook
      --commit                enable the commit hook (default)

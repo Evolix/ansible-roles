@@ -1,10 +1,16 @@
 ---
 
-- name: "{{ lxc_php_container_name }} - Configure timezone for the container"
+- name: Get host Timezone
+  ansible.builtin.shell:
+    cmd: "cat /etc/timezone 2>/dev/null || timedatectl show -P Timezone"
+  check_mode: no
+  register: _host_timezone
+
+- name: "{{ lxc_php_container_name }} - Configure timezone for the container (via timedated)"
   ansible.builtin.copy:
-    remote_src: yes
-    src: "/etc/timezone"
     dest: "{{ lxc_rootfs }}/etc/timezone"
+    content: "{{ _host_timezone.stdout }}"
+    force: yes
 
 - name: "{{ lxc_php_container_name }} - Ensure container's root directory is 755"
   ansible.builtin.file:

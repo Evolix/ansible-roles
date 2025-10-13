@@ -36,3 +36,8 @@
   ansible.builtin.systemd:
     name: '{{ item }}'
     state: restarted
+
+- name: reload fail2ban
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: reloaded

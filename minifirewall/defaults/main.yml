@@ -2,6 +2,8 @@
 
 # possible values: Null (default), modern or legacy
 minifirewall_install_mode: Null
+# possible values: Null (default), sysvinit or systemd
+minifirewall_init_mode: Null
 
 # BEGIN legacy variables
 minifirewall_legacy_main_file: /etc/default/minifirewall
@@ -60,15 +62,20 @@ minifirewall_proxybypass:
   - "::1/128"
 minifirewall_backupservers: Null
 
-minifirewall_sysctl_icmp_echo_ignore_broadcasts : Null
-minifirewall_sysctl_icmp_ignore_bogus_error_responses : Null
-minifirewall_sysctl_accept_source_route : Null
-minifirewall_sysctl_tcp_syncookies : Null
-minifirewall_sysctl_icmp_redirects : Null
-minifirewall_sysctl_rp_filter : Null
-minifirewall_sysctl_log_martians : Null
+minifirewall_sysctl_icmp_echo_ignore_broadcasts: Null
+minifirewall_sysctl_icmp_ignore_bogus_error_responses: Null
+minifirewall_sysctl_accept_source_route: Null
+minifirewall_sysctl_tcp_syncookies: Null
+minifirewall_sysctl_icmp_redirects: Null
+minifirewall_sysctl_rp_filter: Null
+minifirewall_sysctl_log_martians: Null
 
-minifirewall_autostart: False
+minifirewall_current_version: Null
+minifirewall_current_install_mode: Null
+minifirewall_current_init_mode: Null
+minifirewall_current_autostart: Null
+
+minifirewall_autostart: Null
 minifirewall_restart_if_needed: True
 minifirewall_restart_force: False
 

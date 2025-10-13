@@ -1,0 +1,27 @@
+---
+# tasks file to setup fail2ban for jitsimeet
+
+#- name: Insert local fail2ban banaction
+#  ansible.builtin.lineinfile:
+#    path: /etc/fail2ban/jail.local
+#    regexp: '^banaction = %(banaction_allports)s' 
+#    line: '^banaction = %(banaction_allports)s'
+
+- name: Insert local fail2ban jails
+  ansible.builtin.blockinfile:
+    path: /etc/fail2ban/jail.local
+    marker: "## {mark} ANSIBLE MANAGED BLOCK ##"
+    insertafter: "# Evolix custom jails"
+    block: "{{ jitsimeet_fail2ban_jails }}"
+
+- name: Copy fail2ban filters
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { src: 'fail2ban/filter.d/nginx-401.conf', dest: "/etc/fail2ban/filter.d/nginx-401.conf", mode: "0644" }
+    - { src: 'fail2ban/filter.d/nginx-402.conf', dest: "/etc/fail2ban/filter.d/nginx-403.conf", mode: "0644" }
+    - { src: 'fail2ban/filter.d/nginx-404.conf', dest: "/etc/fail2ban/filter.d/nginx-404.conf", mode: "0644" }
+    - { src: 'fail2ban/filter.d/nginx-all-without3xx.conf', dest: '/etc/fail2ban/filter.d/nginx-all-without3xx.conf', mode: "0644" }
+  notify: reload fail2ban

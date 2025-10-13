@@ -32,40 +32,40 @@
 
 - name: Create private key for new certificate
   community.crypto.openssl_privatekey:
-    path: "{{ pki_dir }}/private/{{ ansible_fqdn }}.key"
+    path: "{{ pki_dir }}/private/{{ pki_cert_common_name }}.key"
 
 - name: Check whether Certificate Signing Request (CSR) exists
   ansible.builtin.stat:
-    path: "{{ pki_dir }}/csr/{{ ansible_fqdn }}.csr"
+    path: "{{ pki_dir }}/csr/{{ pki_cert_common_name }}.csr"
   register: csr_exists
 
 - name: Read existing CSR if it exists
   ansible.builtin.slurp:
-    src: "{{ pki_dir }}/csr/{{ ansible_fqdn }}.csr"
+    src: "{{ pki_dir }}/csr/{{ pki_cert_common_name }}.csr"
   when: csr_exists.stat.exists
   register: csr
 
 - name: Create Certificate Signing Request (CSR) for new certificate
   community.crypto.openssl_csr_pipe:
     content: "{{ (csr.content | b64decode) if csr_exists.stat.exists else omit }}"
-    privatekey_path: "{{ pki_dir }}/private/{{ ansible_fqdn }}.key"
-    common_name: "{{ ansible_fqdn }}"
+    privatekey_path: "{{ pki_dir }}/private/{{ pki_cert_common_name }}.key"
+    common_name: "{{ pki_cert_common_name }}"
   register: csr
 
 - name: Write CSR file
   ansible.builtin.copy:
-    dest: "{{ pki_dir }}/csr/{{ ansible_fqdn }}.csr"
+    dest: "{{ pki_dir }}/csr/{{ pki_cert_common_name }}.csr"
     content: "{{ csr.csr }}"
   when: csr is changed and not ansible_check_mode
 
 - name: Check whether certificate exists
   ansible.builtin.stat:
-    path: "{{ pki_dir }}/certs/{{ ansible_fqdn }}.crt"
+    path: "{{ pki_dir }}/certs/{{ pki_cert_common_name }}.crt"
   register: certificate_exists
 
 - name: Read existing certificate if exists
   ansible.builtin.slurp:
-    src: "{{ pki_dir }}/certs/{{ ansible_fqdn }}.crt"
+    src: "{{ pki_dir }}/certs/{{ pki_cert_common_name }}.crt"
   when: certificate_exists.stat.exists
   register: certificate
 
@@ -83,13 +83,13 @@
 
 - name: Write certificate file
   ansible.builtin.copy:
-    dest: "{{ pki_dir }}/certs/{{ ansible_fqdn }}.crt"
+    dest: "{{ pki_dir }}/certs/{{ pki_cert_common_name }}.crt"
     content: "{{ certificate.certificate }}"
   when: certificate is changed and not ansible_check_mode
 
 - name: Write certificate file on the CA host
   ansible.builtin.copy:
-    dest: "{{ pki_dir }}/certs/{{ ansible_fqdn }}.crt"
+    dest: "{{ pki_dir }}/certs/{{ pki_cert_common_name }}.crt"
     content: "{{ certificate.certificate }}"
   delegate_to: "{{ pki_ca_host | mandatory }}"
   when: certificate is changed and not ansible_check_mode

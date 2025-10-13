@@ -29,3 +29,9 @@ argument_specs:
         description:
           - "Path to store files related to that PKI; for the CA host and the target machine."
           - "Example for a syslog PKI: /etc/pki/syslog/"
+
+      pki_cert_common_name:
+        type: "str"
+        default: "{{ ansible_fqdn }}"
+        description:
+          - "The commonName field of the certificate signing request subject."

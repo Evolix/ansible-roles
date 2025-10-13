@@ -17,27 +17,80 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
-* *: Replace `with_items:` with `loop:`
-* *: Use FQCN for all ansible modules
-* evobackup-client: upstream release 25.09
-* evocheck: upstream release 25.08.1
-* evolinux-users: Do not loop over ssh keys for `ansible.posix.authorized_key`
-* kvm-host: migrate-vm: fix "vm file" detection
-* kvm-host: migrate-vm: show usage when executed with 0 arguments
-* kvm-host: migrate-vm: version 25.09
-* lxc: Fix the creation of several container in a single playbook
-* minifirewall: upstream release 25.07
-* nextcloud: Replace `with_indexed_items` with `loop` and `loop_control.index_var`
-* openvpn: Add MASQUERADE rule in /etc/minifirewall.d/zzz-custom instead of /etc/default/minifirewall
-* packweb-apache: Don’t set pinning for backports (for phpmyadmin on Debian 10.)
-
 ### Fixed
-
-* packweb-apache: Fix nginx vhost path in phpContainer
 
 ### Removed
 
 ### Security
+
+## [25.10.1] 2025-10-13
+
+### Added
+
+* prometheus: New role
+
+### Changed
+
+* evocheck: upstream release 25.10
+
+### Fixed
+
+* alloy: fix creation of files
+
+## [25.10] 2025-10-10
+
+### Added
+
+* elasticsearch: add warning comment to elasticsearch_custom_datadir variable.
+* evolinux-base: disable "users" group when adduser
+* minifirewall: Add `ipset` as a dependency
+* openvpn: also check CRL expiration
+* PKI: add new variable `pki_cert_common_name`
+
+### Changed
+
+* apt: Remove /etc/apt/trusted.gpg on Debian 13 and newer
+* evobackup-client: upstream release 25.09
+* evocheck: upstream release 25.08.1
+* evolinux-base: continue to install ntpdate before Debian 10
+* evolinux-users: Do not loop over ssh keys for `ansible.posix.authorized_key`
+* evomaintenance: upstream release 25.10
+* kvm-host: migrate-vm: fix "vm file" detection
+* kvm-host: migrate-vm: show usage when executed with 0 arguments
+* kvm-host: migrate-vm: version 25.09
+* lxc-php: avoid using `set_fact` when possible
+* lxc-php: fallback on systemd-timedated when /etc/timezone is absent
+* lxc-solr: Avoid using `set_fact` when possible
+* lxc: Fix the creation of several container in a single playbook
+* minifirewall: upstream release 25.10.1
+* nextcloud: Replace `with_indexed_items` with `loop` and `loop_control.index_var`
+* openvpn: Add MASQUERADE rule in /etc/minifirewall.d/zzz-custom instead of /etc/default/minifirewall
+* packweb-apache: Don’t set pinning for backports (for phpmyadmin on Debian 10.)
+* proftpd: Avoid using `set_fact` when possible
+* proftpd: Replace loop + `when` on loop_var with `selectattr` or `rejectattr` filters
+* redis: Avoid using `set_fact` when possible
+* redmine: Replace loop + `when` on loop_var with `selectattr` filter
+* Replace `with_items:` with `loop:`
+* Use FQCN for all ansible modules
+* varnish: Avoid using `set_fact` when possible
+
+### Fixed
+
+* evoadmin-mail: Fail if /etc/evoadmin-mail/config.ini does not exist after evoadmin-mail.deb. This can happen when the postinst has been partly executed because slapd dependency is not met (no /root/.ldapvirc file).
+* kvm-host: Allocate PTY when running ssh drbdadm commands
+* lxc: Do not fix sources.list in Bookworm container if file is not present
+* lxc: Fix creation of buster containers on bookworm and up
+* lxc: Fix jessie sources.list in php56
+* lxc: Fix the creation of several container in a single playbook
+* nagios-nrpe: Fix false positive in check_ssl_local
+* nextcloud: Fix /home/$user rights (700 is good enough)
+* packweb-apache: Fix nginx vhost path in phpContainer
+* proftpd: Do not break when `proftpd_sftp_enable` is `false`
+* proftpd: Fix usage with tag proftpd
+
+### Removed
+
+* evomaintenance: remove DB hook
 
 ## [25.08] 2025-08-08
 

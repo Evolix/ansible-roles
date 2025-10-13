@@ -1,0 +1,13 @@
+---
+redis_restart_handler_name: "{{ redis_restart_if_needed | bool | ternary('restart redis', 'restart redis (noop)') }}"
+
+redis_monitoringctl_wrapper_cmd: "/usr/local/lib/monitoringctl/alerts_wrapper --name redis -- "
+
+redis_check_redis_path: >-
+  {%- if ansible_distribution == "Debian" and ansible_distribution_major_version is version('9', '<') -%}
+    /usr/local/lib/nagios/plugins/check_redis
+  {%- elif ansible_distribution == "Debian" and ansible_distribution_major_version is version('9', '>=') -%}
+    /usr/lib/nagios/plugins/check_redis
+  {%- else -%}
+    {{ undef() }}
+  {%- endif -%}

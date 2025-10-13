@@ -45,8 +45,7 @@
     owner: "{{ redmine_user }}"
     group: "{{ redmine_user }}"
     mode: "0750"
-  when: item.zip is defined
-  loop: "{{ redmine_plugins }}"
+  loop: "{{ redmine_plugins | selectattr('zip', 'defined') }}"
   tags:
     - redmine
 
@@ -57,8 +56,7 @@
     version: "{{ item.tree | default('master') }}"
     umask: "027"
   become_user: "{{ redmine_user }}"
-  when: item.git is defined
-  loop: "{{ redmine_plugins }}"
+  loop: "{{ redmine_plugins | selectattr('git', 'defined') }}"
   tags:
     - redmine
 
@@ -70,8 +68,7 @@
     owner: "{{ redmine_user }}"
     group: "{{ redmine_user }}"
     mode: "0750"
-  when: item.zip is defined
-  loop: "{{ redmine_themes }}"
+  loop: "{{ redmine_themes | selectattr('zip', 'defined') }}"
   tags:
     - redmine
 
@@ -82,8 +79,7 @@
     version: "{{ item.tree | default('master') }}"
     umask: "027"
   become_user: "{{ redmine_user }}"
-  when: item.git is defined
-  loop: "{{ redmine_themes }}"
+  loop: "{{ redmine_themes | selectattr('git', 'defined') }}"
   tags:
     - redmine
 

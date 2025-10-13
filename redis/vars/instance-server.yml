@@ -1,0 +1,9 @@
+---
+
+redis_systemd_name: "redis-server@{{ redis_instance_name }}"
+
+redis_conf_dir: "{{ redis_conf_dir_prefix }}-{{ redis_instance_name }}"
+redis_socket_dir: "{{ redis_socket_dir_prefix }}-{{ redis_instance_name }}"
+redis_pid_dir: "{{ redis_pid_dir_prefix }}-{{ redis_instance_name }}"
+redis_log_dir: "{{ redis_log_dir_prefix }}-{{ redis_instance_name }}"
+redis_data_dir: "{{ redis_data_dir_prefix }}-{{ redis_instance_name }}"

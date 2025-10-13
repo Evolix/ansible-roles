@@ -10,8 +10,8 @@
 
 - name: Prosody GPG key is installed
   ansible.builtin.copy:
-    src: prosody.gpg
-    dest: "{{ apt_keyring_dir }}/prosody.gpg"
+    src: prosody.asc
+    dest: "{{ apt_keyring_dir }}/prosody.asc"
     force: true
     mode: "0644"
     owner: root
@@ -28,7 +28,7 @@
 
 - name: Add Prosody repository (Debian <12)
   ansible.builtin.apt_repository:
-    repo: "deb [signed-by={{ apt_keyring_dir }}/prosody.gpg] https://packages.prosody.im/debian {{ ansible_distribution_release }} main"
+    repo: "deb [signed-by={{ apt_keyring_dir }}/prosody.asc] https://packages.prosody.im/debian {{ ansible_distribution_release }} main"
     filename: prosody
     state: present
     update_cache: true
