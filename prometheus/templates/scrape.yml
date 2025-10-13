@@ -1,0 +1,2 @@
+scrape_config_files:
+  - "/etc/victoria-metrics/scrape.d/*.yml"

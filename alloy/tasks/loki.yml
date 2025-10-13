@@ -13,6 +13,7 @@
   ansible.builtin.lineinfile:
     path: /etc/minifirewall.d/loki
     line: "/sbin/iptables -A INPUT -p tcp --dport {{ item | urlsplit('port') or '443' }} --sport 1024:65535 -s {{ ansible_default_ipv4.address }} -j ACCEPT # {{ ansible_hostname }}"
+    create: true
   loop: "{{ alloy_loki_default_endpoints_url }}"
   become: yes
   remote_user: "{{ lookup('env', 'USER') }}"
@@ -23,6 +24,7 @@
   ansible.builtin.lineinfile:
     path: /etc/nginx/snippets/loki_whitelist
     line: "allow {{ ansible_default_ipv4.address }}; # {{ ansible_hostname }}"
+    create: true
   notify: reload nginx on loki endpoints
   become: yes
   remote_user: "{{ lookup('env', 'USER') }}"

@@ -21,12 +21,26 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
+## [25.10.1] 2025-10-13
+
+### Added
+
+* prometheus: New role
+
+### Changed
+
+* evocheck: upstream release 25.10
+
+### Fixed
+
+* alloy: fix creation of files
+
 ## [25.10] 2025-10-10
 
 ### Added
 
 * elasticsearch: add warning comment to elasticsearch_custom_datadir variable.
-* evolinux-base: disable "users" group when adduser (UNTESTED)
+* evolinux-base: disable "users" group when adduser
 * minifirewall: Add `ipset` as a dependency
 * openvpn: also check CRL expiration
 * PKI: add new variable `pki_cert_common_name`

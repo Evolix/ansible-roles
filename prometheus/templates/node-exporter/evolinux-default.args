@@ -1,0 +1,6 @@
+# Arguments par defaut d'Evolix pour prometheus-node-exporter
+--collector.logind
+--collector.processes
+--collector.buddyinfo
+--collector.netdev.address-info
+--collector.textfile.directory=/var/lib/prometheus-node-exporter

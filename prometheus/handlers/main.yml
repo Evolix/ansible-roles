@@ -1,0 +1,23 @@
+---
+
+# XXX Need to be before any other systemd handlers
+- name: "daemon-reload"
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: "restart prometheus-node-exporter"
+  ansible.builtin.systemd:
+    name: "prometheus-node-exporter"
+    state: "restarted"
+
+# /!\ DO NOT PUT HANDLERS FOR EXPORTER BELLOW THAT LINE /!\
+    
+- name: "restart vmagent"
+  ansible.builtin.systemd:
+    name: "vmagent"
+    state: "restarted"
+
+- name: "reload vmagent"
+  ansible.builtin.systemd:
+    name: "vmagent"
+    state: "reloaded"
