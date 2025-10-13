@@ -19,6 +19,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* lxc: Fix source.list for debian security repository
+
 ### Removed
 
 ### Security
