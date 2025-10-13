@@ -15,13 +15,25 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
-* evocheck: upstream release 25.10
-
 ### Fixed
 
 ### Removed
 
 ### Security
+
+## [25.10.1] 2025-10-13
+
+### Added
+
+* prometheus: New role
+
+### Changed
+
+* evocheck: upstream release 25.10
+
+### Fixed
+
+* alloy: fix creation of files
 
 ## [25.10] 2025-10-10
 
@@ -32,7 +44,6 @@ The **patch** part is incremented if multiple releases happen the same month
 * minifirewall: Add `ipset` as a dependency
 * openvpn: also check CRL expiration
 * PKI: add new variable `pki_cert_common_name`
-* prometheus: New role
 
 ### Changed
 
@@ -74,7 +85,6 @@ The **patch** part is incremented if multiple releases happen the same month
 * packweb-apache: Fix nginx vhost path in phpContainer
 * proftpd: Do not break when `proftpd_sftp_enable` is `false`
 * proftpd: Fix usage with tag proftpd
-* alloy: fix creation of files
 
 ### Removed
 
