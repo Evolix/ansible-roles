@@ -28,7 +28,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Added
 
 * elasticsearch: add warning comment to elasticsearch_custom_datadir variable.
-* evolinux-base: disable "users" group when adduser (UNTESTED)
+* evolinux-base: disable "users" group when adduser
 * minifirewall: Add `ipset` as a dependency
 * openvpn: also check CRL expiration
 * PKI: add new variable `pki_cert_common_name`
