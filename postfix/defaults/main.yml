@@ -4,4 +4,5 @@ postfix_force_main_cf: False
 postfix_packmail: False
 postfix_slow_transport_include: False
 postfix_purge_exim: True
-
+postfix_minimal_main_cf_path: "evolinux_main.cf.j2"
+postfix_packmail_main_cf_path: "packmail_main.cf.j2"
