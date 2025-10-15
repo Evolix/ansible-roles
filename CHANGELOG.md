@@ -16,6 +16,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * etc-git: add missing doc for ansible-commit
 * etc-git: add path filtering for selective commits
 * etc-git: release 25.11 of ansible-commit and evocommit
+* evoadmin-web: Add support for apache2 multi-instance mode
 * evomaintenance: upstream release 25.11.2
 * listupgrade: external mode
 * lxc: install screen and vim (with config) [UNTESTED]

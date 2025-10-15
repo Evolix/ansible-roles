@@ -1,0 +1,16 @@
+[evoadmin]
+user = www-{{ evoadmin_username }}
+group = {{ evoadmin_username }}
+
+listen = {{ evoadmin_pool_socket }}
+listen.owner = {{ evoadmin_username }}
+listen.group = {{ evoadmin_username }}
+
+pm = ondemand
+pm.status_path = /evolinux_fpm_status-TODO
+pm.max_children = 10
+pm.process_idle_timeout = 10s
+
+php_admin_value[error_log] = {{ evoadmin_log_dir }}/php.log
+php_admin_value[sendmail_path] = "/usr/sbin/sendmail -t -i -f www-{{ evoadmin_username }}"
+php_admin_value[open_basedir] = "/usr/share/php:{{ evoadmin_home_dir }}:/tmp"
