@@ -27,6 +27,19 @@
     home: "{{ hedgedoc_home_base }}/{{ hedgedoc_instance }}"
     shell: /bin/bash
 
+- name: Add tmp dir for Yarn 
+  ansible.builtin.file:
+    path: "~/tmp"
+    state: directory
+    mode: '0700'
+  become_user: "{{ hedgedoc_instance }}"
+
+- name: Set TMPDIR environment var for Yarn
+  lineinfile:
+    path: "~/.profile"
+    line: 'export TMPDIR=~/tmp'
+  become_user: "{{ hedgedoc_instance }}"
+
 - name: Add dir to manage versions
   ansible.builtin.file:
     path: "~/versions"
@@ -64,9 +77,10 @@
         dest: "~/hedgedoc"
         state: link
     - name: Run setup
-      ansible.builtin.shell: "bin/setup"
+      ansible.builtin.shell: ". ~/.profile && bin/setup"
       args:
         chdir: "~/hedgedoc"
+        executable: /bin/bash
 
 - name: Template json config file
   ansible.builtin.template:
