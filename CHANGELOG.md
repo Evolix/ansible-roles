@@ -17,6 +17,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* evolinux-base: force use bullseye suite for HWRaid LeVert
+
 ### Fixed
 
 * lxc: Fix source.list for debian security repository
