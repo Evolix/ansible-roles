@@ -42,15 +42,15 @@ for pool_file in $POOL_FILES; do
   pool_listen=$(grep -E "^listen\s?=" "$pool_file" |  sed -E 's/.*=\s?(.*)\s?$/\1/g')
   pool_max_children=$(grep -E "^pm.max_children" "$pool_file" | sed -E 's/.*=\s?(.*)\s?$/\1/g' )
 
-  pool_crit_procs=$(expr $pool_max_children \* 100 / 100)
-  pool_warn_procs=$(expr $pool_max_children \* 75 / 100)
-
   if [[ "$pool_status_path" == '' ]]; then
       nb_unchk=$((nb_unchk + 1))
       output="${output}UNCHK - ${pool_name} (missing pm.status_path definition)\n" 
       
       continue;
   fi;
+
+  pool_crit_procs=$(expr $pool_max_children \* 100 / 100)
+  pool_warn_procs=$(expr $pool_max_children \* 75 / 100)
   
   if [[ -S "$pool_listen" ]] || [[ ! "$pool_listen" =~ ':'  ]]; then
     target=(-H 127.0.0.1 --unix "$pool_listen")
