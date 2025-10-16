@@ -13,6 +13,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* etc-git: add options to commit selectively
 * packweb-apache: add PHP_UMASK variable so the user can change the default umask with phpContainer. It set the umask for the php command executed in the container. This is usefull if umask 007 is needed only for one command (ex: clear cache), instead of breaking the ITK compartimentation.
 
 ### Changed
