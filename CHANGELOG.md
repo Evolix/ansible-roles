@@ -13,14 +13,19 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* etc-git: add options to commit selectively
 * packweb-apache: add PHP_UMASK variable so the user can change the default umask with phpContainer. It set the umask for the php command executed in the container. This is usefull if umask 007 is needed only for one command (ex: clear cache), instead of breaking the ITK compartimentation.
 * postfix: put main.cf template path in a variable to allow to override it
 
 ### Changed
 
+* evocheck: upstream release 25.10.1
+* evolinux-base: force use bullseye suite for HWRaid LeVert
+
 ### Fixed
 
 * lxc: Fix source.list for debian security repository
+* nagios-nrpe : fix "syntax error: unexpected arguments 85 and 55" inside check_phpfpm_multi
 
 ### Removed
 

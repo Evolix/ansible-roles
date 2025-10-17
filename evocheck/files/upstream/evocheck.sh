@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="25.10"
+VERSION="25.10.1"
 readonly VERSION
 
 # base functions
@@ -1336,11 +1336,7 @@ check_evomaintenanceconf() {
         perms=$(stat -c "%a" $f)
         test "$perms" = "600" || failed "IS_EVOMAINTENANCECONF" "Wrong permissions on \`$f' ($perms instead of 600)"
 
-        { grep "^export PGPASSWORD" $f | grep --quiet --invert-match "your-passwd" \
-            && grep "^PGDB" $f | grep --quiet --invert-match "your-db" \
-            && grep "^PGTABLE" $f | grep --quiet --invert-match "your-table" \
-            && grep "^PGHOST" $f | grep --quiet --invert-match "your-pg-host" \
-            && grep "^FROM" $f | grep --quiet --invert-match "jdoe@example.com" \
+        { grep "^FROM" $f | grep --quiet --invert-match "jdoe@example.com" \
             && grep "^FULLFROM" $f | grep --quiet --invert-match "John Doe <jdoe@example.com>" \
             && grep "^URGENCYFROM" $f | grep --quiet --invert-match "mama.doe@example.com" \
             && grep "^URGENCYTEL" $f | grep --quiet --invert-match "06.00.00.00.00" \

@@ -13,6 +13,12 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Removed
 
+## [25.10.1] 2025-10-16
+
+### Removed
+
+* IS_EVOMAINTENANCECONF: don't search for DB hook variables anymore
+
 ## [25.10] 2025-10-13
 
 ### Added
