@@ -15,6 +15,12 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Security
 
+## [25.10.3] 2025-10-20
+
+### Removed
+
+* meta check is useless, and pushed into each check
+
 ## [25.10.2] 2025-10-20
 
 ### Changed
@@ -25,12 +31,6 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 ### Fixed
 
 * minifirewall might not be installed, it's OK
-
-### Deprecated
-
-### Removed
-
-* meta check is useless, and pushed into each check
 
 ## [25.10.1] 2025-10-16
 

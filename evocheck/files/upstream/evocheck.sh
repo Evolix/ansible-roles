@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="25.10.2"
+VERSION="25.10.3"
 readonly VERSION
 
 # base functions
@@ -581,35 +581,38 @@ check_bindchroot() {
 # /etc/network/interfaces should be present, we don't manage systemd-network yet
 check_network_interfaces() {
     if ! test -f /etc/network/interfaces; then
-        IS_AUTOIF=0
-        IS_INTERFACESGW=0
-        IS_INTERFACESNETMASK=0
         failed "IS_NETWORK_INTERFACES" "systemd network configuration is not supported yet"
     fi
 }
 # Verify if all if are in auto
 check_autoif() {
-    interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep --extended-regexp --invert-match "(lo|vnet|docker|veth|tun|tap|macvtap|vrrp|lxcbr|wg)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
-    for interface in $interfaces; do
-        if grep --quiet --dereference-recursive "^iface $interface" /etc/network/interfaces* && ! grep --quiet --dereference-recursive "^auto $interface" /etc/network/interfaces*; then
-            failed "IS_AUTOIF" "Network interface \`${interface}' is statically defined but not set to auto"
-            test "${VERBOSE}" = 1 || break
-        fi
-    done
+    if test -f /etc/network/interfaces; then
+        interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep --extended-regexp --invert-match "(lo|vnet|docker|veth|tun|tap|macvtap|vrrp|lxcbr|wg)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
+        for interface in $interfaces; do
+            if grep --quiet --dereference-recursive "^iface $interface" /etc/network/interfaces* && ! grep --quiet --dereference-recursive "^auto $interface" /etc/network/interfaces*; then
+                failed "IS_AUTOIF" "Network interface \`${interface}' is statically defined but not set to auto"
+                test "${VERBOSE}" = 1 || break
+            fi
+        done
+    fi
 }
 # Network conf verification
 check_interfacesgw() {
-    number=$(grep --extended-regexp --count "^[^#]*gateway [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" /etc/network/interfaces)
-    test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv4 gateway"
-    number=$(grep --extended-regexp --count "^[^#]*gateway [0-9a-fA-F]+:" /etc/network/interfaces)
-    test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv6 gateway"
+    if test -f /etc/network/interfaces; then
+        number=$(grep --extended-regexp --count "^[^#]*gateway [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" /etc/network/interfaces)
+        test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv4 gateway"
+        number=$(grep --extended-regexp --count "^[^#]*gateway [0-9a-fA-F]+:" /etc/network/interfaces)
+        test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv6 gateway"
+    fi
 }
 check_interfacesnetmask() {
-    addresses_number=$(grep "address" /etc/network/interfaces | grep -cv -e "hwaddress" -e "#")
-    symbol_netmask_number=$(grep address /etc/network/interfaces | grep -v "#" | grep -c "/")
-    text_netmask_number=$(grep "netmask" /etc/network/interfaces | grep -cv -e "#" -e "route add" -e "route del")
-    if [ "$((symbol_netmask_number + text_netmask_number))" -ne "$addresses_number" ]; then
-        failed "IS_INTERFACESNETMASK" "the number of addresses configured is not equal to the number of netmask configured : one netmask is missing or duplicated"
+    if test -f /etc/network/interfaces; then
+        addresses_number=$(grep "address" /etc/network/interfaces | grep -cv -e "hwaddress" -e "#")
+        symbol_netmask_number=$(grep address /etc/network/interfaces | grep -v "#" | grep -c "/")
+        text_netmask_number=$(grep "netmask" /etc/network/interfaces | grep -cv -e "#" -e "route add" -e "route del")
+        if [ "$((symbol_netmask_number + text_netmask_number))" -ne "$addresses_number" ]; then
+            failed "IS_INTERFACESNETMASK" "the number of addresses configured is not equal to the number of netmask configured : one netmask is missing or duplicated"
+        fi
     fi
 }
 # Verification de l’état du service networking
