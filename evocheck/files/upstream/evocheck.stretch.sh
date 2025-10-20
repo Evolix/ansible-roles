@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="25.10.1"
+VERSION="25.10.2"
 readonly VERSION
 
 # base functions
@@ -1622,7 +1622,7 @@ main() {
     test "${IS_ETCGIT_LXC:=1}" = 1 && check_etcgit_lxc
     test "${IS_GITPERMS:=1}" = 1 && check_gitperms
     test "${IS_GITPERMS_LXC:=1}" = 1 && check_gitperms_lxc
-    test "${IS_NOTUPGRADED:=1}" = 1 && check_notupgraded
+    test "${IS_NOTUPGRADED:=0}" = 1 && check_notupgraded
     test "${IS_TUNE2FS_M5:=1}" = 1 && check_tune2fs_m5
     test "${IS_EVOLINUXSUDOGROUP:=1}" = 1 && check_evolinuxsudogroup
     test "${IS_USERINADMGROUP:=1}" = 1 && check_userinadmgroup

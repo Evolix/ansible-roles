@@ -18,7 +18,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
-* evocheck: upstream release 25.10.1
+* evocheck: upstream release 25.10.2
 * evolinux-base: force use bullseye suite for HWRaid LeVert
 
 ### Fixed
