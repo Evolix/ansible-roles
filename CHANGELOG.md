@@ -28,6 +28,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Removed
 
+nagios-nrpe: remove `monitoringctl_branch` variable, since 2484a00a1 removes installation with Git.
+
 ### Security
 
 ## [25.10.1] 2025-10-13
