@@ -20,6 +20,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * evocheck: upstream release 25.10.3
 * evolinux-base: force use bullseye suite for HWRaid LeVert
+* alloy: Use deb822 format to configure grafana repo
 
 ### Fixed
 

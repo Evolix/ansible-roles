@@ -4,15 +4,15 @@
 - name: "Grafana's APT keyring"
   ansible.builtin.copy:
     src: grafana-keyring.asc
-    dest: /etc/apt/trusted.gpg.d/grafana.asc
+    dest: "/usr/share/keyrings/grafana.asc"
     owner: root
     group: root
     mode: "0644"
 
 - name: "Grafana's APT source list"
   ansible.builtin.copy:
-    src: grafana.list
-    dest: /etc/apt/sources.list.d/grafana.list
+    src: grafana.sources
+    dest: /etc/apt/sources.list.d/grafana.sources
     owner: root
     group: root
     mode: "0644"
