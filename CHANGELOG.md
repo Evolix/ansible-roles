@@ -22,6 +22,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: force use bullseye suite for HWRaid LeVert
 * alloy: Use deb822 format to configure grafana repo
 * prometheus: Limit vmagent cache to 500MB per remote_write URL
+* alloy: rename config files
 
 ### Fixed
 

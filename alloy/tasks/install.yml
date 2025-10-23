@@ -39,10 +39,10 @@
     group: root
     mode: 0755
 
-- name: "/etc/alloy/config.d/10-default.alloy file"
+- name: "/etc/alloy/config.d/global-evolinux-default.alloy file"
   ansible.builtin.template:
-    src: 10-default.alloy 
-    dest: /etc/alloy/config.d/10-default.alloy
+    src:  global-evolinux-default.alloy
+    dest: /etc/alloy/config.d/global-evolinux-default.alloy
     owner: root
     group: root
     mode: "0644"

@@ -1,9 +1,9 @@
 ---
 
-- name: "/etc/alloy/config.d/10-default-loki.alloy file"
+- name: "/etc/alloy/config.d/loki-evolinux-default.alloy file"
   ansible.builtin.template:
-    src: 10-default-loki.alloy.j2
-    dest: /etc/alloy/config.d/10-default-loki.alloy
+    src: loki-evolinux-default.alloy
+    dest: /etc/alloy/config.d/loki-evolinux-default.alloy
     owner: root
     group: root
     mode: "0644"
