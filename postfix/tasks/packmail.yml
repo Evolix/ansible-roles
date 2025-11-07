@@ -24,7 +24,7 @@
 
 - name: create packmail main.cf
   ansible.builtin.template:
-    src: packmail_main.cf.j2
+    src: "{{ postfix_packmail_main_cf_path }}"
     dest: /etc/postfix/main.cf
     owner: root
     group: root
