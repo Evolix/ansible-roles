@@ -18,11 +18,12 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* alloy: rename config files
+* alloy: Use deb822 format to configure grafana repo
 * evocheck: upstream release 25.10.3
 * evolinux-base: force use bullseye suite for HWRaid LeVert
-* alloy: Use deb822 format to configure grafana repo
+* listupgrade: upstream release 25.11 for minor-upgrade.sh
 * prometheus: Limit vmagent cache to 500MB per remote_write URL
-* alloy: rename config files
 
 ### Fixed
 

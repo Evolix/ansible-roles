@@ -6,7 +6,7 @@
 set -u
 # Do not "set -e", many subcommands can fail
 
-VERSION="25.07"
+VERSION="25.11"
 readonly VERSION
 
 PROGNAME=$(basename "$0")
@@ -216,7 +216,7 @@ head_or_cat() {
 exec_hooks_in_dir() {
     hooks=$(find "${1}" -follow -type f -executable -not -name '*.*' -print0 | sort --zero-terminated --dictionary-order | xargs --no-run-if-empty --null --max-args=1)
     for hook in ${hooks}; do
-        printf "${CYAN}Executing '%s\`${RESET}\n" "${hook}"
+        # printf "${CYAN}Executing '%s\`${RESET}\n" "${hook}"
         ${hook}
     done
 }
