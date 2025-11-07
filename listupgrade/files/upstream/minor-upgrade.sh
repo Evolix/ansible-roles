@@ -6,7 +6,7 @@
 set -u
 # Do not "set -e", many subcommands can fail
 
-VERSION="25.07"
+VERSION="25.11"
 readonly VERSION
 
 PROGNAME=$(basename "$0")
@@ -36,7 +36,7 @@ is_dry_run() {
 get_upgradable_packages() {
     file=$(upgrade_tmp_file "upgradable_packages.stdout", "main.")
     # shellcheck disable=SC2024
-    apt -o Dir::State::Lists="${listupgrade_state_dir}" list --upgradable 2>&1 | grep --extended-regexp --invert-match '^(Listing|WARNING|$)' > "${file}"
+    apt -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" list --upgradable 2>&1 | grep --extended-regexp --invert-match '^(Listing|WARNING|$)' > "${file}"
 
     echo "${file}"
 }
@@ -216,7 +216,7 @@ head_or_cat() {
 exec_hooks_in_dir() {
     hooks=$(find "${1}" -follow -type f -executable -not -name '*.*' -print0 | sort --zero-terminated --dictionary-order | xargs --no-run-if-empty --null --max-args=1)
     for hook in ${hooks}; do
-        printf "${CYAN}Executing '%s\`${RESET}\n" "${hook}"
+        # printf "${CYAN}Executing '%s\`${RESET}\n" "${hook}"
         ${hook}
     done
 }
@@ -319,6 +319,8 @@ if [ -z "${listupgrade_state_dir:-""}" ]; then
         listupgrade_state_dir="/var/lib/listupgrade"
     fi
 fi
+# alternate APT sourcepart directory
+listupgrade_sources_dir="${listupgrade_sources_dir:-/etc/apt/listupgrade-sources.list.d}"
 ### Disabled (temporary ?)
 # warning_packages_pattern="^(linux-image-|apache|nginx|mysql-server|postgresql-[[:digit:]]|tomcat|redis|courier-|dovecot|postfix|bind9$|samba$|php|haproxy|elasticsearch|kibana)"
 warning_packages_pattern=""
@@ -423,7 +425,7 @@ fi
 
 # Update if wanted.
 if [ "${update}" -eq "1" ]; then
-    "apt-get" -o Dir::State::Lists="${listupgrade_state_dir}" update
+    "apt-get" -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" update
 fi
 
 # Print packages to upgrade, with colors
@@ -468,7 +470,7 @@ if [ "${reinstall_kernel_meta_package}" -eq "1" ]; then
     printf "${CYAN}Purging kernel '${current_kernel}\`...${RESET}\n"
 
     # shellcheck disable=SC2086
-    kernel_purge_command="DEBIAN_FRONTEND=noninteractive apt-get -o Dir::State::Lists=${listupgrade_state_dir} --quiet=2 --assume-yes purge ${kernel_meta_package} ${all_kernels_except_current}"
+    kernel_purge_command="DEBIAN_FRONTEND=noninteractive apt-get -o Dir::State::Lists=${listupgrade_state_dir} -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" --quiet=2 --assume-yes purge ${kernel_meta_package} ${all_kernels_except_current}"
     kernel_purge_stdout="${upgrade_tmp_dir}/kernel.purge.stdout"
     kernel_purge_stderr="${upgrade_tmp_dir}/kernel.purge.stderr"
 
@@ -499,7 +501,7 @@ main_upgrade_stderr="${upgrade_tmp_dir}/main.upgrade.stderr"
 
 
 # shellcheck disable=SC2089
-main_upgrade_command="DEBIAN_FRONTEND=noninteractive apt-get -o Dir::State::Lists=${listupgrade_state_dir} -o Dpkg::Options::='--force-confold' --no-download --no-remove upgrade --quiet=2 --assume-yes"
+main_upgrade_command="DEBIAN_FRONTEND=noninteractive apt-get -o Dir::State::Lists=${listupgrade_state_dir} -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dpkg::Options::='--force-confold' --no-download --no-remove upgrade --quiet=2 --assume-yes"
 
 if is_dry_run; then
     printf "DRY RUN: %s\n" "${main_upgrade_command}"
@@ -529,7 +531,7 @@ if [ "${reinstall_kernel_meta_package}" -eq "1" ]; then
         printf "${CYAN}Reinstalling kernel...${RESET}\n"
 
         # shellcheck disable=SC2089
-        kernel_install_command="DEBIAN_FRONTEND=noninteractive apt-get -o Dir::State::Lists=${listupgrade_state_dir} -o Dpkg::Options::='--force-confold' --quiet=2 --assume-yes install ${kernel_meta_package}"
+        kernel_install_command="DEBIAN_FRONTEND=noninteractive apt-get -o Dir::State::Lists=${listupgrade_state_dir} -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dpkg::Options::='--force-confold' --quiet=2 --assume-yes install ${kernel_meta_package}"
         kernel_install_stdout="${upgrade_tmp_dir}/kernel.install.stdout"
         kernel_install_stderr="${upgrade_tmp_dir}/kernel.install.stderr"
 

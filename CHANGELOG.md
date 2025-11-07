@@ -19,8 +19,12 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
-* evocheck: upstream release 25.10.1
+* alloy: rename config files
+* alloy: Use deb822 format to configure grafana repo
+* evocheck: upstream release 25.10.3
 * evolinux-base: force use bullseye suite for HWRaid LeVert
+* listupgrade: upstream release 25.11 for minor-upgrade.sh
+* prometheus: Limit vmagent cache to 500MB per remote_write URL
 
 ### Fixed
 
@@ -28,6 +32,8 @@ The **patch** part is incremented if multiple releases happen the same month
 * nagios-nrpe : fix "syntax error: unexpected arguments 85 and 55" inside check_phpfpm_multi
 
 ### Removed
+
+nagios-nrpe: remove `monitoringctl_branch` variable, since 2484a00a1 removes installation with Git.
 
 ### Security
 

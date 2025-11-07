@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian 8 only) server
 # powered by Evolix
 
-VERSION="25.10.1"
+VERSION="25.10.3"
 readonly VERSION
 
 # base functions
@@ -1204,7 +1204,7 @@ main() {
     test "${IS_BACKUPUPTODATE:=1}" = 1 && check_backupuptodate
     test "${IS_ETCGIT:=1}" = 1 && check_etcgit
     test "${IS_GITPERMS:=1}" = 1 && check_gitperms
-    test "${IS_NOTUPGRADED:=1}" = 1 && check_notupgraded
+    test "${IS_NOTUPGRADED:=0}" = 1 && check_notupgraded
     test "${IS_TUNE2FS_M5:=1}" = 1 && check_tune2fs_m5
     test "${IS_BROADCOMFIRMWARE:=1}" = 1 && check_broadcomfirmware
     test "${IS_HARDWARERAIDTOOL:=1}" = 1 && check_hardwareraidtool
