@@ -5,7 +5,7 @@ PROGNAME="minifirewall"
 # shellcheck disable=SC2034
 REPOSITORY="https://gitea.evolix.org/evolix/minifirewall"
 
-VERSION="25.10.1"
+VERSION="25.10.1a"
 readonly VERSION
 
 set -u
@@ -127,7 +127,7 @@ if [ -t 1 ]; then
         CYAN=$(tput setaf 6)
         WHITE=$(tput setaf 7)
         BOLD=$(tput bold)
-        RESET='\e[m'
+        RESET=$(tput sgr0)
     fi
 else
     INTERACTIVE=0

@@ -30,6 +30,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * lxc: Fix source.list for debian security repository
 * nagios-nrpe : fix "syntax error: unexpected arguments 85 and 55" inside check_phpfpm_multi
+* minifirewall: local hotfix to reset shell colors
 
 ### Removed
 
