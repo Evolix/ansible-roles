@@ -25,6 +25,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: force use bullseye suite for HWRaid LeVert
 * listupgrade: upstream release 25.11 for minor-upgrade.sh
 * prometheus: Limit vmagent cache to 500MB per remote_write URL
+* use evolix-archive-keyring 0~2025
 
 ### Fixed
 
