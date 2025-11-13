@@ -4,7 +4,7 @@
 - name: "Grafana's APT keyring"
   ansible.builtin.copy:
     src: grafana-keyring.asc
-    dest: "/usr/share/keyrings/grafana.asc"
+    dest: "/etc/apt/keyrings/grafana.asc"
     owner: root
     group: root
     mode: "0644"
