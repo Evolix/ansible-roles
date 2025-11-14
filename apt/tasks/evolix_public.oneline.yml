@@ -22,7 +22,7 @@
 
 - name: Copy keyring package
   ansible.builtin.copy:
-    src: evolix-archive-keyring_0~2024_all.deb
+    src: evolix-archive-keyring_0~2025_all.deb
     dest: /tmp/evolix-archive-keyring.deb
     mode: "0644"
     owner: root
@@ -34,7 +34,7 @@
 - name: Install Evolix keyring package
   ansible.builtin.apt:
     deb: /tmp/evolix-archive-keyring.deb
-    # deb: https://pub.evolix.org/evolix/pool/main/e/evolix-archive-keyring/evolix-archive-keyring_0~2024_all.deb
+    # deb: https://pub.evolix.org/evolix/pool/main/e/evolix-archive-keyring/evolix-archive-keyring_0~2025_all.deb
     state: present
   when:
     - not ansible_check_mode

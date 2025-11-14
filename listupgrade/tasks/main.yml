@@ -1,6 +1,6 @@
 ---
 
-- name: remounr /usr read-write
+- name: Remount /usr read-write
   ansible.builtin.include_role:
     name: remount-usr
   when: not ansible_check_mode
@@ -12,6 +12,35 @@
     owner: root
     group: root
     mode: "0700"
+
+- name: Create /etc/apt/evo_sources.list.d
+  ansible.builtin.file:
+    path: /etc/apt/evo_sources.list.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Enable allowed sources
+  ansible.builtin.file:
+    src: "../sources.list.d/{{ item }}"
+    dest: "/etc/apt/evo_sources.list.d/{{ item }}"
+    state: link
+  ignore_errors: true
+  loop:
+  # /!\ Keep list in sync with maj.sh/hotfix-allowed-sources.yml
+    - system.sources
+    - security.sources
+    - evolix_public.sources
+    - backports.sources
+    - sury.sources
+    - evolix_sury.sources
+    - hp.sources
+    - hwraid.le-vert.net.sources
+    # - postgresql.sources
+    - evolix_public.list
+    - backports.list
+    - extended-lts.list
 
 # listupgrade.sh
 

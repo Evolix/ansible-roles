@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="25.10"
+VERSION="25.10.3"
 readonly VERSION
 
 # base functions
@@ -394,14 +394,18 @@ check_minifw() {
 }
 check_minifw_includes() {
     if evo::os-release::is_debian 11 ge; then
-        if grep --quiet --regexp '/sbin/iptables' --regexp '/sbin/ip6tables' "/etc/default/minifirewall"; then
-            failed "IS_MINIFWINCLUDES" "minifirewall has direct iptables invocations in /etc/default/minifirewall that should go in /etc/minifirewall.d/"
+        if [ -f "/etc/default/minifirewall" ]; then
+            if grep --quiet --extended-regexp --regexp '^\s*/sbin/iptables' --regexp '^\s*/sbin/ip6tables' "/etc/default/minifirewall"; then
+                failed "IS_MINIFWINCLUDES" "minifirewall has direct iptables invocations in /etc/default/minifirewall that should go in /etc/minifirewall.d/"
+            fi
         fi
     fi
 }
 check_minifw_related() {
-    if grep --quiet --fixed-strings "RELATED" "/etc/default/minifirewall" "/etc/minifirewall.d/"*; then
-        failed "IS_MINIFW_RELATED" "RELATED should not be used in minifirewall configuration"
+    if [ -f "/etc/default/minifirewall" ] || [ -d "/etc/minifirewall.d/" ]; then
+        if grep --no-messages --quiet --fixed-strings "RELATED" "/etc/default/minifirewall" "/etc/minifirewall.d/"*; then
+            failed "IS_MINIFW_RELATED" "RELATED should not be used in minifirewall configuration"
+        fi
     fi
 }
 check_nrpeperms() {
@@ -577,35 +581,38 @@ check_bindchroot() {
 # /etc/network/interfaces should be present, we don't manage systemd-network yet
 check_network_interfaces() {
     if ! test -f /etc/network/interfaces; then
-        IS_AUTOIF=0
-        IS_INTERFACESGW=0
-        IS_INTERFACESNETMASK=0
         failed "IS_NETWORK_INTERFACES" "systemd network configuration is not supported yet"
     fi
 }
 # Verify if all if are in auto
 check_autoif() {
-    interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep --extended-regexp --invert-match "(lo|vnet|docker|veth|tun|tap|macvtap|vrrp|lxcbr|wg)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
-    for interface in $interfaces; do
-        if grep --quiet --dereference-recursive "^iface $interface" /etc/network/interfaces* && ! grep --quiet --dereference-recursive "^auto $interface" /etc/network/interfaces*; then
-            failed "IS_AUTOIF" "Network interface \`${interface}' is statically defined but not set to auto"
-            test "${VERBOSE}" = 1 || break
-        fi
-    done
+    if test -f /etc/network/interfaces; then
+        interfaces=$(/sbin/ip address show up | grep "^[0-9]*:" | grep --extended-regexp --invert-match "(lo|vnet|docker|veth|tun|tap|macvtap|vrrp|lxcbr|wg)" | cut -d " " -f 2 | tr -d : | cut -d@ -f1 | tr "\n" " ")
+        for interface in $interfaces; do
+            if grep --quiet --dereference-recursive "^iface $interface" /etc/network/interfaces* && ! grep --quiet --dereference-recursive "^auto $interface" /etc/network/interfaces*; then
+                failed "IS_AUTOIF" "Network interface \`${interface}' is statically defined but not set to auto"
+                test "${VERBOSE}" = 1 || break
+            fi
+        done
+    fi
 }
 # Network conf verification
 check_interfacesgw() {
-    number=$(grep --extended-regexp --count "^[^#]*gateway [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" /etc/network/interfaces)
-    test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv4 gateway"
-    number=$(grep --extended-regexp --count "^[^#]*gateway [0-9a-fA-F]+:" /etc/network/interfaces)
-    test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv6 gateway"
+    if test -f /etc/network/interfaces; then
+        number=$(grep --extended-regexp --count "^[^#]*gateway [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" /etc/network/interfaces)
+        test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv4 gateway"
+        number=$(grep --extended-regexp --count "^[^#]*gateway [0-9a-fA-F]+:" /etc/network/interfaces)
+        test "$number" -gt 1 && failed "IS_INTERFACESGW" "there is more than 1 IPv6 gateway"
+    fi
 }
 check_interfacesnetmask() {
-    addresses_number=$(grep "address" /etc/network/interfaces | grep -cv -e "hwaddress" -e "#")
-    symbol_netmask_number=$(grep address /etc/network/interfaces | grep -v "#" | grep -c "/")
-    text_netmask_number=$(grep "netmask" /etc/network/interfaces | grep -cv -e "#" -e "route add" -e "route del")
-    if [ "$((symbol_netmask_number + text_netmask_number))" -ne "$addresses_number" ]; then
-        failed "IS_INTERFACESNETMASK" "the number of addresses configured is not equal to the number of netmask configured : one netmask is missing or duplicated"
+    if test -f /etc/network/interfaces; then
+        addresses_number=$(grep "address" /etc/network/interfaces | grep -cv -e "hwaddress" -e "#")
+        symbol_netmask_number=$(grep address /etc/network/interfaces | grep -v "#" | grep -c "/")
+        text_netmask_number=$(grep "netmask" /etc/network/interfaces | grep -cv -e "#" -e "route add" -e "route del")
+        if [ "$((symbol_netmask_number + text_netmask_number))" -ne "$addresses_number" ]; then
+            failed "IS_INTERFACESNETMASK" "the number of addresses configured is not equal to the number of netmask configured : one netmask is missing or duplicated"
+        fi
     fi
 }
 # Verification de l’état du service networking
@@ -1336,11 +1343,7 @@ check_evomaintenanceconf() {
         perms=$(stat -c "%a" $f)
         test "$perms" = "600" || failed "IS_EVOMAINTENANCECONF" "Wrong permissions on \`$f' ($perms instead of 600)"
 
-        { grep "^export PGPASSWORD" $f | grep --quiet --invert-match "your-passwd" \
-            && grep "^PGDB" $f | grep --quiet --invert-match "your-db" \
-            && grep "^PGTABLE" $f | grep --quiet --invert-match "your-table" \
-            && grep "^PGHOST" $f | grep --quiet --invert-match "your-pg-host" \
-            && grep "^FROM" $f | grep --quiet --invert-match "jdoe@example.com" \
+        { grep "^FROM" $f | grep --quiet --invert-match "jdoe@example.com" \
             && grep "^FULLFROM" $f | grep --quiet --invert-match "John Doe <jdoe@example.com>" \
             && grep "^URGENCYFROM" $f | grep --quiet --invert-match "mama.doe@example.com" \
             && grep "^URGENCYTEL" $f | grep --quiet --invert-match "06.00.00.00.00" \
@@ -1593,7 +1596,13 @@ get_command() {
         listupgrade) command -v "evolistupgrade.sh" ;;
         old-kernel-autoremoval) command -v "old-kernel-autoremoval.sh" ;;
         mysql-queries-killer) command -v "mysql-queries-killer.sh" ;;
-        minifirewall) echo "/etc/init.d/minifirewall" ;;
+        minifirewall)
+            if [ -f "/usr/local/sbin/minifirewall" ]; then
+                echo "/usr/local/sbin/minifirewall"
+            elif [ -f "/etc/init.d/minifirewall" ]; then
+                echo "/etc/init.d/minifirewall"
+            fi
+            ;;
 
         ## General case, where the program name is the same as the command name
         *) command -v "${program}" ;;
@@ -1615,7 +1624,9 @@ get_version() {
             grep '^VERSION=' "${command}" | head -1 | cut -d '=' -f 2
             ;;
         minifirewall)
-            ${command} version | head -1 | cut -d ' ' -f 3
+            if [ -n "${command}" ]; then
+                ${command} version | head -1 | cut -d ' ' -f 3
+            fi
             ;;
         ## Let's try the --version flag before falling back to grep for the constant
         kvmstats)
@@ -1841,7 +1852,7 @@ main() {
     test "${IS_LXC_OPENSMTPD:=1}" = 1 && check_lxc_opensmtpd
     test "${IS_CHECK_VERSIONS:=1}" = 1 && check_versions
     test "${IS_MONITORINGCTL:=1}" = 1 && check_monitoringctl
-    test "${IS_NRPEPRESSURE:=1}" = 1 && check_nrpepressure
+    test "${IS_NRPEPRESSURE:=0}" = 1 && check_nrpepressure
     test "${IS_POSTFIX_IPV6_DISABLED:=0}" = 1 && check_postfix_ipv6_disabled
 
     if [ -f "${main_output_file}" ]; then
@@ -1913,6 +1924,7 @@ while :; do
             IS_NO_SIGNED_BY=1
             IS_NOT_DEB822=1
             IS_POSTFIX_IPV6_DISABLED=1
+            IS_NRPEPRESSURE=1
             ;;
         -v|--verbose)
             VERBOSE=1

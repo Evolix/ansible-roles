@@ -2,13 +2,13 @@
 
 set -u
 
-VERSION="22.05"
+VERSION="25.10"
 
 show_version() {
     cat <<END
 ansible-commit version ${VERSION}
 
-Copyright 2022 Evolix <info@evolix.fr>,
+Copyright 2025 Evolix <info@evolix.fr>,
                Jérémy Lecour <jlecour@evolix.fr>
                and others.
 
@@ -30,12 +30,18 @@ show_usage() {
 Usage: ansible-commit --message "add new host"
 
 Options
-     --message MESSAGE   set the commit message
-     --no-lxc            disable commit inside LXC containers
- -V, --version           print version number
- -v, --verbose           increase verbosity
- -n, --dry-run           actions are not executed
- -h, --help              print this message and exit
+     --message MESSAGE        set the commit message
+     --no-lxc                 disable commit inside LXC containers
+     --no-etc                 disable commit inside /etc
+     --no-etc-bind            disable commit inside /etc/bind
+     --no-usr-share-scripts   disable commit inside /usr/share/scripts
+     --only-etc               commit only inside /etc
+     --only-etc-bind          commit only inside /etc/bind
+     --only-usr-share-scripts commit only inside /usr/share/scripts
+ -V, --version                print version number
+ -v, --verbose                increase verbosity
+ -n, --dry-run                actions are not executed
+ -h, --help                   print this message and exit
 END
 }
 
@@ -55,7 +61,7 @@ main() {
         common_args="${common_args} --dry-run"
     fi
 
-    if [ -d "/etc/.git" ]; then
+    if [ "${ETC}" = "1" ] && [ -d "/etc/.git" ]; then
         # shellcheck disable=SC2086,SC2090
         ${evocommit_bin} ${common_args} --repository /etc --message "${MESSAGE}"
         last_rc=$?
@@ -64,7 +70,7 @@ main() {
         fi
     fi
 
-    if [ -d "/etc/bind/.git" ]; then
+    if [ "${ETC_BIND}" = "1" ] && [ -d "/etc/bind/.git" ]; then
         # shellcheck disable=SC2086,SC2090
         ${evocommit_bin} ${common_args} --repository /etc/bind --message "${MESSAGE}"
         last_rc=$?
@@ -73,7 +79,7 @@ main() {
         fi
     fi
 
-    if [ -d "/usr/share/scripts/.git" ]; then
+    if [ "${USR_SHARE_SCRIPTS}" = "1" ] && [ -d "/usr/share/scripts/.git" ]; then
         # shellcheck disable=SC2086,SC2090
         ${evocommit_bin} ${common_args} --repository /usr/share/scripts --message "${MESSAGE}"
         last_rc=$?
@@ -140,6 +146,39 @@ while :; do
         --no-lxc)
             LXC=0
             ;;
+        --no-etc)
+            ETC=0
+            ;;
+        --no-etc-bind)
+            ETC_BIND=0
+            ;;
+        --no-usr-share-scripts)
+            USR_SHARE_SCRIPTS=0
+            ;;
+        --only-lxc)
+            LXC=1
+            ETC=0
+            ETC_BIND=0
+            USR_SHARE_SCRIPTS=0
+            ;;
+        --only-etc)
+            LXC=0
+            ETC=1
+            ETC_BIND=0
+            USR_SHARE_SCRIPTS=0
+            ;;
+        --only-etc-bind)
+            LXC=0
+            ETC=0
+            ETC_BIND=1
+            USR_SHARE_SCRIPTS=0
+            ;;
+        --only-usr-share-scripts)
+            LXC=0
+            ETC=0
+            ETC_BIND=0
+            USR_SHARE_SCRIPTS=1
+            ;;
         -n|--dry-run)
             # disable actual commands
             DRY_RUN=1
@@ -174,6 +213,9 @@ fi
 DRY_RUN=${DRY_RUN:-0}
 VERBOSE=${VERBOSE:-0}
 LXC=${LXC:-1}
+ETC=${ETC:-1}
+ETC_BIND=${ETC_BIND:-1}
+USR_SHARE_SCRIPTS=${USR_SHARE_SCRIPTS:-1}
 
 evocommit_bin=$(command -v evocommit)
 if [ -z "${evocommit_bin}" ]; then

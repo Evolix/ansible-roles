@@ -29,7 +29,7 @@
 # Description:       Firewall designed for standalone server
 ### END INIT INFO
 
-VERSION="25.08"
+VERSION="25.08.1a"
 
 PROGNAME="minifirewall"
 # shellcheck disable=SC2034
@@ -154,7 +154,7 @@ if [ -t 1 ]; then
         CYAN=$(tput setaf 6)
         WHITE=$(tput setaf 7)
         BOLD=$(tput bold)
-        RESET='\e[m'
+        RESET=$(tput sgr0)
     fi
 else
     INTERACTIVE=0

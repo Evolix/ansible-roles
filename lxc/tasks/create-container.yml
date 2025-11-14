@@ -156,6 +156,15 @@
     - release == 'bookworm'
     - lxc_is_apt_sources_list.stat.exists
 
+- name: "Fix trixie repository in container {{ name }}"
+  ansible.builtin.replace:
+    dest: "/var/lib/lxc/{{ name }}/rootfs/etc/apt/sources.list"
+    regexp: 'trixie/updates'
+    replace: 'trixie-security'
+  when:
+    - release == 'trixie'
+    - lxc_is_apt_sources_list.stat.exists
+
 - name: "{{ name }} - Update APT cache"
   ansible.builtin.shell:
     cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ name }} --  apt-get update"

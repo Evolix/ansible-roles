@@ -21,6 +21,36 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
+## [25.11] 2025-11-14
+
+### Added
+
+* etc-git: add options to commit selectively
+* packweb-apache: add PHP_UMASK variable so the user can change the default umask with phpContainer. It set the umask for the php command executed in the container. This is usefull if umask 007 is needed only for one command (ex: clear cache), instead of breaking the ITK compartimentation.
+* postfix: put main.cf template path in a variable to allow to override it
+
+### Changed
+
+* alloy: rename config files
+* alloy: Use deb822 format to configure grafana repo
+* evocheck: upstream release 25.10.3
+* evolinux-base: force use bullseye suite for HWRaid LeVert
+* listupgrade: upstream release 25.11 for minor-upgrade.sh
+* minifirewall: upstream release 25.11
+* prometheus: Limit vmagent cache to 500MB per remote_write URL
+* use evolix-archive-keyring 0~2025
+
+### Fixed
+
+* lxc: Fix source.list for debian security repository
+* nagios-nrpe : fix "syntax error: unexpected arguments 85 and 55" inside check_phpfpm_multi
+
+### Removed
+
+nagios-nrpe: remove `monitoringctl_branch` variable, since 2484a00a1 removes installation with Git.
+
+### Security
+
 ## [25.10.1] 2025-10-13
 
 ### Added

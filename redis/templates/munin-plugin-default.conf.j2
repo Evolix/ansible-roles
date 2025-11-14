@@ -2,5 +2,7 @@
 
 {% if redis_password %}
 [redis_*]
-env.password {{ redis_password | replace("#", "\#") }}
+env.host1 {{ redis_check_interface }} 
+env.port1 {{ redis_port }}
+env.password1 {{ redis_password | replace("#", "\#") }}
 {% endif %}

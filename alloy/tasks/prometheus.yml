@@ -1,7 +1,7 @@
-- name: "/etc/alloy/config.d/10-default-prometheus.alloy file"
+- name: "/etc/alloy/config.d/prometheus-evolinux-default.alloy file"
   ansible.builtin.template:
-    src: 10-default-prometheus.alloy
-    dest: /etc/alloy/config.d/10-default-prometheus.alloy
+    src: prometheus-evolinux-default.alloy
+    dest: /etc/alloy/config.d/prometheus-evolinux-default.alloy
     owner: root
     group: root
     mode: "0644"

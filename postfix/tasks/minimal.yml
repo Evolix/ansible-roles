@@ -2,7 +2,7 @@
 
 - name: create minimal main.cf
   ansible.builtin.template:
-    src: evolinux_main.cf.j2
+    src: "{{ postfix_minimal_main_cf_path }}"
     dest: /etc/postfix/main.cf
     owner: root
     group: root

@@ -5,7 +5,7 @@ PROGNAME="minifirewall"
 # shellcheck disable=SC2034
 REPOSITORY="https://gitea.evolix.org/evolix/minifirewall"
 
-VERSION="25.10.1"
+VERSION="25.11"
 readonly VERSION
 
 set -u
@@ -118,6 +118,7 @@ is_color_enabled() {
 if [ -t 1 ]; then
     INTERACTIVE=1
 
+    # shellcheck disable=SC2034
     if is_color_enabled; then
         RED=$(tput setaf 1)
         GREEN=$(tput setaf 2)
@@ -127,7 +128,7 @@ if [ -t 1 ]; then
         CYAN=$(tput setaf 6)
         WHITE=$(tput setaf 7)
         BOLD=$(tput bold)
-        RESET='\e[m'
+        RESET=$(tput sgr0)
     fi
 else
     INTERACTIVE=0
@@ -152,6 +153,7 @@ is_interactive() {
 remove_colors() {
     sed -r 's/\x1B\[(;?[0-9]{1,3})+[mGK]//g'
 }
+# Log functions for syslog/journald
 syslog_info() {
     if [ -x "${LOGGER_BIN}" ]; then
         ${LOGGER_BIN} -t "${PROGNAME}" -p daemon.info "$1"
@@ -160,6 +162,17 @@ syslog_info() {
 syslog_error() {
     if [ -x "${LOGGER_BIN}" ]; then
         ${LOGGER_BIN} -t "${PROGNAME}" -p daemon.error "$1"
+    fi
+}
+# Log functions used only when not inside a systemd call
+print_stdout() {
+    if is_not_systemd; then
+        printf "$@"
+    fi
+}
+print_stderr() {
+    if is_not_systemd; then
+        printf "$@"
     fi
 }
 sort_values() {
@@ -196,7 +209,7 @@ chain_exists() {
 source_file_or_error() {
     file=$1
     syslog_info "sourcing \`${file}'"
-    printf "${BLUE}sourcing \`%s': ${RESET}" "${file}"
+    print_stdout "${BLUE}sourcing \`%s': ${RESET}" "${file}"
 
     tmpfile=$(mktemp --tmpdir=/tmp minifirewall.XXX)
     . "${file}" 2>"${tmpfile}" >&2
@@ -204,19 +217,20 @@ source_file_or_error() {
     if [ -s "${tmpfile}" ]; then
         syslog_error "Error while sourcing ${file}"
     
-        printf "${RED}Error${RESET}\n"
+        print_stdout "${RED}Error${RESET}\n"
         
         printf "${RED}%s returns standard or error output (see below). Stopping.${RESET}\n" "${file}" >&2
         cat "${tmpfile}" >&2
         exit 1
     else
-        printf "${GREEN}Ok${RESET}\n"
+        print_stdout "${GREEN}Ok${RESET}\n"
     fi
     rm -f "${tmpfile}"
 }
 source_configuration() {
     if ! test -f ${config_file}; then
-        printf "${RED}%s does not exist${RESET}\n" "${config_file}" >&2
+        syslog_error "${config_file} does not exist"
+        print_stderr "${RED}%s does not exist${RESET}\n" "${config_file}"
 
         ## We still want to deal with this really old configuration file
         ## even if it has been deprecated since Debian 8
@@ -426,143 +440,22 @@ report_state_changes() {
 
 start() {
     syslog_info "starting"
-    printf "${BOLD}${PROGNAME} starting${RESET}\n"
+    print_stdout "${BOLD}${PROGNAME} starting${RESET}\n"
 
     # Stop and warn if error!
-    set -e
-    trap 'printf "${RED}${PROGNAME} failed : an error occured during startup.${RESET}\n"; syslog_error "failed" ' INT TERM EXIT
+    set -o errexit
+    trap 'flush_custom_chains; delete_custom_chains; printf "${RED}${PROGNAME} failed : an error occured during startup.${RESET}\n"; syslog_error "failed"' INT TERM EXIT
 
     # sysctl network security settings
     ##################################
 
-    # Set 1 to ignore broadcast pings (default)
-    : "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS:=1}"
-    # Set 1 to ignore bogus ICMP responses (default)
-    : "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES:=1}"
-    # Set 0 to disable source routing (default)
-    : "${SYSCTL_ACCEPT_SOURCE_ROUTE:=0}"
-    # Set 1 to enable TCP SYN cookies (default)
-    # cf http://cr.yp.to/syncookies.html
-    : "${SYSCTL_TCP_SYNCOOKIES:=1}"
-    # Set 0 to disable ICMP redirects (default)
-    : "${SYSCTL_ICMP_REDIRECTS:=0}"
-    # Set 1 to enable Reverse Path filtering (default)
-    # Set 0 if VRRP is used
-    : "${SYSCTL_RP_FILTER:=1}"
-    # Set 1 to log packets with inconsistent address (default)
-    : "${SYSCTL_LOG_MARTIANS:=1}"
-
-    syslog_info "configuring sysctl"
-    printf "${BLUE}configuring sysctl: ${RESET}"
-
-    if [ "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" = "1" ] || [ "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" = "0" ]; then
-        echo "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
-        # Apparently not applicable to IPv6
-    else
-        printf "${RED}Error${RESET}\n"
-        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS" "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" >&2
-        exit 1
-    fi
-
-    if [ "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" = "1" ] || [ "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" = "0" ]; then
-        echo "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
-        # Apparently not applicable to IPv6
-    else
-        printf "${RED}Error${RESET}\n"
-        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES" "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" >&2
-        exit 1
-    fi
-
-    if [ "${SYSCTL_ACCEPT_SOURCE_ROUTE}" = "1" ] || [ "${SYSCTL_ACCEPT_SOURCE_ROUTE}" = "0" ]; then
-        for proc_sys_file in /proc/sys/net/ipv4/conf/*/accept_source_route; do
-            echo "${SYSCTL_ACCEPT_SOURCE_ROUTE}" > "${proc_sys_file}"
-        done
-        if is_ipv6_enabled; then
-            for proc_sys_file in /proc/sys/net/ipv6/conf/*/accept_source_route; do
-                echo "${SYSCTL_ACCEPT_SOURCE_ROUTE}" > "${proc_sys_file}"
-            done
-        fi
-    else
-        printf "${RED}Error${RESET}\n"
-        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_ACCEPT_SOURCE_ROUTE" "${SYSCTL_ACCEPT_SOURCE_ROUTE}" >&2
-        exit 1
-    fi
-
-    if [ "${SYSCTL_TCP_SYNCOOKIES}" = "1" ] || [ "${SYSCTL_TCP_SYNCOOKIES}" = "0" ]; then
-        echo "${SYSCTL_TCP_SYNCOOKIES}" > /proc/sys/net/ipv4/tcp_syncookies
-        # Apparently not applicable to IPv6
-    else
-        printf "${RED}Error${RESET}\n"
-        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_TCP_SYNCOOKIES" "${SYSCTL_TCP_SYNCOOKIES}" >&2
-        exit 1
-    fi
-
-    if [ "${SYSCTL_ICMP_REDIRECTS}" = "1" ] || [ "${SYSCTL_ICMP_REDIRECTS}" = "0" ]; then
-        for proc_sys_file in /proc/sys/net/ipv4/conf/*/accept_redirects; do
-            echo "${SYSCTL_ICMP_REDIRECTS}" > "${proc_sys_file}"
-        done
-        for proc_sys_file in /proc/sys/net/ipv4/conf/*/send_redirects; do
-            echo "${SYSCTL_ICMP_REDIRECTS}" > "${proc_sys_file}"
-        done
-        if is_ipv6_enabled; then
-            for proc_sys_file in /proc/sys/net/ipv6/conf/*/accept_redirects; do
-                echo "${SYSCTL_ICMP_REDIRECTS}" > "${proc_sys_file}"
-            done
-        fi
-    else
-        printf "${RED}Error${RESET}\n"
-        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_ICMP_REDIRECTS" "${SYSCTL_ICMP_REDIRECTS}" >&2
-        exit 1
-    fi
-
-    if [ "${SYSCTL_RP_FILTER}" = "1" ] || [ "${SYSCTL_RP_FILTER}" = "0" ]; then
-        for proc_sys_file in /proc/sys/net/ipv4/conf/*/rp_filter; do
-            echo "${SYSCTL_RP_FILTER}" > "${proc_sys_file}"
-        done
-        # Apparently not applicable to IPv6
-    else
-        printf "${RED}Error${RESET}\n"
-        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_RP_FILTER" "${SYSCTL_RP_FILTER}" >&2
-        exit 1
-    fi
-
-    if [ "${SYSCTL_LOG_MARTIANS}" = "1" ] || [ "${SYSCTL_LOG_MARTIANS}" = "0" ]; then
-        for proc_sys_file in /proc/sys/net/ipv4/conf/*/log_martians; do
-            echo "${SYSCTL_LOG_MARTIANS}" > "${proc_sys_file}"
-        done
-        # Apparently not applicable to IPv6
-    else
-        printf "${RED}Error${RESET}\n"
-        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_LOG_MARTIANS" "${SYSCTL_LOG_MARTIANS}" >&2
-        exit 1
-    fi
-
-    printf "${GREEN}Ok${RESET}\n"
+    sysctl_config
 
     # IPTables configuration
     ########################
 
-    ${IPT} -N LOG_DROP
-    ${IPT} -A LOG_DROP -j LOG  --log-prefix '[IPTABLES DROP] : '
-    ${IPT} -A LOG_DROP -j DROP
-    ${IPT} -N LOG_ACCEPT
-    ${IPT} -A LOG_ACCEPT -j LOG  --log-prefix '[IPTABLES ACCEPT] : '
-    ${IPT} -A LOG_ACCEPT -j ACCEPT
-    # Chain for restrictions (blacklist IPs/ranges)
-    ${IPT} -N NEEDRESTRICT
-    if is_ipv6_enabled; then
-        ${IPT6} -N LOG_DROP
-        ${IPT6} -A LOG_DROP -j LOG  --log-prefix '[IPTABLES DROP] : '
-        ${IPT6} -A LOG_DROP -j DROP
-        ${IPT6} -N LOG_ACCEPT
-        ${IPT6} -A LOG_ACCEPT -j LOG  --log-prefix '[IPTABLES ACCEPT] : '
-        ${IPT6} -A LOG_ACCEPT -j ACCEPT
-        ${IPT6} -N NEEDRESTRICT
-    fi
-    if is_docker_enabled; then
-        ${IPT} -N MINIFW-DOCKER-INPUT-MANUAL
-        ${IPT} -N MINIFW-DOCKER-USER
-    fi
+    delete_custom_chains
+    create_custom_chains
 
     # Source additional rules and commands
     # * from legacy configuration file (/etc/default/minifirewall)
@@ -570,7 +463,7 @@ start() {
     source_includes
 
     syslog_info "executing macros"
-    printf "${BLUE}executing macros: ${RESET}"
+    print_stdout "${BLUE}executing macros: ${RESET}"
 
     # IP/ports lists are sorted to have consistent ordering
     # You can disable this feature by simply commenting the following lines
@@ -598,12 +491,6 @@ start() {
     BACKUPSERVERS=$(sort_values ${BACKUPSERVERS})
 
     # Trusted ip addresses
-    ${IPT} -N ONLYTRUSTED
-    ${IPT} -A ONLYTRUSTED -j LOG_DROP
-    if is_ipv6_enabled; then
-        ${IPT6} -N ONLYTRUSTED
-        ${IPT6} -A ONLYTRUSTED -j LOG_DROP
-    fi
     for ip in ${TRUSTEDIPS}; do
         if is_ipv6 ${ip}; then
             if is_ipv6_enabled; then
@@ -616,12 +503,6 @@ start() {
 
     # Privilegied ip addresses
     # (trusted ip addresses *are* privilegied)
-    ${IPT} -N ONLYPRIVILEGIED
-    ${IPT} -A ONLYPRIVILEGIED -j ONLYTRUSTED
-    if is_ipv6_enabled; then
-        ${IPT6} -N ONLYPRIVILEGIED
-        ${IPT6} -A ONLYPRIVILEGIED -j ONLYTRUSTED
-    fi
     for ip in ${PRIVILEGIEDIPS}; do
         if is_ipv6 ${ip}; then
             if is_ipv6_enabled; then
@@ -660,13 +541,6 @@ start() {
         # Chains MINIFW-DOCKER-* are created earlier, to allow usage in additionnal config/command files
         ${IPT} -A MINIFW-DOCKER-INPUT-MANUAL -j DROP
         ${IPT} -A MINIFW-DOCKER-USER -j RETURN
-
-        # Flush DOCKER-USER if exist, create it if absent
-        if chain_exists 'DOCKER-USER'; then
-            ${IPT} -F DOCKER-USER
-        else
-            ${IPT} -N DOCKER-USER
-        fi;
 
         # Pipe new connection through MINIFW-DOCKER-INPUT-MANUAL
         ${IPT} -A DOCKER-USER -i ${INT} -m state  --state NEW -j MINIFW-DOCKER-INPUT-MANUAL
@@ -949,15 +823,15 @@ start() {
     # Finish
     ########################
 
-    printf "${GREEN}Ok${RESET}\n"
+    print_stdout "${GREEN}Ok${RESET}\n"
 
     trap - INT TERM EXIT
 
     syslog_info "started"
-    printf "${GREEN}${BOLD}${PROGNAME} started${RESET}\n"
+    print_stdout "${GREEN}${BOLD}${PROGNAME} started${RESET}\n"
 
     # No need to exit on error anymore
-    set +e
+    set +o errexit
 
     # save active configuration
     save_active_configuration "${ACTIVE_CONFIG}"
@@ -967,9 +841,9 @@ start() {
 
 stop() {
     syslog_info "stopping"
-    printf "${BOLD}${PROGNAME} stopping${RESET}\n"
+    print_stdout "${BOLD}${PROGNAME} stopping${RESET}\n"
 
-    printf "${BLUE}flushing all rules and accepting everything${RESET}\n"
+    print_stdout "${BLUE}flushing all rules and accepting everything${RESET}\n"
 
     # Save previous state (without colors)
     mkdir -p "$(dirname "${STATE_FILE_PREVIOUS}")"
@@ -986,35 +860,14 @@ stop() {
         ${IPT6} -F OUTPUT
     fi
 
-    ${IPT} -F LOG_DROP
-    ${IPT} -F LOG_ACCEPT
-    ${IPT} -F ONLYTRUSTED
-    ${IPT} -F ONLYPRIVILEGIED
-    ${IPT} -F NEEDRESTRICT
-    if is_ipv6_enabled; then
-        ${IPT6} -F LOG_DROP
-        ${IPT6} -F LOG_ACCEPT
-        ${IPT6} -F ONLYTRUSTED
-        ${IPT6} -F ONLYPRIVILEGIED
-        ${IPT6} -F NEEDRESTRICT
-    fi
+    flush_custom_chains
 
     ${IPT} -t mangle -F
     if is_ipv6_enabled; then
         ${IPT6} -t mangle -F
     fi
 
-    if is_docker_enabled; then
-        # WARN: IPv6 not yet supported
-
-        ${IPT} -F DOCKER-USER
-        ${IPT} -A DOCKER-USER -j RETURN
-
-        ${IPT} -F MINIFW-DOCKER-INPUT-MANUAL
-        ${IPT} -X MINIFW-DOCKER-INPUT-MANUAL
-        ${IPT} -F MINIFW-DOCKER-USER
-        ${IPT} -X MINIFW-DOCKER-USER
-    else
+    if ! is_docker_enabled; then
         ${IPT} -t nat -F
     fi
 
@@ -1032,24 +885,12 @@ stop() {
     #${IPT} -t nat -P PREROUTING ACCEPT
     #${IPT} -t nat -P POSTROUTING ACCEPT
 
-    # Delete non-standard chains
-    ${IPT} -X LOG_DROP
-    ${IPT} -X LOG_ACCEPT
-    ${IPT} -X ONLYPRIVILEGIED
-    ${IPT} -X ONLYTRUSTED
-    ${IPT} -X NEEDRESTRICT
-    if is_ipv6_enabled; then
-        ${IPT6} -X LOG_DROP
-        ${IPT6} -X LOG_ACCEPT
-        ${IPT6} -X ONLYPRIVILEGIED
-        ${IPT6} -X ONLYTRUSTED
-        ${IPT6} -X NEEDRESTRICT
-    fi
+    delete_custom_chains
 
     rm -f "${STATE_FILE_LATEST}" "${STATE_FILE_CURRENT}" "${ACTIVE_CONFIG}"
 
     syslog_info "stopped"
-    printf "${GREEN}${BOLD}${PROGNAME} stopped${RESET}\n"
+    print_stdout "${GREEN}${BOLD}${PROGNAME} stopped${RESET}\n"
 }
 
 status() {
@@ -1084,7 +925,7 @@ status_without_numbers() {
 
 reset() {
     syslog_info "resetting"
-    printf "${BOLD}${PROGNAME} resetting${RESET}\n"
+    print_stdout "${BOLD}${PROGNAME} resetting${RESET}\n"
 
     ${IPT} -Z
     if is_ipv6_enabled; then
@@ -1099,7 +940,222 @@ reset() {
     fi
 
     syslog_info "reset"
-    printf "${GREEN}${BOLD}${PROGNAME} reset${RESET}\n"
+    print_stdout "${GREEN}${BOLD}${PROGNAME} reset${RESET}\n"
+}
+
+create_custom_chains() {
+    # syslog_info "create custom chains"
+    ${IPT} -N LOG_DROP
+    ${IPT} -A LOG_DROP -j LOG  --log-prefix '[IPTABLES DROP] : '
+    ${IPT} -A LOG_DROP -j DROP
+    ${IPT} -N LOG_ACCEPT
+    ${IPT} -A LOG_ACCEPT -j LOG  --log-prefix '[IPTABLES ACCEPT] : '
+    ${IPT} -A LOG_ACCEPT -j ACCEPT
+
+    ${IPT} -N NEEDRESTRICT
+
+    ${IPT} -N ONLYTRUSTED
+    ${IPT} -A ONLYTRUSTED -j LOG_DROP
+    ${IPT} -N ONLYPRIVILEGIED
+    ${IPT} -A ONLYPRIVILEGIED -j ONLYTRUSTED
+
+    if is_ipv6_enabled; then
+        ${IPT6} -N LOG_DROP
+        ${IPT6} -A LOG_DROP -j LOG  --log-prefix '[IPTABLES DROP] : '
+        ${IPT6} -A LOG_DROP -j DROP
+        ${IPT6} -N LOG_ACCEPT
+        ${IPT6} -A LOG_ACCEPT -j LOG  --log-prefix '[IPTABLES ACCEPT] : '
+        ${IPT6} -A LOG_ACCEPT -j ACCEPT
+
+        ${IPT6} -N NEEDRESTRICT
+
+        ${IPT6} -N ONLYTRUSTED
+        ${IPT6} -A ONLYTRUSTED -j LOG_DROP
+        ${IPT6} -N ONLYPRIVILEGIED
+        ${IPT6} -A ONLYPRIVILEGIED -j ONLYTRUSTED
+    fi
+    
+    if is_docker_enabled; then
+        ${IPT} -N MINIFW-DOCKER-INPUT-MANUAL
+        ${IPT} -N MINIFW-DOCKER-USER
+
+        # Flush DOCKER-USER if exist, create it if absent
+        if chain_exists 'DOCKER-USER'; then
+            ${IPT} -F DOCKER-USER
+        else
+            ${IPT} -N DOCKER-USER
+        fi;
+    fi
+}
+delete_custom_chains() {
+    # syslog_info "delete custom chains"
+    # No error, no log
+    set +o errexit
+    # Delete non-standard chains
+    ${IPT} -X LOG_DROP 2>/dev/null
+    ${IPT} -X LOG_ACCEPT 2>/dev/null
+
+    ${IPT} -X ONLYPRIVILEGIED 2>/dev/null
+    ${IPT} -X ONLYTRUSTED 2>/dev/null
+
+    ${IPT} -X NEEDRESTRICT 2>/dev/null
+
+    if is_ipv6_enabled; then
+        ${IPT6} -X LOG_DROP 2>/dev/null
+        ${IPT6} -X LOG_ACCEPT 2>/dev/null
+
+        ${IPT6} -X ONLYPRIVILEGIED 2>/dev/null
+        ${IPT6} -X ONLYTRUSTED 2>/dev/null
+
+        ${IPT6} -X NEEDRESTRICT 2>/dev/null
+    fi
+
+    if is_docker_enabled; then
+        # WARN: IPv6 not yet supported
+        ${IPT} -A DOCKER-USER -j RETURN 2>/dev/null
+
+        ${IPT} -X MINIFW-DOCKER-INPUT-MANUAL 2>/dev/null
+        ${IPT} -X MINIFW-DOCKER-USER 2>/dev/null
+    fi
+    # restore exit on error
+    set -o errexit
+}
+flush_custom_chains() {
+    # syslog_info "flush custom chains"
+    # No error, no log
+    set +o errexit
+    ${IPT} -F LOG_DROP 2>/dev/null
+    ${IPT} -F LOG_ACCEPT 2>/dev/null
+
+    ${IPT} -F ONLYTRUSTED 2>/dev/null
+    ${IPT} -F ONLYPRIVILEGIED 2>/dev/null
+
+    ${IPT} -F NEEDRESTRICT 2>/dev/null
+
+    if is_ipv6_enabled; then
+        ${IPT6} -F LOG_DROP 2>/dev/null
+        ${IPT6} -F LOG_ACCEPT 2>/dev/null
+
+        ${IPT6} -F ONLYTRUSTED 2>/dev/null
+        ${IPT6} -F ONLYPRIVILEGIED 2>/dev/null
+
+        ${IPT6} -F NEEDRESTRICT 2>/dev/null
+    fi
+    
+    if is_docker_enabled; then
+        # WARN: IPv6 not yet supported
+        ${IPT} -F DOCKER-USER 2>/dev/null
+        ${IPT} -F MINIFW-DOCKER-INPUT-MANUAL 2>/dev/null
+        ${IPT} -F MINIFW-DOCKER-USER 2>/dev/null
+    fi
+    # restore exit on error
+    set -o errexit
+}
+
+sysctl_config() {
+    # Set 1 to ignore broadcast pings (default)
+    : "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS:=1}"
+    # Set 1 to ignore bogus ICMP responses (default)
+    : "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES:=1}"
+    # Set 0 to disable source routing (default)
+    : "${SYSCTL_ACCEPT_SOURCE_ROUTE:=0}"
+    # Set 1 to enable TCP SYN cookies (default)
+    # cf http://cr.yp.to/syncookies.html
+    : "${SYSCTL_TCP_SYNCOOKIES:=1}"
+    # Set 0 to disable ICMP redirects (default)
+    : "${SYSCTL_ICMP_REDIRECTS:=0}"
+    # Set 1 to enable Reverse Path filtering (default)
+    # Set 0 if VRRP is used
+    : "${SYSCTL_RP_FILTER:=1}"
+    # Set 1 to log packets with inconsistent address (default)
+    : "${SYSCTL_LOG_MARTIANS:=1}"
+
+    syslog_info "configuring sysctl"
+    print_stdout "${BLUE}configuring sysctl: ${RESET}"
+
+    if [ "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" = "1" ] || [ "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" = "0" ]; then
+        echo "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
+        # Apparently not applicable to IPv6
+    else
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS" "${SYSCTL_ICMP_ECHO_IGNORE_BROADCASTS}" >&2
+        exit 1
+    fi
+
+    if [ "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" = "1" ] || [ "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" = "0" ]; then
+        echo "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
+        # Apparently not applicable to IPv6
+    else
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES" "${SYSCTL_ICMP_IGNORE_BOGUS_ERROR_RESPONSES}" >&2
+        exit 1
+    fi
+
+    if [ "${SYSCTL_ACCEPT_SOURCE_ROUTE}" = "1" ] || [ "${SYSCTL_ACCEPT_SOURCE_ROUTE}" = "0" ]; then
+        for proc_sys_file in /proc/sys/net/ipv4/conf/*/accept_source_route; do
+            echo "${SYSCTL_ACCEPT_SOURCE_ROUTE}" > "${proc_sys_file}"
+        done
+        if is_ipv6_enabled; then
+            for proc_sys_file in /proc/sys/net/ipv6/conf/*/accept_source_route; do
+                echo "${SYSCTL_ACCEPT_SOURCE_ROUTE}" > "${proc_sys_file}"
+            done
+        fi
+    else
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_ACCEPT_SOURCE_ROUTE" "${SYSCTL_ACCEPT_SOURCE_ROUTE}" >&2
+        exit 1
+    fi
+
+    if [ "${SYSCTL_TCP_SYNCOOKIES}" = "1" ] || [ "${SYSCTL_TCP_SYNCOOKIES}" = "0" ]; then
+        echo "${SYSCTL_TCP_SYNCOOKIES}" > /proc/sys/net/ipv4/tcp_syncookies
+        # Apparently not applicable to IPv6
+    else
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_TCP_SYNCOOKIES" "${SYSCTL_TCP_SYNCOOKIES}" >&2
+        exit 1
+    fi
+
+    if [ "${SYSCTL_ICMP_REDIRECTS}" = "1" ] || [ "${SYSCTL_ICMP_REDIRECTS}" = "0" ]; then
+        for proc_sys_file in /proc/sys/net/ipv4/conf/*/accept_redirects; do
+            echo "${SYSCTL_ICMP_REDIRECTS}" > "${proc_sys_file}"
+        done
+        for proc_sys_file in /proc/sys/net/ipv4/conf/*/send_redirects; do
+            echo "${SYSCTL_ICMP_REDIRECTS}" > "${proc_sys_file}"
+        done
+        if is_ipv6_enabled; then
+            for proc_sys_file in /proc/sys/net/ipv6/conf/*/accept_redirects; do
+                echo "${SYSCTL_ICMP_REDIRECTS}" > "${proc_sys_file}"
+            done
+        fi
+    else
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_ICMP_REDIRECTS" "${SYSCTL_ICMP_REDIRECTS}" >&2
+        exit 1
+    fi
+
+    if [ "${SYSCTL_RP_FILTER}" = "1" ] || [ "${SYSCTL_RP_FILTER}" = "0" ]; then
+        for proc_sys_file in /proc/sys/net/ipv4/conf/*/rp_filter; do
+            echo "${SYSCTL_RP_FILTER}" > "${proc_sys_file}"
+        done
+        # Apparently not applicable to IPv6
+    else
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_RP_FILTER" "${SYSCTL_RP_FILTER}" >&2
+        exit 1
+    fi
+
+    if [ "${SYSCTL_LOG_MARTIANS}" = "1" ] || [ "${SYSCTL_LOG_MARTIANS}" = "0" ]; then
+        for proc_sys_file in /proc/sys/net/ipv4/conf/*/log_martians; do
+            echo "${SYSCTL_LOG_MARTIANS}" > "${proc_sys_file}"
+        done
+        # Apparently not applicable to IPv6
+    else
+        printf "${RED}Error${RESET}\n"
+        printf "${RED}Invalid %s value '%s', must be '0' or '1'.${RESET}\n" "SYSCTL_LOG_MARTIANS" "${SYSCTL_LOG_MARTIANS}" >&2
+        exit 1
+    fi
+
+    print_stdout "${GREEN}Ok${RESET}\n"
 }
 
 safety_timer() {
@@ -1161,10 +1217,13 @@ safe_start() {
         syslog_info "safe-restart in non-interactive mode ; if safety lock (${SAFETY_LOCK}) is not removed in the next $(safety_timer) seconds, minifirewall will be stopped."
     fi
 }
-
+is_not_systemd() {
+   test $PPID -ne 1
+}
 exit_if_not_systemd() {
-    if [ $PPID -ne 1 ]; then
-        echo "Error: Please use \`systemctl ACTION ${PROGNAME}.service'." >&2
+    action=$1
+    if is_not_systemd && [ "${IGNORE_SYSTEMD}" -ne 1 ]; then
+        echo "Error: Please use \`systemctl ${action} ${PROGNAME}.service'." >&2
         exit 1
     fi
 }
@@ -1196,21 +1255,73 @@ Basic ${PROGNAME} commands via systemd:
   systemctl restart ${PROGNAME}
   systemctl status ${PROGNAME}
 
-Other ${PROGNAME} commands:
+Other direct commands:
   safe-start             Start minifirewall, with background safety checks
   safe-restart           Restart minifirewall, with background safety checks
-  force-stop             Force minifirewall to stop (disregarding systemd)
   status                 Print minifirewall status
   reset                  Reset iptables tables
   check-active-config    Check if active config is up-to-date with stored config
   {version|--version|-V} Print version and exit
   {help|--help|-h|-?}    Print this message and exit
+
+Options:
+  --ignore-systemd       Execute action even outside of systemd
 END
 }
 
-case "${1:-''}" in
+IGNORE_SYSTEMD=0
+ACTION=''
+
+# Empty arguments
+if [ $# -lt 1 ]; then
+    show_usage
+    exit 128
+fi
+
+# Parse options, based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
+while :; do
+    case ${1:-''} in
+        start|safe-start|stop|status|reset|restart|safe-restart|stop-if-locked|check-active-config)
+            ACTION="${1}"
+        ;;
+        force-stop)
+            IGNORE_SYSTEMD=1
+            ACTION="stop"
+        ;;
+
+        --ignore-systemd)
+            IGNORE_SYSTEMD=1
+        ;;
+
+        version|--version|-V)
+            show_version
+            exit 0
+        ;;
+
+        help|-h|-\?|--help)
+            show_help
+            exit 0
+        ;;
+
+        *)
+            # Default case: If no more options then break out of the loop.
+            break
+        ;;
+    esac
+
+    shift
+done
+
+# Empty action
+if [ -z "${ACTION}" ]; then
+    printf "You must provide a command\n" >&2
+    show_usage
+    exit 128
+fi
+
+case "${ACTION}" in
     start)
-        exit_if_not_systemd
+        exit_if_not_systemd "${ACTION}"
         source_configuration
         check_unpersisted_state
 
@@ -1225,14 +1336,7 @@ case "${1:-''}" in
     ;;
 
     stop)
-        exit_if_not_systemd
-        source_configuration
-        check_unpersisted_state
-
-        stop
-    ;;
-
-    force-stop)
+        exit_if_not_systemd "${ACTION}"
         source_configuration
         check_unpersisted_state
 
@@ -1254,7 +1358,7 @@ case "${1:-''}" in
     ;;
 
     restart)
-        exit_if_not_systemd
+        exit_if_not_systemd "${ACTION}"
         source_configuration
         check_unpersisted_state
 
@@ -1280,16 +1384,8 @@ case "${1:-''}" in
         check_active_configuration
     ;;
 
-    version|--version|-V)
-        show_version
-    ;;
-
-    help|-h|-\?|--help)
-        show_help
-    ;;
-
     *)
-        printf "%s: %s: unknown option\n" "${PROGNAME}" "${1}"
+        printf "%s: %s: unknown command\n" "${PROGNAME}" "${ACTION}" >&2
         show_usage
         exit 128
     ;;
