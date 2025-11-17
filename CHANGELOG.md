@@ -17,6 +17,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* postgresql: install postgis 3 for debian ≥ 11
+
 ### Removed
 
 ### Security
