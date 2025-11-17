@@ -5,3 +5,4 @@ client_number: XXX
 monitoring_mode: "everytime"
 monitoring_type: "icmp"
 monitoring_timeout: "10"
+ansible_port: "22"
