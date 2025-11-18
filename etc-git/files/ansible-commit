@@ -2,7 +2,7 @@
 
 set -u
 
-VERSION="25.10"
+VERSION="25.11-pre1"
 
 show_version() {
     cat <<END
@@ -31,6 +31,9 @@ Usage: ansible-commit --message "add new host"
 
 Options
      --message MESSAGE        set the commit message
+     --only-path PATH         commit only files matching PATH
+                              can be set multiple times
+                              can contain globs (compatible with find)
      --no-lxc                 disable commit inside LXC containers
      --no-etc                 disable commit inside /etc
      --no-etc-bind            disable commit inside /etc/bind
@@ -52,6 +55,15 @@ is_dry_run() {
 is_verbose() {
     test "${VERBOSE}" = "1"
 }
+append_path() {
+    current_path=$1
+    new_path=$2
+    if [ -n "${current_path}" ]; then
+        echo "${current_path} ${new_path}"
+    else
+        echo "${new_path}"
+    fi
+}
 main() {
     rc=0
     common_args="--ansible"
@@ -60,6 +72,11 @@ main() {
     fi
     if is_dry_run; then
         common_args="${common_args} --dry-run"
+    fi
+    if [ -n "${ONLY_PATH}" ]; then
+        for path in ${ONLY_PATH}; do
+            common_args="${common_args} --only-path ${path}"
+        done
     fi
 
     if [ "${ETC}" = "1" ] && [ -d "/etc/.git" ]; then
@@ -112,6 +129,14 @@ main() {
 
     exit ${rc}
 }
+
+DRY_RUN=0
+VERBOSE=0
+LXC=1
+ETC=1
+ETC_BIND=1
+USR_SHARE_SCRIPTS=1
+ONLY_PATH=""
 
 # Parse options
 # based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
@@ -180,6 +205,25 @@ while :; do
             ETC_BIND=0
             USR_SHARE_SCRIPTS=1
             ;;
+        --only-path)
+            # message options, with value speparated by space
+            if [ -n "$2" ]; then
+                ONLY_PATH="$(append_path "${ONLY_PATH}" "$2")"
+                shift
+            else
+                printf 'ERROR: "--only-path" requires a non-empty option argument.\n' >&2
+                exit 1
+            fi
+            ;;
+        --only-path=?*)
+            # message options, with value speparated by =
+            ONLY_PATH="$(append_path "${ONLY_PATH}" "${1#*=}")"
+            ;;
+        --only-path=)
+            # message options, without value
+            printf 'ERROR: "--only-path" requires a non-empty option argument.\n' >&2
+            exit 1
+            ;;
         -n|--dry-run)
             # disable actual commands
             DRY_RUN=1
@@ -211,12 +255,6 @@ if [ -z "${MESSAGE}" ]; then
     show_usage
     exit 1
 fi
-DRY_RUN=${DRY_RUN:-0}
-VERBOSE=${VERBOSE:-0}
-LXC=${LXC:-1}
-ETC=${ETC:-1}
-ETC_BIND=${ETC_BIND:-1}
-USR_SHARE_SCRIPTS=${USR_SHARE_SCRIPTS:-1}
 
 evocommit_bin=$(command -v evocommit)
 if [ -z "${evocommit_bin}" ]; then

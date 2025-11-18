@@ -2,13 +2,13 @@
 
 set -u
 
-VERSION="24.09"
+VERSION="25.11-pre1"
 
 show_version() {
     cat <<END
 evocommit version ${VERSION}
 
-Copyright 2022,2024 Evolix <info@evolix.fr>,
+Copyright 2022-2025 Evolix <info@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>
                     and others.
 
@@ -32,6 +32,9 @@ Usage: evocommit --repository /path/to/repository --message "add new host"
 Options
      --repository PATH   set the path for the repository
      --message MESSAGE   set the commit message
+     --only-path PATH    add only this path to the commit
+                         can be set multiple times
+                         can contain globs (compatible with find)
  -V, --version           print version number
  -v, --verbose           increase verbosity
  -n, --dry-run           actions are not executed
@@ -93,6 +96,18 @@ is_verbose() {
 is_ansible() {
     test "${ANSIBLE}" = "1"
 }
+is_absolute_path() {
+    test "$(printf "%.1s" "$1")" = "/"
+}
+append_path() {
+    current_path=$1
+    new_path=$2
+    if [ -n "${current_path}" ]; then
+        echo "${current_path} ${new_path}"
+    else
+        echo "${new_path}"
+    fi
+}
 main() {
     rc=0
     lock="${GIT_DIR}/index.lock"
@@ -115,41 +130,52 @@ main() {
             ${GIT_BIN} status
         else
             readonly_orig=0
-            # remount mount point read-write if currently readonly
-            if is_repository_readonly "${REPOSITORY}"; then
-                readonly_orig=1;
-                remount_repository_readwrite "${REPOSITORY}";
-            fi
             author=$(get_real_user)
             email=$(git config --get user.email)
             email=${email:-"${author}@evolix.net"}
 
             # commit changes
-            git_add_result=$(${GIT_BIN} add --all)
-            git_add_rc=$?
-
-            if is_ansible; then
-                if [ ${git_add_rc} -ne 0 ]; then
-                    printf "FAILED: %s\n%s" "can't add changes in ${REPOSITORY}" "${git_add_result}"
-                    rc=1
-                fi
+            if [ -n "${ONLY_PATH}" ]; then
+                for path in ${ONLY_PATH}; do
+                    if is_absolute_path "${path}"; then
+                        search_path="${path}"
+                    else
+                        search_path="${REPOSITORY}/${path}"
+                    fi
+                    find "${REPOSITORY}" -wholename "${search_path}" -exec "${GIT_BIN}" add {} \;
+                done
+            else
+                ${GIT_BIN} add --all
             fi
 
-            git_commit_result=$(${GIT_BIN} commit --message "${MESSAGE}" --author "${author} <${email}>")
-            git_commit_rc=$?
-
-            if is_ansible; then
-                if [ ${git_commit_rc} -eq 0 ]; then
-                    printf "CHANGED: %s\n" "commit done in ${REPOSITORY} with \`${MESSAGE}'"
-                else
-                    printf "FAILED: %s\n%s" "can't commit in ${REPOSITORY} \`${MESSAGE}'" "${git_commit_result}"
-                    rc=1
+            # Commit only if something is staged
+            if ! git diff --cached --quiet; then
+                # remount mount point read-write if currently readonly
+                if is_repository_readonly "${REPOSITORY}"; then
+                    readonly_orig=1;
+                    remount_repository_readwrite "${REPOSITORY}";
                 fi
-            fi
 
-            # remount mount point read-only if it was before
-            if [ ${readonly_orig} -eq 1 ]; then
-                remount_repository_readonly "${REPOSITORY}"
+                git_commit_result=$(${GIT_BIN} commit --message "${MESSAGE}" --author "${author} <${email}>")
+                git_commit_rc=$?
+
+                if is_ansible; then
+                    if [ ${git_commit_rc} -eq 0 ]; then
+                        printf "CHANGED: %s\n" "commit done in ${REPOSITORY} with \`${MESSAGE}'"
+                    else
+                        printf "FAILED: %s\n%s" "can't commit in ${REPOSITORY} \`${MESSAGE}'" "${git_commit_result}"
+                        rc=1
+                    fi
+                fi
+
+                # remount mount point read-only if it was before
+                if [ ${readonly_orig} -eq 1 ]; then
+                    remount_repository_readonly "${REPOSITORY}"
+                fi
+            else
+                if is_ansible; then
+                    printf "INFO: %s\n" "no commit in ${REPOSITORY}'"
+                fi
             fi
         fi
     else
@@ -163,6 +189,12 @@ main() {
 
     exit ${rc}
 }
+
+DRY_RUN=0
+VERBOSE=0
+ANSIBLE=0
+ONLY_PATH=""
+
 # Parse options
 # based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
 while :; do
@@ -213,6 +245,25 @@ while :; do
             printf 'ERROR: "--repository" requires a non-empty option argument.\n' >&2
             exit 1
             ;;
+        --only-path)
+            # message options, with value speparated by space
+            if [ -n "$2" ]; then
+                ONLY_PATH="$(append_path "${ONLY_PATH}" "$2")"
+                shift
+            else
+                printf 'ERROR: "--only-path" requires a non-empty option argument.\n' >&2
+                exit 1
+            fi
+            ;;
+        --only-path=?*)
+            # message options, with value speparated by =
+            ONLY_PATH="$(append_path "${ONLY_PATH}" "${1#*=}")"
+            ;;
+        --only-path=)
+            # message options, without value
+            printf 'ERROR: "--only-path" requires a non-empty option argument.\n' >&2
+            exit 1
+            ;;
         -n|--dry-run)
             # disable actual commands
             DRY_RUN=1
@@ -253,9 +304,6 @@ if [ -z "${REPOSITORY}" ]; then
     show_usage
     exit 1
 fi
-DRY_RUN=${DRY_RUN:-0}
-VERBOSE=${VERBOSE:-0}
-ANSIBLE=${ANSIBLE:-0}
 
 GIT_BIN=$(command -v git)
 readonly GIT_BIN
