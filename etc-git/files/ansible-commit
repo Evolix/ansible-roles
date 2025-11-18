@@ -35,6 +35,7 @@ Options
      --no-etc                 disable commit inside /etc
      --no-etc-bind            disable commit inside /etc/bind
      --no-usr-share-scripts   disable commit inside /usr/share/scripts
+     --only-lxc               commit only inside LXC containers
      --only-etc               commit only inside /etc
      --only-etc-bind          commit only inside /etc/bind
      --only-usr-share-scripts commit only inside /usr/share/scripts
