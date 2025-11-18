@@ -134,9 +134,11 @@ main() {
             email=$(git config --get user.email)
             email=${email:-"${author}@evolix.net"}
 
-            # commit changes
+            # find and "git add" all existing paths in the repository
+            # that match the filter (if present)
             if [ -n "${ONLY_PATH}" ]; then
                 for path in ${ONLY_PATH}; do
+                    # Path must be absolute to find the matching files
                     if is_absolute_path "${path}"; then
                         search_path="${path}"
                     else
@@ -149,7 +151,7 @@ main() {
             fi
 
             # Commit only if something is staged
-            if ! git diff --cached --quiet; then
+            if ! ${GIT_BIN} diff --cached --quiet; then
                 # remount mount point read-write if currently readonly
                 if is_repository_readonly "${REPOSITORY}"; then
                     readonly_orig=1;

@@ -73,6 +73,7 @@ main() {
     if is_dry_run; then
         common_args="${common_args} --dry-run"
     fi
+    # pass the filters "as is", if any
     if [ -n "${ONLY_PATH}" ]; then
         for path in ${ONLY_PATH}; do
             common_args="${common_args} --only-path ${path}"
