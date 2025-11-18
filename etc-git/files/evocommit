@@ -137,15 +137,12 @@ main() {
             # find and "git add" all existing paths in the repository
             # that match the filter (if present)
             if [ -n "${ONLY_PATH}" ]; then
-                for path in ${ONLY_PATH}; do
-                    # Path must be absolute to find the matching files
-                    if is_absolute_path "${path}"; then
-                        search_path="${path}"
-                    else
-                        search_path="${REPOSITORY}/${path}"
-                    fi
-                    find "${REPOSITORY}" -wholename "${search_path}" -exec "${GIT_BIN}" add {} \;
-                done
+                # disable globbing
+                set -f
+                # shellcheck disable=SC2086
+                ${GIT_BIN} add ${ONLY_PATH}
+                # enable globbing
+                set +f
             else
                 ${GIT_BIN} add --all
             fi
