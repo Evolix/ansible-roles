@@ -2,7 +2,7 @@
 
 set -u
 
-VERSION="25.11-pre1"
+VERSION="25.11-pre3"
 
 show_version() {
     cat <<END
@@ -96,9 +96,6 @@ is_verbose() {
 is_ansible() {
     test "${ANSIBLE}" = "1"
 }
-is_absolute_path() {
-    test "$(printf "%.1s" "$1")" = "/"
-}
 append_path() {
     current_path=$1
     new_path=$2
@@ -139,8 +136,10 @@ main() {
             if [ -n "${ONLY_PATH}" ]; then
                 # disable globbing
                 set -f
-                # shellcheck disable=SC2086
-                ${GIT_BIN} add ${ONLY_PATH}
+                for path in ${ONLY_PATH}; do
+                    # shellcheck disable=SC2086
+                    ${GIT_BIN} add "${path}" 2>/dev/null
+                done
                 # enable globbing
                 set +f
             else
@@ -193,6 +192,7 @@ DRY_RUN=0
 VERBOSE=0
 ANSIBLE=0
 ONLY_PATH=""
+MESSAGE=""
 
 # Parse options
 # based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
