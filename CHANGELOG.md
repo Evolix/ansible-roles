@@ -14,7 +14,8 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Added
 
 * etc-git: add missing doc for ansible-commit
-* etc-git: add path filtering for selective commits (beta)
+* etc-git: add path filtering for selective commits
+* evomaintenance: upstream release 25.11
 
 ### Changed
 

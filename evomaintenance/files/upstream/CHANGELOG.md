@@ -15,6 +15,12 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Security
 
+## [25.11] - 2025-11-19
+
+### Added
+
+* add option to commit only certain files
+
 ## [25.10] - 2025-10-02
 
 ### Changed
