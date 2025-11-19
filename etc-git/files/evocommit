@@ -34,7 +34,7 @@ Options
      --message MESSAGE   set the commit message
      --only-path PATH    add only this path to the commit
                          can be set multiple times
-                         can contain globs (compatible with find)
+                         can contain globs
  -V, --version           print version number
  -v, --verbose           increase verbosity
  -n, --dry-run           actions are not executed
