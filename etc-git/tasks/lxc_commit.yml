@@ -21,10 +21,10 @@
     argv:
       - /usr/local/bin/evocommit
       - '--ansible'
-      - '--repository'
-      - "{{ container_etc }}"
-      - '--message'
-      - "{{ commit_message | mandatory }}"
+      - "--repository {{ container_etc }}"
+      - "--message '{{ commit_message | mandatory }}'"
+      - "{{ ['--commit-only-path' ] | product(commit_only_path | default([])) | map('join', \" '\" ) | product([\"'\"]) | map('join') | list | join(' ') }}"
+      - "{{ commit_options | default([]) | join(' ') }}"
   changed_when:
     - "container_etc_git_commit.stdout"
     - "'CHANGED:' in container_etc_git_commit.stdout"
