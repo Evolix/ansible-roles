@@ -264,17 +264,17 @@ fi
 
 # OpenSSH
 openssh_version=$(get_pkg_version openssh-server)
-ssh_keyscan_options="-4 -p {{ ansible_port }}"
+ssh_keyscan_options="-4"
 if [ $(echo ${openssh_version} | cut -d'.' -f1) -ge 10 ]; then
-    ssh_keyscan_options="-4 -p {{ ansible_port }} -q"
+    ssh_keyscan_options="-4 -q"
 fi
 if [ -n "${openssh_version}" ]; then
     opensshFingerprintRSA=$(ssh-keyscan ${ssh_keyscan_options} -t rsa localhost 2>/dev/null\
-      | sed -e 's/\[localhost\]:{{ ansible_port }} //' -e 's/ssh-rsa /ssh-rsa,/')
+      | sed -e 's/localhost //' -e 's/ssh-rsa /ssh-rsa,/')
     opensshFingerprintED25519=$(ssh-keyscan ${ssh_keyscan_options} -t ed25519 localhost 2>/dev/null\
-      | sed -e 's/\[localhost\]:{{ ansible_port }} //' -e 's/ssh-ed25519 /ssh-ed25519,/')
+      | sed -e 's/localhost //' -e 's/ssh-ed25519 /ssh-ed25519,/')
     opensshFingerprintECDSA=$(ssh-keyscan ${ssh_keyscan_options} -t ecdsa-sha2-nistp256 localhost 2>/dev/null\
-      | sed -e 's/\[localhost\]:{{ ansible_port }} //' -e 's/ecdsa-sha2-nistp256 /ecdsa-sha2-nistp256,/')
+      | sed -e 's/localhost //' -e 's/ecdsa-sha2-nistp256 /ecdsa-sha2-nistp256,/')
     opensshFingerprint="${opensshFingerprintRSA}${opensshFingerprintRSA:+;}${opensshFingerprintED25519}${opensshFingerprintED25519:+;}${opensshFingerprintECDSA}"
 
     cat <<EOT >> "${ldif_file}"
@@ -283,7 +283,7 @@ dn: ServiceName=openssh,${computer_dn}
 ipServiceProtocol: tcp
 NagiosEnabled: TRUE
 objectClass: EvoService
-ipServicePort: {{ ansible_port }}
+ipServicePort: 22
 ServiceName: openssh
 ServiceType: ssh
 ServiceVersion: OpenSSH ${openssh_version}
