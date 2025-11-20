@@ -30,16 +30,15 @@ show_usage() {
 Usage: evocommit --repository /path/to/repository --message "add new host"
 
 Options
-     --repository PATH   set the path for the repository
-     --message MESSAGE   set the commit message
-     --only-path PATH    add only this path to the commit
-                         can be set multiple times
-                         can contain globs
- -V, --version           print version number
- -v, --verbose           increase verbosity
- -n, --dry-run           actions are not executed
-     --help              print this message and exit
-     --version           print version and exit
+ --repository PATH        set the path for the repository
+ --message MESSAGE        set the commit message
+ --commit-only-path PATH  add only this path to the commit
+                          can be set multiple times
+                          can contain globs
+ -v, --verbose            increase verbosity
+ -n, --dry-run            actions are not executed
+ -h, --help               print this message and exit
+ -V, --version            print version number
 END
 }
 
@@ -133,10 +132,10 @@ main() {
 
             # find and "git add" all existing paths in the repository
             # that match the filter (if present)
-            if [ -n "${ONLY_PATH}" ]; then
+            if [ -n "${COMMIT_ONLY_PATH}" ]; then
                 # disable globbing
                 set -f
-                for path in ${ONLY_PATH}; do
+                for path in ${COMMIT_ONLY_PATH}; do
                     # shellcheck disable=SC2086
                     ${GIT_BIN} add "${path}" 2>/dev/null
                 done
@@ -191,7 +190,7 @@ main() {
 DRY_RUN=0
 VERBOSE=0
 ANSIBLE=0
-ONLY_PATH=""
+COMMIT_ONLY_PATH=""
 MESSAGE=""
 
 # Parse options
@@ -244,23 +243,23 @@ while :; do
             printf 'ERROR: "--repository" requires a non-empty option argument.\n' >&2
             exit 1
             ;;
-        --only-path)
+        --commit-only-path)
             # message options, with value speparated by space
             if [ -n "$2" ]; then
-                ONLY_PATH="$(append_path "${ONLY_PATH}" "$2")"
+                COMMIT_ONLY_PATH="$(append_path "${COMMIT_ONLY_PATH}" "$2")"
                 shift
             else
-                printf 'ERROR: "--only-path" requires a non-empty option argument.\n' >&2
+                printf 'ERROR: "--commit-only-path" requires a non-empty option argument.\n' >&2
                 exit 1
             fi
             ;;
-        --only-path=?*)
+        --commit-only-path=?*)
             # message options, with value speparated by =
-            ONLY_PATH="$(append_path "${ONLY_PATH}" "${1#*=}")"
+            COMMIT_ONLY_PATH="$(append_path "${COMMIT_ONLY_PATH}" "${1#*=}")"
             ;;
-        --only-path=)
+        --commit-only-path=)
             # message options, without value
-            printf 'ERROR: "--only-path" requires a non-empty option argument.\n' >&2
+            printf 'ERROR: "--commit-only-path" requires a non-empty option argument.\n' >&2
             exit 1
             ;;
         -n|--dry-run)
