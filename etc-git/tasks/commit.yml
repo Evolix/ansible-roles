@@ -2,12 +2,7 @@
 
 - name: "Execute ansible-commit"
   ansible.builtin.command:
-    argv:
-      - "/usr/local/bin/ansible-commit"
-      - "--verbose"
-      - "--message '{{ commit_message | mandatory }}'"
-      - "{{ ['--commit-only-path' ] | product(commit_only_path | default([])) | map('join', \" '\" ) | product([\"'\"]) | map('join') | list | join(' ') }}"
-      - "{{ commit_options | default([]) | join(' ') }}"
+    cmd: "/usr/local/bin/ansible-commit --verbose --message '{{ commit_message | mandatory }}' {{ ['--commit-only-path' ] | product(commit_only_path | default([])) | map('join', \" '\" ) | product([\"'\"]) | map('join') | list | join(' ') }} {{ commit_options | default([]) | join(' ') }}"
   changed_when:
     - _ansible_commit.stdout
     - "'CHANGED:' in _ansible_commit.stdout"

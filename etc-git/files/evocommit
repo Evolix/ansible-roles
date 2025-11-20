@@ -2,7 +2,7 @@
 
 set -u
 
-VERSION="25.11-pre3"
+VERSION="25.11"
 
 show_version() {
     cat <<END
