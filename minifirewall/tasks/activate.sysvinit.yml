@@ -12,7 +12,7 @@
     replace: '/etc/init.d/minifirewall start'
   when:
     - initd_alert5.stat.exists
-    - "{{ (minifirewall_current_autostart | default(False)) or (minifirewall_autostart | default(False)) }}"
+    - (minifirewall_current_autostart | default(false)) or (minifirewall_autostart | default(false))
 
 - name: check if /usr/share/scripts/alert5 exists
   ansible.builtin.stat:
@@ -26,4 +26,4 @@
     replace: '/etc/init.d/minifirewall start'
   when:
     - usr_share_scripts_alert5.stat.exists
-    - "{{ (minifirewall_current_autostart | default(False)) or (minifirewall_autostart | default(False)) }}"
+    - (minifirewall_current_autostart | default(false)) or (minifirewall_autostart | default(false))
