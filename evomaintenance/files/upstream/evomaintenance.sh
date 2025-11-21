@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PROGNAME="evomaintenance"
-VERSION="25.11"
+VERSION="25.11.1"
 
 show_version() {
     cat <<END
@@ -258,8 +258,8 @@ hook_commit() {
             READONLY_ORIG=0
             # If the repository and the work tree exist, try to commit changes
             if [ -d "${GIT_DIR}" ] && [ -d "${GIT_WORK_TREE}" ]; then
-                # Has something changed in this repository?
-                if ! ${GIT_BIN} diff --quiet; then
+                CHANGED_LINES=$(${GIT_BIN} status --porcelain | wc -l | tr -d ' ')
+                if [ "${CHANGED_LINES}" != "0" ]; then
                     if [ "${DRY_RUN}" = "1" ]; then
                         # STATS_SHORT=$(${GIT_BIN} diff --stat | tail -1)
                         STATS=$(${GIT_BIN} diff --stat | tail -n ${GIT_STATUS_MAX_LINES})
