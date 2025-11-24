@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PROGNAME="evomaintenance"
-VERSION="25.11.1"
+VERSION="25.11.2"
 
 show_version() {
     cat <<END
