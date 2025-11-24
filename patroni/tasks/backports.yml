@@ -1,14 +1,5 @@
 ---
 
-- name: Add Evolix GPG key
-  ansible.builtin.copy:
-    src: pub_evolix.asc
-    dest: "{{ apt_keyring_dir }}/pub_evolix.asc"
-    force: yes
-    mode: "0644"
-    owner: root
-    group: root
-
 - name: Add Evolix backports repository
   ansible.builtin.apt_repository:
     repo: "deb [signed-by={{ apt_keyring_dir }}/pub_evolix.asc] http://pub.evolix.org/evolix {{ ansible_distribution_release }}-backports main"
