@@ -15,6 +15,12 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Security
 
+## [25.11.2] - 2025-11-24
+
+### Fixed
+
+* Properly espace a backslash
+
 ## [25.11.1] - 2025-11-19
 
 ### Fixed

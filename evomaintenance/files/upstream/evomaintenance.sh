@@ -430,7 +430,7 @@ append_path() {
 }
 
 show_git_data() {
-    printf "/!\ There are some uncommited changes.\n%s\n\n" "${GIT_STATUSES}"
+    printf "/!\\\ There are some uncommited changes.\n%s\n\n" "${GIT_STATUSES}"
     if [ -n "${COMMIT_ONLY_PATH}" ]; then
         printf "Only files matching these patterns will be commited :\n"
         # disable globbing
