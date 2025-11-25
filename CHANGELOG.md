@@ -20,6 +20,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* generate-ldif: generateldif.sh can use another port than 22 via ansible_port
+
 ### Fixed
 
 * postgresql: install postgis 3 for debian ≥ 11
