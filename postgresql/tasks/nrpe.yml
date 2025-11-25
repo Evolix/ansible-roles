@@ -6,7 +6,7 @@
 
 - name: Generate random password for nrpe user
   ansible.builtin.command:
-    cmd: apg -n1 -m 12 -M SCNL
+    cmd: apg -n1 -m 32 -M CNL
   register: postgresql_nrpe_password
   changed_when: False
 
