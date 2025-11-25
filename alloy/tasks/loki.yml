@@ -2,30 +2,30 @@
 
 - name: "/etc/alloy/config.d/loki-evolinux-default.alloy file"
   ansible.builtin.template:
-    src: loki-evolinux-default.alloy.j2
-    dest: /etc/alloy/config.d/loki-evolinux-default.alloy
-    owner: root
-    group: root
+    src: "loki-evolinux-default.alloy.j2"
+    dest: "/etc/alloy/config.d/loki-evolinux-default.alloy"
+    owner: "root"
+    group: "root"
     mode: "0644"
-  notify: restart alloy
+  notify: "restart alloy"
 
-- name: "Configure minifirewall on loki endpoints to allow connections from {{ ansible_hostname }}"
+- name: "Configure minifirewall on loki endpoints to allow connections from {{ ansible_hostname }} in {{ lookup('community.general.dig',  item | urlsplit('hostname')) }}:/etc/minifirewall.d/loki"
   ansible.builtin.lineinfile:
-    path: /etc/minifirewall.d/loki
+    path: "/etc/minifirewall.d/loki"
     line: "/sbin/iptables -A INPUT -p tcp --dport {{ item | urlsplit('port') or '443' }} --sport 1024:65535 -s {{ ansible_default_ipv4.address }} -j ACCEPT # {{ ansible_hostname }}"
     create: true
   loop: "{{ alloy_loki_default_endpoints_url }}"
   become: yes
   remote_user: "{{ lookup('env', 'USER') }}"
   delegate_to: "{{ lookup('community.general.dig',  item | urlsplit('hostname')) }}"
-  notify: restart minifirewall on loki endpoints
+  notify: "restart minifirewall on loki endpoints"
 
-- name: "Configure loki endpoints to authorize connections from {{ ansible_hostname }}"
+- name: "Configure loki endpoints to authorize connections from {{ ansible_hostname }} in {{ lookup('community.general.dig',  item | urlsplit('hostname')) }}:/etc/nginx/snippets/loki_write_whitelist"
   ansible.builtin.lineinfile:
-    path: /etc/nginx/snippets/loki_whitelist
+    path: "/etc/nginx/snippets/loki_write_whitelist"
     line: "allow {{ ansible_default_ipv4.address }}; # {{ ansible_hostname }}"
     create: true
-  notify: reload nginx on loki endpoints
+  notify: "reload nginx on loki endpoints"
   become: yes
   remote_user: "{{ lookup('env', 'USER') }}"
   delegate_to: "{{ lookup('community.general.dig',  item | urlsplit('hostname')) }}"
