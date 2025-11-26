@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+/var/log/apache2-{{ apache_multi_front_vhost_name }}/*.log {
+	{{ apache_logrotate_frequency }}
+	missingok
+	rotate {{ apache_logrotate_rotate }}
+	compress
+	delaycompress
+	notifempty
+	create 640 root adm
+	sharedscripts
+	prerotate
+		if [ -d /etc/logrotate.d/httpd-prerotate ]; then
+			run-parts /etc/logrotate.d/httpd-prerotate
+		fi
+	endscript
+	postrotate
+		if pgrep -f ^/usr/sbin/apache2 > /dev/null; then
+			invoke-rc.d apache2@{{ apache_multi_front_vhost_name }} reload 2>&1 | logger -t apache2.logrotate
+		fi
+	endscript
+}

@@ -1,0 +1,400 @@
+---
+- name: "Packages are installed"
+  ansible.builtin.apt:
+    name:
+      - "apache2"
+      - "apachetop"
+      - "libwww-perl"
+      - "libapache2-mod-security2"
+      - "modsecurity-crs"
+      - "libapache2-mod-fcgid"
+    state: present
+  tags:
+    - "apache"
+    - "packages"
+
+- name: "Disable apache2 service"
+  ansible.builtin.systemd_service:
+    name: "apache2"
+    state: "stopped"
+    enabled: false
+    masked: true
+  tags:
+    - "apache"
+
+- name: "Remove /etc/apache2/sites-enabled directory"
+  ansible.builtin.file:
+    path: "/etc/apache2/sites-enabled"
+    follow: false
+    state: "absent"
+  tags:
+    - "apache"
+
+- name: "Remove /etc/apache2/sites-available directory"
+  ansible.builtin.file:
+    path: "/etc/apache2/sites-enabled"
+    follow: false
+    state: "absent"
+  tags:
+    - "apache"
+
+- name: "Create template directory"
+  ansible.builtin.copy:
+    src: "/etc/apache2/"
+    dest: "{{ apache_multi_template_dir }}"
+    remote_src: true
+    mode: "preserve"
+    directory_mode: "preserve"
+    follow: false
+    local_follow: false
+    force: false
+  tags:
+    - "apache"
+
+- name: "Create /etc/apache2-template/sites-enabled directory"
+  ansible.builtin.file:
+    path: "/etc/apache2-template/sites-enabled"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  tags:
+    - "apache"
+
+- name: "Create /etc/apache2-template/sites-available directory"
+  ansible.builtin.file:
+    path: "/etc/apache2-template/sites-available"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  tags:
+    - "apache"
+
+- name: "Disable unused configs for templated instances"
+  ansible.builtin.file:
+    path: "{{ apache_multi_template_dir }}/conf-enabled/{{ config }}"
+    follow: false
+    state: "absent"
+  loop:
+    - "serve-cgi-bin.conf"
+  loop_control:
+    loop_var: "config"
+  tags:
+    - "apache"
+
+- name: "Remount /usr read-write if needed"
+  ansible.builtin.import_role:
+    name: "evolix/remount-usr"
+    allow_duplicates: true
+  tags:
+    - "apache"
+
+- name: "Setup symlinks for vhost template"
+  ansible.builtin.file:
+    path: "/usr/local/sbin/{{ exe }}-template"
+    src: "/usr/sbin/{{ exe }}"
+    state: "link"
+    follow: false
+    force: true
+    owner: "root"
+    group: "root"
+  loop:
+    - "a2enmod"
+    - "a2dismod"
+    - "a2enconf"
+    - "a2disconf"
+    - "apache2ctl"
+  loop_control:
+    loop_var: "exe"
+  tags:
+    - "apache"
+
+- name: "Disable unused modules in vhost template"
+  ansible.builtin.command:
+    argv:
+      - "a2dismod-template"
+      - "security2"
+      - "ssl"
+  register: "cmd_a2dismod_template"
+  changed_when: "'To activate the new configuration, you need to run' in cmd_a2dismod_template.stdout"
+  tags:
+    - "apache"
+
+- name: "Enable common modules in instance template"
+  ansible.builtin.command:
+    argv:
+      - "a2enmod-template"
+      - "rewrite"
+      - "headers"
+  register: "cmd_a2enmod_template"
+  changed_when: "'Enabling module' in cmd_a2enmod_template.stdout"
+  tags:
+    - "apache"
+
+- name: "Copy Apache defaults config file"
+  ansible.builtin.copy:
+    src: "evolinux-defaults.conf"
+    dest: "{{ apache_multi_template_dir }}/conf-available/z-evolinux-defaults.conf"
+    owner: "root"
+    group: "root"
+    mode: "0640"
+    force: true
+  notify: "Reload apache front vhost"
+  tags:
+    - "apache"
+
+- name: "Enable defaults config file in template"
+  ansible.builtin.file:
+    path: "{{ apache_multi_template_dir }}/conf-enabled/z-evolinux-defaults.conf"
+    src: "{{ apache_multi_template_dir }}/conf-available/z-evolinux-defaults.conf"
+    state: "link"
+    follow: false
+    force: true
+    owner: "root"
+    group: "root"
+  notify: "Reload apache front vhost"
+  tags:
+    - "apache"
+
+- name: "Copy bad bots config file"
+  ansible.builtin.copy:
+    src: "evolinux-badbots.conf"
+    dest: "{{ apache_multi_template_dir }}/conf-available/z-evolinux-badbots.conf"
+    owner: "root"
+    group: "root"
+    mode: "0640"
+    force: true
+  notify: "Reload apache front vhost"
+  tags:
+    - "apache"
+
+- name: "Copy Apache custom config file"
+  ansible.builtin.copy:
+    src: "evolinux-custom.conf"
+    dest: "{{ apache_multi_template_dir }}/conf-available/zzz-evolinux-custom.conf"
+    owner: "root"
+    group: "root"
+    mode: "0640"
+    force: false
+  notify: "Reload apache front vhost"
+  tags:
+    - "apache"
+
+- name: "Disable status.conf"
+  ansible.builtin.file:
+    path: "{{ apache_multi_template_dir }}/mods-enabled/status.conf"
+    state: "absent"
+  notify: "Reload apache front vhost"
+  tags:
+    - "apache"
+
+- name: "Configure authentification"
+  ansible.builtin.import_tasks: "auth.yml"
+  tags:
+    - "apache"
+
+- name: "Is umask already present ?"
+  ansible.builtin.command:
+    argv:
+      - "grep"
+      - "-E"
+      - "^umask "
+      - "{{ apache_multi_template_dir }}/envvars"
+  failed_when: false
+  changed_when: false
+  register: "envvar_grep_umask"
+  check_mode: false
+  tags:
+    - "apache"
+
+- name: "Add a mark in envvars for umask"
+  ansible.builtin.blockinfile:
+    dest: "{{ apache_multi_template_dir }}/envvars"
+    marker: "## {mark} ANSIBLE MANAGED BLOCK"
+    block: |
+      ## Set umask for writing by Apache user.
+      ## Set rights on files and directories written by Apache
+      umask 007
+  when: envvar_grep_umask.rc != 0
+  tags:
+    - apache
+
+# Setup instance
+- name: "Create directory of front vhost"
+  ansible.builtin.copy:
+    src: "{{ apache_multi_template_dir }}/"
+    dest: "{{ apache_multi_front_dir }}"
+    remote_src: true
+    mode: "preserve"
+    directory_mode: "preserve"
+    follow: false
+    local_follow: false
+  notify: "Reload apache front vhost"
+  tags:
+    - "apache"
+
+- name: "Remount /usr read-write if needed (front vhost)"
+  ansible.builtin.include_role:
+    name: "evolix/remount-usr"
+    allow_duplicates: true
+  tags:
+    - "apache"
+
+- name: "Setup symlink for front vhost"
+  ansible.builtin.file:
+    path: "/usr/local/sbin/{{ exe }}-{{ apache_multi_front_vhost_name }}"
+    src: "/usr/sbin/{{ exe }}"
+    state: "link"
+    follow: false
+    force: true
+    owner: "root"
+    group: "root"
+  loop:
+    - "a2enmod"
+    - "a2dismod"
+    - "a2ensite"
+    - "a2dissite"
+    - "a2enconf"
+    - "a2disconf"
+    - "apache2ctl"
+  loop_control:
+    loop_var: "exe"
+  tags:
+    - "apache"
+
+- name: "Setup logrotate for front vhost"
+  ansible.builtin.template:
+    dest: "/etc/logrotate.d/apache2-{{ apache_multi_front_vhost_name }}"
+    src: "{{ apache_multi_logrotate_front_template }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  tags:
+    - "apache"
+
+- name: "Create log directory for front vhost"
+  ansible.builtin.file:
+    path: "/var/log/apache2-{{ apache_multi_front_vhost_name }}"
+    state: "directory"
+    owner: "root"
+    group: "adm"
+    mode: "0750"
+  tags:
+    - "apache"
+
+- name: "Create apache-htcacheclean for front vhost"
+  ansible.builtin.copy:
+    src: "/etc/default/apache-htcacheclean"
+    dest: "/etc/default/apache-htcacheclean-{{ apache_multi_front_vhost_name }}"
+    remote_src: true
+    mode: "preserve"
+    directory_mode: "preserve"
+    follow: false
+    local_follow: false
+  tags:
+    - "apache"
+
+- name: "Enable modules for front vhost"
+  ansible.builtin.command:
+    argv:
+      - "a2enmod-{{ apache_multi_front_vhost_name }}"
+      - "security2"
+      - "ssl"
+      - "proxy_http"
+  register: "cmd_a2enmod_front"
+  changed_when: "'Enabling module' in cmd_a2enmod_front.stdout"
+  notify: "Reload apache front vhost"
+  tags:
+    - "apache"
+
+- name: "Enable bad bots config file for front vhost"
+  ansible.builtin.file:
+    path: "{{ apache_multi_front_dir }}/conf-enabled/z-evolinux-badbots.conf"
+    src: "{{ apache_multi_front_dir }}/conf-available/z-evolinux-badbots.conf"
+    state: "link"
+    owner: "root"
+    group: "root"
+  notify: "Reload apache front vhost"
+  tags:
+    - "apache"
+
+- name: "Default vhost is installed"
+  ansible.builtin.template:
+    src: "evolinux-default.conf.j2"
+    dest: "{{ apache_multi_front_dir }}/sites-available/000-evolinux-default.conf"
+    mode: "0640"
+    force: false
+  notify: "Reload apache front vhost"
+  tags:
+    - "apache"
+
+- name: "Default vhost is enabled"
+  ansible.builtin.file:
+    src: "{{ apache_multi_front_dir }}/sites-available/000-evolinux-default.conf"
+    dest: "{{ apache_multi_front_dir }}/sites-enabled/000-default.conf"
+    state: "link"
+    force: true
+  notify: "Reload apache front vhost"
+  when: "apache_evolinux_default_enabled | bool"
+  tags:
+    - "apache"
+
+- name: "Configure server status page"
+  ansible.builtin.import_tasks: "server_status.yml"
+  tags:
+    - "apache"
+
+- name: "Remount /usr read-write if needed"
+  ansible.builtin.include_role:
+    name: "evolix/remount-usr"
+    allow_duplicates: true
+  tags:
+    - "apache"
+
+- name: "Create /usr/share/scripts"
+  ansible.builtin.file:
+    dest: "/usr/share/scripts"
+    mode: "0700"
+    owner: "root"
+    group: "root"
+    state: "directory"
+  tags:
+    - "apache"
+
+- name: "Install save_apache_status.sh"
+  ansible.builtin.copy:
+    src: "save_apache_status.sh"
+    dest: "/usr/share/scripts/save_apache_status.sh"
+    mode: "0755"
+    force: false
+  tags:
+    - "apache"
+
+- name: "Logrotate: {{ apache_logrotate_frequency }}"
+  ansible.builtin.replace:
+    dest: "/etc/logrotate.d/apache2"
+    regexp: "(daily|weekly|monthly)"
+    replace: "{{ apache_logrotate_frequency }}"
+  tags:
+    - "apache"
+
+- name: "Logrotate: rotate {{ apache_logrotate_rotate }}"
+  ansible.builtin.replace:
+    dest: "/etc/logrotate.d/apache2"
+    regexp: '^(\s+rotate) \d+$'
+    replace: '\1 {{ apache_logrotate_rotate }}'
+  tags:
+    - "apache"
+
+- name: "Setup log2mail"
+  ansible.builtin.import_tasks: "log2mail.yml"
+  when: "apache_log2mail_include"
+  tags:
+    - "apache"
+
+- name: "Setup munin"
+  ansible.builtin.import_tasks: "munin.yml"
+  when: "apache_munin_include | bool"
+  tags:
+    - "apache"

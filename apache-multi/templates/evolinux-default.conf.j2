@@ -1,0 +1,161 @@
+<VirtualHost *:80>
+    ServerName {{ ansible_fqdn }}
+    #ServerAlias {{ ansible_fqdn }}
+
+    DocumentRoot /var/www/
+
+    <Directory />
+        Include {{ apache_multi_template_dir }}/ipaddr_whitelist.conf
+    </Directory>
+    <Directory /var/www/>
+        Options -Indexes
+        Require all denied
+        Include {{ apache_multi_template_dir }}/ipaddr_whitelist.conf
+    </Directory>
+
+    # Munin. We need to set Directory directive as Alias take precedence.
+    Alias /munin /var/cache/munin/www
+    <Directory /var/cache/munin/>
+        Require all denied
+        Include {{ apache_multi_template_dir }}/ipaddr_whitelist.conf
+    </Directory>
+    # munin-cgi-graph, used for zooming on graphs.
+    ScriptAlias /munin-cgi/munin-cgi-graph /usr/lib/munin/cgi/munin-cgi-graph
+    <Location /munin-cgi/munin-cgi-graph>
+        Options +ExecCGI
+        Require all denied
+        Include {{ apache_multi_template_dir }}/ipaddr_whitelist.conf
+    </Location>
+
+    # For CGI Scripts. We need to set Directory directive as ScriptAlias take precedence.
+    ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
+    <Directory /usr/lib/cgi-bin>
+        Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+        Require all denied
+        Include {{ apache_multi_template_dir }}/ipaddr_whitelist.conf
+    </Directory>
+
+    # Mailgraph configuration
+    Alias /mailgraph /usr/share/mailgraph
+    <Directory /usr/share/mailgraph>
+        DirectoryIndex mailgraph.cgi
+        Require all denied
+        Include {{ apache_multi_template_dir }}/ipaddr_whitelist.conf
+        Options +FollowSymLinks +ExecCGI
+        AddHandler cgi-script .cgi
+    </Directory>
+
+    CustomLog ${APACHE_LOG_DIR}/access.log vhost_combined
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    LogLevel warn
+
+    <IfModule mod_ssl.c>
+        RewriteEngine on
+        # Redirect to HTTPS, execpt for munin, because some plugins
+        # can't handle HTTPS! :(
+        RewriteCond %{REQUEST_URI} !^/.well-known.*$ [NC] [OR]
+        RewriteCond %{REQUEST_URI} !^/server-status.*$ [NC] [OR]
+        RewriteCond %{REQUEST_URI} !^/munin_opcache.php$ [NC]
+        RewriteRule ^/(.*) https://{{ ansible_fqdn }}/$1 [L,R=permanent]
+    </IfModule>
+
+    <Location /munin_opcache.php>
+        Require local
+    </Location>
+
+    <IfModule mod_status.c>
+        <Location /server-status-{{ apache_serverstatus_suffix | mandatory }}>
+            SetHandler server-status
+            include {{ apache_multi_template_dir }}/ipaddr_whitelist.conf
+            Require local
+        </Location>
+    </IfModule>
+
+    <IfModule security2_module>
+      SecRuleEngine Off
+    </IfModule>
+
+</VirtualHost>
+
+<IfModule mod_ssl.c>
+    <VirtualHost *:443>
+        ServerName {{ ansible_fqdn }}
+        #ServerAlias {{ ansible_fqdn }}
+
+        DocumentRoot /var/www/
+
+        # We override these 2 Directory directives setted in apache2.conf.
+        # We want no access except from allowed IP address.
+        <Directory />
+            Include {{ apache_multi_template_dir }}/ipaddr_whitelist.conf
+        </Directory>
+        <Directory /var/www/>
+            Options -Indexes
+            Require all denied
+            Include {{ apache_multi_template_dir }}/ipaddr_whitelist.conf
+        </Directory>
+
+        SSLEngine on
+        SSLCertificateFile    {{ apache_evolinux_default_ssl_cert }}
+        SSLCertificateKeyFile {{ apache_evolinux_default_ssl_key }}
+
+        # Munin. We need to set Directory directive as Alias take precedence.
+        Alias /munin /var/cache/munin/www
+        <Directory /var/cache/munin/>
+            Require all denied
+            Include {{ apache_multi_template_dir }}/ipaddr_whitelist.conf
+        </Directory>
+        <Directory /usr/lib/munin/cgi/>
+            Options -Indexes
+            Require all denied
+            Include {{ apache_multi_template_dir }}/ipaddr_whitelist.conf
+        </Directory>
+
+        # For CGI Scripts. We need to set Directory directive as ScriptAlias take precedence.
+        ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
+        <Directory /usr/lib/cgi-bin>
+            Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+            Require all denied
+            Include {{ apache_multi_template_dir }}/ipaddr_whitelist.conf
+        </Directory>
+        ScriptAlias /munin-cgi/munin-cgi-graph /usr/lib/munin/cgi/munin-cgi-graph
+        <Location /munin-cgi/munin-cgi-graph>
+            Options +ExecCGI
+            <IfModule mod_fcgid.c>
+                SetHandler fcgid-script
+            </IfModule>
+            Require all denied
+            Include {{ apache_multi_template_dir }}/ipaddr_whitelist.conf
+        </Location>
+
+        # Mailgraph configuration
+        Alias /mailgraph /usr/share/mailgraph
+        <Directory /usr/share/mailgraph>
+            DirectoryIndex mailgraph.cgi
+            Require all denied
+            Include {{ apache_multi_template_dir }}/ipaddr_whitelist.conf
+            Options +FollowSymLinks +ExecCGI
+            AddHandler cgi-script .cgi
+        </Directory>
+
+# BEGIN phpMyAdmin section
+# END phpMyAdmin section
+
+        CustomLog ${APACHE_LOG_DIR}/access.log vhost_combined
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        LogLevel warn
+
+        <IfModule mod_status.c>
+            <Location /server-status-{{ apache_serverstatus_suffix | mandatory }}>
+                SetHandler server-status
+                include {{ apache_multi_template_dir }}/ipaddr_whitelist.conf
+                Require local
+            </Location>
+        </IfModule>
+
+        <IfModule security2_module>
+          SecRuleEngine Off
+        </IfModule>
+
+    </VirtualHost>
+</IfModule>

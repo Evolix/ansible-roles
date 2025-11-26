@@ -13,6 +13,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* apache-multi: Create role for apache2 multi-instance
 * etc-git: add missing doc for ansible-commit
 * etc-git: add path filtering for selective commits
 * etc-git: release 25.11 of ansible-commit and evocommit
