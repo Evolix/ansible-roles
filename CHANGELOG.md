@@ -26,6 +26,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * postgresql: install postgis 3 for debian ≥ 11
+* lxc-php: do not fail to run container if /run/mysqld does not exist (for instance if MariaDB has been disabled).
 
 ### Removed
 
