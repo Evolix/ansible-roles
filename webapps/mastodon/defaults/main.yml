@@ -32,5 +32,4 @@ mastodon_app_smtp_from_address: "example@somedomain.org"
 mastodon_app_smtp_auth_method: "none"
 mastodon_app_smtp_openssl_verify_mode: "none"
 mastodon_app_es_enabled: 'false'
-mastodon_app_es_pass: 'CHANGE_ME'
 mastodon_install_elasticsearch: false
