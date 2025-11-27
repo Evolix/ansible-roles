@@ -191,3 +191,17 @@
   loop: ["/var/lib/lxc/{{ name }}/rootfs/etc/"]
   loop_control:
     loop_var: 'repository_path'
+
+- name: "{{ name }} - Install minimal packages"
+  ansible.builtin.shell:
+    cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ name }} --  apt-get install -y vim screen"
+
+- name: "{{ name }} - Apply our vim default config"
+  ansible.builtin.copy:
+    src: vimrc.local
+    dest: "/var/lib/lxc/{{ name }}/rootfs/etc/vim/vimrc.local"
+    mode: "0644"
+    owner: root
+    group: root
+    force: yes
+
