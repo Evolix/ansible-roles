@@ -102,8 +102,9 @@
 
 - name: Add minifirewall rule in config file
   ansible.builtin.lineinfile:
-    dest: "/etc/minifirewall.d/zzz-custom"
+    dest: "/etc/minifirewall.d/openvpn"
     line: "{{ item }}"
+    create: true
   loop:
      - "# OpenVPN"
      - "/sbin/iptables -t nat -A POSTROUTING -s {{ openvpn_lan }}/{{ openvpn_netmask_cidr }} -o $INT -j MASQUERADE"
