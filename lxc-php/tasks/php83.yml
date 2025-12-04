@@ -25,6 +25,7 @@
     - evolix-archive-keyring_0~2025_all.deb
     # - https://packages.sury.org/php/pool/main/d/debsuryorg-archive-keyring/debsuryorg-archive-keyring_2025.11.18_all.deb
     # - https://pub.evolix.org/evolix/pool/main/e/evolix-archive-keyring/evolix-archive-keyring_0~2025_all.deb
+  when: not ansible_check_mode
 
 - name: "{{ lxc_php_container_name }} - delete sources.list bookworm repository"
   ansible.builtin.file:
