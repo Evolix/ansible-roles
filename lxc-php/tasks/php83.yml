@@ -12,18 +12,18 @@
     owner: root
     group: root
   loop:
-    - debsuryorg-archive-keyring_2025.03.13_all.deb
+    - debsuryorg-archive-keyring_2025.11.18_all.deb
     - evolix-archive-keyring_0~2025_all.deb
-    # - https://packages.sury.org/php/pool/main/d/debsuryorg-archive-keyring/debsuryorg-archive-keyring_2025.03.13_all.deb
+    # - https://packages.sury.org/php/pool/main/d/debsuryorg-archive-keyring/debsuryorg-archive-keyring_2025.11.18_all.deb
     # - https://pub.evolix.org/evolix/pool/main/e/evolix-archive-keyring/evolix-archive-keyring_0~2025_all.deb
 
 - name: "{{ lxc_php_container_name }} - Install keyring packages"
   ansible.builtin.shell:
     cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ lxc_php_container_name }} --  apt-get install -y /tmp/{{ item }}"
   loop:
-    - debsuryorg-archive-keyring_2025.03.13_all.deb
+    - debsuryorg-archive-keyring_2025.11.18_all.deb
     - evolix-archive-keyring_0~2025_all.deb
-    # - https://packages.sury.org/php/pool/main/d/debsuryorg-archive-keyring/debsuryorg-archive-keyring_2025.03.13_all.deb
+    # - https://packages.sury.org/php/pool/main/d/debsuryorg-archive-keyring/debsuryorg-archive-keyring_2025.11.18_all.deb
     # - https://pub.evolix.org/evolix/pool/main/e/evolix-archive-keyring/evolix-archive-keyring_0~2025_all.deb
 
 - name: "{{ lxc_php_container_name }} - delete sources.list bookworm repository"
