@@ -25,6 +25,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * generate-ldif: generateldif.sh can use another port than 22 via ansible_port
 * postgresql: Use only :alnum: characters for nrpe's password
 * openvpn: use its own minifirewall file instead of zzz-custom
+* lxc-php/php: Use debsuryorg-archive-keyring 2025.11.18
 
 ### Fixed
 
