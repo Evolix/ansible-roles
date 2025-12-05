@@ -53,8 +53,8 @@ check_certs_expiration() {
     
             # Predicting expirations - OpenBSD case (date is not the same than in Linux)
             if [ "${SYSTEM}" = "openbsd" ]; then
-                # Already expired if expiration date is before now
-                if [ "$(TZ=:Zulu date -jf "%Y %b %d %H:%M:%S" "$(echo "$line" | awk '{print $2,$3,$4,$5}')" +%s)" -le "$(date +%s)" ]; then
+                # Already expired if expiration date is before now and after now - $old_certs_age
+                if [ "$(TZ=:Zulu date -jf "%Y %b %d %H:%M:%S" "$(echo "$line" | awk '{print $2,$3,$4,$5}')" +%s)" -le "$(date +%s)" ] && [ "$(TZ=:Zulu date -jf "%Y %b %d %H:%M:%S" "$(echo "$line" | awk '{print $2,$3,$4,$5}')" +%s)" -gt "$(($(date +%s) - old_certs_age))" ]; then
                     expired_certs="${expired_certs}$line\n"
                 # Expiring soon if expiration date is after now and before now + $somedays days
                 elif [ "$(TZ=:Zulu date -jf "%Y %b %d %H:%M:%S" "$(echo "$line" | awk '{print $2,$3,$4,$5}')" +%s)" -gt "$(date +%s)" ] && [ "$(TZ=:Zulu date -jf "%Y %b %d %H:%M:%S" "$(echo "$line" | awk '{print $2,$3,$4,$5}')" +%s)" -lt "$(($(date +%s) + somedays))" ]; then
@@ -65,8 +65,8 @@ check_certs_expiration() {
                 fi
             # Non OpenBSD cases
             else
-                # Already expired if expiration date is before now
-                if [ "$(TZ=:Zulu date -d "$(echo "$line" | awk '{print $3,$4,$2,$5}')" +%s)" -le "$(date +%s)" ]; then
+                # Already expired if expiration date is before now and after now - $old_certs_age
+                if [ "$(TZ=:Zulu date -d "$(echo "$line" | awk '{print $3,$4,$2,$5}')" +%s)" -le "$(date +%s)" ] && [ "$(TZ=:Zulu date -d "$(echo "$line" | awk '{print $3,$4,$2,$5}')" +%s)" -gt "$(($(date +%s) - old_certs_age))" ]; then
                     expired_certs="${expired_certs}$line\n"
                 # Expiring soon if expiration date is after now and before now + $somedays days
                 elif [ "$(TZ=:Zulu date -d "$(echo "$line" | awk '{print $3,$4,$2,$5}')" +%s)" -gt "$(date +%s)" ] && [ "$(TZ=:Zulu date -d "$(echo "$line" | awk '{print $3,$4,$2,$5}')" +%s)" -lt "$(($(date +%s) + somedays))" ]; then
@@ -78,7 +78,7 @@ check_certs_expiration() {
             fi
         done
         
-        echo "Expired client certificates:"
+        echo "Expired client certificates (up until $((old_certs_age / 60 / 60 / 24)) days ago): "
         echo "${expired_certs}"
         echo "Valid client certificates expiring soon (in less than $((somedays / 60 / 60 / 24)) days):"
         echo "${expiring_soon_certs}"
@@ -92,6 +92,7 @@ main() {
     cacert_path="/etc/shellpki/cacert.pem"
     index_path="/etc/shellpki/index.txt"
     somedays="3456000" # 40 days currently
+    old_certs_age="7776000" # 90 days
     expired_certs=""
     expiring_soon_certs=""
     still_valid_certs=""
