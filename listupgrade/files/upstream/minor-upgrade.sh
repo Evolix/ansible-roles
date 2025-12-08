@@ -32,11 +32,14 @@ END
 is_dry_run() {
     test ${dry_run} -eq 1
 }
+is_ext_mode() {
+    test ${ext_mode} -eq 1
+}
 # Generate pretty list of packages to upgrade
 get_upgradable_packages() {
     file=$(upgrade_tmp_file "upgradable_packages.stdout", "main.")
     # shellcheck disable=SC2024
-    apt -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" list --upgradable 2>&1 | grep --extended-regexp --invert-match '^(Listing|WARNING|$)' > "${file}"
+    apt -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dir::Etc::sourcelist="${listupgrade_sources_file}" list --upgradable 2>&1 | grep --extended-regexp --invert-match '^(Listing|WARNING|$)' > "${file}"
 
     echo "${file}"
 }
@@ -302,8 +305,10 @@ update="0"
 cleankernels="1"
 # execute without sudo?
 nosudopasswd="0"
-# dry-run mode ?
+# dry-run mode?
 dry_run="0"
+# external mode?
+ext_mode="0"
 # use needrestart after upgrade?
 needrestart="0"
 # should we reinstall the kernel?
@@ -321,6 +326,7 @@ if [ -z "${listupgrade_state_dir:-""}" ]; then
 fi
 # alternate APT sourcepart directory
 listupgrade_sources_dir="${listupgrade_sources_dir:-/etc/apt/listupgrade-sources.list.d}"
+listupgrade_sources_file="${listupgrade_sources_file:-/etc/apt/sources.list}"
 ### Disabled (temporary ?)
 # warning_packages_pattern="^(linux-image-|apache|nginx|mysql-server|postgresql-[[:digit:]]|tomcat|redis|courier-|dovecot|postfix|bind9$|samba$|php|haproxy|elasticsearch|kibana)"
 warning_packages_pattern=""
@@ -362,6 +368,9 @@ while :; do
     -d | --dry-run)
         dry_run=1
         ;;
+    -e | --external | --ext )
+        ext_mode=1
+        ;;
     -r | --restart-services)
         needrestart=1
         ;;
@@ -386,6 +395,12 @@ minimum_debian_version=9
 if dpkg --compare-versions "$(cat /etc/debian_version)" lt "${minimum_debian_version}"; then
     echo "This script is not compatible with Debian < ${minimum_debian_version}" >&2
     exit 1
+fi
+
+# External mode: overwrite config
+if is_ext_mode; then
+    listupgrade_sources_dir="/etc/apt/listupgrade-external-sources.list.d"
+    listupgrade_sources_file="/dev/null"
 fi
 
 # Cleanup commit, without notification
@@ -425,7 +440,7 @@ fi
 
 # Update if wanted.
 if [ "${update}" -eq "1" ]; then
-    "apt-get" -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" update
+    "apt-get" -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dir::Etc::sourcelist="${listupgrade_sources_file}" update
 fi
 
 # Print packages to upgrade, with colors
@@ -470,7 +485,7 @@ if [ "${reinstall_kernel_meta_package}" -eq "1" ]; then
     printf "${CYAN}Purging kernel '${current_kernel}\`...${RESET}\n"
 
     # shellcheck disable=SC2086
-    kernel_purge_command="DEBIAN_FRONTEND=noninteractive apt-get -o Dir::State::Lists=${listupgrade_state_dir} -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" --quiet=2 --assume-yes purge ${kernel_meta_package} ${all_kernels_except_current}"
+    kernel_purge_command="DEBIAN_FRONTEND=noninteractive apt-get -o Dir::State::Lists=${listupgrade_state_dir} -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dir::Etc::sourcelist="${listupgrade_sources_file}" --quiet=2 --assume-yes purge ${kernel_meta_package} ${all_kernels_except_current}"
     kernel_purge_stdout="${upgrade_tmp_dir}/kernel.purge.stdout"
     kernel_purge_stderr="${upgrade_tmp_dir}/kernel.purge.stderr"
 
@@ -501,7 +516,7 @@ main_upgrade_stderr="${upgrade_tmp_dir}/main.upgrade.stderr"
 
 
 # shellcheck disable=SC2089
-main_upgrade_command="DEBIAN_FRONTEND=noninteractive apt-get -o Dir::State::Lists=${listupgrade_state_dir} -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dpkg::Options::='--force-confold' --no-download --no-remove upgrade --quiet=2 --assume-yes"
+main_upgrade_command="DEBIAN_FRONTEND=noninteractive apt-get -o Dir::State::Lists=${listupgrade_state_dir} -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dir::Etc::sourcelist="${listupgrade_sources_file}" -o Dpkg::Options::='--force-confold' --no-download --no-remove upgrade --quiet=2 --assume-yes"
 
 if is_dry_run; then
     printf "DRY RUN: %s\n" "${main_upgrade_command}"
@@ -531,7 +546,7 @@ if [ "${reinstall_kernel_meta_package}" -eq "1" ]; then
         printf "${CYAN}Reinstalling kernel...${RESET}\n"
 
         # shellcheck disable=SC2089
-        kernel_install_command="DEBIAN_FRONTEND=noninteractive apt-get -o Dir::State::Lists=${listupgrade_state_dir} -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dpkg::Options::='--force-confold' --quiet=2 --assume-yes install ${kernel_meta_package}"
+        kernel_install_command="DEBIAN_FRONTEND=noninteractive apt-get -o Dir::State::Lists=${listupgrade_state_dir} -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dir::Etc::sourcelist="${listupgrade_sources_file}" -o Dpkg::Options::='--force-confold' --quiet=2 --assume-yes install ${kernel_meta_package}"
         kernel_install_stdout="${upgrade_tmp_dir}/kernel.install.stdout"
         kernel_install_stderr="${upgrade_tmp_dir}/kernel.install.stderr"
 

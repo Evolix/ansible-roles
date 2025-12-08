@@ -3,6 +3,7 @@
 # Repository: https://gitea.evolix.org/evolix/maj.sh/
 
 # Exit codes :
+# - 20 : hostname does not match $ext_hosts (external mode)
 # - 30 : $skip_releases or $skip_packages is set to "all"
 # - 40 : current release is in $skip_releases list
 # - 50 : all upgradable packages are in the $skip_packages list
@@ -64,6 +65,7 @@ fetch_upgrade_info() {
     r_skip_releases="$(get_value "${upgradeInfo}" "skip_releases")"
     r_packages="$(get_value "${upgradeInfo}" "packages")"
     r_skip_packages="$(get_value "${upgradeInfo}" "skip_packages")"
+    r_ext_hosts="$(get_value "${upgradeInfo}" "ext_hosts")"
 
     rm "${upgradeInfo}"
 }
@@ -155,6 +157,10 @@ cron_mode() {
     test "${cron_mode}" = "1"
 }
 
+ext_mode() {
+    test "${ext_mode}" = "1"
+}
+
 force_mode() {
     test "${force_mode}" = "1"
 }
@@ -194,6 +200,13 @@ main() {
     if force_mode; then
         if ! cron_mode; then
             echo "Force mode is enabled, as if every release/package is available for upgrade."
+        fi
+    elif ext_mode; then
+        fetch_upgrade_info
+
+        # Exit if hostname does not match the expected ^[ext_hosts] regex
+        if echo ${hostname} | grep --quiet --invert-match "^[${r_ext_hosts}]"; then
+            post_hooks_and_exit 20
         fi
     else
         fetch_upgrade_info
@@ -243,7 +256,7 @@ main() {
         echo "Updating lists..."
     fi
     # Update APT cache and get packages to upgrade and packages on hold.
-    aptUpdateOutput=$(apt-get -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" update 2>&1 | (grep --extended-regexp --invert-match --regexp '^(Listing|WARNING|$)' --regexp upgraded --regexp 'up to date' || true))
+    aptUpdateOutput=$(apt-get -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dir::Etc::sourcelist="${listupgrade_sources_file}" update 2>&1 | (grep --extended-regexp --invert-match --regexp '^(Listing|WARNING|$)' --regexp upgraded --regexp 'up to date' || true))
 
     if echo "${aptUpdateOutput}" | grep --extended-regexp "^Err(:[0-9]+)? http"; then
         echo "FATAL - Not able to fetch all sources (probably a pesky (mini)firewall). Please, fix me" >&2
@@ -251,7 +264,7 @@ main() {
     fi
 
     apt-mark showhold | sed -e 's/\(.\+\)/^\1\//' >"${packagesHold}"
-    apt -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" list --upgradable 2>&1 | grep --invert-match --file "${packagesHold}" | grep --invert-match --extended-regexp '^(Listing|WARNING|$)' >"${packages}"
+    apt -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dir::Etc::sourcelist="${listupgrade_sources_file}" list --upgradable 2>&1 | grep --invert-match --file "${packagesHold}" | grep --invert-match --extended-regexp '^(Listing|WARNING|$)' >"${packages}"
     packagesParsable=$(cut -f 1 -d / <"${packages}" | tr '\n' ' ' | cut -c 900-)
 
     # No updates? Exit!
@@ -333,7 +346,7 @@ main() {
         echo "Dowloading packages..."
     fi
     # Now we try to fetch all the packages for the next update session
-    downloadstatus=$(apt-get -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" dist-upgrade --assume-yes --download-only -q 2>&1)
+    downloadstatus=$(apt-get -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dir::Etc::sourcelist="${listupgrade_sources_file}" dist-upgrade --assume-yes --download-only -q 2>&1)
     apt_rc=$?
     echo "${downloadstatus}" | grep --quiet 'Download complete and in download only mode'
     download_rc=$?
@@ -381,6 +394,9 @@ while :; do
     --cron)
         cron_mode=1
         ;;
+    -e | --external | --ext )
+        ext_mode=1
+        ;;
     -f | --force)
         # Ignore exclusions from "upgrade info" and do as if all releases and packages are to be upgraded
         force_mode=1
@@ -409,6 +425,7 @@ export LC_ALL=C
 config_file="/etc/evolinux/listupgrade.cnf"
 
 cron_mode=${cron_mode:-0}
+ext_mode=${ext_mode:-0}
 force_mode=${force_mode:-0}
 clientmail=$(grep EVOMAINTMAIL /etc/evomaintenance.cf | cut -d'=' -f2)
 mailto="${clientmail}"
@@ -418,6 +435,13 @@ hostname=${hostname%%.evolix.net}
 listupgrade_state_dir="${listupgrade_state_dir:-/var/lib/listupgrade}"
 hooks_dir="/etc/evolinux/listupgrade-hooks"
 listupgrade_sources_dir="${listupgrade_sources_dir:-/etc/apt/listupgrade-sources.list.d}"
+listupgrade_sources_file="${listupgrade_sources_file:-/etc/apt/sources.list}"
+if ext_mode; then
+    config_file="/etc/evolinux/listupgrade-ext.cnf"
+    date="Ce mercredi entre 8h00 et 10h00."
+    listupgrade_sources_dir="/etc/apt/listupgrade-external-sources.list.d"
+    listupgrade_sources_file="/dev/null"
+fi
 
 # If hostname is composed with -, remove the first part.
 if [[ "${hostname}" =~ "-" ]]; then
@@ -426,6 +450,10 @@ fi
 # Edit $config_file to override some variables.
 # shellcheck disable=SC1090,SC1091
 [ -r "${config_file}" ] && . "${config_file}"
+# Enable force mode if the upgrade should happen on Tuesday
+if $(echo ${date} | grep -q mardi);
+    then force_mode=1
+fi
 
 # Create temporary files
 packages=$(mktemp --tmpdir=/tmp listupgrade.XXX)

@@ -13,34 +13,77 @@
     group: root
     mode: "0700"
 
-- name: Create /etc/apt/evo_sources.list.d
+- name: Official sources.list
+  ansible.builtin.set_fact:
+    official:
+    # /!\ Keep list in sync with maj.sh/hotfix-allowed-sources.yml
+      - system.sources
+      - security.sources
+      - evolix_public.sources
+      - backports.sources
+      # sury.sources
+      - evolix_sury.sources
+      - hp.sources
+      - hwraid.le-vert.net.sources
+      # postgresql.sources
+      - evolix_public.list
+      - backports.list
+      - extended-lts.list
+
+- name: Create /etc/apt/listupgrade{,-external}-sources.list.d directories
   ansible.builtin.file:
-    path: /etc/apt/evo_sources.list.d
+    path: "/etc/apt/{{ item }}-sources.list.d"
     state: directory
     owner: root
     group: root
     mode: "0755"
+  loop:
+    - listupgrade
+    - listupgrade-external
+
+- name: List active sources
+  ansible.builtin.find:
+    paths: /etc/apt/sources.list.d
+    file_type: file
+    patterns:
+      - '*.sources'
+      - '*.list'
+  register: found_external
+
+- name: Initiate external list
+  ansible.builtin.set_fact:
+    external: []
+
+- name: Add every sources to external
+  ansible.builtin.set_fact:
+    external: "{{ external + [ item.path | regex_replace('^/etc/apt/sources.list.d/', '') ] }}"
+  loop: "{{ found_external.files }}"
+
+- name: Remove official sources from external
+  ansible.builtin.set_fact:
+    external: "{{ external | difference(official) }}"
 
 - name: Enable allowed sources
   ansible.builtin.file:
     src: "../sources.list.d/{{ item }}"
-    dest: "/etc/apt/evo_sources.list.d/{{ item }}"
+    dest: "/etc/apt/listupgrade-sources.list.d/{{ item }}"
     state: link
   ignore_errors: true
-  loop:
-  # /!\ Keep list in sync with maj.sh/hotfix-allowed-sources.yml
-    - system.sources
-    - security.sources
-    - evolix_public.sources
-    - backports.sources
-    - sury.sources
-    - evolix_sury.sources
-    - hp.sources
-    - hwraid.le-vert.net.sources
-    # - postgresql.sources
-    - evolix_public.list
-    - backports.list
-    - extended-lts.list
+  loop: "{{ official }}"
+
+- name: Ensure external sources are not enabled
+  ansible.builtin.file:
+    path: "/etc/apt/listupgrade-sources.list.d/{{ item }}"
+    state: absent
+  ignore_errors: true
+  loop: "{{ external }}"
+
+- name: Enable external sources
+  ansible.builtin.file:
+    src: "../sources.list.d/{{ item }}"
+    dest: "/etc/apt/listupgrade-external-sources.list.d/{{ item }}"
+    state: link
+  loop: "{{ external }}"
 
 # listupgrade.sh
 
@@ -57,6 +100,15 @@
   ansible.builtin.template:
     src: listupgrade.cnf.j2
     dest: /etc/evolinux/listupgrade.cnf
+    mode: "0600"
+    owner: root
+    group: root
+    force: false
+
+- name: Copy listupgrade-ext config
+  ansible.builtin.template:
+    src: listupgrade-ext.cnf.j2
+    dest: /etc/evolinux/listupgrade-ext.cnf
     mode: "0600"
     owner: root
     group: root
@@ -117,6 +169,16 @@
     dest: "/etc/profile.d/evolinux.sh"
     line: 'alias maj="TMOUT=0; sudo -k /usr/local/sbin/minor-upgrade"'
     regexp: "^alias maj="
+    create: True
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Add ext alias in global profile
+  ansible.builtin.lineinfile:
+    dest: "/etc/profile.d/evolinux.sh"
+    line: 'alias ext="TMOUT=0; sudo -k /usr/local/sbin/minor-upgrade --external"'
+    regexp: "^alias ext="
     create: True
     mode: "0644"
     owner: root
