@@ -229,20 +229,23 @@ replace_existing_or_abort() {
     fi
     if [ "${non_interactive}" -eq 1 ]; then
         if [ "${replace_existing}" -eq 1 ]; then
-            revoke --non-interactive "${no_crl_argument}" "${cn}"
+            # Do not put the variable $no_crl_argument in quotes : "revoke --non-interactive '' $cn" would be executed, which doesn't work
+            revoke --non-interactive ${no_crl_argument} "${cn}"
         else
             error "${cn} already exists, use \`--replace-existing' to force"
         fi
     else
         if [ "${replace_existing}" -eq 1 ]; then
-            revoke "${no_crl_argument}" "${cn}"
+            # Do not put the variable $no_crl_argument in quotes : "revoke --non-interactive '' $cn" would be executed, which doesn't work
+            revoke ${no_crl_argument} "${cn}"
         else
             printf "%s already exists, do you want to revoke and recreate it ? [y/N] " "${cn}"
             read -r REPLY
             resp=$(echo "${REPLY}" | tr 'Y' 'y')
 
             if [ "${resp}" = "y" ]; then
-                revoke "${no_crl_argument}" "${cn}"
+                # Do not put the variable $no_crl_argument in quotes : "revoke --non-interactive '' $cn" would be executed, which doesn't work
+                revoke ${no_crl_argument} "${cn}"
             else
                 error "Aborted"
             fi
