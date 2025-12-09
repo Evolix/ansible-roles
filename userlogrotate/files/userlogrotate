@@ -8,7 +8,7 @@ CONF_PATH="/etc/evolinux/userlogrotate.conf"  # optional file
 
 # Default conf
 DELETE_AFTER_RETENTION_DAYS="false" # values: true | false
-RETENTION_DAYS=365                  # only applies if $RETENTION_DAYS == "true"
+RETENTION_DAYS=365                  # only applies if $DELETE_AFTER_RETENTION_DAYS == "true"
 SYSTEM_LOGS_SEARCH_PATHS=(          # will chown root:$user
     /home/*/log
 )
