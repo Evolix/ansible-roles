@@ -16,5 +16,10 @@ vrrp_addresses: []
 
 vrrp_manage_minifirewall: true
 
+# possible values: Null (default), modern or legacy
+minifirewall_install_mode: Null
+# possible values: Null (default), sysvinit or systemd
+minifirewall_init_mode: Null
+
 minifirewall_restart_if_needed: True
 minifirewall_restart_force: False

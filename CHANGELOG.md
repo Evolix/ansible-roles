@@ -24,17 +24,18 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * generate-ldif: generateldif.sh can use another port than 22 via ansible_port
-* postgresql: Use only :alnum: characters for nrpe's password
-* openvpn: use its own minifirewall file instead of zzz-custom
 * lxc-php/php: Use debsuryorg-archive-keyring 2025.11.18
+* openvpn: use its own minifirewall file instead of zzz-custom
+* postgresql: Use only :alnum: characters for nrpe's password
 
 ### Fixed
 
-* postgresql: install postgis 3 for debian ≥ 11
-* lxc-php: do not fail to run container if /run/mysqld does not exist (for instance if MariaDB has been disabled).
-* userlorotate: fix comment string of option RETENTION_DAYS
-* squid : since ELTS release, fix config for Debian 10
 * evolinux-bash: Fix HISTCONTROL
+* lxc-php: do not fail to run container if /run/mysqld does not exist (for instance if MariaDB has been disabled).
+* postgresql: install postgis 3 for debian ≥ 11
+* squid : since ELTS release, fix config for Debian 10
+* userlorotate: fix comment string of option RETENTION_DAYS
+* vrrpd: adapt to the new way of restarting minifirewall
 
 ### Removed
 
