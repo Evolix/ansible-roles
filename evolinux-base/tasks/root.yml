@@ -14,7 +14,7 @@
     create: yes
     state: present
   loop:
-    - "export HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoreboth,erasedups"
+    - "export HISTCONTROL=$HISTCONTROL${HISTCONTROL+:}ignoreboth:erasedups"
     - "export HISTSIZE=65535"
     - "export HISTTIMEFORMAT=\"%c : \""
     - "shopt -s histappend"
