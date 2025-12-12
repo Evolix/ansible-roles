@@ -39,6 +39,9 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Removed
 
+* generate-ldif: do not generate a service pressure_mem for LDAP
+* nagios-nrpe: do not add a check pressure_mem
+
 ### Security
 
 ## [25.11] 2025-11-14
