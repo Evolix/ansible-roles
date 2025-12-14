@@ -1,0 +1,42 @@
+[Container]
+ContainerName=php7.0-fpm
+Image=php7.0.build
+
+# Signal to stop process gracefully
+# https://github.com/php/php-src/blob/17baa87faddc2550def3ae7314236826bc1b1398/sapi/fpm/php-fpm.8.in#L163
+StopSignal=SIGQUIT
+
+Entrypoint=/usr/sbin/php-fpm7.0
+Exec=--nodaemonize --fpm-config /etc/php/7.0/fpm/php-fpm.conf
+
+## Users
+Mount=type=bind,source=/home,destination=/home
+Mount=type=bind,source=/etc/passwd,destination=/etc/passwd,readonly=true
+Mount=type=bind,source=/etc/shadow,destination=/etc/shadow,readonly=true
+Mount=type=bind,source=/etc/group,destination=/etc/group,readonly=true
+Mount=type=bind,source=/etc/gshadow,destination=/etc/ghsadow,readonly=true
+
+## Network
+Mount=type=bind,source=/etc/resolv.conf,destination=/etc/resolv.conf,readonly=true
+Mount=type=bind,source=/etc/hosts,destination=/etc/hosts,readonly=true
+Mount=type=bind,source=/etc/gai.conf,destination=/etc/gai.conf,readonly=true
+### Time
+## TODO Test Timezone directive to replace the folowwing
+Mount=type=bind,source=/etc/timezone,destination=/etc/timezone,readonly=true
+Mount=type=bind,source=/etc/localtime,destination=/etc/localtime,readonly=true
+### Mail
+Mount=type=bind,source=/var/spool/postfix,destination=/var/spool/postfix
+Mount=type=bind,source=/etc/mailname,destination=/etc/mailname,readonly=true
+### MySQL
+Mount=type=bind,source=/run/mysqld/,destination=/run/mysqld
+### PHP
+Mount=type=bind,source=/var/log,destination=/var/log
+Mount=type=bind,source=/etc/php/evolinux-common,destination=/etc/php/evolinux-common,readonly=true
+Mount=type=bind,source=/etc/php/evolinux-7.0,destination=/etc/php/evolinux-7.0,readonly=true
+
+
+[Service]
+## Extend start timeout to have time to pull or build the image.
+TimeoutStartSec=15min
+## XXX ReloadSignal isn't supported in Debian 13
+ExecReload=/usr/bin/podman kill -s SIGUSR2 --cidfile=%t/%N.cid

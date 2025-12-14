@@ -1,0 +1,34 @@
+---
+- name: "Install podman packages"
+  ansible.builtin.apt:
+    name:
+      - "podman"
+      - "podman-docker"
+      - "podman-compose"
+      - "passt"
+      - "catatonit"
+      - "aardvark-dns"
+
+- name: "Create /etc/evolinux/containers/php{{ multi_php_version }}/Containerfile"
+  ansible.builtin.copy:
+    src: "etc/evolinux/containers/php{{ multi_php_version }}/Containerfile"
+    dest: "/etc/evolinux/containers/php{{ multi_php_version }}/Containerfile"
+    mode: "preserve"
+
+- name: "Create /etc/containers/systemd/php{{ multi_php_version }}.build"
+  ansible.builtin.copy:
+    src: "etc/containers/systemd/php{{ multi_php_version }}.build"
+    dest: "/etc/containers/systemd/php{{ multi_php_version }}.build"
+    mode: "preserve"
+
+- name: "Create /etc/containers/systemd/php{{ multi_php_version }}-fpm.container"
+  ansible.builtin.copy:
+    src: "etc/containers/systemd/php{{ multi_php_version }}-fpm.container"
+    dest: "/etc/containers/systemd/php{{ multi_php_version }}-fpm.container"
+    mode: "preserve"
+
+- name: "Start and enable php{{ multi_php_version }}-fpm.service"
+  ansible.builtin.service:
+    name: "php{{ multi_php_version }}-fpm.service"
+    state: "started"
+    enabled: true

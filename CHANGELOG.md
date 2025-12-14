@@ -20,6 +20,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * listupgrade: external mode
 * lxc: install screen and vim (with config) [UNTESTED]
 * openvpn: add a reply-to email for expirations cron in Debian
+* multi-php: new role
 
 ### Changed
 
