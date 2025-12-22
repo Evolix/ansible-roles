@@ -29,6 +29,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * openvpn: use its own minifirewall file instead of zzz-custom
 * postgresql: Use only :alnum: characters for nrpe's password
 * evocheck: crontab template source file and destination path are now variabilized
+* evocheck: Add /usr/local/sbin to PATH
 
 ### Fixed
 
