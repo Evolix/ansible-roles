@@ -39,6 +39,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * squid : since ELTS release, fix config for Debian 10
 * userlorotate: fix comment string of option RETENTION_DAYS
 * vrrpd: adapt to the new way of restarting minifirewall
+* haproxy: generate new configuration in haproxy.cf.new to debug "failed to validate"
 
 ### Removed
 
