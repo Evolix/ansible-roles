@@ -21,7 +21,7 @@
 
 - name: add server-status suffix in default VHost
   ansible.builtin.replace:
-    dest: /etc/nginx/sites-available/evolinux-default.conf
+    dest: /etc/nginx/sites-enabled/default
     regexp: 'location /server-status-[^ ]* +{'
     replace: 'location /server-status-{{ nginx_serverstatus_suffix }} {'
   when: not ansible_check_mode

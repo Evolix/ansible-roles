@@ -28,6 +28,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evocheck: crontab template source file and destination path are now variabilized
 * generate-ldif: generateldif.sh can use another port than 22 via ansible_port
 * lxc-php/php: Use debsuryorg-archive-keyring 2025.11.18
+* nginx: add server-status suffix in *enabled* default VHost
 * nodejs: install version 22 by default
 * openvpn: use its own minifirewall file instead of zzz-custom
 * postgresql: Use only :alnum: characters for nrpe's password
