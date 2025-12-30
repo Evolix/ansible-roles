@@ -1,7 +1,7 @@
 ---
 
 # https://nodejs.org/en/about/releases/
-nodejs_apt_version: 'node_16.x'
+nodejs_apt_version: 'node_22.x'
 
 nodejs_install_yarn: False
 
