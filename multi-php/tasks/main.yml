@@ -1,4 +1,36 @@
 ---
+############
+## Misc
+############
+
+- name: "Create /etc/tmpfiles.d/multi-php.conf"
+  ansible.builtin.copy:
+    src: "etc/tmpfiles.d/multi-php.conf"
+    dest: "/etc/tmpfiles.d/multi-php.conf"
+    mode: "preserve"
+  notify: "systemd-tmpfiles --create"
+
+############
+## PHP
+############
+
+
+- name: "Create /etc/php/evolinux-common/fpm/pool.d/"
+  ansible.builtin.file:
+    path: "/etc/php/evolinux-common/fpm/pool.d/"
+    state: "directory"
+    mode: "755"
+
+- name: "Create /etc/php/evolinux-{{ multi_php_version }}/fpm/pool.d/"
+  ansible.builtin.file:
+    path: "/etc/php/evolinux-{{ multi_php_version }}/fpm/pool.d/"
+    state: "directory"
+    mode: "755"
+
+############
+## Podman
+############
+
 - name: "Install podman packages"
   ansible.builtin.apt:
     name:
@@ -9,23 +41,42 @@
       - "catatonit"
       - "aardvark-dns"
 
+  # To slience warning from podman
+- name: "Create /etc/containers/nodocker"
+  ansible.builtin.file:
+    path: "/etc/containers/nodocker"
+    state: "touch"
+    mode: "644"
+    modification_time: "preserve"
+    access_time: "preserve"
+
+- name: "Create /etc/evolinux/containers/php{{ multi_php_version }}/"
+  ansible.builtin.file:
+    path: "/etc/evolinux/containers/php{{ multi_php_version }}/"
+    state: "directory"
+    mode: "755"
+    
 - name: "Create /etc/evolinux/containers/php{{ multi_php_version }}/Containerfile"
   ansible.builtin.copy:
     src: "etc/evolinux/containers/php{{ multi_php_version }}/Containerfile"
     dest: "/etc/evolinux/containers/php{{ multi_php_version }}/Containerfile"
     mode: "preserve"
-
+    
 - name: "Create /etc/containers/systemd/php{{ multi_php_version }}.build"
   ansible.builtin.copy:
     src: "etc/containers/systemd/php{{ multi_php_version }}.build"
     dest: "/etc/containers/systemd/php{{ multi_php_version }}.build"
     mode: "preserve"
+  notify: "systemctl daemon-reload"
 
 - name: "Create /etc/containers/systemd/php{{ multi_php_version }}-fpm.container"
   ansible.builtin.copy:
     src: "etc/containers/systemd/php{{ multi_php_version }}-fpm.container"
     dest: "/etc/containers/systemd/php{{ multi_php_version }}-fpm.container"
     mode: "preserve"
+  notify: "systemctl daemon-reload"
+
+- ansible.builtin.meta: flush_handlers
 
 - name: "Start and enable php{{ multi_php_version }}-fpm.service"
   ansible.builtin.service:

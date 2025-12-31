@@ -6,6 +6,9 @@ Image=php8.4.build
 # https://github.com/php/php-src/blob/17baa87faddc2550def3ae7314236826bc1b1398/sapi/fpm/php-fpm.8.in#L163
 StopSignal=SIGQUIT
 
+# Use system timezone
+Timezone=local
+
 Entrypoint=/usr/sbin/php-fpm8.4
 Exec=--nodaemonize --fpm-config /etc/php/8.4/fpm/php-fpm.conf
 
@@ -20,16 +23,12 @@ Mount=type=bind,source=/etc/gshadow,destination=/etc/ghsadow,readonly=true
 Mount=type=bind,source=/etc/resolv.conf,destination=/etc/resolv.conf,readonly=true
 Mount=type=bind,source=/etc/hosts,destination=/etc/hosts,readonly=true
 Mount=type=bind,source=/etc/gai.conf,destination=/etc/gai.conf,readonly=true
-### Time
-## TODO Test Timezone directive to replace the folowwing
-Mount=type=bind,source=/etc/timezone,destination=/etc/timezone,readonly=true
-Mount=type=bind,source=/etc/localtime,destination=/etc/localtime,readonly=true
-### Mail
+## Mail
 Mount=type=bind,source=/var/spool/postfix,destination=/var/spool/postfix
 Mount=type=bind,source=/etc/mailname,destination=/etc/mailname,readonly=true
-### MySQL
+## MySQL
 Mount=type=bind,source=/run/mysqld/,destination=/run/mysqld
-### PHP
+## PHP
 Mount=type=bind,source=/var/log,destination=/var/log
 Mount=type=bind,source=/etc/php/evolinux-common,destination=/etc/php/evolinux-common,readonly=true
 Mount=type=bind,source=/etc/php/evolinux-8.4,destination=/etc/php/evolinux-8.4,readonly=true
