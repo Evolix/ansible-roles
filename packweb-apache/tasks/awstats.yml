@@ -20,6 +20,7 @@
       ShowHTTPErrorsStats=0
       LogFormat=1
       AllowFullYearView=3
+      DNSLookup=0
       ErrorMessages="An error occured. Contact your Administrator"
     mode: "0644"
 

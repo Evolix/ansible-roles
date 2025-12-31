@@ -47,6 +47,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * generate-ldif: do not generate a service pressure_mem for LDAP
 * nagios-nrpe: do not add a check pressure_mem
+* packweb-apache: disable AWStats DNSLookup
 
 ### Security
 
