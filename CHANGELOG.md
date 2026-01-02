@@ -36,12 +36,13 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * evolinux-bash: Fix HISTCONTROL
+* haproxy: generate new configuration in haproxy.cf.new to debug "failed to validate"
+* kvm-tools: add-vm supports VM without home/srv volumes in solo mode
 * lxc-php: do not fail to run container if /run/mysqld does not exist (for instance if MariaDB has been disabled).
 * postgresql: install postgis 3 for debian ≥ 11
 * squid : since ELTS release, fix config for Debian 10
 * userlorotate: fix comment string of option RETENTION_DAYS
 * vrrpd: adapt to the new way of restarting minifirewall
-* haproxy: generate new configuration in haproxy.cf.new to debug "failed to validate"
 
 ### Removed
 
