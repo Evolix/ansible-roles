@@ -15,14 +15,10 @@
   changed_when: False
   check_mode: no
   register: _minifirewall_version_check
-  when:
-    - not ansible_check_mode
 
 - name: Split minifirewall version string
   ansible.builtin.set_fact:
     minifirewall_version: "{{ _minifirewall_version_check.stdout_lines[0] | default('0') }}"
-  when:
-    - not ansible_check_mode
 
 - name: 'Set minifirewall_restart_handler_name to "modern/sysvinit"'
   ansible.builtin.set_fact:
