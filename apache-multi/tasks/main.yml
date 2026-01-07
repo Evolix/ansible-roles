@@ -32,7 +32,7 @@
 
 - name: "Remove /etc/apache2/sites-available directory"
   ansible.builtin.file:
-    path: "/etc/apache2/sites-enabled"
+    path: "/etc/apache2/sites-available"
     follow: false
     state: "absent"
   tags:
