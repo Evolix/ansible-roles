@@ -21,7 +21,19 @@
   ansible.builtin.user:
     name: "{{ mastodon_instance }}"
     shell: /bin/bash
-#    umask: "0022" requires ansible-core 2.12
+
+- name: Add tmp dir for Yarn 
+  ansible.builtin.file:
+    path: "~/tmp"
+    state: directory
+    mode: '0700'
+  become_user: "{{ mastodon_instance }}"
+
+- name: Set TMPDIR environment var for Yarn
+  lineinfile:
+    path: "~/.profile"
+    line: 'export TMPDIR=~/tmp'
+  become_user: "{{ mastodon_instance }}"
 
 - name: Install Ruby for instance user (rbenv)
   ansible.builtin.include_role:
