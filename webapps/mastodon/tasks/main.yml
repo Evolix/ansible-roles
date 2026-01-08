@@ -20,6 +20,7 @@
 - name: Add UNIX account
   ansible.builtin.user:
     name: "{{ mastodon_instance }}"
+    home: "{{ mastodon_home_base }}/{{ mastodon_instance }}"
     shell: /bin/bash
 
 - name: Add tmp dir for Yarn 
