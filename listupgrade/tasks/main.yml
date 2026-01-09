@@ -129,6 +129,19 @@
     month: "{{ listupgrade_cron_month }}"
     state: "{{ listupgrade_cron_enabled | bool | ternary('present','absent') }}"
 
+- name: Enable listupgrade-external cron
+  ansible.builtin.cron:
+    name: "listupgrade.sh"
+    cron_file: "listupgrade-external"
+    user: root
+    job: "/usr/local/sbin/listupgrade.sh --external --cron{{ listupgrade_cron_force | bool | ternary(' --force','') }}"
+    minute: "{{ listupgrade_cron_minute }}"
+    hour: "{{ listupgrade_cron_hour }}"
+    weekday: "{{ listupgrade_external_cron_weekday }}"
+    day: "{{ listupgrade_cron_day }}"
+    month: "{{ listupgrade_cron_month }}"
+    state: "{{ listupgrade_cron_enabled | bool | ternary('present','absent') }}"
+
 # old-kernel-autoremoval
 
 - name: old-kernel-autoremoval.sh is present
