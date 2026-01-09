@@ -99,20 +99,14 @@
 - name: Copy listupgrade config
   ansible.builtin.template:
     src: listupgrade.cnf.j2
-    dest: /etc/evolinux/listupgrade.cnf
+    dest: "/etc/evolinux/{{ item }}.cnf"
     mode: "0600"
     owner: root
     group: root
     force: false
-
-- name: Copy listupgrade-ext config
-  ansible.builtin.template:
-    src: listupgrade-ext.cnf.j2
-    dest: /etc/evolinux/listupgrade-ext.cnf
-    mode: "0600"
-    owner: root
-    group: root
-    force: false
+  loop:
+    - listupgrade
+    - listupgrade-ext
 
 - name: Cron.d is present
   ansible.builtin.file:
