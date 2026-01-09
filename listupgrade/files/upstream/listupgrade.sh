@@ -96,6 +96,7 @@ X-Debian-Release: ${local_release}
 X-Packages: ${packagesParsable}
 X-Date: ${date}
 X-Listupgrade-Version: ${VERSION}
+X-External: ${ext_mode}
 Auto-Submitted: auto-generated
 
 Bonjour,
