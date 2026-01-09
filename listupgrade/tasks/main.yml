@@ -21,11 +21,11 @@
       - security.sources
       - evolix_public.sources
       - backports.sources
-      # sury.sources
+      - sury.sources
       - evolix_sury.sources
       - hp.sources
       - hwraid.le-vert.net.sources
-      # postgresql.sources
+      - postgresql.sources
       - evolix_public.list
       - backports.list
       - extended-lts.list
