@@ -30,6 +30,7 @@
       - php-intl
       - php-imap
       - php-ldap
+      - libldap-common
       - php-mysql
       - php-pgsql
       - php-sqlite3
