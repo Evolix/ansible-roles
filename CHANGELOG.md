@@ -40,7 +40,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
-* evolinux-bash: Fix HISTCONTROL
+* evolinux-base: Fix HISTCONTROL
+* evolinux-base: Update HPE OpenPGP key
 * haproxy: generate new configuration in haproxy.cf.new to debug "failed to validate"
 * kvm-tools: add-vm supports VM without home/srv volumes in solo mode
 * lxc-php: do not fail to run container if /run/mysqld does not exist (for instance if MariaDB has been disabled).
