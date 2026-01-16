@@ -16,7 +16,7 @@ show_version() {
     cat <<END
 ${PROGNAME} version ${VERSION}
 
-Copyright 2018-2025 Evolix <info@evolix.fr>,
+Copyright 2018-2026 Evolix <info@evolix.fr>,
                Gregory Colpart <reg@evolix.fr>,
                Romain Dessort <rdessort@evolix.fr>,
                Ludovic Poujol <lpoujol@evolix.fr>,
@@ -399,6 +399,7 @@ fi
 
 # External mode: overwrite config
 if is_ext_mode; then
+    listupgrade_state_dir="/var/lib/listupgrade-external"
     listupgrade_sources_dir="/etc/apt/listupgrade-external-sources.list.d"
     listupgrade_sources_file="/dev/null"
 fi

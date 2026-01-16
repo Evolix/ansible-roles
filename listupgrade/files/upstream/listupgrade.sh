@@ -24,7 +24,7 @@ show_version() {
     cat <<END
 ${PROGNAME} version ${VERSION}
 
-Copyright 2018-2025 Evolix <info@evolix.fr>,
+Copyright 2018-2026 Evolix <info@evolix.fr>,
                Gregory Colpart <reg@evolix.fr>,
                Romain Dessort <rdessort@evolix.fr>,
                Ludovic Poujol <lpoujol@evolix.fr>,
@@ -349,7 +349,7 @@ main() {
     # Now we try to fetch all the packages for the next update session
     downloadstatus=$(apt-get -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dir::Etc::sourcelist="${listupgrade_sources_file}" dist-upgrade --assume-yes --download-only -q 2>&1)
     apt_rc=$?
-    echo "${downloadstatus}" | grep --quiet 'Download complete and in download only mode'
+    echo "${downloadstatus}" | grep --quiet -e 'Download complete and in download only mode' -e '0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.'
     download_rc=$?
 
     # shellcheck disable=SC2181
@@ -372,7 +372,7 @@ main() {
             # Now we try to fetch all the packages for the next update session
             downloadstatus=$(lxc-attach -n "${container}" -- apt-get -o Dir::State::Lists="${listupgrade_state_dir}" dist-upgrade --assume-yes --download-only -q 2>&1)
             apt_rc=$?
-            echo "${downloadstatus}" | grep --quiet 'Download complete and in download only mode'
+            echo "${downloadstatus}" | grep --quiet -e 'Download complete and in download only mode' -e '0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.'
             download_rc=$?
 
             # shellcheck disable=SC2181
@@ -440,6 +440,7 @@ listupgrade_sources_file="${listupgrade_sources_file:-/etc/apt/sources.list}"
 if ext_mode; then
     config_file="/etc/evolinux/listupgrade-ext.cnf"
     date="Ce mercredi entre 8h00 et 10h00."
+    listupgrade_state_dir="/var/lib/listupgrade-external"
     listupgrade_sources_dir="/etc/apt/listupgrade-external-sources.list.d"
     listupgrade_sources_file="/dev/null"
 fi
