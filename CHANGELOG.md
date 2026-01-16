@@ -37,6 +37,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * openvpn: use its own minifirewall file instead of zzz-custom
 * postgresql: Use only :alnum: characters for nrpe's password
 * vrrpd: check minifirewall version even in check mode
+* nagios-nrpe: measure pressure over a 7s interval instead of default 1s
 
 ### Fixed
 

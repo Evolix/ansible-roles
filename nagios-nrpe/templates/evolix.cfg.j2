@@ -13,8 +13,8 @@ command[check_disk1]={{ monitoringctl_wrapper_path }} --name disk1 -- /usr/lib/n
 command[check_load]={{ monitoringctl_wrapper_path }} --name load -- /usr/lib/nagios/plugins/check_load --percpu --warning=0.7,0.6,0.5 --critical=0.9,0.8,0.7
 command[check_mem]={{ monitoringctl_wrapper_path }} --name mem -- {{ nagios_plugins_directory }}/check_mem -f -C -w 20 -c 10
 command[check_memory]={{ monitoringctl_wrapper_path }} --name memory -- /usr/lib/nagios/plugins/check_memory --available --warning 20%: --critical 10%:
-command[check_pressure_cpu]={{ monitoringctl_wrapper_path }} --name pressure_cpu -- /usr/lib/nagios/plugins/check_pressure --cpu -w 100000 -c 500000
-command[check_pressure_io]={{ monitoringctl_wrapper_path }} --name pressure_io -- /usr/lib/nagios/plugins/check_pressure --io --full -w 100000 -c 500000
+command[check_pressure_cpu]={{ monitoringctl_wrapper_path }} --name pressure_cpu -- /usr/lib/nagios/plugins/check_pressure --cpu -w 100000 -c 500000 7
+command[check_pressure_io]={{ monitoringctl_wrapper_path }} --name pressure_io -- /usr/lib/nagios/plugins/check_pressure --io --full -w 100000 -c 500000 7
 command[check_swap]={{ monitoringctl_wrapper_path }} --name swap -- /usr/lib/nagios/plugins/check_swap -a -w 30% -c 20%
 command[check_total_procs]={{ monitoringctl_wrapper_path }} --name total_procs -- sudo /usr/lib/nagios/plugins/check_procs -w 400 -c 600
 command[check_users]={{ monitoringctl_wrapper_path }} --name users -- /usr/lib/nagios/plugins/check_users -w 5 -c 10
