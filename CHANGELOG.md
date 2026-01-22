@@ -52,6 +52,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * vrrpd: adapt to the new way of restarting minifirewall
 * php: we want be sure libldap-common is installed [UNTESTED]
 * ldap: we want libldap-common with php-ldap [UNTESTED]
+* nagios-nrpe: Use shell glob in check_supervisord to include symlinks
 
 ### Removed
 
