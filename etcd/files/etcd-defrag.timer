@@ -1,0 +1,7 @@
+[Unit]
+Description=Run etcd-defrag.service every week
+After=network.target
+[Timer]
+OnCalendar=Fri *-*-* 07:00
+[Install]
+WantedBy=multi-user.target
