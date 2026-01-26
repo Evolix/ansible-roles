@@ -91,4 +91,16 @@
     - { name: "net.ipv4.ipfrag_high_thresh",  value: "262144" }
     - { name: "net.ipv6.ip6frag_high_thresh", value: "262144" }
 
+- name: Boost values for cache ARP
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    sysctl_file: "{{ evolinux_kernel_sysctl_path }}"
+    state: present
+    reload: yes
+  loop:
+    - { name: "net.ipv4.neigh.default.gc_thresh1",   value: "1024" }
+    - { name: "net.ipv4.neigh.default.gc_thresh2",  value: "2048" }
+    - { name: "net.ipv4.neigh.default.gc_thresh3",  value: "4096" }
+
 - ansible.builtin.meta: flush_handlers

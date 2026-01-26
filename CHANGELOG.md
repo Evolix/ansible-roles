@@ -23,6 +23,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc: install screen and vim (with config) [UNTESTED]
 * openvpn: add a reply-to email for expirations cron in Debian
 * multi-php: new role
+* evolinux-base: boost values for cache ARP, see https://wiki.evolix.org/HowtoDebian/Reseau#saturation-du-cache-arp [UNTESTED]
 
 ### Changed
 
