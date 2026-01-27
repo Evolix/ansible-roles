@@ -34,6 +34,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * generate-ldif: generateldif.sh can use another port than 22 via ansible_port
 * lxc-php/php: Use debsuryorg-archive-keyring 2025.11.18
 * nextcloud: do not mount nextcloud_data_uuid if it is not defined
+* nodejs: Update repository's PGP key
 * nginx: add server-status suffix in *enabled* default VHost
 * nodejs: install version 22 by default
 * openvpn: use its own minifirewall file instead of zzz-custom
