@@ -28,11 +28,12 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * apt: Use evolix security mirror
-* elasticsearch: Update repository's GPG key
+* elasticsearch: Update repository's OpenPGP key
 * evocheck: Add /usr/local/sbin to PATH
 * evocheck: crontab template source file and destination path are now variabilized
 * generate-ldif: generateldif.sh can use another port than 22 via ansible_port
 * lxc-php/php: Use debsuryorg-archive-keyring 2025.11.18
+* nagios-nrpe: measure pressure over a 7s interval instead of default 1s
 * nextcloud: do not mount nextcloud_data_uuid if it is not defined
 * nodejs: Update repository's PGP key
 * nginx: add server-status suffix in *enabled* default VHost
@@ -40,7 +41,6 @@ The **patch** part is incremented if multiple releases happen the same month
 * openvpn: use its own minifirewall file instead of zzz-custom
 * postgresql: Use only :alnum: characters for nrpe's password
 * vrrpd: check minifirewall version even in check mode
-* nagios-nrpe: measure pressure over a 7s interval instead of default 1s
 
 ### Fixed
 
@@ -49,6 +49,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * haproxy: generate new configuration in haproxy.cf.new to debug "failed to validate"
 * kvm-tools: add-vm supports VM without home/srv volumes in solo mode
 * lxc-php: do not fail to run container if /run/mysqld does not exist (for instance if MariaDB has been disabled).
+* nodejs: update expired yarn OpenPGP certificate for apt
 * postgresql: install postgis 3 for debian ≥ 11
 * squid : since ELTS release, fix config for Debian 10
 * userlorotate: fix comment string of option RETENTION_DAYS
