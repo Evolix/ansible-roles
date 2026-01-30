@@ -26,9 +26,16 @@
       - hp.sources
       - hwraid.le-vert.net.sources
       - postgresql.sources
+      - pgdg.sources
       - evolix_public.list
       - backports.list
       - extended-lts.list
+      - sury.list
+      - evolix_sury.list
+      - hp.list
+      - hwraid.le-vert.net.list
+      - postgresql.list
+      - pgdg.list
 
 - name: Create /etc/apt/listupgrade{,-external}-sources.list.d directories
   ansible.builtin.file:
