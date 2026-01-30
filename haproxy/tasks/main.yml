@@ -106,6 +106,7 @@
       - "templates/haproxy/haproxy.{{ host_group | default('all') }}.cfg.j2"
       - "templates/haproxy/haproxy.default.cfg.j2"
       - "templates/haproxy.default.cfg.j2"
+  diff: no
   when: haproxy_update_config | bool
   tags:
     - haproxy

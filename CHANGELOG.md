@@ -33,6 +33,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evocheck: Add /usr/local/sbin to PATH
 * evocheck: crontab template source file and destination path are now variabilized
 * generate-ldif: generateldif.sh can use another port than 22 via ansible_port
+* haproxy no diff for temporary config
 * lxc-php/php: Use debsuryorg-archive-keyring 2025.11.18
 * nagios-nrpe: measure pressure over a 7s interval instead of default 1s
 * nextcloud: do not mount nextcloud_data_uuid if it is not defined
