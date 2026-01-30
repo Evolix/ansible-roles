@@ -18,6 +18,7 @@
       - redis-server
       - redis-tools
     state: present
+    update_cache: True
   tags:
     - redis
     - packages
