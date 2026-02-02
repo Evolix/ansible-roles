@@ -47,18 +47,19 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * evolinux-base: Fix HISTCONTROL
+* evolinux-base: motd template must staysat the top of the templates directory
 * evolinux-base: Update HPE OpenPGP key
 * haproxy: generate new configuration in haproxy.cf.new to debug "failed to validate"
 * kvm-tools: add-vm supports VM without home/srv volumes in solo mode
+* ldap: we want libldap-common with php-ldap [UNTESTED]
 * lxc-php: do not fail to run container if /run/mysqld does not exist (for instance if MariaDB has been disabled).
+* nagios-nrpe: Use shell glob in check_supervisord to include symlinks
 * nodejs: update expired yarn OpenPGP certificate for apt
+* php: we want be sure libldap-common is installed [UNTESTED]
 * postgresql: install postgis 3 for debian ≥ 11
 * squid : since ELTS release, fix config for Debian 10
 * userlorotate: fix comment string of option RETENTION_DAYS
 * vrrpd: adapt to the new way of restarting minifirewall
-* php: we want be sure libldap-common is installed [UNTESTED]
-* ldap: we want libldap-common with php-ldap [UNTESTED]
-* nagios-nrpe: Use shell glob in check_supervisord to include symlinks
 
 ### Removed
 
