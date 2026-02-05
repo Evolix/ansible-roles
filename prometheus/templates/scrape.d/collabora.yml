@@ -1,0 +1,12 @@
+- job_name: coolwsd
+  basic_auth:
+    username: evolix_loolwsd
+    password: iBytiztyacitnilshamCocninEshtobWy
+  metrics_path: /cool/getMetrics
+  static_configs:
+  - targets:
+    - localhost:9980
+  metric_relabel_configs:
+  # There is too much cardinality in doc_* metrics
+  - action: drop_metrics
+    regex: "doc_.*"

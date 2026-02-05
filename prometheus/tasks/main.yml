@@ -17,3 +17,13 @@
     mode: "0640"
   notify: "reload vmagent"
   when: "'crowdsec' in ansible_facts.packages"
+
+- name: "/etc/victoria-metrics/scrape.d/collabora.yml file"
+  ansible.builtin.template:
+    src: "scrape.d/collabora.yml"
+    dest: "/etc/victoria-metrics/scrape.d/collabora.yml"
+    owner: "_victoria-metrics"
+    group: "_victoria-metrics"
+    mode: "0640"
+  notify: "reload vmagent"
+  when: "'coolwsd' in ansible_facts.packages"
