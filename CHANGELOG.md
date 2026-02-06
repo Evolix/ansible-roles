@@ -57,6 +57,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc-php: do not fail to run container if /run/mysqld does not exist (for instance if MariaDB has been disabled).
 * nagios-nrpe: Use shell glob in check_supervisord to include symlinks
 * nodejs: update expired yarn OpenPGP certificate for apt
+* php: fix failsafe filename
 * php: we want be sure libldap-common is installed [UNTESTED]
 * postgresql: install postgis 3 for debian ≥ 11
 * squid : since ELTS release, fix config for Debian 10
