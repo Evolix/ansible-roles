@@ -13,7 +13,7 @@
 
 - name: Copy make-csr.sh script
   ansible.builtin.copy:
-    src: make-csr.sh
+    src: upstream/make-csr.sh
     dest: /usr/local/sbin/make-csr
     owner: root
     group: root
@@ -21,7 +21,7 @@
 
 - name: Copy vhost-domains.sh script
   ansible.builtin.copy:
-    src: vhost-domains.sh
+    src: upstream/vhost-domains.sh
     dest: /usr/local/sbin/vhost-domains
     owner: root
     group: root
@@ -29,7 +29,7 @@
 
 - name: Copy evoacme script
   ansible.builtin.copy:
-    src: evoacme.sh
+    src: upstream/evoacme.sh
     dest: /usr/local/sbin/evoacme
     owner: root
     group: root

@@ -13,7 +13,7 @@ show_version() {
     cat <<END
 vhost-domains version ${VERSION}
 
-Copyright 2009-2021 Evolix <info@evolix.fr>,
+Copyright 2009-2026 Evolix <info@evolix.fr>,
                     Victor Laborie <vlaborie@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>,
                     Benoit Série <bserie@evolix.fr>
@@ -170,7 +170,7 @@ readonly ARGS=$@
 readonly VERBOSE=${VERBOSE:-"0"}
 readonly QUIET=${QUIET:-"0"}
 
-readonly VERSION="21.01"
+readonly VERSION="26.02"
 
 readonly SRV_IP=${SRV_IP:-""}
 

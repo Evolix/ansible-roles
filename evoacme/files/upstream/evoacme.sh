@@ -14,7 +14,7 @@ show_version() {
     cat <<END
 evoacme version ${VERSION}
 
-Copyright 2009-2021 Evolix <info@evolix.fr>,
+Copyright 2009-2026 Evolix <info@evolix.fr>,
                     Victor Laborie <vlaborie@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>,
                     Benoit Série <bserie@evolix.fr>
@@ -310,7 +310,7 @@ readonly QUIET=${QUIET:-"0"}
 readonly TEST=${TEST:-"0"}
 readonly DRY_RUN=${DRY_RUN:-"0"}
 
-readonly VERSION="21.01"
+readonly VERSION="26.02"
 
 # Read configuration file, if it exists
 [ -r /etc/default/evoacme ] && . /etc/default/evoacme

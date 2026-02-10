@@ -13,7 +13,7 @@ show_version() {
     cat <<END
 make-csr version ${VERSION}
 
-Copyright 2009-2021 Evolix <info@evolix.fr>,
+Copyright 2009-2026 Evolix <info@evolix.fr>,
                     Victor Laborie <vlaborie@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>,
                     Benoit Série <bserie@evolix.fr>
@@ -39,6 +39,7 @@ Usage: ${PROGNAME} VHOST DOMAIN [DOMAIN]
 
     If env variable QUIET=1, no message is output
     If env variable VERBOSE=1, debug messages are output
+    If env variable TEST=1, a CSR is generated with the current private key (it's not overwritten by a new key), and Apache and Nginx configurations are not modified.
 EOT
 }
 
@@ -112,9 +113,9 @@ openssl_selfsigned() {
     [ -r "${key}" ] || error "File ${key} is not readable"
     [ -w "${crt_dir}" ] || error "Directory ${crt_dir} is not writable"
     if grep -q SAN "${cfg}"; then
-        "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -extensions SAN -extfile "${cfg}" -signkey "${key}" -out "${crt}" 2>/dev/null
+        "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -extensions SAN -extfile "${cfg}" -signkey "${key}" -out "${crt}" 2> /dev/null
     else
-        "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -signkey "${key}" -out "${crt}" 2>/dev/null
+        "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -signkey "${key}" -out "${crt}" 2> /dev/null
     fi
 
     [ -r "${crt}" ] || error "Something went wrong, ${crt} has not been generated"
@@ -126,7 +127,7 @@ openssl_key(){
 
     [ -w "${key_dir}" ] || error "Directory ${key_dir} is not writable"
 
-    "${OPENSSL_BIN}" genrsa -out "${key}" "${size}" 2>/dev/null
+    "${OPENSSL_BIN}" genrsa -out "${key}" "${size}" 2> /dev/null
 
     [ -r "${key}" ] || error "Something went wrong, ${key} has not been generated"
 }
@@ -250,11 +251,16 @@ main() {
     readonly SSL_KEY_FILE="${SSL_KEY_DIR}/${VHOST}.key"
     readonly CSR_FILE="${CSR_DIR}/${VHOST}.csr"
 
-    make_key "${SSL_KEY_FILE}" "${SSL_KEY_SIZE}"
+    # Change private key only if not in test mode
+    if [ -z "${TEST}" ] || [ "${TEST}" -ne 1 ]; then
+        make_key "${SSL_KEY_FILE}" "${SSL_KEY_SIZE}"
+    fi
     make_csr ${DOMAINS}
 
-    command -v apache2ctl >/dev/null && sed_selfsigned_cert_path_for_apache "/etc/apache2/ssl/${VHOST}.conf"
-    command -v nginx >/dev/null && sed_selfsigned_cert_path_for_nginx "/etc/nginx/ssl/${VHOST}.conf"
+    if [ -z "${TEST}" ] || [ "${TEST}" -ne 1 ]; then
+        command -v apache2ctl >/dev/null && sed_selfsigned_cert_path_for_apache "/etc/apache2/ssl/${VHOST}.conf"
+        command -v nginx >/dev/null && sed_selfsigned_cert_path_for_nginx "/etc/nginx/ssl/${VHOST}.conf"
+    fi
     exit 0
 }
 
@@ -264,8 +270,9 @@ readonly ARGS=$@
 
 readonly VERBOSE=${VERBOSE:-"0"}
 readonly QUIET=${QUIET:-"0"}
+readonly TEST=${TEST:-"0"}
 
-readonly VERSION="21.01"
+readonly VERSION="26.02"
 
 # Read configuration file, if it exists
 [ -r /etc/default/evoacme ] && . /etc/default/evoacme
