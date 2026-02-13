@@ -36,6 +36,8 @@ The **patch** part is incremented if multiple releases happen the same month
 * evocheck: crontab template source file and destination path are now variabilized
 * generate-ldif: generateldif.sh can use another port than 22 via ansible_port
 * haproxy no diff for temporary config
+* lxc: Stricter check of container existence
+* lxc-php: Use http in URI for security.sources
 * lxc-php/php: Use debsuryorg-archive-keyring 2025.11.18
 * nagios-nrpe: measure pressure over a 7s interval instead of default 1s
 * nextcloud: do not mount nextcloud_data_uuid if it is not defined
@@ -55,7 +57,9 @@ The **patch** part is incremented if multiple releases happen the same month
 * haproxy: generate new configuration in haproxy.cf.new to debug "failed to validate"
 * kvm-tools: add-vm supports VM without home/srv volumes in solo mode
 * ldap: we want libldap-common with php-ldap [UNTESTED]
+* lxc: Fix trixie containers creation on buster host
 * lxc-php: do not fail to run container if /run/mysqld does not exist (for instance if MariaDB has been disabled).
+* lxc-php: Use proper keyring for system.source
 * nagios-nrpe: Use shell glob in check_supervisord to include symlinks
 * nodejs: update expired yarn OpenPGP certificate for apt
 * php: fix failsafe filename
