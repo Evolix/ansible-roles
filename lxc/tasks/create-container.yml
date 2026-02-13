@@ -1,7 +1,7 @@
 ---
 - name: "Check if container {{ name }} exists"
   ansible.builtin.command:
-    cmd: "lxc-ls {{ name }}"
+    cmd: "lxc-ls ^{{ name }}$"
   changed_when: False
   check_mode: no
   register: container_exists
