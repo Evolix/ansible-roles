@@ -32,22 +32,23 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * apt: Use evolix security mirror
 * elasticsearch: Update repository's OpenPGP key
+* evoacme: upstream release 26.02
 * evocheck: Add /usr/local/sbin to PATH
 * evocheck: crontab template source file and destination path are now variabilized
 * generate-ldif: generateldif.sh can use another port than 22 via ansible_port
 * haproxy no diff for temporary config
-* lxc: Stricter check of container existence
+* listupgrade/minor-upgrade: upstream release 26.02
 * lxc-php: Use http in URI for security.sources
 * lxc-php/php: Use debsuryorg-archive-keyring 2025.11.18
+* lxc: Stricter check of container existence
 * nagios-nrpe: measure pressure over a 7s interval instead of default 1s
 * nextcloud: do not mount nextcloud_data_uuid if it is not defined
-* nodejs: Update repository's PGP key
 * nginx: add server-status suffix in *enabled* default VHost
 * nodejs: install version 22 by default
+* nodejs: Update repository's PGP key
 * openvpn: use its own minifirewall file instead of zzz-custom
 * postgresql: Use only :alnum: characters for nrpe's password
 * vrrpd: check minifirewall version even in check mode
-* Import upstream release 26.02 of evoacme
 
 ### Fixed
 

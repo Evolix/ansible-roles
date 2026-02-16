@@ -6,7 +6,7 @@
 set -u
 # Do not "set -e", many subcommands can fail
 
-VERSION="25.11"
+VERSION="26.02"
 readonly VERSION
 
 PROGNAME=$(basename "$0")
@@ -60,8 +60,8 @@ upgrade_tmp_file() {
 }
 
 fix_logs_permissions() {
-    chown -R "$(logname)": "${upgrade_tmp_dir}"
-    chmod -R o+rwX,g+rwX "${upgrade_tmp_dir}"
+    chown -R "root:root" "${upgrade_tmp_dir}"
+    chmod -R u+rwX,g-rwx,o-rwx "${upgrade_tmp_dir}"
 }
 save_apt_logs() {
     lxc_container=${1:-}
@@ -227,7 +227,7 @@ pre_hooks() {
     prefix=${1}
 
     if [ -d "${hooks_dir}/pre" ]; then
-        file=$(upgrade_tmp_file "upgradable_packages.stdout", "${prefix}.")
+        file=$(upgrade_tmp_file "upgradable_packages.stdout" "${prefix}.")
         if [ -f "${file}" ]; then
             export UPGRADABLE_PACKAGES_FILE="${file}"
         fi
@@ -239,7 +239,7 @@ post_hooks() {
     prefix=${1}
 
     if [ -d "${hooks_dir}/post" ]; then
-        file=$(upgrade_tmp_file "upgradable_packages.stdout", "${prefix}.")
+        file=$(upgrade_tmp_file "upgradable_packages.stdout" "${prefix}.")
         if [ -f "${file}" ]; then
             export UPGRADABLE_PACKAGES_FILE="${file}"
         fi
@@ -416,6 +416,9 @@ check_alternate_apt_state
 
 upgrade_tmp_dir="/var/log/minor-upgrade/$(date +"%Y%m%d%H%M%S")"
 mkdir --parents "${upgrade_tmp_dir}"
+chown "root:root" "${upgrade_tmp_dir}"
+chmod "0700" "${upgrade_tmp_dir}"
+
 if command -v realpath >/dev/null; then
     upgrade_tmp_dir="$(realpath "${upgrade_tmp_dir}")"
 fi
