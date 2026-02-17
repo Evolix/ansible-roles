@@ -6,7 +6,7 @@
 set -u
 # Do not "set -e", many subcommands can fail
 
-VERSION="26.02"
+VERSION="26.02.1"
 readonly VERSION
 
 PROGNAME=$(basename "$0")
@@ -37,7 +37,7 @@ is_ext_mode() {
 }
 # Generate pretty list of packages to upgrade
 get_upgradable_packages() {
-    file=$(upgrade_tmp_file "upgradable_packages.stdout", "main.")
+    file=$(upgrade_tmp_file "upgradable_packages.stdout" "main.")
     # shellcheck disable=SC2024
     apt -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dir::Etc::sourcelist="${listupgrade_sources_file}" list --upgradable 2>&1 | grep --extended-regexp --invert-match '^(Listing|WARNING|$)' > "${file}"
 
@@ -45,7 +45,7 @@ get_upgradable_packages() {
 }
 get_upgradable_packages_container() {
     container=${1-}
-    file=$(upgrade_tmp_file "upgradable_packages.stdout", "${container}.")
+    file=$(upgrade_tmp_file "upgradable_packages.stdout" "${container}.")
     # shellcheck disable=SC2024
     lxc-attach --name "${container}" -- apt list --upgradable 2>&1 | grep --extended-regexp --invert-match '^(Listing|WARNING|$)' > "${file}"
 

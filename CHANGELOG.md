@@ -37,7 +37,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evocheck: crontab template source file and destination path are now variabilized
 * generate-ldif: generateldif.sh can use another port than 22 via ansible_port
 * haproxy no diff for temporary config
-* listupgrade/minor-upgrade: upstream release 26.02
+* listupgrade/minor-upgrade: upstream release 26.02.1
 * lxc-php: Use http in URI for security.sources
 * lxc-php/php: Use debsuryorg-archive-keyring 2025.11.18
 * lxc: Stricter check of container existence
