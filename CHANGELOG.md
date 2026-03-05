@@ -33,6 +33,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * apt: Use evolix security mirror
 * elasticsearch: Update repository's OpenPGP key
 * evoacme: upstream release 26.02
+* evoacme: upstream release 26.03
 * evocheck: Add /usr/local/sbin to PATH
 * evocheck: crontab template source file and destination path are now variabilized
 * generate-ldif: generateldif.sh can use another port than 22 via ansible_port
