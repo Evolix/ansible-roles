@@ -18,6 +18,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * etc-git: add path filtering for selective commits
 * etc-git: release 25.11 of ansible-commit and evocommit
 * evoadmin-web: Add support for apache2 multi-instance mode
+* evoadmin-web: Install dependency php-net-dns2 for coming soon new certificate management page
 * evolinux-base: boost values for cache ARP, see https://wiki.evolix.org/HowtoDebian/Reseau#saturation-du-cache-arp [UNTESTED]
 * evomaintenance: upstream release 25.11.2
 * listupgrade: external mode

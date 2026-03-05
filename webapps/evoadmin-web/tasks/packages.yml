@@ -8,6 +8,7 @@
     name:
       - php-pear
       - php-log
+      - php-net-dns2
     state: present
 
 - name: Install PHP-FPM (multi-instance)
