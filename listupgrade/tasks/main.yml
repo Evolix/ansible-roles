@@ -70,7 +70,7 @@
   ansible.builtin.set_fact:
     external: "{{ external | difference(official) }}"
 
-- name: Enable allowed sources
+- name: Enable allowed sources (errors are legitimately ignored)
   ansible.builtin.file:
     src: "../sources.list.d/{{ item }}"
     dest: "/etc/apt/listupgrade-sources.list.d/{{ item }}"
@@ -78,7 +78,7 @@
   ignore_errors: true
   loop: "{{ official }}"
 
-- name: Ensure external sources are not enabled
+- name: Ensure external sources are not enabled (errors are legitimately ignored)
   ansible.builtin.file:
     path: "/etc/apt/listupgrade-sources.list.d/{{ item }}"
     state: absent
