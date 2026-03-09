@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PROGNAME="evomaintenance"
-VERSION="25.10"
+VERSION="25.11.2"
 
 show_version() {
     cat <<END
@@ -41,6 +41,9 @@ Options
      --no-evocheck           disable evocheck execution
      --auto                  use "auto" mode
      --no-auto               use "manual" mode (default)
+     --commit-only-path PATH add only this path to the commit
+                             can be set multiple times
+                             can contain globs
  -u, --user=USER             force USER value (default: logname(1))
  -v, --verbose               increase verbosity
  -n, --dry-run               actions are not executed
@@ -263,20 +266,40 @@ hook_commit() {
                         # GIT_COMMITS_SHORT=$(printf "%s\n%s : %s" "${GIT_COMMITS_SHORT}" "${GIT_DIR}" "${STATS_SHORT}" | sed -e '/^$/d')
                         GIT_COMMITS=$(printf "%s\n%s\n%s" "${GIT_COMMITS}" "${GIT_DIR}" "${STATS}" | sed -e '/^$/d')
                     else
-                        # remount mount point read-write if currently readonly
-                        is_repository_readonly ${dir} && { READONLY_ORIG=1; remount_repository_readwrite ${dir}; }
-                        # commit changes
-                        ${GIT_BIN} add --all
-                        ${GIT_BIN} commit --message "${MESSAGE}" --author="${USER} <${USER}@evolix.net>" --quiet
-                        # remount mount point read-only if it was before
-                        test "$READONLY_ORIG" = "1" && remount_repository_readonly ${dir}
-                        # Add the SHA to the log file if something has been committed
-                        SHA=$(${GIT_BIN} rev-parse --short HEAD)
-                        # STATS_SHORT=$(${GIT_BIN} show --stat | tail -1)
-                        STATS=$(${GIT_BIN} show --stat --pretty=format:"" | tail -n ${GIT_STATUS_MAX_LINES})
-                        # append commit data, without empty lines
-                        # GIT_COMMITS_SHORT=$(printf "%s\n%s : %s –%s" "${GIT_COMMITS_SHORT}" "${GIT_DIR}" "${SHA}" "${STATS_SHORT}" | sed -e '/^$/d')
-                        GIT_COMMITS=$(printf "%s\n%s : %s\n%s" "${GIT_COMMITS}" "${GIT_DIR}" "${SHA}" "${STATS}" | sed -e '/^$/d')
+                        # find and "git add" all existing paths in the repository
+                        # that match the filter (if present)
+                        if [ -n "${COMMIT_ONLY_PATH}" ]; then
+                            # disable globbing
+                            set -f
+                            for path in ${COMMIT_ONLY_PATH}; do
+                                # shellcheck disable=SC2086
+                                ${GIT_BIN} add "${path}" 2>/dev/null
+                            done
+                            # enable globbing
+                            set +f
+                        else
+                            ${GIT_BIN} add --all
+                        fi
+                        # Commit only if something is staged
+                        if ! ${GIT_BIN} diff --cached --quiet; then
+                            # remount mount point read-write if currently readonly
+                            is_repository_readonly ${dir} && { READONLY_ORIG=1; remount_repository_readwrite ${dir}; }
+
+                            # commit changes
+                            ${GIT_BIN} commit --message "${MESSAGE}" --author="${USER} <${USER}@evolix.net>" --quiet
+
+                            # remount mount point read-only if it was before
+                            test "$READONLY_ORIG" = "1" && remount_repository_readonly ${dir}
+
+                            # Add the SHA to the log file if something has been committed
+                            SHA=$(${GIT_BIN} rev-parse --short HEAD)
+                            # STATS_SHORT=$(${GIT_BIN} show --stat | tail -1)
+                            STATS=$(${GIT_BIN} show --stat --pretty=format:"" | tail -n ${GIT_STATUS_MAX_LINES})
+
+                            # append commit data, without empty lines
+                            # GIT_COMMITS_SHORT=$(printf "%s\n%s : %s –%s" "${GIT_COMMITS_SHORT}" "${GIT_DIR}" "${SHA}" "${STATS_SHORT}" | sed -e '/^$/d')
+                            GIT_COMMITS=$(printf "%s\n%s : %s\n%s" "${GIT_COMMITS}" "${GIT_DIR}" "${SHA}" "${STATS}" | sed -e '/^$/d')
+                        fi
                     fi
                 fi
             fi
@@ -396,6 +419,32 @@ hook_log() {
   fi
 }
 
+append_path() {
+    current_path=$1
+    new_path=$2
+    if [ -n "${current_path}" ]; then
+        echo "${current_path} ${new_path}"
+    else
+        echo "${new_path}"
+    fi
+}
+
+show_git_data() {
+    printf "/!\\\ There are some uncommited changes.\n%s\n\n" "${GIT_STATUSES}"
+    if [ -n "${COMMIT_ONLY_PATH}" ]; then
+        printf "Only files matching these patterns will be commited :\n"
+        # disable globbing
+        set -f
+        for path in ${COMMIT_ONLY_PATH}; do
+            # shellcheck disable=SC2086
+            printf " %s\n" "${path}"
+        done
+        printf "\n"
+        # enable globbing
+        set +f
+    fi
+}
+
 # load configuration if present.
 test -f /etc/evomaintenance.cf && . /etc/evomaintenance.cf
 
@@ -412,6 +461,7 @@ EVOCHECK=${EVOCHECK:-"0"}
 GIT_STATUS_MAX_LINES=${GIT_STATUS_MAX_LINES:-20}
 API_ENDPOINT=${API_ENDPOINT:-""}
 FORCE_USER=${FORCE_USER:-""}
+COMMIT_ONLY_PATH=${COMMIT_ONLY_PATH:-""}
 
 # initialize variables
 MESSAGE=""
@@ -431,7 +481,7 @@ while :; do
             exit 0
             ;;
         -m|--message)
-            # message options, with value speparated by space
+            # message options, with value separated by space
             if [ -n "$2" ]; then
                 MESSAGE=$2
                 shift
@@ -441,7 +491,7 @@ while :; do
             fi
             ;;
         --message=?*)
-            # message options, with value speparated by =
+            # message options, with value separated by =
             MESSAGE=${1#*=}
             ;;
         --message=)
@@ -496,7 +546,7 @@ while :; do
             FORCE_USER="autosysadmin"
             ;;
         -u|--user)
-            # user options, with value speparated by space
+            # user options, with value separated by space
             if [ -n "$2" ]; then
                 FORCE_USER=$2
                 shift
@@ -506,12 +556,31 @@ while :; do
             fi
             ;;
         --user=?*)
-            # message options, with value speparated by =
+            # message options, with value separated by =
             FORCE_USER=${1#*=}
             ;;
         --user=)
             # message options, without value
             printf 'ERROR: "--user" requires a non-empty option argument.\n' >&2
+            exit 1
+            ;;
+        --commit-only-path)
+            # message options, with value separated by space
+            if [ -n "$2" ]; then
+                COMMIT_ONLY_PATH="$(append_path "${COMMIT_ONLY_PATH}" "$2")"
+                shift
+            else
+                printf 'ERROR: "--commit-only-path" requires a non-empty option argument.\n' >&2
+                exit 1
+            fi
+            ;;
+        --commit-only-path=?*)
+            # message options, with value separated by =
+            COMMIT_ONLY_PATH="$(append_path "${COMMIT_ONLY_PATH}" "${1#*=}")"
+            ;;
+        --commit-only-path=)
+            # message options, without value
+            printf 'ERROR: "--commit-only-path" requires a non-empty option argument.\n' >&2
             exit 1
             ;;
         -n|--dry-run)
@@ -617,7 +686,7 @@ if [ "${INTERACTIVE}" = "1" ] && [ "${EVOCHECK}" = "1" ]; then
     get_evocheck
 fi
 if [ -n "${GIT_STATUSES}" ] && [ "${INTERACTIVE}" = "1" ]; then
-    printf "/!\\\ There are some uncommited changes.\n%s\n\n" "${GIT_STATUSES}"
+    show_git_data
 fi
 
 if [ -z "${MESSAGE}" ]; then
@@ -635,7 +704,7 @@ fi
 print_session_data
 
 if [ "${INTERACTIVE}" = "1" ] && [ "${AUTO}" = "0" ]; then
-    if  [ "${HOOK_COMMIT}" = "1" ] || [ "${HOOK_MAIL}" = "1" ] ]; then
+    if  [ "${HOOK_COMMIT}" = "1" ] || [ "${HOOK_MAIL}" = "1" ]; then
         printf "\nActions to execute:\n"
         if [ "${HOOK_COMMIT}" = "1" ]; then
             printf "* commit changes in repositories\n"
@@ -685,7 +754,7 @@ fi
 if [ "${INTERACTIVE}" = "1" ] && [ "${AUTO}" = "0" ]; then
     # Commit hook
     if [ -n "${GIT_STATUSES}" ] && [ "${HOOK_COMMIT}" = "1" ]; then
-        printf "/!\ There are some uncommited changes.\n%s\n\n" "${GIT_STATUSES}"
+        show_git_data
 
         y="Y"; n="n"
         answer=""

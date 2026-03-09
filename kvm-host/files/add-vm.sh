@@ -10,7 +10,7 @@
 # Bash strict mode
 set -euo pipefail
 
-VERSION="21.10"
+VERSION="26.01"
 
 isDryRun() {
     test "${doDryRun}" = "true"
@@ -275,17 +275,28 @@ fi
 
 if isSolo; then
     virtRootDisk="--disk path=/dev/${volRootDisk}/${vmName}_root,bus=virtio,io=threads,cache=none,format=raw"
-    virtHomeDisk="--disk path=/dev/${volHomeDisk}/${vmName}_home,bus=virtio,io=threads,cache=none,format=raw"
-    virtHomeDisk="--disk path=/dev/${volSrvDisk}/${vmName}_srv,bus=virtio,io=threads,cache=none,format=raw"
+    if [ "${volHomeDisk}" != "none" ]; then
+        virtHomeDisk="--disk path=/dev/${volHomeDisk}/${vmName}_home,bus=virtio,io=threads,cache=none,format=raw"
+    else
+        virtHomeDisk=""
+    fi
+    if [ "${volSrvDisk}" != "none" ]; then
+        virtSrvDisk="--disk path=/dev/${volSrvDisk}/${vmName}_srv,bus=virtio,io=threads,cache=none,format=raw"
+    else
+        virtSrvDisk=""
+    fi
 else
     virtRootDisk="--disk path=/dev/drbd/by-disk/${volRootDisk}/${vmName}_root,bus=virtio,io=threads,cache=none,format=raw"
-    virtHomeDisk=""
+
     if [ "${volHomeDisk}" != "none" ]; then
         virtHomeDisk="--disk path=/dev/drbd/by-disk/${volHomeDisk}/${vmName}_home,bus=virtio,io=threads,cache=none,format=raw"
+    else
+        virtHomeDisk=""
     fi
-    virtSrvDisk=""
     if [ "${volSrvDisk}" != "none" ]; then
         virtSrvDisk="--disk path=/dev/drbd/by-disk/${volSrvDisk}/${vmName}_srv,bus=virtio,io=threads,cache=none,format=raw"
+    else
+        virtSrvDisk=""
     fi
 fi
 

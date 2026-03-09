@@ -7,8 +7,37 @@
     path: /etc/minifirewall.d/
   register: _minifirewall_dir
 
-- ansible.builtin.set_fact:
-    minifirewall_restart_handler_name: "{{ minifirewall_restart_if_needed | bool | ternary('restart minifirewall', 'restart minifirewall (noop)') }}"
+
+- name: Get minifirewall version
+  ansible.builtin.shell:
+    cmd: "test -x /usr/local/sbin/minifirewall && { /usr/local/sbin/minifirewall version | head -n 1 | awk '{print $3}'; } || { grep --extended-regexp '^\\s*VERSION=' /etc/init.d/minifirewall | cut -d '=' -f2 | tr -d '\"'; }"
+  failed_when: False
+  changed_when: False
+  check_mode: no
+  register: _minifirewall_version_check
+
+- name: Split minifirewall version string
+  ansible.builtin.set_fact:
+    minifirewall_version: "{{ _minifirewall_version_check.stdout_lines[0] | default('0') }}"
+
+- name: 'Set minifirewall_restart_handler_name to "modern/sysvinit"'
+  ansible.builtin.set_fact:
+    minifirewall_restart_handler_name: "restart minifirewall (modern/sysvinit)"
+  when:
+    - minifirewall_version is version('0','<=')
+  
+- name: 'Set minifirewall_restart_handler_name to "modern/sysvinit"'
+  ansible.builtin.set_fact:
+    minifirewall_restart_handler_name: "restart minifirewall (modern/sysvinit)"
+  when:
+    - minifirewall_version is version('0','>')
+    - minifirewall_version is version('25.10','<')
+
+- name: 'Set minifirewall_restart_handler_name to "modern/systemd"'
+  ansible.builtin.set_fact:
+    minifirewall_restart_handler_name: "restart minifirewall (modern/systemd)"
+  when:
+    - minifirewall_version is version('25.10','>=')
 
 - name: VRRP output is authorized in minifirewall
   ansible.builtin.blockinfile:

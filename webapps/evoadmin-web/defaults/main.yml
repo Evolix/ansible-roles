@@ -30,3 +30,9 @@ evoadmin_tpl_mail_from: root@localhost
 evoadmin_tpl_mail_bcc: Null
 evoadmin_tpl_mail_standard: "{{ general_alert_email }}"
 evoadmin_tpl_mail_urgent: "{{ general_alert_email }}"
+
+evoadmin_multiinstance: false
+evoadmin_pool_socket: "{{ evoadmin_home_dir }}/php-fpm.sock"
+evoadmin_multiinstance_backend_port: "127.0.0.80:997"
+evoadmin_multiinstance_backend_vhost_template: "evoadmin.backend.default.conf.j2"
+evoadmin_multiinstance_frontend_vhost_template: "evoadmin.front.default.conf.j2"

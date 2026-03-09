@@ -1,12 +1,25 @@
 ---
 
-- name: restart minifirewall
+- name: restart minifirewall (modern/sysvinit)
   ansible.builtin.command:
     cmd: /etc/init.d/minifirewall restart
   register: minifirewall_init_restart
-  failed_when:
-    - "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
-    - "'minifirewall started' not in minifirewall_init_restart.stdout"
+  failed_when: "'minifirewall failed' in minifirewall_init_restart.stdout"
+
+- name: force-stop minifirewall (modern/systemd)
+  ansible.builtin.command:
+    cmd: /usr/local/sbin/minifirewall force-stop
+
+- name: restart minifirewall (modern/systemd)
+  ansible.builtin.systemd:
+    name: minifirewall.service
+    state: restarted
+
+- name: restart minifirewall (legacy)
+  ansible.builtin.command:
+    cmd: /etc/init.d/minifirewall restart
+  register: minifirewall_init_restart
+  failed_when: "'starting IPTables rules is now finish : OK' not in minifirewall_init_restart.stdout"
 
 - name: restart minifirewall (noop)
   ansible.builtin.meta: noop

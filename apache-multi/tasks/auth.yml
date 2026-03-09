@@ -1,0 +1,24 @@
+---
+- name: "auth | Init ipaddr_whitelist.conf file"
+  ansible.builtin.copy:
+    src: "ipaddr_whitelist.conf"
+    dest: "{{ apache_multi_template_dir }}/ipaddr_whitelist.conf"
+    owner: "root"
+    group: "root"
+    mode: "0640"
+    force: false
+  tags:
+    - "apache"
+
+- name: "auth | Load IP whitelist task"
+  ansible.builtin.import_tasks:
+    file: "ip_whitelist.yml"
+
+- name: "auth | Include private IP whitelist for server-status"
+  ansible.builtin.lineinfile:
+    dest: "{{ apache_multi_template_dir }}/mods-available/status.conf"
+    line: "        Include {{ apache_multi_template_dir }}/ipaddr_whitelist.conf"
+    insertafter: "SetHandler server-status"
+    state: "present"
+  tags:
+    - "apache"

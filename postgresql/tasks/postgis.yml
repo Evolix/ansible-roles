@@ -1,8 +1,20 @@
 ---
-- name: Install PostGIS extention
+- name: Install PostGIS extention (Debian < 11)
   ansible.builtin.apt:
     name:
       - postgis
       - "postgresql-{{ postgresql_version }}-postgis-2.5"
       - "postgresql-{{ postgresql_version }}-postgis-2.5-scripts"
     update_cache: yes
+  when:
+    - ansible_distribution_major_version is version('11', '<')
+
+- name: Install PostGIS extention (Debian >= 11)
+  ansible.builtin.apt:
+    name:
+      - postgis
+      - "postgresql-{{ postgresql_version }}-postgis-3"
+      - "postgresql-{{ postgresql_version }}-postgis-3-scripts"
+    update_cache: yes
+  when:
+    - ansible_distribution_major_version is version('11', '>=')

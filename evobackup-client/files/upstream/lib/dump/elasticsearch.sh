@@ -252,7 +252,7 @@ dump_elasticsearch() {
     ${dump_cmd} > "${error_file}"
 
     # test if the last line of the log file is "200"
-    tail -n 1 "${error_file}" | grep --quiet "^200$" "${error_file}"
+    tail -n 1 "${error_file}" | grep "^200$" >/dev/null 2>&1
 
     local last_rc=$?
     # shellcheck disable=SC2086
@@ -285,7 +285,7 @@ dump_elasticsearch() {
         ${dump_cmd} > "${error_file}"
 
         # test if the last line of the log file is "200"
-        tail -n 1 "${error_file}" | grep --quiet "^200$" "${error_file}"
+        tail -n 1 "${error_file}" | grep "^200$" >/dev/null 2>&1
 
         local last_rc=$?
         # shellcheck disable=SC2086

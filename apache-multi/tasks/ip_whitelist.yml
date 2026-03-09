@@ -1,0 +1,25 @@
+---
+- name: "ip_whitelist | Add IP addresses to private IP whitelist"
+  ansible.builtin.lineinfile:
+    dest: "{{ apache_multi_template_dir }}/ipaddr_whitelist.conf"
+    line: "Require ip {{ item }}"
+    state: "present"
+    create: true
+  loop: "{{ apache_ipaddr_whitelist_present }}"
+  # TODO: replace
+  # notify: reload apache
+  tags:
+    - "apache"
+    - "ips"
+
+- name: "ip_whitelist | Remove IP addresses from private IP whitelist"
+  ansible.builtin.lineinfile:
+    dest: "{{ apache_multi_template_dir }}/ipaddr_whitelist.conf"
+    line: "Require ip {{ item }}"
+    state: "absent"
+  loop: "{{ apache_ipaddr_whitelist_absent }}"
+  # TODO: replace
+  # notify: reload apache
+  tags:
+    - "apache"
+    - "ips"

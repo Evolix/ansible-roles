@@ -1,0 +1,43 @@
+<VirtualHost {{ evoadmin_multiinstance_backend_port }}>
+
+    # FQDN principal
+    ServerName {{ evoadmin_host }}
+    #ServerAlias {{ evoadmin_host }}
+
+    # Repertoire principal
+    DocumentRoot {{ evoadmin_document_root }}/htdocs/
+
+    # Propriete du repertoire
+    <Directory {{ evoadmin_document_root }}/htdocs/>
+        #Options Indexes SymLinksIfOwnerMatch
+        Options SymLinksIfOwnerMatch
+        AllowOverride AuthConfig Limit FileInfo
+{% if evoadmin_htpasswd %}
+        Require all denied
+        Include /etc/apache2-template/ipaddr_whitelist.conf
+        AuthType Basic
+        AuthName "Restricted"
+        AuthUserFile "/var/www/.ansible_evoadmin_htpasswd"
+        Require valid-user
+        <IfModule security2_module>
+            SecRuleEngine Off
+        </IfModule>
+{% else %}
+        Require all granted
+{% endif %}
+    </Directory>
+
+    # LOG
+    CustomLog {{ evoadmin_log_dir }}/access.log combined
+    ErrorLog  {{ evoadmin_log_dir }}/error.log
+
+    # AWSTATS
+    SetEnv AWSTATS_FORCE_CONFIG evoadmin
+
+    # PHP
+    <Proxy "unix:{{ evoadmin_pool_socket }}|fcgi://localhost/" timeout=300>
+    </Proxy>
+    <FilesMatch "\.php$">
+        SetHandler proxy:unix:{{ evoadmin_pool_socket }}|fcgi://localhost/
+    </FilesMatch>
+</VirtualHost>

@@ -8,4 +8,5 @@ listupgrade_cron_hour: "{{ range(6,9) | random(seed=inventory_hostname) }}"
 listupgrade_cron_day: "*"
 listupgrade_cron_month: "*"
 listupgrade_cron_weekday: "2"
+listupgrade_external_cron_weekday: "4"
 listupgrade_cron_force: false

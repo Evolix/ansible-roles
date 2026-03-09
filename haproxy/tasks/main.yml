@@ -94,11 +94,11 @@
     - haproxy
     - packages
 
-- name: Copy HAProxy configuration
+- name: Generate HAProxy new configuration (check mode)
   ansible.builtin.template:
     src: "{{ item }}"
     dest: /etc/haproxy/haproxy.cfg
-    force: "{{ haproxy_force_config }}"
+    force: True
     validate: "haproxy -c -f %s"
   loop: "{{ query('first_found', templates) }}"
   vars:
@@ -107,8 +107,46 @@
       - "templates/haproxy/haproxy.{{ host_group | default('all') }}.cfg.j2"
       - "templates/haproxy/haproxy.default.cfg.j2"
       - "templates/haproxy.default.cfg.j2"
+  when:
+    - haproxy_update_config | bool
+    - ansible_check_mode
+  tags:
+    - haproxy
+    - config
+    - update-config
+
+- name: Generate HAProxy new configuration
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: /etc/haproxy/haproxy.cfg.new
+    force: True
+  loop: "{{ query('first_found', templates) }}"
+  vars:
+    templates:
+      - "templates/haproxy/haproxy.{{ inventory_hostname }}.cfg.j2"
+      - "templates/haproxy/haproxy.{{ host_group | default('all') }}.cfg.j2"
+      - "templates/haproxy/haproxy.default.cfg.j2"
+      - "templates/haproxy.default.cfg.j2"
+  diff: no
+  when:
+    - haproxy_update_config | bool
+    - not ansible_check_mode
+  tags:
+    - haproxy
+    - config
+    - update-config
+
+- name: Copy HAProxy configuration
+  ansible.builtin.copy:
+    src: /etc/haproxy/haproxy.cfg.new
+    dest: /etc/haproxy/haproxy.cfg
+    remote_src: True
+    force: "{{ haproxy_force_config }}"
+    validate: "haproxy -c -f %s"
   notify: reload haproxy
-  when: haproxy_update_config | bool
+  when:
+    - haproxy_update_config | bool
+    - not ansible_check_mode
   tags:
     - haproxy
     - config

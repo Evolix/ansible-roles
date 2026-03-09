@@ -24,6 +24,7 @@
       - php-intl
       - php-imap
       - php-ldap
+      - libldap-common
       - "{{ php_modules_mysqlnd | bool | ternary('php-mysqlnd','php-mysql') }}"
       - php-pgsql
       - php-sqlite3

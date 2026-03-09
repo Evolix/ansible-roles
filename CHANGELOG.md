@@ -21,6 +21,76 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
+## [26.03] 2026-03-09
+
+### Added
+
+* apache-multi: Create role for apache2 multi-instance
+* etc-git: add missing doc for ansible-commit
+* etc-git: add path filtering for selective commits
+* etc-git: release 25.11 of ansible-commit and evocommit
+* evoadmin-web: Add support for apache2 multi-instance mode
+* evoadmin-web: Install dependency php-net-dns2 for coming soon new certificate management page
+* evolinux-base: boost values for cache ARP, see https://wiki.evolix.org/HowtoDebian/Reseau#saturation-du-cache-arp [UNTESTED]
+* evomaintenance: upstream release 25.11.2
+* listupgrade: external mode
+* log2mail: Add rule for ARP table saturation
+* lxc: install screen and vim (with config) [UNTESTED]
+* openvpn: add a reply-to email for expirations cron in Debian
+* php-multi: new role
+* prometheus: add collabora
+* redis: update apt cache before install
+
+### Changed
+
+* apt: Use evolix security mirror
+* elasticsearch: Update repository's OpenPGP key
+* evoacme: upstream release 26.02
+* evoacme: upstream release 26.03
+* evocheck: Add /usr/local/sbin to PATH
+* evocheck: crontab template source file and destination path are now variabilized
+* generate-ldif: generateldif.sh can use another port than 22 via ansible_port
+* haproxy: new attempt to have "normal" and "check" modes compatible
+* haproxy: no diff for temporary config
+* listupgrade/minor-upgrade: upstream release 26.02.1
+* lxc-php: Use http in URI for security.sources
+* lxc-php/php: Use debsuryorg-archive-keyring 2025.11.18
+* lxc: Stricter check of container existence
+* nagios-nrpe: measure pressure over a 7s interval instead of default 1s
+* nextcloud: do not mount nextcloud_data_uuid if it is not defined
+* nginx: add server-status suffix in *enabled* default VHost
+* nodejs: install version 22 by default
+* nodejs: Update repository's PGP key
+* openvpn: use its own minifirewall file instead of zzz-custom
+* postgresql: Use only :alnum: characters for nrpe's password
+* vrrpd: check minifirewall version even in check mode
+
+### Fixed
+
+* evolinux-base: Fix HISTCONTROL
+* evolinux-base: motd template must staysat the top of the templates directory
+* evolinux-base: Update HPE OpenPGP key
+* haproxy: generate new configuration in haproxy.cf.new to debug "failed to validate"
+* kvm-tools: add-vm supports VM without home/srv volumes in solo mode
+* ldap: we want libldap-common with php-ldap [UNTESTED]
+* lxc-php: do not fail to run container if /run/mysqld does not exist (for instance if MariaDB has been disabled).
+* lxc-php: Use proper keyring for system.source
+* lxc: Fix trixie containers creation on buster host
+* nagios-nrpe: Use shell glob in check_supervisord to include symlinks
+* nodejs: update expired yarn OpenPGP certificate for apt
+* php: fix failsafe filename
+* php: we want be sure libldap-common is installed [UNTESTED]
+* postgresql: install postgis 3 for debian ≥ 11
+* squid : since ELTS release, fix config for Debian 10
+* userlorotate: fix comment string of option RETENTION_DAYS
+* vrrpd: adapt to the new way of restarting minifirewall
+
+### Removed
+
+* generate-ldif: do not generate a service pressure_mem for LDAP
+* nagios-nrpe: do not add a check pressure_mem
+* packweb-apache: disable AWStats DNSLookup
+
 ## [25.11] 2025-11-14
 
 ### Added

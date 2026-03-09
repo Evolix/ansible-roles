@@ -1,0 +1,72 @@
+---
+- name: "munin | Install munin-node and core plugins packages"
+  ansible.builtin.apt:
+    name:
+      - "munin-node"
+      - "munin-plugins-core"
+    state: "present"
+  tags:
+    - "apache"
+    - "munin"
+
+- name: "munin | Enable Munin plugins"
+  ansible.builtin.file:
+    src: "/usr/share/munin/plugins/{{ item }}"
+    dest: "/etc/munin/plugins/{{ item }}"
+    state: "link"
+  loop:
+    - "apache_accesses"
+    - "apache_processes"
+    - "apache_volume"
+  notify: "Restart munin-node"
+  tags:
+    - apache
+    - munin
+
+- name: "munin | Install fcgi packages for Munin graphs"
+  ansible.builtin.apt:
+    name:
+      - "libcgi-fast-perl"
+    state: "present"
+  notify: "Reload apache front vhost"
+  tags:
+    - apache
+    - munin
+
+- name: "munin | Enable libapache2-mod-fcgid"
+  community.general.apache2_module:
+    name: "fcgid"
+    state: "present"
+  notify: "Reload apache front vhost"
+  tags:
+    - apache
+    - munin
+
+- name: "munin | Enable libapache2-mod-fcgid"
+  ansible.builtin.file:
+    path: "{{ apache_multi_front_dir }}/mods-enabled/{{ module_file }}"
+    src: "{{ apache_multi_front_dir }}/mods-available/{{ module_file }}"
+    state: "link"
+    owner: "root"
+    group: "root"
+  vars:
+    modules:
+      - "fcgid"
+    extensions:
+      - "conf"
+      - "load"
+  loop: "{{ modules | ansible.builtin.product(extensions) | map('join', '.') }}"
+  loop_control:
+    loop_var: "module_file"
+  notify: "Reload apache front vhost"
+  tags:
+    - "apache"
+    - "munin"
+
+- name: "munin | Apache has access to /var/log/munin/"
+  ansible.builtin.file:
+    path: "/var/log/munin/"
+    group: "www-data"
+  tags:
+    - "apache"
+    - "munin"

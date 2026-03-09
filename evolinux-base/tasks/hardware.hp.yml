@@ -11,7 +11,7 @@
 - name: HPE GPG key is installed
   ansible.builtin.copy:
     src: hpePublicKey2048_key1.asc
-    dest: "{{ apt_keyring_dir }}/hpePublicKey2048_key1.asc"
+    dest: "{{ apt_keyring_dir }}/hpe.asc"
     force: true
     mode: "0644"
     owner: root

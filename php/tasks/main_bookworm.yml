@@ -37,6 +37,7 @@
       - php-intl
       - php-imap
       - php-ldap
+      - libldap-common
       - php-mysql
       # php-mcrypt is no longer packaged for PHP 7.2
       - php-pgsql

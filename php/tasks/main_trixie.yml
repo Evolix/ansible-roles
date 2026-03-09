@@ -37,6 +37,7 @@
       - php-intl
       # - php-imap ## Currently not in Trixie
       - php-ldap
+      - libldap-common
       - php-mysql
       - php-pgsql
       - php-sqlite3

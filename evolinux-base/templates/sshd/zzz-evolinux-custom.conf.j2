@@ -8,6 +8,12 @@ PermitRootLogin {{ evolinux_ssh_permitrootlogin }}
 ### To open **additional** ports (on top of 22), add lines like this, one for each port
 # Port 22222
 
+### OpenSSH listen by default on all addresses.
+### Add one or more lines to restrict to these addresses (port is optional)
+### https://manpages.debian.org/openssh-server/sshd_config.5.en.html#ListenAddress
+# ListenAddress 127.0.0.1
+# ListenAddress 192.168.42.1:22222
+
 ### To restrict SSH access to one or more groups, uncomment the following line
 # AllowGroups {{ evolinux_ssh_group }}
 
@@ -17,3 +23,7 @@ PermitRootLogin {{ evolinux_ssh_permitrootlogin }}
 #     PubkeyAuthentication yes
 #     PasswordAuthentication no
 #     PermitRootLogin without-password
+
+### WARNING
+### do not put directives after a Match, without a new Match
+### Regular directives must be added before all the Match blocks

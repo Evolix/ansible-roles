@@ -1,0 +1,156 @@
+---
+- name: "web_multi | Create evoadmin instance"
+  ansible.builtin.command:
+    argv:
+      - "{{ evoadmin_scripts_dir }}/setup-instance-apache.sh"
+      - "evoadmin"
+    creates: "/etc/apache2-evoadmin"
+  register: "create_backend_instance"
+  notify:
+    - Reload systemd
+    - Restart apache2 backend
+
+- name: "web_multi | Set running user for backend instance"
+  ansible.builtin.lineinfile:
+    path: /etc/apache2-evoadmin/envvars
+    regexp: "APACHE_RUN_USER="
+    line: "export APACHE_RUN_USER=www-evoadmin"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart apache2 backend
+
+- name: "web_multi | Set running group for backend instance"
+  ansible.builtin.lineinfile:
+    path: /etc/apache2-evoadmin/envvars
+    regexp: "APACHE_RUN_GROUP="
+    line: "export APACHE_RUN_GROUP=evoadmin"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart apache2 backend
+
+- name: "web_multi | Set listening port for backend instance"
+  ansible.builtin.copy:
+    content: "Listen {{ evoadmin_multiinstance_backend_port }}"
+    dest: "/etc/apache2-evoadmin/ports.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+    force: "{{ evoadmin_force_vhost or create_backend_instance.changed }}"
+  notify: Restart apache2 backend
+
+- name: "web_multi | Set custom values for PHP config (Debian 13)"
+  community.general.ini_file:
+    dest: /etc/php/8.4/fpm/conf.d/zzz-evolinux-custom.ini
+    section: PHP
+    option: "disable_functions"
+    value: "shell-exec,system,passthru,putenv,popen"
+  notify: Reload php-fpm
+  when: ansible_distribution_release == "trixie"
+
+- name: "web_multi | Enable modules for backend vhost"
+  ansible.builtin.command:
+    argv:
+      - "a2enmod-evoadmin"
+      - "proxy_fcgi"
+  register: "cmd_a2enmodule_backend"
+  changed_when: "'Enabling module' in cmd_a2enmodule_backend.stdout"
+  notify: "Reload apache2 backend"
+
+- name: web_multi | Install evoadmin backend VHost
+  ansible.builtin.template:
+    src: "{{ evoadmin_multiinstance_backend_vhost_template }}"
+    dest: /etc/apache2-evoadmin/sites-available/evoadmin.conf
+    force: "{{ evoadmin_force_vhost }}"
+  notify: Reload apache2 backend
+
+- name: web_multi | Install evoadmin PHP pool
+  ansible.builtin.template:
+    src: evoadmin.pool.conf.j2
+    dest: "{{ php_pool_dir }}/evoadmin.conf"
+    force: true
+  vars:
+    php_pool_dir: >-
+      {%- if ansible_distribution_release == "trixie" -%}
+        /etc/php/8.4/fpm/pool.d/
+      {%- else -%}
+        {{ undef() }}
+      {%- endif -%}
+  notify: "Reload php-fpm"
+
+- name: web_multi | Create the link for backend vhost
+  ansible.builtin.file:
+    path: "/etc/apache2-evoadmin/sites-enabled/evoadmin.conf"
+    src: "/etc/apache2-evoadmin/sites-available/evoadmin.conf"
+    state: "link"
+    force: true
+  notify: Reload apache2 backend
+
+- name: web_multi | Enable or disable evoadmin backend vhost
+  ansible.builtin.systemd_service:
+    name: "apache2@evoadmin"
+    enabled: "{{ evoadmin_enable_vhost | bool }}"
+    state: "{{ evoadmin_enable_vhost | ternary('started', 'stopped') }}"
+
+- name: web_multi | Install evoadmin frontend vhost
+  ansible.builtin.template:
+    src: "{{ evoadmin_multiinstance_frontend_vhost_template }}"
+    dest: /etc/apache2-front/sites-available/evoadmin.conf
+    force: "{{ evoadmin_force_vhost }}"
+  notify: Reload apache2 front
+
+- name: web_multi | Enable evoadmin frontend vhost
+  ansible.builtin.command:
+    argv:
+      - "a2ensite-front"
+      - "evoadmin.conf"
+  register: cmd_a2ensite
+  changed_when: "'Enabling site' in cmd_a2ensite.stdout"
+  notify: Reload apache2 front
+  when: evoadmin_enable_vhost | bool
+
+- name: web_multi | Disable evoadmin vhost
+  ansible.builtin.command:
+    argv:
+      - "a2dissite-front"
+      - "evoadmin.conf"
+  register: cmd_a2dissite
+  changed_when: "'Disabling site' in cmd_a2dissite.stdout"
+  notify: Reload apache2 front
+  when: not (evoadmin_enable_vhost | bool)
+
+- name: web_multi | Copy htpasswd for evoadmin
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "/var/www/.ansible_evoadmin_htpasswd"
+    mode: "0644"
+    owner: root
+    group: www-data
+    force: "{{ evoadmin_htpasswd_force }}"
+  loop: "{{ query('first_found', templates) }}"
+  vars:
+    templates:
+      - "templates/evoadmin-web/htpasswd.{{ inventory_hostname }}.j2"
+      - "templates/evoadmin-web/htpasswd.{{ host_group | default('all') }}.j2"
+      - "templates/evoadmin-web/htpasswd.j2"
+      - "templates/htpasswd.j2"
+  register: evoadmin_htpasswd_template
+  when: evoadmin_htpasswd | bool
+
+- name: web_multi | Copy config file for evoadmin
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{ evoadmin_document_root }}/conf/config.local.php"
+    mode: "0640"
+    owner: evoadmin
+    group: evoadmin
+    force: "{{ evoadmin_config_local_php_force }}"
+  loop: "{{ query('first_found', templates) }}"
+  vars:
+    templates:
+      - "templates/evoadmin-web/config.local.{{ inventory_hostname }}.php.j2"
+      - "templates/evoadmin-web/config.local.{{ host_group | default('all') }}.php.j2"
+      - "templates/evoadmin-web/config.local.php.j2"
+      - "templates/config.local.php.j2"
+  register: evoadmin_config_local_php_template

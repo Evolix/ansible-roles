@@ -35,6 +35,8 @@ Finally, you can use `shellpki` to generate client certificates.
 
 By default, if the server IP is 192.0.2.42, then OpenVPN LAN will be 10.2.42.0/24 (last 2 digit of main IP of server set as 2nd and 3rd digit of OpenVPN LAN).
 
+* `openvpn_administrator`: used to set the "reply-to" variable for the certificate expiration summary email
+
 ## Dependencies
 
 * Files in `files/shellpki/*` are gotten from the upstream [shellpki](https://gitea.evolix.org/evolix/shellpki) and must be updated when the upstream is.

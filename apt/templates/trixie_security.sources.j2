@@ -1,8 +1,8 @@
 # {{ ansible_managed }}
 
 Types: deb
-URIs: https://security.debian.org/debian-security
+URIs: http://mirror.evolix.org/debian-security
 Suites: trixie-security
 Components: {{ apt_basics_components | mandatory }}
 Enabled: yes
-Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+Signed-By: /usr/share/keyrings/debian-archive-trixie-security-automatic.pgp

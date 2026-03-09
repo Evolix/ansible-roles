@@ -1,7 +1,7 @@
 ---
 - name: "Check if container {{ name }} exists"
   ansible.builtin.command:
-    cmd: "lxc-ls {{ name }}"
+    cmd: "lxc-ls ^{{ name }}$"
   changed_when: False
   check_mode: no
   register: container_exists
@@ -24,6 +24,25 @@
   when:
     - release == 'jessie' or release == 'stretch' or release == 'buster'
     - ansible_distribution_major_version is version('11', '==')
+
+- name: "Enable Buster backports from Evolix"
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/pub_evolix.asc] https://pub.evolix.org/evolix buster-backports main"
+    filename: evolix-backports
+    state: present
+  when:
+    - release == 'trixie'
+    - ansible_distribution_major_version is version('10', '==')
+
+- name: "Install debootstrap from Buster backports"
+  ansible.builtin.apt:
+    name: debootstrap
+    default_release: buster-backports
+    state: latest
+    update_cache: yes
+  when:
+    - release == 'trixie'
+    - ansible_distribution_major_version is version('10', '==')
 
 - name: "Install keyring for eLTS"
   ansible.builtin.apt:
@@ -191,3 +210,17 @@
   loop: ["/var/lib/lxc/{{ name }}/rootfs/etc/"]
   loop_control:
     loop_var: 'repository_path'
+
+- name: "{{ name }} - Install minimal packages"
+  ansible.builtin.shell:
+    cmd: "DEBIAN_FRONTEND=noninteractive lxc-attach --name {{ name }} --  apt-get install -y vim screen"
+
+- name: "{{ name }} - Apply our vim default config"
+  ansible.builtin.copy:
+    src: vimrc.local
+    dest: "/var/lib/lxc/{{ name }}/rootfs/etc/vim/vimrc.local"
+    mode: "0644"
+    owner: root
+    group: root
+    force: yes
+

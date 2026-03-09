@@ -11,8 +11,8 @@
 
 - name: evocheck crontab is updated
   ansible.builtin.template:
-    src: crontab.j2
-    dest: /etc/cron.d/evocheck
+    src: "{{ evocheck_crontab_src_path }}"
+    dest: "{{ evocheck_crontab_dest_path }}"
     mode: "0644"
     owner: root
     group: root

@@ -33,7 +33,7 @@ server {
   sendfile             on;
   client_max_body_size 0;
 
-  root /home/{{ mastodon_instance }}/mastodon/public;
+  root /{{ mastodon_home_base }}/{{ mastodon_instance }}/mastodon/public;
 
   gzip on;
   gzip_disable "msie6";

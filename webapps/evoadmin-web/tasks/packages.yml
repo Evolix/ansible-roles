@@ -1,5 +1,4 @@
 ---
-
 - ansible.builtin.include_role:
     name: evolix/apt
     tasks_from: evolix_public.yml
@@ -9,7 +8,15 @@
     name:
       - php-pear
       - php-log
+      - php-net-dns2
     state: present
+
+- name: Install PHP-FPM (multi-instance)
+  ansible.builtin.apt:
+    name:
+      - php-fpm
+    state: present
+  when: evoadmin_multiinstance
 
 - name: Install PHP5 packages (jessie)
   ansible.builtin.apt:

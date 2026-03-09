@@ -8,13 +8,13 @@ Type=simple
 User={{ mastodon_instance }}
 Group={{ mastodon_instance }}
 UMask=0027
-WorkingDirectory=/home/{{ mastodon_instance }}/mastodon/
+WorkingDirectory=/{{ mastodon_home_base }}/{{ mastodon_instance }}/mastodon/
 Environment="RAILS_ENV=production"
 Environment="RAILS_LOG_LEVEL=error"
 Environment="DB_POOL=25"
 Environment="MALLOC_ARENA_MAX=2"
 Environment="LD_PRELOAD=libjemalloc.so"
-ExecStart=/home/{{ mastodon_instance }}/.rbenv/shims/bundle exec sidekiq -c {{ mastodon_sidekiq_concurrence }}
+ExecStart=/{{ mastodon_home_base }}/{{ mastodon_instance }}/.rbenv/shims/bundle exec sidekiq -c {{ mastodon_sidekiq_concurrence }}
 TimeoutSec=15
 Restart=always
 SyslogIdentifier=%p

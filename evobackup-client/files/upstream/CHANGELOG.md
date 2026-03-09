@@ -23,6 +23,12 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [25.12] - 2025-12-22
+
+### Added
+
+* Adding three options to rsync : --no-devices, --no-speciales, --info=nonreg0.
+
 ## [25.09] - 2025-09-09
 
 ### Changed

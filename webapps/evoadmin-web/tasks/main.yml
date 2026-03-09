@@ -1,5 +1,4 @@
 ---
-
 - name: "Ensure that evoadmin_contact_email is defined"
   ansible.builtin.fail:
     msg: Please configure var evoadmin_contact_email
@@ -14,6 +13,10 @@
 - ansible.builtin.import_tasks: ssl.yml
 
 - ansible.builtin.import_tasks: web.yml
+  when: not (evoadmin_multiinstance | bool)
+
+- ansible.builtin.import_tasks: web_multi.yml
+  when: evoadmin_multiinstance | bool
 
 - ansible.builtin.import_tasks: ftp.yml
 

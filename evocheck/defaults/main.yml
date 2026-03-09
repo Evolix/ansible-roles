@@ -1,4 +1,6 @@
 ---
 
 evocheck_update_crontab: True
+evocheck_crontab_src_path: crontab.j2
+evocheck_crontab_dest_path: /etc/cron.d/evocheck
 evocheck_bin_dir: /usr/share/scripts

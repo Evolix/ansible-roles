@@ -8,7 +8,7 @@ Type=simple
 User={{ mastodon_instance }}
 Group={{ mastodon_instance }}
 UMask=0027
-WorkingDirectory=/home/{{ mastodon_instance }}/mastodon/
+WorkingDirectory=/{{ mastodon_home_base }}/{{ mastodon_instance }}/mastodon/
 Environment="NODE_ENV=production"
 Environment="PORT={{ mastodon_node_port | default('4000') }}"
 Environment="STREAMING_CLUSTER_NUM=1"

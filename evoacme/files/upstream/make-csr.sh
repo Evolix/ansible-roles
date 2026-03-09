@@ -13,7 +13,7 @@ show_version() {
     cat <<END
 make-csr version ${VERSION}
 
-Copyright 2009-2021 Evolix <info@evolix.fr>,
+Copyright 2009-2026 Evolix <info@evolix.fr>,
                     Victor Laborie <vlaborie@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>,
                     Benoit Série <bserie@evolix.fr>
@@ -39,6 +39,7 @@ Usage: ${PROGNAME} VHOST DOMAIN [DOMAIN]
 
     If env variable QUIET=1, no message is output
     If env variable VERBOSE=1, debug messages are output
+    If env variable TEST=1, a CSR is generated with the current private key (it's not overwritten by a new key), and Apache and Nginx configurations are not modified.
 EOT
 }
 
@@ -73,12 +74,6 @@ SSLCertificateFile    ${SELF_SIGNED_FILE}
 SSLCertificateKeyFile ${SSL_KEY_FILE}
 EOF
         debug "SSL config added in ${apache_ssl_vhost_path}"
-    else
-        local search="^SSLCertificateFile.*$"
-        local replace="SSLCertificateFile ${SELF_SIGNED_FILE}"
-
-        sed -i "s~${search}~${replace}~" "${apache_ssl_vhost_path}"
-        debug "SSL config updated in ${apache_ssl_vhost_path}"
     fi
 }
 
@@ -92,12 +87,6 @@ ssl_certificate ${SELF_SIGNED_FILE};
 ssl_certificate_key ${SSL_KEY_FILE};
 EOF
         debug "SSL config added in ${nginx_ssl_vhost_path}"
-    else
-        local search="^ssl_certificate[^_].*$"
-        local replace="ssl_certificate ${SELF_SIGNED_FILE};"
-
-        sed -i "s~${search}~${replace}~" "${nginx_ssl_vhost_path}"
-        debug "SSL config updated in ${nginx_ssl_vhost_path}"
     fi
 }
 
@@ -112,9 +101,9 @@ openssl_selfsigned() {
     [ -r "${key}" ] || error "File ${key} is not readable"
     [ -w "${crt_dir}" ] || error "Directory ${crt_dir} is not writable"
     if grep -q SAN "${cfg}"; then
-        "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -extensions SAN -extfile "${cfg}" -signkey "${key}" -out "${crt}" 2>/dev/null
+        "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -extensions SAN -extfile "${cfg}" -signkey "${key}" -out "${crt}" 2> /dev/null
     else
-        "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -signkey "${key}" -out "${crt}" 2>/dev/null
+        "${OPENSSL_BIN}" x509 -req -sha256 -days 365 -in "${csr}" -signkey "${key}" -out "${crt}" 2> /dev/null
     fi
 
     [ -r "${crt}" ] || error "Something went wrong, ${crt} has not been generated"
@@ -126,7 +115,7 @@ openssl_key(){
 
     [ -w "${key_dir}" ] || error "Directory ${key_dir} is not writable"
 
-    "${OPENSSL_BIN}" genrsa -out "${key}" "${size}" 2>/dev/null
+    "${OPENSSL_BIN}" genrsa -out "${key}" "${size}" 2> /dev/null
 
     [ -r "${key}" ] || error "Something went wrong, ${key} has not been generated"
 }
@@ -247,14 +236,26 @@ main() {
     readonly OPENSSL_BIN=$(command -v openssl) || error "openssl command not installed"
 
     readonly SELF_SIGNED_FILE="${SELF_SIGNED_DIR}/${VHOST}.pem"
-    readonly SSL_KEY_FILE="${SSL_KEY_DIR}/${VHOST}.key"
+    readonly SSL_KEY_FILE="${SSL_KEY_DIR}/${VHOST}.key.new"
+    readonly SSL_KEY_FILE_FINAL="${SSL_KEY_DIR}/${VHOST}.key"
     readonly CSR_FILE="${CSR_DIR}/${VHOST}.csr"
 
     make_key "${SSL_KEY_FILE}" "${SSL_KEY_SIZE}"
     make_csr ${DOMAINS}
 
-    command -v apache2ctl >/dev/null && sed_selfsigned_cert_path_for_apache "/etc/apache2/ssl/${VHOST}.conf"
-    command -v nginx >/dev/null && sed_selfsigned_cert_path_for_nginx "/etc/nginx/ssl/${VHOST}.conf"
+    if [ -z "${TEST}" ] || [ "${TEST}" -ne 1 ]; then
+        if command -v apache2ctl >/dev/null; then
+            if [ ! -f "/etc/apache2/ssl/${VHOST}.conf" ]; then
+                cp -a "${SSL_KEY_FILE}" "${SSL_KEY_FILE_FINAL}"
+                sed_selfsigned_cert_path_for_apache "/etc/apache2/ssl/${VHOST}.conf"
+            fi
+        fi
+        if command -v nginx >/dev/null; then
+            if [ ! -f "/etc/nginx/ssl/${VHOST}.conf" ]; then
+                sed_selfsigned_cert_path_for_nginx "/etc/nginx/ssl/${VHOST}.conf"
+            fi
+        fi
+    fi
     exit 0
 }
 
@@ -264,8 +265,9 @@ readonly ARGS=$@
 
 readonly VERBOSE=${VERBOSE:-"0"}
 readonly QUIET=${QUIET:-"0"}
+readonly TEST=${TEST:-"0"}
 
-readonly VERSION="21.01"
+readonly VERSION="26.03"
 
 # Read configuration file, if it exists
 [ -r /etc/default/evoacme ] && . /etc/default/evoacme

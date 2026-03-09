@@ -17,7 +17,7 @@ for file in $(find /etc/supervisor/conf.d/ -type f -or -type l); do
     fi
 done
 
-numprocs_expected=$(grep --recursive --no-messages --no-filename --only-matching --extended-regexp 'numprocs=([0-9]+)' /etc/supervisor/conf.d/ | awk -F'=' '{ sum+=$2; } END{ print sum }')
+numprocs_expected=$(grep --recursive --no-messages --no-filename --only-matching --extended-regexp 'numprocs=([0-9]+)' /etc/supervisor/conf.d/*.conf | awk -F'=' '{ sum+=$2; } END{ print sum }')
 
 if [ -z "${numprocs_expected}" ]; then
     echo "OK - No process configured."

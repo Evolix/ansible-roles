@@ -15,6 +15,24 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Security
 
+## [25.11.2] - 2025-11-24
+
+### Fixed
+
+* Properly espace a backslash
+
+## [25.11.1] - 2025-11-19
+
+### Fixed
+
+* revert to "git status porcelain" to detect untracked files
+
+## [25.11] - 2025-11-19
+
+### Added
+
+* add option to commit only certain files
+
 ## [25.10] - 2025-10-02
 
 ### Changed

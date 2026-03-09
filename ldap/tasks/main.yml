@@ -5,6 +5,7 @@
       - ldap-utils
       - ldapvi
       - shelldap
+      - libldap-common
     state: present
     update_cache: yes
 
