@@ -264,9 +264,9 @@ fi
 
 # OpenSSH
 openssh_version=$(get_pkg_version openssh-server)
-ssh_keyscan_options="-4"
+ssh_keyscan_options="-4 -p {{ ansible_port }}"
 if [ $(echo ${openssh_version} | cut -d'.' -f1) -ge 10 ]; then
-    ssh_keyscan_options="-4 -q"
+    ssh_keyscan_options="-4 -p {{ ansible_port }} -q"
 fi
 if [ -n "${openssh_version}" ]; then
     opensshFingerprintRSA=$(ssh-keyscan ${ssh_keyscan_options} -t rsa localhost 2>/dev/null\
@@ -286,7 +286,7 @@ dn: ServiceName=openssh,${computer_dn}
 ipServiceProtocol: tcp
 NagiosEnabled: TRUE
 objectClass: EvoService
-ipServicePort: 22
+ipServicePort: {{ ansible_port }}
 ServiceName: openssh
 ServiceType: ssh
 ServiceVersion: OpenSSH ${openssh_version}
