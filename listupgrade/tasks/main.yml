@@ -75,14 +75,14 @@
     src: "../sources.list.d/{{ item }}"
     dest: "/etc/apt/listupgrade-sources.list.d/{{ item }}"
     state: link
-  ignore_errors: true
+  failed_when: False
   loop: "{{ official }}"
 
 - name: Ensure external sources are not enabled (errors are legitimately ignored)
   ansible.builtin.file:
     path: "/etc/apt/listupgrade-sources.list.d/{{ item }}"
     state: absent
-  ignore_errors: true
+  failed_when: False
   loop: "{{ external }}"
 
 - name: Enable external sources
