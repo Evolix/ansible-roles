@@ -23,7 +23,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evomaintenance: upstream release 25.11.2
 * listupgrade: external mode
 * lxc: install screen and vim (with config) [UNTESTED]
-* multi-php: new role
+* php-multi: new role
 * openvpn: add a reply-to email for expirations cron in Debian
 * redis: update apt cache before install
 * log2mail: Add rule for ARP table saturation
