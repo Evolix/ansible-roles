@@ -1,5 +1,13 @@
 ---
 
+- name: "Compatibility check"
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution == "Debian"
+      - ansible_distribution_major_version is version('13', '>=')
+    msg: Only compatible with Debian >= 13
+  when: not (php_multi_disable_compatibility_check | bool)
+
 ############
 ## Misc
 ############

@@ -25,3 +25,5 @@ apache_logrotate_frequency: daily
 apache_logrotate_rotate: 365
 
 apache_mpm: "event"
+
+apache_multi_disable_compatibility_check: False

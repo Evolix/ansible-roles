@@ -1,3 +1,5 @@
 ---
 
 php_multi_version: Null
+
+php_multi_disable_compatibility_check: False
