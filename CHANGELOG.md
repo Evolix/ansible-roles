@@ -13,6 +13,18 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [26.03] 2026-03-09
+
+### Added
+
 * apache-multi: Create role for apache2 multi-instance
 * etc-git: add missing doc for ansible-commit
 * etc-git: add path filtering for selective commits
@@ -22,12 +34,12 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: boost values for cache ARP, see https://wiki.evolix.org/HowtoDebian/Reseau#saturation-du-cache-arp [UNTESTED]
 * evomaintenance: upstream release 25.11.2
 * listupgrade: external mode
-* lxc: install screen and vim (with config) [UNTESTED]
-* php-multi: new role
-* openvpn: add a reply-to email for expirations cron in Debian
-* redis: update apt cache before install
 * log2mail: Add rule for ARP table saturation
+* lxc: install screen and vim (with config) [UNTESTED]
+* openvpn: add a reply-to email for expirations cron in Debian
+* php-multi: new role
 * prometheus: add collabora
+* redis: update apt cache before install
 
 ### Changed
 
@@ -61,9 +73,9 @@ The **patch** part is incremented if multiple releases happen the same month
 * haproxy: generate new configuration in haproxy.cf.new to debug "failed to validate"
 * kvm-tools: add-vm supports VM without home/srv volumes in solo mode
 * ldap: we want libldap-common with php-ldap [UNTESTED]
-* lxc: Fix trixie containers creation on buster host
 * lxc-php: do not fail to run container if /run/mysqld does not exist (for instance if MariaDB has been disabled).
 * lxc-php: Use proper keyring for system.source
+* lxc: Fix trixie containers creation on buster host
 * nagios-nrpe: Use shell glob in check_supervisord to include symlinks
 * nodejs: update expired yarn OpenPGP certificate for apt
 * php: fix failsafe filename
@@ -78,8 +90,6 @@ The **patch** part is incremented if multiple releases happen the same month
 * generate-ldif: do not generate a service pressure_mem for LDAP
 * nagios-nrpe: do not add a check pressure_mem
 * packweb-apache: disable AWStats DNSLookup
-
-### Security
 
 ## [25.11] 2025-11-14
 
