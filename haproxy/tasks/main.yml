@@ -94,6 +94,27 @@
     - haproxy
     - packages
 
+- name: Generate HAProxy new configuration (check mode)
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: /etc/haproxy/haproxy.cfg
+    force: True
+    validate: "haproxy -c -f %s"
+  loop: "{{ query('first_found', templates) }}"
+  vars:
+    templates:
+      - "templates/haproxy/haproxy.{{ inventory_hostname }}.cfg.j2"
+      - "templates/haproxy/haproxy.{{ host_group | default('all') }}.cfg.j2"
+      - "templates/haproxy/haproxy.default.cfg.j2"
+      - "templates/haproxy.default.cfg.j2"
+  when:
+    - haproxy_update_config | bool
+    - ansible_check_mode
+  tags:
+    - haproxy
+    - config
+    - update-config
+
 - name: Generate HAProxy new configuration
   ansible.builtin.template:
     src: "{{ item }}"
@@ -107,7 +128,9 @@
       - "templates/haproxy/haproxy.default.cfg.j2"
       - "templates/haproxy.default.cfg.j2"
   diff: no
-  when: haproxy_update_config | bool
+  when:
+    - haproxy_update_config | bool
+    - not ansible_check_mode
   tags:
     - haproxy
     - config
@@ -121,7 +144,9 @@
     force: "{{ haproxy_force_config }}"
     validate: "haproxy -c -f %s"
   notify: reload haproxy
-  when: haproxy_update_config | bool
+  when:
+    - haproxy_update_config | bool
+    - not ansible_check_mode
   tags:
     - haproxy
     - config
