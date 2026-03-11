@@ -84,6 +84,7 @@
     path: /etc/systemd/journald.conf.d/
     state: directory
     mode: "0755"
+  notify: restart systemd-journald
   when: evolinux_logs_journald_conf | bool
 
 - name: Copy journald.conf
