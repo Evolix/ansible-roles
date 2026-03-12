@@ -13,6 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* log2mail : add patterm for "link down"
+
 ### Changed
 
 ### Fixed
