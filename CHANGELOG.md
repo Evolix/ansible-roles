@@ -19,6 +19,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* tomcat: Don’t emit useless output related to fallback
+
 ### Removed
 
 ### Security
