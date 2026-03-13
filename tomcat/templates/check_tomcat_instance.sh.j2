@@ -11,7 +11,7 @@ nb_ok=0
 nb_unchk=0
 output=""
 
-instances=$(ls "${TOMCAT_ROOT}")
+instances=$(ls "${TOMCAT_ROOT}"|grep -v "\bfallback\b")
 for instance in ${instances}; do
     if ! id -u "${instance}" 1>&2 2>/dev/null; then
         continue
