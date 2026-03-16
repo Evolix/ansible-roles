@@ -1,0 +1,67 @@
+---
+
+- name: Add Kernel modules to blacklist
+  ansible.builtin.lineinfile:
+    path: /etc/modprobe.d/z_evolinux-harden_blacklist
+    line: "blacklist {{ item }}"
+    create: yes
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    # Unused Filesystems
+    - freevxfs
+    - jffs2
+    - hfs
+    - hfsplus
+    - udfs
+    # Unused Network protocols
+    - dccp
+    - sctp
+    - rds
+    - tipc
+
+- name: Apply some sysctl settings
+  ansible.posix.sysctl:
+    sysctl_file: /etc/sysctl.d/z_evolinux-harden.conf
+    sysctl_set: true
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+  loop:
+   - {name: net.core.bpf_jit_harden,                    value: '2' }
+   - {name: net.ipv4.conf.all.accept_local,             value: '0' }
+   - {name: net.ipv4.conf.all.accept_redirects,         value: '0' }
+   - {name: net.ipv4.conf.default.accept_redirects,     value: '0' }
+   - {name: net.ipv4.conf.all.secure_redirects,         value: '0' }
+   - {name: net.ipv4.conf.default.secure_redirects,     value: '0' }
+   - {name: net.ipv4.conf.all.shared_media,             value: '0' }
+   - {name: net.ipv4.conf.default.shared_media,         value: '0' }
+   - {name: net.ipv4.conf.all.accept_source_route,      value: '0' }
+   - {name: net.ipv4.conf.default.accept_source_route,  value: '0' }
+   - {name: net.ipv4.conf.all.arp_filter,               value: '1' }
+   - {name: net.ipv4.conf.all.arp_ignore,               value: '2' }
+   - {name: net.ipv4.conf.all.route_localnet,           value: '0' }
+   - {name: net.ipv4.conf.all.drop_gratuitous_arp,      value: '1' }
+   - {name: net.ipv4.conf.default.rp_filter,            value: '1' }
+   - {name: net.ipv4.conf.all.rp_filter,                value: '1' }
+   - {name: net.ipv4.conf.default.send_redirects,       value: '0' }
+   - {name: net.ipv4.conf.all.send_redirects,           value: '0' }
+   - {name: net.ipv4.icmp_ignore_bogus_error_responses, value: '1' }
+   - {name: net.ipv4.ip_local_port_range,               value: '32768 65535' }
+   - {name: net.ipv4.tcp_rfc1337,                       value: '1' }
+   - {name: net.ipv4.tcp_syncookies,                    value: '1' }
+   - {name: fs.suid_dumpable,                           value: '0' }
+   - {name: fs.protected_fifos,                         value: '2' }
+   - {name: fs.protected_regular,                       value: '2' }
+   - {name: fs.protected_symlinks,                      value: '1' }
+   #- {name: fs.protected_hardinks,                      value: '1' }
+
+- name: Apply some sysctl settings (ip_forward)
+  ansible.posix.sysctl:
+    sysctl_file: /etc/sysctl.d/zzz_evolinux-harden.conf
+    sysctl_set: true
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+  loop:
+   - {name: net.ipv4.ip_forward,                        value: '0' }
+  when: hardening_kernel_disable_ipv4_forward

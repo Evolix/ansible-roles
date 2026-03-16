@@ -1,0 +1,44 @@
+---
+
+
+- name: Auditd is installed
+  ansible.builtin.apt:
+    state: present
+    name: auditd
+
+- name: Configure auditd settings
+  ansible.builtin.replace:
+    dest: /etc/audit/auditd.conf
+    regexp: "^{{ item.name }} = .*"
+    replace: "{{ item.name }} = {{ item.value }}"
+  loop:
+    - { name: name_format, value: HOSTNAME}
+    - { name: max_log_file, value: "{{ hardening_auditd_max_log_size }}" }
+    - { name: num_logs,     value: "{{ hardening_auditd_max_log_num }}"  }
+    - { name: admin_space_left_action, value: SYSLOG}
+    - { name: disk_full_action, value: SYSLOG}
+    - { name: disk_error_action, value: SYSLOG}
+  notify: restart auditd
+
+- name: Configure auditd syslog plugin
+  ansible.builtin.replace:
+    dest: /etc/audit/plugins.d/syslog.conf
+    regexp: "^active = .*"
+    replace: "active = no"
+  notify: restart auditd
+
+- name: Add common rules
+  ansible.builtin.copy:
+    src: "audit_common.rules"
+    dest: "/etc/audit/rules.d/audit_common.rules"
+    force: yes
+  notify: restart auditd
+
+- name: Add supplemental config for rsyslog
+  ansible.builtin.copy:
+    src: "rsyslog_audit_ignore.conf"
+    dest: "/etc/rsyslog.d/49-audit.conf"
+    force: yes
+  notify: restart rsyslog
+
+

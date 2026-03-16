@@ -1,0 +1,10 @@
+--- 
+
+- name: Restrict NRPE Listening on specific interface
+  ansible.builtin.lineinfile:
+    dest: /etc/nagios/nrpe.d/evolix.cfg
+    line: "server_address={{ hardening_nrpe_listen_address }}"
+    insertbefore: '# Allowed IPs'
+  notify: restart nagios-nrpe-server
+  when: 
+    - hardening_nrpe_listen_address | length > 0

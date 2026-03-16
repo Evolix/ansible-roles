@@ -1,0 +1,50 @@
+---
+
+- name: Disable IPv6
+  ansible.builtin.import_tasks:
+    file: network_disableipv6.yml
+  when: hardening_disable_ipv6
+
+- name: Apply FHS restrictions
+  ansible.builtin.import_tasks:
+    file: system_fhs_restrictions.yml
+  when: hardening_enable_fhs_restrictions
+
+- name: Apply auditd configuration
+  ansible.builtin.import_tasks:
+    file: system_auditd.yml
+  when: hardening_auditd
+
+- name: Apply nrpe config
+  ansible.builtin.import_tasks:
+    file: service_nrpe.yml
+  when: hardening_nrpe
+
+- name: Apply ssh config
+  ansible.builtin.import_tasks:
+    file: service_ssh.yml
+  when: hardening_ssh
+
+# - name: Apply munin config
+#   ansible.builtin.import_tasks:
+#     file: service_munin.yml
+#   when: hardening_munin
+
+# - name: Apply postfix config
+#   ansible.builtin.import_tasks:
+#     file: service_postfix.yml
+
+
+- name: Configure PAM
+  ansible.builtin.import_tasks:
+    file: system_pam.yml
+  when: hardening_pam
+
+- name: Configure Kernel
+  ansible.builtin.import_tasks:
+    file: system_kernel.yml
+  when: hardening_kernel
+
+# - name: Setup clamav daily cron
+#   ansible.builtin.import_tasks:
+#     file: clamav.yml

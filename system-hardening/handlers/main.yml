@@ -1,0 +1,38 @@
+---
+
+# Debian services
+
+- name: restart nfs server
+  ansible.builtin.service:
+    name: nfs-server.service
+    state: restarted
+
+- name: restart postfix
+  ansible.builtin.service:
+    name: postfix.service
+    state: restarted
+
+- name: reload debian_sshd
+  ansible.builtin.service:
+    name: ssh.service
+    state: reloaded
+
+- name: restart nagios-nrpe-server
+  ansible.builtin.service:
+    name: nagios-nrpe-server.service
+    state: restarted
+
+- name: restart rsyslog
+  ansible.builtin.service:
+    name: rsyslog.service
+    state: restarted
+
+- name: restart munin-node
+  ansible.builtin.service:
+    name: munin-node.service
+    state: restarted
+
+- name: restart auditd
+  ansible.builtin.service:
+    name: auditd.service
+    state: restarted

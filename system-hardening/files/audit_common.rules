@@ -1,0 +1,31 @@
+#
+# Ansible managed
+#
+# See https://gitea.evolix.org/evolix/ansible-roles
+
+# Common audit rules
+# References :
+#  - https://www.ssi.gouv.fr/guide/recommandations-de-securite-relatives-a-un-systeme-gnulinux/
+
+# Exécution de insmod , rmmod et modprobe
+-w /sbin/insmod -p x -k common.10
+-w /sbin/modprobe -p x -k common.20
+-w /sbin/rmmod -p x -k common.30
+
+# Journaliser les modifications dans /etc/
+-w /etc/ -p wa -k common.40
+
+# Surveillance de montage/démontage
+-a exit,always -S mount -S umount2 -k common.50
+
+# Appels de syscalls x86 suspects
+-a exit,always -S ioperm -S modify_ldt -k common.60
+
+# Appels de syscalls qui doivent être rares et surveillés de près
+-a exit,always -S get_kernel_syms -S ptrace -k common.70
+-a exit,always -S prctl -k common.80 
+
+## Rajout du monitoring pour la création ou suppression de fichiers
+#-a exit,always -F arch=b64 -S unlink -S rmdir -S rename –k audit_files
+#-a exit,always -F arch=b64 -S creat -S open -S openat -F exit=-EACCESS –k audit_files
+#-a exit,always -F arch=b64 -S truncate -S ftruncate -F exit=-EACCESS –k audit_files

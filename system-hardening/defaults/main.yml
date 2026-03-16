@@ -1,0 +1,44 @@
+---
+monitoringctl_wrapper_path: /usr/local/lib/monitoringctl/alerts_wrapper
+
+# Disable IPv6 configuration
+hardening_disable_ipv6: true
+
+# Enable some FHS restrictions 
+hardening_enable_fhs_restrictions: true
+
+# Enable auditd with a default configuration
+hardening_auditd: true
+
+# Maximum log file size (in megabytes)
+hardening_auditd_max_log_size: 10
+
+# Maximum number of logfiles to keep
+# Keep in mind to have enough space to acomodate `hardening_auditd_max_log_size` * `hardening_auditd_max_log_num`
+# in /var/log/audit/ - Default values will need ~5G of space.
+hardening_auditd_max_log_num: 500
+
+# Harden NRPE configuration
+# Will require hardening_nrpe_listen_address to be set
+hardening_nrpe: true
+
+# Define the IP on wich NRPE will listen. 
+# Warning: It can only listen on one interface/ip
+hardening_nrpe_listen_address: null
+
+# Harden Munin configuration
+hardening_munin: true
+
+# Harden sshd config
+hardening_ssh: true
+
+# List addresses to listen on for sshd
+# eg: ['192.0.2.42']
+hardening_sshd_listen: []
+
+
+hardening_kernel: true
+hardening_kernel_disable_ipv4_forward: true
+
+
+hardening_pam: true

@@ -1,0 +1,28 @@
+---
+
+- name: Check sshd split config
+  ansible.builtin.stat:
+    path: /etc/ssh/sshd_config.d/zzz-evolinux-custom.conf
+  register: sshd_evolinux_custom
+
+- name: Set sshd config file
+  ansible.builtin.set_fact:
+    sshd_config: "{{ sshd_evolinux_custom.stat.exists | ternary('/etc/ssh/sshd_config.d/zzz-evolinux-custom.conf', '/etc/ssh/sshd_config') }}"
+
+- name: Restrict SSH Listening on specific interfaces
+  ansible.builtin.lineinfile:
+    dest: "{{ sshd_config }}"
+    line: "ListenAddress {{ item }}"
+    insertafter: 'BOF'
+    validate: '/usr/sbin/sshd -t -f %s'
+  notify: reload debian_sshd
+  when: hardening_sshd_listen | length > 0
+  with_items: "{{ hardening_sshd_listen }}"
+
+- name: Add additional sshd hardening settings
+  ansible.builtin.copy:
+    src: "sshd_harden.conf"
+    dest: "/etc/ssh/sshd_config.d/zzzzz-evolinux-harden.conf"
+    force: yes
+    mode: "0644"
+  notify: reload debian_sshd

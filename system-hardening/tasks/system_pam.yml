@@ -1,0 +1,31 @@
+
+- name: libpam-pwquality is installed
+  ansible.builtin.apt:
+    state: present
+    name:
+      - libpam-pwquality
+      - cracklib-runtime
+
+- name: Configure pam_pwquality
+  ansible.builtin.replace:
+    dest: /etc/security/pwquality.conf
+    regexp: "^#? ?{{ item.name }} = .*"
+    replace: "{{ item.name }} = {{ item.value }}"
+  loop:
+    - { name: minlen, value: 15}
+    - { name: dcredit, value: 0}
+    - { name: ucredit, value: -1}
+    - { name: ocredit, value: -1}
+    - { name: lcredit, value: -1}
+
+- name: Enable pam_pwhistory
+  ansible.builtin.lineinfile:
+    dest: /etc/pam.d/common-password
+    line: "password     required           pam_pwhistory.so  remember=24 use_authtok"
+    insertafter: 'pam_pwquality.so retry=3'
+
+- name: Change PASS_MIN_DAYS
+  ansible.builtin.replace:
+    dest: /etc/login.defs
+    replace: "PASS_MIN_DAYS  7"
+    regexp: '^PASS_MIN_DAYS.*'

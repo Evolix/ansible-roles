@@ -1,0 +1,12 @@
+---
+
+- name: Disable IPv6
+  ansible.posix.sysctl:
+    sysctl_file: /etc/sysctl.d/z_evolinux-harden_disableipv6.conf
+    sysctl_set: true
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+  loop:
+    - {name: net.ipv6.conf.all.disable_ipv6,     value: 1}
+    - {name: net.ipv6.conf.default.disable_ipv6, value: 1}
+
