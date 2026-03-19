@@ -609,129 +609,15 @@ fi
 # LXC (multiphp)
 if is_pkg_installed lxc; then
 
-if lxc-ls | grep -q php56 ; then
+if lxc-ls | grep -q php ; then
     cat <<EOT >> "${ldif_file}"
 
-dn: ServiceName=php-fpm56,${computer_dn}
+dn: ServiceName=php-fpm,${computer_dn}
 NagiosEnabled: TRUE
-ipServiceProtocol: tcp
 objectClass: EvoService
-ServiceName: php-fpm56
-ipServicePort: 443
-ServiceType: web
-ServiceVersion: PHP-FPM 5.6 (multiphp)
-EOT
-fi
-
-if lxc-ls | grep -q php70 ; then
-    cat <<EOT >> "${ldif_file}"
-
-dn: ServiceName=php-fpm70,${computer_dn}
-NagiosEnabled: TRUE
-ipServiceProtocol: tcp
-objectClass: EvoService
-ServiceName: php-fpm70
-ipServicePort: 443
-ServiceType: web
-ServiceVersion: PHP-FPM 7.0 (multiphp)
-EOT
-fi
-
-if lxc-ls | grep -q php73 ; then
-    cat <<EOT >> "${ldif_file}"
-
-dn: ServiceName=php-fpm73,${computer_dn}
-NagiosEnabled: TRUE
-ipServiceProtocol: tcp
-objectClass: EvoService
-ServiceName: php-fpm73
-ipServicePort: 443
-ServiceType: web
-ServiceVersion: PHP-FPM 7.3 (multiphp)
-EOT
-fi
-
-if lxc-ls | grep -q php74 ; then
-    cat <<EOT >> "${ldif_file}"
-
-dn: ServiceName=php-fpm74,${computer_dn}
-NagiosEnabled: TRUE
-ipServiceProtocol: tcp
-objectClass: EvoService
-ServiceName: php-fpm74
-ipServicePort: 443
-ServiceType: web
-ServiceVersion: PHP-FPM 7.4 (multiphp)
-EOT
-fi
-
-if lxc-ls | grep -q php80 ; then
-    cat <<EOT >> "${ldif_file}"
-
-dn: ServiceName=php-fpm80,${computer_dn}
-NagiosEnabled: TRUE
-ipServiceProtocol: tcp
-objectClass: EvoService
-ServiceName: php-fpm80
-ipServicePort: 443
-ServiceType: web
-ServiceVersion: PHP-FPM 8.0 (multiphp)
-EOT
-fi
-
-if lxc-ls | grep -q php81 ; then
-    cat <<EOT >> "${ldif_file}"
-
-dn: ServiceName=php-fpm81,${computer_dn}
-NagiosEnabled: TRUE
-ipServiceProtocol: tcp
-objectClass: EvoService
-ServiceName: php-fpm81
-ipServicePort: 443
-ServiceType: web
-ServiceVersion: PHP-FPM 8.1 (multiphp)
-EOT
-fi
-
-if lxc-ls | grep -q php82 ; then
-    cat <<EOT >> "${ldif_file}"
-
-dn: ServiceName=php-fpm82,${computer_dn}
-NagiosEnabled: TRUE
-ipServiceProtocol: tcp
-objectClass: EvoService
-ServiceName: php-fpm82
-ipServicePort: 443
-ServiceType: web
-ServiceVersion: PHP-FPM 8.2 (multiphp)
-EOT
-fi
-
-if lxc-ls | grep -q php83 ; then
-    cat <<EOT >> "${ldif_file}"
-
-dn: ServiceName=php-fpm83,${computer_dn}
-NagiosEnabled: TRUE
-ipServiceProtocol: tcp
-objectClass: EvoService
-ServiceName: php-fpm83
-ipServicePort: 443
-ServiceType: web
-ServiceVersion: PHP-FPM 8.3 (multiphp)
-EOT
-fi
-
-if lxc-ls | grep -q php84 ; then
-    cat <<EOT >> "${ldif_file}"
-
-dn: ServiceName=php-fpm84,${computer_dn}
-NagiosEnabled: TRUE
-ipServiceProtocol: tcp
-objectClass: EvoService
-ServiceName: php-fpm84
-ipServicePort: 443
-ServiceType: web
-ServiceVersion: PHP-FPM 8.4 (multiphp)
+ServiceName: php-fpm
+ServiceType: php-fpm
+ServiceVersion: multi-php
 EOT
 fi
 
