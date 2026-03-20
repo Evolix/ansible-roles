@@ -463,12 +463,18 @@ def get_pool_directory_path(service: str, location: str = 'host'):
     location: (optional) 'host' or container name.
     """
     version = service.lstrip('php').rstrip('-fpm')
-    version_array = list(map(int, version.split('.')))
     path = '/etc/php/{}/fpm/pool.d'.format(version)
+
+    version_array = list(map(int, version.split('.')))
     if not os.path.exists(path) and version_array[0] <= 5:
         path = '/etc/php{}/fpm/pool.d'.format(version_array[0])
-    if location != 'host':
+
+    if location == 'host':
+        if not os.path.exists(path):
+            path = '/etc/php/evolinux-{}/fpm/pool.d'.format(version)
+    else:
         path = '/var/lib/lxc/{}/rootfs'.format(location) + path
+
     return path
 
 def execute(cmd: str, timeout: int = None, shell: bool = False, extra_env_vars: List[str] = []):
