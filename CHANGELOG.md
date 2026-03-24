@@ -19,6 +19,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* listupgrade: Upgrade listupgrade.sh to 26.02
+
 ### Fixed
 
 * nagios-nrpe: Quick and dirty fix for check_php_fmp to work with future multiphp packweb
