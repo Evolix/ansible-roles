@@ -13,6 +13,20 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [Unreleased]
+
+## [26.03.1] 2026-03-24
+
+### Added
+
 * log2mail : add patterm for "link down"
 * nagios-nrpe, generateldif: add new check_php_fpm.py that auto detect PHP versions (on host or in LXC).
 * packweb-apache: configure check php_fpm
@@ -30,7 +44,6 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * nagios-nrpe, generateldif: remove old style checks php-fpm56, …, php-fpm84
 
-### Security
 
 ## [26.03] 2026-03-09
 
