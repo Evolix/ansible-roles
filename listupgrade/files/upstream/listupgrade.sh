@@ -3,6 +3,7 @@
 # Repository: https://gitea.evolix.org/evolix/maj.sh/
 
 # Exit codes :
+# - 10 : Failure to fetch upgrade informations
 # - 20 : hostname does not match $ext_hosts (external mode)
 # - 30 : $skip_releases or $skip_packages is set to "all"
 # - 40 : current release is in $skip_releases list
@@ -14,7 +15,7 @@
 # - 150 : Inside an LXC container: Failure to apt update
 # - 160 : Inside an LXC container: Failure to apt upgrade --download only
 
-VERSION="25.07"
+VERSION="26.02"
 readonly VERSION
 
 PROGNAME=$(basename "$0")
@@ -53,12 +54,12 @@ get_value() {
 
 # Fetch which packages/releases will be upgraded.
 fetch_upgrade_info() {
-    upgradeInfo=$(mktemp --tmpdir=/tmp listupgrade.XXX)
     wget --no-check-certificate --quiet --output-document="${upgradeInfo}" https://upgrades.evolix.org/upgrade
 
     # shellcheck disable=SC2181
     if [ "$?" != "0" ]; then
         printf >&2 "Error fetching upgrade directives.\n"
+        post_hooks_and_exit 10
     fi
 
     r_releases="$(get_value "${upgradeInfo}" "releases")"
@@ -66,8 +67,6 @@ fetch_upgrade_info() {
     r_packages="$(get_value "${upgradeInfo}" "packages")"
     r_skip_packages="$(get_value "${upgradeInfo}" "skip_packages")"
     r_ext_hosts="$(get_value "${upgradeInfo}" "ext_hosts")"
-
-    rm "${upgradeInfo}"
 }
 
 # Check if element $element is in (space separated) list $list.
@@ -93,7 +92,7 @@ From: equipe@evolix.net
 To: ${clientmail}
 Subject: Prochain creneau pour mise a jour de votre serveur ${hostname}
 X-Debian-Release: ${local_release}
-X-Packages: ${packagesParsable}
+X-Packages: $(echo "${packagesParsable}" | cut -c 1-900)
 X-Date: ${date}
 X-Listupgrade-Version: ${VERSION}
 X-External: ${ext_mode}
@@ -266,7 +265,7 @@ main() {
 
     apt-mark showhold | sed -e 's/\(.\+\)/^\1\//' >"${packagesHold}"
     apt -o Dir::State::Lists="${listupgrade_state_dir}" -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dir::Etc::sourcelist="${listupgrade_sources_file}" list --upgradable 2>&1 | grep --invert-match --file "${packagesHold}" | grep --invert-match --extended-regexp '^(Listing|WARNING|$)' >"${packages}"
-    packagesParsable=$(cut -f 1 -d / <"${packages}" | tr '\n' ' ' | cut -c 900-)
+    packagesParsable=$(cut -f 1 -d / <"${packages}" | xargs)
 
     # No updates? Exit!
     if [ ! -s "${packages}" ]; then
@@ -462,9 +461,10 @@ packages=$(mktemp --tmpdir=/tmp listupgrade.XXX)
 packagesHold=$(mktemp --tmpdir=/tmp listupgrade.XXX)
 servicesToRestart=$(mktemp --tmpdir=/tmp listupgrade.XXX)
 template=$(mktemp --tmpdir=/tmp listupgrade.XXX)
+upgradeInfo=$(mktemp --tmpdir=/tmp listupgrade.XXX)
 # Remove temporary files on exit.
 # shellcheck disable=SC2064
-trap "rm ${packages} ${packagesHold} ${servicesToRestart} ${template}" EXIT
+trap "rm ${packages} ${packagesHold} ${servicesToRestart} ${template} ${upgradeInfo}" EXIT
 
 if ! cron_mode; then
     echo "À quelle date/heure allez vous planifier les mises à jour ?"
