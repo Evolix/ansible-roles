@@ -39,3 +39,6 @@ Mount=type=bind,source=/etc/php/evolinux-8.4,destination=/etc/php/evolinux-8.4,r
 TimeoutStartSec=15min
 ## XXX ReloadSignal isn't supported in Debian 13
 ExecReload=/usr/bin/podman kill -s SIGUSR2 --cidfile=%t/%N.cid
+
+[Install]
+WantedBy=multi-user.target

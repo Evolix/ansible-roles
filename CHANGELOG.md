@@ -13,11 +13,22 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* log2mail : add patterm for "link down"
+* nagios-nrpe, generateldif: add new check_php_fpm.py that auto detect PHP versions (on host or in LXC).
+* packweb-apache: configure check php_fpm
+
 ### Changed
+
+* listupgrade: Upgrade listupgrade.sh to 26.02
 
 ### Fixed
 
+* nagios-nrpe: Quick and dirty fix for check_php_fmp to work with future multiphp packweb
+* tomcat: Don’t emit useless output related to fallback
+
 ### Removed
+
+* nagios-nrpe, generateldif: remove old style checks php-fpm56, …, php-fpm84
 
 ### Security
 
@@ -40,6 +51,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * php-multi: new role
 * prometheus: add collabora
 * redis: update apt cache before install
+* evolinux-base: keep journald logs for 7 days
 
 ### Changed
 

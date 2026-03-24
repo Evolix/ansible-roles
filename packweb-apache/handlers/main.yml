@@ -8,3 +8,8 @@
   ansible.builtin.service:
     name: apache2
     state: reloaded
+
+- name: reload nagios-nrpe-server
+  ansible.builtin.service:
+    name: nagios-nrpe-server
+    state: reloaded

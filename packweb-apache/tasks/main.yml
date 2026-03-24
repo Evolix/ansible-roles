@@ -95,3 +95,6 @@
 - ansible.builtin.import_tasks: multiphp.yml
   when: packweb_multiphp_versions | length > 0
 
+- name: Check php_fpm is configured
+  ansible.builtin.import_tasks: check_php_fpm.yml
+
