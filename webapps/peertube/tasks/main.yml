@@ -9,6 +9,13 @@
     name: "{{ peertube_system_dep }}"
     update_cache: true
 
+- name: Install pnpm (via corepack)
+  ansible.builtin.shell:
+#    cmd: "mount -o remount,rw /usr; corepack enable pnpm; mount -o remount,ro /usr"
+    cmd: "corepack enable pnpm"
+    creates: /usr/bin/pnpm
+  when: peertube_version is regex('^v8.*')
+
 - name: Upgrade redis-server to the latest version from bullseye-backports on Debian 11
   ansible.builtin.apt:
     name: redis-server
@@ -63,7 +70,8 @@
   become_user: "{{ peertube_instance }}"
 
 - name: Install PeerTube nodejs deps (via yarn)
-  ansible.builtin.shell: "yarn install --production --pure-lockfile"
+# ansible.builtin.shell: "yarn install --production --pure-lockfile"
+  ansible.builtin.shell: "npm run install-node-dependencies -- --production"
   args:
     chdir: "~/peertube-latest"
   become_user: "{{ peertube_instance }}"

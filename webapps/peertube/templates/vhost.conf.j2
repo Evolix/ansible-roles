@@ -9,11 +9,8 @@ server {
   server_name {{ peertube_domains | first }};
 
   # For certbot
-  location ~ /.well-known/acme-challenge {
-    alias /var/lib/letsencrypt/;
-    try_files $uri =404;
-    allow all;
-  }
+  include /etc/nginx/snippets/letsencrypt.conf;
+  
   {% if ssl.stat.exists %}
   location / { return 301 https://$host$request_uri; }
   {% endif %}
@@ -31,13 +28,9 @@ server {
 
   access_log /var/log/nginx/{{ peertube_instance }}.access.log; # reduce I/0 with buffer=10m flush=5m
   error_log  /var/log/nginx/{{ peertube_instance }}.error.log;
-  
+
   # For certbot
-  location ~ /.well-known/acme-challenge {
-    alias /var/lib/letsencrypt/;
-    try_files $uri =404;
-    allow all;
-  }
+  include /etc/nginx/snippets/letsencrypt.conf;
 
   ##
   # Certificates
@@ -261,6 +254,7 @@ server {
     sendfile_max_chunk 1M; # prevent one fast connection from entirely occupying the worker process. should be > 800k.
     aio threads;
 
+    # web-videos is the name of the directory mapped to the `storage.web_videos` key in your PeerTube configuration
     rewrite ^/static/webseed/(.*)$ /videos/$1 break;
     rewrite ^/static/(.*)$         /$1        break;
 
