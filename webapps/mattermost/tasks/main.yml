@@ -25,37 +25,42 @@
     owner: "{{ mattermost_db_user }}"
   become_user: postgres
 
-- name: Unarchive mattermost archive
+- name: Template PostgreSQL user conf file
+  ansible.builtin.template:
+    src: "pg_service.conf.j2"
+    dest: "~/.pg_service.conf"
+    mode: '0640'
+  become_user: "{{ mattermost_instance }}"
+
+- name: Unarchive mattermost archive in default location
   ansible.builtin.unarchive:
     src: "{{ mattermost_download_url }}"
     dest: ~/
     remote_src: true
   become_user: "{{ mattermost_instance }}"
 
-- name: Create the mattermost data/tmp dir if needed
+- name: Create the mattermost config/data/tmp dir if needed
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
     mode: "{{ item.mode }}"
   loop:
+    - { path: '~/config', mode: '0750' }
     - { path: '~/data', mode: '0750' }
     - { path: '~/temp', mode: '0750' }
     - { path: '~/mattermost/temp', mode: '0750' }
   become_user: "{{ mattermost_instance }}"
 
-- name: Backup mattermost default conf file
-  ansible.builtin.copy:
-    src: "~/mattermost/config/config.json"
-    dest: "~/mattermost/config/config.defaults.json"
-    mode: '0644'
-    remote_src: true
-  become_user: "{{ mattermost_instance }}"
-
 - name: Template mattermost conf file
   ansible.builtin.template:
     src: "config.json.j2"
-    dest: "~/mattermost/config/config.json"
-    mode: '0644'
+    dest: "~/config/config.json"
+    mode: '0640'
+  become_user: "{{ mattermost_instance }}"
+
+- name: Move installation to current directory
+  ansible.builtin.command:
+    cmd: "mv ~/mattermost ~/{{ mattermost_current }}"
   become_user: "{{ mattermost_instance }}"
 
 - name: Template mattermost systemd unit
@@ -67,7 +72,8 @@
 - name: Start mattermost systemd unit
   ansible.builtin.systemd:
     name: "mattermost@{{ mattermost_instance }}"
-    state: restarted
+    state: started
+    enabled: true
 
 - name: Check if SSL certificate is present and register result
   ansible.builtin.stat:
