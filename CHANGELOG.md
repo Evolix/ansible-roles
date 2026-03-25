@@ -13,6 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* mysql: Add comment in "mysql/files/evomariabackup.sh" for overload options in prepare phase in mariabackup
+
 ### Changed
 
 ### Fixed
