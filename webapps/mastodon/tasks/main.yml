@@ -42,6 +42,7 @@
   vars:
     - username: "{{ mastodon_instance }}"
     - rbenv_ruby_version: "{{ mastodon_ruby_version }}"
+    - rbenv_ruby_configure_opts: "{{ mastodon_ruby_configure_opts }}"
 
 - name: Clone Mastodon repo (git)
   ansible.builtin.git:
