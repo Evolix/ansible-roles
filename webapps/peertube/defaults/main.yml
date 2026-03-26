@@ -1,7 +1,7 @@
 ---
 # defaults file for vars
 peertube_system_dep: "['curl', 'python3-dev', 'python3-pip', 'python-is-python3', 'python3-psycopg2','ffmpeg', 'postgresql-contrib', 'openssl', 'g++', 'make', 'git', 'unzip', 'acl']"
-peertube_version: 'v7.3.0'
+peertube_version: 'v8.1.3'
 peertube_download_url: "https://github.com/Chocobozzz/PeerTube/releases/download/{{ peertube_version }}/peertube-{{ peertube_version }}.zip"
 peertube_domains: ['example.domain.org']
 peertube_instance: 'my-peertube'
