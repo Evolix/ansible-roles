@@ -37,7 +37,7 @@
   ansible.builtin.lineinfile:
     dest: /etc/nagios/nrpe.d/evolix.cfg
     regexp: 'command\[check_keepalived\]'
-    replace: 'command[check_keepalived]={{ keepalived_monitoringctl_wrapper_cmd }}/usr/local/lib/nagios/plugins/check_keepalived'
+    line: 'command[check_keepalived]={{ keepalived_monitoringctl_wrapper_cmd }}/usr/local/lib/nagios/plugins/check_keepalived'
   notify: restart nagios-nrpe-server
   tags:
     - keepalived
