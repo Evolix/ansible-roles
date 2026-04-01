@@ -22,6 +22,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * keepalived: Fix lineinfile task related to NRPE
+* postfix: Add missing `disable_vrfy_command = yes` in packmail_main.cf.j2
 
 ### Removed
 
