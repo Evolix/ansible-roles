@@ -13,4 +13,4 @@ rbenv_plugins:
   - { name: "rbenv-use",          repo: "https://github.com/rkh/rbenv-use.git",            version: "v1.0.0" }
 rbenv_default_gems:
   - bundler
-rbenv_ruby_configure_opts: "RUBY_CONFIGURE_OPTS="
+rbenv_ruby_configure_opts: ""
