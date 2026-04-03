@@ -3,8 +3,8 @@
 mastodon_system_dep: "['imagemagick', 'ffmpeg', 'libvips-tools', 'libpq-dev', 'libxml2-dev', 'libxslt1-dev', 'file', 'git-core', 'g++', 'libprotobuf-dev', 'protobuf-compiler', 'pkg-config', 'gcc', 'autoconf', 'bison', 'build-essential', 'libssl-dev', 'libyaml-dev', 'libreadline6-dev', 'zlib1g-dev', 'libncurses5-dev', 'libffi-dev', 'libgdbm-dev', 'python3-psycopg2', 'libidn11-dev', 'libicu-dev', 'libjemalloc-dev']"
 mastodon_domains: ['example.somedomain.org']
 mastodon_git_url: 'https://github.com/mastodon/mastodon.git'
-mastodon_git_version: 'v4.4.5'
-mastodon_ruby_version: '3.4.4'
+mastodon_git_version: 'v4.5.8'
+mastodon_ruby_version: '3.4.7'
 mastodon_ruby_configure_opts: "--with-jemalloc"
 mastodon_nodejs_version: 'node_20.x'
 mastodon_instance: 'example'
