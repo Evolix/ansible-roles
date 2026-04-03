@@ -18,7 +18,7 @@
     src: elastic.asc
     dest: "{{ apt_keyring_dir }}/elastic.asc"
     force: true
-    mode: "0644"
+    mode: "0600"
     owner: root
     group: root
 
