@@ -21,6 +21,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * elasticsearch: use 4-digit string as file mode
 * elasticsearch: change mode of elastic.asc to 0600
 * elasticsearch: specify mode and owner of /etc/apt/sources.list.d/elastic.sources
+* tomcat: show critical instances before overview
 
 ### Fixed
 
