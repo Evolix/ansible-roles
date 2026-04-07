@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Evolix
+
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
 # monitoringctl
 
 **`monitoringctl` gives some control over NRPE checks and alerts.**

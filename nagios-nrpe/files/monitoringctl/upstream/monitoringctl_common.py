@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2024 Evolix
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 # Common functions for monitoringctl and alerts_wrapper
 #

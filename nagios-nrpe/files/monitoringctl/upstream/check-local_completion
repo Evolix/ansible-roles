@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# SPDX-FileCopyrightText: 2024 Evolix
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 function _get_checks_names() {
     grep --extended-regexp --no-filename --no-messages -R "command\[check_.*\]="  /etc/nagios/ | grep --invert-match --extended-regexp "^\s*#" | awk -F"[\\\[\\\]=]" '{sub("check_", "", $2); print $2}' | sort | uniq
 }

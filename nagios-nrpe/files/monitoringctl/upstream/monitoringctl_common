@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# SPDX-FileCopyrightText: 2024 Evolix
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # Location of disable files
 readonly var_dir="/var/lib/monitoringctl"
 
