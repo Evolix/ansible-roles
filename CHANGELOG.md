@@ -86,6 +86,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evoacme: upstream release 26.03
 * evocheck: Add /usr/local/sbin to PATH
 * evocheck: crontab template source file and destination path are now variabilized
+* evolinux-base: Bump keylengh to 3072b for self-signed certificate
 * generate-ldif: generateldif.sh can use another port than 22 via ansible_port
 * haproxy: new attempt to have "normal" and "check" modes compatible
 * haproxy: no diff for temporary config
