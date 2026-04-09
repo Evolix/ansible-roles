@@ -22,6 +22,7 @@ nagios          ALL = NOPASSWD: /usr/local/bin/mvcli info -o vd
 nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_gluster.rb
 nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_supervisord
 nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_php_fpm.py
+nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_docker
 
 nagios          ALL = (clamav) NOPASSWD: /usr/bin/clamscan /tmp/safe.txt
 

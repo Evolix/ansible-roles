@@ -97,6 +97,7 @@ command[check_minifirewall]={{ monitoringctl_wrapper_path }} --name minifirewall
 #command[check_mount]={{ monitoringctl_wrapper_path }} --name mount -- /usr/local/lib/nagios/plugins/check_mount
 #command[check_alloy]={{ monitoringctl_wrapper_path }} --name alloy -- /usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /-/healthy -p 12345 -r 'All Alloy components are healthy.'
 #command[check_loki]={{ monitoringctl_wrapper_path }} --name loki -- /usr/lib/nagios/plugins/check_http --ssl -I {{ ansible_hostname }}.evolix.net -u /ready -p 3100 -r 'ready'
+#command[check_docker]={{ monitoringctl_wrapper_path }} --name docker -- sudo /usr/local/lib/nagios/plugins/check_docker --present --uptime 120:350 --containers [...]
 
 # Check HTTP "many". Use this to check many websites (http, https, ports, sockets and SSL certificates).
 # Beware! All checks must not take more than 10s!

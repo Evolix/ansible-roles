@@ -77,6 +77,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * prometheus: add collabora
 * redis: update apt cache before install
 * evolinux-base: keep journald logs for 7 days
+* nagios-nrpe: add check_docker
 
 ### Changed
 
