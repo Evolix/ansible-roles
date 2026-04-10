@@ -110,17 +110,17 @@
     mode: "preserve"
   notify: "systemctl daemon-reload"
 
-- name: "Create /etc/containers/systemd/php{{ php_multi_version }}-fpm.container"
+- name: "Create /etc/containers/systemd/php-fpm{{ php_multi_version }}.container"
   ansible.builtin.copy:
-    src: "etc/containers/systemd/php{{ php_multi_version }}-fpm.container"
-    dest: "/etc/containers/systemd/php{{ php_multi_version }}-fpm.container"
+    src: "etc/containers/systemd/php-fpm{{ php_multi_version }}.container"
+    dest: "/etc/containers/systemd/php-fpm{{ php_multi_version }}.container"
     mode: "preserve"
   notify: "systemctl daemon-reload"
 
 - ansible.builtin.meta: flush_handlers
 
-- name: "Start and enable php{{ php_multi_version }}-fpm.service"
+- name: "Start and enable php-fpm{{ php_multi_version }}.service"
   ansible.builtin.service:
-    name: "php{{ php_multi_version }}-fpm.service"
+    name: "php-fpm{{ php_multi_version }}.service"
     state: "started"
     enabled: true

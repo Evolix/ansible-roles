@@ -1,5 +1,5 @@
 [Container]
-ContainerName=php7.4-fpm
+ContainerName=php-fpm7.4
 Image=php7.4.build
 
 # Signal to stop process gracefully
