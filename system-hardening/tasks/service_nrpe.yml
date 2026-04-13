@@ -7,4 +7,4 @@
     insertbefore: '# Allowed IPs'
   notify: restart nagios-nrpe-server
   when: 
-    - hardening_nrpe_listen_address | length > 0
+    - hardening_nrpe_listen_address

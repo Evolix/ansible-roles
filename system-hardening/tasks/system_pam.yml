@@ -12,16 +12,18 @@
     regexp: "^#? ?{{ item.name }} = .*"
     replace: "{{ item.name }} = {{ item.value }}"
   loop:
-    - { name: minlen, value: 15}
-    - { name: dcredit, value: 0}
-    - { name: ucredit, value: -1}
-    - { name: ocredit, value: -1}
-    - { name: lcredit, value: -1}
+    - { name: minlen, value: "{{ hardening_pam_pwlen }}"}
+    - { name: dcredit, value: "{{ hardening_pam_dcredit }}"}
+    - { name: ucredit, value: "{{ hardening_pam_ucredit }}"}
+    - { name: ocredit, value: "{{ hardening_pam_ocredit }}"}
+    - { name: lcredit, value: "{{ hardening_pam_lcredit }}"}
+    - { name: minclass, value: "{{ hardening_pam_minclass }}"}
 
 - name: Enable pam_pwhistory
   ansible.builtin.lineinfile:
     dest: /etc/pam.d/common-password
-    line: "password     required           pam_pwhistory.so  remember=24 use_authtok"
+    line: "password     required           pam_pwhistory.so  remember={{ hardening_pam_historylen }} use_authtok"
+    regexp: 'password\s+required\s+pam_pwhistory.so .*'
     insertafter: 'pam_pwquality.so retry=3'
 
 - name: Change PASS_MIN_DAYS

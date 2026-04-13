@@ -4,8 +4,10 @@ monitoringctl_wrapper_path: /usr/local/lib/monitoringctl/alerts_wrapper
 # Disable IPv6 configuration
 hardening_disable_ipv6: true
 
+
 # Enable some FHS restrictions 
 hardening_enable_fhs_restrictions: true
+
 
 # Enable auditd with a default configuration
 hardening_auditd: true
@@ -18,6 +20,7 @@ hardening_auditd_max_log_size: 10
 # in /var/log/audit/ - Default values will need ~5G of space.
 hardening_auditd_max_log_num: 500
 
+
 # Harden NRPE configuration
 # Will require hardening_nrpe_listen_address to be set
 hardening_nrpe: true
@@ -29,6 +32,7 @@ hardening_nrpe_listen_address: null
 # Harden Munin configuration
 hardening_munin: true
 
+
 # Harden sshd config
 hardening_ssh: true
 
@@ -37,8 +41,44 @@ hardening_ssh: true
 hardening_sshd_listen: []
 
 
+# Harden Kernel configuration
 hardening_kernel: true
+
+# Kernel > Disable IPv4 paquet forwarding
+# Should not be disabled for VPN/OpenVPN hosts or container hosts
 hardening_kernel_disable_ipv4_forward: true
 
 
+# Harden PAM config
+# Will enable pam_pwhistory (to prevent pw reuse) & pam_pwquality 
 hardening_pam: true
+
+# pam_pwquality > minimum password size
+hardening_pam_pwlen: 15
+
+# pam_pwquality > Maximum credit for digits in password
+# If less than 0, it's the required number of digits in password
+# Default: -1 (At least one digit required in password)
+hardening_pam_dcredit: -1
+
+# pam_pwquality > Maximum credit for uppercase characters in password
+# If less than 0, it's the required number of uppercase characters in password
+# Default: -1 (At least one uppercase character required in password)
+hardening_pam_ucredit: -1
+
+# pam_pwquality > Maximum credit for other characters (ie: not digits, uppercase or lowercase) in password
+# If less than 0, it's the required number of other characters in password
+# Default: -1 (At least one other character required in password)
+hardening_pam_ocredit: -1
+
+# pam_pwquality > Maximum credit for lowercase characters in password
+# If less than 0, it's the required number of lowercase characters in password
+# Default: -1 (At least one lowercase character required in password)
+hardening_pam_lcredit: 15
+
+# pam_pwquality > Minimum number of required class of characters in password (digits, uppercase, lowercase, others)
+# Default: 4 (all classes required)
+hardening_pam_minclass: 4
+
+# pam_pwhistory > Number of old password to memorize so they can't be reused
+hardening_pam_historylen: 24
