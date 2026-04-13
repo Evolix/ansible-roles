@@ -6,18 +6,16 @@ if [ "$EUID" -ne 0 ]; then
   exit 0;
 fi;
 
-#PHPVersion=$(grep SetHandler /etc/apache2/sites-enabled/$LOGNAME.conf 2>/dev/null | grep -m 1 -o 'fpm[0-9][0-9]' | head -n 1 | sed 's/php//g' | sed 's/fpm//g')
-PHPVersion=$(grep SetHandler /etc/apache2/sites-enabled/$LOGNAME.conf 2>/dev/null 2>/dev/null | grep -m 1 -o 'php[0-9].[0-9]')
+PHPVersion=$(grep SetHandler /etc/apache2-$LOGNAME/sites-enabled/$LOGNAME.conf 2>/dev/null 2>/dev/null | sed -E 's/.*php-fpm([0-9][0-9]).*/\1/')
 
 # If $PHPVersion is empty, look for "SetHandler" in the includes.
 if [ "$PHPVersion" == "" ]; then
-    includes=$(grep -w "Include" /etc/apache2/sites-enabled/$LOGNAME.conf | uniq | awk '{print $2}')
+    includes=$(grep -w "Include" /etc/apache2-$LOGNAME/sites-enabled/$LOGNAME.conf | uniq | awk '{print $2}')
     for f in "$includes"; do
         f="$(realpath "$f")"
 
         # Grep again
-        #PHPVersion=$(grep SetHandler "${f}" 2>/dev/null | grep -m 1 -o 'fpm[0-9][0-9]' | head -n 1 | sed 's/php//g' | sed 's/fpm//g')
-        PHPVersion=$(grep SetHandler "${f}" 2>/dev/null | grep -m 1 -o 'php[0-9].[0-9]')
+        PHPVersion=$(grep SetHandler "${f}" 2>/dev/null | sed -E 's/.*php-fpm([0-9][0-9]).*/\1/')
         if [ "$PHPVersion" != "" ]; then
             break
         fi
@@ -25,8 +23,7 @@ if [ "$PHPVersion" == "" ]; then
 fi
 
 if [ "$PHPVersion" != "" ]; then
-    # lxc-attach -n php$PHPVersion -- su - $LOGNAME -c "cd \"${PWD@E}\" && php ${*@Q}"
-    podman exec --user "$LOGNAME" --interactive --workdir "$PWD" "${PHPVersion}-fpm" php $@
+    podman exec --user "$LOGNAME" --interactive --workdir "$PWD" "php-fpm${PHPVersion:0:1}.${PHPVersion:1:1}" php $@
 else
     # TODO: fallback?
     # command php $*
