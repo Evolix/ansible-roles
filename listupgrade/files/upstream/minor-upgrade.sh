@@ -520,7 +520,7 @@ main_upgrade_stderr="${upgrade_tmp_dir}/main.upgrade.stderr"
 
 
 # shellcheck disable=SC2089
-main_upgrade_command="DEBIAN_FRONTEND=noninteractive apt-get -o Dir::State::Lists=${listupgrade_state_dir} -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dir::Etc::sourcelist="${listupgrade_sources_file}" -o Dpkg::Options::='--force-confold' --no-download --no-remove upgrade --quiet=2 --assume-yes"
+main_upgrade_command="DEBIAN_FRONTEND=noninteractive apt-get -o Dir::State::Lists=${listupgrade_state_dir} -o Dir::Etc::sourceparts="${listupgrade_sources_dir}" -o Dir::Etc::sourcelist="${listupgrade_sources_file}" -o Dpkg::Options::='--force-confold' --no-download --no-remove upgrade --with-new-pkgs --quiet=2 --assume-yes"
 
 if is_dry_run; then
     printf "DRY RUN: %s\n" "${main_upgrade_command}"
@@ -710,7 +710,7 @@ if which lxc-ls >/dev/null; then
                 printf "${CYAN}Upgrading packages...${RESET}\n"
 
                 # shellcheck disable=SC2089
-                lxc_command="lxc-attach --name ${container_name} --set-var DEBIAN_FRONTEND=noninteractive -- apt-get -o Dir::State::Lists=${listupgrade_state_dir} -o Dpkg::Options::='--force-confold' --no-download --no-remove upgrade --quiet=2 --assume-yes"
+                lxc_command="lxc-attach --name ${container_name} --set-var DEBIAN_FRONTEND=noninteractive -- apt-get -o Dir::State::Lists=${listupgrade_state_dir} -o Dpkg::Options::='--force-confold' --no-download --no-remove upgrade --with-new-pkgs --quiet=2 --assume-yes"
                 lxc_stdout="${upgrade_tmp_dir}/lxc-${container_name}.stdout"
                 lxc_stderr="${upgrade_tmp_dir}/lxc-${container_name}.stderr"
 
