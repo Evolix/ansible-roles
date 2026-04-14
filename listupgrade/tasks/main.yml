@@ -20,6 +20,7 @@
       - system.sources
       - security.sources
       - evolix_public.sources
+      - auto_evolix_public.sources
       - backports.sources
       - sury.sources
       - evolix_sury.sources
