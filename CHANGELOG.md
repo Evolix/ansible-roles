@@ -24,6 +24,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * elasticsearch: specify mode and owner of /etc/apt/sources.list.d/elastic.sources
 * listupgrades: allow new packages
 * tomcat: show critical instances before overview
+* php-multi: make phpContainer more robust
 
 ### Fixed
 
