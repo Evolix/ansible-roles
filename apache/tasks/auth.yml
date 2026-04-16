@@ -1,56 +1,56 @@
 ---
 
-- name: Init ipaddr_whitelist.conf file
+- name: "auth | Init ipaddr_whitelist.conf file"
   ansible.builtin.copy:
-    src: ipaddr_whitelist.conf
-    dest: /etc/apache2/ipaddr_whitelist.conf
-    owner: root
-    group: root
+    src: "ipaddr_whitelist.conf"
+    dest: "{{ apache_config_dir }}/ipaddr_whitelist.conf"
+    owner: "root"
+    group: "root"
     mode: "0640"
     force: false
   tags:
     - apache
 
-- name: Load IP whitelist task
+- name: "auth | Load IP whitelist task"
   ansible.builtin.import_tasks: ip_whitelist.yml
 
-- name: include private IP whitelist for server-status
+- name: "include private IP whitelist for server-status"
   ansible.builtin.lineinfile:
-    dest: /etc/apache2/mods-available/status.conf
-    line: "        include /etc/apache2/ipaddr_whitelist.conf"
+    dest: "{{ apache_config_dir }}/mods-available/status.conf"
+    line: "        include {{ apache_config_dir }}/ipaddr_whitelist.conf"
     insertafter: 'SetHandler server-status'
-    state: present
+    state: "present"
   tags:
     - apache
 
-- name: Copy private_htpasswd
+- name: "auth | Copy private_htpasswd"
   ansible.builtin.copy:
-    src: private_htpasswd
-    dest: /etc/apache2/private_htpasswd
-    owner: root
-    group: root
+    src: "private_htpasswd"
+    dest: "{{ apache_config_dir }}/private_htpasswd"
+    owner: "root"
+    group: "root"
     mode: "0640"
     force: false
-  notify: reload apache
+  notify: "reload apache"
   tags:
     - apache
 
-- name: add user:pwd to private htpasswd
+- name: "auth | Add user:pwd to private htpasswd"
   ansible.builtin.lineinfile:
-    dest: /etc/apache2/private_htpasswd
+    dest: "{{ apache_config_dir }}/private_htpasswd"
     line: "{{ item }}"
-    state: present
+    state: "present"
   loop: "{{ apache_private_htpasswd_present }}"
-  notify: reload apache
+  notify: "reload apache"
   tags:
     - apache
 
-- name: remove user:pwd from private htpasswd
+- name: "auth | Remove user:pwd from private htpasswd"
   ansible.builtin.lineinfile:
-    dest: /etc/apache2/private_htpasswd
+    dest: "{{ apache_config_dir }}/private_htpasswd"
     line: "{{ item }}"
-    state: absent
+    state: "absent"
   loop: "{{ apache_private_htpasswd_absent }}"
-  notify: reload apache
+  notify: "reload apache"
   tags:
     - apache

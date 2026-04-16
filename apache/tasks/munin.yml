@@ -1,53 +1,53 @@
 ---
 
-- name: "Install munin-node and core plugins packages"
+- name: "munin | Install munin-node and core plugins packages"
   ansible.builtin.apt:
     name:
       - munin-node
       - munin-plugins-core
-    state: present
+    state: "present"
   tags:
     - apache
     - munin
 
-- name: "Enable Munin plugins"
+- name: "munin | Enable Munin plugins"
   ansible.builtin.file:
     src: "/usr/share/munin/plugins/{{ item }}"
     dest: "/etc/munin/plugins/{{ item }}"
-    state: link
+    state: "link"
   loop:
     - apache_accesses
     - apache_processes
     - apache_volume
-  notify: restart munin-node
+  notify: "restart munin-node"
   tags:
     - apache
     - munin
 
-- name: "Install fcgi packages for Munin graphs"
+- name: "munin | Install fcgi packages for Munin graphs"
   ansible.builtin.apt:
     name:
       - libapache2-mod-fcgid
       - libcgi-fast-perl
-    state: present
-  notify: reload apache
+    state: "present"
+  notify: "reload apache"
   tags:
     - apache
     - munin
 
-- name: "Enable libapache2-mod-fcgid"
+- name: "munin | Enable libapache2-mod-fcgid"
   community.general.apache2_module:
     name: fcgid
-    state: present
-  notify: restart apache
+    state: "present"
+  notify: "restart apache"
   tags:
     - apache
     - munin
 
-- name: "Apache has access to /var/log/munin/"
+- name: "munin | Apache has access to /var/log/munin/"
   ansible.builtin.file:
-    path: /var/log/munin/
-    group: www-data
+    path: "/var/log/munin/"
+    group: "www-data"
   tags:
     - apache
     - munin

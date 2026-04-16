@@ -1,4 +1,6 @@
 ---
+
+apache_config_dir: "/etc/apache2"
 apache_default_ipaddr_whitelist_ips: []
 apache_additional_ipaddr_whitelist_ips: []
 apache_ipaddr_whitelist_present: "{{ apache_default_ipaddr_whitelist_ips | union(apache_additional_ipaddr_whitelist_ips) | unique }}"

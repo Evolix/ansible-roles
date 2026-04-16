@@ -18,6 +18,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* apache: backport improvements (mostly syntax) from apache-multi
 * apache-multi : rollback using argv vs cmd
 * elasticsearch: change mode of elastic.asc to 0600
 * elasticsearch: specify mode and owner of /etc/apt/sources.list.d/elastic.sources
