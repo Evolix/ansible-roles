@@ -121,10 +121,7 @@
 
 - name: "Disable unused modules in vhost template"
   ansible.builtin.command:
-    argv:
-      - "a2dismod-template"
-      - "security2"
-      - "ssl"
+    cmd: "a2dismod-template security2 ssl"
   register: "cmd_a2dismod_template"
   changed_when: "'To activate the new configuration, you need to run' in cmd_a2dismod_template.stdout"
   tags:
@@ -132,10 +129,7 @@
 
 - name: "Enable common modules in instance template"
   ansible.builtin.command:
-    argv:
-      - "a2enmod-template"
-      - "rewrite"
-      - "headers"
+    cmd: "a2enmod-template rewrite headers"
   register: "cmd_a2enmod_template"
   changed_when: "'Enabling module' in cmd_a2enmod_template.stdout"
   tags:
@@ -205,11 +199,7 @@
 
 - name: "Is umask already present ?"
   ansible.builtin.command:
-    argv:
-      - "grep"
-      - "-E"
-      - "^umask "
-      - "{{ apache_multi_template_dir }}/envvars"
+    cmd: "grep --extended-regexp '^umask' {{ apache_multi_template_dir }}/envvars"
   failed_when: false
   changed_when: false
   register: "envvar_grep_umask"
@@ -306,11 +296,7 @@
 
 - name: "Enable modules for front vhost"
   ansible.builtin.command:
-    argv:
-      - "a2enmod-{{ apache_multi_front_vhost_name }}"
-      - "security2"
-      - "ssl"
-      - "proxy_http"
+    cmd: "a2enmod-{{ apache_multi_front_vhost_name }} security2 ssl proxy_http"
   register: "cmd_a2enmod_front"
   changed_when: "'Enabling module' in cmd_a2enmod_front.stdout"
   notify: "Reload apache front vhost"

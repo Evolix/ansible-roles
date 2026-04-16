@@ -28,11 +28,7 @@
 
 - name: "server_status | Read apache server status suffix"
   ansible.builtin.command:
-    argv:
-      - "tail"
-      - "-n"
-      - "1"
-      - "{{ apache_serverstatus_suffix_file }}"
+    cmd: "tail -n 1 {{ apache_serverstatus_suffix_file }}"
   changed_when: false
   check_mode: false
   register: "new_apache_serverstatus_suffix"

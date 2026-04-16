@@ -18,13 +18,14 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
-* webapps/evoadmin-web: clone repository from new forge gitea.evolix.org
-* elasticsearch: use 4-digit string as file mode
+* apache-multi : rollback using argv vs cmd
 * elasticsearch: change mode of elastic.asc to 0600
 * elasticsearch: specify mode and owner of /etc/apt/sources.list.d/elastic.sources
+* elasticsearch: use 4-digit string as file mode
 * listupgrades: allow new packages
-* tomcat: show critical instances before overview
 * php-multi: make phpContainer more robust
+* tomcat: show critical instances before overview
+* webapps/evoadmin-web: clone repository from new forge gitea.evolix.org
 
 ### Fixed
 
