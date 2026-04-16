@@ -1,0 +1,72 @@
+---
+
+- name: Remove read permission on some folders (/, /etc, ...)
+  ansible.builtin.shell:
+    cmd: "test -d {{ item }} && chmod --verbose o-r {{ item }}"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  failed_when: False
+  loop:
+    - /
+    - /etc
+    - /usr
+    - /usr/bin
+    - /var
+    - /var/log
+    - /home
+    - /bin
+    - /sbin
+    - /lib
+    - /usr/lib
+    - /usr/include
+    - /usr/bin
+    - /usr/sbin
+    - /usr/share
+    - /usr/share/doc
+    - /etc/default
+
+- name: Set 750 permission on some folders (/var/log/apt, /var/log/munin, ...)
+  ansible.builtin.shell:
+    cmd: "test -d {{ item }} && chmod --verbose 750 {{ item }}"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  failed_when: False
+  loop:
+    - /var/log/apt
+    - /var/lib/dpkg
+    - /var/log/munin
+    - /var/backups
+    - /etc/init.d
+    - /etc/apache2
+    - /etc/network
+    - /etc/phpmyadmin
+    - /var/log/installer
+
+- name: Change group to www-data for /etc/phpmyadmin/
+  ansible.builtin.file:
+    dest: /etc/phpmyadmin/
+    group: www-data
+    state: directory
+
+- name: Set u-s permission on some binaries (/bin/ping, /usr/bin/mtr, ...)
+  ansible.builtin.shell:
+    cmd: "test -f {{ item }} && chmod --verbose u-s {{ item }}"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  failed_when: False
+  loop:
+    - /bin/ping
+    - /bin/ping6
+    - /usr/bin/fping
+    - /usr/bin/fping6
+    - /usr/bin/mtr
+
+- name: Set 640 permission on some files (/var/log/evolix.log, ...)
+  ansible.builtin.shell:
+    cmd: "test -f {{ item }} && chmod --verbose 640 {{ item }}"
+  register: command_result
+  changed_when: "'changed' in command_result.stdout"
+  failed_when: False
+  loop:
+    - /var/log/evolix.log
+    - /etc/warnquota.conf

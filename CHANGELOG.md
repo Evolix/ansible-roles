@@ -126,6 +126,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * redis: update apt cache before install
 * evolinux-base: keep journald logs for 7 days
 * nagios-nrpe: add check_docker
+* packweb-apache-v2: new role
 
 ### Changed
 
