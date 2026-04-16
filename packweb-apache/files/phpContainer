@@ -12,7 +12,7 @@ if [ -e "/etc/apache2/sites-enabled/$LOGNAME.conf" ]; then
     vhostfile=/etc/apache2/sites-enabled/"${LOGNAME}".conf
 elif [ -e "/etc/nginx/sites-enabled/$LOGNAME.conf" ]; then
     pattern=fastcgi_pass
-    vhostfile=/etc/apache2/sites-enabled/"${LOGNAME}"
+    vhostfile=/etc/nginx/sites-enabled/"${LOGNAME}".conf
 fi;
 
 PHPVersion=$(grep $pattern "${vhostfile}" 2>/dev/null | grep -m 1 -o 'fpm[0-9][0-9]' | head -n 1 | sed 's/php//g' | sed 's/fpm//g')
