@@ -16,6 +16,28 @@ if [ "${TRACE-0}" = "1" ]; then
     set -o xtrace
 fi
 
+readonly VERSION="26.04"
+
+PROGNAME=$(basename "${0}")
+readonly PROGNAME
+
+show_version() {
+    cat <<END
+${PROGNAME} version ${VERSION}
+END
+}
+get_php_version_from_sethandler() {
+    local file=$1
+    grep "SetHandler" "${file}" 2>/dev/null | sed --regexp-extended 's/.*php-fpm([0-9][0-9]).*/\1/'
+}
+
+case $1 in
+    -v|--version|version|Version)
+        show_version
+        exit 0
+        ;;
+esac
+
 # If this script isn't run as root, then, re-run it with sudo.
 if [ "$EUID" -ne 0 ]; then
     # Keep trace mode if enabled
@@ -42,11 +64,6 @@ if [ ! -e "${apache_vhost_file}" ]; then
     >&2 printf "ERROR: %s not found\n" "${apache_vhost_file}"
     exit 1
 fi
-
-function get_php_version_from_sethandler() {
-    local file=$1
-    grep "SetHandler" "${file}" 2>/dev/null | sed --regexp-extended 's/.*php-fpm([0-9][0-9]).*/\1/'
-}
 
 php_version=$(get_php_version_from_sethandler "${apache_vhost_file}")
 
