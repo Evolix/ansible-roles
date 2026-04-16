@@ -1,0 +1,15 @@
+---
+- name: restart apache
+  ansible.builtin.service:
+    name: apache2
+    state: restarted
+
+- name: reload apache
+  ansible.builtin.service:
+    name: apache2
+    state: reloaded
+
+- name: reload nagios-nrpe-server
+  ansible.builtin.service:
+    name: nagios-nrpe-server
+    state: reloaded
