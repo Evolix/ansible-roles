@@ -1,7 +1,7 @@
 ---
 
 - ansible.builtin.include_role:
-    name: evolix/apache
+    name: evolix/apache-multi
 
 - ansible.builtin.include_role:
     name: evolix/php
