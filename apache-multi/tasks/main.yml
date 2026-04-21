@@ -215,8 +215,8 @@
 - name: "Customize /usr/local/sbin/apache2-setup-instance"
   ansible.builtin.replace:
     dest: "/usr/local/sbin/apache2-setup-instance"
-    regexp: "/etc/apache2"
-    replace: "/etc/apache2-template"
+    regexp: "/etc/apache2 "
+    replace: "/etc/apache2-template "
   tags:
     - "apache"
 
