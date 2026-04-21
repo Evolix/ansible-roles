@@ -123,7 +123,7 @@
   tags:
     - "apache"
 
-  - name: "Disable unused confs in vhost template"
+- name: "Disable unused confs in vhost template"
   ansible.builtin.command:
     cmd: "a2disconf-template serve-cgi-bin"
   register: "cmd_a2disconf_template"
@@ -133,7 +133,7 @@
 
 - name: "Copy Apache config files"
   ansible.builtin.copy:
-    src: "{{ itme }}"
+    src: "{{ item }}"
     dest: "{{ apache_multi_template_dir }}/conf-available/{{ item }}"
     owner: "root"
     group: "root"
@@ -228,8 +228,8 @@
   ansible.builtin.command:
     cmd: "setup-instance {{ apache_multi_front_vhost_name }}"
     creates: "{{ apache_multi_front_dir }}"
-  register: "cmd_setup-instance_front"
-  changed_when: "'Setting up /etc/default/apache-htcacheclean-' in cmd_setup-instance_front"
+  register: "cmd_setup_instance_front"
+  changed_when: "'Setting up /etc/default/apache-htcacheclean-' in cmd_setup_instance_front"
   notify: "Reload apache front vhost"
   tags:
     - "apache"
