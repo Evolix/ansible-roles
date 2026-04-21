@@ -31,14 +31,15 @@
 - ansible.builtin.include_role:
     name: evolix/php-multi
   vars:
-    multi_php_version: "{{ item }}"
+    php_multi_version: "{{ item }}"
   loop: "{{ packweb_apache_v2_php_versions }}"
 
 - ansible.builtin.include_role:
     name: evolix/webapps/evoadmin-web
   vars:
+    evoadmin_multiinstance: True
     evoadmin_enable_vhost: "{{ packweb_apache_v2_enable_evoadmin_vhost }}"
-    evoadmin_multiphp_versions: "{{ packweb_apache_v2_multiphp_versions }}"
+    evoadmin_multiphp_versions: "{{ packweb_apache_v2_php_versions }}"
 
 - ansible.builtin.include_role:
     name: evolix/evoacme

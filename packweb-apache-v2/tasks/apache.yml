@@ -39,7 +39,7 @@
 
 - name: Copy Apache settings for modules
   ansible.builtin.copy:
-    src: "evolinux-modsec.conf"
+    src: "etc/apache2-template/conf-available/evolinux-modsec.conf"
     dest: "/etc/apache2-template/conf-available/evolinux-modsec.conf"
     owner: root
     group: root
