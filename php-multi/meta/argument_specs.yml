@@ -14,8 +14,8 @@ argument_specs:
           - "Example: \"8.4\""
 
       php_multi_disable_compatibility_check:
-        type: "str"
-        default: "False"
+        type: "bool"
+        default: False
         description:
           - "Whether to manually bypass the compatibility check."
           - "To be used when you really need to apply it on an old Debian."
