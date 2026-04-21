@@ -18,13 +18,14 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
-* apache: backport improvements (mostly syntax) from apache-multi
 * apache-multi : rollback using argv vs cmd
+* apache: backport improvements (mostly syntax) from apache-multi
 * elasticsearch: change mode of elastic.asc to 0600
 * elasticsearch: specify mode and owner of /etc/apt/sources.list.d/elastic.sources
 * elasticsearch: use 4-digit string as file mode
 * listupgrades: allow new packages
 * php-multi: make phpContainer more robust
+* redis: fix service template for Debian 12/13
 * tomcat: show critical instances before overview
 * webapps/evoadmin-web: clone repository from new forge gitea.evolix.org
 

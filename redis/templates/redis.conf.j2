@@ -1,4 +1,4 @@
-daemonize yes
+daemonize {{ (ansible_distribution == "Debian" and ansible_distribution_major_version is version('11', '>=')) | bool | ternary('no','yes') }}
 pidfile "{{ redis_pid_dir }}/redis-server.pid"
 port {{ redis_port }}
 bind {{ redis_bind_interfaces | join(' ') }}
