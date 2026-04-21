@@ -1,5 +1,7 @@
 ---
 
-php_multi_version: Null
+# You want to look into ../meta/argument_specs.yml instead, this is just a
+# dummy file.
 
-php_multi_disable_compatibility_check: False
+# php_multi_version: "7.0"
+# php_multi_disable_compatibility_check: True
