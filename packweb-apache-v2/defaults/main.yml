@@ -13,10 +13,10 @@ packweb_apache_v2_phpmyadmin_suffix_file: "/etc/evolinux/phpmyadmin_suffix"
 packweb_apache_v2_mysql_variant: "debian"
 
 packweb_apache_v2_php_versions:
-  - 7.0
-  - 7.3
-  - 7.4
-  - 8.2
-  - 8.4
+  - "7.0"
+  - "7.3"
+  - "7.4"
+  - "8.2"
+  - "8.4"
 
 packweb_apache_v2_disable_compatibility_check: False
