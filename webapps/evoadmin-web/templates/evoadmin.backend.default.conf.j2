@@ -1,8 +1,5 @@
 <VirtualHost {{ evoadmin_multiinstance_backend_port }}>
-
-    # FQDN principal
-    ServerName {{ evoadmin_host }}
-    #ServerAlias {{ evoadmin_host }}
+    ServerName DEFAULT
 
     # Repertoire principal
     DocumentRoot {{ evoadmin_document_root }}/htdocs/
