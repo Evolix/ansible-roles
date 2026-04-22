@@ -9,7 +9,7 @@
     dest: /etc/awstats/awstats.conf.local
     marker: "## {mark} ANSIBLE MANAGED BLOCK FOR PACKWEB"
     block: |
-      LogFile="/var/log/apache2/access.log"
+      LogFile="/var/log/apache2-front/access.log"
       SiteDomain="{{ ansible_hostname }}"
       DirData="/var/lib/awstats"
       ShowHostsStats=0
@@ -26,7 +26,7 @@
 
 - name: Create conf-available/awstats-icon.conf file
   ansible.builtin.copy:
-    dest: /etc/apache2/conf-available/awstats-icon.conf
+    dest: /etc/apache2-front/conf-available/awstats-icon.conf
     content: |
       Alias /awstats-icon/ /usr/share/awstats/icon/
       <Directory /usr/share/awstats/icon/>
@@ -40,14 +40,14 @@
     cmd: "a2enconf awstats-icon"
   register: command_result
   changed_when: "'Enabling' in command_result.stderr"
-  notify: reload apache
+  notify: reload apache2@front
 
 - name: Create awstats cron
   ansible.builtin.lineinfile:
     dest: /etc/cron.d/awstats
     create: yes
     regexp: '-config=awstats'
-    line: "10 */6 * * * root umask 033; [ -x /usr/lib/cgi-bin/awstats.pl -a -f /etc/awstats/awstats.conf -a -r /var/log/apache2/access.log ] && /usr/lib/cgi-bin/awstats.pl -config=awstats -update >/dev/null"
+    line: "10 */6 * * * root umask 033; [ -x /usr/lib/cgi-bin/awstats.pl -a -f /etc/awstats/awstats.conf -a -r /var/log/apache2-front/access.log ] && /usr/lib/cgi-bin/awstats.pl -config=awstats -update >/dev/null"
 
 - name: Comment default awstat cron's tasks
   ansible.builtin.lineinfile:

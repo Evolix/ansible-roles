@@ -55,9 +55,9 @@
     state: absent
   when: pma_default_config.stat.exists
 
-- name: "phpmyadmin suffix dirname '{{ packweb_phpmyadmin_v2_suffix_file | dirname }}' exists"
+- name: "phpmyadmin suffix dirname '{{ packweb_apache_v2_phpmyadmin_suffix_file | dirname }}' exists"
   ansible.builtin.file:
-    dest: "{{ packweb_phpmyadmin_v2_suffix_file | dirname }}"
+    dest: "{{ packweb_apache_v2_phpmyadmin_suffix_file | dirname }}"
     mode: "0700"
     owner: root
     group: root
@@ -65,31 +65,31 @@
 
 - name: set phpmyadmin suffix if provided
   ansible.builtin.copy:
-    dest: "{{ packweb_phpmyadmin_v2_suffix_file }}"
+    dest: "{{ packweb_apache_v2_phpmyadmin_suffix_file }}"
     # The last character "\u000A" is a line feed (LF), it's better to keep it
-    content: "{{ packweb_phpmyadmin_v2_suffix }}\u000A"
+    content: "{{ packweb_apache_v2_phpmyadmin_suffix }}\u000A"
     force: true
-  when: packweb_phpmyadmin_v2_suffix | length > 0
+  when: packweb_apache_v2_phpmyadmin_suffix | length > 0
 
 - name: generate random string for phpmyadmin suffix
   ansible.builtin.shell:
-    cmd: "apg -a 1 -M N -n 1 > {{ packweb_phpmyadmin_v2_suffix_file }}"
+    cmd: "apg -a 1 -M N -n 1 > {{ packweb_apache_v2_phpmyadmin_suffix_file }}"
   args:
-    creates: "{{ packweb_phpmyadmin_v2_suffix_file }}"
+    creates: "{{ packweb_apache_v2_phpmyadmin_suffix_file }}"
 
 - name: read phpmyadmin suffix
   ansible.builtin.command:
-    cmd: "tail -n 1 {{ packweb_phpmyadmin_v2_suffix_file }}"
+    cmd: "tail -n 1 {{ packweb_apache_v2_phpmyadmin_suffix_file }}"
   changed_when: False
   check_mode: no
-  register: new_packweb_phpmyadmin_v2_suffix
+  register: new_packweb_apache_v2_phpmyadmin_suffix
 
-- name: overwrite packweb_phpmyadmin_v2_suffix
+- name: overwrite packweb_apache_v2_phpmyadmin_suffix
   ansible.builtin.set_fact:
-    packweb_phpmyadmin_v2_suffix: "{{ new_packweb_phpmyadmin_v2_suffix.stdout }}"
+    packweb_apache_v2_phpmyadmin_suffix: "{{ new_packweb_apache_v2_phpmyadmin_suffix.stdout }}"
 
 - ansible.builtin.debug:
-    var: packweb_phpmyadmin_v2_suffix
+    var: packweb_apache_v2_phpmyadmin_suffix
     verbosity: 1
 
 - name: enable phpMyAdmin config
@@ -98,11 +98,11 @@
     marker: "# {mark} phpMyAdmin section"
     block: |
       Alias /phpmyadmin /var/www
-      Alias /phpmyadmin-{{ packweb_phpmyadmin_v2_suffix }} /usr/share/phpmyadmin/
+      Alias /phpmyadmin-{{ packweb_apache_v2_phpmyadmin_suffix }} /usr/share/phpmyadmin/
       Include /etc/phpmyadmin/apache.conf
       <Directory /usr/share/phpmyadmin/>
           Require all denied
-          Include /etc/apache2/ipaddr_whitelist.conf
+          Include /etc/apache2-front/ipaddr_whitelist.conf
       </Directory>
 
 - name: enable phpmyadmin link in default site index
@@ -115,4 +115,4 @@
   ansible.builtin.replace:
     dest: /var/www/index.html
     regexp: '__PHPMYADMIN_SUFFIX__'
-    replace: "{{ packweb_phpmyadmin_v2_suffix }}"
+    replace: "{{ packweb_apache_v2_phpmyadmin_suffix }}"

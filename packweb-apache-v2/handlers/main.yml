@@ -1,12 +1,12 @@
 ---
-- name: restart apache
+- name: restart apache2@front
   ansible.builtin.service:
-    name: apache2
+    name: apache2@front
     state: restarted
 
-- name: reload apache
+- name: reload apache2@front
   ansible.builtin.service:
-    name: apache2
+    name: apache2@front
     state: reloaded
 
 - name: reload nagios-nrpe-server

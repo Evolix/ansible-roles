@@ -88,7 +88,8 @@
 
 - ansible.builtin.import_tasks: phpmyadmin.yml
 
-- ansible.builtin.import_tasks: awstats.yml
+# FIXME this is currently not working in apache-multi mode
+# - ansible.builtin.import_tasks: awstats.yml
 
 - ansible.builtin.import_tasks: fhs_retrictions.yml
   when: packweb_apache_v2_fhs_retrictions | bool
