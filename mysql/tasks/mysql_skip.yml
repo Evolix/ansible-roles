@@ -28,6 +28,8 @@
     owner: root
     group: adm
     mode: "0640"
+    modification_time: "preserve"
+    access_time: "preserve"
   tags:
     - mysql_skip
 
@@ -37,6 +39,7 @@
     search_string: "/var/log/mysql/*.log"
     state: absent
   check_mode: yes
+  changed_when: false
   register: logrotate_mariadb
 
 - name: "Copy logrotate file for mysql_skip.sh"
@@ -47,7 +50,7 @@
     group: root
     mode: "0600"
   # We don't want /etc/logrotate.d/mysql_skip to be in conflict with /etc/logrotate.d/mariadb
-  when: not logrotate_mariadb.changed
+  when: not logrotate_mariadb.found
   tags:
     - mysql_skip
 
