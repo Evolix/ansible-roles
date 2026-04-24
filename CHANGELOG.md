@@ -18,6 +18,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* nagios-nrpe: added borg check script from (https://github.com/bebehei/nagios-plugin-check_borg)
+* evolinux-users: added sudoers rules for borg check
 * apache-multi : rollback using argv vs cmd
 * apache: backport improvements (mostly syntax) from apache-multi
 * elasticsearch: change mode of elastic.asc to 0600
