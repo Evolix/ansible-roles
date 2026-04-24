@@ -18,6 +18,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* docker-host: disable user-ns remap by default because it has heavy limitations (https://wiki.evolix.org/HowtoDocker#activer-le-userns-remap)
 * nagios-nrpe: added borg check script from (https://github.com/bebehei/nagios-plugin-check_borg)
 * evolinux-users: added sudoers rules for borg check
 * apache-multi : rollback using argv vs cmd
