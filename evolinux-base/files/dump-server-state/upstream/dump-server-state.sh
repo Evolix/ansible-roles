@@ -3,7 +3,7 @@
 PROGNAME="dump-server-state"
 REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
 
-VERSION="25.06.2"
+VERSION="26.04"
 readonly VERSION
 
 dump_dir=
@@ -15,7 +15,7 @@ show_version() {
     cat <<END
 ${PROGNAME} version ${VERSION}
 
-Copyright 2018-2025 Evolix <info@evolix.fr>,
+Copyright 2018-2026 Evolix <info@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>,
                     Éric Morino <emorino@evolix.fr>,
                     Brice Waegeneire <bwaegeneire@evolix.fr>,
@@ -729,11 +729,17 @@ task_disks() {
     lsblk_bin=$(command -v lsblk)
     awk_bin=$(command -v awk)
     dd_bin=$(command -v dd)
+    sfdisk_bin=$(command -v sfdisk)
     fdisk_bin=$(command -v fdisk)
 
     if [ -n "${lsblk_bin}" ] && [ -n "${awk_bin}" ]; then
-        disks=$(${lsblk_bin} -l | grep disk | grep -v -E '(drbd|fd[0-9]+)' | ${awk_bin} '{print $1}')
+        disks=$(${lsblk_bin} -l | grep disk | grep -v -E '(drbd|zram[0-9]+|fd[0-9]+)' | ${awk_bin} '{print $1}')
         for disk in ${disks}; do
+            disk_size=$("${lsblk_bin}" --bytes --nodeps --noheadings --output size "/dev/${disk}")
+            if [ "${disk_size}" -eq 0 ]; then
+                debug "* ${disk} is empty, skipping"
+                continue
+            fi
             if [ -n "${dd_bin}" ]; then
                 last_result=$(${dd_bin} if="/dev/${disk}" of="${dump_dir}/MBR-${disk}" bs=512 count=1 2>&1)
                 last_rc=$?
@@ -751,8 +757,24 @@ task_disks() {
                 debug "* dd not found"
             fi
             
+            if [ -n "${sfdisk_bin}" ]; then
+                last_result=$(${sfdisk_bin} --dump "/dev/${disk}" > "${dump_dir}/partitions-${disk}.sfdisk" 2>&1)
+                last_rc=$?
+
+                if [ ${last_rc} -eq 0 ]; then
+                    debug "* sfdisk ${disk} OK"
+                else
+                    debug "* sfdisk ${disk} ERROR"
+                    debug "${last_result}"
+                    if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                        rc=10
+                    fi
+                fi
+            else
+                debug "* sfdisk not found"
+            fi
             if [ -n "${fdisk_bin}" ]; then
-                last_result=$(${fdisk_bin} -l "/dev/${disk}" > "${dump_dir}/partitions-${disk}" 2>&1)
+                last_result=$(${fdisk_bin} -l "/dev/${disk}" > "${dump_dir}/partitions-${disk}.fdisk" 2>&1)
                 last_rc=$?
 
                 if [ ${last_rc} -eq 0 ]; then
@@ -768,8 +790,11 @@ task_disks() {
                 debug "* fdisk not found"
             fi
         done
-        if ls "${dump_dir}"/partitions-* >/dev/null 2>&1; then
-            cat "${dump_dir}"/partitions-* > "${dump_dir}/partitions"
+        if ls "${dump_dir}"/partitions-*.sfdisk >/dev/null 2>&1; then
+            cat "${dump_dir}"/partitions-*.sfdisk > "${dump_dir}/partitions.sfdisk"
+        fi
+        if ls "${dump_dir}"/partitions-*.fdisk >/dev/null 2>&1; then
+            cat "${dump_dir}"/partitions-*.fdisk > "${dump_dir}/partitions.fdisk"
         fi
     else
         if [ -n "${lsblk_bin}" ]; then

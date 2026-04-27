@@ -24,15 +24,16 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
-* docker-host: disable user-ns remap by default because it has heavy limitations (https://wiki.evolix.org/HowtoDocker#activer-le-userns-remap)
-* nagios-nrpe: added borg check script from (https://github.com/bebehei/nagios-plugin-check_borg)
-* evolinux-users: added sudoers rules for borg check
 * apache-multi : rollback using argv vs cmd
 * apache: backport improvements (mostly syntax) from apache-multi
+* docker-host: disable user-ns remap by default because it has heavy limitations (https://wiki.evolix.org/HowtoDocker#activer-le-userns-remap)
 * elasticsearch: change mode of elastic.asc to 0600
 * elasticsearch: specify mode and owner of /etc/apt/sources.list.d/elastic.sources
 * elasticsearch: use 4-digit string as file mode
+* evolinux-base: dump-server-state upstream release 26.04
+* evolinux-users: added sudoers rules for borg check
 * listupgrades: allow new packages
+* nagios-nrpe: added borg check script from (https://github.com/bebehei/nagios-plugin-check_borg)
 * php-multi: make phpContainer more robust
 * redis: fix service template for Debian 12/13
 * tomcat: show critical instances before overview
