@@ -50,17 +50,19 @@
     filename: evolix-backports
     state: present
   when:
-    - release = 'bookworm' or release == 'trixie'
+    - release == 'bookworm' or release == 'trixie'
     - ansible_distribution_major_version is version('9', '==')
 
 - name: "Install debootstrap and debian-archive-keyring from Stretch backports"
   ansible.builtin.apt:
-    name: debootstrap
+    name:
+      - debootstrap
+      - debian-archive-keyring
     default_release: stretch-backports
     state: latest
     update_cache: yes
   when:
-    - release = 'bookworm' or release == 'trixie'
+    - release == 'bookworm' or release == 'trixie'
     - ansible_distribution_major_version is version('9', '==')
 
 - name: "Install keyring for eLTS"
