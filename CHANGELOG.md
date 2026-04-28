@@ -14,6 +14,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Added
 
 * apt: Enable ELTS for Buster
+* kvm-host: Install new kvmstats2.py, but do not use it in the cron by default
 * mysql: Add comment in "mysql/files/evomariabackup.sh" for overload options in prepare phase in mariabackup
 * nagios-nrpe: import upstream release of monitoringctl 0.1.3
 
