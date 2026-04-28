@@ -35,6 +35,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* hardware: also enable non-free-firmware for security
 * lxc: Fix trixie and bookworm containers creation on stretch host
 * keepalived: Fix lineinfile task related to NRPE
 * postfix: Add missing `disable_vrfy_command = yes` in packmail_main.cf.j2
