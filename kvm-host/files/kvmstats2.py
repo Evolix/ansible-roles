@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from typing import List
 import argparse
 import socket
+import datetime
 
 # Deps
 import libvirt, rbd
@@ -25,6 +26,7 @@ TODO
 '''
 
 hostname = socket.gethostname()
+timestamp = datetime.datetime.now().replace(microsecond=0)
 args_output = None
 
 def bold(to_bold):
@@ -301,10 +303,14 @@ footer3.append('')
 for footer in [footer1, footer2, footer3]:
     table.append(bold(footer))
 
+timestamp_msg = 'Generated at {}'.format(str(timestamp))
+
 if args.output == 'table':
+    print(timestamp)
     print(tabulate(table, headers=bold(header)))
 
 elif args.output == 'html':
+    print('<p>Generated at {}</p>'.format(str(timestamp)))
     print(tabulate(table, headers=bold(header), tablefmt='html'))
 
 else:
