@@ -13,6 +13,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* apache, nginx, haproxy: install evodomains by default
 * apt: Enable ELTS for Buster
 * evodomains: add this new role to install evodomains
 * evolinux-users, generate-ldif, nagios-nrpe: adjustments for check ssl / evodomains

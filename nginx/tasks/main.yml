@@ -202,3 +202,9 @@
 - ansible.builtin.import_tasks: logrotate.yml
 
 # - ansible.builtin.import_tasks: log2mail.yml
+
+- name: Install evodomains
+  include_role:
+    name: evodomains
+  tags:
+    - nginx
