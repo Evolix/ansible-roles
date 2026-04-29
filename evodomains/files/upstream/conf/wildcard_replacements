@@ -1,0 +1,4 @@
+# Domains to check for wildcards with command 'evodomains check-dns'
+# By default, wildcards like *.example.com are replaced by www.example.com.
+# Format: one wildcard per line 'WILDCARD_DOMAIN REPLACEMENT_DOMAIN'
+

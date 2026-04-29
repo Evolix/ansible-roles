@@ -1,0 +1,9 @@
+---
+evodomains_allowed_ips:
+  - { ip: 31.170.13.1, comment: "boost05" }
+  - { ip: 31.170.8.100, comment: "boost04" }
+  - { ip: 54.39.237.40, comment: "cariboost" }
+  - { ip: 31.170.11.208, comment: "boost-mrs00" }
+  - { ip: 31.170.13.9, comment: "boost-par00" }
+  - { ip: 31.170.11.118, comment: "boost-pp00" }
+

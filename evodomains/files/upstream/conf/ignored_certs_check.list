@@ -1,0 +1,3 @@
+# Certificates to exclude from check with command 'evodomains check-certs'.
+# Format: one certificate path per line, regex and wildcards not supported.
+

@@ -1,0 +1,105 @@
+---
+
+### Install evodomains
+
+# Very slow, may not a good idea to run on a big batch
+#- name: 'Update apt cache'
+#  ansible.builtin.apt:
+#    update_cache: yes
+
+- name: 'Python3 dependencies'
+  ansible.builtin.apt:
+    name:
+      - python3-tabulate
+      - python3-cryptography
+      - python3-dnspython
+      - python3-requests
+
+- name: 'Remount /usr read-write'
+  ansible.builtin.import_role:
+    name: 'evolix/remount-usr'
+
+- name: 'Install evodomains'
+  ansible.builtin.copy:
+    src: 'upstream/evodomains.py'
+    dest: '/usr/local/bin/evodomains'
+    mode: '0700'
+
+- name: 'Install evodomains completion'
+  ansible.builtin.copy:
+    src: 'upstream/evodomains_completion.sh'
+    dest: '/etc/bash_completion.d/evodomains'
+    mode: '0700'
+
+- name: 'Install check_domains'
+  ansible.builtin.copy:
+    src: 'upstream/check_domains.sh'
+    dest: '/usr/local/lib/nagios/plugins/check_domains'
+    mode: '0755'
+
+- name: 'Install check_certs'
+  ansible.builtin.copy:
+    src: 'upstream/check_certs.sh'
+    dest: '/usr/local/lib/nagios/plugins/check_certs'
+    mode: '0755'
+
+- name: 'Create conf directory'
+  ansible.builtin.file:
+    path: '/etc/evolinux/evodomains/'
+    state: directory
+    mode: '0755'
+
+- name: 'Install defaut conf if no conf'
+  ansible.builtin.copy:
+    src: 'upstream/conf/{{ item }}'
+    dest: '/etc/evolinux/evodomains/{{ item }}'
+    mode: '0755'
+    force: false
+  loop:
+    - 'allowed_ips_check.list'
+    - 'ignored_domains_check.list'
+    - 'included_domains_check.list'
+    - 'wildcard_replacements'
+    - 'ignored_certs_check.list'
+    - 'included_certs_check.list'
+
+### TMP tasks
+
+- name: 'Remove old evodomain files and directories'
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - '/usr/local/sbin/evodomains'
+    - '/usr/sbin/evodomains'
+    - '/usr/bin/evodomains'
+    - '/usr/lib/nagios/plugins/check_domains'
+    - '/etc/evolinux/domains'
+    - '/etc/bash_completion.d/evodomains_completion'
+    - '/etc/evolinux/evodomains/allowed-ips'
+    - '/etc/evolinux/evodomains/extra-certs'
+    - '/etc/evolinux/evodomains/extra-domains'
+    - '/etc/evolinux/evodomains/ignored-certs'
+    - '/etc/evolinux/evodomains/ignored-domains'
+    - '/etc/evolinux/evodomains/wildcard-replacements'
+
+
+### Setup evodomains
+
+- name: 'Add default allowed IPs in config file'
+  ansible.builtin.lineinfile:
+    path: '/etc/evolinux/evodomains/allowed_ips_check.list'
+    line: '{{ item.ip }}  # {{ item.comment }}'
+    regexp: "{{ item.ip | replace('.', '\\.') }}"
+  loop: '{{ evodomains_allowed_ips }}'
+  when: not ansible_check_mode
+
+- name: 'Set certificates to ignore by default'
+  ansible.builtin.lineinfile:
+    path: '/etc/evolinux/evodomains/ignored_certs_check.list'
+    line: '{{ item }}'
+    insertafter: EOF
+  loop:
+    - '/etc/ssl/certs/ssl-cert-snakeoil.pem'
+
+

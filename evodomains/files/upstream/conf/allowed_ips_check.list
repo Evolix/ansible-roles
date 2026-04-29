@@ -1,0 +1,5 @@
+# External IPs allowed with command 'evodomains check-dns'.
+# This is useful for load-balanced domains or NAT.
+# Note: the network interfaces IPs of the server are allowed by default.
+# Format: one IP per line, regex and wildcards not supported.
+
