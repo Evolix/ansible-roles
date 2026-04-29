@@ -53,6 +53,7 @@
     mode: "0755"
     owner: root
     group: root
+    force: kvmstats_force_overwrite_cron | default(false)
 
 - name: entry for kvmstats in web page is present
   ansible.builtin.lineinfile:
