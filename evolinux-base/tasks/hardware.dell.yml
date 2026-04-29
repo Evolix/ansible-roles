@@ -79,23 +79,14 @@
       when:
         - ansible_distribution_major_version is version('12', '<')
 
-    - name: Add HW tool repository (Debian =12)
+    - name: Add HW tool repository (Debian >=12)
       ansible.builtin.template:
         src: hardware/hwraid.le-vert.net.sources.j2
         dest: /etc/apt/sources.list.d/hwraid.le-vert.net.sources
       tags:
         - packages
       register: hwraid_sources
-      when: ansible_distribution_major_version is version('12', '=')
-
-    - name: Add HW tool repository (Debian >=13)
-      ansible.builtin.template:
-        src: hardware/hwraid.le-vert.net.trixie.sources.j2
-        dest: /etc/apt/sources.list.d/hwraid.le-vert.net.sources
-      tags:
-        - packages
-      register: hwraid_sources
-      when: ansible_distribution_major_version is version('13', '>=')
+      when: ansible_distribution_major_version is version('12', '>=')
 
     - name: Update APT cache
       ansible.builtin.apt:

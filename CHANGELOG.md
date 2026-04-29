@@ -37,7 +37,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * redis: fix service template for Debian 12/13
 * tomcat: show critical instances before overview
 * webapps/evoadmin-web: clone repository from new forge gitea.evolix.org
-* evolinux-base : update key for repository hwraid.le-vert.net and add .sources file for trixie (Debian 13).
+* evolinux-base : update key for repository hwraid.le-vert.net and add variable "ansible_distribution_release" for distribution Suites on .sources file
 
 ### Fixed
 
