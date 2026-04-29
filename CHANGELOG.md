@@ -15,6 +15,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * apt: Enable ELTS for Buster
 * evodomains: add this new role to install evodomains
+* evolinux-users, generate-ldif, nagios-nrpe: adjustments for check ssl / evodomains
 * kvm-host: Install new kvmstats2.py, but do not use it in the cron by default
 * kvm-host: Add a kvmstats_force_overwrite_cron option.
 * mysql: Add comment in "mysql/files/evomariabackup.sh" for overload options in prepare phase in mariabackup

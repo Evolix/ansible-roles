@@ -365,6 +365,15 @@ ServiceName: apache-ssl
 ipServicePort: 443
 ServiceType: http
 ServiceVersion: Apache ${apache_version}
+
+dn: ServiceName=ssl,${computer_dn}
+NagiosEnabled: TRUE
+objectClass: EvoService
+ServiceName: ssl
+ServiceType: ssl
+ipServicePort: 443
+ipServiceProtocol: tcp
+ServiceVersion: Undefined
 EOT
 fi
 
@@ -392,6 +401,15 @@ ipServicePort: 443
 ServiceName: nginx-ssl
 ServiceType: https
 ServiceVersion: Nginx ${nginx_version}
+
+dn: ServiceName=ssl,${computer_dn}
+NagiosEnabled: TRUE
+objectClass: EvoService
+ServiceName: ssl
+ServiceType: ssl
+ipServicePort: 443
+ipServiceProtocol: tcp
+ServiceVersion: Undefined
 EOT
 fi
 
@@ -706,6 +724,19 @@ ServiceName: alloy
 ipServicePort: 12345
 ServiceVersion: ${alloy_version}
 ServiceType: collector
+EOT
+fi
+
+# Check domain
+if command -v evodomains &>/dev/null; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=domains,${computer_dn}
+objectClass: EvoService
+NagiosEnabled: FALSE
+ServiceName: domains
+ServiceType: domains
+ServiceVersion: Undefined
 EOT
 fi
 

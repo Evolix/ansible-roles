@@ -62,6 +62,7 @@ command[check_minifirewall]={{ monitoringctl_wrapper_path }} --name minifirewall
 #command[check_clamd]={{ monitoringctl_wrapper_path }} --name clamd -- /usr/lib/nagios/plugins/check_clamd -H /var/run/clamav/clamd.ctl -v
 #command[check_clamav_db]={{ monitoringctl_wrapper_path }} --name clamav_db -- /usr/lib/nagios/plugins/check_file_age -w 86400 -c 172800 -f /var/lib/clamav/daily.cld
 #command[check_ssl]={{ monitoringctl_wrapper_path }} --name ssl -- /usr/lib/nagios/plugins/check_http -f follow -I 127.0.0.1 -S -p 443 -H ssl.evolix.net -C 15,5
+#command[check_domains]={{ monitoringctl_wrapper_path }} --name domains -- sudo {{ nagios_plugins_directory }}/check_domains
 #command[check_elasticsearch]={{ monitoringctl_wrapper_path }} --name elasticsearch -- /usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /_cat/health?h=st -p 9200 -r 'red' --invert-regex
 #command[check_memcached]={{ monitoringctl_wrapper_path }} --name memcached -- /usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 11211
 #command[check_opendkim]={{ monitoringctl_wrapper_path }} --name opendkim -- /usr/lib/nagios/plugins/check_tcp -H 127.0.0.1 -p 8891
@@ -93,6 +94,7 @@ command[check_minifirewall]={{ monitoringctl_wrapper_path }} --name minifirewall
 #command[check_hpraid]={{ monitoringctl_wrapper_path }} --name hpraid -- {{ nagios_plugins_directory }}/check_hpraid
 #command[check_php-fpm]={{ monitoringctl_wrapper_path }} --name php-fpm -- sudo {{ nagios_plugins_directory }}/check_php_fpm.py
 #command[check_dhcp_pool]={{ monitoringctl_wrapper_path }} --name dhcp_pool -- {{ nagios_plugins_directory }}/check_dhcp_pool
+#command[check_ssl]={{ monitoringctl_wrapper_path }} --name ssl -- {{ nagios_plugins_directory }}/check_certs
 #command[check_ssl_local]={{ monitoringctl_wrapper_path }} --name ssl_local -- {{ nagios_plugins_directory }}/check_ssl_local
 #command[check_mount]={{ monitoringctl_wrapper_path }} --name mount -- /usr/local/lib/nagios/plugins/check_mount
 #command[check_alloy]={{ monitoringctl_wrapper_path }} --name alloy -- /usr/lib/nagios/plugins/check_http -I 127.0.0.1 -u /-/healthy -p 12345 -r 'All Alloy components are healthy.'
