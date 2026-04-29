@@ -136,6 +136,7 @@ first_vhost_file_found() {
     ls "/etc/nginx/sites-enabled/${vhost_name}" \
        "/etc/nginx/sites-enabled/${vhost_name}.conf" \
        "/etc/apache2/sites-enabled/${vhost_name}.conf" \
+       "/etc/apache2-front/sites-enabled/${vhost_name}.conf" \
         2>/dev/null \
         | head -n 1
 }
