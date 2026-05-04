@@ -30,7 +30,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * elasticsearch: change mode of elastic.asc to 0600
 * elasticsearch: specify mode and owner of /etc/apt/sources.list.d/elastic.sources
 * elasticsearch: use 4-digit string as file mode
-* evolinux-base: dump-server-state upstream release 26.04
+* evolinux-base: dump-server-state upstream release 26.05
 * evolinux-users: added sudoers rules for borg check
 * listupgrades: allow new packages
 * nagios-nrpe: added borg check script from (https://github.com/bebehei/nagios-plugin-check_borg)

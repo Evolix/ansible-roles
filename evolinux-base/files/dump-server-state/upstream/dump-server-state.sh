@@ -3,7 +3,7 @@
 PROGNAME="dump-server-state"
 REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
 
-VERSION="26.04"
+VERSION="26.05"
 readonly VERSION
 
 dump_dir=
@@ -733,6 +733,20 @@ task_disks() {
     fdisk_bin=$(command -v fdisk)
 
     if [ -n "${lsblk_bin}" ] && [ -n "${awk_bin}" ]; then
+
+        # Export volumes with UUID
+        last_result=$(${lsblk_bin} --pairs --paths --shell -o NAME,FSTYPE,UUID,LABEL,PARTLABEL,PARTTYPE,PARTUUID,SIZE,MOUNTPOINT 2>&1 > "${dump_dir}/lsblk")
+        last_rc=$?
+        if [ ${last_rc} -eq 0 ]; then
+            debug "* lsblk OK"
+        else
+            debug "* lsblk ERROR"
+            debug "${last_result}"
+            if [ "${FAIL_ON_DUMP_ERROR}" -eq "1" ]; then
+                rc=10
+            fi
+        fi
+
         disks=$(${lsblk_bin} -l | grep disk | grep -v -E '(drbd|zram[0-9]+|fd[0-9]+)' | ${awk_bin} '{print $1}')
         for disk in ${disks}; do
             disk_size=$("${lsblk_bin}" --bytes --nodeps --noheadings --output size "/dev/${disk}")
@@ -756,13 +770,15 @@ task_disks() {
             else
                 debug "* dd not found"
             fi
-            
+
             if [ -n "${sfdisk_bin}" ]; then
                 last_result=$(${sfdisk_bin} --dump "/dev/${disk}" > "${dump_dir}/partitions-${disk}.sfdisk" 2>&1)
                 last_rc=$?
 
                 if [ ${last_rc} -eq 0 ]; then
                     debug "* sfdisk ${disk} OK"
+                elif grep -q 'does not contain a recognized partition table' "${dump_dir}/partitions-${disk}.sfdisk"; then
+                    debug "* sfdisk ${disk} no partition table"
                 else
                     debug "* sfdisk ${disk} ERROR"
                     debug "${last_result}"
