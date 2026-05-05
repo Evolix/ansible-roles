@@ -15,7 +15,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * apache, nginx, haproxy: install evodomains by default
 * apt: Enable ELTS for Buster
-* evodomains: add this new role to install evodomains
+* evodomains: new role
 * evolinux-users, generate-ldif, nagios-nrpe: adjustments for check ssl / evodomains
 * kvm-host: Install new kvmstats2.py, but do not use it in the cron by default
 * kvm-host: Add a kvmstats_force_overwrite_cron option.
@@ -30,6 +30,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * elasticsearch: change mode of elastic.asc to 0600
 * elasticsearch: specify mode and owner of /etc/apt/sources.list.d/elastic.sources
 * elasticsearch: use 4-digit string as file mode
+* evolinux-base : update key for repository hwraid.le-vert.net and add variable "ansible_distribution_release" for distribution Suites on .sources file
 * evolinux-base: dump-server-state upstream release 26.05
 * evolinux-users: added sudoers rules for borg check
 * listupgrades: allow new packages
@@ -39,13 +40,12 @@ The **patch** part is incremented if multiple releases happen the same month
 * redis: fix service template for Debian 12/13
 * tomcat: show critical instances before overview
 * webapps/evoadmin-web: clone repository from new forge gitea.evolix.org
-* evolinux-base : update key for repository hwraid.le-vert.net and add variable "ansible_distribution_release" for distribution Suites on .sources file
 
 ### Fixed
 
 * hardware: also enable non-free-firmware for security
-* lxc: Fix trixie and bookworm containers creation on stretch host
 * keepalived: Fix lineinfile task related to NRPE
+* lxc: Fix trixie and bookworm containers creation on stretch host
 * postfix: Add missing `disable_vrfy_command = yes` in packmail_main.cf.j2
 
 ### Removed
