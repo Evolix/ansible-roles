@@ -91,14 +91,15 @@
     path: '/etc/evolinux/evodomains/allowed_ips_check.list'
     line: '{{ item.ip }}  # {{ item.comment }}'
     regexp: "{{ item.ip | replace('.', '\\.') }}"
+    create: true
   loop: '{{ evodomains_allowed_ips }}'
-  when: not ansible_check_mode
 
 - name: 'Set certificates to ignore by default'
   ansible.builtin.lineinfile:
     path: '/etc/evolinux/evodomains/ignored_certs_check.list'
     line: '{{ item }}'
     insertafter: EOF
+    create: true
   loop:
     - '/etc/ssl/certs/ssl-cert-snakeoil.pem'
 
