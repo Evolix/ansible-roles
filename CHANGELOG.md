@@ -33,6 +33,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: dump-server-state upstream release 26.05
 * evolinux-users: added sudoers rules for borg check
 * listupgrades: allow new packages
+* listupgrades: simplify external/allowed sources management
 * nagios-nrpe: added borg check script from (https://github.com/bebehei/nagios-plugin-check_borg)
 * php-multi: make phpContainer more robust
 * redis: fix service template for Debian 12/13

@@ -1,0 +1,84 @@
+---
+
+- name: Create /etc/apt/listupgrade{,-external}-sources.list.d directories
+  ansible.builtin.file:
+    path: "/etc/apt/{{ item }}-sources.list.d"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - listupgrade
+    - listupgrade-external
+
+# If the allowed list gets updated, we want to remove the existing
+# symlinks from the “wrong” directory.
+- name: Clean existing /etc/apt/listupgrade{,-external}-sources.list.d directories
+  ansible.builtin.shell:
+    cmd: "rm -rvf /etc/apt/{{ item }}-sources.list.d/*"
+  register: _sources_cleanup
+  changed_when: _sources_cleanup.stdout_lines | length > 0
+  loop:
+    - listupgrade
+    - listupgrade-external
+
+- name: Active sources
+  ansible.builtin.find:
+    paths: /etc/apt/sources.list.d
+    file_type: file
+    patterns:
+      - '*.sources'
+      - '*.list'
+  register: _active_sources
+
+- name: Allowed sources
+  ansible.builtin.set_fact:
+    _allowed_sources:
+      - system.sources
+      - security.sources
+      - evolix_public.sources
+      - evolix_public.list
+      - auto_evolix_public.sources # old name
+      - evolix_public_auto.sources # new name
+      - evolix_sury.sources
+      - evolix_sury.list
+      - backports.sources
+      - backports.list
+      - sury.sources
+      - sury.list
+      - hp.sources
+      - hp.list
+      - hwraid.le-vert.net.sources
+      - hwraid.le-vert.net.list
+      - postgresql.sources
+      - postgresql.list
+      - pgdg.sources
+      - pgdg.list
+      - extended-lts.sources
+      - extended-lts.list
+
+- name: External sources
+  ansible.builtin.set_fact:
+    _external_sources: "{{ _active_sources.files | map(attribute='path') | map('regex_replace', '^/etc/apt/sources.list.d/', '') | difference(_allowed_sources) }}"
+
+- name: Allowed sources are enabled in main directory (errors are legitimately ignored)
+  ansible.builtin.file:
+    src: "../sources.list.d/{{ item }}"
+    dest: "/etc/apt/listupgrade-sources.list.d/{{ item }}"
+    state: link
+  failed_when: false
+  loop: "{{ _allowed_sources }}"
+
+- name: External sources are disabled in main directory (errors are legitimately ignored)
+  ansible.builtin.file:
+    path: "/etc/apt/listupgrade-sources.list.d/{{ item }}"
+    state: absent
+  failed_when: false
+  loop: "{{ _external_sources }}"
+
+- name: External sources are enabled in external directory
+  ansible.builtin.file:
+    src: "../sources.list.d/{{ item }}"
+    dest: "/etc/apt/listupgrade-external-sources.list.d/{{ item }}"
+    state: link
+  loop: "{{ _external_sources }}"
