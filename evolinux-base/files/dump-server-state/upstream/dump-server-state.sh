@@ -3,7 +3,7 @@
 PROGNAME="dump-server-state"
 REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
 
-VERSION="26.05"
+VERSION="26.05.1"
 readonly VERSION
 
 dump_dir=
@@ -735,7 +735,8 @@ task_disks() {
     if [ -n "${lsblk_bin}" ] && [ -n "${awk_bin}" ]; then
 
         # Export volumes with UUID
-        last_result=$(${lsblk_bin} --pairs --paths --shell -o NAME,FSTYPE,UUID,LABEL,PARTLABEL,PARTTYPE,PARTUUID,SIZE,MOUNTPOINT 2>&1 > "${dump_dir}/lsblk")
+        # --shell option is incompatible with Debian 10 (at least)
+        last_result=$(${lsblk_bin} --pairs --paths -o NAME,FSTYPE,UUID,LABEL,PARTLABEL,PARTTYPE,PARTUUID,SIZE,MOUNTPOINT 2>&1 > "${dump_dir}/lsblk")
         last_rc=$?
         if [ ${last_rc} -eq 0 ]; then
             debug "* lsblk OK"

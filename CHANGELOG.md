@@ -32,7 +32,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * elasticsearch: specify mode and owner of /etc/apt/sources.list.d/elastic.sources
 * elasticsearch: use 4-digit string as file mode
 * evolinux-base : update key for repository hwraid.le-vert.net and add variable "ansible_distribution_release" for distribution Suites on .sources file
-* evolinux-base: dump-server-state upstream release 26.05
+* evolinux-base: dump-server-state upstream release 26.05.1
 * evolinux-users: added sudoers rules for borg check
 * listupgrades: allow new packages
 * listupgrades: simplify external/allowed sources management
