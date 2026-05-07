@@ -1,0 +1,16 @@
+[Unit]
+Description=Etherpad - open source online editor for real-time collaborative editing.
+Documentation=https://github.com/ether/etherpad-go
+After=network.target
+After=mariadb.service
+
+[Service]
+Type=simple
+ExecStart=/home/%i/etherpad-go-linux-amd64
+Restart=always
+User=%i
+Group=%i
+WorkingDirectory=/home/%i
+
+[Install]
+WantedBy=multi-user.target
