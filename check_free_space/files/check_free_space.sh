@@ -128,6 +128,9 @@ done
 PARTITION_DATA="$(echo "$PARTITION_DATA"|tr -d $'\n')" # make sed accept the input
 DUC_OUTPUT="$(echo "$DUC_OUTPUT"|tr -d $'\n')"
 
+# Important for Mutt to keep Return-Path aligned with From
+export EMAIL="${FULLFROM}"
+
 if [ $old_df ]
 then
   sed -e "s/__TO__/$EVOMAINTMAIL/"                         \
@@ -146,7 +149,7 @@ then
       -e "s/__URGENCYFROM__/$URGENCYFROM/"                 \
       -e "s/__URGENCYTEL__/$URGENCYTEL/"                   \
        $email_template |                                   \
-  /usr/bin/mutt -e 'unset record' -H - $graph_list
+   /usr/bin/mutt -e "set envelope_from=yes" -e 'unset record' -H - $graph_list
 else
   sed -e "s/__TO__/$EVOMAINTMAIL/"               \
       -e "s/__HOSTNAME__/$HOSTNAME/"             \
@@ -160,7 +163,7 @@ else
       -e "s/__URGENCYFROM__/$URGENCYFROM/"       \
       -e "s/__URGENCYTEL__/$URGENCYTEL/"         \
        $email_template |                         \
-  /usr/bin/mutt -e 'unset record' -H - $graph_list
+  /usr/bin/mutt -e "set envelope_from=yes" -e 'unset record' -H - $graph_list
 fi
 
 rm -f $PID_FILE

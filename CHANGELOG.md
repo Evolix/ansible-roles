@@ -44,6 +44,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* check_free_space: align Return-Path with From
 * hardware: also enable non-free-firmware for security
 * keepalived: Fix lineinfile task related to NRPE
 * lxc: Fix trixie and bookworm containers creation on stretch host
