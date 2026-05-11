@@ -27,6 +27,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * apache-multi : rollback using argv vs cmd
 * apache: backport improvements (mostly syntax) from apache-multi
+* check_free_space: use duc only if available
 * docker-host: add failsafes so role fails if minifirewall is installed and/or configured
 * docker-host: disable user-ns remap by default because it has heavy limitations (https://wiki.evolix.org/HowtoDocker#activer-le-userns-remap)
 * elasticsearch: change mode of elastic.asc to 0600

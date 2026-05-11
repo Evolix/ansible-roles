@@ -96,7 +96,6 @@ do
     fi
     full_partitions="$full_partitions $partition"
     partname=$(echo $partition|tr -s '/' '-')
-    graph_list="$graph_list -a /home/duc${partname}.png"
   fi
 done
 
@@ -107,26 +106,39 @@ if test -z "$PARTITION_DATA"
 then
   exit 0
 fi
- 
+
+graph_list=""
 
 # If there is indeed a problem, get more infos with duc
+DUC_BIN=$(command -v duc)
 
-/usr/bin/ionice -c3 /usr/bin/duc index -H -d /home/duc.idx -x $full_partitions -q
+if [ -n "${DUC_BIN}" ]; then
 
-for partition in $full_partitions
-do
-  duc_temp=$(/usr/bin/duc ls -d /home/duc.idx -Fg $partition)
-  duc_temp=$(printf "$duc_temp" | sed -e "s@]@]newline@" | grep -v "lost+found")
-  DUC_OUTPUT="$DUC_OUTPUT newline$partition newline$duc_temp"
-  partname=$(echo $partition|tr -s '/' '-')
-  duc graph -d /home/duc.idx -o /home/duc${partname}.png -l8 -s 1024 $partition
-done 
+  /usr/bin/ionice -c3 ${DUC_BIN} index -H -d /home/duc.idx -x $full_partitions -q
 
+  for partition in $full_partitions
+  do
+    duc_temp=$(${DUC_BIN} ls -d /home/duc.idx -Fg $partition)
+    duc_temp=$(printf "$duc_temp" | sed -e "s@]@]newline@" | grep -v "lost+found")
+    DUC_OUTPUT="$DUC_OUTPUT newline$partition newline$duc_temp"
+    partname=$(echo $partition | tr -s '/' '-')
 
+    graph_list="${graph_list} -a /home/duc${partname}.png"
+    ${DUC_BIN} graph -d /home/duc.idx -o /home/duc${partname}.png -l8 -s 1024 $partition
+  done 
+else
+  DUC_OUTPUT="newlineErreur : 'duc' non trouvé. Détail des partitions impossible à générer"
+fi
+
+if [ -n "${graph_list}" ]; then
+  ATTACHMENT_TXT="Un graphique par partition problématique est disponible en pièce jointe."
+else
+  ATTACHMENT_TXT=""
+fi
 # Replace placeholders & send the mail !
 
-PARTITION_DATA="$(echo "$PARTITION_DATA"|tr -d $'\n')" # make sed accept the input
-DUC_OUTPUT="$(echo "$DUC_OUTPUT"|tr -d $'\n')"
+PARTITION_DATA="$(echo "$PARTITION_DATA" | tr -d $'\n')" # make sed accept the input
+DUC_OUTPUT="$(echo "$DUC_OUTPUT" | tr -d $'\n')"
 
 if [ $old_df ]
 then
@@ -134,6 +146,7 @@ then
       -e "s/__HOSTNAME__/$HOSTNAME/"                       \
       -e "s@__PARTITION_DATA__@$PARTITION_DATA@"           \
       -e "s@__DUC_OUTPUT__@$DUC_OUTPUT@"                   \
+      -e "s@__ATTACHMENT_TXT__@$ATTACHMENT_TXT@"               \
       -e "s/newline/\n/g"                                  \
       -e "s/IUse%/IUse%\n/g"                               \
       -e "s/ Use%/ Use%\n/g"                               \
@@ -146,12 +159,13 @@ then
       -e "s/__URGENCYFROM__/$URGENCYFROM/"                 \
       -e "s/__URGENCYTEL__/$URGENCYTEL/"                   \
        $email_template |                                   \
-   /usr/bin/mutt -e "set use_envelope_from=yes" -e 'unset record' -H - $graph_list
+   /usr/bin/mutt -e "set use_envelope_from=yes" -e 'unset record' -H - ${graph_list}
 else
   sed -e "s/__TO__/$EVOMAINTMAIL/"               \
       -e "s/__HOSTNAME__/$HOSTNAME/"             \
       -e "s@__PARTITION_DATA__@$PARTITION_DATA@" \
       -e "s@__DUC_OUTPUT__@$DUC_OUTPUT@"         \
+      -e "s@__ATTACHMENT_TXT__@$ATTACHMENT_TXT@"               \
       -e "s/newline/\n/g"                        \
       -e "s/IUse%/IUse%\n/g"                     \
       -e "s/__MAX_PERCENTAGE__/$max_percentage/" \
@@ -160,7 +174,7 @@ else
       -e "s/__URGENCYFROM__/$URGENCYFROM/"       \
       -e "s/__URGENCYTEL__/$URGENCYTEL/"         \
        $email_template |                         \
-  /usr/bin/mutt -e "set use_envelope_from=yes" -e 'unset record' -H - $graph_list
+  /usr/bin/mutt -e "set use_envelope_from=yes" -e 'unset record' -H - ${graph_list}
 fi
 
 rm -f $PID_FILE

@@ -14,7 +14,7 @@ Voici les informations sur l'espace disque qui pose problème :
 __PARTITION_DATA__
 Détails sur les partitions problématiques :
 __DUC_OUTPUT__
-Un graphe par partition problématique est disponible en pièce jointe.
+__ATTACHMENT_TXT__
 
 Nous vous recommandons d'effectuer du ménage pour maintenir
 chaque partition avec un minimum de __MAX_PERCENTAGE__% d'espace disque libre.
