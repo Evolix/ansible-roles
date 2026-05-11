@@ -12,9 +12,7 @@ if [ -n "${NEEDRESTART_BIN}" ]; then
         KEXP=$(echo "${NEEDRESTART_OUT}" | grep NEEDRESTART-KEXP | awk '{print $2}')
 
         if [ "${KCUR}" != "${KEXP}" ]; then
-            printf "\n"
-            printf "W: Kernel change: %s → %s\n" "${KCUR}" "${KEXP}"
-            printf "\n"
+            printf "W: needrestart: new kernel %s → %s\n" "${KCUR}" "${KEXP}"
         fi
     fi
 fi

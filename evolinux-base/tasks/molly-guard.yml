@@ -11,5 +11,4 @@
     src: molly-guard/warn-kernel-change.sh
     dest: /etc/molly-guard/run.d/15-warn-kernel-change
     force: true
-    create: true
     mode: "0755"
