@@ -122,6 +122,10 @@ evolinux_system_alert5_init: True
 evolinux_system_alert5_enable: True
 evolinux_system_eni_auto: True
 
+# molly-guard
+
+evolinux_mollyguard_include: True
+
 # evomaintenance
 
 evolinux_evomaintenance_include: True

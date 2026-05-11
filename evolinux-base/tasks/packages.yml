@@ -50,7 +50,6 @@
       - telnet
       - traceroute
       - man
-      - molly-guard
       - jq
   when: evolinux_packages_diagnostic | bool
 

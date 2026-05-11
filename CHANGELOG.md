@@ -33,8 +33,9 @@ The **patch** part is incremented if multiple releases happen the same month
 * elasticsearch: change mode of elastic.asc to 0600
 * elasticsearch: specify mode and owner of /etc/apt/sources.list.d/elastic.sources
 * elasticsearch: use 4-digit string as file mode
-* evolinux-base : update key for repository hwraid.le-vert.net and add variable "ansible_distribution_release" for distribution Suites on .sources file
 * evolinux-base: dump-server-state upstream release 26.05.1
+* evolinux-base: extract molly-guard tasks for external inclusion
+* evolinux-base: update key for repository hwraid.le-vert.net and add variable "ansible_distribution_release" for distribution Suites on .sources file
 * evolinux-users: added sudoers rules for borg check
 * listupgrades: upstream release 26.05
 * nagios-nrpe: added borg check script from (https://github.com/bebehei/nagios-plugin-check_borg)

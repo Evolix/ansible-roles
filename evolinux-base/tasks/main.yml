@@ -46,6 +46,10 @@
   ansible.builtin.import_tasks: system.yml
   when: evolinux_system_include | bool
 
+- name: Molly-guard
+  ansible.builtin.import_tasks: molly-guard.yml
+  when: evolinux_mollyguard_include | bool
+
 - name: Nagios/NRPE
   ansible.builtin.include_role:
     name: evolix/nagios-nrpe
