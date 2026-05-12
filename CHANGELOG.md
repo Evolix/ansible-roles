@@ -15,6 +15,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* apt/list-upgradable-held-packages.sh: use from address from evomaintenance.cfg
+
 ### Fixed
 
 ### Removed

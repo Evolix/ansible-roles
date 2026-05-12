@@ -29,7 +29,10 @@ readonly PROGPATH=$(readlink -m "${0}")
 
 # Fetch values from evomaintenance configuration
 get_evomaintenance_mail() {
-    grep "EVOMAINTMAIL=" /etc/evomaintenance.cf | cut -d '=' -f2
+    grep "^\s*EVOMAINTMAIL=" /etc/evomaintenance.cf | cut -d'=' -f2
+}
+get_evomaintenance_from() {
+    grep "^\s*FROM=" /etc/evomaintenance.cf | cut -d'=' -f2
 }
 get_fqdn() {
     hostname --fqdn
@@ -106,7 +109,7 @@ main() {
     HOSTNAME="$(get_fqdn)"
     HOSTNAME_TEXT="$(get_complete_hostname)"
     EMAIL_CLIENT="$(get_evomaintenance_mail)"
-    EMAIL_FROM="equipe@evolix.fr"
+    EMAIL_FROM="$(get_evomaintenance_from)"
     MAIL_CONTENT="$(format_mail)"
 
     SENDMAIL_BIN="$(command -v sendmail)"
@@ -120,7 +123,7 @@ main() {
         exit 1
     fi
 
-    echo "${MAIL_CONTENT}" | "${SENDMAIL_BIN}" -oi -t -f "equipe@evolix.fr"
+    echo "${MAIL_CONTENT}" | "${SENDMAIL_BIN}" -oi -t -f "${EMAIL_FROM}"
     exit 0
 }
 
