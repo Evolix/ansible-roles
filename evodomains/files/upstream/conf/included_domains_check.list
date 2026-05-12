@@ -1,0 +1,5 @@
+# Domains to check explicitely with command 'evodomains check-dns'.
+# This is useful to check a domain that is not in supported confs
+# (Apache, Nginx, SSL certs…).
+# Format: one domain per line, regex and wildcards not supported.
+

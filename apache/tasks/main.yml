@@ -1,22 +1,22 @@
 ---
 
-- name: packages are installed (Debian 9 or later)
+- name: "Packages are installed (Debian 9 or later)"
   ansible.builtin.apt:
     name:
       - apache2
       - apachetop
       - libwww-perl
-    state: present
+    state: "present"
   tags:
     - apache
     - packages
   when: ansible_distribution_major_version is version('9', '>=')
 
-- name: itk package is installed if required (Debian 9 or later)
+- name: "Itk package is installed if required (Debian 9 or later)"
   ansible.builtin.apt:
     name:
       - libapache2-mpm-itk
-    state: present
+    state: "present"
   tags:
     - apache
     - packages
@@ -24,22 +24,22 @@
     - ansible_distribution_major_version is version('9', '>=')
     - apache_mpm == "itk"
 
-- name: packages are installed (jessie)
+- name: "Packages are installed (jessie)"
   ansible.builtin.apt:
     name:
       - apache2-mpm-itk
       - apachetop
       - libwww-perl
-    state: present
+    state: "present"
   tags:
     - apache
     - packages
   when: ansible_distribution_release == "jessie"
 
-- name: basic modules are enabled
+- name: "Basic modules are enabled"
   community.general.apache2_module:
     name: '{{ item }}'
-    state: present
+    state: "present"
   loop:
     - rewrite
     - expires
@@ -48,75 +48,75 @@
     - include
     - negotiation
     - alias
-  notify: reload apache
+  notify: "reload apache"
   tags:
     - apache
 
-- name: basic modules are enabled
+- name: "Basic modules are enabled"
   community.general.apache2_module:
     name: '{{ item }}'
-    state: present
+    state: "present"
   loop:
     - cgi
-  notify: reload apache
+  notify: "reload apache"
   when: apache_mpm == "prefork" or apache_mpm == "itk"
   tags:
     - apache
 
 
-- name: Copy Apache defaults config file
+- name: "Copy Apache defaults config file"
   ansible.builtin.copy:
-    src: evolinux-defaults.conf
-    dest: "/etc/apache2/conf-available/z-evolinux-defaults.conf"
-    owner: root
-    group: root
+    src: "evolinux-defaults.conf"
+    dest: "{{ apache_config_dir }}/conf-available/z-evolinux-defaults.conf"
+    owner: "root"
+    group: "root"
     mode: "0640"
     force: true
-  notify: reload apache
+  notify: "reload apache"
   tags:
   - apache
 
-- name: Copy Apache defaults config file
+- name: "Copy Apache defaults config file"
   ansible.builtin.copy:
-    src: evolinux-badbots.conf
-    dest: "/etc/apache2/conf-available/z-evolinux-badbots.conf"
-    owner: root
-    group: root
+    src: "evolinux-badbots.conf"
+    dest: "{{ apache_config_dir }}/conf-available/z-evolinux-badbots.conf"
+    owner: "root"
+    group: "root"
     mode: "0640"
     force: true
-  notify: reload apache
+  notify: "reload apache"
   tags:
   - apache
 
-- name: Copy Apache custom config file
+- name: "Copy Apache custom config file"
   ansible.builtin.copy:
-    src: evolinux-custom.conf
-    dest: "/etc/apache2/conf-available/zzz-evolinux-custom.conf"
-    owner: root
-    group: root
+    src: "evolinux-custom.conf"
+    dest: "{{ apache_config_dir }}/conf-available/zzz-evolinux-custom.conf"
+    owner: "root"
+    group: "root"
     mode: "0640"
     force: false
-  notify: reload apache
+  notify: "reload apache"
   tags:
   - apache
 
-- name: disable status.conf
+- name: "Disable status.conf"
   ansible.builtin.file:
-    dest: /etc/apache2/mods-enabled/status.conf
-    state: absent
-  notify: reload apache
+    dest: "{{ apache_config_dir }}/mods-enabled/status.conf"
+    state: "absent"
+  notify: "reload apache"
   tags:
     - apache
 
-- name: Ensure Apache config files are enabled
+- name: "Ensure Apache config files are enabled"
   ansible.builtin.command:
     cmd: "a2enconf {{ item }}"
   register: command_result
   changed_when: "'Enabling' in command_result.stderr"
   loop:
-    - z-evolinux-defaults.conf
-    - zzz-evolinux-custom.conf
-  notify: reload apache
+    - "z-evolinux-defaults.conf"
+    - "zzz-evolinux-custom.conf"
+  notify: "reload apache"
   tags:
     - apache
 
@@ -124,23 +124,23 @@
   tags:
   - apache
 
-- name: default vhost is installed
+- name: "Default vhost is installed"
   ansible.builtin.template:
-    src: evolinux-default.conf.j2
-    dest: /etc/apache2/sites-available/000-evolinux-default.conf
+    src: "evolinux-default.conf.j2"
+    dest: "{{ apache_config_dir }}/sites-available/000-evolinux-default.conf"
     mode: "0640"
     force: false
-  notify: reload apache
+  notify: "reload apache"
   tags:
     - apache
 
-- name: default vhost is enabled
+- name: "Default vhost is enabled"
   ansible.builtin.file:
-    src: /etc/apache2/sites-available/000-evolinux-default.conf
-    dest: /etc/apache2/sites-enabled/000-default.conf
-    state: link
+    src: "{{ apache_config_dir }}/sites-available/000-evolinux-default.conf"
+    dest: "{{ apache_config_dir }}/sites-enabled/000-default.conf"
+    state: "link"
     force: true
-  notify: reload apache
+  notify: "reload apache"
   when: apache_evolinux_default_enabled | bool
   tags:
     - apache
@@ -149,9 +149,9 @@
   tags:
     - apache
 
-- name: is umask already present?
+- name: "Is umask already present?"
   ansible.builtin.command:
-    cmd: "grep -E '^umask ' /etc/apache2/envvars"
+    cmd: "grep --extended-regexp '^umask ' {{ apache_config_dir }}/envvars"
   failed_when: False
   changed_when: False
   register: envvar_grep_umask
@@ -159,9 +159,9 @@
   tags:
     - apache
 
-- name: Add a mark in envvars for umask
+- name: "Add a mark in envvars for umask"
   ansible.builtin.blockinfile:
-    dest: /etc/apache2/envvars
+    dest: "{{ apache_config_dir }}/envvars"
     marker: "## {mark} ANSIBLE MANAGED BLOCK"
     block: |
       ## Set umask for writing by Apache user.
@@ -176,47 +176,56 @@
   tags:
     - apache
 
-- name: /usr/share/scripts exists
+- name: "/usr/share/scripts exists"
   ansible.builtin.file:
-    dest: /usr/share/scripts
+    dest: "/usr/share/scripts"
     mode: "0700"
-    owner: root
-    group: root
-    state: directory
+    owner: "root"
+    group: "root"
+    state: "directory"
   tags:
     - apache
 
 - name: "Install save_apache_status.sh"
   ansible.builtin.copy:
-    src: save_apache_status.sh
-    dest: /usr/share/scripts/save_apache_status.sh
+    src: "save_apache_status.sh"
+    dest: "/usr/share/scripts/save_apache_status.sh"
     mode: "0755"
     force: false
   tags:
     - apache
 
-- name: "logrotate: {{ apache_logrotate_frequency }}"
+- name: "Logrotate: {{ apache_logrotate_frequency }}"
   ansible.builtin.replace:
-    dest: /etc/logrotate.d/apache2
+    dest: "/etc/logrotate.d/apache2"
     regexp: "(daily|weekly|monthly)"
     replace: "{{ apache_logrotate_frequency }}"
   tags:
     - apache
 
-- name: "logrotate: rotate {{ apache_logrotate_rotate }}"
+- name: "Logrotate: rotate {{ apache_logrotate_rotate }}"
   ansible.builtin.replace:
-    dest: /etc/logrotate.d/apache2
+    dest: "/etc/logrotate.d/apache2"
     regexp: '^(\s+rotate) \d+$'
     replace: '\1 {{ apache_logrotate_rotate }}'
   tags:
     - apache
 
-- ansible.builtin.import_tasks: log2mail.yml
+- name: "Setup log2mail"
+  ansible.builtin.import_tasks: "log2mail.yml"
   when: apache_log2mail_include
   tags:
     - apache
 
-- ansible.builtin.import_tasks: munin.yml
+- name: "Setup munin"
+  ansible.builtin.import_tasks: "munin.yml"
   when: apache_munin_include | bool
   tags:
     - apache
+
+- name: Install evodomains
+  include_role:
+    name: evodomains
+  tags:
+    - apache
+

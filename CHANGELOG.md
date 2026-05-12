@@ -21,7 +21,49 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
-## [Unreleased]
+## [26.05] 2026-05-12
+
+### Added
+
+* apache, nginx, haproxy: install evodomains by default
+* apt: Enable ELTS for Buster
+* evodomains: new role
+* evolinux-users, generate-ldif, nagios-nrpe: adjustments for check ssl / evodomains
+* kvm-host: Add a kvmstats_force_overwrite_cron option.
+* kvm-host: Install new kvmstats2.py, but do not use it in the cron by default
+* kvm-hosts/migrate-vm: improve migration speed
+* mysql: Add comment in "mysql/files/evomariabackup.sh" for overload options in prepare phase in mariabackup
+* nagios-nrpe: import upstream release of monitoringctl 0.1.3
+
+### Changed
+
+* apache-multi : rollback using argv vs cmd
+* apache: backport improvements (mostly syntax) from apache-multi
+* check_free_space: use Bash and fix shellcheck violations
+* check_free_space: use duc only if available
+* docker-host: add failsafes so role fails if minifirewall is installed and/or configured
+* docker-host: disable user-ns remap by default because it has heavy limitations (https://wiki.evolix.org/HowtoDocker#activer-le-userns-remap)
+* elasticsearch: change mode of elastic.asc to 0600
+* elasticsearch: specify mode and owner of /etc/apt/sources.list.d/elastic.sources
+* elasticsearch: use 4-digit string as file mode
+* evolinux-base: dump-server-state upstream release 26.05.1
+* evolinux-base: extract molly-guard tasks for external inclusion
+* evolinux-base: update key for repository hwraid.le-vert.net and add variable "ansible_distribution_release" for distribution Suites on .sources file
+* evolinux-users: added sudoers rules for borg check
+* listupgrades: upstream release 26.05
+* nagios-nrpe: added borg check script from (https://github.com/bebehei/nagios-plugin-check_borg)
+* php-multi: make phpContainer more robust
+* redis: fix service template for Debian 12/13
+* tomcat: show critical instances before overview
+* webapps/evoadmin-web: clone repository from new forge gitea.evolix.org
+
+### Fixed
+
+* check_free_space: align Return-Path with From
+* hardware: also enable non-free-firmware for security
+* keepalived: Fix lineinfile task related to NRPE
+* lxc: Fix trixie and bookworm containers creation on stretch host
+* postfix: Add missing `disable_vrfy_command = yes` in packmail_main.cf.j2
 
 ## [26.03.1] 2026-03-24
 
@@ -65,6 +107,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * prometheus: add collabora
 * redis: update apt cache before install
 * evolinux-base: keep journald logs for 7 days
+* nagios-nrpe: add check_docker
 
 ### Changed
 
@@ -74,6 +117,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evoacme: upstream release 26.03
 * evocheck: Add /usr/local/sbin to PATH
 * evocheck: crontab template source file and destination path are now variabilized
+* evolinux-base: Bump keylengh to 3072b for self-signed certificate
 * generate-ldif: generateldif.sh can use another port than 22 via ansible_port
 * haproxy: new attempt to have "normal" and "check" modes compatible
 * haproxy: no diff for temporary config

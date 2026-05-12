@@ -1,5 +1,6 @@
 [Unit]
 Description=Mattermost
+After=syslog.target
 After=network.target
 After=postgresql.service
 Requires=postgresql.service
@@ -7,23 +8,24 @@ Requires=postgresql.service
 [Service]
 Type=notify
 Restart=always
-WorkingDirectory={{ mattermost_home_base }}/%i/mattermost
-ExecStart=/{{ mattermost_home_base }}/%i/mattermost/bin/mattermost
-TimeoutStartSec=3600
+WorkingDirectory={{ mattermost_home_base }}/%i/{{ mattermost_current }}
+ExecStart={{ mattermost_home_base }}/%i/{{ mattermost_current }}/bin/mattermost -c {{ mattermost_home_base }}/%i/config/config.json
+TimeoutStartSec=360
 LimitNOFILE=49152
-RestartSec=10
+SyslogIdentifier=mattermost-%i
+RestartSec=30
 User=%i
 Group=%i
 
-Environment="TMP={{ mattermost_home_base }}/%i/mattermost/temp"
-Environment="TEMP={{ mattermost_home_base }}/%i/mattermost/temp"
+Environment="TMP={{ mattermost_home_base }}/%i/{{ mattermost_current }}/temp"
+Environment="TEMP={{ mattermost_home_base }}/%i/{{ mattermost_current }}/temp"
 
 # Hardening
 NoNewPrivileges=yes
 PrivateTmp=yes
 PrivateDevices=yes
 PrivateUsers=yes
-#ProtectHome=read-only
+ProtectHome=read-only
 ProtectSystem=strict
 ProtectControlGroups=yes
 ProtectKernelModules=yes
@@ -34,7 +36,6 @@ RestrictNamespaces=yes
 RestrictRealtime=yes
 RestrictSUIDSGID=yes
 LockPersonality=yes
-
 
 [Install]
 WantedBy=multi-user.target

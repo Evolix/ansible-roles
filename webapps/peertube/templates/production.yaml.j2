@@ -86,10 +86,17 @@ database:
 # You can also specify a 'socket' path to a unix socket but first need to
 # set 'hostname' and 'port' to null
 redis:
-  hostname: 'localhost'
+  hostname: '127.0.0.1'
   port: 6379
   auth: null
   db: 0
+  sentinel:
+    enabled: false
+    enable_tls: false
+    master_name: ''
+    sentinels:
+      - hostname: ''
+        port: 26379
 
 # SMTP server to send emails
 smtp:

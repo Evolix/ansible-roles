@@ -23,7 +23,6 @@
 ## PHP
 ############
 
-
 - name: "Create /etc/php/evolinux-common/fpm/pool.d/"
   ansible.builtin.file:
     path: "/etc/php/evolinux-common/fpm/pool.d/"
@@ -35,6 +34,39 @@
     path: "/etc/php/evolinux-{{ php_multi_version }}/fpm/pool.d/"
     state: "directory"
     mode: "755"
+
+- name: "Add php-multi sudoers file"
+  ansible.builtin.copy:
+    src: "etc/sudoers.d/php-multi"
+    dest: "/etc/sudoers.d/php-multi"
+    mode: "0600"
+    validate: "visudo -cf %s"
+
+- ansible.builtin.include_role:
+    name: "remount-usr"
+
+- name: "/usr/local/bin/phpContainer"
+  ansible.builtin.copy:
+    src: "usr/local/bin/phpContainer"
+    dest: "/usr/local/bin/phpContainer"
+    mode: "preserve"
+
+
+############
+## Skeleton
+############
+
+- name: "Create /etc/skel/.local/bin"
+  ansible.builtin.file:
+    path: "/etc/skel/.local/bin"
+    state: "directory"
+    mode: "755"
+
+- name: "Create /etc/skel/.local/bin/php"
+  ansible.builtin.file:
+    src: "/usr/local/bin/phpContainer"
+    dest: "/etc/skel/.local/bin/php"
+    state: "link"
 
 ############
 ## Podman
@@ -78,17 +110,17 @@
     mode: "preserve"
   notify: "systemctl daemon-reload"
 
-- name: "Create /etc/containers/systemd/php{{ php_multi_version }}-fpm.container"
+- name: "Create /etc/containers/systemd/php-fpm{{ php_multi_version }}.container"
   ansible.builtin.copy:
-    src: "etc/containers/systemd/php{{ php_multi_version }}-fpm.container"
-    dest: "/etc/containers/systemd/php{{ php_multi_version }}-fpm.container"
+    src: "etc/containers/systemd/php-fpm{{ php_multi_version }}.container"
+    dest: "/etc/containers/systemd/php-fpm{{ php_multi_version }}.container"
     mode: "preserve"
   notify: "systemctl daemon-reload"
 
 - ansible.builtin.meta: flush_handlers
 
-- name: "Start and enable php{{ php_multi_version }}-fpm.service"
+- name: "Start and enable php-fpm{{ php_multi_version }}.service"
   ansible.builtin.service:
-    name: "php{{ php_multi_version }}-fpm.service"
+    name: "php-fpm{{ php_multi_version }}.service"
     state: "started"
     enabled: true

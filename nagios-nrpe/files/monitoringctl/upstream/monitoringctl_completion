@@ -1,12 +1,17 @@
 #!/usr/bin/bash
+
+# SPDX-FileCopyrightText: 2024 Evolix
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 #
 
 function _get_wrappers_names() {
-    grep "alerts_wrapper" --no-filename --no-messages -R /etc/nagios/ | grep --invert-match --extended-regexp "^\s*#" | awk '{ for (i=1 ; i<=NF; i++) { if ($i ~ /^(-n|--name)$/) { print $(i+1); break } } }' | tr ',' '\n' | sort | uniq
+    sudo grep "alerts_wrapper" --no-filename --no-messages -R /etc/nagios/ | grep --invert-match --extended-regexp "^\s*#" | awk '{ for (i=1 ; i<=NF; i++) { if ($i ~ /^(-n|--name)$/) { print $(i+1); break } } }' | tr ',' '\n' | sort | uniq
 }
 
 function _get_checks_names() {
-    grep --extended-regexp --no-filename --no-messages -R "command\[check_.*\]="  /etc/nagios/ | grep --invert-match --extended-regexp "^\s*#" | grep --invert-match 'hda1' | awk -F"[\\\[\\\]=]" '{sub("check_", "", $2); print $2}' | sort | uniq
+    sudo grep --extended-regexp --no-filename --no-messages -R "command\[check_.*\]="  /etc/nagios/ | grep --invert-match --extended-regexp "^\s*#" | grep --invert-match 'hda1' | awk -F"[\\\[\\\]=]" '{sub("check_", "", $2); print $2}' | sort | uniq
 }
 
 function _monitoringctl_completion() {

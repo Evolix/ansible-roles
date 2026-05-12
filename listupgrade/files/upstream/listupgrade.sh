@@ -15,7 +15,7 @@
 # - 150 : Inside an LXC container: Failure to apt update
 # - 160 : Inside an LXC container: Failure to apt upgrade --download only
 
-VERSION="26.02"
+VERSION="26.05"
 readonly VERSION
 
 PROGNAME=$(basename "$0")
@@ -88,7 +88,7 @@ render_mail_template() {
     cat <<EOT >"${template_file}"
 Content-Type: text/plain; charset="utf-8"
 Reply-To: equipe@evolix.fr
-From: equipe@evolix.net
+From: ${from}
 To: ${clientmail}
 Subject: Prochain creneau pour mise a jour de votre serveur ${hostname}
 X-Debian-Release: ${local_release}
@@ -338,7 +338,7 @@ main() {
     test ! -s "${servicesToRestart}" && echo "Aucun" >"${servicesToRestart}"
 
     render_mail_template "${template}"
-    /usr/sbin/sendmail "${mailto}" <"${template}"
+    /usr/sbin/sendmail -oi -t -f "${from}" "${mailto}" <"${template}"
 
     ### Download packages
 
@@ -427,10 +427,11 @@ config_file="/etc/evolinux/listupgrade.cnf"
 cron_mode=${cron_mode:-0}
 ext_mode=${ext_mode:-0}
 force_mode=${force_mode:-0}
-clientmail=$(grep EVOMAINTMAIL /etc/evomaintenance.cf | cut -d'=' -f2)
+clientmail=$(grep "^\s*EVOMAINTMAIL=" /etc/evomaintenance.cf | cut -d'=' -f2)
+from=$(grep "^\s*FROM=" /etc/evomaintenance.cf | cut -d'=' -f2)
 mailto="${clientmail}"
 date="Ce jeudi entre 18h00 et 23h00."
-hostname=$(grep HOSTNAME /etc/evomaintenance.cf | cut -d'=' -f2)
+hostname=$(grep "^\s*HOSTNAME=" /etc/evomaintenance.cf | cut -d'=' -f2)
 hostname=${hostname%%.evolix.net}
 listupgrade_state_dir="${listupgrade_state_dir:-/var/lib/listupgrade}"
 hooks_dir="/etc/evolinux/listupgrade-hooks"

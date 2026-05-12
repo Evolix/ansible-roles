@@ -102,6 +102,8 @@
 - name: "Ruby {{ rbenv_ruby_version }} is available for {{ username }} (be patient... could be long)"
   ansible.builtin.shell:
     cmd: /bin/bash -lc "TMPDIR=~/tmp rbenv install {{ rbenv_ruby_version }}"
+  environment:
+    RUBY_CONFIGURE_OPTS: "{{ rbenv_ruby_configure_opts }}"
   when: ruby_installed.rc != 0
   become_user: "{{ username }}"
   become: true

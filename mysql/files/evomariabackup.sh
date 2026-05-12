@@ -292,6 +292,7 @@ backup_phase() {
         log_info "END mariabackup backup phase"
     fi
 
+    # Overload options for --prepare in ${prepare_command} or in ${backup_dir}/backup-my.cnf generated during backup; see : https://jira.mariadb.org/browse/MDEV-38745
     prepare_command="${mariabackup_bin} --prepare --target-dir=${backup_dir:?}"
 
     if ! is_quiet; then

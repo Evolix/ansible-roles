@@ -11,7 +11,7 @@
     mattermost_backup_date: "{{ ansible_date_time.iso8601_basic_short }}"
 
 - name: Backup current mattermost files
-  ansible.builtin.command: "mv  ~/mattermost/ ~/mattermost_{{ mattermost_backup_date }}"
+  ansible.builtin.command: "mv  ~/{{ mattermost_current }}/ ~/mattermost_{{ mattermost_backup_date }}"
   become_user: "{{ mattermost_instance }}"
 
 - name: Dump database to a file with compression
@@ -21,17 +21,17 @@
     target: "~/{{ mattermost_db_name }}.sql.gz"
   become_user: postgres
 
-- name: Unarchive new mattermost archive in temp location
+- name: Unarchive new mattermost archive in default location
   ansible.builtin.unarchive:
     src: "{{ mattermost_download_url }}"
-    dest: ~/temp
+    dest: ~/
     remote_src: true
   become_user: "{{ mattermost_instance }}"
 
-- name: Copy new mattermost files from temp to final directory only if not exist
+- name: Copy new mattermost files to final directory only if not exist
   ansible.builtin.copy:
-    src: "~/temp/mattermost/"
-    dest: ~/mattermost
+    src: "~/mattermost/"
+    dest: ~/{{ mattermost_current }}
     remote_src: true
     force: no
   become_user: "{{ mattermost_instance }}"
@@ -39,10 +39,9 @@
 - name: Restore dirs from backup
   ansible.builtin.copy:
     src: "{{ item }}"
-    dest: ~/mattermost
+    dest: ~/{{ mattermost_current }}
     remote_src: true
   loop:
-    - "~/mattermost_{{ mattermost_backup_date }}/config"
     - "~/mattermost_{{ mattermost_backup_date }}/logs"
     - "~/mattermost_{{ mattermost_backup_date }}/plugins"
     - "~/mattermost_{{ mattermost_backup_date }}/client/plugins"
@@ -58,11 +57,11 @@
     name: nginx
     state: reloaded
 
-- name: Remove unarchived mattermost files from temp
-  ansible.builtin.file:
-    path: "~/temp/mattermost/"
-    state: absent
-  become_user: "{{ mattermost_instance }}"
+#- name: Remove unarchived mattermost files from temp
+#  ansible.builtin.file:
+#    path: "~/mattermost/"
+#    state: absent
+#  become_user: "{{ mattermost_instance }}"
 
 - name: Define variable to skip next task by default
   ansible.builtin.set_fact:

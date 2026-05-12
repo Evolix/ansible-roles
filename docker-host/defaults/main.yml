@@ -9,8 +9,11 @@ docker_conf_no_newprivileges: false
 # Toggle live restore (need to be disabled in swarm mode)
 docker_conf_live_restore: true
 
-# Toggle user namespace
-docker_conf_user_namespace: true
+# Toggle user namespace, more secure, but has limitations <https://wiki.evolix.org/HowtoDocker#activer-le-userns-remap>
+docker_conf_user_namespace: false
+
+# Forbid docker install if squid is installed and used on the system
+docker_install_forbidden_if_squid_detected: true
 
 # Disable all default network connectivity
 docker_conf_disable_default_networking: false

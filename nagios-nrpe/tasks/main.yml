@@ -13,6 +13,7 @@
       - monitoring-plugins-basic
       - monitoring-plugins-common
       - monitoring-plugins-standard
+      - nagios-plugin-check-multi
     state: present
   tags:
     - nagios-nrpe

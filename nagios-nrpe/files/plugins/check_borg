@@ -1,0 +1,151 @@
+#!/bin/sh
+
+set -o nounset
+
+PROGNAME=$(basename "$0")
+PROGPATH=$(echo "$0" | sed -e 's,[\\/][^\\/][^\\/]*$,,')
+
+# source a utils.sh from nagios-plugins
+# if the check is not executed in the normal check-directory,
+# we'll search on common places. This gives us the ability to
+# avoid problems with the package-manager
+if [ -r "${PROGPATH}/utils.sh" ] && [ -f "${PROGPATH}/utils.sh" ]; then
+	. "${PROGPATH}/utils.sh"
+elif [ -r /usr/lib/nagios/plugins/utils.sh ] && [ -f /usr/lib/nagios/plugins/utils.sh ]; then
+	. /usr/lib/nagios/plugins/utils.sh
+elif [ -r /usr/lib/monitoring-plugins/utils.sh ] && [ -f /usr/lib/monitoring-plugins/utils.sh ]; then
+	. /usr/lib/monitoring-plugins/utils.sh
+else
+	echo "Cannot source utils.sh from monitoring-plugins!" >&2
+	exit 128
+fi
+
+debug(){   ([ "${verbose}" -gt 1 ] && echo "$*") || return 0; }
+verbose(){ ([ "${verbose}" -gt 0 ] && echo "$*") || return 0; }
+
+error(){   echo "BORG UNKNOWN, $*"; exit "${STATE_UNKNOWN}"; }
+
+crit='7 days ago'
+warn='3 days ago'
+verbose=0
+prefix=''
+
+usage(){
+	cat >&2 <<-FIN
+	usage: ${PROGNAME} [-C CONF] [-R REPO] [-P PREFIX] [-w DATE] [-c DATE] [ -h -v ]
+
+	REPO: borg repo-url
+	DATE: Any valid date for the date-command.
+	      default for -w: "${warn}"
+	      default for -c: "${crit}"
+	CONF: A configuration file, which will get sourced. You
+	      can use this to set the necessary env variables.
+	PREFIX: Only archives that start with this prefix are
+          considered. (optional)
+
+	You have to specify in the environment:
+	  - BORG_REPO if you haven't passed the -R flag
+	  - BORG_PASSPHRASE if your repo is encrypted
+	FIN
+	exit "${STATE_UNKNOWN}"
+}
+
+: "${BORG:=borg}"
+command -v "${BORG}" >/dev/null 2>/dev/null \
+	|| error "No command '${BORG}' available."
+
+: "${DATE:=date}"
+command -v "${DATE}" >/dev/null 2>/dev/null \
+	|| error "No command '${DATE}' available."
+
+while getopts ":vhR:P:C:c:w:" opt; do
+	case "${opt}" in
+		v)
+			verbose=$((verbose + 1))
+			;;
+		h)
+			usage
+			;;
+		R)
+			export "BORG_REPO=${OPTARG}"
+			;;
+		P)
+			prefix="${OPTARG}"
+			;;
+		C)
+			[ -e "${OPTARG}" ] || error "Configuration file '${OPTARG}' does not exist."
+			[ -r "${OPTARG}" ] || error "Could not read configuration file '${OPTARG}'."
+			. "${OPTARG}"      || error "Could not source configuration file '${OPTARG}'."
+			;;
+		c)
+			crit="${OPTARG}"
+			;;
+		w)
+			warn="${OPTARG}"
+			;;
+		\?)
+			error "Invalid option: -${OPTARG}"
+			usage
+			;;
+		:)
+			error "Option -${OPTARG} requires an argument."
+			usage
+			;;
+	esac
+done
+
+if [ -z "${BORG_REPO:-""}" ]; then
+	error "No repository specified!"
+fi
+verbose "repo ${BORG_REPO}"
+
+# convert values to seconds to enable comparison
+sec_warn="$(${DATE} --date="${warn}" '+%s')"
+sec_crit="$(${DATE} --date="${crit}" '+%s')"
+
+# check warning and critical values
+if check_range "${sec_crit}" 0:"${sec_warn}" ; then
+	error "Warning value has to be a more recent timepoint than critical."
+fi
+
+# get unixtime of last backup
+# As there are easier and safer ways to get the latest time stamp in the current borg version,
+# use the ugly ones only when necessary
+case "$(${BORG} --version | cut -d' ' -f2)" in
+	1.0*)
+		# Get the archive names and then get via borg info the date for the latest archive name
+		# We have to split the pipe chains, as we have to catch if borg failed to execute
+		last_archive="$(${BORG} list --short)"
+		[ "$?" = 0 ] || error "Cannot list repository archives. Repo Locked?"
+		last_archive="$(echo "${last_archive}" | tail -n 1)"
+		last="$(${BORG} info "::${last_archive}")"
+		[ "$?" = 0 ] || error "Cannot get archive info for '${last_archive}'. Repo Locked?"
+		last="$(echo "${last}" | sed -n 's/^Time (start):\s\(.*\)/\1/p')"
+		;;
+	*)
+		last="$(${BORG} list --glob-archives "${prefix}*" --sort timestamp --last 1 --format '{time}')"
+		[ "$?" = 0 ] || error "Cannot list repository archives. Repo Locked?"
+		;;
+esac
+
+if [ -z "${last}" ]; then
+	echo "BORG CRITICAL, no archive in repository"
+	exit "${STATE_CRITICAL}"
+fi
+
+sec_last="$(${DATE} --date="${last}" '+%s')"
+
+# interpret the amount of fails
+if [ "${sec_crit}" -gt "${sec_last}" ]; then
+	state="${STATE_CRITICAL}"
+	msg="BORG CRITICAL, last backup made on ${last}"
+elif [ "${sec_warn}" -gt "${sec_last}" ]; then
+	state="${STATE_WARNING}"
+	msg="BORG WARN, last backup made on ${last}"
+else
+	state="${STATE_OK}"
+	msg="BORG OK, last backup made on ${last}"
+fi
+
+echo "${msg}"
+exit "${state}"

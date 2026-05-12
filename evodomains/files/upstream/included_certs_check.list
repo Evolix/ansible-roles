@@ -1,0 +1,5 @@
+# Cretificats to check explicitely with command 'evodomains check-certs'.
+# This is useful to check a certificate domain that is not in supported confs
+# (Apache, Nginx, SSL certs…).
+# Format: one certificate path per line, regex and wildcards not supported.
+

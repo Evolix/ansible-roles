@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Evolix
+
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -9,9 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* Use sudo to bash-complete the name of the checks and wrappers.
+
 ### Changed
 
 ### Fixed
+
+* alerts_wrapper.py: fix special characters issue in commands by using an array instead of a string for subprocess lib.
 
 ### Removed
 

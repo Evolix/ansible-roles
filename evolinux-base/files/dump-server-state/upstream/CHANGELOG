@@ -20,6 +20,28 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [26.05.1] 2026-05-06
+
+### Fixed
+
+* "lsblk" doesn't know --shell option on Debian 10
+
+## [26.05] 2026-05-04
+
+### Added
+
+* dump "lsblk" output to save UUID of each volume
+
+### Fixed
+
+* sfdisk: don't fail when volume has no partition table
+
+## [26.04] 2026-04-27
+
+### Added
+
+* add sfdisk to list of outputs (keeps partitions UUID)
+
 ## [25.06.2] 2025-06-06
 
 ### Changed

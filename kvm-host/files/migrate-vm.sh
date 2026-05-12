@@ -9,15 +9,16 @@
 # * different return codes for different errors
 # * use local and readonly variables
 
-VERSION="25.09"
+VERSION="26.05"
 
 # If expansion is attempted on an unset variable or parameter, the shell prints an
 # error message, and, if not interactive, exits with a non-zero status.
 set -o nounset
 
+### disabled, it breaks "grep --quiet"
 # The pipeline's return status is the value of the last (rightmost) command
 # to exit with a non-zero status, or zero if all commands exit successfully.
-set -o pipefail
+# set -o pipefail
 
 # Enable trace mode if called with environment variable TRACE=1
 if [[ "${TRACE-0}" == "1" ]]; then
@@ -144,6 +145,14 @@ interface_speed() {
         speed_path="${bonding_speed_path}"
     fi
 
+    if [ -e "${speed_path}" ]; then
+        speed=$(head -n 1 "${speed_path}" 2> /dev/null)
+        if [ -n "${speed}" ] || [ "${speed}" -gt "0" ]; then
+            echo "${speed}"
+            return 0
+        fi
+    fi
+
     if [ -e "${bridge_path}" ]; then
         # echo "${interface} is a bridge" >&2
         case "$(ls "${bridge_path}" | wc -l)" in
@@ -160,18 +169,31 @@ interface_speed() {
             # echo "${interface} bridge has many interfaces" >&2
             min_speed=""
             for bridge_iface in $(ls "${bridge_path}"); do
-                if realpath "/sys/class/net/${bridge_iface}" | grep --quiet --invert-match virtual; then
-                    speed=$(head -n 1 "/sys/class/net/${bridge_iface}/speed" 2> /dev/null)
+                speed=$(head -n 1 "/sys/class/net/${bridge_iface}/speed" 2> /dev/null)
+                if realpath "/sys/class/net/${bridge_iface}" | grep --quiet virtual; then
                     if [ -n "${speed}" ]; then
-                        # echo "${bridge_iface} is a physical interface, keep" >&2
-                        if [ -z "${min_speed}" ] || [ "${min_speed}" -gt "${speed}" ]; then
+                        # echo "${bridge_iface} is a virtual interface (with detected speed of ${speed}), keep" >&2
+                        # echo "min_speed: '${min_speed}', speed: '${speed}'" >&2
+                        if [ -z "${min_speed}" ] || [ "${min_speed}" -lt "${speed}" ]; then
                             # echo "new min speed with ${bridge_iface}: ${speed}" >&2
                             min_speed="${speed}"
                         fi
+                    else
+                        # echo "${bridge_iface} is a virtual interface (with no detected speed), skip" >&2
+                        : # noop
                     fi
                 else
-                    # echo "${bridge_iface} is a virtual interface, skip" >&2
-                    : # noop
+                    if [ -n "${speed}" ]; then
+                        # echo "${bridge_iface} is a physical interface, keep" >&2
+                        # echo "min_speed: '${min_speed}', speed: '${speed}'" >&2
+                        if [ -z "${min_speed}" ] || [ "${min_speed}" -lt "${speed}" ]; then
+                            # echo "new min speed with ${bridge_iface}: ${speed}" >&2
+                            min_speed="${speed}"
+                        fi
+                    else
+                        # echo "${bridge_iface} is a physical interface (with no detected speed), skip" >&2
+                        : # noop
+                    fi
                 fi
             done
             if [ -n "${min_speed}" ] && [ "${min_speed}" -gt "0" ]; then
@@ -203,8 +225,6 @@ interface_speed() {
                 echo "${fallback_speed}"
             fi
         fi
-    elif [ -e "${speed_path}" ]; then
-        head -n 1 "${speed_path}" 2> /dev/null || echo "${fallback_speed}"
     else
         echo "${fallback_speed}"
     fi
@@ -433,10 +453,16 @@ stop_vm() {
 migrate_vm_to() {
     vm=${1:-}
     remote_ip=${2:-}
+    speed=${3:-}
 
     drbd_interface=$(drbd_interface "${remote_ip}")
-    interface_speed=$(interface_speed "${drbd_interface}")
-    migrate_speed=$(echo "${interface_speed}*0.8/8" | bc)
+
+    if [ -n "${speed}" ]; then
+        migrate_speed="${speed}"
+    else
+        interface_speed=$(interface_speed "${drbd_interface}")
+        migrate_speed=$(echo "${interface_speed}*0.8/8" | bc)
+    fi
 
     echo "Migration speed set to ${migrate_speed}MiB/s"
     virsh --quiet migrate-setspeed "${vm}" "${migrate_speed}"
@@ -450,6 +476,7 @@ migrate_to() {
     resource=${2:-}
     remote_ip=${3:-}
     remote_host=${4:-}
+    speed=${5:-}
 
     echo "Start migration of ${vm} to ${remote_ip} (${remote_host})"
 
@@ -463,7 +490,7 @@ migrate_to() {
     fi
 
     if is_vm_running_locally "${vm}"; then
-        migrate_vm_to "${vm}" "${remote_ip}"
+        migrate_vm_to "${vm}" "${remote_ip}" "${speed}"
     else
         if [ ${option_start_after} -eq 0 ]; then
             echo "${vm} is not running locally, so it won't be started on ${remote_host}"
@@ -495,6 +522,7 @@ migrate_to() {
 migrate() {
     vm=${1:-}
     resource=${2:-}
+    speed=${3:-}
     server_ips=$(server_ips)
 
     if ! is_drbd_resource "${resource}"; then
@@ -516,7 +544,7 @@ migrate() {
     done
 
     if is_vm_defined_locally "${vm}"; then
-        migrate_to "${vm}" "${resource}" "${remote_ip}" "${remote_host}"
+        migrate_to "${vm}" "${resource}" "${remote_ip}" "${remote_host}" "${speed}"
     else
         echo "VM \"${vm}\" is not defined." >&2
     fi
@@ -564,7 +592,7 @@ main() {
     count_total=$(wc -l "${vm_list_tmp}" | cut -d ' ' -f 1)
     count_current=0
 
-    # If report is not explicitely enabled or disabed
+    # If report is not explicitely enabled or disabled
     if [ -z "${option_report}" ] ; then
         # it is disabled for 1 VM, and enabled for more than 1 VM
         if [ "${count_total}" -le 1 ]; then
@@ -585,7 +613,7 @@ main() {
         vm=$(echo "${line}" | cut -d: -f1)
         resource=$(echo "${line}" | cut -d: -f2)
         echo "[$(date +'%Y-%m-%d %H:%M:%S')] VM ${count_current}/${count_total}: ${vm} (resource: ${resource})"
-        migrate "${vm}" "${resource}"
+        migrate "${vm}" "${resource}" "${option_speed}"
     done < "${vm_list_tmp}"
 
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] Finish"
@@ -620,6 +648,7 @@ option_stop_timeout=300
 option_vms=""
 option_vm=""
 option_resource=""
+option_speed=""
 
 # Parse options
 # based on https://gist.github.com/deshion/10d3cb5f88a21671e17a
@@ -731,6 +760,25 @@ while :; do
             printf 'ERROR: "--vms" requires a non-empty option argument.\n' >&2
             exit 1
             ;;
+        --speed)
+            # with value separated by space
+            if [ -n "$2" ]; then
+                option_speed=$2
+                shift
+            else
+                printf 'ERROR: "--speed" requires a non-empty option argument.\n' >&2
+                exit 1
+            fi
+            ;;
+        --speed=?*)
+            # with value speparated by =
+            option_speed=${1#*=}
+            ;;
+        --speed=)
+            # without value
+            printf 'ERROR: "--speed" requires a non-empty option argument.\n' >&2
+            exit 1
+            ;;
 
         # Backward compatibility and deprecations
         --vm)
@@ -799,6 +847,12 @@ while :; do
 
     shift
 done
+
+# Check if speed is an integer
+if [ -n "${option_speed}" ] && ! [[ "${option_speed}" =~ ^[0-9]+$ ]] ; then
+    printf 'ERROR: "--speed" requires a integer value.\n' >&2
+    exit 1
+fi
 
 # Backward compatibility
 if [ -z "${option_vms}" ] && [ -n "${option_vm}" ]; then

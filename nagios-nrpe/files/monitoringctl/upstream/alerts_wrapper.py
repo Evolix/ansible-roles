@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2024 Evolix
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 # alerts_wrapper wraps an NRPE command and overrides its return code if alert is disabled by monitoringctl.
 #
@@ -61,11 +64,11 @@ def main(wrapper_name, check_command):
         enable_wrapper(wrapper_name)
 
     if is_disabled:
-        check_command = 'timeout 8 ' + check_command
+        check_command = ['timeout', '8'] + check_command
 
     check_rc = 0
     try:
-        stdout = subprocess.check_output(check_command, shell=True)
+        stdout = subprocess.check_output(check_command)
     except subprocess.CalledProcessError as e:
         check_rc = e.returncode
         stdout = e.output
@@ -119,13 +122,7 @@ if args.version:
     exit(0)
 
 wrapper_name = args.name
-for i, arg in enumerate(unknown_args):
-    if '"' in arg:
-        unknown_args[i] = '\'{}\''.format(arg)
-    else:
-        unknown_args[i] = '"{}"'.format(arg)
 check_command = [args.check_command] + unknown_args
-check_command = ' '.join(check_command)
 
 
 # Run program

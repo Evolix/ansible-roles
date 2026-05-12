@@ -1,0 +1,180 @@
+{
+  "title": "{{ etherpad_app_title }}",
+  "showRecentPads": true,
+  "favicon": null,
+  "skinName": "{{ etherpad_app_skin_name }}",
+  "skinVariants": "{{ etherpad_app_skin_variants }}",
+  "ip": "{{ etherpad_app_ip }}",
+  "port": "{{ etherpad_app_port }}",
+  "showSettingsInAdminPage": true,
+  "enableMetrics": true,
+  "cleanup": {
+    "enabled": false,
+    "keepRevisions": 5
+  },
+  "authenticationMethod": "sso",
+  "enableDarkMode": true,
+  "updateServer": "https://etherpad.org/ep_infos",
+  "dbType": "mysql",
+  "dbSettings": {
+    "host": "{{ etherpad_db_host }}",
+    "port": "{{ etherpad_db_port }}",
+    "database":  "{{ etherpad_db_name }}",
+    "user": "{{ etherpad_db_user }}",
+    "password": "{{ etherpad_db_password }}",
+    "charset": "utf8mb4"
+  },
+  "defaultPadText": "{{ etherpad_app_default_pad_text }}",
+  "padOptions": {
+    "noColors": false,
+    "showControls": true,
+    "showChat": true,
+    "showLineNumbers": true,
+    "useMonospaceFont": false,
+    "userName": null,
+    "userColor": null,
+    "rtl": false,
+    "alwaysShowChat": false,
+    "chatAndUsers": false,
+    "lang": null
+  },
+  "padShortcutEnabled": {
+    "altF9": true,
+    "altC": true,
+    "cmdShift2": true,
+    "delete": true,
+    "return": true,
+    "esc": true,
+    "cmdS": true,
+    "tab": true,
+    "cmdZ": true,
+    "cmdY": true,
+    "cmdI": true,
+    "cmdB": true,
+    "cmdU": true,
+    "cmd5": true,
+    "cmdShiftL": true,
+    "cmdShiftN": true,
+    "cmdShift1": true,
+    "cmdShiftC": true,
+    "cmdH": true,
+    "ctrlHome": true,
+    "pageUp": true,
+    "pageDown": true
+  },
+  "suppressErrorsInPadText": false,
+  "requireSession": false,
+  "editOnly": false,
+  "minify": true,
+  "maxAge": 21600,
+  "abiword": null,
+  "soffice": null,
+  "allowUnknownFileEnds": {{ etherpad_app_file_ends }},
+  "requireAuthentication": {{ etherpad_app_require_authentication }},
+  "requireAuthorization": {{ etherpad_app_require_authorization }},
+  "trustProxy": {{ etherpad_app_trust_proxy }},
+  "cookie": {
+    "keyRotationInterval": 86400000,
+    "sameSite": "Lax",
+    "sessionLifetime": 864000000,
+    "sessionRefreshInterval": 86400000
+  },
+  "disableIPlogging": false,
+  "automaticReconnectionTimeout": 0,
+  "scrollWhenFocusLineIsOutOfViewport": {
+    "percentage": {
+      "editionAboveViewport": 0,
+      "editionBelowViewport": 0
+    },
+    "duration": 0,
+    "scrollWhenCaretIsInTheLastLineOfViewport": false,
+    "percentageToScrollWhenUserPressesArrowUp": 0
+  },
+  "users": {
+    "admin": {
+      "password": "{{ etherpad_app_admin_password }}",
+      "is_admin": true
+    },
+    "user": {
+      "password": null,
+      "is_admin": false
+    }
+  },
+  "socketTransportProtocols": ["websocket", "polling"],
+  "socketIo": {
+    "maxHttpBufferSize": 50000
+  },
+  "loadTest": false,
+  "dumpOnUncleanExit": false,
+  "importExportRateLimiting": {
+    "windowMs": 90000,
+    "max": 10
+  },
+  "importMaxFileSize": 52428800,
+  "commitRateLimiting": {
+    "duration": 1,
+    "points": 10
+  },
+  "exposeVersion": false,
+  "loglevel": "INFO",
+  "customLocaleStrings": {},
+  "enableAdminUITests": false,
+  "lowerCasePadIds": false,
+  "sso": {
+    "issuer": "http://localhost:9001",
+    "clients": [
+      {
+        "client_id": "admin_client",
+        "client_secret": "admin",
+        "grant_types": ["authorization_code"],
+        "response_types": ["code"],
+        "redirect_uris": ["http://localhost:9001/admin/"]
+      },
+      {
+        "client_id": "user_client",
+        "client_secret": "user",
+        "grant_types": ["authorization_code"],
+        "response_types": ["code"],
+        "redirect_uris": ["http://localhost:9001/"]
+      }
+    ]
+  },
+  "plugins": {
+    "ep_align": {
+      "enabled": false
+    },
+    "ep_author_hover": {
+      "enabled": false
+    },
+    "ep_chat_log_join_leave": {
+      "enabled": false
+    },
+    "ep_clear_formatting": {
+      "enabled": false
+    },
+    "ep_cursortrace": {
+      "enabled": false
+    },
+    "ep_font_color": {
+      "enabled": false
+    },
+    "ep_font_family": {
+      "enabled": false
+    },
+    "ep_font_size": {
+      "enabled": false
+    },
+    "ep_markdown": {
+      "enabled": false
+    },
+    "ep_print": {
+      "enabled": false
+    },
+    "ep_spellcheck": {
+      "enabled": false
+    },
+    "ep_table_of_contents": {
+      "enabled": false
+    }
+  }
+}

@@ -43,9 +43,10 @@ done
 [ "${return}" -ge 1 ] && header="WARNING"
 [ "${return}" -ge 2 ] && header="CRITICAL"
 
-printf "%s - %s UNCHK / %s CRIT / %s WARN / %s OK\n\n" "${header}" "${nb_unchk}" "${nb_crit}" "${nb_warn}" "${nb_ok}"
+printf "${output}" | grep -E "^CRITICAL" && printf '\n'
 
-printf "${output}" | grep -E "^CRITICAL"
+printf "\n%s - %s UNCHK / %s CRIT / %s WARN / %s OK\n\n" "${header}" "${nb_unchk}" "${nb_crit}" "${nb_warn}" "${nb_ok}"
+
 printf "${output}" | grep -E "^WARNING"
 printf "${output}" | grep -E "^OK"
 printf "${output}" | grep -E "^UNCHK"

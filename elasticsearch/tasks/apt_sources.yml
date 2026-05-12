@@ -9,7 +9,7 @@
   ansible.builtin.file:
     path: "{{ apt_keyring_dir }}"
     state: directory
-    mode: "755"
+    mode: "0755"
     owner: root
     group: root
 
@@ -18,7 +18,7 @@
     src: elastic.asc
     dest: "{{ apt_keyring_dir }}/elastic.asc"
     force: true
-    mode: "0644"
+    mode: "0600"
     owner: root
     group: root
 
@@ -34,6 +34,9 @@
   ansible.builtin.template:
     src: elastic.sources.j2
     dest: /etc/apt/sources.list.d/elastic.sources
+    mode: "0644"
+    owner: "root"
+    group: "root"
   register: elastic_sources
   when: ansible_distribution_major_version is version('12', '>=')
 

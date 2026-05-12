@@ -1,0 +1,28 @@
+---
+- name: Check if squid is installed
+  ansible.builtin.shell:
+    cmd: "set -o pipefail && dpkg -l squid 2>/dev/null | grep -q -E '^(i|h)i'"
+    executable: /bin/bash
+  check_mode: no
+  failed_when: False
+  changed_when: False
+  register: squid__apt_config_package_installed
+
+- name: Fail if squid is installed
+  ansible.builtin.fail:
+    msg: Docker may not be installed if squid is installed ; if you know what you're doing, skip this check with docker_install_forbidden_if_squid_detected set to false 
+  when: squid__apt_config_package_installed.rc == 0 and docker_install_forbidden_if_squid_detected 
+
+- name: Check if proxy is set to on in minifirewall
+  ansible.builtin.shell:
+    cmd: test -e /etc/default/minifirewall && grep -q -i "PROXY='on'" /etc/default/minifirewall
+    executable: /bin/bash
+  check_mode: no
+  failed_when: False
+  changed_when: False
+  register: minifirewall_proxy_is_set_to_on
+
+- name: Fail if squid is configured in minifirewall
+  ansible.builtin.fail:
+    msg: Docker may not be installed if squid is configured ; if you know what you're doing, skip this check with docker_install_forbidden_if_squid_detected set to false  
+  when: minifirewall_proxy_is_set_to_on.rc == 0 and docker_install_forbidden_if_squid_detected 

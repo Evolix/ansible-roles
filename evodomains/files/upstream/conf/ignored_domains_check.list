@@ -1,0 +1,3 @@
+# Domains to exclude from check with command 'evodomains check-dns'.
+# Format: one domain per line, regex and wildcards not supported.
+

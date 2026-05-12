@@ -1,6 +1,7 @@
 # This role installs the docker daemon
 ---
 
+- ansible.builtin.import_tasks: failsafe.yml
 - ansible.builtin.import_tasks: install.yml
 - ansible.builtin.import_tasks: munin.yml
 - ansible.builtin.import_tasks: configure.yml

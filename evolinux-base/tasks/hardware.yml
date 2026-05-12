@@ -8,9 +8,12 @@
 
 - name: non-free-firmware components are installed (Debian 12+)
   ansible.builtin.replace:
-    dest: /etc/apt/sources.list.d/system.sources
+    dest: "{{ item }}"
     regexp: '^(Components: ((?!\bnon-free-firmware\b).)*)$'
     replace: '\1 non-free-firmware'
+  loop:
+    - /etc/apt/sources.list.d/system.sources
+    - /etc/apt/sources.list.d/security.sources
   when:
     - ansible_distribution_major_version is version('12', '>=')
 

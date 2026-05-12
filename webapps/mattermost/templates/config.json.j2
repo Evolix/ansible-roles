@@ -14,7 +14,10 @@
     "UseLetsEncrypt": false,
     "LetsEncryptCertificateCacheFile": "./config/letsencrypt.cache",
     "Forward80To443": false,
-    "TrustedProxyIPHeader": [],
+    "TrustedProxyIPHeader": [
+        "X-Forwarded-For",
+        "X-Real-IP"
+    ],
     "ReadTimeout": 300,
     "WriteTimeout": 300,
     "IdleTimeout": 60,
@@ -42,7 +45,7 @@
     "EnableMultifactorAuthentication": false,
     "EnforceMultifactorAuthentication": false,
     "EnableUserAccessTokens": false,
-    "AllowCorsFrom": "",
+    "AllowCorsFrom": "{{ mattermost_domains | first }}",
     "CorsExposedHeaders": "",
     "CorsAllowCredentials": false,
     "CorsDebug": false,
@@ -145,7 +148,7 @@
   },
   "SqlSettings": {
     "DriverName": "postgres",
-    "DataSource": "postgres://{{ mattermost_db_user }}:{{ mattermost_db_password }}@{{ mattermost_db_host }}:5432/{{ mattermost_db_name }}?sslmode=disable&connect_timeout=10",
+    "DataSource": "postgres://{{ mattermost_db_user }}:{{ mattermost_db_password }}@{{ mattermost_db_host }}:{{ mattermost_db_port }}/{{ mattermost_db_name }}?sslmode=disable&connect_timeout=10",
     "DataSourceReplicas": [],
     "DataSourceSearchReplicas": [],
     "MaxIdleConns": 20,
@@ -263,8 +266,8 @@
     "EnableSMTPAuth": false,
     "SMTPUsername": "",
     "SMTPPassword": "",
-    "SMTPServer": "",
-    "SMTPPort": "10025",
+    "SMTPServer": "127.0.0.1",
+    "SMTPPort": "25",
     "SMTPServerTimeout": 10,
     "ConnectionSecurity": "",
     "SendPushNotifications": true,
@@ -484,7 +487,9 @@
   "MetricsSettings": {
     "Enable": false,
     "BlockProfileRate": 0,
-    "ListenAddress": ":8067"
+    "ListenAddress": ":8067",
+    "EnableClientMetrics": true,
+    "EnableNotificationMetrics": false
   },
   "ExperimentalSettings": {
     "ClientSideCertEnable": false,

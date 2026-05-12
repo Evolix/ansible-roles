@@ -186,3 +186,9 @@
     - haproxy_allow_ip_nonlocal_bind is not none
 
 - ansible.builtin.import_tasks: munin.yml
+
+- name: Install evodomains
+  include_role:
+    name: evodomains
+  tags:
+    - haproxy

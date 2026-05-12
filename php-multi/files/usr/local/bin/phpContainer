@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+
+# If not interactive, exit immediately if any untested command fails
+## set -o errexit
+
+# If expansion is attempted on an unset variable or parameter, the shell prints an
+# error message, and, if not interactive, exits with a non-zero status.
+set -o nounset
+
+# # The pipeline's return status is the value of the last (rightmost) command
+# # to exit with a non-zero status, or zero if all commands exit successfully.
+## set -o pipefail
+
+# Enable trace mode if called with environment variable TRACE=1
+if [ "${TRACE-0}" = "1" ]; then
+    set -o xtrace
+fi
+
+readonly VERSION="26.04"
+
+PROGNAME=$(basename "${0}")
+readonly PROGNAME
+
+show_version() {
+    cat <<END
+${PROGNAME} version ${VERSION}
+END
+}
+get_php_version_from_sethandler() {
+    local file=$1
+    grep "SetHandler" "${file}" 2>/dev/null | sed --regexp-extended 's/.*php-fpm([0-9][0-9]).*/\1/'
+}
+
+case $1 in
+    -v|--version|version|Version)
+        show_version
+        exit 0
+        ;;
+esac
+
+# If this script isn't run as root, then, re-run it with sudo.
+if [ "$EUID" -ne 0 ]; then
+    # Keep trace mode if enabled
+    if [ "${TRACE-0}" = "1" ]; then
+        export TRACE="${TRACE-0}"
+    fi
+    sudo $(readlink -f "${BASH_SOURCE[0]}") "$@"
+    # Keep return code
+    exit $?;
+fi;
+
+readonly apache_root="/etc/apache2-${LOGNAME}"
+if [ ! -e "${apache_root}" ]; then
+    >&2 printf "ERROR: %s not found\n" "${apache_root}"
+    exit 1
+fi
+readonly apache_sites_enabled="${apache_root}/sites-enabled"
+if [ ! -e "${apache_sites_enabled}" ]; then
+    >&2 printf "ERROR: %s not found\n" "${apache_sites_enabled}"
+    exit 1
+fi
+readonly apache_vhost_file="${apache_sites_enabled}/${LOGNAME}.conf"
+if [ ! -e "${apache_vhost_file}" ]; then
+    >&2 printf "ERROR: %s not found\n" "${apache_vhost_file}"
+    exit 1
+fi
+
+php_version=$(get_php_version_from_sethandler "${apache_vhost_file}")
+
+# If $php_version is empty, look for "SetHandler" in the includes.
+if [ -z "${php_version}" ]; then
+    includes=$(grep -w "Include" "${apache_vhost_file}" | uniq | awk '{print $2}')
+    for include in ${includes}; do
+        php_version=$(get_php_version_from_sethandler "$(realpath "${include}")")
+        if [ -n "${php_version}" ]; then
+            break
+        fi
+    done
+fi
+
+# If still empty, exit. Otherwise, execute PHP inside corresponding container
+if [ -z "${php_version}" ]; then
+    # TODO: fallback?
+    # command php $*
+    >&2 print "ERROR: Could not determine PHP version - Are you a web account?\n"
+    exit 1
+else
+    container_name="php-fpm${php_version:0:1}.${php_version:1:1}"
+    if podman container exists "${container_name}"; then
+        podman exec --user "${LOGNAME}" --interactive --workdir "${PWD}" "${container_name}" php $@
+    else
+        >&2 print "ERROR: Could not find container %s.\n" "${container_name}"
+        exit 1
+    fi
+fi

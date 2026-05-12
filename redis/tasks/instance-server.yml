@@ -175,7 +175,7 @@
   tags:
     - redis
 
-- name: Systemd template for redis instances is installed (Debian 10 or later)
+- name: Systemd template for redis instances is installed (Debian 10)
   ansible.builtin.template:
     src: 'redis-server@buster.service.j2'
     dest: '/etc/systemd/system/redis-server@.service'
@@ -184,7 +184,46 @@
     group: "root"
   when:
     - ansible_distribution == "Debian"
-    - ansible_distribution_major_version is version('10', '>=')
+    - ansible_distribution_major_version is version('10', '=')
+  tags:
+    - redis
+
+- name: Systemd template for redis instances is installed (Debian 11)
+  ansible.builtin.template:
+    src: 'redis-server@bullseye.service.j2'
+    dest: '/etc/systemd/system/redis-server@.service'
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version is version('11', '=')
+  tags:
+    - redis
+
+- name: Systemd template for redis instances is installed (Debian 12)
+  ansible.builtin.template:
+    src: 'redis-server@bookworm.service.j2'
+    dest: '/etc/systemd/system/redis-server@.service'
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version is version('12', '=')
+  tags:
+    - redis
+
+- name: Systemd template for redis instances is installed (Debian 13 or later)
+  ansible.builtin.template:
+    src: 'redis-server@trixie.service.j2'
+    dest: '/etc/systemd/system/redis-server@.service'
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  when:
+    - ansible_distribution == "Debian"
+    - ansible_distribution_major_version is version('13', '>=')
   tags:
     - redis
 

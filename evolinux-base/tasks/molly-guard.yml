@@ -1,0 +1,14 @@
+---
+
+- name: Molly-guard is installed
+  ansible.builtin.apt:
+    name:
+      - molly-guard
+    state: present
+
+- name: Molly-guard warn-kernel-change is present
+  ansible.builtin.copy:
+    src: molly-guard/warn-kernel-change.sh
+    dest: /etc/molly-guard/run.d/15-warn-kernel-change
+    force: true
+    mode: "0755"

@@ -1,0 +1,4 @@
+---
+evodomains_allowed_ips: []
+#  - { ip: 192.168.2.1, comment: "my trusted server" }
+
