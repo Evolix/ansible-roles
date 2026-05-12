@@ -13,6 +13,18 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [26.05] 2026-05-12
+
+### Added
+
 * apache, nginx, haproxy: install evodomains by default
 * apt: Enable ELTS for Buster
 * evodomains: new role
@@ -52,12 +64,6 @@ The **patch** part is incremented if multiple releases happen the same month
 * keepalived: Fix lineinfile task related to NRPE
 * lxc: Fix trixie and bookworm containers creation on stretch host
 * postfix: Add missing `disable_vrfy_command = yes` in packmail_main.cf.j2
-
-### Removed
-
-### Security
-
-## [Unreleased]
 
 ## [26.03.1] 2026-03-24
 
