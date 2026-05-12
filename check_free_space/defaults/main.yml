@@ -4,3 +4,7 @@ check_free_space_partitions:
   - "/srv"
 check_free_space_max_percent: 70
 check_free_space_mailto: Null
+
+check_free_space_manage_cron: true
+check_free_space_cron_force: false
+check_free_space_cron_enabled: true

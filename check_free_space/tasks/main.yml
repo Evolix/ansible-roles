@@ -26,7 +26,9 @@
     owner: root
     group: root
     mode: "0644"
-    force: false
+    force: check_free_space_cron_force | bool
+    state: check_free_space_cron_enabled | bool | ternary('present', 'absent')
+  when: check_free_space_manage_cron | bool
 
 - name: Duc and Mutt are installed
   ansible.builtin.apt:
@@ -34,4 +36,3 @@
       - mutt
       - duc
     state: present
-
