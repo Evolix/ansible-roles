@@ -31,26 +31,6 @@
   tags:
     - "apache"
 
-###################
-## /etc/apache2/
-###################
-
-- name: "Remove /etc/apache2/sites-enabled directory"
-  ansible.builtin.file:
-    path: "/etc/apache2/sites-enabled"
-    follow: false
-    state: "absent"
-  tags:
-    - "apache"
-
-- name: "Remove /etc/apache2/sites-available directory"
-  ansible.builtin.file:
-    path: "/etc/apache2/sites-available"
-    follow: false
-    state: "absent"
-  tags:
-    - "apache"
-
 ############################
 ## /etc/apache2-template/
 ############################
@@ -220,13 +200,33 @@
   tags:
     - "apache"
 
+###################
+## /etc/apache2/
+###################
+
+- name: "Remove /etc/apache2/sites-enabled directory"
+  ansible.builtin.file:
+    path: "/etc/apache2/sites-enabled"
+    follow: false
+    state: "absent"
+  tags:
+    - "apache"
+
+- name: "Remove /etc/apache2/sites-available directory"
+  ansible.builtin.file:
+    path: "/etc/apache2/sites-available"
+    follow: false
+    state: "absent"
+  tags:
+    - "apache"
+
 #########################
 ## /etc/apache2-front/
 #########################
 
 - name: "Setup apache 'front' instance"
   ansible.builtin.command:
-    cmd: "setup-instance {{ apache_multi_front_vhost_name }}"
+    cmd: "apache2-setup-instance {{ apache_multi_front_vhost_name }}"
     creates: "{{ apache_multi_front_dir }}"
   register: "cmd_setup_instance_front"
   changed_when: "'Setting up /etc/default/apache-htcacheclean-' in cmd_setup_instance_front"
