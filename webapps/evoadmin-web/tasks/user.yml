@@ -103,9 +103,9 @@
 
 - name: "Configure 'WEB_SERVER' for multi instance"
   ansible.builtin.replace:
-  dest: "/usr/share/scripts/evoadmin/web-add.sh"
-  regexp: "WEB_SERVER=\"apache\""
-  replace: "WEB_SERVER=\"apache-multi\""
+    dest: "/usr/share/scripts/evoadmin/web-add.sh"
+    regexp: "WEB_SERVER=\"apache\""
+    replace: "WEB_SERVER=\"apache-multi\""
   when: "evoadmin_multiinstance"
 
 # we use a shell command to have a "changed" that really reflects the result.

@@ -2,7 +2,7 @@
 - name: "web_multi | Create evoadmin instance"
   ansible.builtin.command:
     argv:
-      - "{{ evoadmin_scripts_dir }}/setup-instance-apache.sh"
+      - "apache2-setup-instance"
       - "evoadmin"
     creates: "/etc/apache2-evoadmin"
   register: "create_backend_instance"
