@@ -15,6 +15,46 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Security
 
+## [26.05] 2026-05-15
+
+This is a significant rewrite with new features and changed output.
+
+### Added
+
+* Add check levels
+* Document some checks
+* IS_DEBIANSECURITYMIRROR and IS_DEBIANSECURITYMIRROR_LXC
+* IS_EVOLIX_GROUP: new check to verify that all Evolix users are in "evolix" group (#161)
+* IS_PHPPGADMINAPACHECONF and IS_PHPLDAPADMINAPACHECONF (#193)
+* IS_SMARTMONTOOLS (#198)
+* IS_SYSTEMDUSERUNIT in --future (#196)
+* IS_NONFREE (#202)
+
+### Changed
+
+* Verbose is the new normal
+* IS_DUPLICATE_FS_LABEL now excludes ZFS pool and device /dev/zd*
+* IS_MARIADBEVOLINUXCONF enabled back in --future
+* IS_OLD_HOME_DIR enabled back in --future
+* IS_PHPEVOLINUXCONF enabled back in --future
+* IS_SSHALLOWUSERS: look for AllowUsers/AllowGroups in sshd_config.d/000-evolinux-migrated.conf
+* IS_SSHLASTMATCH enabled in --future
+* IS_APACHECTL and IS_EVOLIX_USER are now mandatory
+* IS_EVOLINUXSUDOGROUP accept alternates config with EXEC: flag
+
+### Fixed
+
+* find(1): follow symbolic links when searching for backup
+* get_version: avoid stderr if minifirewall version can’t be guessed on wheezy
+* get_version: failsafe when it's impossible to get the version
+* IS_EVOMAINTENANCEUSERS: better detection of trap
+* IS_LDAP_BACKUP: check also new backup path
+
+### Removed
+
+* IS_NRPEDISKS already deactivated fourteen years ago
+* IS_DISKPERF already deactivated six years ago
+
 ## [25.10.3] 2025-10-20
 
 ### Removed
