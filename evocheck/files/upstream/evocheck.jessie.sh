@@ -4,7 +4,7 @@
 # Script to verify compliance of a Linux (Debian 8 only) server
 # powered by Evolix
 
-VERSION="25.10.3"
+VERSION="26.05"
 readonly VERSION
 
 # base functions
@@ -1063,7 +1063,9 @@ get_version() {
             grep '^VERSION=' "${command}" | head -1 | cut -d '=' -f 2
             ;;
         minifirewall)
-            ${command} version | head -1 | cut -d ' ' -f 3
+            if ${command} version > /dev/null 2> /dev/null; then
+                ${command} version | head -1 | cut -d ' ' -f 3
+            fi
             ;;
         ## Let's try the --version flag before falling back to grep for the constant
         kvmstats)
