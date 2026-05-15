@@ -17,8 +17,12 @@ if [ -n "${NEEDRESTART_BIN}" ]; then
 
     if [ -n "${NEEDRESTART_OUT}" ]; then
         KSTA=$(echo "${NEEDRESTART_OUT}" | grep NEEDRESTART-KSTA | cut -d ' ' -f 2)
+
         KCUR=$(echo "${NEEDRESTART_OUT}" | grep NEEDRESTART-KCUR | cut -d ' ' -f 2)
+        KCUR_MAIN=$(echo "${KCUR}" | cut -d . -f1,2)
+
         KEXP=$(echo "${NEEDRESTART_OUT}" | grep NEEDRESTART-KEXP | cut -d ' ' -f 2)
+        KEXP_MAIN=$(echo "${KEXP}" | cut -d . -f1,2)
 
         # https://github.com/liske/needrestart/blob/master/README.batch.md
         # The kernel status (NEEDRESTART-KSTA) value has the following meaning:
@@ -27,12 +31,23 @@ if [ -n "${NEEDRESTART_BIN}" ]; then
         #     2: ABI compatible upgrade pending
         #     3: version upgrade pending
 
-        case ${KSTA} in
-            0) printf "E: needrestart: failed to detect kernel version\n" ;;
-            1) : ;;
-            2) printf "W: needrestart: new kernel %s → %s (ABI compatible)\n"  "${KCUR}" "${KEXP}" ;;
-            3) printf "W: needrestart: new kernel %s → %s (version upgrade)\n" "${KCUR}" "${KEXP}" ;;
-            *) printf "E: needrestart: unknown kernel status (%s)\n"           "${KSTA}" ;;
+        case "${KSTA}" in
+            0)
+                printf "E: needrestart: failed to detect kernel version\n"
+                ;;
+            1)
+                :
+                ;;
+            2|3)
+                if [ "${KCUR_MAIN}" = "${KEXP_MAIN}" ]; then
+                    printf "W: needrestart: minor kernel change %s → %s\n" "${KCUR}" "${KEXP}"
+                else
+                    printf "W: needrestart: major kernel change %s → %s\n" "${KCUR}" "${KEXP}"
+                fi
+                ;;
+            *)
+                printf "E: needrestart: unknown kernel status (%s)\n" "${KSTA}"
+                ;;
         esac
     fi
 fi

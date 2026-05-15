@@ -27,6 +27,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * apt/list-upgradable-held-packages.sh: use from address from evomaintenance.cfg
 * evocheck: upstream release 26.05
+* evolinux-base/molly-guard: tell if the kernel change is major or minor
 
 ## [26.05] 2026-05-12
 
