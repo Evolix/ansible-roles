@@ -28,18 +28,21 @@
     dest: /var/www/index.html
     line: '            <li><a href="/info.php">Infos PHP</a></li>'
     regexp: "Infos PHP"
+  when: packweb_multiphp_versions | length < 1
 
 - name: install opcache.php
   ansible.builtin.copy:
     src: opcache.php
     dest: /var/www/opcache.php
     mode: "0644"
+  when: packweb_multiphp_versions | length < 1
 
 - name: enable opcache.php link in default site index
   ansible.builtin.lineinfile:
     dest: /var/www/index.html
     line: '            <li><a href="/opcache.php">Infos OpCache PHP</a></li>'
     regexp: "Infos OpCache PHP"
+  when: packweb_multiphp_versions | length < 1
 
 - name: Add elements to user account template
   ansible.builtin.file:
@@ -80,8 +83,10 @@
 - ansible.builtin.import_tasks: apache.yml
 
 - ansible.builtin.import_tasks: phpmyadmin.yml
+  when: packweb_multiphp_versions | length < 1
 
 - ansible.builtin.import_tasks: awstats.yml
+  when: packweb_multiphp_versions | length < 1
 
 - ansible.builtin.import_tasks: fhs_retrictions.yml
   when: packweb_fhs_retrictions | bool
