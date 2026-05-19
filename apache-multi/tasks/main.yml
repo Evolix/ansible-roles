@@ -48,6 +48,18 @@
   tags:
     - "apache"
 
+- name: "Cleanup /etc/apache2/sites-{enabled,available}/ content"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    follow: false
+    state: "absent"
+  loop:
+    - "/etc/apache2-template/sites-enabled/000-default.conf"
+    - "/etc/apache2-template/sites-available/000-default.conf"
+    - "/etc/apache2-template/sites-available/default-ssl.conf"
+  tags:
+    - "apache"
+
 - name: "Disable unused configs for templated instances"
   ansible.builtin.file:
     path: "{{ apache_multi_template_dir }}/conf-enabled/{{ config }}"
@@ -97,7 +109,7 @@
 
 - name: "Enable common modules in instance template"
   ansible.builtin.command:
-    cmd: "a2enmod-template rewrite expires headers cgi remoteip"
+    cmd: "a2enmod-template rewrite expires headers cgi remoteip proxy_fcgi"
   register: "cmd_a2enmod_template"
   changed_when: "'Enabling module' in cmd_a2enmod_template.stdout"
   tags:
