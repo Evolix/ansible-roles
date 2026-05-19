@@ -31,6 +31,7 @@ Usage: ${PROGNAME} VHOST
     VHOST must correspond to an Apache or Nginx enabled VHost
     If VHOST ends with ".conf" it is stripped,
     then files are seached at those paths:
+    - /etc/apache2-front/sites-enables/VHOST.conf
     - /etc/apache2/sites-enables/VHOST.conf
     - /etc/nginx/sites-enabled/VHOST.conf
     - /etc/nginx/sites-enabled/VHOST

@@ -58,7 +58,13 @@ error() {
 
 sed_key_cert_path_for_apache() {
     local vhost=$1
-    local vhost_full_path="/etc/apache2/ssl/${vhost}.conf"
+
+    if [ -d "/etc/apache2-front/" ]; then
+        local apache_instance="-front"
+    else
+        local apache_instance=""
+    fi
+    local vhost_full_path="/etc/apache2${apache_instance}/ssl/${vhost}.conf"
 
     [ ! -r "${vhost_full_path}" ] && return 0
 
@@ -89,8 +95,8 @@ sed_key_cert_path_for_apache() {
     fi
 
     if [ "${cert_updated}" -eq 1 ] || [ "${key_updated}" -eq 1 ]; then
-        $(command -v apache2ctl) -t 2>/dev/null
-        [ "${?}" -eq 0 ] || $(command -v apache2ctl) -t
+        $(command -v "apache2ctl${apache_instance}") -t 2>/dev/null
+        [ "${?}" -eq 0 ] || $(command -v "apache2ctl${apache_instance}") -t
     fi
 }
 
