@@ -32,6 +32,7 @@
       - php5-curl
       - php5-ssh2
       - libphp-phpmailer
+    update_cache: yes
     state: present
 
 - name: "Install mod_php packages (Debian 8)"
