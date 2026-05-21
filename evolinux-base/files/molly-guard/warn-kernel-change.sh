@@ -1,10 +1,14 @@
 #!/bin/sh
 
+
 # If not interactive, exit immediately if any untested command fails
-set -o errexit
+# Disabled, it break "command -v" and we don't do anything critical here
+# set -o errexit
+
 # If expansion is attempted on an unset variable or parameter, the shell prints an
 # error message, and, if not interactive, exits with a non-zero status.
 set -o nounset
+
 # Enable trace mode if called with environment variable TRACE=1
 if [ "${TRACE-0}" -eq "1" ]; then
     set -o xtrace

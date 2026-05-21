@@ -4,6 +4,7 @@
   ansible.builtin.apt:
     name:
       - molly-guard
+      - needrestart
     state: present
 
 - name: Molly-guard warn-kernel-change is present
