@@ -1,0 +1,16 @@
+---
+
+- name: "Set variables (Debian 13)"
+  ansible.builtin.set_fact:
+    postgresql_version: '17'
+  when: postgresql_version is none or postgresql_version | length == 0
+
+- ansible.builtin.import_tasks: pgdg-repo.yml
+  when: postgresql_version != '17'
+
+- name: Install postgresql package
+  ansible.builtin.apt:
+    name:
+      - "postgresql-{{ postgresql_version }}"
+      - pgtop
+      - libdbd-pg-perl

@@ -13,6 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* postgresql: add support for trixie
+
 ### Changed
 
 * openvpn: variable `client_email` renamed `openvpn_client_email`

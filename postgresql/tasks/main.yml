@@ -16,6 +16,9 @@
 - ansible.builtin.import_tasks: packages_bookworm.yml
   when: ansible_distribution_release == "bookworm"
 
+- ansible.builtin.import_tasks: packages_trixie.yml
+  when: ansible_distribution_release == "trixie"
+
 - ansible.builtin.import_tasks: config.yml
 
 - ansible.builtin.import_tasks: nrpe.yml
