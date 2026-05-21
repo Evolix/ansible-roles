@@ -210,7 +210,7 @@
   ansible.builtin.cron:
     name: "OpenVPN certificates expiration"
     special_time: monthly
-    job: '/usr/share/scripts/cert-expirations.sh | mail -E -s "PKI OpenVPN {{ ansible_hostname }} : recapitulatif expirations" {{ client_email }}'
+    job: '/usr/share/scripts/cert-expirations.sh | mail -E -s "PKI OpenVPN {{ ansible_hostname }} : recapitulatif expirations" {{ openvpn_client_email }}'
 
 - name: Generate the CA password
   ansible.builtin.set_fact:

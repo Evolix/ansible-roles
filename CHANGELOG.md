@@ -15,6 +15,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* openvpn: variable `client_email` renamed `openvpn_client_email`
+
 ### Fixed
 
 ### Removed

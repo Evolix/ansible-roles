@@ -1,0 +1,18 @@
+---
+argument_specs:
+  main:
+    short_description: "Install an OpenVPN server"
+    options:
+      openvpn_client_email:
+        type: "str"
+        required: true
+        description:
+          - "The email receiving expiration notifications."
+          - "Example: \"client's@example.com\""
+
+      openvpn_administrator:
+        type: "str"
+        required: true
+        description:
+          - "The email used to set the \"reply-to\" variable for the certificate expiration summary email."
+          - "Example: \"john.doe@example.com\""
