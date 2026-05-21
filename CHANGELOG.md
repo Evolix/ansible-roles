@@ -19,6 +19,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* openvpn: make minifirewall configuration idempotent
+
 ### Removed
 
 ### Security

@@ -119,13 +119,23 @@
     jump: MASQUERADE
   when: minifirewall_config.stat.exists
 
-- name: Add 1194/udp OpenVPN port to public services in minifirewall
+- name: "Verfiy if 1194/udp isn't already a public port"
+  ansible.builtin.lineinfile:
+    path: "/etc/default/minifirewall"
+    regexp: "^SERVICESUDP1=.*1194.*"
+    state: absent
+  check_mode: true
+  register: _port_upd_1194_public
+
+- name: "Add 1194/udp OpenVPN port to public services in minifirewall"
   ansible.builtin.replace:
     dest: "/etc/default/minifirewall"
     regexp: "^SERVICESUDP1='(.*)?'$"
     replace: "SERVICESUDP1='\\1 1194'"
     backup: yes
-  when: minifirewall_config.stat.exists
+  when:
+    - minifirewall_config.stat.exists
+    - not _port_upd_1194_public.changed
 
 - name: Activate minifirewall rule for IPv4
   ansible.builtin.iptables:
