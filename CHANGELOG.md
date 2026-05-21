@@ -13,11 +13,13 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
-* evolinux-base: add molly-guard to common packages
+* evolinux-base: add needrestart to common packages
 
 ### Changed
 
 ### Fixed
+
+* evolinux-base/molly-guard: don't exit on error
 
 ### Removed
 
