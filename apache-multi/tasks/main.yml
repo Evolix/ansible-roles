@@ -276,6 +276,14 @@
   tags:
     - "apache"
 
+- name: "apache2@front is enabled and started"
+  ansible.builtin.service:
+    name: "apache2@front"
+    enabled: yes
+    state: "started"
+  tags:
+    - "apache"
+
 ################
 ## Status page
 #################
