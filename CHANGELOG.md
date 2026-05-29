@@ -15,6 +15,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* openvpn: variable `client_email` renamed `openvpn_client_email`
 * nagios-nrpe: correct dockerd check command and check
 * generateldif: add dockerd entry
 * evolinux-users: add sudoer rule for nagisos dockerd check
