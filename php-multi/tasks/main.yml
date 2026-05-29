@@ -48,15 +48,6 @@
       - "catatonit"
       - "aardvark-dns"
 
-  # To slience warning from podman
-- name: "Create /etc/containers/nodocker"
-  ansible.builtin.file:
-    path: "/etc/containers/nodocker"
-    state: "touch"
-    mode: "644"
-    modification_time: "preserve"
-    access_time: "preserve"
-
 - name: "Create /etc/evolinux/containers/php{{ php_multi_version }}/"
   ansible.builtin.file:
     path: "/etc/evolinux/containers/php{{ php_multi_version }}/"
