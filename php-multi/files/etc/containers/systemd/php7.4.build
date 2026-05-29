@@ -1,3 +1,4 @@
 [Build]
 ImageTag=localhost/php7.4
 File=/etc/evolinux/containers/php7.4/Containerfile
+SetWorkingDirectory=/var/lib/evolinux/containers/
