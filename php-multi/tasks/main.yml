@@ -48,6 +48,12 @@
       - "catatonit"
       - "aardvark-dns"
 
+- name: "Create /var/evolinux/containers/"
+  ansible.builtin.file:
+    path: "/var/evolinux/containers/"
+    state: "directory"
+    mode: "755"
+
 - name: "Create /etc/evolinux/containers/php{{ php_multi_version }}/"
   ansible.builtin.file:
     path: "/etc/evolinux/containers/php{{ php_multi_version }}/"
