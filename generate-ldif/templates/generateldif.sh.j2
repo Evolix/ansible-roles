@@ -588,6 +588,22 @@ ServiceVersion: Clamd ${clamav_version}
 EOT
 fi
 
+# Dockerd
+if is_pkg_installed docker-ce; then
+	docker_version=$(get_pkg_version docker-ce)
+fi
+if [ -n "${docker_version}" ]; then
+    cat <<EOT >> "${ldif_file}"
+
+dn: ServiceName=dockerd,${computer_dn}
+objectClass: EvoService
+NagiosEnabled: TRUE
+ServiceName: dockerd
+ServiceType: docker
+ServiceVersion: Docker ${docker_version}
+EOT
+fi
+
 # Elasticsearch
 if is_pkg_installed elasticsearch; then
     elasticsearch_version=$(get_pkg_version elasticsearch)

@@ -24,6 +24,30 @@
     path: /usr/sbin/apachectl
   register: is_apache
 
+- name: "Check if apache multi is in use"
+  ansible.builtin.stat:
+    path: "/etc/apache2-front/"
+  register: "certbot_apache2_front"
+
+- name: "ACME challenge for Apache multi"
+  block:
+    - name: "ACME challenge for Apache multi is installed"
+      ansible.builtin.template:
+        src: "acme-challenge/apache.conf.j2"
+        dest: "/etc/apache2-front/conf-available/letsencrypt.conf"
+        force: true
+      notify: "reload apache2@front"
+
+    - name: "ACME challenge for Apache multi is enabled"
+      ansible.builtin.command:
+        cmd: "a2enconf-front letsencrypt"
+      register: command_result
+      changed_when: "'Enabling' in command_result.stderr"
+      notify: "reload apache2@front"
+  when:
+    - "is_apache.stat.exists"
+    - "certbot_apache2_front.stat.exists"
+
 - name: ACME challenge for Apache
   block:
     - name: ACME challenge for Apache is installed
@@ -39,7 +63,9 @@
       register: command_result
       changed_when: "'Enabling' in command_result.stderr"
       notify: reload apache
-  when: is_apache.stat.exists
+  when:
+    - is_apache.stat.exists
+    - "not certbot_apache2_front.stat.exists"
 
 - name: Check if HAProxy is installed
   ansible.builtin.stat:

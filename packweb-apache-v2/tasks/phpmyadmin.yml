@@ -1,0 +1,118 @@
+---
+
+# On Debian 10, we need to install the package from buster-backports
+- name: Enable backports (Debian 10)
+  ansible.builtin.include_role:
+    name: evolix/apt
+    tasks_from: backports.yml
+  when: ansible_distribution_major_version is version('10', '=')
+
+- name: Debconf settings for phpMyAdmin
+  ansible.builtin.debconf:
+    name: phpMyAdmin
+    question: "{{ item.key }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.type }}"
+  loop:
+    - { key: 'phpmyadmin/dbconfig-install', type: 'boolean', value: 'true' }
+    - { key: 'phpmyadmin/dbconfig-upgrade', type: 'boolean', value: 'true' }
+    - { key: 'phpmyadmin/reconfigure-webserver', type: 'string', value: 'apache2' }
+
+- name: Install phpmyadmin
+  ansible.builtin.apt:
+    name: phpmyadmin
+    update_cache: yes
+  when: ansible_distribution_major_version is not version('10', '=')
+
+- name: Prefer phpMyAdmin package from backports (Debian 10)
+  ansible.builtin.apt:
+    name:
+      - phpmyadmin
+      - php-twig
+    default_release: buster-backports
+    update_cache: yes
+  when: ansible_distribution_major_version is version('10', '=')
+
+- name: Check if phpmyadmin default configuration is present
+  ansible.builtin.stat:
+    path: /etc/apache2-front/conf-available/phpmyadmin.conf
+  register: pma_default_config
+
+- ansible.builtin.debug:
+    var: pma_default_config
+    verbosity: 1
+
+- name: Disable phpmyadmin default configuration
+  ansible.builtin.command:
+    cmd: "a2disconf-front phpmyadmin"
+  register: command_result
+  changed_when: "'Disabling' in command_result.stderr"
+  when: pma_default_config.stat.exists
+
+- name: Remove phpmyadmin default configuration
+  ansible.builtin.file:
+    path: /etc/apache2-front/conf-available/phpmyadmin.conf
+    state: absent
+  when: pma_default_config.stat.exists
+
+- name: "phpmyadmin suffix dirname '{{ packweb_apache_v2_phpmyadmin_suffix_file | dirname }}' exists"
+  ansible.builtin.file:
+    dest: "{{ packweb_apache_v2_phpmyadmin_suffix_file | dirname }}"
+    mode: "0700"
+    owner: root
+    group: root
+    state: directory
+
+- name: set phpmyadmin suffix if provided
+  ansible.builtin.copy:
+    dest: "{{ packweb_apache_v2_phpmyadmin_suffix_file }}"
+    # The last character "\u000A" is a line feed (LF), it's better to keep it
+    content: "{{ packweb_apache_v2_phpmyadmin_suffix }}\u000A"
+    force: true
+  when: packweb_apache_v2_phpmyadmin_suffix | length > 0
+
+- name: generate random string for phpmyadmin suffix
+  ansible.builtin.shell:
+    cmd: "apg -a 1 -M N -n 1 > {{ packweb_apache_v2_phpmyadmin_suffix_file }}"
+  args:
+    creates: "{{ packweb_apache_v2_phpmyadmin_suffix_file }}"
+
+- name: read phpmyadmin suffix
+  ansible.builtin.command:
+    cmd: "tail -n 1 {{ packweb_apache_v2_phpmyadmin_suffix_file }}"
+  changed_when: False
+  check_mode: no
+  register: new_packweb_apache_v2_phpmyadmin_suffix
+
+- name: overwrite packweb_apache_v2_phpmyadmin_suffix
+  ansible.builtin.set_fact:
+    packweb_apache_v2_phpmyadmin_suffix: "{{ new_packweb_apache_v2_phpmyadmin_suffix.stdout }}"
+
+- ansible.builtin.debug:
+    var: packweb_apache_v2_phpmyadmin_suffix
+    verbosity: 1
+
+- name: enable phpMyAdmin config
+  ansible.builtin.blockinfile:
+    dest: /etc/apache2-front/sites-available/000-evolinux-default.conf
+    marker: "# {mark} phpMyAdmin section"
+    block: |
+      Alias /phpmyadmin /var/www
+      Alias /phpmyadmin-{{ packweb_apache_v2_phpmyadmin_suffix }} /usr/share/phpmyadmin/
+      Include /etc/phpmyadmin/apache.conf
+      <Directory /usr/share/phpmyadmin/>
+          Require all denied
+          Include /etc/apache2-front/ipaddr_whitelist.conf
+      </Directory>
+
+- name: enable phpmyadmin link in default site index
+  ansible.builtin.replace:
+    dest: /var/www/index.html
+    regexp:  '<!-- <li><a href="/phpmyadmin-__PHPMYADMIN_SUFFIX__/">Accès PhpMyAdmin</a></li> -->'
+    replace: '     <li><a href="/phpmyadmin-__PHPMYADMIN_SUFFIX__/">Accès PhpMyAdmin</a></li>'
+
+- name: replace phpmyadmin suffix in default site index
+  ansible.builtin.replace:
+    dest: /var/www/index.html
+    regexp: '__PHPMYADMIN_SUFFIX__'
+    replace: "{{ packweb_apache_v2_phpmyadmin_suffix }}"

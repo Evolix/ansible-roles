@@ -1,1 +1,1 @@
-FROM gitea.evolix.org/evolix/evodocker/php7.0
+FROM gitea.evolix.org/evolix/evodocker/php/7.0

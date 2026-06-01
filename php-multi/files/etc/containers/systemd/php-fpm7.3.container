@@ -12,6 +12,8 @@ Timezone=local
 Entrypoint=/usr/sbin/php-fpm7.3
 Exec=--nodaemonize --fpm-config /etc/php/7.3/fpm/php-fpm.conf
 
+Network=host
+
 ## Users
 Mount=type=bind,source=/home,destination=/home
 Mount=type=bind,source=/etc/passwd,destination=/etc/passwd,readonly=true

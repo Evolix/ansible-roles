@@ -1,0 +1,21 @@
+---
+argument_specs:
+  main:
+    short_description: "Install a PHP service using Podman's Quadlet"
+    decription:
+      - "Generate a certificate for the target machine, with a Common Name based on its 'ansible_fqdn'."
+      - "If the defined PKI doesn't exit yet it will be created, otherwise it will be reused."
+    options:
+      php_multi_version:
+        type: "str"
+        required: true
+        description:
+          - "The version of PHP to install."
+          - "Example: \"8.4\""
+
+      php_multi_disable_compatibility_check:
+        type: "bool"
+        default: False
+        description:
+          - "Whether to manually bypass the compatibility check."
+          - "To be used when you really need to apply it on an old Debian."

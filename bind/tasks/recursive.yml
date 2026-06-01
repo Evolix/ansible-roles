@@ -1,6 +1,5 @@
 ---
 
-
 - name: Set bind configuration for recursive server
   ansible.builtin.template:
     src: named.conf.options_recursive.j2
@@ -10,6 +9,18 @@
     mode: "0644"
     force: true
   notify: restart bind
+
+# This file has been removed from the package bind9 since trixie
+# https://lists.isc.org/pipermail/bind-users/2025-January/109424.html
+- name: "Create /etc/bind/zones.rfc1918 (since Trixie)"
+  ansible.builtin.copy:
+    src: "zones.rfc1918"
+    dest: "/etc/bind/zones.rfc1918"
+    mode: "0644"
+    owner: "root"
+    force: true
+  when:
+    - "ansible_distribution_major_version is version('13', '>=')"
 
 - name: enable zones.rfc1918 for recursive server
   ansible.builtin.lineinfile:

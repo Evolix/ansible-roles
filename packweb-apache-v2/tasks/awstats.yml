@@ -1,0 +1,58 @@
+---
+- name: Install awstats
+  ansible.builtin.apt:
+    name: awstats
+    state: present
+
+- name: Configure awstats
+  ansible.builtin.blockinfile:
+    dest: /etc/awstats/awstats.conf.local
+    marker: "## {mark} ANSIBLE MANAGED BLOCK FOR PACKWEB"
+    block: |
+      LogFile="/var/log/apache2-front/access.log"
+      SiteDomain="{{ ansible_hostname }}"
+      DirData="/var/lib/awstats"
+      ShowHostsStats=0
+      ShowOriginStats=0
+      ShowPagesStats=0
+      ShowKeyphrasesStats=0
+      ShowKeywordsStats=0
+      ShowHTTPErrorsStats=0
+      LogFormat=1
+      AllowFullYearView=3
+      DNSLookup=0
+      ErrorMessages="An error occured. Contact your Administrator"
+    mode: "0644"
+
+- name: Create conf-available/awstats-icon.conf file
+  ansible.builtin.copy:
+    dest: /etc/apache2-front/conf-available/awstats-icon.conf
+    content: |
+      Alias /awstats-icon/ /usr/share/awstats/icon/
+      <Directory /usr/share/awstats/icon/>
+        Require all granted
+      </Directory>
+    force: false
+    mode: "0644"
+
+- name: Enable apache awstats-icon configuration
+  ansible.builtin.command:
+    cmd: "a2enconf awstats-icon"
+  register: command_result
+  changed_when: "'Enabling' in command_result.stderr"
+  notify: reload apache2@front
+
+- name: Create awstats cron
+  ansible.builtin.lineinfile:
+    dest: /etc/cron.d/awstats
+    create: yes
+    regexp: '-config=awstats'
+    line: "10 */6 * * * root umask 033; [ -x /usr/lib/cgi-bin/awstats.pl -a -f /etc/awstats/awstats.conf -a -r /var/log/apache2-front/access.log ] && /usr/lib/cgi-bin/awstats.pl -config=awstats -update >/dev/null"
+
+- name: Comment default awstat cron's tasks
+  ansible.builtin.lineinfile:
+    dest: /etc/cron.d/awstats
+    regexp: "(?i)^([^#]*update\\.sh.*)"
+    line: '#\1'
+    backrefs: yes
+    state: present

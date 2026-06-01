@@ -10,6 +10,11 @@
     name: apache2
     state: reloaded
 
+- name: "reload apache2@front"
+  ansible.builtin.systemd:
+    name: "apache2@front"
+    state: "reloaded"
+
 - name: reload haproxy
   ansible.builtin.systemd:
     name: haproxy
