@@ -10,7 +10,7 @@
 
 - name: HPE GPG key is installed
   ansible.builtin.copy:
-    src: hpePublicKey2048_key1.asc
+    src: hpe.asc
     dest: "{{ apt_keyring_dir }}/hpe.asc"
     force: true
     mode: "0644"
@@ -21,7 +21,7 @@
 
 - name: Add HPE repository (Debian <12)
   ansible.builtin.apt_repository:
-    repo: 'deb [signed-by={{ apt_keyring_dir }}/hpePublicKey2048_key1.asc] https://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_distribution_release }}/current non-free'
+    repo: 'deb [signed-by={{ apt_keyring_dir }}/hpe.asc] https://downloads.linux.hpe.com/SDR/repo/mcp {{ ansible_distribution_release }}/current non-free'
     state: present
   tags:
     - packages
