@@ -16,6 +16,8 @@
       - ca-certificates
       - rename
       - dmidecode
+      - pciutils
+      - cron
   when: evolinux_packages_system | bool
 
 - name: Install/Update ntp tools (Debian <10)
