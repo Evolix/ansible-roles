@@ -18,6 +18,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * evolinux-base: install cron & pciutils
+* evolinux-base: needrestart DPKg hook is disabled
 * openvpn: variable `client_email` renamed `openvpn_client_email`
 * nagios-nrpe: correct dockerd check command and check
 * nagios-nrpe: add a task file used to only install a specified plugin

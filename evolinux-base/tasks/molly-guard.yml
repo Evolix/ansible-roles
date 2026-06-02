@@ -1,6 +1,6 @@
 ---
 
-- name: Molly-guard is installed
+- name: Molly-guard (and needrestart) is installed
   ansible.builtin.apt:
     name:
       - molly-guard
@@ -13,3 +13,9 @@
     dest: /etc/molly-guard/run.d/15-warn-kernel-change
     force: true
     mode: "0755"
+
+- name: Needrestart DPKg hook is disabled
+  ansible.builtin.replace:
+    path: /etc/apt/apt.conf.d/99needrestart
+    regexp: '^( *DPkg)'
+    replace: '#\1'
