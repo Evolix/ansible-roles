@@ -1,0 +1,26 @@
+---
+
+# call this task file this way to ensure a plugin is installed
+#- name: Ensure borg check is intstalled
+#  include_role:
+#    name: nagios-nrpe
+#    tasks_from: install-specific-plugin
+#  vars:
+#    plugin_name: "check_borg"
+
+- ansible.builtin.include_role:
+    name: evolix/remount-usr
+  when: nagios_plugins_directory is search("/usr")
+  tags:
+    - nagios-nrpe
+    - nagios-plugins
+
+- name: Nagios plugin {{ plugin_name }} are installed
+  ansible.builtin.copy:
+    src: plugins/{{ plugin_name }}
+    dest: "{{ nagios_plugins_directory }}/"
+    mode: "0755"
+  notify: restart nagios-nrpe-server
+  tags:
+  - nagios-nrpe
+  - nagios-plugins
