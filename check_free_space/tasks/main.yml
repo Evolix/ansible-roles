@@ -27,8 +27,18 @@
     group: root
     mode: "0644"
     force: check_free_space_cron_force | bool
-    state: check_free_space_cron_enabled | bool | ternary('present', 'absent')
-  when: check_free_space_manage_cron | bool
+  when:
+    - check_free_space_manage_cron | bool
+    - check_free_space_cron_enabled | bool
+
+- name: check_free_space.sh is NOT run by cron
+  ansible.builtin.file:
+    dest: /etc/cron.d/check_free_space
+    state: absent
+  when:
+    - check_free_space_manage_cron | bool
+    - not (check_free_space_cron_enabled | bool)
+
 
 - name: Duc and Mutt are installed
   ansible.builtin.apt:

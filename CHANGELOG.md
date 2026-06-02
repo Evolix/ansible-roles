@@ -28,6 +28,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Fixed
 
 * evolinux-base: Use correct filename for HPE GPG key
+* check_free_space: fix conditions
 * openvpn: make minifirewall configuration idempotent
 
 ### Removed
