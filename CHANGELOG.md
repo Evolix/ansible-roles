@@ -13,6 +13,18 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [26.06] 2026-06-03
+
+### Added
+
 * postgresql: add support for trixie
 
 ### Changed
@@ -30,10 +42,6 @@ The **patch** part is incremented if multiple releases happen the same month
 * check_free_space: fix conditions
 * evolinux-base: Use correct filename for HPE GPG key
 * openvpn: make minifirewall configuration idempotent
-
-### Removed
-
-### Security
 
 ## [26.05.2] 2026-05-21
 
