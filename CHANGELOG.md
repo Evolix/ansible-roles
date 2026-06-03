@@ -17,11 +17,31 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
-* evolinux-base: Use correct filename for HPE GPG key
-
 ### Removed
 
 ### Security
+
+## [26.06] 2026-06-03
+
+### Added
+
+* postgresql: add support for trixie
+
+### Changed
+
+* evolinux-base: install cron & pciutils
+* evolinux-base: needrestart DPKg hook is disabled
+* evolinux-users: add sudoer rule for nagisos dockerd check
+* generateldif: add dockerd entry
+* nagios-nrpe: add a task file used to only install a specified plugin
+* nagios-nrpe: correct dockerd check command and check
+* openvpn: variable `client_email` renamed `openvpn_client_email`
+
+### Fixed
+
+* check_free_space: fix conditions
+* evolinux-base: Use correct filename for HPE GPG key
+* openvpn: make minifirewall configuration idempotent
 
 ## [26.05.2] 2026-05-21
 
@@ -76,6 +96,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * redis: fix service template for Debian 12/13
 * tomcat: show critical instances before overview
 * webapps/evoadmin-web: clone repository from new forge gitea.evolix.org
+* evoacme: upstream release 26.05
 
 ### Fixed
 
@@ -128,6 +149,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * redis: update apt cache before install
 * evolinux-base: keep journald logs for 7 days
 * nagios-nrpe: add check_docker
+* packweb-apache-v2: new role
 
 ### Changed
 
@@ -173,6 +195,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * squid : since ELTS release, fix config for Debian 10
 * userlorotate: fix comment string of option RETENTION_DAYS
 * vrrpd: adapt to the new way of restarting minifirewall
+* bind: create /etc/bind/zones.rfc1918 for Trixie and later versions
 
 ### Removed
 

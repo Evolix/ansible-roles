@@ -35,39 +35,6 @@
     state: "directory"
     mode: "755"
 
-- name: "Add php-multi sudoers file"
-  ansible.builtin.copy:
-    src: "etc/sudoers.d/php-multi"
-    dest: "/etc/sudoers.d/php-multi"
-    mode: "0600"
-    validate: "visudo -cf %s"
-
-- ansible.builtin.include_role:
-    name: "remount-usr"
-
-- name: "/usr/local/bin/phpContainer"
-  ansible.builtin.copy:
-    src: "usr/local/bin/phpContainer"
-    dest: "/usr/local/bin/phpContainer"
-    mode: "preserve"
-
-
-############
-## Skeleton
-############
-
-- name: "Create /etc/skel/.local/bin"
-  ansible.builtin.file:
-    path: "/etc/skel/.local/bin"
-    state: "directory"
-    mode: "755"
-
-- name: "Create /etc/skel/.local/bin/php"
-  ansible.builtin.file:
-    src: "/usr/local/bin/phpContainer"
-    dest: "/etc/skel/.local/bin/php"
-    state: "link"
-
 ############
 ## Podman
 ############
@@ -76,20 +43,16 @@
   ansible.builtin.apt:
     name:
       - "podman"
-      - "podman-docker"
       - "podman-compose"
       - "passt"
       - "catatonit"
       - "aardvark-dns"
 
-  # To slience warning from podman
-- name: "Create /etc/containers/nodocker"
+- name: "Create /var/evolinux/containers/"
   ansible.builtin.file:
-    path: "/etc/containers/nodocker"
-    state: "touch"
-    mode: "644"
-    modification_time: "preserve"
-    access_time: "preserve"
+    path: "/var/evolinux/containers/"
+    state: "directory"
+    mode: "755"
 
 - name: "Create /etc/evolinux/containers/php{{ php_multi_version }}/"
   ansible.builtin.file:

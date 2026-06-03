@@ -34,15 +34,6 @@
     - munin
 
 - name: "munin | Enable libapache2-mod-fcgid"
-  community.general.apache2_module:
-    name: "fcgid"
-    state: "present"
-  notify: "Reload apache front vhost"
-  tags:
-    - apache
-    - munin
-
-- name: "munin | Enable libapache2-mod-fcgid"
   ansible.builtin.file:
     path: "{{ apache_multi_front_dir }}/mods-enabled/{{ module_file }}"
     src: "{{ apache_multi_front_dir }}/mods-available/{{ module_file }}"

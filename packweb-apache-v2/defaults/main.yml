@@ -1,0 +1,22 @@
+---
+# defaults file for packweb_apache_v2
+general_alert_email: "root@localhost"
+
+packweb_apache_v2_enable_evoadmin_vhost: True
+packweb_apache_v2_fhs_retrictions: True
+packweb_apache_v2_apache_modphp: True
+packweb_apache_v2_apache_fpm: False
+
+packweb_apache_v2_phpmyadmin_suffix: ""
+packweb_apache_v2_phpmyadmin_suffix_file: "/etc/evolinux/phpmyadmin_suffix"
+
+packweb_apache_v2_mysql_variant: "debian"
+
+packweb_apache_v2_php_versions:
+  - "7.0"
+  - "7.3"
+  - "7.4"
+  - "8.2"
+  - "8.4"
+
+packweb_apache_v2_disable_compatibility_check: False

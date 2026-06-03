@@ -13,5 +13,5 @@ $localconf['logins'] = array();
 //$localconf['logins']['bar'] = '$6$Q6233S6mlWAF6p.j$LtzwG02YucozwqjAgSpeldh24Mnz7lBuVSbOQYbKKh9FiUx3tMVl6kJZkmrNdPqeadFXKAYXrqn.gy8KposF5.';
 
 {% if evoadmin_multiphp_versions != [] %}
-$localconf['php_versions'] = array( {{ evoadmin_multiphp_versions | join(', ') | replace('php', '') }} );
+$localconf['php_versions'] = array( {{ evoadmin_multiphp_versions | join(', ') | replace('php', '') | replace('.', '') }} );
 {% endif %}

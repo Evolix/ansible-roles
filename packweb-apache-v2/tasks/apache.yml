@@ -1,0 +1,60 @@
+---
+
+- name: Check if Apache envvars have a PATH
+  ansible.builtin.command:
+    cmd: "grep -E '^export PATH ' /etc/apache2-template/envvars"
+  failed_when: False
+  changed_when: False
+  register: envvar_grep_path
+  check_mode: no
+
+- name: Add a PATH envvar for Apache
+  ansible.builtin.blockinfile:
+    dest: /etc/apache2-template/envvars
+    marker: "## {mark} ANSIBLE MANAGED BLOCK FOR PATH"
+    block: |
+      # Used for Evoadmin-web
+      export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  when: envvar_grep_path.rc != 0
+
+- name: Additional packages are installed
+  ansible.builtin.apt:
+    name:
+      - libapache2-mod-security2
+      - modsecurity-crs
+      - apg
+    state: present
+
+- name: Additional modules are enabled
+  ansible.builtin.command:
+    cmd: "/usr/local/sbin/a2enmod-template {{ item }}"
+  loop:
+    - ssl
+    - include
+    - negotiation
+    - alias
+    - log_forensic
+    - remoteip
+  notify: restart apache2@front
+
+- name: Copy Apache settings for modules
+  ansible.builtin.copy:
+    src: "etc/apache2-template/conf-available/evolinux-modsec.conf"
+    dest: "/etc/apache2-template/conf-available/evolinux-modsec.conf"
+    owner: root
+    group: root
+    mode: "0644"
+    force: false
+
+- name: Ensure Apache modules configs are enabled
+  ansible.builtin.command:
+    cmd: "/usr/local/sbin/a2enconf-template {{ item }}"
+  register: command_result
+  changed_when: "'Enabling' in command_result.stderr"
+  loop:
+    - evolinux-modsec
+
+- name: Enable proxy_fcgi
+  ansible.builtin.command:
+    cmd: "/usr/local/sbin/a2enmod-front proxy_fcgi"
+  notify: restart apache2@front

@@ -1,0 +1,45 @@
+---
+
+- ansible.builtin.include_role:
+    name: evolix/apache-multi
+
+- ansible.builtin.include_role:
+    name: evolix/php
+  vars:
+    php_apache_enable: True
+  when: packweb_apache_v2_apache_modphp
+
+- ansible.builtin.include_role:
+    name: evolix/php
+  vars:
+    php_fpm_enable: True
+  when: packweb_apache_v2_apache_fpm
+
+- ansible.builtin.include_role:
+    name: evolix/squid
+  vars:
+    squid_localproxy_enable: True
+
+- ansible.builtin.include_role:
+    name: evolix/mysql
+  when: packweb_apache_v2_mysql_variant == "debian"
+
+- ansible.builtin.include_role:
+    name: evolix/mysql-oracle
+  when: packweb_apache_v2_mysql_variant == "oracle"
+
+- ansible.builtin.include_role:
+    name: evolix/php-multi
+  vars:
+    php_multi_version: "{{ item }}"
+  loop: "{{ packweb_apache_v2_php_versions }}"
+
+- ansible.builtin.include_role:
+    name: evolix/webapps/evoadmin-web
+  vars:
+    evoadmin_multiinstance: True
+    evoadmin_enable_vhost: "{{ packweb_apache_v2_enable_evoadmin_vhost }}"
+    evoadmin_multiphp_versions: "{{ packweb_apache_v2_php_versions }}"
+
+- ansible.builtin.include_role:
+    name: evolix/evoacme

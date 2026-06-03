@@ -31,21 +31,9 @@
   tags:
     - "apache"
 
-- name: "Remove /etc/apache2/sites-enabled directory"
-  ansible.builtin.file:
-    path: "/etc/apache2/sites-enabled"
-    follow: false
-    state: "absent"
-  tags:
-    - "apache"
-
-- name: "Remove /etc/apache2/sites-available directory"
-  ansible.builtin.file:
-    path: "/etc/apache2/sites-available"
-    follow: false
-    state: "absent"
-  tags:
-    - "apache"
+############################
+## /etc/apache2-template/
+############################
 
 - name: "Create template directory"
   ansible.builtin.copy:
@@ -60,23 +48,15 @@
   tags:
     - "apache"
 
-- name: "Create /etc/apache2-template/sites-enabled directory"
+- name: "Cleanup /etc/apache2/sites-{enabled,available}/ content"
   ansible.builtin.file:
-    path: "/etc/apache2-template/sites-enabled"
-    state: "directory"
-    owner: "root"
-    group: "root"
-    mode: "0755"
-  tags:
-    - "apache"
-
-- name: "Create /etc/apache2-template/sites-available directory"
-  ansible.builtin.file:
-    path: "/etc/apache2-template/sites-available"
-    state: "directory"
-    owner: "root"
-    group: "root"
-    mode: "0755"
+    path: "{{ item }}"
+    follow: false
+    state: "absent"
+  loop:
+    - "/etc/apache2-template/sites-enabled/000-default.conf"
+    - "/etc/apache2-template/sites-available/000-default.conf"
+    - "/etc/apache2-template/sites-available/default-ssl.conf"
   tags:
     - "apache"
 
@@ -129,57 +109,49 @@
 
 - name: "Enable common modules in instance template"
   ansible.builtin.command:
-    cmd: "a2enmod-template rewrite headers"
+    cmd: "a2enmod-template rewrite expires headers cgi remoteip proxy_fcgi"
   register: "cmd_a2enmod_template"
   changed_when: "'Enabling module' in cmd_a2enmod_template.stdout"
   tags:
     - "apache"
 
-- name: "Copy Apache defaults config file"
+- name: "Disable unused confs in vhost template"
+  ansible.builtin.command:
+    cmd: "a2disconf-template serve-cgi-bin"
+  register: "cmd_a2disconf_template"
+  changed_when: "'To activate the new configuration, you need to run' in cmd_a2disconf_template.stdout"
+  tags:
+    - "apache"
+
+- name: "Copy Apache config files"
   ansible.builtin.copy:
-    src: "evolinux-defaults.conf"
-    dest: "{{ apache_multi_template_dir }}/conf-available/z-evolinux-defaults.conf"
+    src: "{{ item }}"
+    dest: "{{ apache_multi_template_dir }}/conf-available/{{ item }}"
     owner: "root"
     group: "root"
     mode: "0640"
     force: true
+  loop:
+    - "z-evolinux-defaults.conf"
+    - "z-evolinux-badbots.conf"
+    - "zzz-evolinux-custom.conf"
   notify: "Reload apache front vhost"
   tags:
     - "apache"
 
-- name: "Enable defaults config file in template"
+- name: "Enable Apache config files"
   ansible.builtin.file:
-    path: "{{ apache_multi_template_dir }}/conf-enabled/z-evolinux-defaults.conf"
-    src: "{{ apache_multi_template_dir }}/conf-available/z-evolinux-defaults.conf"
+    path: "{{ apache_multi_template_dir }}/conf-enabled/{{ item }}"
+    src: "{{ apache_multi_template_dir }}/conf-available/{{ item }}"
     state: "link"
     follow: false
     force: true
     owner: "root"
     group: "root"
-  notify: "Reload apache front vhost"
-  tags:
-    - "apache"
-
-- name: "Copy bad bots config file"
-  ansible.builtin.copy:
-    src: "evolinux-badbots.conf"
-    dest: "{{ apache_multi_template_dir }}/conf-available/z-evolinux-badbots.conf"
-    owner: "root"
-    group: "root"
-    mode: "0640"
-    force: true
-  notify: "Reload apache front vhost"
-  tags:
-    - "apache"
-
-- name: "Copy Apache custom config file"
-  ansible.builtin.copy:
-    src: "evolinux-custom.conf"
-    dest: "{{ apache_multi_template_dir }}/conf-available/zzz-evolinux-custom.conf"
-    owner: "root"
-    group: "root"
-    mode: "0640"
-    force: false
+  loop:
+    - "z-evolinux-defaults.conf"
+    - "z-evolinux-badbots.conf"
+    - "zzz-evolinux-custom.conf"
   notify: "Reload apache front vhost"
   tags:
     - "apache"
@@ -219,78 +191,58 @@
   tags:
     - apache
 
-# Setup instance
-- name: "Create directory of front vhost"
+- name: "Create /usr/local/sbin/apache2-setup-instance"
   ansible.builtin.copy:
-    src: "{{ apache_multi_template_dir }}/"
-    dest: "{{ apache_multi_front_dir }}"
+    src: "/usr/share/doc/apache2/examples/setup-instance"
+    dest: "/usr/local/sbin/apache2-setup-instance"
     remote_src: true
-    mode: "preserve"
+    mode: "755"
     directory_mode: "preserve"
     follow: false
     local_follow: false
+    force: false
+  tags:
+    - "apache"
+
+- name: "Customize /usr/local/sbin/apache2-setup-instance"
+  ansible.builtin.replace:
+    dest: "/usr/local/sbin/apache2-setup-instance"
+    regexp: "/etc/apache2 "
+    replace: "/etc/apache2-template "
+  tags:
+    - "apache"
+
+###################
+## /etc/apache2/
+###################
+
+- name: "Remove /etc/apache2/sites-enabled directory"
+  ansible.builtin.file:
+    path: "/etc/apache2/sites-enabled"
+    follow: false
+    state: "absent"
+  tags:
+    - "apache"
+
+- name: "Remove /etc/apache2/sites-available directory"
+  ansible.builtin.file:
+    path: "/etc/apache2/sites-available"
+    follow: false
+    state: "absent"
+  tags:
+    - "apache"
+
+#########################
+## /etc/apache2-front/
+#########################
+
+- name: "Setup apache 'front' instance"
+  ansible.builtin.command:
+    cmd: "apache2-setup-instance {{ apache_multi_front_vhost_name }}"
+    creates: "{{ apache_multi_front_dir }}"
+  register: "cmd_setup_instance_front"
+  changed_when: "'Setting up /etc/default/apache-htcacheclean-' in cmd_setup_instance_front"
   notify: "Reload apache front vhost"
-  tags:
-    - "apache"
-
-- name: "Remount /usr read-write if needed (front vhost)"
-  ansible.builtin.include_role:
-    name: "evolix/remount-usr"
-    allow_duplicates: true
-  tags:
-    - "apache"
-
-- name: "Setup symlink for front vhost"
-  ansible.builtin.file:
-    path: "/usr/local/sbin/{{ exe }}-{{ apache_multi_front_vhost_name }}"
-    src: "/usr/sbin/{{ exe }}"
-    state: "link"
-    follow: false
-    force: true
-    owner: "root"
-    group: "root"
-  loop:
-    - "a2enmod"
-    - "a2dismod"
-    - "a2ensite"
-    - "a2dissite"
-    - "a2enconf"
-    - "a2disconf"
-    - "apache2ctl"
-  loop_control:
-    loop_var: "exe"
-  tags:
-    - "apache"
-
-- name: "Setup logrotate for front vhost"
-  ansible.builtin.template:
-    dest: "/etc/logrotate.d/apache2-{{ apache_multi_front_vhost_name }}"
-    src: "{{ apache_multi_logrotate_front_template }}"
-    owner: "root"
-    group: "root"
-    mode: "0644"
-  tags:
-    - "apache"
-
-- name: "Create log directory for front vhost"
-  ansible.builtin.file:
-    path: "/var/log/apache2-{{ apache_multi_front_vhost_name }}"
-    state: "directory"
-    owner: "root"
-    group: "adm"
-    mode: "0750"
-  tags:
-    - "apache"
-
-- name: "Create apache-htcacheclean for front vhost"
-  ansible.builtin.copy:
-    src: "/etc/default/apache-htcacheclean"
-    dest: "/etc/default/apache-htcacheclean-{{ apache_multi_front_vhost_name }}"
-    remote_src: true
-    mode: "preserve"
-    directory_mode: "preserve"
-    follow: false
-    local_follow: false
   tags:
     - "apache"
 
@@ -299,17 +251,6 @@
     cmd: "a2enmod-{{ apache_multi_front_vhost_name }} security2 ssl proxy_http"
   register: "cmd_a2enmod_front"
   changed_when: "'Enabling module' in cmd_a2enmod_front.stdout"
-  notify: "Reload apache front vhost"
-  tags:
-    - "apache"
-
-- name: "Enable bad bots config file for front vhost"
-  ansible.builtin.file:
-    path: "{{ apache_multi_front_dir }}/conf-enabled/z-evolinux-badbots.conf"
-    src: "{{ apache_multi_front_dir }}/conf-available/z-evolinux-badbots.conf"
-    state: "link"
-    owner: "root"
-    group: "root"
   notify: "Reload apache front vhost"
   tags:
     - "apache"
@@ -334,6 +275,18 @@
   when: "apache_evolinux_default_enabled | bool"
   tags:
     - "apache"
+
+- name: "apache2@front is enabled and started"
+  ansible.builtin.service:
+    name: "apache2@front"
+    enabled: yes
+    state: "started"
+  tags:
+    - "apache"
+
+################
+## Status page
+#################
 
 - name: "Configure server status page"
   ansible.builtin.import_tasks: "server_status.yml"
@@ -365,6 +318,10 @@
     force: false
   tags:
     - "apache"
+
+##########
+## Misc
+##########
 
 - name: "Logrotate: {{ apache_logrotate_frequency }}"
   ansible.builtin.replace:

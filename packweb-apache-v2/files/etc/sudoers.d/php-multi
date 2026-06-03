@@ -1,0 +1,2 @@
+Defaults        env_keep += "LOGNAME PWD PHP_UMASK TRACE"
+ALL ALL = NOPASSWD: /usr/local/bin/phpContainer

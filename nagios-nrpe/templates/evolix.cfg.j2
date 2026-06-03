@@ -9,7 +9,7 @@ allowed_hosts={{ nagios_nrpe_allowed_hosts | join(',') }}
 # Default activated checks
 
 ## System checks
-command[check_disk1]={{ monitoringctl_wrapper_path }} --name disk1 -- /usr/lib/nagios/plugins/check_disk -e -w 10% -c 3% -W 10% -K 3% -C -w 5% -c 2% -W 5% -K 2% -p /home -x /lib/init/rw -x /dev -x /dev/shm -x /run -I '^/var/lib/containers/' -I '^/run/' -I '^/sys/' -X overlay 
+command[check_disk1]={{ monitoringctl_wrapper_path }} --name disk1 -- /usr/lib/nagios/plugins/check_disk -e -w 10% -c 3% -W 10% -K 3% -C -w 5% -c 2% -W 5% -K 2% -p /home -x /lib/init/rw -x /dev -x /dev/shm -x /run -I '^/var/lib/containers/' -I '^/var/tmp/buildah' -I '^/run/' -I '^/sys/' -X overlay 
 command[check_load]={{ monitoringctl_wrapper_path }} --name load -- /usr/lib/nagios/plugins/check_load --percpu --warning=0.7,0.6,0.5 --critical=0.9,0.8,0.7
 command[check_mem]={{ monitoringctl_wrapper_path }} --name mem -- {{ nagios_plugins_directory }}/check_mem -f -C -w 20 -c 10
 command[check_memory]={{ monitoringctl_wrapper_path }} --name memory -- /usr/lib/nagios/plugins/check_memory --available --warning 20%: --critical 10%:
@@ -75,7 +75,7 @@ command[check_minifirewall]={{ monitoringctl_wrapper_path }} --name minifirewall
 #command[check_dhcpd]={{ monitoringctl_wrapper_path }} --name dhcpd -- /usr/lib/nagios/plugins/check_procs -c1:1 -C dhcpd -t 60
 #command[check_ipmi_sensors]={{ monitoringctl_wrapper_path }} --name ipmi_sensors -- sudo /usr/lib/nagios/plugins/check_ipmi_sensor
 #command[check_raid_status]={{ monitoringctl_wrapper_path }} --name raid_status -- /usr/lib/nagios/plugins/check_raid
-#command[check_dockerd]={{ monitoringctl_wrapper_path }} --name dockerd -- /usr/lib/nagios/plugins/check_tcp -H /var/run/docker.sock --escape -s "GET /_ping HTTP/1.1\nHost: http\n\n" -e OK
+#command[check_dockerd]={{ monitoringctl_wrapper_path }} --name dockerd -- /usr/lib/nagios/plugins/check_dockerd 
 #command[check_syslog_age]={{ monitoringctl_wrapper_path }} --name syslog_age -- /usr/lib/nagios/plugins/check_file_age -w $(( 16 * 60 )) -c $(( 60 * 60)) /var/log/auth.log
 
 ## Local checks (not packaged)

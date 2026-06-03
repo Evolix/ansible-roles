@@ -1,0 +1,40 @@
+---
+
+- ansible.builtin.set_fact:
+    nagios_plugins_directory: '/usr/local/lib/nagios/plugins'
+    monitoringctl_wrapper_path: '/usr/local/lib/monitoringctl/alerts_wrapper'
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install dependencies
+  ansible.builtin.apt:
+    name: '{{ item }}'
+  loop:
+    - libfcgi-bin
+    - python3-requests
+
+- name: /usr is mounted with RW option (apt hook set it RO)
+  ansible.builtin.include_role:
+    name: remount-usr
+
+- name: check_php_fpm.py is enabled in NRPE configuration file
+  ansible.builtin.lineinfile:
+    dest: /etc/nagios/nrpe.d/evolix.cfg
+    line: 'command[check_php-fpm]={{ monitoringctl_wrapper_path }} --name php-fpm -- sudo {{ nagios_plugins_directory }}/check_php_fpm.py'
+    regexp: 'command\[check_php-fpm\]='
+    create: false
+    state: present
+  notify: reload nagios-nrpe-server
+
+- name: Sudo permissions are added
+  ansible.builtin.lineinfile:
+    dest: /etc/sudoers.d/evolinux
+    line: 'nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_php_fpm.py'
+    regexp: 'check_php_fpm.py'
+    insertafter: '^nagios'
+    create: false
+    state: present
+    validate: '/usr/sbin/visudo -cf %s'
+

@@ -55,6 +55,7 @@
 - name: "Install PHP packages (Debian 12)"
   ansible.builtin.apt:
     name: '{{ php_stretch_packages }}'
+    update_cache: yes
     state: present
 
 - name: "Install mod_php packages (Debian 12)"

@@ -31,6 +31,7 @@ Usage: ${PROGNAME} VHOST DOMAIN [DOMAIN]
     VHOST must correspond to an Apache or Nginx enabled VHost
     If VHOST ends with ".conf" it is stripped,
     then files are seached at those paths:
+    - /etc/apache2-front/sites-enables/VHOST.conf
     - /etc/apache2/sites-enables/VHOST.conf
     - /etc/nginx/sites-enabled/VHOST.conf
     - /etc/nginx/sites-enabled/VHOST
@@ -244,7 +245,12 @@ main() {
     make_csr ${DOMAINS}
 
     if [ -z "${TEST}" ] || [ "${TEST}" -ne 1 ]; then
-        if command -v apache2ctl >/dev/null; then
+        if command -v apache2ctl-front >/dev/null; then
+            if [ ! -f "/etc/apache2-front/ssl/${VHOST}.conf" ]; then
+                cp -a "${SSL_KEY_FILE}" "${SSL_KEY_FILE_FINAL}"
+                sed_selfsigned_cert_path_for_apache "/etc/apache2-front/ssl/${VHOST}.conf"
+            fi
+        elif command -v apache2ctl >/dev/null; then
             if [ ! -f "/etc/apache2/ssl/${VHOST}.conf" ]; then
                 cp -a "${SSL_KEY_FILE}" "${SSL_KEY_FILE_FINAL}"
                 sed_selfsigned_cert_path_for_apache "/etc/apache2/ssl/${VHOST}.conf"

@@ -2,13 +2,13 @@
 - name: "web_multi | Create evoadmin instance"
   ansible.builtin.command:
     argv:
-      - "{{ evoadmin_scripts_dir }}/setup-instance-apache.sh"
+      - "apache2-setup-instance"
       - "evoadmin"
     creates: "/etc/apache2-evoadmin"
   register: "create_backend_instance"
   notify:
-    - Reload systemd
-    - Restart apache2 backend
+    - "Reload systemd"
+    - "Restart apache2 backend"
 
 - name: "web_multi | Set running user for backend instance"
   ansible.builtin.lineinfile:
@@ -18,7 +18,7 @@
     owner: root
     group: root
     mode: "0644"
-  notify: Restart apache2 backend
+  notify: "Restart apache2 backend"
 
 - name: "web_multi | Set running group for backend instance"
   ansible.builtin.lineinfile:
@@ -28,7 +28,7 @@
     owner: root
     group: root
     mode: "0644"
-  notify: Restart apache2 backend
+  notify: "Restart apache2 backend"
 
 - name: "web_multi | Set listening port for backend instance"
   ansible.builtin.copy:
@@ -38,7 +38,7 @@
     group: "root"
     mode: "0644"
     force: "{{ evoadmin_force_vhost or create_backend_instance.changed }}"
-  notify: Restart apache2 backend
+  notify: "Restart apache2 backend"
 
 - name: "web_multi | Set custom values for PHP config (Debian 13)"
   community.general.ini_file:
