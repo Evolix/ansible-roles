@@ -19,6 +19,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Removed
 
+* packweb-apache-v2: remove version flag from phpContainer
+
 ### Security
 
 ## [26.06] 2026-06-03
