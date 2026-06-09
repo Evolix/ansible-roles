@@ -26,7 +26,7 @@
     owner: root
     group: root
     mode: "0644"
-    force: check_free_space_cron_force | bool
+    force: "{{ check_free_space_cron_force | bool }}"
   when:
     - check_free_space_manage_cron | bool
     - check_free_space_cron_enabled | bool
