@@ -80,7 +80,7 @@ if [ -z "${php_version}" ]; then
 else
     container_name="php-fpm${php_version:0:1}.${php_version:1:1}"
     if podman container exists "${container_name}"; then
-        podman exec --user "${LOGNAME}" --interactive --workdir "${PWD}" "${container_name}" php $@
+        podman exec --user "${LOGNAME}" --interactive --workdir "${PWD}" "${container_name}" php "$@"
     else
         >&2 print "ERROR: Could not find container %s.\n" "${container_name}"
         exit 1
