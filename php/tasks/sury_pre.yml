@@ -41,6 +41,7 @@
     dest: /etc/apt/sources.list.d/evolix_sury.sources
     force: true
     mode: "0644"
+  when: ansible_distribution_major_version is version('12', '>=')
 
 - name: Add Sury repository (Debian <12)
   ansible.builtin.apt_repository:
