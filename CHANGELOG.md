@@ -16,6 +16,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Changed
 
 * autosysadmin-agent: updated to upstream version 26.06
+* postfix: disable TLSv1/TLSv1.1 by default
 
 ### Fixed
 
