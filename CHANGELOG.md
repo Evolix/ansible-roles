@@ -20,6 +20,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* proftpd: all tasks are now tagged with `proftpd` (most already were)
+
 ### Removed
 
 * packweb-apache-v2: remove version flag from phpContainer
