@@ -80,6 +80,7 @@
       - pinentry-curses
       - ncurses-term
       - molly-guard
+      - pigz
   when: evolinux_packages_common | bool
 
 - name: Be sure that openntpd package is absent/purged

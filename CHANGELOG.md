@@ -13,6 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* evolinux-base: Install pigz
+
 ### Changed
 
 * autosysadmin-agent: updated to upstream version 26.06
