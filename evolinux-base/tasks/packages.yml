@@ -9,6 +9,7 @@
       - dnsutils
       - pv
       - apg
+      - pwgen
       - conntrack
       - logrotate
       - bash-completion

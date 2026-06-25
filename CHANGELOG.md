@@ -19,6 +19,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * postfix: disable TLSv1/TLSv1.1 by default
 * nagios-nrpe: check_http_many ; make it so env for endpoints are set outside of the script in the nagios command
 * varnish: add an override if haproxy service is configured
+* evolinux-base: install pwgen
 
 ### Fixed
 
