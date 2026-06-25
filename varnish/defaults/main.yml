@@ -23,3 +23,5 @@ varnish_update_config: true
 varnish_secret_file: /etc/varnish/secret
 
 varnish_tmp_dir: /var/tmp-vcache
+
+varnish_wait_for_haproxy: false
