@@ -4,6 +4,7 @@ set -o nounset
 
 PROGNAME=$(basename "$0")
 PROGPATH=$(echo "$0" | sed -e 's,[\\/][^\\/][^\\/]*$,,')
+LOCK_TIMEOUT_SEC=${LOCK_TIMEOUT_SEC:-1600}
 
 # source a utils.sh from nagios-plugins
 # if the check is not executed in the normal check-directory,
@@ -115,15 +116,15 @@ case "$(${BORG} --version | cut -d' ' -f2)" in
 	1.0*)
 		# Get the archive names and then get via borg info the date for the latest archive name
 		# We have to split the pipe chains, as we have to catch if borg failed to execute
-		last_archive="$(${BORG} list --short)"
+		last_archive="$(${BORG} list --lock-wait ${LOCK_TIMEOUT_SEC} --short)"
 		[ "$?" = 0 ] || error "Cannot list repository archives. Repo Locked?"
 		last_archive="$(echo "${last_archive}" | tail -n 1)"
-		last="$(${BORG} info "::${last_archive}")"
+		last="$(${BORG} info --lock-wait ${LOCK_TIMEOUT_SEC} "::${last_archive}")"
 		[ "$?" = 0 ] || error "Cannot get archive info for '${last_archive}'. Repo Locked?"
 		last="$(echo "${last}" | sed -n 's/^Time (start):\s\(.*\)/\1/p')"
 		;;
 	*)
-		last="$(${BORG} list --glob-archives "${prefix}*" --sort timestamp --last 1 --format '{time}')"
+		last="$(${BORG} list --lock-wait ${LOCK_TIMEOUT_SEC} --glob-archives "${prefix}*" --sort timestamp --last 1 --format '{time}')"
 		[ "$?" = 0 ] || error "Cannot list repository archives. Repo Locked?"
 		;;
 esac
