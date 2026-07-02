@@ -13,17 +13,22 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* bind: restore "zones.rfc1918" data for Debian 13+
+* crowdsec : new role
+
 ### Changed
 
 * autosysadmin-agent: updated to upstream version 26.06
-* postfix: disable TLSv1/TLSv1.1 by default
-* nagios-nrpe: check_http_many ; make it so env for endpoints are set outside of the script in the nagios command
-* nagios-nrpe: check_borg ; add --lock-wait arg for borg commands
-* varnish: add an override if haproxy service is configured
+* certbot: special configuration for apache-multi
 * evolinux-base: install pwgen
+* nagios-nrpe: check_borg ; add --lock-wait arg for borg commands
+* nagios-nrpe: check_http_many ; make it so env for endpoints are set outside of the script in the nagios command
+* postfix: disable TLSv1/TLSv1.1 by default
+* varnish: add an override if haproxy service is configured
 
 ### Fixed
 
+* check_free_space: fix (de)activation logic
 * proftpd: all tasks are now tagged with `proftpd` (most already were)
 
 ### Removed
