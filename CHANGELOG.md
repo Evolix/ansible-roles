@@ -13,6 +13,18 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [06.07] 2026-07-02
+
+### Added
+
 * bind: restore "zones.rfc1918" data for Debian 13+
 * crowdsec : new role
 
@@ -35,7 +47,6 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * packweb-apache-v2: remove version flag from phpContainer
 
-### Security
 
 ## [26.06] 2026-06-03
 
