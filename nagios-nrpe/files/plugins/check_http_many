@@ -32,7 +32,7 @@ check_state() {
 #fi
 
 # Check HTTP
-sites=""
+sites=${http_sites:-}
 for site in $sites; do
     echo -n "Site ${site}: " >> $result
     /usr/lib/nagios/plugins/check_http -f critical -e 200 -I 127.0.0.1 -H ${site%%/*} -u /${site#*/} >> $result
@@ -40,7 +40,7 @@ for site in $sites; do
 done
 
 ## Check HTTPs
-sites=""
+sites=${https_sites:-}
 for site in $sites; do
     echo -n "Site ${site}: " >> $result
     /usr/lib/nagios/plugins/check_http -f critical -e 200 -p 443 -S -I 127.0.0.1 -H ${site%%/*} -u /${site#*/} >> $result
@@ -48,7 +48,7 @@ for site in $sites; do
 done
 
 # Check HTTPs certs
-sites=""
+sites=${https_certs:-}
 for site in $sites; do
     echo -n "Certificate ${site}: " >> $result
     /usr/lib/nagios/plugins/check_http -p 443 -S --sni -H $site -C14,7 >> $result
@@ -56,7 +56,7 @@ for site in $sites; do
 done
 
 # Check Sockets
-sockets=""
+sockets=${sockets:-}
 for socket in $sockets; do
     echo -n "Socket ${socket}: " >> $result
     /usr/lib/nagios/plugins/check_tcp -H $socket >> $result
@@ -64,7 +64,7 @@ for socket in $sockets; do
 done
 
 # Check Ports
-ports=""
+ports=${ports:-}
 for port in $ports; do
     echo -n "Port ${port}: " >> $result
     /usr/lib/nagios/plugins/check_tcp -p $port >> $result

@@ -9,7 +9,7 @@
 # * different return codes for different errors
 # * use local and readonly variables
 
-VERSION="26.05"
+VERSION="26.06"
 
 # If expansion is attempted on an unset variable or parameter, the shell prints an
 # error message, and, if not interactive, exits with a non-zero status.
@@ -37,7 +37,7 @@ show_version() {
     cat <<END
 ${PROGNAME} version ${VERSION}
 
-Copyright 2018-2025 Evolix <info@evolix.fr>,
+Copyright 2018-2026 Evolix <info@evolix.fr>,
                Jérémy Lecour <jlecour@evolix.fr>,
                Victor Laborie <vlaborie@evolix.fr>
                and others.
@@ -76,6 +76,7 @@ Options
                  default: 300 seconds
                   >0 integer: abort if VM is still up
                  <=0 integer: wait infinitely
+  --speed        Force migration speed (in Mbits)
   --help         Print this message and exit
   --version      Print version and exit
 

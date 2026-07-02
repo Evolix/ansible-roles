@@ -99,6 +99,14 @@
     - config
     - update-config
 
+- name: Install a varnish override if haproxy is installed
+  ansible.builtin.copy:
+    src: "override.varnish-haproxy.conf"
+    dest: "/etc/systemd/system/varnish.service.d/haproxy.conf"
+  notify:
+    - reload systemd
+  when: varnish_wait_for_haproxy and ansible_facts.packages['haproxy'] | length > 0 
+
 - name: Patch logrotate conf
   ansible.builtin.replace:
     name: /etc/logrotate.d/varnish

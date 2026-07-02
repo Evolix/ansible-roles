@@ -31,13 +31,6 @@ get_php_version_from_sethandler() {
     grep "SetHandler" "${file}" 2>/dev/null | sed --regexp-extended 's/.*php-fpm([0-9][0-9]).*/\1/'
 }
 
-case $1 in
-    -v|--version|version|Version)
-        show_version
-        exit 0
-        ;;
-esac
-
 # If this script isn't run as root, then, re-run it with sudo.
 if [ "$EUID" -ne 0 ]; then
     # Keep trace mode if enabled
@@ -87,7 +80,7 @@ if [ -z "${php_version}" ]; then
 else
     container_name="php-fpm${php_version:0:1}.${php_version:1:1}"
     if podman container exists "${container_name}"; then
-        podman exec --user "${LOGNAME}" --interactive --workdir "${PWD}" "${container_name}" php $@
+        podman exec --user "${LOGNAME}" --interactive --workdir "${PWD}" "${container_name}" php "$@"
     else
         >&2 print "ERROR: Could not find container %s.\n" "${container_name}"
         exit 1

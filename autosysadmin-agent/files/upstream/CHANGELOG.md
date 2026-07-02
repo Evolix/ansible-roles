@@ -21,6 +21,16 @@ The **patch** part changes is incremented if multiple releases happen the same m
 
 ### Security
 
+## [26.06] 2026-06-15
+
+### Changed
+
+* restart_tomcat_viaxoft: running_custom pour le tomcat de Viaxoft
+
+### Fixed
+
+* repair_disk: support both output from check_disk
+
 ## [25.05] 2025-05-28
 
 ### Added

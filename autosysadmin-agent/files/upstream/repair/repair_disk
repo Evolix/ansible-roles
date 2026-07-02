@@ -18,7 +18,7 @@ get_mountpoints() {
     # the last cut command selects the mountpoints
     check_disk1_command=$(grep check_disk1 /etc/nagios/nrpe.d/evolix.cfg | cut -d'=' -f2-)
     
-    ${check_disk1_command} -e | cut -d'|' -f1 | grep --extended-regexp --only-matching '/[[:graph:]]* [0-9]+ [A-Z][A-Z]' | cut -d' ' -f1
+    ${check_disk1_command} -e | cut -d'|' -f1 | grep --extended-regexp --only-matching '/[[:graph:]]* [0-9]+' | cut -d' ' -f1
 }
 
 is_reserved_blocks_nominal() {

@@ -1,0 +1,9 @@
+
+# add Crowdsec sources 
+
+# install Crowdsec
+
+- name: "crowdsec installed"
+  ansible.builtin.apt:
+    name: "crowdsec"
+    state: "present" 

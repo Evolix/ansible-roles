@@ -15,8 +15,8 @@ inet_protocols = ipv4
 disable_vrfy_command = yes
 # enable SSL/TLS client
 smtp_tls_security_level = may
-smtp_tls_mandatory_protocols=!SSLv2,!SSLv3
-smtp_tls_protocols=!SSLv2,!SSLv3
+smtp_tls_mandatory_protocols=!SSLv2,!SSLv3,!TLSv1,!TLSv1.1
+smtp_tls_protocols=!SSLv2,!SSLv3,!TLSv1,!TLSv1.1
 smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 smtp_tls_loglevel = 1
 

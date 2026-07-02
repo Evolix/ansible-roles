@@ -103,6 +103,6 @@ command[check_minifirewall]={{ monitoringctl_wrapper_path }} --name minifirewall
 
 # Check HTTP "many". Use this to check many websites (http, https, ports, sockets and SSL certificates).
 # Beware! All checks must not take more than 10s!
-#command[check_https]={{ monitoringctl_wrapper_path }} --name https -- {{ nagios_plugins_directory }}/check_http_many
+#command[check_https]={{ monitoringctl_wrapper_path }} --name https -- bash -c 'http_sites="" https_sites="" https_certs="" sockets="" ports="" {{ nagios_plugins_directory }}/check_http_many'
 # Check Borg. it's needed to set envs ; check last archive is recent enough
 #command[check_borg]=/usr/local/lib/monitoringctl/alerts_wrapper --name borg -- sudo BORG_PASSPHRASE="xxxxx" BORG_REPO="jdoe@backup-server:/path/to/repo" /usr/local/lib/nagios/plugins/check_borg -c "last day" -w "4 hours ago"

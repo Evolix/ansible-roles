@@ -81,6 +81,8 @@
   when:
     - proftpd_sftp_enable | bool
     - proftpd_sftp_enable_user_whitelist | bool
+  tags:
+    - proftpd
 
 - name: IP Whitelists for SFTP users are absent
   ansible.builtin.blockinfile:
@@ -91,6 +93,8 @@
   when:
     - proftpd_sftp_enable | bool
     - not (proftpd_sftp_enable_user_whitelist | bool)  
+  tags:
+    - proftpd
 
 - name: Allow keys for SFTP account
   ansible.builtin.template:

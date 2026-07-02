@@ -2,7 +2,7 @@
 
 Types: deb
 URIs: https://pub.evolix.org/evolix
-Suites: {{ ansible_distribution_release }}-{{ php_version | replace('.', '') }}
+Suites: {{ ansible_distribution_release }}-php{{ php_version | replace('.', '') }}
 Components: main
 Signed-By: /usr/share/keyrings/pub_evolix.asc
 Enabled: yes
