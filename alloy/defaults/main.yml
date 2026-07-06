@@ -1,8 +1,5 @@
 ---
 
-# FIXME it should be a list of endpoint struct
-#
-# https://grafana.com/docs/alloy/latest/reference/components/loki/loki.write/#endpoint
-alloy_loki_default_endpoints_url: []
+# alloy_loki_default_endpoints_url: []
 
 alloy_force_install: False
