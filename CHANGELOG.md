@@ -15,7 +15,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
-minifirewall: remove deprecated IP addresses
+* minifirewall: remove deprecated IP addresses
+* spamassassin: remove deprecated IP addresses
 
 ### Fixed
 
