@@ -6,6 +6,10 @@ Port 22
 LogLevel VERBOSE
 SetEnv LC_ALL=en_US.UTF-8
 
+{% if ansible_distribution_major_version is version('13', '>=') %}
+PerSourcePenaltyExemptList *
+{% endif %}
+
 {% if evolinux_ssh_password_auth_addresses %}
 Match Address {{ evolinux_ssh_password_auth_addresses | join(',') }}
     PasswordAuthentication yes
