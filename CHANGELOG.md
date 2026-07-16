@@ -17,6 +17,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* redis: Do not add `Alias=` directive to instanced service
+
 ### Removed
 
 ### Security
