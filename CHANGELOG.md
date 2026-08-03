@@ -21,6 +21,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* apache: save_apache_status.sh : Use realpath on the find used to clean old entries
+
 ### Removed
 
 ### Security
