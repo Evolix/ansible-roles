@@ -3,7 +3,7 @@ dev tun
 tls-client
 proto udp
 
-remote {{ ansible_fqdn }} 1194
+remote {{ openvpn_server_host }} {{ openvpn_server_port }}
 
 nobind
 persist-key

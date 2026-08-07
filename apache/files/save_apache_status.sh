@@ -17,6 +17,6 @@ wget -q -U "save_apache_status" -O "${FILE}" "${URL}"
 chmod 640 "${FILE}"
 chown root:adm "${FILE}"
 
-find "${DIR}" -type f -mtime +1 -delete
+find $(realpath "${DIR}") -type f -mtime +1 -delete
 
 exit 0

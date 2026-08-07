@@ -75,7 +75,7 @@ command[check_minifirewall]={{ monitoringctl_wrapper_path }} --name minifirewall
 #command[check_dhcpd]={{ monitoringctl_wrapper_path }} --name dhcpd -- /usr/lib/nagios/plugins/check_procs -c1:1 -C dhcpd -t 60
 #command[check_ipmi_sensors]={{ monitoringctl_wrapper_path }} --name ipmi_sensors -- sudo /usr/lib/nagios/plugins/check_ipmi_sensor
 #command[check_raid_status]={{ monitoringctl_wrapper_path }} --name raid_status -- /usr/lib/nagios/plugins/check_raid
-#command[check_dockerd]={{ monitoringctl_wrapper_path }} --name dockerd -- /usr/lib/nagios/plugins/check_dockerd 
+#command[check_dockerd]={{ monitoringctl_wrapper_path }} --name dockerd -- {{ nagios_plugins_directory }}/check_dockerd
 #command[check_syslog_age]={{ monitoringctl_wrapper_path }} --name syslog_age -- /usr/lib/nagios/plugins/check_file_age -w $(( 16 * 60 )) -c $(( 60 * 60)) /var/log/auth.log
 
 ## Local checks (not packaged)

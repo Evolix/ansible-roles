@@ -21,7 +21,20 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Security
 
-## [06.07] 2026-07-02
+## [26.08] 2026-08-07
+
+### Changed
+
+* minifirewall: remove deprecated IP addresses
+* spamassassin: remove deprecated IP addresses
+* evolinux-base: disable openssh penalities
+* openvpn : add variables
+
+### Fixed
+
+* apache: save_apache_status.sh : Use realpath on the find used to clean old entries
+
+## [26.07] 2026-07-02
 
 ### Added
 
@@ -37,6 +50,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * nagios-nrpe: check_http_many ; make it so env for endpoints are set outside of the script in the nagios command
 * postfix: disable TLSv1/TLSv1.1 by default
 * varnish: add an override if haproxy service is configured
+* alloy: be sure `alloy_loki_default_endpoints_url` is set
 
 ### Fixed
 

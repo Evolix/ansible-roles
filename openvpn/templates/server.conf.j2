@@ -2,7 +2,7 @@ user  _openvpn
 group _openvpn
 
 local {{ ansible_default_ipv4.address }}
-port 1194
+port {{ openvpn_server_port }}
 proto udp
 dev tun
 mode server
@@ -21,7 +21,7 @@ status /var/log/openvpn-status.log
 log-append  /var/log/openvpn.log
 
 ca   /etc/shellpki/cacert.pem
-cert /etc/shellpki/certs/{{ ansible_fqdn }}.crt
+cert /etc/shellpki/certs/{{ openvpn_server_host }}.crt
 key  /etc/shellpki/private/TO_COMPLETE
 dh   /etc/shellpki/dh2048.pem
 
@@ -32,4 +32,4 @@ server {{ openvpn_lan }} {{ openvpn_netmask }}
 #push "route 192.0.3.0 255.255.255.0"
 
 # Management interface (used by check_openvpn for Nagios)
-management 127.0.0.1 1195 /etc/openvpn/management-pwd
+management {{ openvpn_management_host }} {{ openvpn_management_port }} /etc/openvpn/management-pwd

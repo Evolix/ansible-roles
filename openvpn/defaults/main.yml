@@ -7,3 +7,7 @@ openvpn_netmask_cidr: "{{ (openvpn_lan + '/' + openvpn_netmask) | ipaddr('prefix
 
 openvpn_administrator: Null
 openvpn_client_email: Null
+openvpn_server_host: "{{ ansible_fqdn }}"
+openvpn_server_port: 1194
+openvpn_management_host: 127.0.0.1
+openvpn_management_port: 1195

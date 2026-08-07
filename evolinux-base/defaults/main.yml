@@ -141,6 +141,7 @@ evolinux_ssh_match_address: True
 evolinux_ssh_disable_acceptenv: True
 evolinux_ssh_allow_current_user: False
 evolinux_ssh_group: "evolinux-ssh"
+evolinux_ssh_penalty_exempt_list: [ "none" ]
 
 ### disabled because of a memory leak
 # # evolinux users

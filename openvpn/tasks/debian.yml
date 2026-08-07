@@ -216,7 +216,7 @@
   ansible.builtin.lineinfile:
     dest: "/etc/nagios/nrpe.d/evolix.cfg"
     regexp: '^command\[check_openvpn\]='
-    line: "command[check_openvpn]={{ openvpn_monitoringctl_wrapper_cmd }}/usr/local/lib/nagios/plugins/check_openvpn -H 127.0.0.1 -p 1195 -P {{ management_pwd }}"
+    line: "command[check_openvpn]={{ openvpn_monitoringctl_wrapper_cmd }}/usr/local/lib/nagios/plugins/check_openvpn -H {{ openvpn_management_host }} -p {{ openvpn_management_port }} -P {{ management_pwd }}"
   notify: restart nagios-nrpe-server
   diff: no
   when:
@@ -281,9 +281,13 @@
   check_mode: no
   changed_when: no
 
+- name: Set temp file name
+  ansible.builtin.set_fact:
+    openvpn_tmp_ca_password_file: "/tmp/ansible_openvpn_ca_{{ ansible_hostname }}_{{ ansible_date_time.iso8601_basic_short }}"
+
 - name: Save the CA password in the user's /tmp directory
   ansible.builtin.copy:
-    dest: "/tmp/ansible_openvpn_ca_{{ ansible_hostname }}_{{ ansible_date_time.iso8601 }}"
+    dest: "{{ openvpn_tmp_ca_password_file | mandatory }}"
     content: "{{ ca_pwd }}\n"
     mode: "0600"
   delegate_to: localhost
@@ -292,11 +296,11 @@
 
 - name: Initialization of the CA
   ansible.builtin.shell:
-    cmd: 'CA_PASSWORD="{{ ca_pwd }}" shellpki init --non-interactive {{ ansible_fqdn }}'
+    cmd: 'CA_PASSWORD="{{ ca_pwd }}" shellpki init --non-interactive {{ openvpn_server_host }}'
 
 - name: Creation of the server's certificate
   ansible.builtin.shell:
-    cmd: 'CA_PASSWORD="{{ ca_pwd }}" shellpki create --days 3650 --non-interactive {{ ansible_fqdn }}'
+    cmd: 'CA_PASSWORD="{{ ca_pwd }}" shellpki create --days 3650 --non-interactive {{ openvpn_server_host }}'
 
 - name: Get the server key
   ansible.builtin.shell:
@@ -323,7 +327,8 @@
       You must check and adjust if necessary the configuration file "/etc/openvpn/server.conf", and then restart the OpenVPN service with "systemctl restart openvpn@server.service".
       The "push" parameter may be needed to push a route to the client, so that the client can access that route through OpenVPN.
 
-      Take note of the generated CA password and store it in your password manager. It is stored in your computer in "/tmp/ansible_openvpn_ca_{{ ansible_hostname }}_{{ ansible_date_time.iso8601 }}"
+      Take note of the generated CA password and store it in your password manager.
+      It is stored on your computer (the Ansible controller) in "{{ openvpn_tmp_ca_password_file }}"
 
       Press enter to exit when it's done.
 

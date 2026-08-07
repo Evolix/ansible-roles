@@ -5,6 +5,16 @@ PermitRootLogin {{ evolinux_ssh_permitrootlogin }}
 # PermitRootLogin no
 {% endif %}
 
+
+{% if ansible_distribution_major_version is version('13', '>=') %}
+### To exempt some sources from getting penalities, uncomment the following line
+# PerSourcePenaltyExemptList {{ evolinux_ssh_penalty_exempt_list | join(",") }}
+
+### FIXME The following directive should be in z-evolinux-defaults.conf, but we wouldn't be able to override then
+PerSourcePenaltyExemptList *
+{% endif %}
+
+
 ### To open **additional** ports (on top of 22), add lines like this, one for each port
 # Port 22222
 

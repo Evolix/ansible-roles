@@ -1,0 +1,22 @@
+---
+argument_specs:
+  main:
+    short_description: "Install alloy, to ship log to Loki servers."
+    options:
+      # FIXME it should be a list of endpoint struct
+      #
+      # https://grafana.com/docs/alloy/latest/reference/components/loki/loki.write/#endpoint
+      alloy_loki_default_endpoints_url:
+        type: "list"
+        elements: "str"
+        required: true
+        description:
+          - "A list of whole URLs to send logs to."
+          - "Example: [ \"https://loki.example.com/api/v1/push\" ]"
+
+      alloy_force_install:
+        type: "bool"
+        default: False
+        description:
+          - "Whether to manually bypass the compatibility check."
+          - "To be used when you really need to apply it on an old Debian."
