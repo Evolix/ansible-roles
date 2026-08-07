@@ -44,7 +44,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * nagios-nrpe: check_http_many ; make it so env for endpoints are set outside of the script in the nagios command
 * postfix: disable TLSv1/TLSv1.1 by default
 * varnish: add an override if haproxy service is configured
-* alloy: be sure alloy_`loki_default_endpoints_url` is set
+* alloy: be sure `alloy_loki_default_endpoints_url` is set
 
 ### Fixed
 
