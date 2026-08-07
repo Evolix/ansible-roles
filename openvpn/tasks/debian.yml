@@ -283,7 +283,7 @@
 
 - name: Set temp file name
   ansible.builtin.set_fact:
-    openvpn_tmp_ca_password_file: "/tmp/ansible_openvpn_ca_{{ ansible_date_time.iso8601_basic_short }}"
+    openvpn_tmp_ca_password_file: "/tmp/ansible_openvpn_ca_{{ ansible_hostname }}_{{ ansible_date_time.iso8601_basic_short }}"
 
 - name: Save the CA password in the user's /tmp directory
   ansible.builtin.copy:
