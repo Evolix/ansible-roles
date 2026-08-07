@@ -164,7 +164,7 @@
   ansible.builtin.lineinfile:
     dest: "/etc/nrpe.d/evolix.cfg"
     regexp: '^command\[check_openvpn\]='
-    line: "command[check_openvpn]=/usr/local/libexec/nagios/plugins/check_openvpn.pl -H 127.0.0.1 -p 1195 -P {{ management_pwd }}"
+    line: "command[check_openvpn]=/usr/local/libexec/nagios/plugins/check_openvpn.pl -H {{ openvpn_management_host }} -p {{ openvpn_management_port }} -P {{ management_pwd }}"
     create: yes
     mode: "0644"
     owner: root

@@ -216,7 +216,7 @@
   ansible.builtin.lineinfile:
     dest: "/etc/nagios/nrpe.d/evolix.cfg"
     regexp: '^command\[check_openvpn\]='
-    line: "command[check_openvpn]={{ openvpn_monitoringctl_wrapper_cmd }}/usr/local/lib/nagios/plugins/check_openvpn -H {{ openvpn_management_host }}127.0.0.1 -p {{ openvpn_management_port }} -P {{ management_pwd }}"
+    line: "command[check_openvpn]={{ openvpn_monitoringctl_wrapper_cmd }}/usr/local/lib/nagios/plugins/check_openvpn -H {{ openvpn_management_host }} -p {{ openvpn_management_port }} -P {{ management_pwd }}"
   notify: restart nagios-nrpe-server
   diff: no
   when:
