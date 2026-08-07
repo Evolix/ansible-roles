@@ -15,6 +15,16 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+### Fixed
+
+### Removed
+
+### Security
+
+## [26.08] 2026-08-07
+
+### Changed
+
 * minifirewall: remove deprecated IP addresses
 * spamassassin: remove deprecated IP addresses
 * evolinux-base: disable openssh penalities
@@ -24,11 +34,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * apache: save_apache_status.sh : Use realpath on the find used to clean old entries
 
-### Removed
-
-### Security
-
-## [06.07] 2026-07-02
+## [26.07] 2026-07-02
 
 ### Added
 
