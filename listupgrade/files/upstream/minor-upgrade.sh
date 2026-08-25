@@ -1,7 +1,7 @@
 #!/bin/sh
 # shellcheck disable=SC2059
 
-# Repository: https://gitea.evolix.org/evolix/maj.sh/
+# Repository: https://forge.evolix.net/evolix/maj.sh/
 
 set -u
 # Do not "set -e", many subcommands can fail

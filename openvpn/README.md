@@ -39,4 +39,4 @@ By default, if the server IP is 192.0.2.42, then OpenVPN LAN will be 10.2.42.0/2
 
 ## Dependencies
 
-* Files in `files/shellpki/*` are gotten from the upstream [shellpki](https://gitea.evolix.org/evolix/shellpki) and must be updated when the upstream is.
+* Files in `files/shellpki/*` are gotten from the upstream [shellpki](https://forge.evolix.net/evolix/shellpki) and must be updated when the upstream is.

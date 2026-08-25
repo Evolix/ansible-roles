@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PROGNAME="dir-check"
-REPOSITORY="https://gitea.evolix.org/evolix/ansible-roles"
+REPOSITORY="https://forge.evolix.net/evolix/ansible-roles"
 
 VERSION="22.06.1"
 readonly VERSION

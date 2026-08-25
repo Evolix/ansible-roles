@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Repository: https://gitea.evolix.org/evolix/maj.sh/
+# Repository: https://forge.evolix.net/evolix/maj.sh/
 
 # fork by reg from /etc/kernel/postinst.d/apt-auto-removal script
 

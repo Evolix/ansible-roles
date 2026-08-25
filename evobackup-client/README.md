@@ -4,7 +4,7 @@ Install the necessary libraries and script to configure backup scripts.
 
 Additional information:
 
-* [evobackup-client documentation](https://gitea.evolix.org/evolix/evobackup/src/branch/master/client/README.md)
+* [evobackup-client documentation](https://forge.evolix.net/evolix/evobackup/src/branch/master/client/README.md)
 * canary
 
 ## Available variables

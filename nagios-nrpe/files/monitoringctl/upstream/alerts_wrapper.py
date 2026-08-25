@@ -6,7 +6,7 @@
 # alerts_wrapper wraps an NRPE command and overrides its return code if alert is disabled by monitoringctl.
 #
 # Need: Python >= 3.4
-# Source: https://gitea.evolix.org/evolix/ansible-roles/src/branch/stable/nagios-nrpe/
+# Source: https://forge.evolix.net/evolix/ansible-roles/src/branch/stable/nagios-nrpe/
 #
 
 lib_dir = '/usr/local/lib/monitoringctl'
