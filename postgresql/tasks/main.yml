@@ -21,6 +21,8 @@
 
 - ansible.builtin.import_tasks: config.yml
 
+- ansible.builtin.import_tasks: datadir.yml
+
 - ansible.builtin.import_tasks: nrpe.yml
 
 - ansible.builtin.import_tasks: munin.yml

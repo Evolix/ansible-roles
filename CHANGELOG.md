@@ -13,6 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* postgresql: add `postgresql_custom_datadir`
+
 ### Changed
 
 ### Fixed
