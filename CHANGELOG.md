@@ -17,6 +17,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* evoacme: upstream release 26.08
+
 ### Fixed
 
 * redis: Do not add `Alias=` directive to instanced service
