@@ -350,3 +350,9 @@
   when: "apache_munin_include | bool"
   tags:
     - "apache"
+
+- name: "Install evodomains"
+  include_role:
+    name: "evodomains"
+  tags:
+    - "apache"
