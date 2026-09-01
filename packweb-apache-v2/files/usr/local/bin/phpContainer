@@ -75,14 +75,14 @@ fi
 if [ -z "${php_version}" ]; then
     # TODO: fallback?
     # command php $*
-    >&2 print "ERROR: Could not determine PHP version - Are you a web account?\n"
+    >&2 printf "ERROR: Could not determine PHP version - Are you a web account?\n"
     exit 1
 else
     container_name="php-fpm${php_version:0:1}.${php_version:1:1}"
     if podman container exists "${container_name}"; then
         podman exec --user "${LOGNAME}" --interactive --workdir "${PWD}" "${container_name}" php "$@"
     else
-        >&2 print "ERROR: Could not find container %s.\n" "${container_name}"
+        >&2 printf "ERROR: Could not find container %s.\n" "${container_name}"
         exit 1
     fi
 fi
