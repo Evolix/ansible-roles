@@ -42,4 +42,4 @@
     update_cache: true
   tags:
     - apt
-  when: apt_basic_list is changed or apt_security_sources is changed
+  when: apt_basic_sources is changed or apt_security_sources is changed
