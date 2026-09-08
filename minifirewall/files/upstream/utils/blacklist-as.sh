@@ -2,7 +2,7 @@
 
 # Only IPv4 (could be easily IPv6 too)
 
-# use it with /sbin/iptables -I INPUT -m set --match-set asn-blocklist-v4 src -j DROP
+# Usage : sets the ports to protect by this blacklist as PROTECTED (in /etc/default/minifirewall)
 
 rpkideny_file=/var/tmp/rpki_deny
 
@@ -31,6 +31,7 @@ for i in 45102 200373 198571 4134 4837 136907 55990 63727 9808; do
 done
 
 /sbin/iptables -D NEEDRESTRICT -m set --match-set asn-blocklist-v4 src -j DROP >/dev/null 2>&1
+sleep 0.5
 /sbin/ipset destroy asn-blocklist-v4 >/dev/null 2>&1
 
 /sbin/ipset create asn-blocklist-v4 hash:net comment

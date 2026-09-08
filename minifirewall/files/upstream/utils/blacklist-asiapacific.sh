@@ -2,7 +2,7 @@
 
 # Only IPv4 (could be easily IPv6 too)
 
-# use it with /sbin/iptables -I INPUT -m set --match-set apnic-blocklist-v4 src -j DROP
+# Usage : sets the ports to protect by this blacklist as PROTECTED (in /etc/default/minifirewall)
 
 apnicdeny_file=/var/tmp/apnic_deny
 
@@ -18,6 +18,7 @@ md5sum --status -c apnic.cidr.md5 || exit
 mv apnic.cidr $apnicdeny_file
 
 /sbin/iptables -D NEEDRESTRICT -m set --match-set apnic-blocklist-v4 src -j DROP >/dev/null 2>&1
+sleep 0.5
 /sbin/ipset destroy apnic-blocklist-v4 >/dev/null 2>&1
 
 /sbin/ipset create apnic-blocklist-v4 hash:net comment
