@@ -15,6 +15,17 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Security
 
+## [26.09] 2026-09-10
+
+### Added
+
+* IS_EFI_PART: new check for EFI partitions
+
+### Fixed
+
+* IS_NONFREE: Fix false-positive
+* IS_EVOBACKUP: Fix false-negative (#204)
+
 ## [26.05] 2026-05-15
 
 This is a significant rewrite with new features and changed output.
