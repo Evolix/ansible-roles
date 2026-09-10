@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="26.09"
+VERSION="26.09.1"
 readonly VERSION
 
 # base functions
@@ -4423,12 +4423,13 @@ check_efi_part() {
     future=0
     label="IS_EFI_PART"
     doc=$(cat <<EODOC
-    EPI partitions and EFI boot entries are not synced
+    EFI partitions and EFI boot entries are not synced
     Read this doc at https://wiki.evolix.org/HowtoRAIDLogiciel#partition-efi
 EODOC
 )
 
     if check_can_run --label "${label}" --level "${level}" --default-exec "${default_exec}" --cron "${cron}" --future "${future}"; then
+        rc=0
         # Check if blkid is present or skip everything
         if command -v blkid > /dev/null; then
             # Check if efibootmgr is present or skip everything
