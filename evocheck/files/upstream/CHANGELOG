@@ -15,6 +15,12 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Security
 
+## [26.09.2] 2026-09-10
+
+### Fixed
+
+* IS_EFI_PART: exclude partitions with `SEC_TYPE="msdos"`
+
 ## [26.09.1] 2026-09-10
 
 ### Fixed
