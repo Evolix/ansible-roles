@@ -11,9 +11,12 @@
     - evolinux_kernel_cloud_auto | bool
     - ansible_distribution_major_version is version('10', '>=')
 
-- name: "Remove non-Cloud kernel on virtual servers"
+- name: "Remove non-Cloud kernel and microcode on virtual servers"
   ansible.builtin.apt:
-    name: "linux-image-amd64"
+    name:
+      - linux-image-amd64
+      - intel-microcode
+      - amd64-microcode
     state: absent
   when:
     - ansible_machine == "x86_64"
