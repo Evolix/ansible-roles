@@ -20,6 +20,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * apache-multi: install evodomains
 * evoacme: upstream release 26.08
 * evocheck : upstream release 26.09.2
+* listupgrade: old-kernel-autoremoval upstream release 26.09
 * minifirewall: upstream release 26.09
 
 ### Fixed
