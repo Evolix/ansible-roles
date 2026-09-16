@@ -28,6 +28,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc: Disable tmpfs for /tmp for Debian 13+
 * lxc-php: Rename source templates
 * minifirewall: upstream release 26.09
+* packweb-apache: Default to packweb-apache-v2 on Debian 13+
 * php-multi: use complete containers names
 
 ### Fixed
