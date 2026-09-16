@@ -25,6 +25,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: Drop Microcode on virtual servers
 * listupgrade: old-kernel-autoremoval upstream release 26.09
 * minifirewall: upstream release 26.09
+* packweb-apache: Default to packweb-apache-v2 on Debian 13+
 
 ### Fixed
 
