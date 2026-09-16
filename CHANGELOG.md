@@ -13,10 +13,22 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* postgresql: add `postgresql_custom_datadir`
+
 ### Changed
+
+* apache-multi: install evodomains
+* apt: Enable ELTS for Bullseye
+* evoacme: upstream release 26.08
+* evocheck : upstream release 26.09.2
+* evolinux-base: Drop Microcode on virtual servers
+* listupgrade: old-kernel-autoremoval upstream release 26.09
+* minifirewall: upstream release 26.09
 
 ### Fixed
 
+* apt: use the right variable in 'when' condition
+* elasticsearch: revert gpg key permissions to 0644
 * redis: Do not add `Alias=` directive to instanced service
 
 ### Removed
@@ -138,7 +150,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * php-multi: make phpContainer more robust
 * redis: fix service template for Debian 12/13
 * tomcat: show critical instances before overview
-* webapps/evoadmin-web: clone repository from new forge gitea.evolix.org
+* webapps/evoadmin-web: clone repository from new forge forge.evolix.net
 * evoacme: upstream release 26.05
 
 ### Fixed
@@ -1941,7 +1953,7 @@ nagios-nrpe: remove `monitoringctl_branch` variable, since 2484a00a1 removes ins
 
 ### Changed
 
-* changed remote repository to <https://gitea.evolix.org/evolix/ansible-roles>
+* changed remote repository to <https://forge.evolix.net/evolix/ansible-roles>
 * apt: Ensure jessie-backport from archives.debian.org is accepted
 * apt: Remove jessie-update suite as it's no longer exists
 * apt: Replace mirror.evolix.org by archives.debian.org for jessie-backport

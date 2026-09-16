@@ -14,7 +14,7 @@
     - evobackup_client_jail
 
 # temp fix for bkctld 2.x because the ip and key command return 1
-# if the jail is not started, see https://gitea.evolix.org/evolix/evobackup/issues/31
+# if the jail is not started, see https://forge.evolix.net/evolix/evobackup/issues/31
 - name: 'start jail'
   ansible.builtin.command:
     cmd: "bkctld restart {{ evolinux_hostname }}"

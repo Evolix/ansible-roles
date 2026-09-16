@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Repository: https://gitea.evolix.org/evolix/maj.sh/
+# Repository: https://forge.evolix.net/evolix/maj.sh/
 
 # Exit codes :
 # - 10 : Failure to fetch upgrade informations

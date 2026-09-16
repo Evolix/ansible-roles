@@ -48,7 +48,7 @@ options:
 
 Not in production.
 
-~~Use the role [`evodomains`](https://gitea.evolix.org/evolix/ansible-roles/src/branch/stable/evodomains) of [`ansible-role` repository](https://gitea.evolix.org/evolix/ansible-roles).~~
+~~Use the role [`evodomains`](https://forge.evolix.net/evolix/ansible-roles/src/branch/stable/evodomains) of [`ansible-role` repository](https://forge.evolix.net/evolix/ansible-roles).~~
 
 
 ### Manual installation or update
@@ -66,7 +66,7 @@ Clone the repo in the directory of your choice:
 
 ~~~
 cd /tmp
-git clone https://gitea.evolix.org/evolix/evodomains.git
+git clone https://forge.evolix.net/evolix/evodomains.git
 cd /tmp/evodomains
 git switch main
 ~~~

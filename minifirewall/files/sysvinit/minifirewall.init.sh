@@ -3,7 +3,7 @@
 
 # minifirewall is a shell script for easy firewalling on a standalone server
 # It uses netfilter/iptables http://netfilter.org/ designed for recent Linux kernel
-# See https://gitea.evolix.org/evolix/minifirewall
+# See https://forge.evolix.net/evolix/minifirewall
 
 # Copyright (c) 2007-2025 Evolix
 # This program is free software; you can redistribute it and/or

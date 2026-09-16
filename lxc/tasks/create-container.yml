@@ -69,7 +69,7 @@
   ansible.builtin.apt:
     name:
       - freexian-archive-keyring
-  when: release == 'jessie' or release == 'stretch' or release == 'buster'
+  when: release == 'jessie' or release == 'stretch' or release == 'buster' or release == 'bullseye'
 
 - name: "Create container {{ name }}"
   community.general.lxc_container:

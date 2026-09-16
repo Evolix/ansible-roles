@@ -56,7 +56,7 @@
 
 - name: "Clone evoadmin repository (jessie)"
   ansible.builtin.git:
-    repo: https://gitea.evolix.org/evolix/evoadmin-web.git
+    repo: https://forge.evolix.net/evolix/evoadmin-web.git
     dest: "{{ evoadmin_document_root }}"
     version: jessie
     update: False
@@ -64,7 +64,7 @@
 
 - name: "Clone evoadmin repository (Debian 9 or later)"
   ansible.builtin.git:
-    repo: https://gitea.evolix.org/evolix/evoadmin-web.git
+    repo: https://forge.evolix.net/evolix/evoadmin-web.git
     dest: "{{ evoadmin_document_root }}"
     version: master
     update: False

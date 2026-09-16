@@ -6,7 +6,7 @@
 
 #set -x
 
-VERSION="26.05"
+VERSION="26.09.2"
 readonly VERSION
 
 # base functions
@@ -201,6 +201,7 @@ exec_checks() {
     check_nrpepressure
     check_postfix_ipv6_disabled
     check_smartmontools
+    check_efi_part
 }
 
 #####################
@@ -495,21 +496,23 @@ EODOC
     if check_can_run --label "${label}" --level "${level}" --default-exec "${default_exec}" --cron "${cron}" --future "${future}"; then
         rc=0
         tags=$(format_tags --cron "${cron}" --future "${future}")
+    
         # Look for enabled "Debian-Security" sources from the "Debian" origin
-        apt-cache policy | grep "\bl=Debian,\b" | grep "\bo=Debian\b" | grep --quiet "\bc=non-free\b"
+        apt-cache policy | grep "\bl=Debian,\b" | grep "\bo=Debian\b" | grep --quiet "\bc=non-free,\b"
         if [ $? -eq 0 ]; then
             apt-cache policy | grep "\bl=Debian,\b" | grep "\bo=Debian\b" | grep --quiet "\bc=contrib\b"
             test $? -eq 0 || fail --comment "missing contrib component for Debian repository"  --level "${level}" --label "${label}" --tags "${tags}"
-	    # Debian-Security is rarely updated for contrib and non-free, so we can’t use such a check
-	    # to verify if contrib and non-free are actually present in sources list files (we used to
-	    # parse those file, but it was fragile compared to parsing the apt-cache policy output)
-	    if ( evo::os-release::is_debian 12 ge ); then
-                apt-cache policy | grep "\bl=Debian,\b" | grep "\bo=Debian\b" | grep --quiet "\bc=non-free-firmware\b"
-                test $? -eq 0 || fail --comment "missing non-free-firmware component for Debian repository"  --level "${level}" --label "${label}" --tags "${tags}"
-                apt-cache policy | grep "\bl=Debian-Security\b" | grep "\bo=Debian\b" | grep --quiet "\bc=non-free-firmware\b"
-                test $? -eq 0 || fail --comment "missing non-free-firmware component for Debian-Security repository"  --level "${level}" --label "${label}" --tags "${tags}"
-	    fi
-	fi
+            # Debian-Security is rarely updated for contrib and non-free, so we can’t use such a check
+            # to verify if contrib and non-free are actually present in sources list files (we used to
+            # parse those file, but it was fragile compared to parsing the apt-cache policy output)
+            if ( evo::os-release::is_debian 12 ge ); then
+                    apt-cache policy | grep "\bl=Debian,\b" | grep "\bo=Debian\b" | grep --quiet "\bc=non-free-firmware\b"
+                    test $? -eq 0 || fail --comment "missing non-free-firmware component for Debian repository"  --level "${level}" --label "${label}" --tags "${tags}"
+    
+                    apt-cache policy | grep "\bl=Debian-Security\b" | grep "\bo=Debian\b" | grep --quiet "\bc=non-free-firmware\b"
+                    test $? -eq 0 || fail --comment "missing non-free-firmware component for Debian-Security repository"  --level "${level}" --label "${label}" --tags "${tags}"
+            fi
+        fi
 
         show_doc "${doc:-}"
     fi
@@ -1990,7 +1993,7 @@ check_evobackup() {
         rc=0
         tags=$(format_tags --cron "${cron}" --future "${future}")
         local evobackup_found
-        evobackup_found=$(find /etc/cron* -name '*evobackup*' | wc -l)
+        evobackup_found=$(find /etc/cron* -name '*evobackup*' ! -name '*evobackup-canary*' | wc -l)
         test "$evobackup_found" -gt 0 || fail --comment "missing evobackup cron"  --level "${level}" --label "${label}" --tags "${tags}"
 
         show_doc "${doc:-}"
@@ -2606,10 +2609,10 @@ check_notupgraded() {
             install_date=$(stat -c %Z /var/log/installer)
         fi
         # Check install_date if the system never received an upgrade
-        if [ "$last_upgrade" -eq 0 ]; then
-            [ "$install_date" -lt "$limit" ] && fail --comment "The system has never been updated"  --level "${level}" --label "${label}" --tags "${tags}"
+        if [ "${last_upgrade}" -eq 0 ]; then
+            [ "${install_date}" -lt "${limit}" ] && fail --comment "The system has never been updated"  --level "${level}" --label "${label}" --tags "${tags}"
         else
-            [ "$last_upgrade" -lt "$limit" ] && fail --comment "The system hasn't been updated for too long"  --level "${level}" --label "${label}" --tags "${tags}"
+            [ "${last_upgrade}" -lt "${limit}" ] && fail --comment "The system hasn't been updated for too long"  --level "${level}" --label "${label}" --tags "${tags}"
         fi
 
         show_doc "${doc:-}"
@@ -4409,6 +4412,69 @@ check_postfix_ipv6_disabled() {
         fi
 
         show_doc "${doc:-}"
+    fi
+}
+
+check_efi_part() {
+    local level default_exec cron future tags label doc rc
+    level=4
+    default_exec=1
+    cron=1
+    future=0
+    label="IS_EFI_PART"
+    doc=$(cat <<EODOC
+    EFI partitions and EFI boot entries are not synced
+    Read this doc at https://wiki.evolix.org/HowtoRAIDLogiciel#partition-efi
+EODOC
+)
+
+    if check_can_run --label "${label}" --level "${level}" --default-exec "${default_exec}" --cron "${cron}" --future "${future}"; then
+        rc=0
+        # Check if blkid is present or skip everything
+        if command -v blkid > /dev/null; then
+            # Check if efibootmgr is present or skip everything
+            if command -v efibootmgr > /dev/null; then
+                local vfat_parts boot_entries partname partuuid
+
+                # fetch list of vfat partitions
+                vfat_parts=$(blkid | grep --extended-regexp 'TYPE="?vfat"?' | grep --extended-regexp --invert-match 'SEC_TYPE="?msdos"?')
+                # fetch list of EFI boot entries
+                boot_entries=$(efibootmgr --verbose | grep debian)
+
+                while IFS= read -r vfat_part; do
+                    # split part name and uuid
+                    partname=$(echo "${vfat_part}" | cut -d ':' -f1 | sed -e "s|/dev/||")
+                    partuuid=$(echo "${vfat_part}" | grep --only-matching --extended-regexp "PARTUUID=\S+" | tr -d '"' | cut -d '=' -f2)
+                    if [ -n "${partuuid}" ]; then
+                        # search for a boot entry for the current partition
+                        boot_entry=$(echo "${boot_entries}" | grep --ignore-case ",${partuuid},")
+                        if [ -n "${boot_entry}" ]; then
+                            # fetch the EFI path
+                            efi_path=$(echo "${boot_entry}" | grep --only-matching --extended-regexp "File\([^)]+\)")
+                            # … which should be shimx64.efi
+                            if [[ "${efi_path}" =~ "shimx64.efi" ]]; then
+                                # OK
+                                :
+                            else
+                                fail --comment "${boot_entry} has incorrect EFI path : '${efi_path}' (should be shimx64.efi)" --level "${level}" --label "${label}" --tags "${tags}"
+                            fi
+                        else
+                            fail --comment "${partname} seems to be a EFI partition but has no entry in EFI boot manager" --level "${level}" --label "${label}" --tags "${tags}"
+                        fi
+                    else
+                        fail --comment "Error parsing '${vfat_part}'" --level "${level}" --label "${label}" --tags "${tags}"
+                    fi
+                done <<< "${vfat_parts}"
+
+                show_doc "${doc:-}"
+            else
+                # efibootmgr not found
+                :
+            fi
+        else
+            # blkid not found
+            :
+        fi
     fi
 }
 

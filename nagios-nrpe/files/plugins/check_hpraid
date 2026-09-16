@@ -8,7 +8,7 @@ set -euo pipefail
 # Tools not used on Debian were also removed.
 # Linting tool shellcheck was used to use a better bash coding style.
 # Upstream at:
-# https://gitea.evolix.org/evolix/ansible-roles/src/branch/stable/nagios-nrpe/files/plugins
+# https://forge.evolix.net/evolix/ansible-roles/src/branch/stable/nagios-nrpe/files/plugins
 # Source of the fork:
 # https://exchange.nagios.org/directory/Plugins/Hardware/Storage-Systems/RAID-Controllers/check_cciss--2D-HP-and-Compaq-Smart-Array-Hardware-status/details
 #
