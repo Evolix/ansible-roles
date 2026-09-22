@@ -24,29 +24,31 @@
 ## /var/php
 ############
 
-- name: install info.php
-  ansible.builtin.copy:
-    src: var/www/info.php
-    dest: /var/www/info.php
-    mode: "0644"
+# FIXME there should be a info.php per php version
+#- name: install info.php
+#  ansible.builtin.copy:
+#    src: var/www/info.php
+#    dest: /var/www/info.php
+#    mode: "0644"
+#
+#- name: enable info.php link in default site index
+#  ansible.builtin.lineinfile:
+#    dest: /var/www/index.html
+#    line: '            <li><a href="/info.php">Infos PHP</a></li>'
+#    regexp: "Infos PHP"
 
-- name: enable info.php link in default site index
-  ansible.builtin.lineinfile:
-    dest: /var/www/index.html
-    line: '            <li><a href="/info.php">Infos PHP</a></li>'
-    regexp: "Infos PHP"
-
-- name: install opcache.php
-  ansible.builtin.copy:
-    src: var/www/opcache.php
-    dest: /var/www/opcache.php
-    mode: "0644"
-
-- name: enable opcache.php link in default site index
-  ansible.builtin.lineinfile:
-    dest: /var/www/index.html
-    line: '            <li><a href="/opcache.php">Infos OpCache PHP</a></li>'
-    regexp: "Infos OpCache PHP"
+# FIXME there should be a opache.php per ph version
+#- name: install opcache.php
+#  ansible.builtin.copy:
+#    src: var/www/opcache.php
+#    dest: /var/www/opcache.php
+#    mode: "0644"
+#
+#- name: enable opcache.php link in default site index
+#  ansible.builtin.lineinfile:
+#    dest: /var/www/index.html
+#    line: '            <li><a href="/opcache.php">Infos OpCache PHP</a></li>'
+#    regexp: "Infos OpCache PHP"
 
 - name: Add elements to user account template
   ansible.builtin.file:
@@ -86,10 +88,8 @@
 
 - ansible.builtin.import_tasks: apache.yml
 
-- ansible.builtin.import_tasks: phpmyadmin.yml
-
-# FIXME this is currently not working in apache-multi mode
-# - ansible.builtin.import_tasks: awstats.yml
+# TODO Make sure it work in php-multi v2
+# - ansible.builtin.import_tasks: phpmyadmin.yml
 
 - ansible.builtin.import_tasks: fhs_retrictions.yml
   when: packweb_apache_v2_fhs_retrictions | bool

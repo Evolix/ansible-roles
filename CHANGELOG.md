@@ -37,6 +37,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Removed
 
+* packweb-apache-v2: disable broken features
+
 ### Security
 
 ## [26.08] 2026-08-07
