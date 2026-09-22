@@ -48,7 +48,7 @@
       - "catatonit"
       - "aardvark-dns"
 
-- name: "Create /var/evolinux/containers/"
+- name: "Create /var/lib/evolinux/containers/"
   ansible.builtin.file:
     path: "/var/evolinux/containers/"
     state: "directory"

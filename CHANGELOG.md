@@ -27,6 +27,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* php-multi: create /var/lib/evolinux/containers/ instead of /var/evolinux/containers/
 * apt: use the right variable in 'when' condition
 * elasticsearch: revert gpg key permissions to 0644
 * redis: Do not add `Alias=` directive to instanced service
