@@ -17,6 +17,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* php-multi: use complete containers names
 * apache-multi: install evodomains
 * apt: Enable ELTS for Bullseye
 * evoacme: upstream release 26.08
