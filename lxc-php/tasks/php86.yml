@@ -34,14 +34,14 @@
 
 - name: "{{ lxc_php_container_name }} - system trixie repository"
   ansible.builtin.template:
-    src: bookworm_basics.sources.j2
+    src: system.sources.j2
     dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/system.sources"
     force: true
     mode: "0644"
 
 - name: "{{ lxc_php_container_name }} - security trixie repository"
   ansible.builtin.template:
-    src: bookworm_security.sources.j2
+    src: security.sources.j2
     dest: "{{ lxc_rootfs }}/etc/apt/sources.list.d/security.sources"
     force: true
     mode: "0644"
