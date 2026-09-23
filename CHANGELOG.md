@@ -13,18 +13,22 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* Support for PHP 8.6 with trixie LXC containers
 * postgresql: add `postgresql_custom_datadir`
 
 ### Changed
 
-* php-multi: use complete containers names
 * apache-multi: install evodomains
 * apt: Enable ELTS for Bullseye
+* apt, lxc-php, prp: update evolix-archive-keyring
 * evoacme: upstream release 26.08
 * evocheck : upstream release 26.09.2
-* evolinux-base: Drop Microcode on virtual servers
+* evolinux-base: drop Microcode on virtual servers
 * listupgrade: old-kernel-autoremoval upstream release 26.09
+* lxc: Disable tmpfs for /tmp for Debian 13+
+* lxc-php: Rename source templates
 * minifirewall: upstream release 26.09
+* php-multi: use complete containers names
 
 ### Fixed
 
