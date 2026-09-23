@@ -13,6 +13,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* Support for PHP 8.6 with trixie LXC containers
 * postgresql: add `postgresql_custom_datadir`
 
 ### Changed
@@ -24,6 +25,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evocheck : upstream release 26.09.2
 * evolinux-base: Drop Microcode on virtual servers
 * listupgrade: old-kernel-autoremoval upstream release 26.09
+* lxc-php: Rename source templates
 * minifirewall: upstream release 26.09
 
 ### Fixed
