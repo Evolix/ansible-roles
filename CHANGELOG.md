@@ -41,6 +41,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * prometheus: configure vmagent to always use prometheus compatible names
 * redis: Do not add `Alias=` directive to instanced service
 * evolinux-base: s/screen_conf/tmux_conf/ for Tmux
+* opendkim: Quick fix regexp problem in opendkim-add.sh
 
 ### Removed
 
