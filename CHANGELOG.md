@@ -38,6 +38,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * php-multi: create /var/lib/evolinux/containers/ instead of /var/evolinux/containers/
 * prometheus: configure vmagent to always use prometheus compatible names
 * redis: Do not add `Alias=` directive to instanced service
+* opendkim: Quick fix regexp problem in opendkim-add.sh
 
 ### Removed
 
