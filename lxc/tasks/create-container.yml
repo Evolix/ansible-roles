@@ -245,3 +245,14 @@
     group: root
     force: yes
 
+- name: "Disable tmpfs for /tmp in container {{ name }}"
+  ansible.builtin.shell:
+    cmd: lxc-attach --name {{ name }} -- systemctl mask tmp.mount
+  when:
+    - release == 'trixie' or release == 'forky' or release == 'duke'
+
+- name: "Restart container {{ name }} witout tmpfs for /tmp"
+  ansible.builtin.shell:
+    cmd: lxc-attach --name {{ name }} -- reboot
+  when:
+    - release == 'trixie' or release == 'forky' or release == 'duke'
