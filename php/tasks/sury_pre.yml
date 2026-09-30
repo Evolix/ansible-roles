@@ -15,7 +15,7 @@
     group: root
   loop:
     - debsuryorg-archive-keyring_2025.11.18_all.deb
-    - evolix-archive-keyring_0~2025_all.deb
+    - evolix-archive-keyring_0~2026_all.deb
 
 - name: Install keyring packages
   ansible.builtin.apt:
@@ -23,9 +23,9 @@
     state: present
   loop:
     - debsuryorg-archive-keyring_2025.11.18_all.deb
-    - evolix-archive-keyring_0~2025_all.deb
+    - evolix-archive-keyring_0~2026_all.deb
     # - https://packages.sury.org/php/pool/main/d/debsuryorg-archive-keyring/debsuryorg-archive-keyring_2025.11.18_all.deb
-    # - https://pub.evolix.org/evolix/pool/main/e/evolix-archive-keyring/evolix-archive-keyring_0~2025_all.deb
+    # - https://pub.evolix.org/evolix/pool/main/e/evolix-archive-keyring/evolix-archive-keyring_0~2026_all.deb
   when: not ansible_check_mode
 
 - name: Add Evolix failsafe repository for Sury (Debian <12)
