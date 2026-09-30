@@ -16,6 +16,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * Support for PHP 8.6 with trixie LXC containers
 * postgresql: add `postgresql_custom_datadir`
 * evolinux-base: Screen and Tmux configuration for root user
+* evolinux-base: screen_conf and tmux_conf variables
 
 ### Changed
 
