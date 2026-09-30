@@ -14,21 +14,20 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Added
 
 * Support for PHP 8.6 with trixie LXC containers
-* postgresql: add `postgresql_custom_datadir`
 * evolinux-base: Screen and Tmux configuration for root user
-* evolinux-base: screen_conf and tmux_conf variables
+* postgresql: add `postgresql_custom_datadir`
 
 ### Changed
 
 * apache-multi: install evodomains
-* apt: Enable ELTS for Bullseye
 * apt, lxc-php, prp: update evolix-archive-keyring
+* apt: Enable ELTS for Bullseye
 * evoacme: upstream release 26.08
 * evocheck : upstream release 26.09.2
 * evolinux-base: drop Microcode on virtual servers
 * listupgrade: old-kernel-autoremoval upstream release 26.09
-* lxc: Disable tmpfs for /tmp for Debian 13+
 * lxc-php: Rename source templates
+* lxc: Disable tmpfs for /tmp for Debian 13+
 * minifirewall: upstream release 26.09
 * php-multi: use complete containers names
 
@@ -36,11 +35,12 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * apt: use the right variable in 'when' condition
 * elasticsearch: revert gpg key permissions to 0644
+* evolinux-base: s/screen_conf/tmux_conf/ for Tmux
+* opendkim: Quick fix regexp problem in opendkim-add.sh
 * packweb-apache: Fix bug that broke evoadmin-web
 * php-multi: create /var/lib/evolinux/containers/ instead of /var/evolinux/containers/
 * prometheus: configure vmagent to always use prometheus compatible names
 * redis: Do not add `Alias=` directive to instanced service
-* opendkim: Quick fix regexp problem in opendkim-add.sh
 
 ### Removed
 
