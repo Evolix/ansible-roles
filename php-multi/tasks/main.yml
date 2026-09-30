@@ -50,7 +50,7 @@
 
 - name: "Create /var/lib/evolinux/containers/"
   ansible.builtin.file:
-    path: "/var/evolinux/containers/"
+    path: "/var/lib/evolinux/containers/"
     state: "directory"
     mode: "755"
 
