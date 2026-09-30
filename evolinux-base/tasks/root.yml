@@ -162,4 +162,28 @@
 #   notify: reload sshd
 #   when: evolinux_root_disable_ssh
 
+- name: "Setting Screen root configuration"
+  ansible.builtin.lineinfile:
+    path: "/root/.screenrc"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK evolinux-base"
+    block: |
+      defscrollback 10000
+  when: evolinux_root_screen_conf | bool
+
+- name: "Setting Tmux root configuration"
+  ansible.builtin.lineinfile:
+    path: "/root/.tmux.conf"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK evolinux-base"
+    block: |
+      set-option -g history-limit 10000
+  when: evolinux_root_screen_conf | bool
+
 - ansible.builtin.meta: flush_handlers
