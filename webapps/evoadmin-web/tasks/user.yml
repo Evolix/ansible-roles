@@ -70,7 +70,21 @@
     update: False
   become: yes
   become_user: evoadmin
-  when: ansible_distribution_major_version is version('9', '>=')
+  when:
+    - ansible_distribution_major_version is version('9', '>=')
+    - not (evoadmin_multiinstance | bool)
+
+- name: "Clone evoadmin repository (apache2_multi)"
+  ansible.builtin.git:
+    repo: https://forge.evolix.net/evolix/evoadmin-web.git
+    dest: "{{ evoadmin_document_root }}"
+    version: apache2_multi
+    update: False
+  become: yes
+  become_user: evoadmin
+  when:
+    - ansible_distribution_major_version is version('13', '>=')
+    - evoadmin_multiinstance | bool
 
 - name: Change ownership on git repository
   ansible.builtin.file:
@@ -108,7 +122,7 @@
     dest: "/usr/share/scripts/evoadmin/web-add.sh"
     regexp: "WEB_SERVER=\"apache\""
     replace: "WEB_SERVER=\"apache-multi\""
-  when: "evoadmin_multiinstance"
+  when: evoadmin_multiinstance | bool
 
 # we use a shell command to have a "changed" that really reflects the result.
 - name: Fix permissions
