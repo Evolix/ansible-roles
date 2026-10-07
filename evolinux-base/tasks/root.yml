@@ -163,7 +163,7 @@
 #   when: evolinux_root_disable_ssh
 
 - name: "Setting Screen root configuration"
-  ansible.builtin.lineinfile:
+  ansible.builtin.blockinfile:
     path: "/root/.screenrc"
     owner: "root"
     group: "root"
@@ -175,7 +175,7 @@
   when: evolinux_root_screen_conf | bool
 
 - name: "Setting Tmux root configuration"
-  ansible.builtin.lineinfile:
+  ansible.builtin.blockinfile:
     path: "/root/.tmux.conf"
     owner: "root"
     group: "root"
