@@ -17,6 +17,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* evolinux-base: Add the other PGP key used to sign HPE packages
 * packweb-apache: Fix bug that broke evoadmin-web
 * redis: Do not add `Alias=` directive to instanced service
 
