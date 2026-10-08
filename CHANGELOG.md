@@ -22,6 +22,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * apache-multi: install evodomains
 * apt, lxc-php, prp: update evolix-archive-keyring
 * apt: Enable ELTS for Bullseye
+* certbot: improve haproxy/hapee hooks
 * evoacme: upstream release 26.08
 * evocheck : upstream release 26.09.2
 * evolinux-base: drop Microcode on virtual servers

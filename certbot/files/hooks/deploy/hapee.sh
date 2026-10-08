@@ -1,4 +1,6 @@
 #!/bin/sh
+# /!\ MODIFIED to work with evoacme OR certbot
+private_keys_dirs="/etc/ssl/private" # Only used for evoacme
 
 error() {
     >&2 echo "${PROGNAME}: $1"
@@ -10,12 +12,21 @@ debug() {
     fi
 }
 daemon_found_and_running() {
-    readonly hapee_main_pid=$(ps -u root u | grep hapee-lb | grep -v grep | awk '{print $2}')
+    hapee_main_pid=$(ps -u root u | grep hapee-lb | grep -v grep | awk '{print $2}')
+    readonly hapee_main_pid
+
     if [ -n "${hapee_main_pid}" ] && [ -d "/proc/${hapee_main_pid}" ] ; then
-        readonly hapee_bin=$(readlink "/proc/${hapee_main_pid}/exe")
-        readonly hapee_config_file=$(cat "/proc/${hapee_main_pid}/cmdline" | tr "\0" " " | grep --only-matching --extended-regexp -- "-f \S+" | awk '{print $2}')
-        readonly hapee_pid_file=$(cat "/proc/${hapee_main_pid}/cmdline" | tr "\0" " " | grep --only-matching --extended-regexp -- "-p \S+" | awk '{print $2}')
-        readonly hapee_service_name="$(basename -s .pid "${hapee_pid_file}").service"
+        hapee_bin=$(readlink "/proc/${hapee_main_pid}/exe")
+        readonly hapee_bin
+
+        hapee_config_file=$(cat "/proc/${hapee_main_pid}/cmdline" | tr "\0" " " | grep --only-matching --extended-regexp -- "-f \S+" | awk '{print $2}')
+        readonly hapee_config_file
+
+        hapee_pid_file=$(cat "/proc/${hapee_main_pid}/cmdline" | tr "\0" " " | grep --only-matching --extended-regexp -- "-p \S+" | awk '{print $2}')
+        readonly hapee_pid_file
+
+        hapee_service_name="$(basename -s .pid "${hapee_pid_file}").service"
+        readonly hapee_service_name
 
         kill -0 "${hapee_main_pid}" && test -n "${hapee_bin}" && test -f "${hapee_config_file}" && systemctl -q is-active "${hapee_service_name}"
     else
@@ -23,26 +34,33 @@ daemon_found_and_running() {
     fi
 }
 found_renewed_lineage() {
-    test -f "${RENEWED_LINEAGE}/fullchain.pem" && test -f "${RENEWED_LINEAGE}/privkey.pem"
+    test -f "${full_chain}" && test -f "${private_key}"
 }
 config_check() {
     ${hapee_bin} -c -f "${hapee_config_file}" > /dev/null 2>&1
 }
-concat_files() {
+move_cert_file() {
+    src_file=$1
+    dst_file=$2
+
+    dst_dir=$(dirname "${dst_file}")
+
     # shellcheck disable=SC2174
-    mkdir --mode=700 --parents "${hapee_cert_dir}"
-    chown root: "${hapee_cert_dir}"
+    mkdir --mode=700 --parents "${dst_dir}"
+    chown root: "${dst_dir}"
 
-    debug "Concatenating certificate files to ${hapee_cert_file}"
-    cat "${RENEWED_LINEAGE}/fullchain.pem" "${RENEWED_LINEAGE}/privkey.pem" > "${hapee_cert_file}"
-    chmod 600 "${hapee_cert_file}"
-    chown root: "${hapee_cert_file}"
+    debug "Moving certificate files to ${dst_file}"
+    mv "${src_file}" "${dst_file}"
+    chmod 600 "${dst_file}"
+    chown root: "${dst_file}"
 }
-cert_and_key_mismatch() {
-    hapee_cert_md5=$(openssl x509 -noout -pubkey -in "${hapee_cert_file}" | openssl md5)
-    hapee_key_md5=$(openssl pkey -pubout -in "${hapee_cert_file}" | openssl md5)
+cert_and_key_match() {
+    file=$1
 
-    test "${hapee_cert_md5}" != "${hapee_key_md5}"
+    hapee_cert_md5=$(openssl x509 -noout -pubkey -in "${file}" | openssl md5)
+    hapee_key_md5=$(openssl pkey -pubout -in "${file}" | openssl md5)
+
+    test "${hapee_cert_md5}" = "${hapee_key_md5}"
 }
 detect_hapee_cert_dir() {
     # get last field or line wich defines the crt directory
@@ -56,21 +74,34 @@ detect_hapee_cert_dir() {
 }
 main() {
     if [ -z "${RENEWED_LINEAGE}" ]; then
-      error "This script must be called only by certbot!"
+      error "This script must be called with RENEWED_LINEAGE env variable!"
     fi
 
     if daemon_found_and_running; then
-        readonly hapee_cert_dir=$(detect_hapee_cert_dir)
+        hapee_cert_dir=$(detect_hapee_cert_dir)
+        readonly hapee_cert_dir
+
+        full_chain="${RENEWED_LINEAGE}/fullchain.pem"
+        if  [ -n "${EVOACME_VHOST_NAME}" ]; then
+            # EVOACME
+            private_key=${private_keys_dirs}/$(basename "$(dirname "${RENEWED_LINEAGE}")").key
+	        cert_name=$(basename "$(dirname "${RENEWED_LINEAGE}")")
+        else
+            # CERTBOT
+            private_key=${RENEWED_LINEAGE}/privkey.pem
+            cert_name=$(basename "${RENEWED_LINEAGE}")
+        fi
 
         if found_renewed_lineage; then
             hapee_cert_file="${hapee_cert_dir}/$(basename "${RENEWED_LINEAGE}").pem"
-            failed_cert_file="/root/$(basename "${RENEWED_LINEAGE}").failed.pem"
+            tmp_cert_file="${RENEWED_LINEAGE}/${cert_name}.tmp.pem"
 
-            concat_files
+            cat "${full_chain}" "${private_key}" > "${tmp_cert_file}"
 
-            if cert_and_key_mismatch; then
-                mv "${hapee_cert_file}" "${failed_cert_file}"
-                error "Key and cert don't match, we moved the file to ${failed_cert_file} for inspection"
+            if cert_and_key_match "${tmp_cert_file}"; then
+                move_cert_file "${tmp_cert_file}" "${hapee_cert_file}"
+            else
+                error "Private key and certificate don't match, see ${tmp_cert_file} for inspection"
             fi
 
             if config_check; then
@@ -87,8 +118,11 @@ main() {
     fi
 }
 
-readonly PROGNAME=$(basename "$0")
-readonly VERBOSE=${VERBOSE:-"0"}
-readonly QUIET=${QUIET:-"0"}
+PROGNAME=$(basename "$0")
+readonly PROGNAME
+VERBOSE=${VERBOSE:-"0"}
+readonly VERBOSE
+QUIET=${QUIET:-"0"}
+readonly QUIET
 
 main

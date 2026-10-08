@@ -20,21 +20,28 @@ found_renewed_lineage() {
 config_check() {
     ${haproxy_bin} -c -f "${haproxy_config_file}" > /dev/null 2>&1
 }
-concat_files() {
+move_cert_file() {
+    src_file=$1
+    dst_file=$2
+
+    dst_dir=$(dirname "${dst_file}")
+
     # shellcheck disable=SC2174
-    mkdir --mode=700 --parents "${haproxy_cert_dir}"
-    chown root: "${haproxy_cert_dir}"
+    mkdir --mode=700 --parents "${dst_dir}"
+    chown root: "${dst_dir}"
 
-    debug "Concatenating certificate files to ${haproxy_cert_file}"
-    cat "${full_chain}" "${private_key}" > "${haproxy_cert_file}"
-    chmod 600 "${haproxy_cert_file}"
-    chown root: "${haproxy_cert_file}"
+    debug "Moving certificate files to ${dst_file}"
+    mv "${src_file}" "${dst_file}"
+    chmod 600 "${dst_file}"
+    chown root: "${dst_file}"
 }
-cert_and_key_mismatch() {
-    haproxy_cert_md5=$(openssl x509 -noout -pubkey -in "${haproxy_cert_file}" | openssl md5)
-    haproxy_key_md5=$(openssl pkey -pubout -in "${haproxy_cert_file}" | openssl md5)
+cert_and_key_match() {
+    file=$1
 
-    test "${haproxy_cert_md5}" != "${haproxy_key_md5}"
+    haproxy_cert_md5=$(openssl x509 -noout -pubkey -in "${file}" | openssl md5)
+    haproxy_key_md5=$(openssl pkey -pubout -in "${file}" | openssl md5)
+
+    test "${haproxy_cert_md5}" = "${haproxy_key_md5}"
 }
 detect_haproxy_cert_dir() {
     # get last field or line wich defines the crt directory
@@ -54,12 +61,13 @@ detect_haproxy_cert_dir() {
 }
 main() {
     if [ -z "${RENEWED_LINEAGE}" ]; then
-      error "This script must be called only by certbot!"
+      error "This script must be called with RENEWED_LINEAGE env variable!"
     fi
 
     if daemon_found_and_running; then
         readonly haproxy_config_file="/etc/haproxy/haproxy.cfg"
-        readonly haproxy_cert_dir=$(detect_haproxy_cert_dir)
+        haproxy_cert_dir="$(detect_haproxy_cert_dir)"
+        readonly haproxy_cert_dir
         
         full_chain="${RENEWED_LINEAGE}/fullchain.pem"
         if  [ -n "${EVOACME_VHOST_NAME}" ]; then
@@ -74,13 +82,14 @@ main() {
 
         if found_renewed_lineage; then
             haproxy_cert_file="${haproxy_cert_dir}/${cert_name}.pem"
-            failed_cert_file="/root/${cert_name}.failed.pem"
+            tmp_cert_file="${RENEWED_LINEAGE}/${cert_name}.tmp.pem"
 
-            concat_files
+            cat "${full_chain}" "${private_key}" > "${tmp_cert_file}"
 
-            if cert_and_key_mismatch; then
-                mv "${haproxy_cert_file}" "${failed_cert_file}"
-                error "Key and cert don't match, we moved the file to ${failed_cert_file} for inspection"
+            if cert_and_key_match "${tmp_cert_file}"; then
+                move_cert_file "${tmp_cert_file}" "${haproxy_cert_file}"
+            else
+                error "Private key and certificate don't match, see ${tmp_cert_file} for inspection"
             fi
 
             if config_check; then
@@ -97,11 +106,15 @@ main() {
     fi
 }
 
-readonly PROGNAME=$(basename "$0")
-readonly VERBOSE=${VERBOSE:-"0"}
-readonly QUIET=${QUIET:-"0"}
+PROGNAME=$(basename "$0")
+readonly PROGNAME
+VERBOSE=${VERBOSE:-"0"}
+readonly VERBOSE
+QUIET=${QUIET:-"0"}
+readonly QUIET
 
-readonly haproxy_bin=$(command -v haproxy)
+haproxy_bin=$(command -v haproxy)
+readonly haproxy_bin
 
 main
 
