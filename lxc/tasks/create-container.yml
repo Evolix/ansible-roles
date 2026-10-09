@@ -101,6 +101,8 @@
         {{ lxc_template_final_options_archive_removed }}
       {%- elif release == 'buster' and ansible_distribution_major_version is version('11', '=') -%}
         {{ lxc_template_final_options_archive }}
+      {%- elif release == 'bullseye' and ansible_distribution_major_version is version('11', '>=') -%}
+        {{ lxc_template_final_options_archive }}
       {%- elif release == 'buster' and ansible_distribution_major_version is version('12', '>=') -%}
         {{ lxc_template_final_options_archive_removed }}
       {%- else -%}
