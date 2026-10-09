@@ -25,8 +25,8 @@ The **patch** part is incremented if multiple releases happen the same month
 * apt: Enable ELTS for Bullseye
 * certbot: improve haproxy/hapee hooks
 * evoacme: upstream release 26.08
-* evocheck : upstream release 26.09.2
-* evolinux-base: drop Microcode on virtual servers
+* evocheck: upstream release 26.09.2
+* evolinux-base: drop microcode on virtual servers
 * listupgrade: old-kernel-autoremoval upstream release 26.09
 * lxc-php: Rename source templates
 * lxc: bullseye-security has been archived
@@ -59,7 +59,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * minifirewall: remove deprecated IP addresses
 * spamassassin: remove deprecated IP addresses
 * evolinux-base: disable openssh penalities
-* openvpn : add variables
+* openvpn: add variables
 
 ### Fixed
 
