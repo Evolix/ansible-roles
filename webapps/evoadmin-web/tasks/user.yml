@@ -78,7 +78,7 @@
   ansible.builtin.git:
     repo: https://forge.evolix.net/evolix/evoadmin-web.git
     dest: "{{ evoadmin_document_root }}"
-    version: apache2_multi
+    version: packweb-debian13
     update: False
   become: yes
   become_user: evoadmin
