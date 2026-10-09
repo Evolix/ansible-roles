@@ -22,6 +22,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * apache-multi: install evodomains
 * apt, lxc-php, prp: update evolix-archive-keyring
 * apt: Enable ELTS for Bullseye
+* apt: bullseye-security has been archived
 * certbot: improve haproxy/hapee hooks
 * evoacme: upstream release 26.08
 * evocheck : upstream release 26.09.2
@@ -29,6 +30,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * listupgrade: old-kernel-autoremoval upstream release 26.09
 * lxc-php: Rename source templates
 * lxc: Disable tmpfs for /tmp for Debian 13+
+* lxc: bullseye-security has been archived
 * minifirewall: upstream release 26.09
 * packweb-apache: Default to packweb-apache-v2 on Debian 13+
 * php-multi: use complete containers names
