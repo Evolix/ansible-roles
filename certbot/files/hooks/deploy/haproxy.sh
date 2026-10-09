@@ -48,7 +48,7 @@ detect_haproxy_cert_dir() {
     config_cert_dir=$(grep -r -o -E -h '^\s*bind .* crt /etc/\S+' "${haproxy_config_file}" | head -1 | awk '{ print $(NF)}')
     if [ -n "${config_cert_dir}" ]; then
         debug "Cert directory is configured with ${config_cert_dir}"
-        echo "${config_cert_dir}"
+        realpath "${config_cert_dir}"
     elif [ -d "/etc/haproxy/ssl" ]; then
         debug "No configured cert directory found, but /etc/haproxy/ssl exists"
         echo "/etc/haproxy/ssl"
