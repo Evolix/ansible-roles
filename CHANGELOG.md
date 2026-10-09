@@ -34,7 +34,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * minifirewall: upstream release 26.09
 * packweb-apache: Default to packweb-apache-v2 on Debian 13+
 * php-multi: use complete containers names
-* webapps/evoadmin-web: Clone apache2_multi if evoadmin_multiinstance
+* webapps/evoadmin-web: Clone packweb-debian13 if evoadmin_multiinstance #255
 
 ### Fixed
 
