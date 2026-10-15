@@ -27,6 +27,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evoacme: upstream release 26.08
 * evocheck: upstream release 26.09.2
 * evolinux-base: drop microcode on virtual servers
+* evomaintenance: upstream release 26.10
 * listupgrade: old-kernel-autoremoval upstream release 26.09
 * lxc-php: Rename source templates
 * lxc: bullseye-security has been archived
