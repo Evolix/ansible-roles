@@ -41,6 +41,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * apt: use the right variable in 'when' condition
 * elasticsearch: revert gpg key permissions to 0644
+* mysql/evomariabackup: fix lock file age comparison with default value
 * opendkim: Quick fix regexp problem in opendkim-add.sh
 * packweb-apache: Fix bug that broke evoadmin-web
 * php-multi: create /var/lib/evolinux/containers/ instead of /var/evolinux/containers/
