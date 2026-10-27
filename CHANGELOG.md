@@ -36,6 +36,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * packweb-apache: Default to packweb-apache-v2 on Debian 13+
 * php-multi: use complete containers names
 * webapps/evoadmin-web: Clone packweb-debian13 if evoadmin_multiinstance #255
+* php-multi: set env PHP_INI_SCAN_DIR to search config in
 
 ### Fixed
 
