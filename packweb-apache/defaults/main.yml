@@ -11,5 +11,6 @@ packweb_phpmyadmin_suffix: ""
 packweb_phpmyadmin_suffix_file: "/etc/evolinux/phpmyadmin_suffix"
 
 packweb_mysql_variant: "debian"
+packweb_really_v1: False
 
 packweb_multiphp_versions: []

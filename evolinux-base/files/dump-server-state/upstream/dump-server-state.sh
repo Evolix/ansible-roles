@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PROGNAME="dump-server-state"
-REPOSITORY="https://gitea.evolix.org/evolix/dump-server-state"
+REPOSITORY="https://forge.evolix.net/evolix/dump-server-state"
 
 VERSION="26.05.1"
 readonly VERSION

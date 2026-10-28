@@ -15,6 +15,13 @@ cross_domain_bosh = false;
 consider_bosh_secure = true;
 cross_domain_websocket = true;
 consider_websocket_secure = true;
+
+muc_log_by_default = true;
+muc_log_presences = true;
+log_all_rooms = true;
+muc_log_expires_after = "1w";
+muc_log_cleanup_interval = 4 * 60 * 60;
+
 -- https_ports = { }; -- Remove this line to prevent listening on port 5284
 
 -- by default prosody 0.12 sends cors headers, if you want to disable it uncomment the following (the config is available on 0.12.1)
@@ -61,7 +68,7 @@ VirtualHost "{{ jitsimeet_domains | first }}"
         "bosh";
         "websocket";
         "smacks"; -- XEP-0198: Stream Management
-        "pubsub";
+        --"pubsub";
         "ping"; -- Enable mod_ping
         "speakerstats";
         "external_services";
@@ -81,16 +88,19 @@ VirtualHost "{{ jitsimeet_domains | first }}"
 
 Component "conference.{{ jitsimeet_domains | first }}" "muc"
     restrict_room_creation = true
-    storage = "memory"
+    --storage = "memory"
+    storage = "internal"
     modules_enabled = {
         "muc_hide_all";
         "muc_meeting_id";
         "muc_domain_mapper";
-        "polls";
+        --"polls";
         --"token_verification";
         "muc_rate_limit";
         "muc_password_whitelist";
         "time_restricted";
+        --"message_logging";
+        "muc_mam";
     }
     admins = { "focus@auth.{{ jitsimeet_domains | first }}" }
     muc_password_whitelist = {
@@ -108,7 +118,7 @@ Component "breakout.{{ jitsimeet_domains | first }}" "muc"
         "muc_meeting_id";
         "muc_domain_mapper";
         "muc_rate_limit";
-        "polls";
+        --"polls";
     }
     admins = { "focus@auth.{{ jitsimeet_domains | first }}" }
     muc_room_locking = false
@@ -159,9 +169,11 @@ Component "lobby.{{ jitsimeet_domains | first }}" "muc"
     modules_enabled = {
         "muc_hide_all";
         "muc_rate_limit";
-        "polls";
+        --"polls";
     }
 
 Component "metadata.{{ jitsimeet_domains | first }}" "room_metadata_component"
     muc_component = "conference.{{ jitsimeet_domains | first }}"
     breakout_rooms_component = "breakout.{{ jitsimeet_domains | first }}"
+
+Component "polls.meet-beta.evolix.org" "polls_component"

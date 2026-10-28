@@ -3,7 +3,7 @@ galaxy_info:
   description: Install evocheck
   company: Evolix
 
-  issue_tracker_url: https://gitea.evolix.org/evolix/evocheck/issues
+  issue_tracker_url: https://forge.evolix.net/evolix/evocheck/issues
 
   license: GPLv2
 

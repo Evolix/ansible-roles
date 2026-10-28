@@ -25,6 +25,7 @@ lxc_php_container_releases:
   php82: "bookworm"
   php83: "bookworm"
   php84: "trixie"
+  php86: "trixie"
 
 lxc_php_services:
   php56: 'php5-fpm.service'
@@ -36,6 +37,7 @@ lxc_php_services:
   php82: 'php8.2-fpm.service'
   php83: 'php8.3-fpm.service'
   php84: 'php8.4-fpm.service'
+  php86: 'php8.6-fpm.service'
 
 # Containers are not yet ready to use /etc/apt/keyrings
 # apt_keyring_dir: "{{ ansible_distribution_major_version is version('12', '<') | ternary('/etc/apt/trusted.gpg.d', '/etc/apt/keyrings') }}"

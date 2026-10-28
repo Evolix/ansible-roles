@@ -25,12 +25,12 @@ if [ ! -f "${private_key_file}" ]; then
     chmod 640 "${private_key_file}"
 fi
 
-if ! grep --quiet "${domain}" "${key_table}"; then
+if ! grep --quiet " ${domain}:" "${key_table}"; then
     echo "Add ${domain} to KeyTable ..."
     echo "${dns_entry} ${domain}:${selector}:${private_key_file}" >> "${key_table}"
 fi
 
-if ! grep --quiet "${domain}" "${signing_table}"; then
+if ! grep --quiet "@${domain} " "${signing_table}"; then
     echo "Add ${domain} to SigningTable ..."
     echo "*@${domain} ${dns_entry}" >> "${signing_table}"
 fi

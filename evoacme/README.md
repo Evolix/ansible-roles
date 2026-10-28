@@ -1,6 +1,6 @@
 # Evoacme 2.0
 
-The upstream repository of EvoAcme is at <https://gitea.evolix.org/evolix/evoacme>
+The upstream repository of EvoAcme is at <https://forge.evolix.net/evolix/evoacme>
 
 Shell scripts are copied from the upstream repository after each release.
 No changes must be applied directly here ; patch upstream, release then copy here.

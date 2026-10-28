@@ -1,12 +1,12 @@
 #!/bin/sh
 
-VERSION="22.06.1"
+VERSION="26.10"
 
 show_version() {
     cat <<END
 evomariabackup version ${VERSION}
 
-Copyright 2004-2022 Evolix <info@evolix.fr>,
+Copyright 2004-2026 Evolix <info@evolix.fr>,
                     Éric Morino <emorino@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>
                     and others.
@@ -37,7 +37,7 @@ Options
     --verbose           Output much more information (to stdout/stderr or the log file)
     --quiet             Ouput only the most critical information
     --lock-file         Specify which lock file to use (default: /run/lock/mariabackup.lock)
-    --max-age           Lock file is ignored if older than this (default: 1d)
+    --max-age           Lock file is ignored if older than this (default: ${max_age_default})
     --force-unlock      If a lock is present, do as if it has expired
     -h|--help|-?        Display help
     -V|--version        Display version, authors and license
@@ -156,15 +156,17 @@ lock_file_age() {
     now=$(date +"%s")
 
     age=$(( now - last_change ))
-    log_debug "Lock file \`${lock_file}' is ${age} seconds old"
+    log_debug "Lock file \`${lock_file}' is ${age} seconds old (max: ${max_age_in_seconds})"
 
-    echo "${created_at}"
+    echo "${age}"
 }
 is_force_unlock() {
     test "${force_unlock}" = "1"
 }
 is_lock_file_too_old() {
-    test "$(lock_file_age)" -ge "${max_age}"
+    lock_file_age=$(lock_file_age)
+    # log_debug "Age comparison : age = \`${lock_file_age}', max_age: \`${max_age_in_seconds}'"
+    test "${lock_file_age}" -ge "${max_age_in_seconds}"
 }
 kill_or_clean_lockfile() {
     lock_file=${1:-}
@@ -470,7 +472,7 @@ lock_file=""
 log_file=""
 verbose=""
 quiet=""
-max_age=""
+max_age_in_seconds=""
 force_unlock=""
 do_backup=""
 backup_dir=""
@@ -496,7 +498,7 @@ while :; do
         -m|--max-age)
             # with value separated by space
             if [ -n "$2" ]; then
-                max_age=$(duration_in_seconds "$2")
+                max_age_in_seconds=$(duration_in_seconds "$2")
                 shift
             else
                 log_fatal 'ERROR: "-m|--max-age" requires a non-empty option argument.'
@@ -504,7 +506,7 @@ while :; do
             ;;
         --max-age=?*)
             # with value speparated by =
-            max_age=$(duration_in_seconds "${1#*=}")
+            max_age_in_seconds=$(duration_in_seconds "${1#*=}")
             ;;
         --max-age=)
             # without value
@@ -698,7 +700,8 @@ done
 lock_file="${lock_file:-/run/lock/evomariabackup.lock}"
 verbose=${verbose:-0}
 quiet=${quiet:-0}
-max_age="${max_age:-1d}"
+max_age_default="1d"
+max_age_in_seconds="${max_age_in_seconds:-$(duration_in_seconds "${max_age_default}")}"
 force_unlock=${force_unlock:-0}
 # Enable backup phase if not disabled and backup_dir is set
 if [ -z "${do_backup}" ] && [ -n "${backup_dir}" ]; then

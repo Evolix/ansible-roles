@@ -69,7 +69,7 @@
   ansible.builtin.apt:
     name:
       - freexian-archive-keyring
-  when: release == 'jessie' or release == 'stretch' or release == 'buster'
+  when: release == 'jessie' or release == 'stretch' or release == 'buster' or release == 'bullseye'
 
 - name: "Create container {{ name }}"
   community.general.lxc_container:
@@ -100,6 +100,8 @@
       {%- elif release == 'stretch' and ansible_distribution_major_version is version('11', '>=') -%}
         {{ lxc_template_final_options_archive_removed }}
       {%- elif release == 'buster' and ansible_distribution_major_version is version('11', '=') -%}
+        {{ lxc_template_final_options_archive }}
+      {%- elif release == 'bullseye' and ansible_distribution_major_version is version('11', '>=') -%}
         {{ lxc_template_final_options_archive }}
       {%- elif release == 'buster' and ansible_distribution_major_version is version('12', '>=') -%}
         {{ lxc_template_final_options_archive_removed }}
@@ -245,3 +247,14 @@
     group: root
     force: yes
 
+- name: "Disable tmpfs for /tmp in container {{ name }}"
+  ansible.builtin.shell:
+    cmd: lxc-attach --name {{ name }} -- systemctl mask tmp.mount
+  when:
+    - release == 'trixie' or release == 'forky' or release == 'duke'
+
+- name: "Restart container {{ name }} witout tmpfs for /tmp"
+  ansible.builtin.shell:
+    cmd: lxc-attach --name {{ name }} -- reboot
+  when:
+    - release == 'trixie' or release == 'forky' or release == 'duke'

@@ -1,13 +1,13 @@
 #!/bin/sh
 
 PROGNAME="evomaintenance"
-VERSION="25.11.2"
+VERSION="26.10"
 
 show_version() {
     cat <<END
 ${PROGNAME} version ${VERSION}
 
-Copyright 2007-2025 Evolix <info@evolix.fr>,
+Copyright 2007-2026 Evolix <info@evolix.fr>,
                     Gregory Colpart <reg@evolix.fr>,
                     Jérémy Lecour <jlecour@evolix.fr>,
                     Brice Waegeneire <bwaegeneire@evolix.fr>,
@@ -219,12 +219,13 @@ is_autosysadmin() {
 is_repository_readonly() {
     if [ "$(get_system)" = "OpenBSD" ]; then
         partition=$(stat -f '%Sd' $1)
-        mount | grep ${partition} | grep -q "read-only"
+        mount | grep ${partition} | grep --quiet "read-only"
     elif command -v findmnt >/dev/null; then
         mountpoint=$(stat -c '%m' $1)
-        findmnt ${mountpoint} --noheadings --output OPTIONS -O ro
+        findmnt "${mountpoint}" --noheadings --output OPTIONS -O ro > /dev/null
     else
-        grep /usr /proc/mounts | grep -E '\bro\b'
+        mountpoint=$(stat -c '%m' $1)
+        grep "${mountpoint}" /proc/mounts | grep --extended-regexp --quiet '\bro\b'
     fi
 }
 remount_repository_readwrite() {
@@ -266,6 +267,9 @@ hook_commit() {
                         # GIT_COMMITS_SHORT=$(printf "%s\n%s : %s" "${GIT_COMMITS_SHORT}" "${GIT_DIR}" "${STATS_SHORT}" | sed -e '/^$/d')
                         GIT_COMMITS=$(printf "%s\n%s\n%s" "${GIT_COMMITS}" "${GIT_DIR}" "${STATS}" | sed -e '/^$/d')
                     else
+                        # remount mount point read-write if currently readonly
+                        is_repository_readonly ${dir} && { READONLY_ORIG=1; remount_repository_readwrite ${dir}; }
+
                         # find and "git add" all existing paths in the repository
                         # that match the filter (if present)
                         if [ -n "${COMMIT_ONLY_PATH}" ]; then
@@ -282,9 +286,6 @@ hook_commit() {
                         fi
                         # Commit only if something is staged
                         if ! ${GIT_BIN} diff --cached --quiet; then
-                            # remount mount point read-write if currently readonly
-                            is_repository_readonly ${dir} && { READONLY_ORIG=1; remount_repository_readwrite ${dir}; }
-
                             # commit changes
                             ${GIT_BIN} commit --message "${MESSAGE}" --author="${USER} <${USER}@evolix.net>" --quiet
 

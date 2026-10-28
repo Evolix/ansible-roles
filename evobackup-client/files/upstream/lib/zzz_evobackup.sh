@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Evobackup client
-# See https://gitea.evolix.org/evolix/evobackup
+# See https://forge.evolix.net/evolix/evobackup
 #
 # This is a generated backup script made by:
 #   command: @COMMAND@
