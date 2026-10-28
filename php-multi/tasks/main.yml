@@ -47,6 +47,7 @@
       - "passt"
       - "catatonit"
       - "aardvark-dns"
+      - "cpp"
 
 - name: "Create /var/lib/evolinux/containers/"
   ansible.builtin.file:
