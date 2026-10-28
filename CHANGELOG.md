@@ -17,6 +17,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: Screen and Tmux configuration for root user
 * postgresql: add `postgresql_custom_datadir`
 * php-multi: install `cpp`
+* php-multi: add php default and custom files
 
 ### Changed
 
