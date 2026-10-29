@@ -2,6 +2,8 @@
 ContainerName=php-fpm7.0
 Image=php7.0.build
 
+# Depend of sd_notify signals from php-fpm
+Notify=true
 # Signal to stop process gracefully
 # https://github.com/php/php-src/blob/17baa87faddc2550def3ae7314236826bc1b1398/sapi/fpm/php-fpm.8.in#L163
 StopSignal=SIGQUIT

@@ -40,6 +40,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * php-multi: use complete containers names
 * webapps/evoadmin-web: Clone packweb-debian13 if evoadmin_multiinstance #255
 * php-multi: set env PHP_INI_SCAN_DIR to search config in
+* php-multi: php-fpm*.service depend on sd_notify from php-fpm
 
 ### Fixed
 
