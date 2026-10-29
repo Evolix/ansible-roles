@@ -62,6 +62,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * php-multi: create missing pool.d directories
 * php-multi: typo in php7.3.build
 * php-multi: fix phpsessionclean@.service
+* php-multi: fix tasks/main.yml
 
 ### Removed
 
