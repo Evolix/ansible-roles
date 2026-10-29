@@ -76,12 +76,13 @@
     state: "directory"
     mode: "755"
     
-- name: "Deploy /etc/evolinux/containers/php{{ php_multi_version }}/"
+- name: "Deploy /etc/evolinux/containers/php/Containerfile.in"
   ansible.builtin.copy:
-    src: "etc/evolinux/containers/php{{ php_multi_version }}/"
-    dest: "/etc/evolinux/containers/php{{ php_multi_version }}/"
+    src: "etc/evolinux/containers/php/Containerfile.in"
+    dest: "/etc/evolinux/containers/php/Containerfile.in"
     mode: "preserve"
     directory_mode: "755"
+    force: false
     
 - name: "Create /etc/containers/systemd/php{{ php_multi_version }}.build"
   ansible.builtin.copy:
