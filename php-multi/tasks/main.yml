@@ -97,6 +97,11 @@
     mode: "preserve"
   notify: "systemctl daemon-reload"
 
+- name: "Pull podman image php{{ php_multi_version }}"
+  containers.podman.podman_image:
+    name: "forge.evolix.net/evolix/evodocker/php/{{ php_multi_version }}"
+    state: "present"
+
 #############
 ## Systemd
 #############

@@ -1,6 +1,7 @@
 [Container]
 ContainerName=php-fpm8.4
-Image=php8.4.build
+
+Image=localhost/php/8.4:latest
 
 # Depend of sd_notify signals from php-fpm
 Notify=true

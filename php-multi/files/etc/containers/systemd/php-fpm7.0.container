@@ -1,6 +1,7 @@
 [Container]
 ContainerName=php-fpm7.0
-Image=php7.0.build
+
+Image=localhost/php/7.0:latest
 
 # Depend of sd_notify signals from php-fpm
 Notify=true
