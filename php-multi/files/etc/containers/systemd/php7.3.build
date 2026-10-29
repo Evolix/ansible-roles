@@ -1,5 +1,5 @@
 [Build]
-ImageTag=localhost/php7.3
+ImageTag=localhost/php/7.3:latest
 File=/etc/evolinux/containers/php/Containerfile.in
 
 # Because we want to control the image lifecycle manually and we want a

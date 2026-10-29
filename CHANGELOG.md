@@ -60,6 +60,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * redis: Do not add `Alias=` directive to instanced service
 * evoadmin-web: Increase proxy timeout from evoadmin's apache-front vhost
 * php-multi: create missing pool.d directories
+* php-multi: typo in php7.3.build
 
 ### Removed
 
