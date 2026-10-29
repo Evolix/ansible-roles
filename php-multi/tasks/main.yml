@@ -136,7 +136,8 @@
     state: "started"
     enabled: true
 
-- name: "Enable phpsessionclean@{{ php_multi_version }}.timer"
+- name: "Start and enable phpsessionclean@{{ php_multi_version }}.timer"
   ansible.builtin.service:
     name: "phpsessionclean@{{ php_multi_version }}.timer"
+    state: "started"
     enabled: true

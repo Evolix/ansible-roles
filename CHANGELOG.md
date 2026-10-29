@@ -61,6 +61,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evoadmin-web: Increase proxy timeout from evoadmin's apache-front vhost
 * php-multi: create missing pool.d directories
 * php-multi: typo in php7.3.build
+* php-multi: fix phpsessionclean@.service
 
 ### Removed
 

@@ -1,14 +1,14 @@
 [Unit]
 Description=Clean php session files for PHP %i
-Requires=php-fpm%i.service
-BindsTo=php-fpm%i.service
-After=php-fpm%i.service
-ConditionPathExists=/run/php-fpm%i.cid
+Requires=php%i.service
+BindsTo=php%i.service
+After=php%i.service
+ConditionPathExists=/run/php%i.cid
+JoinsNamespaceOf=php%i.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/lib/php/sessionclean
+ExecStart=/usr/bin/podman exec php%i  /usr/lib/php/sessionclean
 ProtectHome=true
 ProtectSystem=true
 PrivateTmp=true
-JoinsNamespaceOf=php-fpm%i.service
