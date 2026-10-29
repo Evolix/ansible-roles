@@ -125,6 +125,11 @@
 
 - ansible.builtin.meta: flush_handlers
 
+- name: "Enable podman-system-prune.timer"
+  ansible.builtin.service:
+    name: "podman-system-prune.timer"
+    enabled: true
+
 - name: "Start and enable php{{ php_multi_version }}.service"
   ansible.builtin.service:
     name: "php{{ php_multi_version }}.service"
