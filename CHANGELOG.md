@@ -18,6 +18,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * postgresql: add `postgresql_custom_datadir`
 * php-multi: install `cpp`
 * php-multi: add php default and custom files
+* php-multi: add phpsessionclean@ systemd's units
 
 ### Changed
 

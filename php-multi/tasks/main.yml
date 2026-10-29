@@ -97,10 +97,28 @@
     mode: "preserve"
   notify: "systemctl daemon-reload"
 
+#############
+## Systemd
+#############
+
+- name: "Deploy /etc/systemd/ tree"
+  ansible.builtin.copy:
+    src: "etc/systemd/"
+    dest: "/etc/systemd/"
+    mode: "preserve"
+    directory_mode: "755"
+    force: false
+  notify: "systemctl daemon-reload"
+
 - ansible.builtin.meta: flush_handlers
 
 - name: "Start and enable php-fpm{{ php_multi_version }}.service"
   ansible.builtin.service:
     name: "php-fpm{{ php_multi_version }}.service"
     state: "started"
+    enabled: true
+
+- name: "Enable phpsessionclean@{{ php_multi_version }}.timer"
+  ansible.builtin.service:
+    name: "phpsessionclean@{{ php_multi_version }}.timer"
     enabled: true
