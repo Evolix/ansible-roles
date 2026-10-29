@@ -42,6 +42,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * php-multi: set env PHP_INI_SCAN_DIR to search config in
 * php-multi: php-fpm*.service depend on sd_notify from php-fpm
 * php-multi: manually manage images and containers lifecycle
+* php-multi: rename units php-fpmX.Y to phpX.Y
 
 ### Fixed
 

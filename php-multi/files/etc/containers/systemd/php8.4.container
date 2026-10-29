@@ -1,7 +1,7 @@
 [Container]
-ContainerName=php-fpm7.4
+ContainerName=php8.4
 
-Image=localhost/php/7.4:latest
+Image=localhost/php/8.4:latest
 
 # Depend of sd_notify signals from php-fpm
 Notify=true
@@ -12,11 +12,11 @@ StopSignal=SIGQUIT
 # Use system timezone
 Timezone=local
 
-# Extra php.ini scan dirs. Leading ":" keeps the default /etc/php/7.4/fpm/conf.d
-Environment=PHP_INI_SCAN_DIR=:/etc/php/evolinux-common/fpm/conf.d:/etc/php/evolinux-7.4/fpm/conf.d
+# Extra php.ini scan dirs. Leading ":" keeps the default /etc/php/8.4/fpm/conf.d
+Environment=PHP_INI_SCAN_DIR=:/etc/php/evolinux-common/fpm/conf.d:/etc/php/evolinux-8.4/fpm/conf.d
 
-Entrypoint=/usr/sbin/php-fpm7.4
-Exec=--nodaemonize --fpm-config /etc/php/7.4/fpm/php-fpm.conf
+Entrypoint=/usr/sbin/php-fpm8.4
+Exec=--nodaemonize --fpm-config /etc/php/8.4/fpm/php-fpm.conf
 
 Network=host
 
@@ -39,7 +39,7 @@ Mount=type=bind,source=/run/mysqld/,destination=/run/mysqld
 ## PHP
 Mount=type=bind,source=/var/log,destination=/var/log
 Mount=type=bind,source=/etc/php/evolinux-common,destination=/etc/php/evolinux-common,readonly=true
-Mount=type=bind,source=/etc/php/evolinux-7.4,destination=/etc/php/evolinux-7.4,readonly=true
+Mount=type=bind,source=/etc/php/evolinux-8.4,destination=/etc/php/evolinux-8.4,readonly=true
 
 
 [Service]
