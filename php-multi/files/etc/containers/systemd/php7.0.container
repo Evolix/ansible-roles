@@ -2,6 +2,7 @@
 ContainerName=php7.0
 
 Image=localhost/php/7.0:latest
+AutoUpdate=local
 
 # Depend of sd_notify signals from php-fpm
 Notify=true

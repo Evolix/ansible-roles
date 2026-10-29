@@ -70,6 +70,13 @@
       - "aardvark-dns"
       - "cpp"
 
+# We never want to launch "podman auto-update" unattended
+- name: "Disable and mask podman-auto-update.timer"
+  ansible.builtin.systemd_service:
+    name: "podman-auto-update.timer"
+    enabled: false
+    masked: yes
+
 - name: "Create /var/lib/evolinux/containers/"
   ansible.builtin.file:
     path: "/var/lib/evolinux/containers/"

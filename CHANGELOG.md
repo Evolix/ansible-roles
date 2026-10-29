@@ -44,6 +44,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * php-multi: manually manage images and containers lifecycle
 * php-multi: rename units php-fpmX.Y to phpX.Y
 * php-multi: use a single Containerfile.in instead of multilple Containerfile
+* php-multi: configure `podman auto-update` as an attended process
 
 ### Fixed
 
