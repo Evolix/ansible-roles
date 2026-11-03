@@ -14,6 +14,7 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Added
 
 * Support for PHP 8.6 with trixie LXC containers
+* evolinux-base: molly-guard blocks cloud kernel on baremetal servers
 * evolinux-base: Screen and Tmux configuration for root user
 * postgresql: add `postgresql_custom_datadir`
 * php-multi: install `cpp`

@@ -14,6 +14,13 @@ if [ "${TRACE-0}" -eq "1" ]; then
     set -o xtrace
 fi
 
+is_virt_server() {
+    systemd-detect-virt --quiet
+}
+is_expected_cloud() {
+    echo "${KEXP}" | grep --quiet cloud
+}
+
 NEEDRESTART_BIN=$(command -v needrestart)
 
 if [ -n "${NEEDRESTART_BIN}" ]; then
@@ -27,6 +34,11 @@ if [ -n "${NEEDRESTART_BIN}" ]; then
 
         KEXP=$(echo "${NEEDRESTART_OUT}" | grep NEEDRESTART-KEXP | cut -d ' ' -f 2)
         KEXP_MAIN=$(echo "${KEXP}" | cut -d . -f1,2)
+
+        if is_expected_cloud && ! is_virt_server; then
+            printf "E: rebooting a non-virtual server on a cloud kernel will fail\n"
+            exit 1
+        fi
 
         # https://github.com/liske/needrestart/blob/master/README.batch.md
         # The kernel status (NEEDRESTART-KSTA) value has the following meaning:
