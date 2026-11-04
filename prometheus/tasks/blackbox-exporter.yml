@@ -1,0 +1,65 @@
+# Install blackbox-exporter
+
+- name: "prometheus-blackbox-exporter installed"
+  ansible.builtin.apt:
+    name: "prometheus-blackbox-exporter"
+    state: "present"
+
+# Configure prometheus-blackbox-exporter.service
+
+- name: "/etc/prometheus/blackbox-exporter/ directory"
+  ansible.builtin.file:
+    path: "/etc/prometheus/blackbox-exporter/"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+
+- name: "/etc/prometheus/blackbox-exporter/evolinux-default.args file"
+  ansible.builtin.template:
+    src: "blackbox-exporter/evolinux-default.args"
+    dest: "/etc/prometheus/blackbox-exporter/evolinux-default.args"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+
+- name: "/etc/prometheus/blackbox-exporter/evolinux-custom.args file"
+  ansible.builtin.template:
+    src: "blackbox-exporter/evolinux-custom.args"
+    dest: "/etc/prometheus/blackbox-exporter/evolinux-custom.args"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+    force: false
+
+# Configure and start prometheus-blackbox-exporter.service
+
+- name: "/etc/systemd/system/prometheus-blackbox-exporter.service.d/ directory"
+  ansible.builtin.file:
+    path: "/etc/systemd/system/prometheus-blackbox-exporter.service.d/"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+
+- name: "/etc/systemd/system/prometheus-blackbox-exporter.service.d/evolinux-default.conf file"
+  ansible.builtin.template:
+    src: "prometheus-blackbox-exporter.service.d/evolinux-default.conf"
+    dest: "/etc/systemd/system/prometheus-blackbox-exporter.service.d/evolinux-default.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  notify:
+    - "restart prometheus-blackbox-exporter"
+    - "daemon-reload"
+
+# Configure vmagent to scrape blackbox-exporter
+
+- name: "/etc/victoria-metrics/scrape.d/blackbox-exporter.yml file"
+  ansible.builtin.template:
+    src: "scrape.d/blackbox-exporter.yml"
+    dest: "/etc/victoria-metrics/scrape.d/blackbox-exporter.yml"
+    owner: "_victoria-metrics"
+    group: "_victoria-metrics"
+    mode: "0640"
+  notify: "reload vmagent"

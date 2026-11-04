@@ -10,6 +10,11 @@
     name: "prometheus-node-exporter"
     state: "restarted"
 
+- name: "restart prometheus-blackbox-exporter"
+  ansible.builtin.systemd:
+    name: "prometheus-blackbox-exporter"
+    state: "restarted"
+
 # /!\ DO NOT PUT HANDLERS FOR EXPORTER BELLOW THAT LINE /!\
     
 - name: "restart vmagent"

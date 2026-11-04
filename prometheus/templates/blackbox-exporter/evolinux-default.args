@@ -1,0 +1,2 @@
+# Arguments par defaut d'Evolix pour prometheus-blackbox-exporter
+--config.file /etc/prometheus/blackbox.yml
