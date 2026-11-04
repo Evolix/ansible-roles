@@ -1,0 +1,3 @@
+[Service]
+ReadWritePaths=-{{ redis_data_dir_prefix }}
+ExecStartPre=+/usr/bin/install -d --owner redis --group redis --mode 0750 {{ redis_data_dir_prefix }}

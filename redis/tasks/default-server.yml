@@ -40,10 +40,24 @@
   tags:
     - redis
 
+- name: "Create /etc/systemd/system/redis-server.service.d/ directory"
+  ansible.builtin.file:
+    path: "/etc/systemd/system/redis-server.service.d/"
+    state: "directory"
+    mode: "0755"
+
+- name: "Configure redis-server.service drop-in"
+  ansible.builtin.template:
+    src: "etc/systemd/system/redis-server.service.d/evolinux-default.conf.j2"
+    dest: "/etc/systemd/system/redis-server.service.d/evolinux-default.conf"
+    mode: "0655"
+  tags: redis
+
 - name: Redis is running and enabled on boot.
   ansible.builtin.systemd:
     name: "{{ redis_systemd_name }}"
     enabled: yes
     state: started
+    daemon_reload: yes
   tags:
     - redis

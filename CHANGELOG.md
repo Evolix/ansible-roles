@@ -47,6 +47,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * php-multi: use a single Containerfile.in instead of multilple Containerfile
 * php-multi: configure `podman auto-update` as an attended process
 * php-multi: add `pdoman-system-prune.timer`
+* redis: create directory `redis_data_dir_prefix` at runtime if missing
 
 ### Fixed
 

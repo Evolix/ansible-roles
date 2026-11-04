@@ -4,6 +4,7 @@ After=network.target
 
 [Service]
 Type=forking
+ExecStartPre=+/usr/bin/install -d --owner redis-%i --group redis-%i --mode 0750 {{ redis_data_dir_prefix }}-%i
 ExecStart=/usr/bin/redis-server {{ redis_conf_dir_prefix }}-%i/redis.conf
 PIDFile=/run/redis-%i/redis-server.pid
 TimeoutStopSec=0
