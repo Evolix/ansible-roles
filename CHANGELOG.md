@@ -14,13 +14,14 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Added
 
 * Support for PHP 8.6 with trixie LXC containers
+* evolinux-base: Install lastlog2 on Debian 13 Trixie and newer
 * evolinux-base: molly-guard blocks cloud kernel on baremetal servers
 * evolinux-base: Screen and Tmux configuration for root user
-* evolinux-base: Install lastlog2 on Debian 13 Trixie and newer
-* postgresql: add `postgresql_custom_datadir`
-* php-multi: install `cpp`
+* kvm-hosts: migrate-vm support non-DRBD migrations
 * php-multi: add php default and custom files
 * php-multi: add phpsessionclean@ systemd's units
+* php-multi: install `cpp`
+* postgresql: add `postgresql_custom_datadir`
 
 ### Changed
 

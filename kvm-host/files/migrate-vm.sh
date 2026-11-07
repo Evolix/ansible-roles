@@ -77,6 +77,7 @@ Options
                   >0 integer: abort if VM is still up
                  <=0 integer: wait infinitely
   --speed        Force migration speed (in Mbits)
+  --retry        Skip errors and retry later
   --help         Print this message and exit
   --version      Print version and exit
 
@@ -111,12 +112,21 @@ drbd_config_file() {
     echo "/etc/drbd.d/${1:-}.res"
 }
 
+is_drbd_vm() {
+    local vm=${1:-}
+
+    virsh domblklist --details "${vm}" | grep --quiet drbd
+}
+
 is_drbd_resource() {
-    resource=${1:-}
+    local resource=${1:-}
+
     test -f "$(drbd_config_file "${resource}")" && drbdadm role "${resource}" >/dev/null 2>&1
 }
 
 check_drbd_sync() {
+    local resource dstate cstate
+    
     resource=${1:-}
 
     set +e
@@ -130,9 +140,10 @@ check_drbd_sync() {
     fi
 }
 
-drbd_interface() {
-    drbd_peer=${1:-}
-    ip route get "${drbd_peer}" | grep --only-matching --extended-regexp 'dev\s+\S+' | awk '{print $2}'
+interface_for_ip() {
+    local ip=${1:-}
+
+    ip route get "${ip}" | grep --only-matching --extended-regexp 'dev\s+\S+' | awk '{print $2}'
 }
 
 interface_speed() {
@@ -232,9 +243,21 @@ interface_speed() {
 }
 
 drbd_peers() {
+    local drbd_config_file
+    
     drbd_config_file=$(drbd_config_file "${1:-}")
 
     awk '$1 ~ /^on$/ { host = $2 } $1 ~ /^address/ { sub(";$", "", $NF); split($NF, a, ":"); ip = a[1]; printf "%s:%s\n", host, ip }' "${drbd_config_file}"
+}
+kvm_peers() {
+    local file="/etc/evolinux/kvm-peers"
+
+    if [ ! -f "${file}" ]; then
+        echo "File ${file} not found, unable to guess KVM peers" >&2
+        exit 1
+    else
+        grep --extended-regexp "^[^:]+:.+$" "${file}"
+    fi
 }
 
 is_old_virsh() {
@@ -245,8 +268,7 @@ is_old_virsh() {
     return ${is_old_virsh}
 }
 is_vm_running_locally() {
-    local vm
-    local vm_list
+    local vm vm_list
 
     vm=${1:-}
     vm_list=$(virsh list --state-running --name)
@@ -254,8 +276,7 @@ is_vm_running_locally() {
     echo "${vm_list}" | grep --fixed-strings --line-regexp --quiet "${vm}"
 }
 is_vm_shutoff_locally() {
-    local vm
-    local vm_list
+    local vm vm_list
 
     vm=${1:-}
     # There is a bug in virsh on Debian 8
@@ -269,8 +290,7 @@ is_vm_shutoff_locally() {
     echo "${vm_list}" | grep --fixed-strings --line-regexp --quiet "${vm}"
 }
 is_vm_defined_locally() {
-    local vm
-    local vm_list
+    local vm vm_list
 
     vm=${1:-}
     vm_list=$(virsh list --all --name)
@@ -279,6 +299,8 @@ is_vm_defined_locally() {
 }
 
 execute_remotely() {
+    local remote command
+
     remote=${1:-}
     shift
     command=${*}
@@ -288,6 +310,8 @@ execute_remotely() {
 }
 
 set_drbd_role() {
+    local role resource remote
+
     role=${1:-}
     resource=${2:-}
     remote=${3:-""}
@@ -335,6 +359,8 @@ set_drbd_role() {
 }
 
 define_vm() {
+    local vm remote
+
     vm=${1:-}
     remote=${2:-}
 
@@ -357,6 +383,8 @@ define_vm() {
 }
 
 undefine_vm() {
+    local vm remote
+
     vm=${1:-}
     remote=${2:-}
 
@@ -380,6 +408,8 @@ undefine_vm() {
 }
 
 start_vm() {
+    local vm remote
+
     vm=${1:-}
     remote=${2:-}
 
@@ -402,6 +432,8 @@ start_vm() {
 }
 
 stop_vm() {
+    local vm remote
+
     vm=${1:-}
     remote=${2:-}
 
@@ -452,16 +484,18 @@ stop_vm() {
 }
 
 migrate_vm_to() {
+    local vm remote speed interface_name interface_speed migrate_speed
+
     vm=${1:-}
     remote_ip=${2:-}
     speed=${3:-}
 
-    drbd_interface=$(drbd_interface "${remote_ip}")
+    interface_name=$(interface_for_ip "${remote_ip}")
 
     if [ -n "${speed}" ]; then
         migrate_speed="${speed}"
     else
-        interface_speed=$(interface_speed "${drbd_interface}")
+        interface_speed=$(interface_speed "${interface_name}")
         migrate_speed=$(echo "${interface_speed}*0.8/8" | bc)
     fi
 
@@ -473,6 +507,8 @@ migrate_vm_to() {
 }
 
 migrate_to() {
+    local vm resource remote_ip remote_host speed drbd_mode
+
     vm=${1:-}
     resource=${2:-}
     remote_ip=${3:-}
@@ -481,10 +517,16 @@ migrate_to() {
 
     echo "Start migration of ${vm} to ${remote_ip} (${remote_host})"
 
+    # set locally if VM is in DRBD mode or not
+    # because we can't get this anymore after the VM is undefined
+    is_drbd_vm "${vm}" && drbd_mode=1 || drbd_mode=0
+
+    if [ "${drbd_mode}" = "1" ]; then
     check_drbd_sync "${resource}"
 
     set_drbd_role primary "${resource}" "${remote_ip}"
     sleep 1
+    fi
 
     if is_vm_running_locally "${vm}" && [ ${option_stop_before} -eq 1 ]; then
         stop_vm "${vm}"
@@ -506,8 +548,10 @@ migrate_to() {
 
     undefine_vm "${vm}"
 
+    if [ "${drbd_mode}" = "1" ]; then
     sleep 1
     set_drbd_role secondary "${resource}"
+    fi
 
     # When the report is enabled, the VM name is added when the migration finishes.
     # If the DRBD resource name is different than the VM name, it is also added on the same line.
@@ -521,16 +565,23 @@ migrate_to() {
 }
 
 migrate() {
+    local vm resource speed server_ips peers host ip current_ip current_host remote_ip remote_host
+
     vm=${1:-}
     resource=${2:-}
     speed=${3:-}
     server_ips=$(server_ips)
 
+    if is_drbd_vm "${vm}"; then
     if ! is_drbd_resource "${resource}"; then
         echo "No DRBD resource found for '${resource}\`." >&2
+        fi
+        peers=$(drbd_peers "${resource}")
+    else
+        peers=$(kvm_peers)
     fi
 
-    for peer in $(drbd_peers "${resource}"); do
+    for peer in ${peers}; do
         host=$(echo "${peer}" | cut -d':' -f1)
         ip=$(echo "${peer}" | cut -d':' -f2)
 
@@ -561,6 +612,7 @@ migrate() {
 }
 
 main() {
+    local vm vm_list_tmp running_vm_list vm_list_file count_total count_current
     # Temp file to store the list of VMs to migrate, destroyed at exit.
     vm_list_tmp=$(mktemp --tmpdir "migrate-vm.XXXXX")
     # shellcheck disable=SC2064
