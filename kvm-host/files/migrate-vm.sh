@@ -10,7 +10,7 @@
 # * use readonly variables
 # * verbose mode
 
-VERSION="26.06"
+VERSION="26.11-pre5"
 
 # If expansion is attempted on an unset variable or parameter, the shell prints an
 # error message, and, if not interactive, exits with a non-zero status.
