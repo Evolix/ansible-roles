@@ -17,6 +17,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * evolinux-base: Install lastlog2 on Debian 13 Trixie and newer
 * evolinux-base: molly-guard blocks cloud kernel on baremetal servers
 * evolinux-base: Screen and Tmux configuration for root user
+* kvm-hosts: migrate-vm can ignore errors and copy cdrom images
 * kvm-hosts: migrate-vm support non-DRBD migrations
 * php-multi: add php default and custom files
 * php-multi: add phpsessionclean@ systemd's units
