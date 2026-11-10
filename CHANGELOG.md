@@ -13,6 +13,18 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [26.11] 2026-11-10
+
+### Added
+
 * Support for PHP 8.6 with Trixie LXC containers
 * evolinux-base: Install lastlog2 on Debian 13 Trixie and newer
 * evolinux-base: molly-guard blocks cloud kernel on baremetal servers
@@ -73,7 +85,6 @@ The **patch** part is incremented if multiple releases happen the same month
 
 * packweb-apache-v2: disable broken features
 
-### Security
 
 ## [26.08] 2026-08-07
 
