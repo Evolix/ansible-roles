@@ -13,7 +13,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
-* Support for PHP 8.6 with trixie LXC containers
+* Support for PHP 8.6 with Trixie LXC containers
 * evolinux-base: Install lastlog2 on Debian 13 Trixie and newer
 * evolinux-base: molly-guard blocks cloud kernel on baremetal servers
 * evolinux-base: Screen and Tmux configuration for root user
@@ -41,33 +41,33 @@ The **patch** part is incremented if multiple releases happen the same month
 * lxc: Disable tmpfs for /tmp for Debian 13+
 * minifirewall: upstream release 26.09
 * packweb-apache: Default to packweb-apache-v2 on Debian 13+
-* php-multi: use complete containers names
-* webapps/evoadmin-web: Clone packweb-debian13 if evoadmin_multiinstance #255
-* php-multi: set env PHP_INI_SCAN_DIR to search config in
-* php-multi: php-fpm*.service depend on sd_notify from php-fpm
-* php-multi: manually manage images and containers lifecycle
-* php-multi: rename units php-fpmX.Y to phpX.Y
-* php-multi: use a single Containerfile.in instead of multilple Containerfile
-* php-multi: configure `podman auto-update` as an attended process
 * php-multi: add `pdoman-system-prune.timer`
+* php-multi: configure `podman auto-update` as an attended process
+* php-multi: manually manage images and containers lifecycle
+* php-multi: php-fpm*.service depend on sd_notify from php-fpm
+* php-multi: rename units php-fpmX.Y to phpX.Y
+* php-multi: set env PHP_INI_SCAN_DIR to search config in
+* php-multi: use a single Containerfile.in instead of multilple Containerfile
+* php-multi: use complete containers names
 * redis: create directory `redis_data_dir_prefix` at runtime if missing
+* webapps/evoadmin-web: Clone packweb-debian13 if evoadmin_multiinstance #255
 
 ### Fixed
 
 * apt: use the right variable in 'when' condition
 * elasticsearch: revert gpg key permissions to 0644
+* evoadmin-web: Increase proxy timeout from evoadmin's apache-front vhost
 * evolinux-base: Add the other PGP key used to sign HPE packages
 * mysql/evomariabackup: fix lock file age comparison with default value
 * opendkim: Quick fix regexp problem in opendkim-add.sh
 * packweb-apache: Fix bug that broke evoadmin-web
 * php-multi: create /var/lib/evolinux/containers/ instead of /var/evolinux/containers/
-* prometheus: configure vmagent to always use prometheus compatible names
-* redis: Do not add `Alias=` directive to instanced service
-* evoadmin-web: Increase proxy timeout from evoadmin's apache-front vhost
 * php-multi: create missing pool.d directories
-* php-multi: typo in php7.3.build
 * php-multi: fix phpsessionclean@.service
 * php-multi: fix tasks/main.yml
+* php-multi: typo in php7.3.build
+* prometheus: configure vmagent to always use prometheus compatible names
+* redis: Do not add `Alias=` directive to instanced service
 
 ### Removed
 
