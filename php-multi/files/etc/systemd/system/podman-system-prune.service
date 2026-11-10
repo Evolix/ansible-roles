@@ -1,0 +1,6 @@
+[Unit]
+Description=Prune unused podman images, stopped containers and build cache older than 31 days.
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/podman system prune --all --filter until=744h --force

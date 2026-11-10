@@ -15,11 +15,21 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Security
 
+## [26.10] - 2026-10-15
+
+### Changed
+
+* Rework is_repository_readonly() to make it silent
+
+### Fixed
+
+* Remount partition earlier
+
 ## [25.11.2] - 2025-11-24
 
 ### Fixed
 
-* Properly espace a backslash
+* Properly escape a backslash
 
 ## [25.11.1] - 2025-11-19
 

@@ -8,6 +8,10 @@
   ansible.builtin.shell:
     cmd: "lxc-attach --name {{ lxc_php_version }} -- systemctl restart {{ lxc_php_services[lxc_php_version] }}"
 
+- name: Reload php86-fpm
+  ansible.builtin.shell:
+    cmd: "lxc-attach --name {{ lxc_php_version }} -- systemctl reload php8.6-fpm"
+
 - name: Reload php84-fpm
   ansible.builtin.shell:
     cmd: "lxc-attach --name {{ lxc_php_version }} -- systemctl reload php8.4-fpm"

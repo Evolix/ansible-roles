@@ -189,18 +189,18 @@ main() {
     [ -d "${CSR_DIR}" ]  || error "${CSR_DIR} is not a directory"
     [ -d "${LOG_DIR}" ]  || error "${LOG_DIR} is not a directory"
 
-    #### KEY VALIDATION
+    #### KEY VALIDATION
 
     readonly SSL_KEY_FILE="${SSL_KEY_DIR}/${VHOST}.key.new"
     readonly SSL_KEY_FILE_FINAL="${SSL_KEY_DIR}/${VHOST}.key"
-    [ -f "${SSL_KEY_FILE}" ] || error "${SSL_KEY_FILE} absent"
+    [ -f "${SSL_KEY_FILE}" ] || error "${SSL_KEY_FILE} absent - Re-run make-csr"
 
     #### CSR VALIDATION
 
     # verify .csr file
     readonly CSR_FILE="${CSR_DIR}/${VHOST}.csr"
     debug "Using CSR file: ${CSR_FILE}"
-    [ -f "${CSR_FILE}" ] || error "${CSR_FILE} absent"
+    [ -f "${CSR_FILE}" ] || error "${CSR_FILE} absent - Re-run make-csr"
     [ -r "${CSR_FILE}" ] || error "${CSR_FILE} is not readable"
 
     csr_verify "${CSR_FILE}" || error "${CSR_FILE} is invalid"
@@ -257,7 +257,6 @@ main() {
     [ "${TEST}" = "1" ] && CERTBOT_MODE="${CERTBOT_MODE} --test-cert"
     [ "${QUIET}" = "1" ] && CERTBOT_MODE="${CERTBOT_MODE} --quiet"
     [ "${DRY_RUN}" = "1" ] && CERTBOT_MODE="${CERTBOT_MODE} --dry-run"
-    [ "${CERTBOT_SELF_UPGRADE}" = "0" ] && CERTBOT_MODE="${CERTBOT_MODE} --no-self-upgrade"
 
     local CERTBOT_REGISTRATION="--agree-tos"
     if [ -n "${SSL_EMAIL}" ]; then
@@ -320,7 +319,7 @@ main() {
     x509_verify "${LIVE_CERT}" || error "${LIVE_CERT} is invalid"
 
     # Use new key
-    mv "${SSL_KEY_FILE}" "${SSL_KEY_FILE_FINAL}"
+    cp -a "${SSL_KEY_FILE}" "${SSL_KEY_FILE_FINAL}"
 
     # update Apache
     sed_key_cert_path_for_apache "${VHOST}" "${LIVE_FULLCHAIN}"
@@ -376,6 +375,5 @@ readonly LOG_DIR=${LOG_DIR:-"/var/log/evoacme"}
 readonly HOOKS_DIR=${HOOKS_DIR:-"${CRT_DIR}/renewal-hooks/deploy"}
 readonly SSL_MINDAY=${SSL_MINDAY:-"30"}
 readonly SSL_EMAIL=${SSL_EMAIL:-""}
-readonly CERTBOT_SELF_UPGRADE=${CERTBOT_SELF_UPGRADE:-"0"}
 
 main ${ARGS}

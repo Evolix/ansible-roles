@@ -8,7 +8,7 @@ pre_repair
 
 
 # We always keep some reserved blocks to avoid missing some logs
-# https://gitea.evolix.org/evolix/autosysadmin/issues/22
+# https://forge.evolix.net/evolix/autosysadmin/issues/22
 RESERVED_BLOCKS_MIN=1
 
 get_mountpoints() {

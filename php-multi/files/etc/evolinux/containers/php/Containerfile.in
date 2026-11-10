@@ -1,0 +1,20 @@
+#ifndef PHP_VERSION
+#define PHP_VERSION 84
+#endif
+
+#if PHP_VERSION == 70
+FROM forge.evolix.net/evolix/evodocker/php/7.0:latest
+ENV php_version=7.0
+#elif PHP_VERSION == 73
+FROM forge.evolix.net/evolix/evodocker/php/7.3:latest
+ENV php_version=7.3
+#elif PHP_VERSION == 74
+FROM forge.evolix.net/evolix/evodocker/php/7.4:latest
+ENV php_version=7.4
+#elif PHP_VERSION == 82
+FROM forge.evolix.net/evolix/evodocker/php/8.2:latest
+ENV php_version=8.2
+#elif PHP_VERSION == 84
+FROM forge.evolix.net/evolix/evodocker/php/8.4:latest
+ENV php_version=8.4
+#endif

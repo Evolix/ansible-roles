@@ -2,7 +2,7 @@
 argument_specs:
   main:
     short_description: "Generate a certificate from a PKI."
-    decription:
+    description:
       - "Generate a certificate for the target machine, with a Common Name based on its 'ansible_fqdn'."
       - "If the defined PKI doesn't exit yet it will be created, otherwise it will be reused."
     options:

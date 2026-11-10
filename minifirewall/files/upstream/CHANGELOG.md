@@ -15,6 +15,13 @@ and this project **does not adhere to [Semantic Versioning](http://semver.org/sp
 
 ### Security
 
+## [26.09] - 2026-09-08
+
+### Changed
+
+* port 22 defaults to `SERVICESTCP3` (private)
+* improve wgitelist/blacklist scripts
+
 ## [25.11] - 2025-11-13
 
 ### Added

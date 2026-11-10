@@ -1,0 +1,14 @@
+[Unit]
+Description=Clean php session files for PHP %i
+Requires=php%i.service
+BindsTo=php%i.service
+After=php%i.service
+ConditionPathExists=/run/php%i.cid
+JoinsNamespaceOf=php%i.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/podman exec php%i  /usr/lib/php/sessionclean
+ProtectHome=true
+ProtectSystem=true
+PrivateTmp=true

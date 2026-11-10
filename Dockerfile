@@ -10,7 +10,7 @@ RUN apt-get update \
 
 RUN ansible-galaxy install --force \
     --roles-path /etc/ansible \
-    "git+https://gitea.evolix.org/evolix/ansible-roles.git,${ROLES_VERSION},roles"
+    "git+https://forge.evolix.net/evolix/ansible-roles.git,${ROLES_VERSION},roles"
 
 ENV ANSIBLE_FORCE_COLOR=1
 ENV ANSIBLE_HOST_KEY_CHECKING=false

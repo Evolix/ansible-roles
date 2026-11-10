@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PROGNAME="update-evobackup-canary"
-REPOSITORY="https://gitea.evolix.org/evolix/ansible-roles/"
+REPOSITORY="https://forge.evolix.net/evolix/ansible-roles/"
 
 VERSION="25.07"
 readonly VERSION

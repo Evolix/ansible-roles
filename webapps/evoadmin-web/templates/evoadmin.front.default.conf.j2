@@ -33,6 +33,6 @@
     ProxyPass / "http://{{ evoadmin_multiinstance_backend_port }}/"
     ProxyPassReverse / http://{{ evoadmin_multiinstance_backend_port }}/
 
-    <Proxy "http://{{ evoadmin_multiinstance_backend_port }}/">
+    <Proxy "http://{{ evoadmin_multiinstance_backend_port }}/" timeout=120>
     </Proxy>
 </VirtualHost>

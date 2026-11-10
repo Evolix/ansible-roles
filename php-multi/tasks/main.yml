@@ -19,21 +19,42 @@
     mode: "preserve"
   notify: "systemd-tmpfiles --create"
 
+- ansible.builtin.meta: flush_handlers
+
 ############
 ## PHP
 ############
 
-- name: "Create /etc/php/evolinux-common/fpm/pool.d/"
+- name: "Deploy /etc/php/evolinux-common/ tree"
+  ansible.builtin.copy:
+    src: "etc/php/evolinux-common/"
+    dest: "/etc/php/evolinux-common/"
+    owner: "root"
+    group: "root"
+    mode: "preserve"
+    directory_mode: "755"
+
+- name: "Create /etc/php/evolinux-{{ php_multi_version }}"
   ansible.builtin.file:
-    path: "/etc/php/evolinux-common/fpm/pool.d/"
+    path: "/etc/php/evolinux-{{ php_multi_version }}"
     state: "directory"
     mode: "755"
 
-- name: "Create /etc/php/evolinux-{{ php_multi_version }}/fpm/pool.d/"
+- name: "Deploy /etc/php/evolinux-{{ php_multi_version }}/ directories"
   ansible.builtin.file:
-    path: "/etc/php/evolinux-{{ php_multi_version }}/fpm/pool.d/"
+    path: "/etc/php/evolinux-{{ php_multi_version }}/{{ item.path }}"
     state: "directory"
     mode: "755"
+  with_community.general.filetree: "templates/etc/php/evolinux-VERSION/"
+  when: "item.state == 'directory'"
+
+- name: "Deploy /etc/php/evolinux-{{ php_multi_version }}/ files"
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "/etc/php/evolinux-{{ php_multi_version }}/{{ item.path }}"
+    mode: "644"
+  with_community.general.filetree: "templates/etc/php/evolinux-VERSION/"
+  when: "item.state == 'file'"
 
 ############
 ## Podman
@@ -47,24 +68,28 @@
       - "passt"
       - "catatonit"
       - "aardvark-dns"
+      - "cpp"
 
-- name: "Create /var/evolinux/containers/"
-  ansible.builtin.file:
-    path: "/var/evolinux/containers/"
-    state: "directory"
-    mode: "755"
+# We never want to launch "podman auto-update" unattended
+- name: "Disable and mask podman-auto-update.timer"
+  ansible.builtin.systemd_service:
+    name: "podman-auto-update.timer"
+    enabled: false
+    masked: yes
 
-- name: "Create /etc/evolinux/containers/php{{ php_multi_version }}/"
+- name: "Create /var/lib/evolinux/containers/"
   ansible.builtin.file:
-    path: "/etc/evolinux/containers/php{{ php_multi_version }}/"
+    path: "/var/lib/evolinux/containers/"
     state: "directory"
     mode: "755"
     
-- name: "Create /etc/evolinux/containers/php{{ php_multi_version }}/Containerfile"
+- name: "Deploy /etc/evolinux/containers/php/"
   ansible.builtin.copy:
-    src: "etc/evolinux/containers/php{{ php_multi_version }}/Containerfile"
-    dest: "/etc/evolinux/containers/php{{ php_multi_version }}/Containerfile"
+    src: "etc/evolinux/containers/php/"
+    dest: "/etc/evolinux/containers/php/"
     mode: "preserve"
+    directory_mode: "755"
+    force: false
     
 - name: "Create /etc/containers/systemd/php{{ php_multi_version }}.build"
   ansible.builtin.copy:
@@ -73,17 +98,52 @@
     mode: "preserve"
   notify: "systemctl daemon-reload"
 
-- name: "Create /etc/containers/systemd/php-fpm{{ php_multi_version }}.container"
+- name: "Create /etc/containers/systemd/php{{ php_multi_version }}.container"
   ansible.builtin.copy:
-    src: "etc/containers/systemd/php-fpm{{ php_multi_version }}.container"
-    dest: "/etc/containers/systemd/php-fpm{{ php_multi_version }}.container"
+    src: "etc/containers/systemd/php{{ php_multi_version }}.container"
+    dest: "/etc/containers/systemd/php{{ php_multi_version }}.container"
     mode: "preserve"
+  notify: "systemctl daemon-reload"
+
+- name: "Pull podman image php{{ php_multi_version }}"
+  containers.podman.podman_image:
+    name: "forge.evolix.net/evolix/evodocker/php/{{ php_multi_version }}"
+    state: "present"
+
+#############
+## Systemd
+#############
+
+- name: "Deploy /etc/systemd/ tree"
+  ansible.builtin.copy:
+    src: "etc/systemd/"
+    dest: "/etc/systemd/"
+    mode: "preserve"
+    directory_mode: "755"
+    force: false
   notify: "systemctl daemon-reload"
 
 - ansible.builtin.meta: flush_handlers
 
-- name: "Start and enable php-fpm{{ php_multi_version }}.service"
+- name: "Enable podman-system-prune.timer"
   ansible.builtin.service:
-    name: "php-fpm{{ php_multi_version }}.service"
+    name: "podman-system-prune.timer"
+    enabled: true
+
+- name: "Start php{{ php_multi_version }}-build.service"
+  ansible.builtin.service:
+    name: "php{{ php_multi_version }}-build.service"
+    state: "started"
+    enabled: true
+
+- name: "Start and enable php{{ php_multi_version }}.service"
+  ansible.builtin.service:
+    name: "php{{ php_multi_version }}.service"
+    state: "started"
+    enabled: true
+
+- name: "Start and enable phpsessionclean@{{ php_multi_version }}.timer"
+  ansible.builtin.service:
+    name: "phpsessionclean@{{ php_multi_version }}.timer"
     state: "started"
     enabled: true

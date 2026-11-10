@@ -1,13 +1,20 @@
 [Container]
-ContainerName=php-fpm7.0
-Image=php7.0.build
+ContainerName=php7.0
 
+Image=localhost/php/7.0:latest
+AutoUpdate=local
+
+# Depend of sd_notify signals from php-fpm
+Notify=true
 # Signal to stop process gracefully
 # https://github.com/php/php-src/blob/17baa87faddc2550def3ae7314236826bc1b1398/sapi/fpm/php-fpm.8.in#L163
 StopSignal=SIGQUIT
 
 # Use system timezone
 Timezone=local
+
+# Extra php.ini scan dirs. Leading ":" keeps the default /etc/php/7.0/fpm/conf.d
+Environment=PHP_INI_SCAN_DIR=:/etc/php/evolinux-common/fpm/conf.d:/etc/php/evolinux-7.0/fpm/conf.d
 
 Entrypoint=/usr/sbin/php-fpm7.0
 Exec=--nodaemonize --fpm-config /etc/php/7.0/fpm/php-fpm.conf

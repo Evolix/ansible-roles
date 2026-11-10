@@ -17,13 +17,74 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+### Removed
+
+### Security
+
+## [26.11] 2026-11-10
+
+### Added
+
+* Support for PHP 8.6 with Trixie LXC containers
+* evolinux-base: Install lastlog2 on Debian 13 Trixie and newer
+* evolinux-base: molly-guard blocks cloud kernel on baremetal servers
+* evolinux-base: Screen and Tmux configuration for root user
+* kvm-hosts: migrate-vm can ignore errors and copy cdrom images
+* kvm-hosts: migrate-vm support non-DRBD migrations
+* php-multi: add php default and custom files
+* php-multi: add phpsessionclean@ systemd's units
+* php-multi: install `cpp`
+* postgresql: add `postgresql_custom_datadir`
+
+### Changed
+
+* apache-multi: install evodomains
+* apt, lxc-php, prp: update evolix-archive-keyring
+* apt: bullseye-security has been archived
+* apt: Enable ELTS for Bullseye
+* certbot: improve haproxy/hapee hooks
+* evoacme: upstream release 26.08
+* evocheck: upstream release 26.09.2
+* evolinux-base: drop microcode on virtual servers
+* evomaintenance: upstream release 26.10
+* listupgrade: old-kernel-autoremoval upstream release 26.09
+* lxc-php: Rename source templates
+* lxc: bullseye-security has been archived
+* lxc: Disable tmpfs for /tmp for Debian 13+
+* minifirewall: upstream release 26.09
+* packweb-apache: Default to packweb-apache-v2 on Debian 13+
+* php-multi: add `pdoman-system-prune.timer`
+* php-multi: configure `podman auto-update` as an attended process
+* php-multi: manually manage images and containers lifecycle
+* php-multi: php-fpm*.service depend on sd_notify from php-fpm
+* php-multi: rename units php-fpmX.Y to phpX.Y
+* php-multi: set env PHP_INI_SCAN_DIR to search config in
+* php-multi: use a single Containerfile.in instead of multilple Containerfile
+* php-multi: use complete containers names
+* redis: create directory `redis_data_dir_prefix` at runtime if missing
+* webapps/evoadmin-web: Clone packweb-debian13 if evoadmin_multiinstance #255
+
+### Fixed
+
+* apt: use the right variable in 'when' condition
+* elasticsearch: revert gpg key permissions to 0644
+* evoadmin-web: Increase proxy timeout from evoadmin's apache-front vhost
 * evolinux-base: Add the other PGP key used to sign HPE packages
+* mysql/evomariabackup: fix lock file age comparison with default value
+* opendkim: Quick fix regexp problem in opendkim-add.sh
 * packweb-apache: Fix bug that broke evoadmin-web
+* php-multi: create /var/lib/evolinux/containers/ instead of /var/evolinux/containers/
+* php-multi: create missing pool.d directories
+* php-multi: fix phpsessionclean@.service
+* php-multi: fix tasks/main.yml
+* php-multi: typo in php7.3.build
+* prometheus: configure vmagent to always use prometheus compatible names
 * redis: Do not add `Alias=` directive to instanced service
 
 ### Removed
 
-### Security
+* packweb-apache-v2: disable broken features
+
 
 ## [26.08] 2026-08-07
 
@@ -32,7 +93,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * minifirewall: remove deprecated IP addresses
 * spamassassin: remove deprecated IP addresses
 * evolinux-base: disable openssh penalities
-* openvpn : add variables
+* openvpn: add variables
 
 ### Fixed
 
@@ -140,7 +201,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * php-multi: make phpContainer more robust
 * redis: fix service template for Debian 12/13
 * tomcat: show critical instances before overview
-* webapps/evoadmin-web: clone repository from new forge gitea.evolix.org
+* webapps/evoadmin-web: clone repository from new forge forge.evolix.net
 * evoacme: upstream release 26.05
 
 ### Fixed
@@ -1943,7 +2004,7 @@ nagios-nrpe: remove `monitoringctl_branch` variable, since 2484a00a1 removes ins
 
 ### Changed
 
-* changed remote repository to <https://gitea.evolix.org/evolix/ansible-roles>
+* changed remote repository to <https://forge.evolix.net/evolix/ansible-roles>
 * apt: Ensure jessie-backport from archives.debian.org is accepted
 * apt: Remove jessie-update suite as it's no longer exists
 * apt: Replace mirror.evolix.org by archives.debian.org for jessie-backport

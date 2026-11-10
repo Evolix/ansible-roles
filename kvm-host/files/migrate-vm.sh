@@ -7,9 +7,10 @@
 # * logging (stdout/stderr + syslog)
 # * more checks, rollback if needed…
 # * different return codes for different errors
-# * use local and readonly variables
+# * use readonly variables
+# * verbose mode
 
-VERSION="26.06"
+VERSION="26.11"
 
 # If expansion is attempted on an unset variable or parameter, the shell prints an
 # error message, and, if not interactive, exits with a non-zero status.
@@ -64,21 +65,28 @@ Usage: ${PROGNAME} --vms <vm1-name>[,<vm2-name>]
   or   ${PROGNAME} --all
 
 Options
-  --vms          Migrate this list of VMs
-  --all          Migrate all running VMs
-  --[no-]report  Store remotely the list of migrated VMs
-  --report-path  Remote path for the report
-  --hot          Migrate VMs as they are (default)
-  --cold         Stop before and start after migration
-  --[no-]stop-before Stop VMs before migration
-  --[no-]start-after Start VMs after migration
-  --stop-timeout Seconds to wait for the VM to stop
-                 default: 300 seconds
-                  >0 integer: abort if VM is still up
-                 <=0 integer: wait infinitely
-  --speed        Force migration speed (in Mbits)
-  --help         Print this message and exit
-  --version      Print version and exit
+  --vms         Migrate this list of VMs
+  --all         Migrate all running VMs
+  --[no-]report Store remotely the list of migrated VMs
+  --report-path Remote path for the report
+  --hot         Migrate VMs as they are (default)
+  --cold        Stop before and start after migration
+  --[no-]stop-before
+                Stop VMs before migration
+  --[no-]start-after
+                Start VMs after migration
+  --stop-timeout
+                Seconds to wait for the VM to stop
+                default: 300 seconds
+                 >0 integer: abort if VM is still up
+                <=0 integer: wait infinitely
+  --speed       Force migration speed (in Mbits)
+  --[no-]ignore-errors
+                Continue the list if error on VM (default)
+  --[no-]copy-cdrom
+                Copy cdrom image to remote server (default)
+  --help        Print this message and exit
+  --version     Print version and exit
 
 For multi-line inputs, a line beginning with # is ignored.
 
@@ -111,31 +119,65 @@ drbd_config_file() {
     echo "/etc/drbd.d/${1:-}.res"
 }
 
+has_drbd_volume() {
+    local vm=${1:-}
+
+    virsh domblklist --details "${vm}" | grep --quiet drbd
+}
+
+cdrom_volumes() {
+    local vm=${1:-}
+
+    virsh domblklist --details "${vm}" | grep cdrom | awk '{print $4}' | grep --invert-match --fixed-strings --line-regexp -- "-"
+}
+has_cdrom_volumes() {
+    local vm=${1:-}
+
+    cdrom_volumes "${vm}" > /dev/null 2>&1
+}
+copy_cdrom_to() {
+    local vm remote image_path image_dir
+
+    vm=${1:-}
+    remote=${2:-}
+
+    for image_path in $(cdrom_volumes "${vm}"); do
+        image_dir=$(dirname "${image_path}")
+
+        printf "Syncing %s\n" "$(basename "${image_path}")"
+        rsync --archive --quiet "${image_path}" "${remote}:${image_dir}"
+    done
+}
+
 is_drbd_resource() {
-    resource=${1:-}
+    local resource=${1:-}
+
     test -f "$(drbd_config_file "${resource}")" && drbdadm role "${resource}" >/dev/null 2>&1
 }
 
 check_drbd_sync() {
+    local resource dstate cstate
+    
     resource=${1:-}
 
-    set +e
     dstate=$(drbdadm dstate "${resource}" | grep -vF 'UpToDate/UpToDate')
     cstate=$(drbdadm cstate "${resource}" | grep -vF 'Connected')
-    set -e
 
     if [ -n "${dstate}" ] || [ -n "${cstate}" ]; then
         echo "DRBD resource ${resource} is not up-to-date" >&2
-        exit 1
+        return 1
     fi
 }
 
-drbd_interface() {
-    drbd_peer=${1:-}
-    ip route get "${drbd_peer}" | grep --only-matching --extended-regexp 'dev\s+\S+' | awk '{print $2}'
+interface_for_ip() {
+    local ip=${1:-}
+
+    ip route get "${ip}" | grep --only-matching --extended-regexp 'dev\s+\S+' | awk '{print $2}'
 }
 
 interface_speed() {
+    local speed min_speed interface fallback_speed speed_path bridge_path bridge_iface bonding_speed_path lower_ifaces first_lower_iface new_iface
+
     interface=${1:-}
     fallback_speed="1000"
     speed_path="/sys/class/net/${interface}/speed"
@@ -221,6 +263,7 @@ interface_speed() {
                 new_iface=$(basename "$(realpath "${first_lower_iface}")")
                 # echo "${interface} is in fact ${new_iface}" >&2
                 # recursice call to self, but with the real interface
+
                 interface_speed "${new_iface}"
             else
                 echo "${fallback_speed}"
@@ -232,9 +275,21 @@ interface_speed() {
 }
 
 drbd_peers() {
+    local drbd_config_file
+    
     drbd_config_file=$(drbd_config_file "${1:-}")
 
     awk '$1 ~ /^on$/ { host = $2 } $1 ~ /^address/ { sub(";$", "", $NF); split($NF, a, ":"); ip = a[1]; printf "%s:%s\n", host, ip }' "${drbd_config_file}"
+}
+kvm_peers() {
+    local peers_file="/etc/evolinux/kvm-peers"
+
+    if [ ! -f "${peers_file}" ]; then
+        echo "File ${peers_file} not found, unable to guess KVM peers" >&2
+        exit 2
+    else
+        grep --extended-regexp --invert-match "^\s*#" "${peers_file}"
+    fi
 }
 
 is_old_virsh() {
@@ -242,11 +297,11 @@ is_old_virsh() {
         dpkg --compare-versions "$(virsh --version)" lt '3.0.0'
         is_old_virsh=$?
     fi
+    # shellcheck disable=SC2086
     return ${is_old_virsh}
 }
 is_vm_running_locally() {
-    local vm
-    local vm_list
+    local vm vm_list
 
     vm=${1:-}
     vm_list=$(virsh list --state-running --name)
@@ -254,8 +309,7 @@ is_vm_running_locally() {
     echo "${vm_list}" | grep --fixed-strings --line-regexp --quiet "${vm}"
 }
 is_vm_shutoff_locally() {
-    local vm
-    local vm_list
+    local vm vm_list
 
     vm=${1:-}
     # There is a bug in virsh on Debian 8
@@ -269,8 +323,7 @@ is_vm_shutoff_locally() {
     echo "${vm_list}" | grep --fixed-strings --line-regexp --quiet "${vm}"
 }
 is_vm_defined_locally() {
-    local vm
-    local vm_list
+    local vm vm_list
 
     vm=${1:-}
     vm_list=$(virsh list --all --name)
@@ -279,6 +332,8 @@ is_vm_defined_locally() {
 }
 
 execute_remotely() {
+    local remote command
+
     remote=${1:-}
     shift
     command=${*}
@@ -288,6 +343,8 @@ execute_remotely() {
 }
 
 set_drbd_role() {
+    local role resource remote retval retcode
+
     role=${1:-}
     resource=${2:-}
     remote=${3:-""}
@@ -299,7 +356,7 @@ set_drbd_role() {
         ;;
     *)
         echo "Unknown DRBD role '${role}'" >&2
-        exit 1
+        return 1
         ;;
     esac
 
@@ -308,33 +365,35 @@ set_drbd_role() {
         retcode=$?
         if [ ${retcode} != 0 ]; then
             echo "An error occurred while setting ${resource} as ${role} : ${retval}" >&2
-            exit 1
+            return 1
         fi
 
         retval=$(eval "${verify_command}")
         retcode=$?
         if [ ${retcode} != 0 ]; then
             echo "Role has not been set to ${role} on ${resource}. Abort!" >&2
-            exit 1
+            return 1
         fi
     else
         retval=$(execute_remotely "${remote}" "${set_command}")
         retcode=$?
         if [ ${retcode} != 0 ]; then
             echo "An error occurred while remotely setting ${resource} as ${role} : ${retval}" >&2
-            exit 1
+            return 1
         fi
 
         retval=$(execute_remotely "${remote}" "${verify_command}")
         retcode=$?
         if [ ${retcode} != 0 ]; then
             echo "Role has not been remotely set to ${role} on ${resource}. Abort!" >&2
-            exit 1
+            return 1
         fi
     fi
 }
 
 define_vm() {
+    local vm remote retval retcode
+
     vm=${1:-}
     remote=${2:-}
 
@@ -347,39 +406,65 @@ define_vm() {
         # fi
         echo "Defining a VM locally is not supported yet. Let's skip this step." >&2
     else
-        retval=$(virsh dumpxml "${vm}" | ssh "${remote}" virsh define /dev/stdin)
+        # ssh "${remote}" "virsh list --name"
+        # echo "Define ${vm} on ${remote}"
+        # shellcheck disable=SC2029
+        retval=$(ssh "${remote}" "virsh dumpxml ${vm} > /etc/libvirt/qemu/${vm}.xml")
         retcode=$?
         if [ ${retcode} != 0 ]; then
             echo "An error occurred while remotely defining ${vm} : ${retval}" >&2
-            exit 1
+            return 1
+        # else
+        #     echo "Define ${vm} on ${remote}: OK"
         fi
     fi
 }
 
 undefine_vm() {
+    local vm remote command xml_file retval retcode
+
     vm=${1:-}
     remote=${2:-}
+    xml_file="/etc/libvirt/qemu/${vm}.xml"
 
-    command="virsh undefine --nvram ${vm}"
+    command="virsh undefine --nvram ${vm} 2>&1"
 
     if [ -z "${remote}" ]; then
-        retval=$(eval "${command}")
-        retcode=$?
-        if [ ${retcode} != 0 ]; then
-            echo "An error occurred while undefining ${vm} : ${retval}" >&2
-            exit 1
+        # Undefine the VM if it is defined
+        if virsh list --name | grep --quiet --fixed-strings --line-regexp "${vm}"; then
+            retval=$(eval "${command}")
+            retcode=$?
+            if [ ${retcode} != 0 ]; then
+                echo "An error occurred while undefining ${vm} : ${retval}" >&2
+                return 1
+            # else
+            #     echo "Undefine ${vm}: OK"
+            fi
         fi
+        # Delete XML file if it still exists
+        test -f "${xml_file}" && rm "${xml_file}"
     else
-        retval=$(execute_remotely "${remote}" "${command}")
-        retcode=$?
-        if [ ${retcode} != 0 ]; then
-            echo "An error occurred while remotely undefining ${vm}: ${retval}" >&2
-            exit 1
+        # Undefine the VM if it is defined
+        if ssh "${remote}" "virsh list --name" | grep --quiet --fixed-strings --line-regexp "${vm}"; then
+            retval=$(execute_remotely "${remote}" "${command}")
+            retcode=$?
+            if [ ${retcode} != 0 ]; then
+                echo "An error occurred while remotely undefining ${vm}: ${retval}" >&2
+                return 1
+            # else
+            #     echo "Undefine ${vm}: OK"
+            fi
         fi
+        # Delete XML file if it still exists
+        # shellcheck disable=SC2029
+        ssh "${remote}" "test -f ${xml_file} && rm ${xml_file}"
     fi
+    return 0
 }
 
 start_vm() {
+    local vm remote retval retcode
+
     vm=${1:-}
     remote=${2:-}
 
@@ -393,7 +478,7 @@ start_vm() {
             retcode=$?
             if [ ${retcode} != 0 ]; then
                 echo "An error occurred while remotely starting ${vm} : ${retval}" >&2
-                exit 1
+                return 1
             else
                 echo "VM ${vm} is started" >&2
             fi
@@ -402,6 +487,8 @@ start_vm() {
 }
 
 stop_vm() {
+    local vm remote retval retcode timeout timeout_word shutoff start elapsed
+
     vm=${1:-}
     remote=${2:-}
 
@@ -410,14 +497,12 @@ stop_vm() {
         retcode=$?
         if [ ${retcode} != 0 ]; then
             echo "An error occurred while stopping ${vm} : ${retval}" >&2
-            exit 1
+            return 1
         fi
 
-        local timeout
         timeout=${option_stop_timeout}
 
-        local timeout_word
-        if [ ${option_stop_timeout} -le 0 ]; then
+        if [ "${option_stop_timeout}" -le 0 ]; then
             timeout_word="infinitely"
         else
             timeout_word="${option_stop_timeout}s"
@@ -429,6 +514,7 @@ stop_vm() {
             start=$(date +%s)
             elapsed=$(( $(date +%s) - start ))
             # wait for the shutoff, with a positive timeout or infinitely (timeout <= 0)
+            # shellcheck disable=SC2086
             while [ ${shutoff} -eq 0 ] && { [ ${elapsed} -le ${timeout} ] || [ ${timeout} -le 0 ] ; } ; do
                 if is_vm_shutoff_locally "${vm}"; then
                     shutoff=1
@@ -441,7 +527,7 @@ stop_vm() {
             printf "\n"
             if ! is_vm_shutoff_locally "${vm}"; then
                 echo "Stopping ${vm} timed-out after ${elapsed} seconds" >&2
-                exit 1
+                return 1
             # else
             #     echo "VM ${vm} stopped after ${elapsed} seconds"
             fi
@@ -452,16 +538,18 @@ stop_vm() {
 }
 
 migrate_vm_to() {
+    local vm remote speed interface_name interface_speed migrate_speed
+
     vm=${1:-}
     remote_ip=${2:-}
     speed=${3:-}
 
-    drbd_interface=$(drbd_interface "${remote_ip}")
+    interface_name=$(interface_for_ip "${remote_ip}")
 
     if [ -n "${speed}" ]; then
         migrate_speed="${speed}"
     else
-        interface_speed=$(interface_speed "${drbd_interface}")
+        interface_speed=$(interface_speed "${interface_name}")
         migrate_speed=$(echo "${interface_speed}*0.8/8" | bc)
     fi
 
@@ -473,6 +561,8 @@ migrate_vm_to() {
 }
 
 migrate_to() {
+    local vm resource remote_ip remote_host speed drbd_mode
+
     vm=${1:-}
     resource=${2:-}
     remote_ip=${3:-}
@@ -481,33 +571,48 @@ migrate_to() {
 
     echo "Start migration of ${vm} to ${remote_ip} (${remote_host})"
 
-    check_drbd_sync "${resource}"
+    # set locally if VM is in DRBD mode or not
+    # because we can't get this anymore after the VM is undefined
+    has_drbd_volume "${vm}" && drbd_mode=1 || drbd_mode=0
 
-    set_drbd_role primary "${resource}" "${remote_ip}"
-    sleep 1
+    if [ "${drbd_mode}" = "1" ]; then
+        check_drbd_sync "${resource}"
+
+        set_drbd_role primary "${resource}" "${remote_ip}" || return 1
+        sleep 1
+    fi
+
+    # Copy CDROM images if needed
+    if has_cdrom_volumes "${vm}"; then
+        if [ "${option_copy_cdrom}" -eq 1 ]; then
+            copy_cdrom_to "${vm}" "${remote_ip}"
+        fi
+    fi
 
     if is_vm_running_locally "${vm}" && [ ${option_stop_before} -eq 1 ]; then
-        stop_vm "${vm}"
+        stop_vm "${vm}" || return 1
     fi
 
     if is_vm_running_locally "${vm}"; then
-        migrate_vm_to "${vm}" "${remote_ip}" "${speed}"
+        migrate_vm_to "${vm}" "${remote_ip}" "${speed}" || return 1
     else
         if [ ${option_start_after} -eq 0 ]; then
             echo "${vm} is not running locally, so it won't be started on ${remote_host}"
         fi
     fi
 
-    define_vm "${vm}" "${remote_ip}"
+    define_vm "${vm}" "${remote_ip}" || return 1
 
     if [ ${option_start_after} -eq 1 ]; then
-        start_vm "${vm}" "${remote_ip}"
+        start_vm "${vm}" "${remote_ip}" || return 1
     fi
 
     undefine_vm "${vm}"
 
-    sleep 1
-    set_drbd_role secondary "${resource}"
+    if [ "${drbd_mode}" = "1" ]; then
+        sleep 1
+        set_drbd_role secondary "${resource}" || return 1
+    fi
 
     # When the report is enabled, the VM name is added when the migration finishes.
     # If the DRBD resource name is different than the VM name, it is also added on the same line.
@@ -521,16 +626,24 @@ migrate_to() {
 }
 
 migrate() {
+    local vm resource speed server_ips peers host ip current_ip current_host remote_ip remote_host
+
     vm=${1:-}
     resource=${2:-}
     speed=${3:-}
     server_ips=$(server_ips)
 
-    if ! is_drbd_resource "${resource}"; then
-        echo "No DRBD resource found for '${resource}\`." >&2
+    if has_drbd_volume "${vm}"; then
+        if ! is_drbd_resource "${resource}"; then
+            echo "No DRBD resource found for '${resource}\`." >&2
+            return 1
+        fi
+        peers=$(drbd_peers "${resource}")
+    else
+        peers=$(kvm_peers)
     fi
 
-    for peer in $(drbd_peers "${resource}"); do
+    for peer in ${peers}; do
         host=$(echo "${peer}" | cut -d':' -f1)
         ip=$(echo "${peer}" | cut -d':' -f2)
 
@@ -545,9 +658,10 @@ migrate() {
     done
 
     if is_vm_defined_locally "${vm}"; then
-        migrate_to "${vm}" "${resource}" "${remote_ip}" "${remote_host}" "${speed}"
+        migrate_to "${vm}" "${resource}" "${remote_ip}" "${remote_host}" "${speed}" || return 1
     else
         echo "VM \"${vm}\" is not defined." >&2
+        return 1
     fi
 
     # if is_vm_running_locally "${vm}"; then
@@ -561,6 +675,8 @@ migrate() {
 }
 
 main() {
+    local vm vm_list_tmp running_vm_list vm_list_file count_total retcode
+
     # Temp file to store the list of VMs to migrate, destroyed at exit.
     vm_list_tmp=$(mktemp --tmpdir "migrate-vm.XXXXX")
     # shellcheck disable=SC2064
@@ -591,7 +707,6 @@ main() {
 
     # Initialize counters
     count_total=$(wc -l "${vm_list_tmp}" | cut -d ' ' -f 1)
-    count_current=0
 
     # If report is not explicitely enabled or disabled
     if [ -z "${option_report}" ] ; then
@@ -609,13 +724,42 @@ main() {
     fi
 
     # Migrate each VM in the list
-    while IFS= read -r line; do
-        count_current=$((count_current + 1))
+    while true; do
+        # fetch the first line
+        line=$(head -n 1 "${vm_list_tmp}")
+        # remove the first line
+        sed --in-place "1d" "${vm_list_tmp}"
+        # count the number of remaining lines
+        remaining=$(wc -l "${vm_list_tmp}" | cut -d ' ' -f1)
+        
         vm=$(echo "${line}" | cut -d: -f1)
         resource=$(echo "${line}" | cut -d: -f2)
-        echo "[$(date +'%Y-%m-%d %H:%M:%S')] VM ${count_current}/${count_total}: ${vm} (resource: ${resource})"
+        echo "[$(date +'%Y-%m-%d %H:%M:%S')] VM $((count_total - remaining))/${count_total}: ${vm} (resource: ${resource})"
+
         migrate "${vm}" "${resource}" "${option_speed}"
-    done < "${vm_list_tmp}"
+        retcode=$?
+
+        if [ "${retcode}" -eq 0 ]; then
+            # migration success, do nothing
+            :
+        else
+            # echo "Error migrating ${vm}" >&2
+            if [ "${option_ignore_errors}" -eq 1 ]; then
+                # echo "Ignore error, continue" >&2
+                # wait a bit for global interrupt opportunity
+                sleep 1
+            else
+                echo "EXIT" >&2
+                exit 3
+            fi
+        fi
+        
+        # re-count the number of remaining lines
+        remaining=$(wc -l "${vm_list_tmp}" | cut -d ' ' -f1)
+        if [ "${remaining}" -le "0" ]; then
+            break
+        fi
+    done
 
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] Finish"
 
@@ -643,6 +787,8 @@ fi
 option_all=0
 option_report=""
 option_report_path=""
+option_ignore_errors=1
+option_copy_cdrom=1
 option_stop_before=0
 option_start_after=0
 option_stop_timeout=300
@@ -690,6 +836,20 @@ while :; do
             # without value
             printf 'ERROR: "--report-path" requires a non-empty option argument.\n' >&2
             exit 1
+            ;;
+
+        --copy-cdrom)
+            option_copy_cdrom=1
+            ;;
+        --no-copy-cdrom)
+            option_copy_cdrom=0
+            ;;
+
+        --ignore-errors)
+            option_ignore_errors=1
+            ;;
+        --no-ignore-errors)
+            option_ignore_errors=0
             ;;
 
         --stop-before)

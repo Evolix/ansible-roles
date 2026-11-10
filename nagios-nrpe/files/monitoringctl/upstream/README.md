@@ -18,7 +18,7 @@ Its main features are to verify the checks status, and to disable (e.g. downtime
 
 ### Install monitoringctl
 
-Use [nagios-nrpe](https://gitea.evolix.org/evolix/ansible-roles/src/branch/stable/nagios-nrpe) role from `evolix/ansible-roles`.
+Use [nagios-nrpe](https://forge.evolix.net/evolix/ansible-roles/src/branch/stable/nagios-nrpe) role from `evolix/ansible-roles`.
 
 
 ### Configure NRPE
@@ -106,7 +106,7 @@ See `monitoringctl help` for more details.
 
 ### Update monitoringctl
 
-Use [nagios-nrpe](https://gitea.evolix.org/evolix/ansible-roles/src/branch/stable/nagios-nrpe) role from `evolix/ansible-roles`.
+Use [nagios-nrpe](https://forge.evolix.net/evolix/ansible-roles/src/branch/stable/nagios-nrpe) role from `evolix/ansible-roles`.
 
 
 
