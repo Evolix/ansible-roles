@@ -1,0 +1,8 @@
+---
+
+- name: "jq is present"
+  ansible.builtin.apt:
+    name: jq
+    state: present
+
+- ansible.builtin.import_tasks: nrpe.yml

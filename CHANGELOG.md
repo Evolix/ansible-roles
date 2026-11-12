@@ -13,6 +13,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Added
 
+* nrpe-check-pve: new role for PVE checks
+
 ### Changed
 
 ### Fixed

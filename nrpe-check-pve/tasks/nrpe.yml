@@ -1,0 +1,34 @@
+---
+
+- ansible.builtin.include_role:
+    name: evolix/remount-usr
+
+- name: deploy check pve_replication
+  ansible.builtin.copy:
+    src: check_pve_replication.sh
+    dest: /usr/local/lib/nagios/plugins/check_pve_replication
+    mode: "0755"
+    owner: root
+    group: nagios
+
+- name: Add check pve_replication on nrpe configuration
+  ansible.builtin.blockinfile:
+    path: /etc/nagios/nrpe.d/evolix.cfg
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - pve_replication "
+    block: |
+      command[check_pve_replication]=/usr/local/lib/monitoringctl/alerts_wrapper --name pve_replication -- sudo /usr/local/lib/nagios/plugins/check_pve_replication -c {{ nrpe_check_pve_replication_critical | mandatory | int }}
+  notify: restart nagios-nrpe-server
+
+- name: Is evolinux sudoers installed?
+  ansible.builtin.stat:
+    path: /etc/sudoers.d/evolinux
+  register: sudoers_evolinux
+
+- name: sudo without password for nagios
+  ansible.builtin.lineinfile:
+    dest: /etc/sudoers.d/evolinux
+    regexp: 'check_pve_replication'
+    line: 'nagios          ALL = NOPASSWD: /usr/local/lib/nagios/plugins/check_pve_replication'
+    insertafter: '^nagios'
+    validate: "/usr/sbin/visudo -cf %s"
+  when: sudoers_evolinux.stat.exists
