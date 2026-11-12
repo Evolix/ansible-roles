@@ -2,7 +2,7 @@
 
 # Variables
 
-version="1.0"
+version="26.11.2"
 hostname=$(hostname)
 replication_ids=$(pvesh get "/nodes/${hostname}/replication/" --noheader --noborder --output-format json | jq '.[].id' | tr -d '"')
 time_crit="7200"
