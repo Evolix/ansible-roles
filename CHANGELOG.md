@@ -68,6 +68,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * php-multi: use complete containers names
 * redis: create directory `redis_data_dir_prefix` at runtime if missing
 * webapps/evoadmin-web: Clone packweb-debian13 if evoadmin_multiinstance #255
+* haproxy: add variable `haproxy_config_template` to replace magical behaviour for overriding haproxy.cfg template
 
 ### Fixed
 

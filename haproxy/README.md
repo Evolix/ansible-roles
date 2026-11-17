@@ -12,9 +12,10 @@ Everything is in the `tasks/main.yml` file.
 
 ## Configuration templates
 
-The roles compiles a `haproxy.cfg` file based on templates that are looked up in that order :
-1. `{{ playbook_dir}}/templates/haproxy/haproxy.{{ inventory_hostname}}.cfg.j2`
-2. `{{ playbook_dir}}/templates/haproxy/haproxy.{{ host_group}}.cfg.j2` (NB : `host_group` is not a core variable, it must be defined in `group_vars` files.)
-3. `{{ playbook_dir}}/templates/haproxy/haproxy.default.cfg.j2`
+The roles compiles a `haproxy.cfg` file based on the template set by the
+variable `haproxy_config_template`. To override the default file `haproxy/templates/haproxy.role-default.cfg.j2`, your file need to be have a filename other than `haproxy.role-default.cfg.j2`.
 
-If nothing is found, the role falls back to the template embedded in the role : `templates/haproxy.default.cfg.j2`
+For example set `haproxy_config_template` to `"haproxy.cfg.j2"`, and put
+that file in ``{{ playbook_dir}}/templates/haproxy.cfg.j2`. Another pattern
+could be to set `haproxy_config_template` to `"haproxy/lb.cfg.j2"`, and put
+that file in ``{{ playbook_dir}}/templates/haproxy/lb.cfg.j2`.

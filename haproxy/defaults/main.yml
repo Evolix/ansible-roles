@@ -24,8 +24,14 @@ haproxy_stats_users: []
 #   - { login: "", password: "" }
 
 haproxy_backports: "{{ haproxy_jessie_backports | default(false, true) }}"
+
 haproxy_update_config: True
 haproxy_force_config: True
+# To use your own, set this variable in your group/host/play vars to a
+# value **other** than the one set here. For examples:
+# haproxy_config_template: "haproxy.cfg.j2"
+# haproxy_config_template: "haproxy.lb.cfg.j2"
+haproxy_config_template: "haproxy.role-default.cfg.j2"
 
 haproxy_socket: /run/haproxy/admin.sock
 haproxy_chroot: /var/lib/haproxy
