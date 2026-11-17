@@ -46,13 +46,13 @@ move_cert_file() {
     dst_dir=$(dirname "${dst_file}")
 
     # shellcheck disable=SC2174
-    mkdir --mode=700 --parents "${dst_dir}"
-    chown root: "${dst_dir}"
+    mkdir --mode=710 --parents "${dst_dir}"
+    chown root:ssl-cert "${dst_dir}"
 
     debug "Moving certificate files to ${dst_file}"
     mv "${src_file}" "${dst_file}"
-    chmod 600 "${dst_file}"
-    chown root: "${dst_file}"
+    chmod 640 "${dst_file}"
+    chown root:ssl-cert "${dst_file}"
 }
 cert_and_key_match() {
     file=$1

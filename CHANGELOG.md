@@ -19,6 +19,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* certbot: fix permissions for deployed certificates in HAProxy/HAPEE
 * nginx: better detection of "server_tokens" directive
 
 ### Removed
