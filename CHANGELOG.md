@@ -19,6 +19,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Fixed
 
+* nginx: better detection of "server_tokens" directive
+
 ### Removed
 
 ### Security

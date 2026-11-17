@@ -41,9 +41,10 @@
 
 - name: search for server_tokens
   ansible.builtin.command:
-    cmd: "grep server_tokens /etc/nginx/nginx.conf"
+    cmd: "grep '^ *server_tokens' /etc/nginx/nginx.conf"
   failed_when: False
   changed_when: False
+  check_mode: no
   register: grep_server_tokens_global
 
 # Set server_tokens off if any value is already in the file
