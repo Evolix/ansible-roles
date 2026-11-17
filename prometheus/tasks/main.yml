@@ -8,6 +8,8 @@
 
 - ansible.builtin.import_tasks: node-exporter.yml
 
+- ansible.builtin.import_tasks: blackbox-exporter.yml
+
 - name: "/etc/victoria-metrics/scrape.d/crowdsec.yml file"
   ansible.builtin.template:
     src: "scrape.d/crowdsec.yml"
