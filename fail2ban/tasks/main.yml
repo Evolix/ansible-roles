@@ -57,6 +57,8 @@
     - wordpress-soft.conf
     - wordpress-hard.conf
     - roundcube.conf
+    - apache-evasive-all-without3xx.conf
+    - recidive-apache-evasive2.conf
   notify: restart fail2ban
   tags:
     - fail2ban

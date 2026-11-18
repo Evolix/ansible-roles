@@ -25,7 +25,6 @@ fail2ban_default_action: "action_"
 fail2ban_sshd: true
 # This port list is useless when using "banaction_allports"
 # It will probably be removed in a future release
-fail2ban_sshd_port: "2222,22222"
 fail2ban_sshd_maxretry: 10
 fail2ban_sshd_bantime: "{{ fail2ban_default_bantime }}"
 fail2ban_sshd_findtime: "{{ fail2ban_default_findtime }}"
@@ -49,5 +48,8 @@ fail2ban_roundcube: false
 fail2ban_roundcube_maxretry: 5
 fail2ban_roundcube_bantime: "{{ fail2ban_default_bantime }}"
 fail2ban_roundcube_findtime: "{{ fail2ban_default_findtime }}"
+
+fail2ban_apache_evasive2: false
+fail2ban_recidive_apache_evasive2: false
 
 fail2ban_dbpurgeage_default: "86400 second"
