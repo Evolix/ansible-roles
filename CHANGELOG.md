@@ -14,6 +14,9 @@ The **patch** part is incremented if multiple releases happen the same month
 ### Added
 
 * nrpe-check-pve: new role for PVE checks
+* apache: add parameters to enable /var/log/apache2/access-fail2ban.log [UNTESTED]
+* apache: install ModSecurity and CRS rules by default [UNTESTED]
+* apache: no more ITK in Debian 13 [UNTESTED]
 
 ### Changed
 
