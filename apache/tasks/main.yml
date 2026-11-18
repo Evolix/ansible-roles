@@ -6,6 +6,8 @@
       - apache2
       - apachetop
       - libwww-perl
+      - libapache2-mod-security2
+      - modsecurity-crs
     state: "present"
   tags:
     - apache
@@ -22,19 +24,21 @@
     - packages
   when:
     - ansible_distribution_major_version is version('9', '>=')
+    - ansible_distribution_major_version is version('12', '<=')
     - apache_mpm == "itk"
 
-- name: "Packages are installed (jessie)"
+- name: "Itk package is installed if required (Debian 9 or later)"
   ansible.builtin.apt:
     name:
-      - apache2-mpm-itk
-      - apachetop
-      - libwww-perl
+      - libapache2-mpm-itk
     state: "present"
   tags:
     - apache
     - packages
-  when: ansible_distribution_release == "jessie"
+  when:
+    - ansible_distribution_major_version is version('9', '>=')
+    - ansible_distribution_major_version is version('12', '<=')
+    - apache_mpm == "itk"
 
 - name: "Basic modules are enabled"
   community.general.apache2_module:
@@ -45,8 +49,6 @@
     - expires
     - headers
     - ssl
-    - include
-    - negotiation
     - alias
   notify: "reload apache"
   tags:
@@ -59,7 +61,8 @@
   loop:
     - cgi
   notify: "reload apache"
-  when: apache_mpm == "prefork" or apache_mpm == "itk"
+  when:
+    - ansible_distribution_major_version is version('12', '<=')
   tags:
     - apache
 
