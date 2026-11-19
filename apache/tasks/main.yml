@@ -14,20 +14,7 @@
     - packages
   when: ansible_distribution_major_version is version('9', '>=')
 
-- name: "Itk package is installed if required (Debian 9 or later)"
-  ansible.builtin.apt:
-    name:
-      - libapache2-mpm-itk
-    state: "present"
-  tags:
-    - apache
-    - packages
-  when:
-    - ansible_distribution_major_version is version('9', '>=')
-    - ansible_distribution_major_version is version('12', '<=')
-    - apache_mpm == "itk"
-
-- name: "Itk package is installed if required (Debian 9 or later)"
+- name: "ITK package is installed if required (Debian 9-12)"
   ansible.builtin.apt:
     name:
       - libapache2-mpm-itk
