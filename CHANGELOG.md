@@ -28,6 +28,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Removed
 
+* kvm-host: revert migrate-vm to 26.06 (bugs in error-handling logic)
+
 ### Security
 
 ## [26.11] 2026-11-10
