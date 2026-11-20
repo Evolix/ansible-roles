@@ -91,7 +91,7 @@
 
 - name: Deploy OpenVPN server config
   ansible.builtin.template:
-    src: "server.conf.j2"
+    src: "{{ openvpn_server_template }}"
     dest: "/etc/openvpn/server.conf"
     mode: "0600"
     owner: root

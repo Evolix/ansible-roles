@@ -47,6 +47,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * php-multi: install `cpp`
 * postgresql: add `postgresql_custom_datadir`
 * openvpn: add `openvpn_ccd` and `openvpn_ccd_default_template`
+* openvpn: add `openvpn_server_template`
 
 ### Changed
 
