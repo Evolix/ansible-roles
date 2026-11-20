@@ -77,6 +77,22 @@
 - ansible.builtin.include_role:
     name: evolix/remount-usr
 
+- name: "Create {{ openvpn_ccd }}/"
+  ansible.builtin.copy:
+    path: "{{ openvpn_ccd }}/"
+    state: "directory"
+    owner: "_openvpn"
+    group: "_openvpn"
+    mode: "0700"
+
+- name: "Deploy {{ openvpn_ccd }}/DEFAULT"
+  ansible.builtin.template:
+    src: "{{ openvpn_ccd_default_template }}"
+    dest: "{{ openvpn_ccd }}/DEFAULT"
+    owner: "_openvpn"
+    group: "_openvpn"
+    mode: "0600"
+
 - name: Deploy OpenVPN server config
   ansible.builtin.template:
     src: "server.conf.j2"

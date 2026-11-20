@@ -9,5 +9,8 @@ openvpn_administrator: Null
 openvpn_client_email: Null
 openvpn_server_host: "{{ ansible_fqdn }}"
 openvpn_server_port: 1194
-openvpn_management_host: 127.0.0.1
+openvpn_management_host: "127.0.0.1"
 openvpn_management_port: 1195
+
+openvpn_ccd: "/etc/openvpn/ccd"
+openvpn_ccd_default_template: "ccd/DEFAULT.role-default.j2"
