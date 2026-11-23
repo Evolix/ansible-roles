@@ -21,6 +21,8 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* squid: add ^packagecloud.io$ for Crowdsec
+
 ### Fixed
 
 * certbot: fix permissions for deployed certificates in HAProxy/HAPEE
