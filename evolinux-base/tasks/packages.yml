@@ -133,6 +133,8 @@
     name:
       - lastlog2
       - libpam-lastlog2
+      - wtmpdb 
+      - libpam-wtmpdb
   when:
     - evolinux_packages_buster | bool
     - ansible_distribution_major_version is version('13', '>=')
