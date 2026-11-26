@@ -15,7 +15,7 @@
 # - 150 : Inside an LXC container: Failure to apt update
 # - 160 : Inside an LXC container: Failure to apt upgrade --download only
 
-VERSION="26.05"
+VERSION="26.11"
 readonly VERSION
 
 PROGNAME=$(basename "$0")
@@ -165,6 +165,11 @@ force_mode() {
     test "${force_mode}" = "1"
 }
 
+mail_mode() {
+    test "${mail_mode}" = "1"
+}
+
+
 main() {
     # TODO: Use evolibs ?
     local_release=$(cut -f 1 -d . </etc/debian_version)
@@ -279,7 +284,6 @@ main() {
         echo 'Aucun' >"${packagesHold}"
     fi
 
-
     # Guess which services will be restarted.
     for pkg in ${packagesParsable}; do
         if echo "${pkg}" | grep --quiet --extended-regexp "^(lib)?apache2"; then
@@ -337,8 +341,10 @@ main() {
     done
     test ! -s "${servicesToRestart}" && echo "Aucun" >"${servicesToRestart}"
 
+    if mail_mode; then
     render_mail_template "${template}"
     /usr/sbin/sendmail -oi -t -f "${from}" "${mailto}" <"${template}"
+    fi
 
     ### Download packages
 
@@ -359,7 +365,7 @@ main() {
 
     # Also, we try to update each container apt sources
     if which lxc-ls >/dev/null; then
-        for container in $( lxc-ls -1 --active | grep --invert-match --regexp php56 --regexp php70 ); do
+        for container in $( lxc-ls -1 --active | grep --invert-match --regexp php56 ); do
 
             aptUpdateOutput=$(lxc-attach -n "${container}" -- apt-get -o Dir::State::Lists="${listupgrade_state_dir}" update 2>&1 | (grep --extended-regexp --invert-match --regexp '^(Listing|WARNING|$)' --regexp upgraded --regexp 'up to date' || true))
 
@@ -384,6 +390,13 @@ main() {
     fi
 }
 
+cron_mode=0
+ext_mode=0
+force_mode=0
+mail_mode=1
+date_option=""
+mailto_option=""
+
 # Options parsing.
 while :; do
     case ${1} in
@@ -394,6 +407,50 @@ while :; do
     --cron)
         cron_mode=1
         ;;
+    --no-mail)
+        mail_mode=0
+        ;;
+
+    --date)
+        # date options, with value speparated by space
+        if [ -n "$2" ]; then
+            date_option=$2
+            shift
+        else
+            printf 'FAILED: "--date" requires a non-empty option argument.\n' >&2
+            exit 1
+        fi
+        ;;
+    --date=?*)
+        # date options, with value speparated by =
+        date_option=${1#*=}
+        ;;
+    --date=)
+        # date options, without value
+        printf 'FAILED: "--date" requires a non-empty option argument.\n' >&2
+        exit 1
+        ;;
+
+    --mailto)
+        # mailto options, with value speparated by space
+        if [ -n "$2" ]; then
+            mailto_option=$2
+            shift
+        else
+            printf 'FAILED: "--mailto" requires a non-empty option argument.\n' >&2
+            exit 1
+        fi
+        ;;
+    --mailto=?*)
+        # mailto options, with value speparated by =
+        mailto_option=${1#*=}
+        ;;
+    --mailto=)
+        # mailto options, without value
+        printf 'FAILED: "--mailto" requires a non-empty option argument.\n' >&2
+        exit 1
+        ;;
+
     -e | --external | --ext )
         ext_mode=1
         ;;
@@ -422,39 +479,49 @@ set -u
 
 export LC_ALL=C
 
-config_file="/etc/evolinux/listupgrade.cnf"
-
-cron_mode=${cron_mode:-0}
-ext_mode=${ext_mode:-0}
-force_mode=${force_mode:-0}
 clientmail=$(grep "^\s*EVOMAINTMAIL=" /etc/evomaintenance.cf | cut -d'=' -f2)
 from=$(grep "^\s*FROM=" /etc/evomaintenance.cf | cut -d'=' -f2)
-mailto="${clientmail}"
-date="Ce jeudi entre 18h00 et 23h00."
+
 hostname=$(grep "^\s*HOSTNAME=" /etc/evomaintenance.cf | cut -d'=' -f2)
 hostname=${hostname%%.evolix.net}
-listupgrade_state_dir="${listupgrade_state_dir:-/var/lib/listupgrade}"
-hooks_dir="/etc/evolinux/listupgrade-hooks"
-listupgrade_sources_dir="${listupgrade_sources_dir:-/etc/apt/listupgrade-sources.list.d}"
-listupgrade_sources_file="${listupgrade_sources_file:-/etc/apt/sources.list}"
-if ext_mode; then
-    config_file="/etc/evolinux/listupgrade-ext.cnf"
-    date="Ce mercredi entre 8h00 et 10h00."
-    listupgrade_state_dir="/var/lib/listupgrade-external"
-    listupgrade_sources_dir="/etc/apt/listupgrade-external-sources.list.d"
-    listupgrade_sources_file="/dev/null"
-fi
-
 # If hostname is composed with -, remove the first part.
 if [[ "${hostname}" =~ "-" ]]; then
     hostname=$(echo "${hostname}" | cut -d'-' -f2-)
 fi
+
+mailto=${clientmail}
+
+hooks_dir="/etc/evolinux/listupgrade-hooks"
+
+if ext_mode; then
+    date="Ce mercredi entre 8h00 et 10h00."
+    config_file="/etc/evolinux/listupgrade-ext.cnf"
+    listupgrade_state_dir="/var/lib/listupgrade-external"
+    listupgrade_sources_dir="/etc/apt/listupgrade-external-sources.list.d"
+    listupgrade_sources_file="/dev/null"
+else
+    date="Ce jeudi entre 18h00 et 23h00."
+    config_file="/etc/evolinux/listupgrade.cnf"
+    listupgrade_state_dir="${listupgrade_state_dir:-/var/lib/listupgrade}"
+    listupgrade_sources_dir="${listupgrade_sources_dir:-/etc/apt/listupgrade-sources.list.d}"
+    listupgrade_sources_file="${listupgrade_sources_file:-/etc/apt/sources.list}"
+fi
+
 # Edit $config_file to override some variables.
 # shellcheck disable=SC1090,SC1091
 [ -r "${config_file}" ] && . "${config_file}"
+
 # Enable force mode if the upgrade should happen on Tuesday
-if $(echo ${date} | grep -q mardi);
+if echo "${date}" | grep -q mardi;
     then force_mode=1
+fi
+
+# Override with command line options
+if [ -n "${mailto_option}" ]; then
+    mailto="${mailto_option}"
+fi
+if [ -n "${date_option}" ]; then
+    date="${date_option}"
 fi
 
 # Create temporary files
@@ -467,15 +534,12 @@ upgradeInfo=$(mktemp --tmpdir=/tmp listupgrade.XXX)
 # shellcheck disable=SC2064
 trap "rm ${packages} ${packagesHold} ${servicesToRestart} ${template} ${upgradeInfo}" EXIT
 
-if ! cron_mode; then
-    echo "À quelle date/heure allez vous planifier les mises à jour ?"
-    echo "Exemple : le jeudi 6 mars entre 18h00 et 23h00"
-    echo -n "> "
-    read -r date
-    echo "À qui envoyer le mail ?"
-    echo -n "> "
-    read -r mailto
-fi
+# printf "cron_mode: %s\n" "${cron_mode}"
+# printf "force_mode: %s\n" "${force_mode}"
+# printf "mail_mode: %s\n" "${mail_mode}"
+# printf "ext_mode: %s\n" "${ext_mode}"
+# printf "date: %s\n" "${date}"
+# printf "mailto: %s\n" "${mailto}"
 
 # Execute pre hooks
 pre_hooks

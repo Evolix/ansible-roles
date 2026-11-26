@@ -22,6 +22,7 @@ The **patch** part is incremented if multiple releases happen the same month
 
 ### Changed
 
+* listupgrade: upstream release 26.11
 * squid: add ^packagecloud.io$ for Crowdsec
 
 ### Fixed
