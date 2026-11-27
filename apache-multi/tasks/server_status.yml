@@ -69,8 +69,7 @@
     dest: "{{ apache_multi_front_dir }}/sites-available/000-evolinux-default.conf"
     regexp: "<Location /server-status-?>"
     replace: "<Location /server-status-{{ apache_serverstatus_suffix }}>"
-  # TODO: replace
-  # notify: reload apache
+  notify: "Reload apache front vhost"
   tags:
     - apache
 

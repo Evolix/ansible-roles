@@ -18,6 +18,8 @@
   become: yes
   remote_user: "{{ lookup('env', 'USER') }}"
   delegate_to: "{{ lookup('community.general.dig',  item | urlsplit('hostname')) }}"
+  vars:
+    ansible_user: "{{ lookup('env', 'USER') }}"
   notify: "restart minifirewall on loki endpoints"
 
 - name: "Configure loki endpoints to authorize connections from {{ ansible_hostname }} in {{ lookup('community.general.dig',  item | urlsplit('hostname')) }}:/etc/nginx/snippets/loki_write_whitelist"

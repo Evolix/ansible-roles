@@ -97,6 +97,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * php-multi: typo in php7.3.build
 * prometheus: configure vmagent to always use prometheus compatible names
 * redis: Do not add `Alias=` directive to instanced service
+* apache-multi: keep `ipaddr_whitelist.conf`only in the front instance
 
 ### Removed
 
