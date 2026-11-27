@@ -126,7 +126,7 @@
 - name: "Copy Apache config files"
   ansible.builtin.copy:
     src: "{{ item }}"
-    dest: "{{ apache_multi_template_dir }}/conf-available/{{ item }}"
+    dest: "../conf-available/{{ item }}"
     owner: "root"
     group: "root"
     mode: "0640"

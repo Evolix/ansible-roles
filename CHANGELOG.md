@@ -98,6 +98,7 @@ The **patch** part is incremented if multiple releases happen the same month
 * prometheus: configure vmagent to always use prometheus compatible names
 * redis: Do not add `Alias=` directive to instanced service
 * apache-multi: keep `ipaddr_whitelist.conf`only in the front instance
+* apache-multi: use relative links for apache template confs
 
 ### Removed
 
