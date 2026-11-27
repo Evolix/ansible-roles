@@ -1,6 +1,11 @@
 <VirtualHost {{ evoadmin_multiinstance_backend_port }}>
     ServerName DEFAULT
 
+   <IfModule remoteip_module>
+        RemoteIPHeader X-Forwarded-For
+        RemoteIPTrustedProxy 127.0.0.1
+   </IfModule>
+
     # Repertoire principal
     DocumentRoot {{ evoadmin_document_root }}/htdocs/
 
